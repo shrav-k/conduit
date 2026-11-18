@@ -1,7 +1,8 @@
 //! Ordered setup parts and Conduit lifecycle. All runner work is an intent; reports are
 //! explicit inputs. Pending plans live with their invocation and survive serialization.
 use crate::{
-    Allocation, Context, Evidence, Result, State, Transition, access, decision, explain, requests,
+    Allocation, Context, Evidence, Result, State, Transition, access, decision, explain, pending,
+    requests, sign_in,
 };
 use serde::Deserialize;
 use serde_json::{Value, json};
@@ -349,6 +350,53 @@ fn part(
 ) {
     t.state.invocations[i]["setup"]["parts"].as_array_mut().unwrap().push(json!({"name":name,"outcome":outcome,"effect":effect,"optional":optional,"invocation":invocation}));
 }
+pub(crate) fn report_sign_in_undone(
+    t: &mut Transition,
+    instance: &Value,
+    outcome: &str,
+    hook: &Value,
+    time: &str,
+) -> Result<()> {
+    let object = t
+        .state
+        .objects
+        .iter_mut()
+        .find(|o| o["id"] == *instance)
+        .ok_or("sign-out instance disappeared")?;
+    sign_in::set_sign_in_undone_false(object, outcome, hook, time);
+    t.decisions.push(decision(
+        "report-sign-in-undone",
+        &["PND-011"],
+        &[],
+        json!({"instance":instance,"hook":hook}),
+        vec![],
+    ));
+    Ok(())
+}
+
+pub(crate) fn record_setup_sign_in(t: &mut Transition, i: usize) -> Result<()> {
+    let setup = &t.state.invocations[i];
+    let Some(action) = setup["setup"].get("raised") else {
+        return Ok(());
+    };
+    let ended = t
+        .records
+        .iter_mut()
+        .rev()
+        .find(|r| r["type"] == "invocation-ended" && r["data"]["invocation"] == setup["id"])
+        .ok_or("raising setup has no ending record")?;
+    ended["data"]["pendingAction"] = json!([action]);
+    let stored = t
+        .state
+        .records
+        .iter_mut()
+        .rev()
+        .find(|r| r["id"] == ended["id"])
+        .ok_or("raising setup's ending record absent from state")?;
+    *stored = ended.clone();
+    Ok(())
+}
+
 fn settle(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) -> Result<()> {
     let v = t.state.invocations[i].clone();
     let parts = v["setup"]["parts"].as_array().unwrap();
@@ -389,8 +437,17 @@ fn settle(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) -> 
         ],
         &v["object"],
     );
-    let cause = explain::settle_cause(&v, outcome, parts)?;
-    requests::finish(t, a, c, i, outcome, json!({}), json!([]), cause)
+    let mut cause = explain::settle_cause(&v, outcome, parts)?;
+    if let Some(sign_out) = v["setup"]["signOut"].as_str() {
+        cause.get_or_insert_with(Vec::new).push(explain::outcome_diagnostic(
+            &v,
+            outcome,
+            "PND-011",
+            &format!("The sign-out hook ended {sign_out} after the account check found an account other than the expected one, so SignInUndone is False and requests to the instance other than the parts of sign-in.v1, of a setup and of its retirement report unavailable until an account check finds the expected account or none."),
+        )?);
+    }
+    requests::finish(t, a, c, i, outcome, json!({}), json!([]), cause)?;
+    record_setup_sign_in(t, i)
 }
 fn request_for(
     t: &Transition,
@@ -512,6 +569,8 @@ fn advance(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) ->
         // part's eventual effect. In particular a connection cannot settle a run.
         if v["setup"]["phase"] == "entry"
             || v["setup"]["phase"] == "hook-pending"
+            || v["setup"]["phase"] == "account-pending"
+            || v["setup"]["phase"] == "undo-pending"
             || v["setup"]["run_phase"]
                 .as_str()
                 .is_some_and(|p| p != "ended")
@@ -547,9 +606,16 @@ fn advance(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) ->
                 .iter()
                 .skip(v["setup"]["cursor"].as_u64().unwrap_or(0) as usize)
                 .any(|(_, d)| d["optional"] != true);
+        let account_left = ["declarations", "implementations", "work", "account"].contains(&phase)
+            && matches!(
+                sign_in::expected_account(&o, c)?,
+                sign_in::ExpectedAccount::Set { .. }
+            );
         if declarations_left
             || (phase == "declarations" || phase == "implementations") && implementations
-            || hook && ["declarations", "implementations", "work", "hook"].contains(&phase)
+            || account_left
+            || hook
+                && ["declarations", "implementations", "work", "account", "hook"].contains(&phase)
         {
             part(
                 t,
@@ -788,6 +854,15 @@ fn advance(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) ->
         {
             return settle(t, a, c, i);
         }
+        t.state.invocations[i]["setup"]["phase"] = json!("account");
+    }
+    if t.state.invocations[i]["setup"]["phase"] == "account" {
+        if matches!(
+            sign_in::expected_account(&o, c)?,
+            sign_in::ExpectedAccount::Set { .. }
+        ) {
+            return dispatch_sign_in_part(t, a, c, i, &o, true);
+        }
         t.state.invocations[i]["setup"]["phase"] = json!("hook");
     }
     if t.state.invocations[i]["setup"]["phase"] == "hook" {
@@ -799,6 +874,27 @@ fn advance(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) ->
         return settle(t, a, c, i);
     }
     Ok(())
+}
+
+fn dispatch_sign_in_part(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    object: &Value,
+    account: bool,
+) -> Result<()> {
+    let (operation, phase, name) = if account {
+        ("account-hook.v1", "account-pending", "account")
+    } else {
+        ("sign-out-hook.v1", "undo-pending", "sign-out")
+    };
+    if requests::setup_sign_in_hook(t, a, c, i, object, operation)? {
+        t.state.invocations[i]["setup"]["phase"] = json!(phase);
+        return Ok(());
+    }
+    part(t, i, name, "failed", !account, false, Value::Null);
+    settle(t, a, c, i)
 }
 pub(crate) fn emit(
     t: &mut Transition,
@@ -1118,6 +1214,13 @@ pub(crate) fn child_answered(
         .as_str()
         .unwrap_or("")
         .to_owned();
+    if matches!(phase.as_str(), "account-pending" | "undo-pending") {
+        sign_in_part_answered(t, a, c, i, v, outcome, phase == "account-pending")?;
+        if t.state.invocations[i]["state"] != "in-progress" {
+            child_ended(t, a, c, i)?;
+        }
+        return Ok(());
+    }
     if phase != "hook-pending" && phase != "entry" {
         return Ok(());
     }
@@ -1145,6 +1248,108 @@ pub(crate) fn child_answered(
         child_ended(t, a, c, i)?;
     }
     Ok(())
+}
+
+fn sign_in_part_answered(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    child: &Value,
+    outcome: &str,
+    account_check: bool,
+) -> Result<()> {
+    part(
+        t,
+        i,
+        if account_check { "account" } else { "sign-out" },
+        outcome,
+        child["contract"]["spec"].get("effect").is_some(),
+        false,
+        child["id"].clone(),
+    );
+    let setup = t.state.invocations[i].clone();
+    let instance = access::object(&t.state, &setup["object"])
+        .ok_or("setup object disappeared")?
+        .clone();
+    let retired = instance["state"] == "retired";
+    if outcome != "succeeded" {
+        // An unsuccessful account check has no account to act on. Call-level
+        // PND-005 and IFC-016 triggers are handled by requests::complete.
+        if !account_check {
+            report_sign_in_undone(t, &instance["id"], outcome, &child["id"], &a.evidence.time)?;
+            t.state.invocations[i]["setup"]["signOut"] = json!(outcome);
+        }
+        if !retired {
+            return settle(t, a, c, i);
+        }
+    } else if account_check {
+        let expected = sign_in::expected_account(&instance, c)?;
+        let found = child["retained"]["outputs"]["account"].as_str();
+        let matches_expected = matches!(&expected, sign_in::ExpectedAccount::Set { account, .. }
+            if found.is_some_and(|found| found.eq_ignore_ascii_case(account)));
+        if retired
+            && found.is_some()
+            && !matches_expected
+            && matches!(&expected, sign_in::ExpectedAccount::Set { .. })
+        {
+            // TPL-012 bars dispatch after retirement, but OPS-022 still counts this required undo.
+            part(t, i, "sign-out", "failed", true, false, Value::Null);
+        }
+        if let sign_in::ExpectedAccount::Set { pointer, account } = &expected
+            && !matches_expected
+            && !retired
+        {
+            let trigger = if found.is_some() {
+                "setup-other-account"
+            } else {
+                "setup-no-account"
+            };
+            if let Some(action) = pending::raise_sign_in(
+                &mut t.state,
+                &instance,
+                account,
+                pointer,
+                pending::SignInRequest::Setup {
+                    invocation: &setup,
+                    trigger,
+                },
+                a,
+            )? {
+                t.state.invocations[i]["setup"]["raised"] = action["id"].clone();
+                t.decisions.push(decision(
+                    "raise-sign-in-action",
+                    &["PND-001", "PND-005", "PND-011", "PND-012", "TPL-012"],
+                    &["DL19"],
+                    json!({"action":action["id"],"instance":instance["id"]}),
+                    vec![],
+                ));
+            }
+            if found.is_some() {
+                return dispatch_sign_in_part(t, a, c, i, &instance, false);
+            }
+        }
+        if (matches_expected
+            || found.is_none()
+                && (retired || matches!(expected, sign_in::ExpectedAccount::Set { .. })))
+            && let Some(object) = t
+                .state
+                .objects
+                .iter_mut()
+                .find(|o| o["id"] == instance["id"])
+            && sign_in::clear_sign_in_undone(object, &a.evidence.time)
+        {
+            t.decisions.push(decision(
+                "clear-sign-in-undone",
+                &["PND-011", "TPL-012"],
+                &[],
+                json!({"instance":instance["id"]}),
+                vec![],
+            ));
+        }
+    }
+    t.state.invocations[i]["setup"]["phase"] = json!("hook");
+    advance(t, a, c, i)
 }
 
 pub(crate) fn cancel(
@@ -1197,10 +1402,15 @@ pub(crate) fn cancel(
                 i,
                 "cancelled-hook",
                 "unknown",
-                true,
+                v["setup"]["phase"] != "account-pending",
                 false,
                 t.state.invocations[child]["id"].clone(),
             );
+            if v["setup"]["phase"] == "undo-pending" {
+                let hook = t.state.invocations[child]["id"].clone();
+                report_sign_in_undone(t, &v["object"], "unknown", &hook, &a.evidence.time)?;
+                t.state.invocations[i]["setup"]["signOut"] = json!("unknown");
+            }
         }
     }
     if v["setup"]["phase"] == "work" {

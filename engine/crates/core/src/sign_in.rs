@@ -1,4 +1,4 @@
-//! PND-005 lapse signals and holds, and PND-010 checks before dispatch.
+//! PND-005 lapse signals and holds, PND-010 checks, and PND-011 sign-out conditions.
 use crate::{Context, Result, State, access, explain::Rejection, inventory, pending};
 use serde_json::{Value, json};
 
@@ -18,6 +18,82 @@ pub(crate) fn request_is_held(state: &State, target: &Value, contract: &Value) -
         && target["id"]
             .as_str()
             .is_some_and(|id| state.sign_in_holds.contains_key(id))
+}
+
+fn undone_condition(object: &Value) -> Option<usize> {
+    object["status"]["conditions"]
+        .as_array()?
+        .iter()
+        .position(|condition| condition["type"] == "SignInUndone")
+}
+
+pub(crate) fn request_is_held_for_sign_in_undone(state: &State, target: &Value) -> bool {
+    access::object_by_id(state, target).is_some_and(|object| {
+        matches!(object["kind"].as_str(), Some("Resource" | "Agent"))
+            && object.get("spec").is_none()
+            && undone_condition(object)
+                .is_some_and(|i| object["status"]["conditions"][i]["status"] == "False")
+    })
+}
+
+pub(crate) fn set_sign_in_undone_false(
+    object: &mut Value,
+    outcome: &str,
+    hook: &Value,
+    time: &str,
+) {
+    let condition = json!({
+        "type":"SignInUndone",
+        "status":"False",
+        "reason":if outcome == "failed" {"SignOutFailed"} else {"SignOutUnknown"},
+        "message":format!(
+            "The sign-out hook ended {outcome} after setup's account check found an account other than the expected one, so that account may still be signed in. Requests to the instance other than the parts of sign-in.v1, of a setup and of its retirement report unavailable under PND-011 until an account check finds the expected account or none."
+        ),
+        "lastTransitionTime":time,
+        "source":format!("urn:uuid:{}", hook.as_str().unwrap())
+    });
+    write_undone_condition(object, undone_condition(object), condition, time);
+}
+
+pub(crate) fn clear_sign_in_undone(object: &mut Value, time: &str) -> bool {
+    let Some(i) = undone_condition(object) else {
+        return false;
+    };
+    let old = &object["status"]["conditions"][i];
+    if old["status"] != "False" {
+        return false;
+    }
+    let condition = json!({
+        "type":"SignInUndone","status":"True","reason":"AccountChecked",
+        "message":"An account check within setup found the expected account or none.",
+        "lastTransitionTime":time,"source":old["source"]
+    });
+    write_undone_condition(object, Some(i), condition, time);
+    true
+}
+
+fn write_undone_condition(object: &mut Value, index: Option<usize>, mut new: Value, time: &str) {
+    if let Some(i) = index {
+        let old = &object["status"]["conditions"][i];
+        if old["status"] == new["status"] {
+            new["lastTransitionTime"] = old["lastTransitionTime"].clone();
+        } else {
+            let past = json!({"condition":old,"endedAt":time});
+            if !object["past_conditions"].is_array() {
+                object["past_conditions"] = json!([]);
+            }
+            object["past_conditions"].as_array_mut().unwrap().push(past);
+        }
+        object["status"]["conditions"][i] = new;
+    } else {
+        if !object["status"]["conditions"].is_array() {
+            object["status"]["conditions"] = json!([]);
+        }
+        object["status"]["conditions"]
+            .as_array_mut()
+            .unwrap()
+            .push(new);
+    }
 }
 
 pub(crate) fn expected_account<'a>(
@@ -219,6 +295,68 @@ fn rejection(reason: &'static str, tool: &str, cause: &str) -> Rejection {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn sign_in_undone_condition_and_hold() {
+        let time = "2026-11-12T12:00:00Z";
+        let later = "2026-11-12T12:00:01Z";
+        let checked = "2026-11-12T12:00:02Z";
+        let running = json!({"type":"Running","status":"True"});
+        let mut state = State {
+            objects: vec![
+                json!({"kind":"Agent","id":"s1","status":{"conditions":[running]}}),
+                json!({"kind":"Agent","id":"s2"}),
+                json!({"kind":"Resource","id":"x1"}),
+                json!({"kind":"Agent","id":"t1","spec":{}}),
+            ],
+            ..State::default()
+        };
+        set_sign_in_undone_false(&mut state.objects[0], "failed", &json!("h1"), time);
+        assert_eq!(
+            state.objects[0]["status"]["conditions"],
+            json!([running,{
+                "type":"SignInUndone","status":"False","reason":"SignOutFailed",
+                "message":"The sign-out hook ended failed after setup's account check found an account other than the expected one, so that account may still be signed in. Requests to the instance other than the parts of sign-in.v1, of a setup and of its retirement report unavailable under PND-011 until an account check finds the expected account or none.",
+                "lastTransitionTime":time,"source":"urn:uuid:h1"
+            }])
+        );
+        let held = |state: &State, id: &str| request_is_held_for_sign_in_undone(state, &json!(id));
+        assert_eq!([held(&state, "s1"), held(&state, "s2")], [true, false]);
+        set_sign_in_undone_false(&mut state.objects[0], "unknown", &json!("h2"), later);
+        let unknown = state.objects[0]["status"]["conditions"][1].clone();
+        assert_eq!(unknown["reason"], "SignOutUnknown");
+        assert_eq!(unknown["source"], "urn:uuid:h2");
+        assert_eq!(unknown["lastTransitionTime"], time);
+        assert_eq!(state.objects[0].get("past_conditions"), None);
+        state.objects[2]["status"]["conditions"] = json!([unknown]);
+        state.objects[3]["status"]["conditions"] = json!([unknown]);
+        assert_eq!([held(&state, "x1"), held(&state, "t1")], [true, false]);
+        assert_eq!(
+            [clear_sign_in_undone(&mut state.objects[0], checked)],
+            [true]
+        );
+        assert_eq!(
+            state.objects[0]["status"]["conditions"][1],
+            json!({"type":"SignInUndone","status":"True","reason":"AccountChecked",
+                "message":"An account check within setup found the expected account or none.",
+                "lastTransitionTime":checked,"source":"urn:uuid:h2"})
+        );
+        assert_eq!(
+            state.objects[0]["past_conditions"],
+            json!([{"condition":unknown,"endedAt":checked}])
+        );
+        let cleared = state.objects[0].clone();
+        assert_eq!(
+            [
+                held(&state, "s1"),
+                clear_sign_in_undone(&mut state.objects[0], "2026-11-12T12:00:03Z"),
+                clear_sign_in_undone(&mut state.objects[1], checked),
+            ],
+            [false, false, false]
+        );
+        assert_eq!(state.objects[0], cleared);
+        assert_eq!(state.objects[1].get("status"), None);
+    }
 
     #[test]
     fn held_requests_by_family_and_model_work() {

@@ -1,0 +1,15 @@
+- name: requests-sign-in-setup-account
+  kind: added
+  cases: [requests-sign-in-setup-account]
+- name: setup's account check, one step inserted after the run report, the later steps moved one place
+  kind: input
+  cases: [requests-sign-in-lapse-and-conflict, requests-sign-in-hold]
+  paths: ['/steps/*']
+- name: setup's account check, the run report now dispatches it, and the moved steps' expectations
+  kind: expectation
+  cases: [requests-sign-in-lapse-and-conflict, requests-sign-in-hold]
+  paths: ['/steps/*']
+- name: setup's account check, the run report's outcome now pending, and the moved steps' reasons and outcomes
+  kind: flip
+  cases: [requests-sign-in-lapse-and-conflict, requests-sign-in-hold]
+  paths: ['/steps/*']

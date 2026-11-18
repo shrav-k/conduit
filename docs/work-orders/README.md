@@ -8,9 +8,9 @@ have left the tree; their results, decisions and observations are in
 
 ## Orders still in the directory
 
-One row for each order file in this directory, in file-name order. Orders 047b to 047d and 050b to
-050o, which the coordinator's cuts of 047 and 050 plan (order 117) but which are not yet written,
-have rows without links where their names sort, each saying what it comes after.
+One row for each order file in this directory, in file-name order. Orders 047c, 047d, 050e, 050f
+and 050h to 050o, which the coordinator's cuts of 047 and 050 plan (order 117) but which are not
+yet written, have rows without links where their names sort, each saying what it comes after.
 
 | Order | What |
 | --- | --- |
@@ -28,7 +28,7 @@ have rows without links where their names sort, each saying what it comes after.
 | [046a](046a-build-refusal-tiers-and-diagnostics.md) | one deciding rule, and a diagnostic on every reason |
 | [046c](046c-build-outcome-diagnostics.md) | the outcomes the engine decides name their promise |
 | [047](047-build-setup-action.md) | a failed setup's action, computed and raised at root's inspection |
-| 047b | where actions are raised: scoped Interfaces, disclosure, list.v1's pending output, the unanswered key; after 047 (planned; the coordinator's split, open to the owner's strike) |
+| [047b](047b-build-actions-raised-by-scope.md) | where pending actions are raised: scoped Interfaces, disclosure, list.v1's pending output and the unanswered key; after 047 (the coordinator's split, open to the owner's strike) |
 | 047c | answer.v1 with stored answers; after 047b (planned; the coordinator's split, open to the owner's strike) |
 | 047d | the notice kind; after 047c (planned; the coordinator's split, open to the owner's strike) |
 | [048a1](048a1-build-sign-in-type-checks.md) | CTR-013's checks on a Type's sign-in, and the .v2 fixture's apiKey |
@@ -36,7 +36,7 @@ have rows without links where their names sort, each saying what it comes after.
 | [050a](050a-agents-v2-own-tools.md) | the .v2 Agent Types, with the Agent's own tools |
 | [050b](050b-spec-claude-sign-in-connection.md) | the connection Conduit manages for a Claude sign-in, F95, the three stale route texts, and Codex's browser-opens limit, in the specification; after ruling 82 and order 199 (the coordinator's split, open to the owner's strike) |
 | [050c](050c-agents-v2-client-home.md) | each .v2 Agent's own client home inside its state directory; after the stack's rebase onto main and order 045 (the coordinator's split, open to the owner's strike) |
-| 050d | the .v2 wrappers stop their client's whole process tree (the full review's order 16); after 050c (planned; the coordinator's split, open to the owner's strike) |
+| [050d](050d-agents-v2-process-tree.md) | the .v2 wrappers stop their client's whole process tree (the full review's order 16); after 050c (the coordinator's split, open to the owner's strike) |
 | 050e | failed turns as fields, with a network class, and a lapsed login in a turn (the full review's order 17); after 050d, and 048a-2 written (planned; the coordinator's split, open to the owner's strike) |
 | 050f | the .v2 inputs: account, an explicit apiKey, toolsDirectory, and the description sentences (i) and (ii); after 050e, 048a-1 merged, and where a set apiKey is refused at setup chosen (planned; the coordinator's split, open to the owner's strike) |
 | [050g](050g-logout-revocation-read.md) | desk reads: what each client's logout revokes, and the scope of each; after nothing (the coordinator's split, open to the owner's strike) |

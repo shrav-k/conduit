@@ -546,3 +546,97 @@ new files and runs `python3 tools/check_private_paths.py` and `git diff --cached
 the merge the admin runs `python3 tools/gate.py`, and merges on its PASS
 ([ruling 80](../proposals/ruling-80/README.md)); GitHub's CI runs on the pull request too, and the
 merge does not wait for it.
+
+## Record
+
+Run on 2026-11-18, from about 03:16 to 04:42 UTC, on the Mac from `main` `2d209c09` (order 050g's
+merge), in three rounds: the worker (1600 s) and a fresh Codex verifier (449 s), then the worker
+again (1278 s) and a second fresh Codex verifier (406 s), then the worker a third time (1013 s) and
+a third fresh Codex verifier (397 s). The change is the five core files of Scope and the `None` of
+`records.rs`'s successful `finish`, `engine/CONFORMANCE.md` and `engine/STANDING.md`, the new case
+`explain-outcome-causes` (17 steps) and its index entry, and decision 3's edit of 25 cases, which
+removed 30 bare text assertions and 32 `structuredContent` absences. `requests::finish` takes the
+`cause`, keeps it with the ended invocation, and a repeat answered from a stored failed or unknown
+outcome, and `complete`'s restoration of `previous`, carry it. Each call site names decision 1's
+rule; `OUTCOME_CAUSES` holds eight entries (IFC-008, IFC-010, IFC-046, IFC-047, IMP-007, LIF-021,
+OPS-007 and OPS-027); a part held back names POOL-013 in `setup.parts` and `status.setup.parts`;
+decision 6's tests are present. The two OPS-012 cases stay expected failures for the full review's
+order 22, and the unbuilt -32022 handling and resend is listed as unfinished. The worker's own
+choices: each diagnostic names the caller's subject, a core reference as the caller spelled it or
+the container named by a cascade's tool, else the tool; a cascade's LIF-021 message holds the
+container retirement's recorded OPS-022 message, or the preflight reason that held it back; and
+the cascade and filtered repeat tests check `ended_reply` directly, since OPS-024 redispatches
+every failed repeat, which the worker reports as the nearest sound reading.
+
+The first verifier found two musts: the diagnostics named no subject, which IFC-050 asks for, and
+a cascade whose container retirement was held back did not say why. Round 2 added the named subject
+and the preflight cause. The subject changes decision 1's message form to
+`{operation} for {subject} ended {outcome} under {RULE}: {cause}`; the admin's round 2 passed the
+first verifier's must on, and the coordinator holds the departure, open to the owner's strike. The
+second verifier found two musts: a cascade dropped the cause of a dispatched container retirement,
+and a provider call named only its tool, where the caller named a file. Round 3 put the child's
+cause in the cascade's message and named the path of `file.read.v1`, `file.write.v1` and
+`directory.list.v1`. The third verifier found three musts: a `directory.read.v1` call named no
+path, an invocation in progress from before this change lost its subject at recovery, and the
+cascade rewrote the message of each remaining member. Its should asked for a per-vector check of
+the deciding rules. The first two verifiers' runner should, that an outcome diagnostic with no
+`message` can pass, is left to a follow-up order with scope in `engine/crates/conformance/`.
+Rounds 2 and 3 applied the verifiers' other shoulds: the POOL-013 test with one met and one unmet
+dependency, the unfinished item naming -32022, and the LIF-031 test fixture.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2), on a scratch copy of
+the branch at `020a6751`, before its rebase. It ran every check of "Done when": the Python checks
+(Errors: 0 each, STANDING.md current with 520 rows), the tool tests (123, OK), `git diff --check`
+(clean), `vector_delta.py` against HEAD (0 changes) and against `origin/main` (63 changes; 0 flips;
+0 undeclared; 0 errors), decision 3's script on the merge base (the 25 cases byte for byte), the
+KEEP script (`0 0 10`), the greps, fmt, clippy, pieces (`Nothing to move.`), the `explain-` run (4
+cases passed), the vectors test (2 passed) and the full release run (316 passed, 0 failed, 4
+ignored), the mutation (`step 15: /reply/structuredContent: missing required field`, then PASS and
+`cmp` 0) and the spike (9 passed). For item 9 it put a placeholder rule in all 32 edited vector
+steps in a probe copy: each actual `ruleId` matched decision 1's row. It upheld none of the third
+verifier's musts as a must: the two on subjects follow from a subject rule the order does not ask
+for. It found no must and three shoulds:
+
+- S1: decision 1 gives each remaining member of a cascade "the message the code writes now", and
+  the build wrapped it in the outcome form.
+- S2: `OUTCOME_CAUSES` gave IFC-010 the cause "The plain implementation gave no complete result
+  establishing the outcome.", false for a complete `isError` result on an operation that states an
+  effect.
+- S3: the named subject departs from decision 1's form, and for provider calls it matched the bare
+  local names of one package's operations in the core, which left `directory.read.v1` out.
+
+The fixer rebased the branch onto `origin/main` at `408d5f17` (order 048a-1, amended) with the work
+order's identity, without conflict, and applied each finding:
+
+- S1: each remaining member's diagnostic is again `ruleId` LIF-021, `level` error, with the whole
+  message `Shutdown is unconfirmed for {kind}/{name} ({id}).`, and the tests
+  `cascade_cancel_lists_cancellation_before_any_remaining_member` and
+  `cascade_repeat_replays_diagnostics_for_all_remaining_members` expect the bare sentence.
+- S2: IFC-010's cause reads "The plain implementation's answer does not establish whether the
+  operation acted."
+- S3, the reader's option (a): the filesystem branch of the named subject goes, so a provider call
+  names `tool {tool}`; the core-reference and cascade subjects stay. The sentence "Filesystem
+  outcome diagnostics name the path ..." of `engine/CONFORMANCE.md` goes. The test is renamed
+  `plain_file_write_outcome_names_the_tool_and_omits_the_arguments`, and asserts
+  `example.org/files#file.write.v1 for tool project.file.write.v1 ended unknown` and that the reply
+  holds neither the content nor `hello.txt`. With it goes the third verifier's `directory.read.v1`
+  must; its recovery must is still not upheld: an invocation persisted before this change has no
+  stored subject, and its IMP-007 diagnostic takes decision 1's form. The reader's spec finding,
+  that contracts carry no marker for a subject that may be disclosed, is a record outside this
+  order's scope: the coordinator files it.
+
+The fixer then ran, on the files of this commit before it was made: the Python checks of "Done when"
+(Errors: 0 each, STANDING.md current), the tool tests (129, OK, the tests `main` gained since),
+`git diff --check` and `git diff --check origin/main...HEAD` (clean), `vector_delta.py` against HEAD
+(0 changes) and against `origin/main` (63 changes; 0 flips; 0 undeclared; 0 errors), the KEEP script
+(`0 0 10`), the greps (1, 1, 1, 0, 0), the protected paths (unchanged), fmt and clippy (clean),
+pieces (`Nothing to move.`), the `explain-` run (4 cases passed), the full release run with
+`RUST_TEST_THREADS=4` (316 passed, 0 failed, 4 ignored, the vectors test's 2 among them), the
+mutation (`step 15: /reply/structuredContent: missing required field`, then PASS and `cmp` 0) and
+the spike (9 passed). The gate's run on this order's squash is the coordinator's at the merge. The
+coordinator rules on the decision that S3 left open: it accepts the named subject's message form
+`{operation} for {subject} ended {outcome} under {RULE}: {cause}` for core references, cascades and
+every other dispatched call (`tool {tool}`) as a departure from decision 1's form, open to the
+owner's strike, and the filesystem branch stays deleted (option (a)). At the merge the coordinator
+adds the departure to its list for review with the owner, as row 40, and files the reader's spec
+finding as finding 4-37 in increment 4's log.

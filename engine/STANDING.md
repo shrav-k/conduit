@@ -154,7 +154,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | IFC-007 | interface | must not | 1 | 0 | cases | core | case passes |
 | IFC-008 | interface | must | 2 | 0 | outside | core | case passes |
 | IFC-009 | interface | must | 10 | 0 | outside | core | case passes |
-| IFC-010 | interface | must | 20 | 0 | cases | core | case passes |
+| IFC-010 | interface | must | 21 | 0 | cases | core | case passes |
 | IFC-011 | interface | must | 1 | 0 | outside | core | case passes |
 | IFC-012 | interface | must | 21 | 0 | cases | core, shell | case passes |
 | IFC-013 | interface | must | 3 | 0 | cases | core | case passes |
@@ -168,7 +168,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | IFC-021 | interface | must | 2 | 0 | cases | core | case passes |
 | IFC-022 | interface | must | 3 | 0 | cases | core | case passes |
 | IFC-023 | interface | may | 0 | 0 | reason | none | reason, no case |
-| IFC-025 | interface | must | 33 | 0 | cases | loader, core | case passes |
+| IFC-025 | interface | must | 34 | 0 | cases | loader, core | case passes |
 | IFC-026 | interface | must | 4 | 0 | outside | core, shell | case passes |
 | IFC-027 | interface | must | 4 | 0 | outside | none | case passes |
 | IFC-028 | interface | must | 4 | 0 | cases | core | case passes |
@@ -190,7 +190,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | IFC-046 | interface | must | 21 | 0 | cases | core | case passes |
 | IFC-047 | interface | must | 2 | 0 | outside | core | case passes |
 | IFC-049 | interface | must | 0 | 0 | outside | none | no case, no reason |
-| IFC-050 | interface | must | 3 | 0 | outside | core | case passes |
+| IFC-050 | interface | must | 4 | 0 | outside | core | case passes |
 | IMP-001 | convention | must | 0 | 0 | reason | none | reason, no case |
 | IMP-002 | convention | must not | 5 | 0 | cases | core | case passes |
 | IMP-003 | language | must | 0 | 0 | reason | none | reason, no case |

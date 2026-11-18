@@ -1560,8 +1560,7 @@
           "isError": true,
           "content": [
             {
-              "type": "text",
-              "text": "unknown"
+              "type": "text"
             }
           ]
         },
@@ -1602,8 +1601,7 @@
           ]
         },
         "absent": [
-          "/reply/_meta/io.github.shrav-k.conduit~1reason",
-          "/reply/structuredContent"
+          "/reply/_meta/io.github.shrav-k.conduit~1reason"
         ]
       }
     },

@@ -105,6 +105,7 @@ each section are one row here, as
 | # | Decision | Why it matters | Where |
 | --- | --- | --- | --- |
 | 39 | **A URL action's requestState is bound to the Interface that the request establishes and to the originating invocation, and to no session** (fix F96, work order 198) | It removes a binding that IFC-049, PND-010 and `sign-in.v1` stated. No definition gave the session, and the baseline transport keeps none, so an engine that read it as the transport's session would refuse a sign-in's retry that comes back on a new connection, and the sign-in would end unknown at DL18 | [Order 198](../../work-orders/198-f96-request-state-binding.md); [FR-039](../full-review/findings/L04-interface.md#fr-039); IFC-049, PND-010, `sign-in.v1` |
+| 40 | **An outcome the engine decides names its subject: `{operation} for {subject} ended {outcome} under {RULE}: {cause}`** (order 046c) | Decision 1 of order 046c gave the form without a subject; the build names the subject a client already sent (a core reference, a cascade's member, or `tool {tool}` for every other dispatched call), which tells the caller which of its calls ended, and names no argument of a provider call, since no contract marks one as disclosable (finding 4-37). Striking it returns to decision 1's form | [Order 046c](../../work-orders/046c-build-outcome-diagnostics.md#record); IFC-050 |
 
 ## What the owner ruled, for reference
 

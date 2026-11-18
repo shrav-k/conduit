@@ -12,6 +12,16 @@
       "safety_rows": []
     },
     {
+      "id": "explain-outcome-causes",
+      "case": "conventions/explain/outcome-causes/case.yaml",
+      "promises": [
+        "IFC-050",
+        "IFC-010",
+        "IFC-025"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "explain-reason-diagnostic",
       "case": "conventions/explain/reason-diagnostic/case.yaml",
       "promises": [

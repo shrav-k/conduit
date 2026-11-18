@@ -525,7 +525,7 @@ pub(crate) fn execute(
             vec![],
         ));
     }
-    requests::finish(t, a, c, i, "succeeded", outputs, json!([]))
+    requests::finish(t, a, c, i, "succeeded", outputs, json!([]), None)
 }
 
 /// The project boundary predates Invoke. Complete its request accounting without changing

@@ -21,12 +21,8 @@ case sends only what a client or a provider can send and asserts only what a cli
 enforces it. Stop, report and change nothing unless `conformance/internal-cases.yaml`,
 `engine/crates/conformance/src/portable.rs` and `conformance/conventions/explain/` all exist: only
 046a's work creates them. Line numbers below are those of `main` at `9af1c29f`; 046a may move them,
-so find each place by the text quoted with it. Order 198 may merge before or after this order;
-decision 8 handles both. If this order merges first, the coordinator amends order 198's decision 6,
-and its checks that name F97's sentence (the `grep -c` for "F97, by order 048a-1: CTR-013 lets a
-Type", listed to print 1, and the `--numstat` line `2 1 IN_FORCE.md`), before 198 is dispatched,
-since its locator, its expected text and those checks name F97's sentence, which this order deletes.
-Orders 046c and 050 may land beside this one; whichever lands second keeps both changes and writes
+so find each place by the text quoted with it. Order 198 has merged (#339); decision 8 assumes
+its F96 line. Orders 046c and 050 may land beside this one; whichever lands second keeps both changes and writes
 `engine/STANDING.md` again with the tool, and reports vector_delta's count on the main it starts
 from.
 
@@ -113,7 +109,8 @@ under `decisions` as the coordinator's. One follow-up stays with the coordinator
 line for 048a ([the plan](../proposals/spec-batch-1/README.md), "CTR-013 in the loader and
 core") is a record outside this order's scope and outside order 117's rows, so it still reads as
 if all of CTR-013 came here; the coordinator notes there, in the follow-up order, that CTR-013's
-comparisons across Types leave 048a-1 for a later order.
+comparisons across Types leave 048a-1 for a later order. The coordinator amended decision 8 and
+its checks after order 050b merged first, as 050b's note on this order asks.
 
 ## The decisions it applies
 
@@ -385,12 +382,11 @@ comparisons across Types leave 048a-1 for a later order.
      ```
 
    - `IN_FORCE.md`, topic 9, the bullet that begins `- *Spec pending*:` and holds
-     "F97, by order 048a-1:". Delete from it exactly the sentence that begins "F97, by order
-     048a-1:" and ends "with one loader vector.", and the one space after it. The rest of the
-     bullet stays: F95's sentence, F96's if order 198 has not yet removed it, and
-     "(82 point 6, o5)". Right after that bullet, and after the bullet that begins
-     `- **In spec/**: F96:` where order 198 put one there, add this bullet, one line, at the
-     same level:
+     "F97, by order 048a-1:". Order 050b, which merged first, left in it F97's sentence alone,
+     ending "with one loader vector (82 point 6, o5).": delete the whole line. Right after the
+     bullet that begins `- **In spec/**: F96:`, which order 198 put there, and so before the
+     bullet that begins `- **In spec/**: F95:`, which order 050b put after it, add this bullet,
+     one line, at the same level:
 
      ```text
      - **In spec/**: F97: CTR-013 lets a Type that states `signIn` list no control whose `changes` holds the account pointer, a pointer inside it or a pointer over it, compared as CTR-006 compares pointers, as CTR-014 does for the tools directory; the engine rejects such a Type when its package is installed or its project is submitted, and the case `contracts-sign-in-resolution` shows it (82 point 6, o5).
@@ -534,8 +530,9 @@ tr -s ' \n' '  ' < spec/promises/contracts.yaml | grep -c 'The Type lists no con
 grep -c 'sha256:12eca5b0c8e74fa0054af053691fe9560d037c161727f71fbc5cf6dcd5699fb7' conformance/language/packages/agents-v2-defaults/install.json
 grep -c '"agents-0.2.0.tar.gz": "sha256:12eca5b0c8e74fa0054af053691fe9560d037c161727f71fbc5cf6dcd5699fb7"' conformance/fixtures/install-archives/digests.json
 grep -c '^- \*\*In spec/\*\*: F97: CTR-013 lets a Type' IN_FORCE.md
-grep -c 'F95, by a named spec fix landed with 050' IN_FORCE.md
-grep -c '^- \*Spec pending\*: .*(82 point 6, o5)\.$' IN_FORCE.md
+grep -A1 '^- \*\*In spec/\*\*: F96:' IN_FORCE.md | grep -c '^- \*\*In spec/\*\*: F97: '
+grep -A1 '^- \*\*In spec/\*\*: F97:' IN_FORCE.md | grep -c '^- \*\*In spec/\*\*: F95: '
+grep -c '^- \*\*In spec/\*\*: F95: the limits in spec/README.md' IN_FORCE.md
 grep -c '^| CTR-013 | language | must | 3 | 0 | outside | core | case passes |$' engine/STANDING.md
 grep -c 'no control whose `changes` reaches the account place' spec/schemas/README.md
 grep -c '`signIn` or `toolsDirectory` has `changes` reaching its place (CTR-013, CTR-014)' spec/schemas/contracts.yaml
@@ -547,7 +544,15 @@ Each of these prints 0:
 
 ```bash
 grep -c 'F97, by order 048a-1' IN_FORCE.md
+grep -c '^- \*Spec pending\*: .*(82 point 6, o5)\.$' IN_FORCE.md
 grep -rc '479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71' conformance | grep -v ':0$' | wc -l
+```
+
+This prints `1 1 IN_FORCE.md` (the numbers and the name separated by tabs): one line added and one
+deleted, so no other line of `IN_FORCE.md` changed:
+
+```bash
+git diff --numstat -- IN_FORCE.md
 ```
 
 This prints 151, the old digest's occurrences in the plan-and-apply reference, which keeps it

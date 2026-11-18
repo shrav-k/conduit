@@ -350,7 +350,8 @@ How to read a line:
 - `main` is protected before Conduit runs its first work order: changes only through pull requests, for administrators too, and no force-push or deletion (74 point 1).
 - Continuous integration runs only on free runners (64 point 3). The organization's own items wait until the organization exists (64 point 5, 65).
 - Before each merge a local gate (`tools/gate.py`) runs the checks on the coordinator's machine, and the merge waits for it. GitHub's CI keeps running on every pull request, as a free second opinion and the Linux leg, and no merge waits for it: a run that fails after a merge is fixed in a follow-up. Since no merge waits for CI, no status check is required on `main` (the review's D11) (80 point 10).
-  - *Coordinator's* (80 point 10, applying answers 12 and 13 to order 191's question, against its own recommendation of a masked secret): CI does not check the private names that `CONDUIT_PRIVATE_NAMES` lists; it stays unset in GitHub, and the local gate is to check the names before each merge once it holds them.
+  - *Coordinator's* (80 point 10, applying answers 12 and 13 to order 191's question, against its own recommendation of a masked secret): CI does not check the private names that `CONDUIT_PRIVATE_NAMES` lists; it stays unset in GitHub, and the local gate checks the names before each merge.
+  - The local gate derives the private names from the machine it runs on, at each run, and keeps them in memory alone; no file of names is kept (80 point 10 and its later answers).
 
 ## 15. How the work is governed
 

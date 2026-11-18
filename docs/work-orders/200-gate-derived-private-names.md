@@ -662,3 +662,122 @@ After the report:
 - The admin runs `python3 tools/gate.py --derive-private-names` on this order's squash, the first
   merge whose `private paths` gate checks derived names; the Record gives that run's last line
   and its `Private names:` lines, which hold counts and sources and no name.
+
+## Record
+
+Run on 2026-11-18, from about 02:27 to 03:06 UTC, on the Mac from `main` `93415960` (the merge that
+added this order), in two rounds: the worker (730 s) and a fresh Codex verifier (464 s), then the
+worker again (681 s) and a second fresh Codex verifier (443 s). The change is the nine files of
+Scope. `tools/gate.py` gains `--derive-private-names`; the `Machine` seam; `derive_private_names`
+with its six sources, decision 4's filters and `PUBLIC_WORDS`; the names given, with the file's
+precedence; decision 6's lines; the record's `private_names`; and redaction without regard to case.
+`tools/tests/test_gate.py` gains `FakeMachine`, the helpers for the origin remote and the siblings,
+and decision 9's six tests. The documents take decision 10's texts. The worker's own choices in
+round 1: ordered dictionaries keep the first of each name and the file's names first; the scrubbed
+environment is kept apart from the commands' environment, so that a names file is checked without a
+`Machine`; and Done when's names file was a self-deleting temporary file of mode 0600.
+
+The first verifier found five musts and three shoulds: the gitleaks version was compared after
+redaction, so a derived name could skip the pinned scan while the gate passed; inherited Git tracing
+could write a sibling's path outside the gate's redaction; a failure to start either of the two
+queries through the gate's `git` helper stopped the derivation; a derived name could make the plan
+show `rust discovery` as a gate still to run and count it; `private_names_configured` was true in a
+record written before the checker was reached; a kept name holding a NUL kept the checker from
+starting; the line on unreadable sibling remotes counted failed queries and rejected URLs as
+repositories; and the source-failure subtests checked their line with `assertIn`, not the whole
+list. Round 2 fixed all eight: the version is compared as cargo's output is parsed, from the
+original output in memory; derivation's Git queries run without inherited Git tracing; each of the
+two queries catches `OSError` and takes decision 3's or decision 4's fallback; the original
+discovery row chooses its display and the plan's count; `private_names_configured` starts false and
+turns true when the checker is dispatched with the variable; a kept name that the checker's
+environment cannot hold stops the run; the line on unreadable remotes was reworded to count
+failures; and each subtest checks the whole ordered list of NOT RUN lines. The second verifier found
+four musts and one should: a name in JSON-escaped form could survive in the discovery log; the skips
+of `docs` and `tool tests` were counted from redacted output; a redacted log path in the record
+could name a file that was never written; `private_names_configured` was written true just before
+the runner was called; and the plan's last line repeated the discovery label that the gate line had
+redacted. Both verifiers and the round-2 worker say that an early probe printed the checkout's path
+in a traceback, in their own output; the round-2 worker's copy, in an ignored log under `target/`,
+was deleted, and none of it reached a tracked file.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2), on the branch before its
+rebase, in a scratch clone outside the repository reset to the order's base with the nine files
+unstaged, as the worker had them. It ran every Done when check: the tool tests (129, OK), the gate's
+tests with `-v` (6 and 21 ok lines), both plans' private names lines (`Private names: NOT RUN git
+identity` the one NOT RUN line), the plan with a names file (1), the full gate with the flag (exit
+0, `PASS private paths`, its last line beginning `Gate: PASS. 12 passed; not run: identity, secrets,
+rust unreached, engine.`), the record's summary, the leak check (`True 0`), `no absolute path`, the
+order's greps, `check_docs`, `check_rulings`, `check_roadmap` and `check_private_paths` (Errors: 0
+each), `git diff --check` (clean), and `.github` and `tools/check_private_paths.py` unchanged. `git
+merge-tree` showed the branch merging onto `origin/main` without conflict. Each of the six mutations
+of Done when failed its test, and `cmp` was clean after each. It compared texts A to F and the
+ledger's cell with the order, scanned the added lines (the only at signs are code, the work-order
+identity's address and planted URLs under `example.invalid`), and checked that both checkpoints
+carry the work-order identity. A count-only derivation from the real worktree, with the real sibling
+directory, kept 10 names; given to `check_private_paths.py` over the branch's tracked files, it gave
+Errors: 0. Of the second verifier's musts it upheld two, as one should (200-R1-3); it did not uphold
+the JSON-escape finding, since a backslash or quote does not occur in account, host or repository
+names, nor the finding on the flag's write before the runner, since persisting it just before
+`run()` is a sound reading of decision 7; and it did not take up the should on the plan's last line.
+It found one must and two shoulds:
+
+- 200-R1-1 (must): at the first verifier's should, round 2 changed decision 6's prescribed line on
+  unreadable sibling remotes, and decision 9.4's subtest of an invalid URL, which planted two more
+  remotes and expected a count of 2 and the name `planted-valid`.
+- 200-R1-2 (should): round 2 added behaviour that no decision names, which the Record should list as
+  the worker's own choices.
+- 200-R1-3 (should): a Python gate's log was written under its unredacted name while the record and
+  the gate line gave the redacted path, and the skips of `docs` and `tool tests` were counted from
+  redacted output, so a derived name equal to a gate label or inside a skip line broke the log path
+  or dropped the partial.
+
+The fixer rebased the branch onto `origin/main` at `2d209c09` (order 050g) with the work-order
+identity, without conflict, and applied each finding:
+
+- 200-R1-1: `show_derivation` prints decision 6's line again, `Private names: the remotes of <U>
+  sibling repositories could not be read; their directory names alone were taken.`, and test 4's
+  subtest gives `planted-sibling-one` the remote `origin` with the invalid URL alone, and expects
+  that line with 1, the names given without `planted-valid`, and `unreadable_sibling_remotes` 1.
+  `unreadable_remotes` still counts each failed query and each refused URL, as decision 3 says; the
+  two decisions differ for a sibling with more than one refused URL, counted once for each, and for
+  one with a refused URL beside a readable one, whose remote's name is still taken.
+- 200-R1-2: round 2's own choices, none of them in a decision, for the coordinator to accept or
+  strike: `UnusablePrivateName`, a stop with exit 2, no gate run and no record, printing `Gate: NOT
+  RUN: --derive-private-names read a name from <source> that cannot be passed to
+  tools/check_private_paths.py. Nothing was checked.` for a kept name holding a NUL or not encodable
+  as UTF-8, such as a directory name with a surrogate escape, against decision 3's rule that other
+  exceptions propagate and decision 5's one stop; `without_git_tracing`, which takes the inherited
+  `GIT_TRACE*` settings out of the environment of derivation's Git queries, the two through the
+  `git` helper among them, and turns Git's three Trace2 destinations off;
+  `private_names_configured`, false in the first record and set true, and the record written, when
+  the `private paths` command is dispatched with the variable; `finish`, which records and shows a
+  redacted copy of each row and keeps the original to choose the plan's display; and the plan's
+  count of other gates, taken from every row after the first, which is always discovery.
+- 200-R1-3: a Python gate's log is named, as the Rust gates' logs are, from its redacted name, and
+  the skips of `docs` and `tool tests` are counted from the original output in memory (`raw_output`
+  of `execute`), never written. `test_result_is_pass_only_when_every_required_gate_passed` runs once
+  more with the derived names `docs` and `Skipped`, besides the test repository's own directory
+  name, `repository`, which is inside the `docs` skip line; it checks both partials, the `docs` log
+  at `03-[redacted].log`, and that every log the record names exists.
+
+On a scratch copy of `tools/gate.py`, each fix taken out failed its test: the log named from the
+unredacted label, the `docs` skips counted from the redacted output, and the `tool tests` skips
+counted from it (each `FAILED (failures=1)`), and a word of decision 6's line changed (`FAILED
+(failures=2)`); `cmp` was clean after each. The fixer then ran, from the worktree's root, on the
+files of this commit before it was made: `/usr/bin/python3 -m unittest discover -s tools/tests`
+(129, OK); the gate's tests with `-v` (6 and 21 ok lines); the plan's line without the flag (1); the
+plan with the flag (exit 0; `Private names: 10 derived from this machine (account 4, host name 2,
+macOS computer names 1, sibling repositories 0, tailnet peers 3), and given to
+tools/check_private_paths.py alone; 4 dropped as public or short (1 shorter than 4 characters, 1 in
+the origin remote's URL, 2 on the gate's list of public words); none is printed or recorded.`, then
+`Private names: NOT RUN git identity`); the plan with a names file (1); and the full run with the
+flag, which exited 0 with `PASS private paths` and the last line `Gate: PASS. 13 passed; not run:
+secrets, rust unreached, engine.`, then the record's path and the sentence on the 2 uncommitted
+paths. `identity` passed on the branch's commits, so the record's summary printed `PASS True False`
+with the six sources and `['secrets', 'rust unreached', 'engine']`, not Done when's list with
+`identity`, which assumed an uncommitted tree. The leak check printed `True 0`, then `no absolute
+path`; the order's greps gave their counts; `check_docs`, `check_rulings`, `check_roadmap` and
+`check_private_paths` gave Errors: 0 each; `git diff --check` and `git diff --check
+origin/main...HEAD` were clean; and `.github` and `tools/check_private_paths.py` are unchanged
+against `origin/main`. The gate's run with `--derive-private-names` on this order's squash, with its
+last line and `Private names:` lines, is the coordinator's at the merge.

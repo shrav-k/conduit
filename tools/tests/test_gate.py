@@ -7,12 +7,14 @@ import os
 from pathlib import Path
 import runpy
 import select
+import shutil
 import signal
 import subprocess
 import sys
 import tempfile
 import threading
 import time
+from types import SimpleNamespace
 import unittest
 from unittest import mock
 
@@ -59,6 +61,65 @@ class FakeRunner:
         output = redact(result.output)
         Path(log).write_text(output)
         return gate.CommandResult(result.exit, output, result.timed_out)
+
+
+class FakeMachine(gate.Machine):
+    def __init__(self, *, account=('planted-short', ''), host='planted-host', macos=False,
+                 computer_name=(1, b''), local_host_name=(1, b''),
+                 git_name=(1, b''), git_email=(1, b''), list_error=None,
+                 tailscale=None, peers=(0, b'{}')):
+        super().__init__(os.environ)
+        self.calls = []
+        self.account_value = account
+        self.host = host
+        self.macos = macos
+        self.list_error = list_error
+        self.tailscale = tailscale
+        self.responses = {
+            ('git', 'config', '--global', '--get', 'user.name'): git_name,
+            ('git', 'config', '--global', '--get', 'user.email'): git_email,
+            ('scutil', '--get', 'ComputerName'): computer_name,
+            ('scutil', '--get', 'LocalHostName'): local_host_name,
+        }
+        if tailscale is not None:
+            self.responses[tailscale, 'status', '--json'] = peers
+
+    def account(self):
+        self.calls.append(('account',))
+        if isinstance(self.account_value, gate.SourceSkipped):
+            raise self.account_value
+        return self.account_value
+
+    def host_name(self):
+        self.calls.append(('host_name',))
+        if isinstance(self.host, OSError):
+            raise self.host
+        return self.host
+
+    def is_macos(self):
+        self.calls.append(('is_macos',))
+        return self.macos
+
+    def which(self, name):
+        self.calls.append(('which', name))
+        if name != 'tailscale':
+            raise AssertionError('unexpected command lookup')
+        return self.tailscale
+
+    def list_directory(self, path):
+        self.calls.append(('list_directory', path))
+        if self.list_error is not None:
+            raise self.list_error
+        return super().list_directory(path)
+
+    def query(self, args, extra=None):
+        command = tuple(args)
+        self.calls.append(('query', command, extra))
+        if command in self.responses:
+            return self.responses[command]
+        if args[0] == 'git' and '--global' not in args:
+            return super().query(args, extra)
+        raise AssertionError('unexpected machine command')
 
 
 class GateTests(unittest.TestCase):
@@ -110,12 +171,12 @@ class GateTests(unittest.TestCase):
         path.chmod(mode)
         return path
 
-    def invoke(self, *args, installed=None, cargo='cargo'):
+    def invoke(self, *args, installed=None, cargo='cargo', machine=None):
         out, err = io.StringIO(), io.StringIO()
         with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err), \
                 mock.patch.object(gate.shutil, 'which',
                                   side_effect=lambda name: cargo if name == 'cargo' else installed):
-            code = gate.main(self.root, ['--base', 'base', *args], run=self.fake)
+            code = gate.main(self.root, ['--base', 'base', *args], run=self.fake, machine=machine)
         return code, out.getvalue(), err.getvalue()
 
     def record(self):
@@ -133,6 +194,28 @@ class GateTests(unittest.TestCase):
 
     def logs(self):
         return ''.join(path.read_text() for path in (self.root / gate.OUTPUT).rglob('*.log'))
+
+    def add_origin(self, url='https://example.invalid/planted-owner/repository.git'):
+        self.git('remote', 'add', 'origin', url)
+
+    def add_sibling(self, name, **remotes):
+        sibling = self.parent / name
+        self.git('init', '-q', str(sibling))
+        for remote, url in remotes.items():
+            self.git('-C', str(sibling), 'remote', 'add', remote, url)
+        return sibling
+
+    def assert_names_given(self, expected):
+        calls = []
+        for call in self.fake.calls:
+            if 'tools/check_private_paths.py' in call['args']:
+                calls.append(call['env'].get('CONDUIT_PRIVATE_NAMES'))
+            else:
+                self.assertNotIn('CONDUIT_PRIVATE_NAMES', call['env'])
+        self.assertEqual(calls, [expected])
+
+    def private_lines(self, output):
+        return [line for line in output.splitlines() if line.startswith('Private names:')]
 
     def test_changed_paths_cover_commits_edits_renames_and_untracked(self):
         self.write('a/x.txt', 'x\n')
@@ -286,6 +369,7 @@ class GateTests(unittest.TestCase):
                       output)
         env = self.record()['environment']
         self.assertTrue(env['private_names_configured'])
+        self.assertEqual(env['private_names'], dict(file=True, derived=None))
         self.assertEqual(env['removed'], ['CONDUIT_PRIVATE_NAMES', 'CONDUIT_TEST_NPM', 'RUSTFLAGS',
                                          'RUSTUP_TOOLCHAIN', 'SCR_AGENT_CODEX'])
         self.assertEqual(env['removed_credentials'], 1)
@@ -305,11 +389,14 @@ class GateTests(unittest.TestCase):
                             'planted-alpha', 'planted-beta', 'planted-gamma', names)
         self.fake.responses.clear()
         self.fake.calls.clear()
+        machine = FakeMachine()
         with mock.patch.dict(os.environ, values):
-            _, output, _ = self.invoke()
+            _, output, _ = self.invoke(machine=machine)
         self.assertIn('CONDUIT_PRIVATE_NAMES in the environment is not used.', output)
+        self.assertEqual(machine.calls, [])
         self.assertTrue(all('CONDUIT_PRIVATE_NAMES' not in call['env'] for call in self.fake.calls))
         self.assertFalse(self.record()['environment']['private_names_configured'])
+        self.assertEqual(self.record()['environment']['private_names'], dict(file=False, derived=None))
 
         # A configured name in the branch or the base is printed and recorded redacted.
         self.git('checkout', '-qb', 'planted-beta-base')
@@ -329,6 +416,355 @@ class GateTests(unittest.TestCase):
         self.assertEqual(record['base']['ref'], '[redacted]-base')
         self.assert_private(output + error + self.logs() + self.record_path().read_text(),
                             'planted-alpha', 'planted-beta', 'planted-gamma', names)
+
+    def test_derived_names_come_from_each_source(self):
+        self.add_origin()
+        first = self.add_sibling('planted-sibling-one', origin=(
+            'https://planted-user:planted-secret@example.invalid/planted-owner/planted-remote-one.git'))
+        self.add_sibling('planted-sibling-two',
+                         origin='git@example.invalid:planted-owner/planted-remote-two.git',
+                         upstream='https://example.invalid/planted-owner/planted-remote-three')
+        (self.parent / 'planted-plain-directory').mkdir()
+        (self.parent / 'planted-link').symlink_to(first, target_is_directory=True)
+        tailscale = 'planted-bin/tailscale'
+        machine = FakeMachine(
+            account=('planted-short', 'Fakefirst Fakelast,Room 1,,'), host='planted-host.example.invalid',
+            macos=True, computer_name=(0, b'Planted Computer\n'), local_host_name=(0, b'planted-local-host\n'),
+            git_name=(0, b'Planted Gitname\n'), git_email=(0, b'planted-git@example.invalid\n'),
+            tailscale=tailscale, peers=(0, json.dumps({
+                'Self': {'HostName': 'planted-self', 'DNSName': 'planted-self-dns.example.invalid.'},
+                'Peer': {'planted-key': {'HostName': 'planted-peer',
+                                         'DNSName': 'planted-peer-dns.example.invalid.'}},
+            }).encode()))
+
+        code, output, error = self.invoke('--derive-private-names', machine=machine)
+
+        self.assertEqual(code, 0)
+        self.assert_names_given(
+            'planted-short,Fakefirst Fakelast,fakefirst fakelast,Fakefirst,fakefirst,Fakelast,fakelast,'
+            'planted-host.example.invalid,planted-host,Planted Computer,planted computer,planted-local-host,'
+            'Planted Gitname,planted gitname,planted-git,planted-sibling-one,planted-remote-one,'
+            'planted-sibling-two,planted-remote-two,planted-remote-three,'
+            'planted-self,planted-self-dns,planted-peer,planted-peer-dns')
+        self.assertEqual(self.private_lines(output), [
+            'Private names: 19 derived from this machine (account 4, host name 2, macOS computer names 2, '
+            'git identity 2, sibling repositories 5, tailnet peers 4), and given to '
+            'tools/check_private_paths.py alone; 1 dropped as public or short (0 shorter than 4 characters, '
+            "1 in the origin remote's URL, 0 on the gate's list of public words); none is printed or recorded.",
+        ])
+        self.assertIn(('query', (tailscale, 'status', '--json'), None), machine.calls)
+        queries = [(args[3], extra) for call, args, extra in
+                   (entry for entry in machine.calls if entry[0] == 'query')
+                   if args[:3] == (*gate.GIT, '-C')]
+        self.assertEqual(queries, [
+            (str(self.parent / name), {'GIT_CEILING_DIRECTORIES': str(self.parent)})
+            for name in ('planted-sibling-one', 'planted-sibling-two', 'repository')
+        ])
+        self.assertEqual(self.record()['environment']['private_names'], {
+            'file': False, 'derived': {
+                'kept': 19, 'dropped': {'short': 0, 'origin': 1, 'public': 0}, 'origin_remote': True,
+                'unreadable_sibling_remotes': 0,
+                'sources': [dict(name=name, result='read', kept=count, why=None)
+                            for name, count in [('account', 4), ('host name', 2),
+                                                ('macOS computer names', 2), ('git identity', 2),
+                                                ('sibling repositories', 5), ('tailnet peers', 4)]],
+            },
+        })
+        self.assert_private(output + error + self.logs() + self.record_path().read_text(),
+                            'planted-user', 'planted-secret', 'planted-owner', 'planted-key', 'Room 1')
+
+        trace_paths = {key: self.parent / key for key in
+                       ('GIT_TRACE', 'GIT_TRACE2', 'GIT_TRACE2_EVENT', 'GIT_TRACE2_PERF')}
+        trace_environment = {key: str(path) for key, path in trace_paths.items()}
+        command = ['git', '-C', str(first), 'config', '--local', '--get', 'remote.origin.url']
+        subprocess.run(command, env=dict(machine.environment, **trace_environment), check=True,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        for key, path in trace_paths.items():
+            trace = path.read_bytes()
+            self.assertTrue(trace)
+            if key == 'GIT_TRACE2_EVENT':
+                self.assertTrue(os.fsencode(first) in trace)
+            path.unlink()
+        machine.environment.update(trace_environment)
+        derived = gate.derive_private_names(self.root, machine)
+        self.assertIn('planted-sibling-one', derived.kept)
+        self.assertIn('planted-remote-one', derived.kept)
+        self.assertTrue(derived.origin_remote)
+        self.assertFalse(any(path.exists() for path in trace_paths.values()))
+
+    def test_derived_names_drop_short_public_and_origin_words(self):
+        self.assertEqual(set(gate.PUBLIC_WORDS), {'agentwatch', 'localhost', 'pi-reference'})
+        for reason in gate.PUBLIC_WORDS.values():
+            self.assertIsInstance(reason, str)
+            self.assertTrue(reason)
+        self.add_origin('https://example.invalid/planted-origin-word/repository.git')
+        machine = FakeMachine(
+            account=('abc', ''), host='Planted-Origin-Word',
+            git_name=(0, b'AgentWatch\n'), git_email=(0, b'LOCALHOST@example.invalid\n'),
+            tailscale='planted-bin/tailscale', peers=(0, json.dumps({
+                'Self': {'HostName': 'planted-peer'},
+                'Peer': {'planted-key': {'HostName': 'PLANTED-PEER', 'DNSName': 'Pi-Reference.example.invalid.'},
+                         'planted-null': None},
+            }).encode()))
+
+        code, output, _ = self.invoke('--derive-private-names', machine=machine)
+        self.assertEqual(code, 0)
+        self.assert_names_given('planted-peer')
+        self.assertEqual(self.private_lines(output), [
+            'Private names: 1 derived from this machine (account 0, host name 0, git identity 0, '
+            'sibling repositories 0, tailnet peers 1), and given to tools/check_private_paths.py alone; '
+            "6 dropped as public or short (1 shorter than 4 characters, 2 in the origin remote's URL, "
+            "3 on the gate's list of public words); none is printed or recorded.",
+            'Private names: NOT RUN macOS computer names: this is not macOS.',
+        ])
+        self.git('remote', 'remove', 'origin')
+        self.fake.calls.clear()
+
+        code, output, _ = self.invoke('--derive-private-names', machine=machine)
+        self.assertEqual(code, 0)
+        self.assert_names_given('Planted-Origin-Word,planted-origin-word,repository,planted-peer')
+        self.assertEqual(self.private_lines(output), [
+            'Private names: 3 derived from this machine (account 0, host name 1, git identity 0, '
+            'sibling repositories 1, tailnet peers 1), and given to tools/check_private_paths.py alone; '
+            "4 dropped as public or short (1 shorter than 4 characters, 0 in the origin remote's URL, "
+            "3 on the gate's list of public words); none is printed or recorded.",
+            'Private names: NOT RUN macOS computer names: this is not macOS.',
+            'Private names: this repository has no origin remote, so no derived name was dropped '
+            'as already public in its URL.',
+        ])
+
+    def test_derived_names_combine_with_a_names_file(self):
+        self.add_origin()
+        names = self.names_file('xyz, Planted-Peer\n')
+        readings = dict(host=OSError(), tailscale='planted-bin/tailscale',
+                        peers=(0, b'{"Self": {"HostName": "planted-peer"}}'))
+        options = ('--derive-private-names', '--private-names-file', str(names))
+
+        code, output, error = self.invoke(*options, machine=FakeMachine(**readings))
+
+        self.assertEqual(code, 0)
+        self.assert_names_given('xyz,Planted-Peer,planted-short,planted-peer')
+        self.assertEqual(self.private_lines(output), [
+            'Private names: read from the file that --private-names-file names, and 2 more derived from this '
+            'machine (account 1, sibling repositories 0, tailnet peers 1), all given to '
+            'tools/check_private_paths.py alone; 1 dropped as public or short (0 shorter than 4 characters, '
+            "1 in the origin remote's URL, 0 on the gate's list of public words); neither the names nor the "
+            "file's path are printed or recorded.",
+            'Private names: NOT RUN host name: socket.gethostname() failed.',
+            'Private names: NOT RUN macOS computer names: this is not macOS.',
+            "Private names: NOT RUN git identity: git's global configuration sets neither user.name nor "
+            'user.email.',
+        ])
+        environment = self.record()['environment']
+        self.assertTrue(environment['private_names_configured'])
+        self.assertTrue(environment['private_names']['file'])
+        self.assertEqual(environment['private_names']['derived']['kept'], 2)
+        self.assert_private((output + error + self.logs() + self.record_path().read_text()).lower(),
+                            'xyz', 'planted-peer', 'planted-short', str(names).lower())
+
+        self.record_path().unlink()
+        self.fake.calls.clear()
+        names.chmod(0o644)
+        machine = FakeMachine(**readings)
+        code, output, _ = self.invoke(*options, machine=machine)
+        self.assertEqual(code, 2)
+        self.assertEqual(output.splitlines(), [
+            'Gate: NOT RUN: the file that --private-names-file names has mode 0644, not 0600; run chmod '
+            '600 on it. Nothing was checked.',
+        ])
+        self.assertEqual(machine.calls, [])
+        self.assertEqual(self.fake.calls, [])
+        self.assertFalse(self.record_path().exists())
+
+    def test_a_missing_source_is_skipped_by_name(self):
+        source_order = ('account', 'host name', 'macOS computer names', 'git identity',
+                        'sibling repositories', 'tailnet peers')
+        base_skips = {
+            'macOS computer names': 'this is not macOS.',
+            'git identity': "git's global configuration sets neither user.name nor user.email.",
+            'tailnet peers': 'the tailscale command is not on the PATH.',
+        }
+
+        def assert_skips(output, **changes):
+            expected = dict(base_skips, **changes)
+            self.assertEqual([line for line in self.private_lines(output)
+                              if line.startswith('Private names: NOT RUN ')],
+                             [f'Private names: NOT RUN {name}: {expected[name]}'
+                              for name in source_order if name in expected])
+
+        code, output, _ = self.invoke('--derive-private-names', machine=FakeMachine())
+        self.assertEqual(code, 0)
+        assert_skips(output)
+        tailscale = 'planted-bin/tailscale'
+        for changes, line in [
+            (dict(host=OSError()), 'host name: socket.gethostname() failed.'),
+            (dict(macos=True), 'macOS computer names: scutil answered neither ComputerName nor LocalHostName.'),
+            (dict(git_name=(128, b'')), 'git identity: git config --global exited 128.'),
+            (dict(git_name=(None, b'')), 'git identity: git config --global did not answer within 10 seconds.'),
+            (dict(tailscale=tailscale, peers=(1, b'planted-tailscale-output')),
+             'tailnet peers: tailscale status --json exited 1.'),
+            (dict(tailscale=tailscale, peers=(None, b'')),
+             'tailnet peers: tailscale status --json did not answer within 10 seconds.'),
+            (dict(tailscale=tailscale, peers=(0, b'[]')),
+             'tailnet peers: tailscale status --json did not print a JSON object.'),
+            (dict(list_error=OSError()),
+             'sibling repositories: the directory that holds this repository could not be listed.'),
+            (dict(account=gate.SourceSkipped("this process's user ID has no account entry")),
+             "account: this process's user ID has no account entry."),
+        ]:
+            with self.subTest(source=line):
+                code, output, error = self.invoke('--derive-private-names', machine=FakeMachine(**changes))
+                self.assertEqual(code, 0)
+                source, why = line.split(': ', 1)
+                assert_skips(output, **{source: why})
+                self.assertTrue(output.splitlines()[-1].startswith('Gate: PASS.'))
+                self.assert_private(output + error + self.logs() + self.record_path().read_text(),
+                                    'planted-tailscale-output')
+
+        unreadable = ('Private names: the remotes of 1 sibling repositories could not be read; '
+                      'their directory names alone were taken.')
+        invalid_url = ('https://planted-user:planted-secret@'
+                       'planted\uff03host.example.invalid/planted-owner/planted-remote.git')
+        for broken in (True, False):
+            with self.subTest(broken_gitdir=broken):
+                if broken:
+                    sibling = self.parent / 'planted-broken'
+                    sibling.mkdir()
+                    (sibling / '.git').write_text('gitdir: planted-nowhere\n')
+                else:
+                    sibling = self.add_sibling('planted-sibling-one', origin=invalid_url)
+                try:
+                    self.fake.calls.clear()
+                    code, output, error = self.invoke('--derive-private-names', machine=FakeMachine())
+                    self.assertEqual(code, 0)
+                    assert_skips(output)
+                    self.assertIn(unreadable, self.private_lines(output))
+                    self.assert_names_given(','.join(['planted-short', 'planted-host', sibling.name,
+                                                      'repository']))
+                    derived = self.record()['environment']['private_names']['derived']
+                    self.assertEqual(derived['unreadable_sibling_remotes'], 1)
+                    self.assertTrue(output.splitlines()[-1].startswith('Gate: PASS.'))
+                    self.assert_private(output + error + self.logs() + self.record_path().read_text(),
+                                        'planted-secret', 'planted-remote')
+                finally:
+                    shutil.rmtree(sibling)
+
+        self.add_origin()
+        original_git = gate.git
+        for failed_argument in ('--git-common-dir', 'remote.origin.url'):
+            with self.subTest(failed_argument=failed_argument):
+                def git(root, env, *args):
+                    if args[-1] == failed_argument:
+                        raise OSError('planted-git-error')
+                    return original_git(root, env, *args)
+
+                self.fake.calls.clear()
+                with mock.patch.object(gate, 'git', side_effect=git):
+                    code, output, error = self.invoke('--derive-private-names', machine=FakeMachine())
+                self.assertEqual(code, 0)
+                if failed_argument == '--git-common-dir':
+                    assert_skips(output, **{'sibling repositories': 'this repository has no main '
+                                            'working tree, so its sibling directories are not known.'})
+                    self.assert_names_given('planted-short,planted-host')
+                else:
+                    assert_skips(output)
+                    self.assertIn('Private names: this repository has no origin remote, so no derived '
+                                  'name was dropped as already public in its URL.', self.private_lines(output))
+                    self.assert_names_given('planted-short,planted-host,repository')
+                self.assert_private(output + error + self.logs() + self.record_path().read_text(),
+                                    'planted-git-error')
+
+        self.record_path().unlink()
+        self.fake.calls.clear()
+        machine = FakeMachine(account=gate.SourceSkipped("this process's user ID has no account entry"),
+                              host=OSError(), list_error=OSError())
+        code, output, _ = self.invoke('--derive-private-names', machine=machine)
+        self.assertEqual(code, 2)
+        self.assertEqual(output.splitlines(), [
+            'Gate: NOT RUN: --derive-private-names read none of its sources on this machine. Nothing was checked.',
+        ])
+        self.assertEqual(self.fake.calls, [])
+        self.assertFalse(self.record_path().exists())
+
+        for invalid_name in ('planted-\0peer', 'planted-\ud800peer'):
+            with self.subTest(invalid_name=repr(invalid_name)):
+                peers = json.dumps({'Self': {'HostName': invalid_name}}).encode()
+                machine = FakeMachine(tailscale=tailscale, peers=(0, peers))
+                code, output, error = self.invoke('--derive-private-names', machine=machine)
+                self.assertEqual(code, 2)
+                self.assertEqual(output.splitlines(), [
+                    'Gate: NOT RUN: --derive-private-names read a name from tailnet peers that '
+                    'cannot be passed to tools/check_private_paths.py. Nothing was checked.',
+                ])
+                self.assertEqual(error, '')
+                self.assertEqual(self.fake.calls, [])
+                self.assertFalse(self.record_path().exists())
+
+    def test_derived_names_are_redacted_and_never_recorded(self):
+        self.git('checkout', '-qb', 'wo/planted-short-work')
+        machine = FakeMachine(account=('planted-short', 'Fakefirst Fakelast'))
+        self.fake.responses['tools/check_docs.py'] = gate.CommandResult(
+            1, 'PLANTED-SHORT and fakefirst FAKELAST here\n')
+
+        code, output, error = self.invoke('--derive-private-names', machine=machine)
+
+        self.assertEqual(code, 1)
+        self.assertIn(' on wo/[redacted]-work', output.splitlines()[0])
+        docs_line = next(line for line in output.splitlines() if line.startswith('FAIL docs '))
+        self.assertIn('[redacted] and [redacted] here', docs_line)
+        self.assertIn('[redacted] and [redacted] here', (self.root / self.row('docs')['log']).read_text())
+        self.assert_names_given('planted-short,Fakefirst Fakelast,fakefirst fakelast,'
+                                'Fakefirst,fakefirst,Fakelast,fakelast,planted-host,repository')
+        self.assertEqual(self.record()['branch'], 'wo/[redacted]-work')
+        self.assert_private((output + error + self.logs() + self.record_path().read_text()).lower(),
+                            'planted-short', 'fakefirst fakelast', 'fakefirst', 'fakelast', 'planted-host')
+
+        self.record_path().unlink()
+        calls = machine.calls[:]
+        code, plan, _ = self.invoke('--plan', '--derive-private-names', machine=machine)
+        self.assertEqual(code, 0)
+        self.assertEqual(self.private_lines(plan), self.private_lines(output))
+        self.assertEqual(machine.calls, calls + calls)
+        self.assertFalse(self.record_path().exists())
+
+    def test_the_real_readers_take_planted_values(self):
+        import pwd
+
+        machine = gate.Machine({})
+        entry = SimpleNamespace(pw_name='planted-short', pw_gecos='Fakefirst Fakelast,,,')
+        with mock.patch.object(pwd, 'getpwuid', return_value=entry):
+            self.assertEqual(machine.account(), ('planted-short', 'Fakefirst Fakelast,,,'))
+        with mock.patch.object(pwd, 'getpwuid', side_effect=KeyError):
+            with self.assertRaises(gate.SourceSkipped) as skipped:
+                machine.account()
+        self.assertEqual(str(skipped.exception), "this process's user ID has no account entry")
+        with mock.patch.object(gate.socket, 'gethostname', return_value='planted-host'):
+            self.assertEqual(machine.host_name(), 'planted-host')
+
+        with tempfile.TemporaryDirectory(dir=self.parent) as temporary:
+            directory = Path(temporary)
+            planted_bin = directory / 'planted-bin'
+            planted_bin.mkdir()
+            tailscale = planted_bin / 'tailscale'
+            tailscale.write_text('#!/bin/sh\nprintf \'%s\\n\' \'{"Self": {"HostName": "planted-self"}}\'\n')
+            tailscale.chmod(0o700)
+            config = directory / 'planted-gitconfig'
+            config.write_text('[user]\n\tname = Planted Gitname\n')
+            git_bin = Path(shutil.which('git')).parent
+            machine = gate.Machine(dict(PATH=os.pathsep.join(map(str, (planted_bin, git_bin))),
+                                        HOME=temporary, GIT_CONFIG_GLOBAL=str(config), GIT_CONFIG_NOSYSTEM='1'))
+            self.assertNotIn(str(planted_bin), os.get_exec_path())
+            self.assertEqual(machine.which('tailscale'), str(tailscale))
+            self.assertEqual(machine.query([str(tailscale), 'status', '--json']),
+                             (0, b'{"Self": {"HostName": "planted-self"}}\n'))
+            self.assertEqual(machine.query(['git', 'config', '--global', '--get', 'user.name']),
+                             (0, b'Planted Gitname\n'))
+            tailscale.write_text('#!/bin/sh\nexec /bin/sleep 30\n')
+            started = time.monotonic()
+            with mock.patch.object(gate, 'DERIVE_TIMEOUT', 1):
+                self.assertEqual(machine.query([str(tailscale), 'status', '--json']), (None, b''))
+            self.assertLess(time.monotonic() - started, 15)
+            self.assertEqual(machine.query(['planted-no-such-command']), (127, b''))
 
     def test_a_run_that_cannot_start_checks_nothing(self):
         code, output, _ = self.invoke('--base', 'no-such-ref')
@@ -477,6 +913,18 @@ class GateTests(unittest.TestCase):
             line = next(line for line in output.splitlines() if line.startswith('PASS ' + name + ' ('))
             self.assertTrue(line.endswith('; not checked: ' + partial))
             self.assertEqual(self.row(name)['partial'], partial)
+        # Derived names equal to a gate label or inside a skip line change no log path and no count.
+        code, output, _ = self.invoke('--derive-private-names', machine=FakeMachine(account=('docs', 'Skipped')))
+        self.assertEqual(code, 0)
+        rows = self.record()['gates']
+        partials = [row['partial'] for row in rows]
+        self.assertIn('the permalinks at 2 commit(s) this clone lacks, which CI fetches', partials)
+        self.assertIn('3 test(s) unittest [redacted]', partials)
+        self.assertIn('target/gate/logs/' + self.git('rev-parse', 'HEAD') + '/03-[redacted].log',
+                      [row['log'] for row in rows])
+        for row in rows:
+            if row['log'] is not None:
+                self.assertTrue((self.root / row['log']).is_file(), row['log'])
         # Interruptions preserve the incomplete record, and do not claim a final result.
         def interrupt(*args, **kwargs):
             raise KeyboardInterrupt
@@ -505,6 +953,22 @@ class GateTests(unittest.TestCase):
         self.assertEqual(self.row('secrets')['why'], gate.NO_COMMITS)
         head = self.add_commit()
         self.fake.version = 'v8.24.2\n'
+        version_logs = []
+
+        def inspect_scan(call):
+            if '--report-path' in call['args']:
+                version_logs.append(Path(call['log']).with_name('version.log').read_text())
+
+        self.fake.inspect = inspect_scan
+        code, output, error = self.invoke('--derive-private-names', installed='gitleaks',
+                                          machine=FakeMachine(account=('8.24', '')))
+        self.fake.inspect = None
+        self.assertEqual(code, 0)
+        self.assertEqual(self.row('secrets')['result'], 'PASS')
+        self.assertTrue(self.row('secrets')['required'])
+        self.assertEqual(version_logs, ['v[redacted].2\n'])
+        self.assert_private(output + error + self.logs() + self.record_path().read_text(), '8.24')
+
         self.fake.scan_exit = 1
         self.fake.report = [dict(RuleID='planted-rule', File='planted-alpha/x.txt', StartLine=1,
                                  Commit=head, Secret='planted-secret-value', Match='planted-secret-value')]
@@ -559,6 +1023,7 @@ class GateTests(unittest.TestCase):
         self.assertEqual(observed[0]['result'], 'incomplete')
         self.assertIsNone(observed[0]['finished'])
         self.assertEqual([row['name'] for row in observed[0]['gates']], ['rust discovery', 'identity', 'docs'])
+        self.assertFalse(observed[0]['environment']['private_names_configured'])
         record = self.record()
         self.assertEqual(set(record), {'format', 'tool', 'started', 'finished', 'result', 'base',
                          'merge_base', 'head', 'branch', 'contains_base', 'behind', 'tree', 'changed_paths',
@@ -585,6 +1050,20 @@ class GateTests(unittest.TestCase):
         self.assert_private(self.record_path().read_text(), 'planted-environment', 'planted-token',
                             'planted-alpha', 'planted-beta', 'planted-gamma', names, self.root)
 
+        for interrupted_gate in ('metadata', 'tools/check_private_paths.py'):
+            with self.subTest(interrupted_gate=interrupted_gate):
+                def interrupt(call):
+                    if call['args'][1] == interrupted_gate:
+                        raise KeyboardInterrupt
+
+                self.fake.inspect = interrupt
+                code, _, _ = self.invoke('--derive-private-names', machine=FakeMachine())
+                self.assertEqual(code, 130)
+                record = self.record()
+                self.assertEqual(record['result'], 'incomplete')
+                reached_checker = interrupted_gate == 'tools/check_private_paths.py'
+                self.assertEqual(record['environment']['private_names_configured'], reached_checker)
+
     def test_plan_lists_the_gates_and_runs_none(self):
         self.add_commit()
         code, output, _ = self.invoke('--plan', installed='gitleaks')
@@ -601,6 +1080,15 @@ class GateTests(unittest.TestCase):
         self.assertEqual(output.splitlines()[-1], 'Gate plan: rust discovery passed; 13 other gates '
                          'would run, 1 would not. No other gate was checked, and no record was written.')
         self.assertFalse((self.root / gate.OUTPUT).exists())
+        self.fake.calls.clear()
+        code, plan, _ = self.invoke('--plan', '--derive-private-names', installed='gitleaks',
+                                    machine=FakeMachine(account=('discovery', '')))
+        self.assertEqual(code, 0)
+        self.assertIn('PASS rust [redacted] ', plan)
+        self.assertNotIn('WOULD RUN rust [redacted]', plan)
+        self.assertEqual(plan.splitlines()[-1], output.splitlines()[-1])
+        self.assertFalse((self.root / gate.OUTPUT).exists())
+
         self.fake.calls.clear()
         self.git('reset', '--hard', self.base)
         code, output, _ = self.invoke('--plan')

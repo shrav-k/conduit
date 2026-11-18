@@ -351,3 +351,36 @@ port alike, is the managed connection's design. Order 050 writes it, once the ta
 that the owner chose the same day, which has that connection in its target, has its record and
 the owner's answers ([ruling 81](../ruling-81/README.md), points 1 and 2). Point 8's routes,
 remote desktop and SSH by pasting the code or forwarding the port, stand as point 8 states them.
+
+2026-11-17: the coordinator asked the owner, in chat, three things: (1) a file of private
+names, of mode 0600 and outside the repository, for the `--private-names-file` of
+`tools/gate.py`; (2) whether the coordinator may set the neutral identity "Conduit work
+order <work-orders@conduit.invalid>" in the main checkout's local Git configuration; (3)
+optional strikes of the coordinator's calls; and it noted the live check to come. The owner
+answered:
+"1. Is this necessary if we do 2? 2. Agreed 3. Agreed  I can do the live session whenever you inform me. I suggest we find a durable way to proceed without a manually created private names file if possible, let me know if there are solutions".
+The coordinator explained that the identity covers a commit's metadata and the names check
+a file's content, proposed deriving the names on each run of the gate, and asked through
+the session's question tool: "How should the merge gate check that private names (your
+user name, machine names, private repo names) never land in the public repo, without a
+hand-made names file?" Its options: "Gate derives them (Recommended)", described as "A
+small order adds --derive-private-names to tools/gate.py: names read from this machine on
+each run (OS account, host names, git identity, sibling repos, tailnet peers), kept in
+memory, never printed, with already-public names and short words dropped. Tested with fake
+values; works on any machine."; "Private script only"; and "Skip names check". The owner
+chose "Gate derives them (Recommended)".
+
+It settles where the private names are held, which the facts above left open: nowhere.
+The gate derives them from the machine it runs on, at each run, and keeps them in memory
+alone ([order 200](../../work-orders/200-gate-derived-private-names.md)). The owner makes
+no file of names, and `--private-names-file` stays for a name that no source gives. That
+the facts' investigation of a secret store for the names ends with it is the coordinator's
+reading, open to the owner's strike. Point 10's choice that CI checks no private name
+stands, and no decision of this ruling changes. The owner's "3. Agreed" and the live
+session it offers change nothing here.
+
+A fact recorded with it: on the owner's "2. Agreed", the coordinator set `user.name` to
+"Conduit work order" and `user.email` to work-orders@conduit.invalid in the main
+checkout's local Git configuration the same day; the global configuration was left as it
+was. The method as run's squash still names the identity on its command line, and the
+gate's `identity` gate still checks every commit a branch adds.

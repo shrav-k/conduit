@@ -234,7 +234,11 @@ What each check needs:
 - `gate.py` needs Python 3 and Git, and what each check it runs needs. It runs cargo offline and
   lets rustup install nothing, so each Rust directory it runs needs the toolchain it pins
   installed through rustup and its crates in cargo's cache, and its discovery, which runs cargo
-  from the root, needs rustup's default toolchain. [AGENTS.md](AGENTS.md#checks) says the rest.
+  from the root, needs rustup's default toolchain.
+  With `--derive-private-names` it also asks the machine for the private names, through
+  `scutil` on macOS and `tailscale` where it is installed, each answering from the machine
+  itself, and skips by name a source it cannot read.
+  [AGENTS.md](AGENTS.md#checks) says the rest.
 
 Run `cargo test --release` in each Rust directory you change, under `experiments/`,
 `packages/` or `engine/`, and in `engine/` after any change to `spec/`.
@@ -270,9 +274,12 @@ What the checks cover:
   workflow: the `docs` job's Python checks, the vector changes, the tools' unit tests and
   `git diff --check`; `cargo fmt --check`, clippy and `cargo test --release` in each package the
   branch reaches, the tests alone of each such experiment, and the engine's three when it is
-  reached; and gitleaks when the release that checks.yml pins is installed. It runs each check once
-  and never fetches, pushes or calls GitHub; the nightly job and the Linux leg stay CI's. Its last
-  line says PASS only when every required gate passed, and merges wait on it
+  reached; and gitleaks when the release that checks.yml pins is installed.
+  With `--derive-private-names`, which each merge uses, it derives the private names from the
+  machine at each run and gives them to `check_private_paths.py` alone, printing only how many
+  it derived and from which sources.
+  It runs each check once and never fetches, pushes or calls GitHub; the nightly job and the
+  Linux leg stay CI's. Its last line says PASS only when every required gate passed, and merges wait on it
   ([the method as run](docs/implementation/METHOD_AS_RUN.md#7-merge-and-the-record)).
 
 The Python and whitespace checks do not establish engine behavior. As of 2026-11-10, the Rust
@@ -326,12 +333,14 @@ repository, its `branches/main/protection`, its `rulesets`, its `actions/variabl
   the owner's question, and [ruling 80](docs/proposals/ruling-80/README.md), point 10, settled it on
   2026-11-16: not for now. That choice is the coordinator's, applying the owner's answers against
   its own recommendation of a masked secret, and is open to the owner's strike; [the
-  tracker](docs/AUDIT.md#waiting-for-the-owner) records it. Since then the only name check is the
-  `private paths` gate of `tools/gate.py` before each merge ([the method as
-  run](docs/implementation/METHOD_AS_RUN.md#7-merge-and-the-record)), which gives the checker the
-  names from a file the coordinator names, of mode 0600 and outside the repository; until the names
-  are held it checks the built-in patterns alone, and its record says so. Whether one of Conduit's
-  secret stores can hold the names is open.
+  tracker](docs/AUDIT.md#waiting-for-the-owner) records it.
+  Since then the only name check is the `private paths` gate of `tools/gate.py` before each
+  merge ([the method as run](docs/implementation/METHOD_AS_RUN.md#7-merge-and-the-record)). On
+  2026-11-17 the owner chose that the gate derive the names itself ([ruling
+  80](docs/proposals/ruling-80/README.md), its later answers): with `--derive-private-names`,
+  which the merge uses, it reads them from the machine it runs on at each run, keeps them in
+  memory, gives them to the checker alone and prints none. No file of names is kept, and
+  `--private-names-file` adds names that no source gives.
 - **CI was paused once.** On 2026-11-11 CI was paused (the Records of orders
   [104](docs/work-orders/104-mc1-model-checking-harness.md#record) and
   [105](docs/work-orders/105-mc2-operation-identity.md#record) say so; how is not recorded). The

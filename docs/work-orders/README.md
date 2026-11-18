@@ -8,10 +8,10 @@ have left the tree; their results, decisions and observations are in
 
 ## Orders still in the directory
 
-One row for each order file in this directory, in file-name order. Orders 047d, 048a3 to 048a6,
-050e, 050f and 050h to 050o, which the coordinator's cuts of 047, 048a-2 and 050 plan (order
-117), and order 201, MC9a's pre-registration, are not yet written; they have rows without links
-where their names sort, each saying what it comes after.
+One row for each order file in this directory, in file-name order. Orders 048a4 to 048a6,
+050f and 050h to 050o, which the coordinator's cuts of 048a-2 and 050 plan (order 117), are
+not yet written; they have rows without links where their names sort, each saying what it
+comes after.
 
 | Order | What |
 | --- | --- |
@@ -32,10 +32,10 @@ where their names sort, each saying what it comes after.
 | [047](047-build-setup-action.md) | a failed setup's action, computed and raised at root's inspection |
 | [047b](047b-build-actions-raised-by-scope.md) | where pending actions are raised: scoped Interfaces, disclosure, list.v1's pending output and the unanswered key; after 047 (the coordinator's split, open to the owner's strike) |
 | [047c](047c-build-stored-answers.md) | `answer.v1` with stored answers: dismissed, retried and retired, conflict, and answered state that survives a purge; after 047b (the coordinator's split, open to the owner's strike) |
-| 047d | the notice kind; after 047c (planned; the coordinator's split, open to the owner's strike) |
+| [047d](047d-build-retirement-notices.md) | the notice kind (PND-007): one per Fleet whose Conduit a Resource's retirement closes, stored with an engine ID, named in the retirement's `pendingAction` key, raised at that Fleet's scope and answered `acknowledged`; after 047c (the coordinator's split, open to the owner's strike) |
 | [048a1](048a1-build-sign-in-type-checks.md) | CTR-013's checks on a Type's sign-in, and the .v2 fixture's apiKey |
 | [048a2](048a2-build-sign-in-lapse-and-conflict.md) | a lapsed login raises the instance's sign-in action (F84's two halves, IFC-016's detection), and a second sign-in of one instance reports conflict (PND-010); after 047, 047b, 047c and 048a-1, the first part of 048a-2 (the coordinator's split, open to the owner's strike) |
-| 048a3 | the hold of an instance whose sign-in action is unanswered (PND-005's `then`); after 048a-2 (planned; the coordinator's split, open to the owner's strike) |
+| [048a3](048a3-build-sign-in-hold.md) | the hold of an instance awaiting sign-in (PND-005's `then`): held requests unavailable with `pendingAction` and a PND-005 diagnostic, an expiry lifting nothing, and a new action on the next held request; after 048a-2 (the coordinator's split, open to the owner's strike) |
 | 048a4 | setup's account check (PND-011's setup half), the wrong-account undo and SignInUndone; after 048a-3 (planned; the coordinator's split, open to the owner's strike) |
 | 048a5 | `sign-in.v1` dispatched, with IFC-049's relay and polling; after 048a-4, and may need its own split (planned; the coordinator's split, open to the owner's strike) |
 | 048a6 | the returns of a browser login (PND-013, PND-014); after 048a-5, and before 048b-join (planned; the coordinator's split, open to the owner's strike) |
@@ -44,7 +44,7 @@ where their names sort, each saying what it comes after.
 | [050b](050b-spec-claude-sign-in-connection.md) | the connection Conduit manages for a Claude sign-in, F95, the three stale route texts, and Codex's browser-opens limit, in the specification; after ruling 82 and order 199 (the coordinator's split, open to the owner's strike) |
 | [050c](050c-agents-v2-client-home.md) | each .v2 Agent's own client home inside its state directory; after the stack's rebase onto main and order 045 (the coordinator's split, open to the owner's strike) |
 | [050d](050d-agents-v2-process-tree.md) | the .v2 wrappers stop their client's whole process tree (the full review's order 16); after 050c (the coordinator's split, open to the owner's strike) |
-| 050e | failed turns as fields, with a network class, and a lapsed login in a turn (the full review's order 17); after 050d, and 048a-2 written (planned; the coordinator's split, open to the owner's strike) |
+| [050e](050e-agents-v2-failed-turn-fields.md) | failed turns as fields, with a network class, and a lapsed login in a turn (the full review's order 17); after 050d, and 048a-2 written (the coordinator's split, open to the owner's strike) |
 | 050f | the .v2 inputs: account, an explicit apiKey, toolsDirectory, and the description sentences (i) and (ii); after 050e, 048a-1 merged, and where a set apiKey is refused at setup chosen (planned; the coordinator's split, open to the owner's strike) |
 | [050g](050g-logout-revocation-read.md) | desk reads: what each client's logout revokes, and the scope of each; after nothing (the coordinator's split, open to the owner's strike) |
 | 050h | the retire hook: each .v2 Agent signs out at retirement (D53); after 050f and 050g's outcome recorded (planned; the coordinator's split, open to the owner's strike) |
@@ -160,7 +160,7 @@ where their names sort, each saying what it comes after.
 | [190](190-desk-checks-terms-1password.md) | two desk checks: each vendor's terms for two subscriptions; 1Password's unattended reads (the full review's order 45) |
 | [191](191-log-marks-closed-settings-written.md) | the '(log)' marks closed, and the repository's settings written down (the full review's order 37) |
 | [192](192-register-rows-mc-mutation-native.md) | register rows: model checking, mutation testing, native probes (the full review's order 39) |
-| 201 | MC9a's pre-registration, with `conflict` for a second `sign-in.v1` of one instance; merges before 048a-2 is dispatched (planned; the coordinator's decision, open to the owner's strike) |
+| [201](201-mc9a-pending-actions-sign-in-registered.md) | MC9a's pre-registration, with `conflict` for a second `sign-in.v1` of one instance; merges before 048a-2 is dispatched (the coordinator's decision, open to the owner's strike) |
 
 ## Shared and staged files
 

@@ -1,0 +1,3 @@
+- name: setup-retirement-notice
+  kind: added
+  cases: [setup-retirement-notice]

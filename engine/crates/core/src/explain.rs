@@ -1,6 +1,8 @@
 //! IFC-050 / ACC-056: public explanations, with disclosure determined by the sender.
-use crate::{Context, Result, State, access, schemas};
+use crate::{Context, Result, State, access, inventory, schemas};
+use chrono::{DateTime, FixedOffset};
 use serde_json::{Value, json};
+use std::cmp::Reverse;
 
 /// Deciding metadata stays independent of the diagnostic's serialized ruleId.
 pub(crate) struct Rejection {
@@ -254,16 +256,207 @@ pub fn cause(reason: &str, rule: &str) -> Result<&'static str> {
         .ok_or_else(|| format!("explanation has no cause for {rule} ({reason})"))
 }
 
-pub(crate) fn tier(state: &State, sender: Option<&str>, c: &Context) -> u8 {
-    if sender.is_some_and(|sender| {
-        state.objects.iter().any(|o| {
-            o["id"] == sender && o["from"] == c.qualified("root") && o.get("spec").is_none()
+fn is_root(state: &State, sender: &Value, c: &Context) -> bool {
+    sender.is_string()
+        && state.objects.iter().any(|o| {
+            o["id"] == *sender && o["from"] == c.qualified("root") && o.get("spec").is_none()
         })
-    }) {
-        2
-    } else {
-        1
+}
+
+fn visible_closed<'s: 'a, 'a>(
+    state: &'s State,
+    sender: &'a Value,
+    c: &'a Context,
+) -> impl Iterator<Item = (&'s String, &'s Value)> + 'a {
+    let root = is_root(state, sender, c);
+    state.tombstones.iter().filter(move |(_, stone)| {
+        stone["object"]["kind"] == "Conduit"
+            && stone["consumer"]["id"] == *sender
+            && (root || inventory::visible(state, sender, stone, c))
+    })
+}
+
+fn closed_time(stone: &Value) -> (Option<DateTime<FixedOffset>>, &str) {
+    let time = stone["time"].as_str().unwrap_or_default();
+    DateTime::parse_from_rfc3339(time).map_or((None, time), |instant| (Some(instant), ""))
+}
+
+fn closed_path<'a>(state: &'a State, route: &Value, c: &Context) -> Option<&'a Value> {
+    let sender = route.get("consumer").filter(|sender| sender.is_string())?;
+    let tool = route.get("tool");
+    let local = tool
+        .and_then(Value::as_str)
+        .and_then(|tool| tool.split_once('.').map(|(local, _)| local));
+    visible_closed(state, sender, c)
+        .filter(|(_, stone)| match local {
+            Some(local) => stone["localName"] == local,
+            None => {
+                tool.is_none()
+                    && route["conduit"]
+                        .as_str()
+                        .is_some_and(|id| stone["object"]["id"] == id)
+            }
+        })
+        .max_by_key(|(id, stone)| (closed_time(stone), Reverse(*id)))
+        .map(|(_, stone)| stone)
+}
+
+fn sender_live_path(path: &Value, sender: &Value) -> bool {
+    path["kind"] == "Conduit"
+        && path["state"] != "retired"
+        && path.get("spec").is_none()
+        && access::id(&path["consumer"]) == sender
+}
+
+fn named_objects(route: &Value) -> impl Iterator<Item = (&'static str, &Value)> {
+    ["object", "instance", "conduit", "node"]
+        .into_iter()
+        .filter_map(|key| {
+            route["arguments"]
+                .get(key)
+                .map(|reference| (key, reference))
+        })
+}
+
+fn resolve_named<'a>(state: &'a State, key: &str, reference: &Value) -> Option<&'a Value> {
+    // Object and instance strings are IDs; node strings are Resource names.
+    match (key, reference.is_string()) {
+        ("node", _) => access::fixed_object(state, reference, "Resource"),
+        ("conduit", true) => access::object_by_id(state, reference)
+            .or_else(|| access::fixed_object(state, reference, "Conduit")),
+        (_, true) => access::object_by_id(state, reference),
+        _ => access::object(state, reference),
     }
+}
+
+fn closed_operation<'a>(
+    stone: &'a Value,
+    route: &'a Value,
+    c: &Context,
+) -> std::borrow::Cow<'a, str> {
+    let operation = route["operation"].as_str().unwrap_or_default();
+    if let Some((_, name)) = route["tool"].as_str().and_then(|tool| tool.split_once('.')) {
+        if let Some(listed) = stone["operations"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter_map(Value::as_str)
+            .find(|op| op.rsplit_once('#').is_some_and(|(_, n)| n == name))
+        {
+            return listed.into();
+        }
+        if c.core_environment.scopes.values().any(|scope| {
+            scope.address == c.core_package
+                && scope
+                    .contracts
+                    .get(name)
+                    .is_some_and(|doc| doc["kind"] == "Operation")
+        }) {
+            return c.qualified(name).into();
+        }
+        return route["tool"].as_str().unwrap_or(operation).into();
+    }
+    operation.into()
+}
+
+pub(crate) fn tier(state: &State, route: &Value, c: &Context) -> Result<u8> {
+    let sender = &route["consumer"];
+    if is_root(state, sender, c) {
+        return Ok(2);
+    }
+    if !sender.is_string() {
+        return Ok(1);
+    }
+    let view = access::PublicationView::new(state, c);
+    let path = route["conduit"]
+        .as_str()
+        .map(|id| view.find(|p| p["id"] == id))
+        .transpose()?
+        .flatten()
+        .filter(|path| sender_live_path(path, sender));
+    let kept_path;
+    let (path, op) = if let Some(path) = path {
+        (path, route["operation"].as_str().unwrap_or_default().into())
+    } else if let Some(stone) = closed_path(state, route, c) {
+        // An ID reference cannot resolve to a different object with the ID as its name.
+        kept_path = json!({"target":{"id":stone["target"]["id"]}});
+        (&kept_path, closed_operation(stone, route, c))
+    } else {
+        return Ok(1);
+    };
+    // ACC-033 rows 9 (enrollment), 16 and 17 are missing from routing.
+    // The default Conduit target cannot establish disclosure for those operations.
+    if matches!(
+        op.strip_prefix(&c.core_package)
+            .and_then(|op| op.strip_prefix('#')),
+        Some(
+            "enroll-machine.v1"
+                | "admit-machine.v1"
+                | "refuse-machine.v1"
+                | "sign-in.v1"
+                | "answer.v1"
+        )
+    ) {
+        return Ok(1);
+    }
+    let args = &route["arguments"];
+    let mut routed_args;
+    let routing_args = if route.get("conduit").is_some()
+        && route.get("tool").is_none()
+        && let Some(object) = args.get("object")
+    {
+        routed_args = args.clone();
+        routed_args["instance"] = object.clone();
+        &routed_args
+    } else {
+        args
+    };
+    let (target, named) = access::routing(state, &view, path, &op, routing_args, c)?;
+    let Some(target) = target else {
+        return Ok(1);
+    };
+    if !access::may_inspect_unfiltered(state, sender, target, c)? {
+        return Ok(1);
+    }
+    if op == c.qualified("register.v1") {
+        for doc in args["documents"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter(|d| d.get("from").is_some())
+        {
+            let family = match doc["kind"].as_str() {
+                Some("Resource") => "Pool",
+                Some("Agent") => "Fleet",
+                _ => continue,
+            };
+            // Submit also finds an owner by ID; a name is tried first.
+            if let Some(owner) = view
+                .fixed(&doc["owner"], family)?
+                .or_else(|| access::object_by_id(state, &doc["owner"]))
+                .filter(|p| p["kind"] == family && p["state"] != "retired")
+                && !access::may_inspect_unfiltered(state, sender, owner, c)?
+            {
+                return Ok(1);
+            }
+        }
+    }
+    if op == c.qualified("register-replacement.v1")
+        && let Some(pool) = named.filter(|p| p["kind"] == "Pool" && p["state"] != "retired")
+        && !access::may_inspect_unfiltered(state, sender, pool, c)?
+    {
+        return Ok(1);
+    }
+    for (key, reference) in named_objects(route) {
+        let inspectable = match resolve_named(state, key, reference) {
+            Some(object) => access::may_inspect_unfiltered(state, sender, object, c)?,
+            None => access::may_inspect_missing(state, sender, c)?,
+        };
+        if !inspectable {
+            return Ok(1);
+        }
+    }
+    Ok(2)
 }
 
 /// A tool's spelling is resolved through the sending instance, even for onward calls.
@@ -552,41 +745,41 @@ pub(crate) fn diagnostic(
     if let Some(local) = path.and_then(|p| p["local_name"].as_str()) {
         named["conduit"] = json!(local);
     }
-    let objects: Vec<(&str, &Value)> = ["object", "instance", "conduit", "node"]
-        .into_iter()
-        .filter_map(|key| route["arguments"].get(key).map(|value| (key, value)))
-        .collect();
+    let objects: Vec<_> = named_objects(route).collect();
     if !objects.is_empty() {
         named["objects"] = json!(objects.iter().map(|(_, value)| value).collect::<Vec<_>>());
     }
-    let tier = tier(state, route["consumer"].as_str(), c);
+    let tier = tier(state, route, c)?;
     let mut refusal = json!({"tier":tier,"operation":operation,"named":named,"cause":cause});
     if tier == 2 {
-        let target = path.and_then(|p| access::object(state, &p["target"]));
+        let sender = &route["consumer"];
+        let path = path.filter(|path| is_root(state, sender, c) || sender_live_path(path, sender));
+        let target = if let Some(path) = path {
+            access::object(state, &path["target"])
+        } else {
+            closed_path(state, route, c).and_then(|stone| stone.get("target"))
+        };
+        let mut conduits = vec![];
         if let Some(target) = target {
-            refusal["target"] =
-                json!({"kind":target["kind"],"name":target["name"],"id":target["id"]});
+            refusal["target"] = inventory::object(target);
+            conduits.extend(state.objects.iter()
+                .filter(|p| sender_live_path(p, sender) && access::id(&p["target"]) == &target["id"])
+                .map(|p| json!({"name":p["name"],"as":p.get("local_name").or_else(|| p["nested"].get("name")).unwrap_or(&p["name"]),"state":if p["open"] == true {"open"} else {"registered"},"operations":p["operations"]})));
+            let mut closed: Vec<_> = visible_closed(state, sender, c)
+                .filter(|(_, stone)| stone["target"]["id"] == target["id"])
+                .collect();
+            closed.sort_by_cached_key(|(id, stone)| (closed_time(stone), *id));
+            conduits.extend(closed.into_iter().map(|(_, stone)| {
+                json!({"name":stone["object"]["name"],"as":stone["localName"],"state":"closed","operations":stone["operations"]})
+            }));
         }
         refusal["exists"] = json!(
             path.is_some()
-                && objects.iter().all(|(key, reference)| {
-                    // Object and instance strings are IDs; node strings are Resource names.
-                    (if *key == "node" {
-                        access::fixed_object(state, reference, "Resource")
-                    } else if reference.is_string() {
-                        access::object_by_id(state, reference)
-                    } else {
-                        access::object(state, reference)
-                    })
-                    .is_some()
-                        || *key == "conduit"
-                            && reference.is_string()
-                            && access::fixed_object(state, reference, "Conduit").is_some()
-                })
+                && objects
+                    .iter()
+                    .all(|(key, reference)| resolve_named(state, key, reference).is_some())
         );
-        refusal["conduits"]=json!(state.objects.iter().filter(|p| p["kind"] == "Conduit" && p["state"] != "retired" && p.get("spec").is_none()
-            && access::id(&p["consumer"]) == &route["consumer"] && target.is_some_and(|target| access::id(&p["target"]) == &target["id"]))
-            .map(|p| json!({"name":p["name"],"as":p.get("local_name").or_else(|| p["nested"].get("name")).unwrap_or(&p["name"]),"state":if p["open"] == true {"open"} else {"registered"},"operations":p["operations"]})).collect::<Vec<_>>());
+        refusal["conduits"] = json!(conduits);
     }
     Ok(
         json!({"ruleId":rule,"level":"error","message":{"text":format!("{subject} is refused under {rule}: {cause}")},"properties":{"refusal":refusal}}),
@@ -842,6 +1035,465 @@ pub(crate) mod tests {
             readable: true,
             authority_readable: true,
         }
+    }
+
+    fn inspector_fixture() -> (State, Context) {
+        let (mut s, c) = fixture();
+        for (id, kind) in [
+            ("v", "Interface"),
+            ("x", "Resource"),
+            ("p", "Pool"),
+            ("sys", "Pool"),
+        ] {
+            s.objects.push(json!({"kind":kind,"id":id,"name":id,"state":"ready",
+                "type":c.qualified("type.v1"),"config":{},"schema_environment":c.core_environment,"contract_scope":"core"}));
+        }
+        item_mut(&mut s, "x")["owner"] = json!("p");
+        item_mut(&mut s, "management")["owner"] = json!("sys");
+        s.objects.push(
+            json!({"kind":"Conduit","id":"v-x","name":"v-x","local_name":"x",
+            "consumer":"v","target":"x","open":true,"state":"ready","operations":[]}),
+        );
+        (s, c)
+    }
+
+    fn item_mut<'a>(s: &'a mut State, id: &str) -> &'a mut Value {
+        s.objects.iter_mut().find(|o| o["id"] == id).unwrap()
+    }
+
+    fn inspection(s: &mut State, target: &str, c: &Context) {
+        let id = format!("v-{target}");
+        s.objects.push(
+            json!({"kind":"Conduit","id":id,"name":id,"local_name":target,"consumer":"v",
+            "target":target,"open":true,"state":"ready","operations":[c.qualified("inspect.v1")]}),
+        );
+    }
+
+    fn refusal(s: &State, c: &Context, route: &Value, rule: &str) -> Value {
+        diagnostic(s, route, c, "refused", rule).unwrap()["properties"]["refusal"].clone()
+    }
+
+    fn expected_inspection(s: &State, c: &Context, sender: &str, id: &str, expected: bool) {
+        let item = access::object_by_id(s, &json!(id)).unwrap();
+        let sender = json!(sender);
+        assert_eq!(access::may_inspect(s, &sender, item, c).unwrap(), expected);
+        assert_eq!(
+            access::may_inspect_unfiltered(s, &sender, item, c).unwrap(),
+            expected
+        );
+    }
+
+    #[test]
+    fn tier_two_requires_an_open_unfiltered_inspection_path_for_interfaces_and_agents() {
+        let (mut s, c) = inspector_fixture();
+        let route = access_route(&s, &request("v", "x.ping.v1", json!({})), &c);
+        inspection(&mut s, "p", &c);
+        let expected = json!([{"name":"v-x","as":"x","state":"open","operations":[]}]);
+        for kind in ["Interface", "Agent"] {
+            item_mut(&mut s, "v")["kind"] = json!(kind);
+            expected_inspection(&s, &c, "v", "x", true);
+            let r = refusal(&s, &c, &route, "ACC-001");
+            assert_eq!(r["tier"], 2);
+            assert_eq!(r["target"], json!({"kind":"Resource","id":"x","name":"x"}));
+            assert_eq!(r["conduits"], expected);
+        }
+        for (field, value) in [
+            ("open", json!(false)),
+            ("operations", json!([])),
+            (
+                "requirements",
+                json!({"filter":{"requirement":"example.org/p#filter.v1"}}),
+            ),
+            (
+                "requirements",
+                json!({"bound":{"requirement":c.qualified("bound.v1")}}),
+            ),
+        ] {
+            let mut changed = s.clone();
+            item_mut(&mut changed, "v-p")[field] = value.clone();
+            let want = if value.get("bound").is_some() { 2 } else { 1 };
+            assert_eq!(refusal(&changed, &c, &route, "ACC-001")["tier"], want);
+            if value.get("filter").is_none() {
+                expected_inspection(&changed, &c, "v", "x", want == 2);
+            }
+        }
+    }
+
+    #[test]
+    fn tier_two_checks_named_objects_and_uses_management_itself_for_missing_objects() {
+        let (mut s, c) = inspector_fixture();
+        inspection(&mut s, "p", &c);
+        let mut route = access_route(&s, &request("v", "x.ping.v1", json!({"object":"p"})), &c);
+        expected_inspection(&s, &c, "v", "x", true);
+        expected_inspection(&s, &c, "v", "p", false);
+        expected_inspection(&s, &c, "v", "management", false);
+        assert_eq!(refusal(&s, &c, &route, "ACC-001")["tier"], 1);
+        route["arguments"]["object"] = json!("missing");
+        assert_eq!(refusal(&s, &c, &route, "ACC-001")["tier"], 1);
+        for target in ["sys", "management"] {
+            let mut changed = s.clone();
+            inspection(&mut changed, target, &c);
+            expected_inspection(&changed, &c, "v", "x", true);
+            expected_inspection(&changed, &c, "v", "management", target == "sys");
+            let r = refusal(&changed, &c, &route, "ACC-001");
+            if target == "management" {
+                assert_eq!(r["tier"], 2);
+                assert_eq!(r["exists"], false);
+            } else {
+                assert_eq!(r["tier"], 1);
+                assert!(r.get("exists").is_none());
+            }
+        }
+        // Without a live owner, both readings route a missing object to management itself.
+        let mut ownerless = s.clone();
+        item_mut(&mut ownerless, "management")
+            .as_object_mut()
+            .unwrap()
+            .remove("owner");
+        expected_inspection(&ownerless, &c, "v", "management", false);
+        assert_eq!(refusal(&ownerless, &c, &route, "ACC-001")["tier"], 1);
+        inspection(&mut ownerless, "management", &c);
+        expected_inspection(&ownerless, &c, "v", "management", true);
+        let r = refusal(&ownerless, &c, &route, "ACC-001");
+        assert_eq!(r["tier"], 2);
+        assert_eq!(r["exists"], false);
+    }
+
+    #[test]
+    fn tier_two_checks_the_pool_that_authorizes_retirement() {
+        let (mut s, c) = inspector_fixture();
+        inspection(&mut s, "p", &c);
+        let route = access_route(
+            &s,
+            &request("v", "p.retire.v1", json!({"instance":"x"})),
+            &c,
+        );
+        assert_eq!(route["operation"], c.qualified("retire.v1"));
+        expected_inspection(&s, &c, "v", "x", true);
+        expected_inspection(&s, &c, "v", "p", false);
+        assert_eq!(refusal(&s, &c, &route, "ACC-001")["tier"], 1);
+        inspection(&mut s, "management", &c);
+        expected_inspection(&s, &c, "v", "x", true);
+        expected_inspection(&s, &c, "v", "p", true);
+        assert_eq!(refusal(&s, &c, &route, "ACC-001")["tier"], 2);
+    }
+
+    fn assert_refusal_records(t: &Transition, refusal: &Value, tier: u8) {
+        assert_eq!(refusal["tier"], tier);
+        for event in ["access-decision", "request-ended"] {
+            let data = &t.records.iter().find(|r| r["type"] == event).unwrap()["data"];
+            assert_eq!(data["refusalTier"], refusal["tier"]);
+            assert!(data.get("exists").is_none() && data.get("conduits").is_none());
+            assert!(data["target"].is_null() || data["target"].is_string());
+        }
+    }
+
+    #[test]
+    fn id_retirement_checks_the_pool_and_records_the_diagnostic_tier() {
+        let (mut s, c) = inspector_fixture();
+        item_mut(&mut s, "x")["owner"] = json!("sys");
+        inspection(&mut s, "sys", &c);
+        for tier in [1, 2] {
+            expected_inspection(&s, &c, "v", "x", true);
+            expected_inspection(&s, &c, "v", "sys", tier == 2);
+            let t = crate::step(
+                &s,
+                crate::Input::Request {
+                    evidence: evidence(),
+                    object: "x".into(),
+                    request: crate::Request {
+                        sender: "v".into(),
+                        caller: "v".into(),
+                        conduit: "v-sys".into(),
+                        target: "sys".into(),
+                        operation: c.qualified("retire.v1"),
+                    },
+                },
+                &c,
+            )
+            .unwrap();
+            assert_refusal_records(
+                &t,
+                &t.reply["diagnostics"][0]["properties"]["refusal"],
+                tier,
+            );
+            if tier == 1 {
+                inspection(&mut s, "management", &c);
+            }
+        }
+    }
+
+    #[test]
+    fn id_refusal_cannot_use_a_foreign_live_conduit_for_disclosure() {
+        let (mut s, c) = inspector_fixture();
+        inspection(&mut s, "p", &c);
+        inspection(&mut s, "management", &c);
+        expected_inspection(&s, &c, "v", "p", true);
+        expected_inspection(&s, &c, "v", "x", true);
+        expected_inspection(&s, &c, "v", "management", false);
+
+        let request = crate::Request {
+            sender: "v".into(),
+            caller: "v".into(),
+            conduit: "root-management".into(),
+            target: "management".into(),
+            operation: c.qualified("retire.v1"),
+        };
+        let t = crate::step(
+            &s,
+            crate::Input::Request {
+                evidence: evidence(),
+                object: "x".into(),
+                request,
+            },
+            &c,
+        )
+        .unwrap();
+        let r = &t.reply["diagnostics"][0]["properties"]["refusal"];
+        assert_refusal_records(&t, r, 1);
+        assert_eq!(r["operation"], c.qualified("retire.v1"));
+        assert_eq!(
+            r["named"],
+            json!({"tool":"management.retire.v1","conduit":"management","objects":["x"]})
+        );
+        for key in ["target", "exists", "conduits"] {
+            assert!(r.get(key).is_none());
+        }
+
+        let root_route =
+            json!({"consumer":"root","conduit":"v-x","operation":c.qualified("retire.v1")});
+        let r = refusal(&s, &c, &root_route, "ACC-001");
+        assert_eq!(r["tier"], 2);
+        assert_eq!(r["target"], json!({"kind":"Resource","name":"x","id":"x"}));
+        assert_eq!(r["exists"], true);
+        assert_eq!(r["conduits"], json!([]));
+    }
+
+    #[test]
+    fn unimplemented_authorizing_routes_keep_non_root_refusals_at_tier_one() {
+        let (mut s, c) = inspector_fixture();
+        inspection(&mut s, "p", &c);
+        expected_inspection(&s, &c, "v", "x", true);
+        expected_inspection(&s, &c, "v", "p", false);
+        expected_inspection(&s, &c, "v", "management", false);
+        for op in [
+            "sign-in.v1",
+            "answer.v1",
+            "enroll-machine.v1",
+            "admit-machine.v1",
+            "refuse-machine.v1",
+        ] {
+            let operation = c.qualified(op);
+            item_mut(&mut s, "v-x")["operations"] = json!([operation]);
+            let route = access_route(
+                &s,
+                &request("v", &format!("x.{op}"), json!({"instance":"x"})),
+                &c,
+            );
+            let r = refusal(&s, &c, &route, "ACC-001");
+            assert_eq!(r["operation"], operation);
+            assert_eq!(r["tier"], 1, "{op}");
+            assert!(r.get("target").is_none());
+        }
+    }
+
+    fn submit_registration(s: &State, c: &Context, owner: &str) -> Transition {
+        crate::step(
+            s,
+            crate::Input::Submit {
+                evidence: evidence(),
+                request: crate::Request {
+                    sender: "v".into(),
+                    caller: "v".into(),
+                    conduit: "v-register".into(),
+                    target: "management".into(),
+                    operation: c.qualified("register.v1"),
+                },
+                documents: vec![json!({"kind":"Resource","from":"template","owner":owner})],
+            },
+            c,
+        )
+        .unwrap()
+    }
+
+    fn registration_fixture() -> (State, Context) {
+        let (mut s, c) = inspector_fixture();
+        s.objects.push(
+            json!({"kind":"Conduit","id":"v-register","name":"v-register",
+            "local_name":"register","consumer":"v","target":"management","open":true,
+            "state":"ready","operations":[c.qualified("register.v1")]}),
+        );
+        inspection(&mut s, "sys", &c);
+        (s, c)
+    }
+
+    #[test]
+    fn tier_two_checks_management_and_the_live_registration_owner() {
+        let (mut s, c) = registration_fixture();
+        for tier in [1, 2] {
+            expected_inspection(&s, &c, "v", "management", true);
+            expected_inspection(&s, &c, "v", "p", tier == 2);
+            let t = submit_registration(&s, &c, "p");
+            let diagnostic = &t.reply["diagnostics"][0];
+            assert_eq!(diagnostic["ruleId"], "ACC-033");
+            assert_eq!(t.reply["reason"], "refused");
+            assert!(
+                t.records
+                    .iter()
+                    .filter(|r| r["data"].get("ruleId").is_some())
+                    .all(|r| r["data"]["ruleId"] == "ACC-033")
+            );
+            assert_refusal_records(&t, &diagnostic["properties"]["refusal"], tier);
+            inspection(&mut s, "management", &c);
+        }
+    }
+
+    #[test]
+    fn registration_owner_given_by_id_needs_inspection_of_that_pool() {
+        let (mut s, c) = registration_fixture();
+        item_mut(&mut s, "p")["name"] = json!("pool-p");
+        expected_inspection(&s, &c, "v", "management", true);
+        expected_inspection(&s, &c, "v", "p", false);
+        let t = submit_registration(&s, &c, "p");
+        let diagnostic = &t.reply["diagnostics"][0];
+        assert_eq!(diagnostic["ruleId"], "ACC-033");
+        assert_refusal_records(&t, &diagnostic["properties"]["refusal"], 1);
+    }
+
+    #[test]
+    fn invoke_and_access_record_the_diagnostic_tier() {
+        let (mut s, c) = inspector_fixture();
+        inspection(&mut s, "p", &c);
+        expected_inspection(&s, &c, "v", "x", true);
+        let r = request("v", "x.ping.v1", json!({}));
+        let t = crate::step(
+            &s,
+            crate::Input::Invoke {
+                evidence: evidence(),
+                request: r.clone(),
+                key: None,
+                archive: None,
+            },
+            &c,
+        )
+        .unwrap();
+        assert_refusal_records(
+            &t,
+            &t.reply["error"]["data"]["diagnostics"][0]["properties"]["refusal"],
+            2,
+        );
+        let mut t = transition(s);
+        access::decide(&mut t, &evidence(), &r, &c).unwrap();
+        assert_refusal_records(&t, &t.reply["diagnostics"][0]["properties"]["refusal"], 2);
+    }
+
+    fn stone(s: &State, id: &str, consumer: &str, target: &str, time: &str) -> Value {
+        json!({"id":id,"object":{"kind":"Conduit","id":format!("closed-{id}"),"name":id},
+            "consumer":inventory::endpoint(s, &json!(consumer)),"target":inventory::endpoint(s, &json!(target)),
+            "time":time,"localName":"y","operations":["example.org/p#op"]})
+    }
+
+    #[test]
+    fn closed_conduits_follow_live_ones_and_only_the_senders_are_used() {
+        let (mut s, c) = inspector_fixture();
+        let route = access_route(&s, &request("root", "y.op", json!({})), &c);
+        expected_inspection(&s, &c, "root", "x", false);
+        s.tombstones.insert(
+            "a-later".into(),
+            stone(&s, "a-later", "root", "x", "2026-11-11T13:00:00.001Z"),
+        );
+        let r = refusal(&s, &c, &route, "ACC-001");
+        assert_eq!(r["target"], json!({"kind":"Resource","name":"x","id":"x"}));
+        assert_eq!(r["exists"], false);
+        assert_eq!(
+            r["conduits"],
+            json!([{"name":"a-later","as":"y","state":"closed","operations":["example.org/p#op"]}])
+        );
+        item_mut(&mut s, "v-x")["consumer"] = json!("root");
+        s.tombstones.insert(
+            "z-earlier".into(),
+            stone(&s, "z-earlier", "root", "x", "2026-11-11T13:00:00Z"),
+        );
+        s.tombstones.insert(
+            "foreign".into(),
+            stone(&s, "foreign", "agent", "management", "2026-11-11T13:00:02Z"),
+        );
+        let r = refusal(&s, &c, &route, "ACC-001");
+        assert_eq!(r["target"]["id"], "x");
+        let names: Vec<_> = r["conduits"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|p| &p["name"])
+            .collect();
+        assert_eq!(json!(names), json!(["v-x", "z-earlier", "a-later"]));
+        let by_id =
+            json!({"consumer":"root","conduit":"closed-z-earlier","operation":"example.org/p#op"});
+        assert_eq!(refusal(&s, &c, &by_id, "ACC-001"), {
+            let mut expected = r;
+            expected["named"] = json!({});
+            expected["operation"] = json!("example.org/p#op");
+            expected
+        });
+        let route = access_route(&s, &request("agent", "y.op", json!({})), &c);
+        expected_inspection(&s, &c, "agent", "management", false);
+        let r = refusal(&s, &c, &route, "ACC-001");
+        assert_eq!(r["tier"], 1);
+        assert_eq!(r["operation"], "y.op");
+        assert_eq!(r["named"], json!({"tool":"y.op"}));
+        for key in ["target", "exists", "conduits"] {
+            assert!(r.get(key).is_none());
+        }
+    }
+
+    #[test]
+    fn closed_conduit_routes_core_operations_without_reconstructing_the_tool() {
+        let (mut s, c) = inspector_fixture();
+        for target in ["management", "p"] {
+            inspection(&mut s, target, &c);
+        }
+        expected_inspection(&s, &c, "v", "management", false);
+        expected_inspection(&s, &c, "v", "p", true);
+        expected_inspection(&s, &c, "v", "x", true);
+        let mut closed = stone(&s, "retire", "v", "management", "2026-11-11T13:00:00Z");
+        closed["localName"] = json!("m");
+        closed["operations"] = json!([c.qualified("retire.v1")]);
+        s.tombstones.insert("retire".into(), closed);
+        let route = access_route(
+            &s,
+            &request("v", "m.retire.v1", json!({"instance":"x"})),
+            &c,
+        );
+        let r = refusal(&s, &c, &route, "ACC-001");
+        assert_eq!(r["tier"], 2);
+        assert_eq!(r["operation"], "m.retire.v1");
+        assert!(r["named"].get("conduit").is_none());
+        s.tombstones.get_mut("retire").unwrap()["operations"] = json!(["example.org/p#retire.v1"]);
+        assert_eq!(refusal(&s, &c, &route, "ACC-001")["tier"], 1);
+        s.tombstones.get_mut("retire").unwrap()["operations"] = json!([]);
+        assert_eq!(refusal(&s, &c, &route, "ACC-001")["tier"], 2);
+    }
+
+    #[test]
+    fn tier_two_omits_a_tombstone_outside_the_senders_inventory_visibility() {
+        let (mut s, c) = inspector_fixture();
+        inspection(&mut s, "p", &c);
+        s.objects
+            .push(json!({"kind":"Pool","name":"q","id":"q","state":"ready"}));
+        expected_inspection(&s, &c, "v", "x", true);
+        expected_inspection(&s, &c, "v", "q", false);
+        let mut closed = stone(&s, "hidden", "v", "x", "2026-11-11T13:00:00Z");
+        closed["target"]["owner"] = json!({"kind":"Pool","name":"q","id":"q"});
+        s.tombstones.insert("hidden".into(), closed);
+        let route = access_route(&s, &request("v", "x.op", json!({})), &c);
+        let r = refusal(&s, &c, &route, "ACC-001");
+        assert_eq!(r["tier"], 2);
+        assert_eq!(
+            r["conduits"],
+            json!([{"name":"v-x","as":"x","state":"open","operations":[]}])
+        );
+        let hidden_route = access_route(&s, &request("v", "y.op", json!({})), &c);
+        assert_eq!(refusal(&s, &c, &hidden_route, "ACC-001")["tier"], 1);
     }
     fn verdict(s: &State, c: &Context, r: &AccessRequest) -> String {
         let v = access::evaluate(s, &access::PublicationView::new(s, c), r, c, true).unwrap();

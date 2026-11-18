@@ -52,7 +52,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 
 | ID | Layer | Level | Cases | Expected failures | S1 | Engine source | Standing |
 | --- | --- | --- | ---: | ---: | --- | --- | --- |
-| ACC-001 | convention | must | 7 | 0 | cases | core | case passes |
+| ACC-001 | convention | must | 8 | 0 | cases | core | case passes |
 | ACC-002 | convention | must | 1 | 0 | cases | core | case passes |
 | ACC-003 | convention | must | 2 | 0 | cases | core | case passes |
 | ACC-005 | convention | must | 9 | 0 | cases | core | case passes |
@@ -85,7 +85,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | ACC-053 | convention | must | 24 | 0 | outside | core, shell | case passes |
 | ACC-054 | convention | must | 7 | 0 | outside | core | case passes |
 | ACC-055 | convention | must | 12 | 0 | outside | core | case passes |
-| ACC-056 | convention | must | 3 | 0 | outside | core | case passes |
+| ACC-056 | convention | must | 4 | 0 | outside | core | case passes |
 | ACC-057 | convention | must | 1 | 0 | outside | core | case passes |
 | CON-001 | language | must | 1 | 0 | cases | core | case passes |
 | CON-002 | language | must | 2 | 0 | cases | core | case passes |

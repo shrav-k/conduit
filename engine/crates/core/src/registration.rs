@@ -1642,14 +1642,9 @@ pub(crate) fn register(
             json!({}),
             vec![],
         ));
-        end_request(t, evidence, request, None, "refused", rule, context)?;
-        let diagnostic = crate::explain::diagnostic(
-            &t.state,
-            &crate::explain::ids(request, json!({"documents":project.documents})),
-            context,
-            "refused",
-            rule,
-        )?;
+        let route = crate::explain::ids(request, json!({"documents":project.documents}));
+        end_request(t, evidence, &route, None, "refused", rule, context)?;
+        let diagnostic = crate::explain::diagnostic(&t.state, &route, context, "refused", rule)?;
         t.reply = json!({"accepted":false,"reason":"refused","diagnostics":[diagnostic]});
         return Ok(());
     }
@@ -1668,6 +1663,7 @@ fn refuse_root_registration(
     t: &mut Transition,
     evidence: &Evidence,
     request: &Request,
+    documents: &[Value],
     context: &Context,
 ) -> Result<Option<crate::explain::Rejection>> {
     t.decisions.push(decision(
@@ -1677,14 +1673,9 @@ fn refuse_root_registration(
         json!({}),
         vec![],
     ));
-    end_request(t, evidence, request, None, "refused", "ACC-054", context)?;
-    let diagnostic = crate::explain::diagnostic(
-        &t.state,
-        &crate::explain::ids(request, json!({})),
-        context,
-        "refused",
-        "ACC-054",
-    )?;
+    let route = crate::explain::ids(request, json!({"documents":documents}));
+    end_request(t, evidence, &route, None, "refused", "ACC-054", context)?;
+    let diagnostic = crate::explain::diagnostic(&t.state, &route, context, "refused", "ACC-054")?;
     t.reply = json!({"accepted":false,"reason":"refused","diagnostics":[diagnostic]});
     Ok(Some(crate::explain::Rejection::new("refused", "ACC-054")))
 }
@@ -1721,14 +1712,10 @@ pub(crate) fn prepare(
             json!({}),
             vec![],
         ));
-        end_request(t, evidence, request, None, "refused", "ACC-057", context)?;
-        let diagnostic = crate::explain::diagnostic(
-            &t.state,
-            &crate::explain::ids(request, json!({"documents":project.documents})),
-            context,
-            "refused",
-            "ACC-057",
-        )?;
+        let route = crate::explain::ids(request, json!({"documents":project.documents}));
+        end_request(t, evidence, &route, None, "refused", "ACC-057", context)?;
+        let diagnostic =
+            crate::explain::diagnostic(&t.state, &route, context, "refused", "ACC-057")?;
         t.reply = json!({"accepted":false,"reason":"refused","diagnostics":[diagnostic]});
         return Ok(Some(crate::explain::Rejection::new("refused", "ACC-057")));
     }
@@ -1739,7 +1726,7 @@ pub(crate) fn prepare(
             .iter()
             .any(|doc| root_consumed(&t.state, doc, root))
     {
-        return refuse_root_registration(t, evidence, request, context);
+        return refuse_root_registration(t, evidence, request, &project.documents, context);
     }
     // Canonical traversal fixes allocations, diagnostics and nested names independently of file order.
     project.documents.sort_by_key(|d| {
@@ -2009,7 +1996,7 @@ pub(crate) fn prepare(
     }
     // ACC-054 / OPS-023: expansion must not make authority depend on valid targets.
     if !root_own && b.objects.iter().any(|o| root_consumed(&b.state, o, root)) {
-        return refuse_root_registration(t, evidence, request, context);
+        return refuse_root_registration(t, evidence, request, &project.documents, context);
     }
     if b.diagnostics.iter().any(|d| d["level"] == "error") {
         return reject(t, b.diagnostics, evidence, request, context);
@@ -2299,7 +2286,15 @@ fn reject(
         })
         .map(|d| d.rule.as_str())
         .ok_or("registration rejection lacks a deciding rule")?;
-    end_request(t, evidence, request, None, reason, rule, context)?;
+    end_request(
+        t,
+        evidence,
+        &crate::explain::ids(request, json!({})),
+        None,
+        reason,
+        rule,
+        context,
+    )?;
     let rejection = crate::explain::Rejection::new(reason, rule);
     t.reply = json!({"accepted":false,"reason":reason,"diagnostics":diagnostics});
     Ok(Some(rejection))

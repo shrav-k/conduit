@@ -45,6 +45,15 @@
         "LIF-034"
       ],
       "safety_rows": []
+    },
+    {
+      "id": "explain-tier-two-inspectors",
+      "case": "conventions/explain/tier-two-inspectors/case.yaml",
+      "promises": [
+        "ACC-056",
+        "ACC-001"
+      ],
+      "safety_rows": []
     }
   ]
 }

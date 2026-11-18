@@ -1,3 +1,4 @@
+# Checked at the merge of order 046b, against main at f72c2bc3: the work's vector delta matches these shapes.
 - name: tier 2 for a caller that may inspect the target, closed Conduits included, in one portable case
   kind: added
   cases: [explain-tier-two-inspectors]

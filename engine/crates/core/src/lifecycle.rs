@@ -678,8 +678,8 @@ fn advance(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) ->
                         }
                     } else {
                         outcome = "refused".into();
-                        let route = json!({"consumer":v["caller"],"operation":op,"arguments":args});
-                        let tier = crate::explain::tier(&t.state, v["caller"].as_str(), c);
+                        let route = json!({"consumer":v["sender"],"operation":op,"arguments":args});
+                        let tier = crate::explain::tier(&t.state, &route, c)?;
                         part_diagnostics = json!([crate::explain::diagnostic(
                             &t.state, &route, c, "refused", "ACC-001"
                         )?]);
@@ -1497,7 +1497,7 @@ mod explanation_tests {
         assert!(t.reply["structuredContent"].get("parts").is_none());
     }
 
-    fn refused_part(child_request: bool) -> Transition {
+    fn refused_part(child_request: bool, sender: &str) -> Transition {
         let (mut state, mut c) = fixture();
         state.objects[0]["conduits"] = json!({"child":{}});
         state.objects[0]["slots"] = json!({"conduits":{"child":{"id":"child"}}});
@@ -1510,10 +1510,11 @@ mod explanation_tests {
                 .remove("open.v1");
             state.objects[4].as_object_mut().unwrap().remove("type");
         } else {
-            state.objects.retain(|o| o["id"] != "root-access");
+            let access_path = format!("{sender}-access");
+            state.objects.retain(|o| o["id"] != access_path);
         }
         // Supply the subject invocation directly to exercise each setup-part branch.
-        state.invocations.push(json!({"id":"setup","state":"in-progress","target":"management","object":"root","caller":"root","sender":"root","conduit":"root-management","operation":c.qualified("set-up.v1"),"arguments":{"instance":"root"},"attempt":1,"contract":{"spec":{}},"setup":{"phase":"declarations","cursor":0,"parts":[]}}));
+        state.invocations.push(json!({"id":"setup","state":"in-progress","target":"management","object":"root","caller":"root","sender":sender,"conduit":format!("{sender}-management"),"operation":c.qualified("set-up.v1"),"arguments":{"instance":"root"},"attempt":1,"contract":{"spec":{}},"setup":{"phase":"declarations","cursor":0,"parts":[]}}));
         c.templates.clear();
         let mut t = transition(state);
         let e = evidence();
@@ -1538,7 +1539,7 @@ mod explanation_tests {
     }
     #[test]
     fn setup_part_without_request_has_operation_but_no_tool_and_records_rule() {
-        let t = refused_part(false);
+        let t = refused_part(false, "root");
         let r =
             &t.state.invocations[0]["setup"]["parts"][0]["diagnostics"][0]["properties"]["refusal"];
         assert_eq!(r["operation"], "test.core#open.v1");
@@ -1556,8 +1557,25 @@ mod explanation_tests {
         }
     }
     #[test]
+    fn setup_part_without_request_uses_the_sender_for_disclosure() {
+        let t = refused_part(false, "agent");
+        let refusal =
+            &t.state.invocations[0]["setup"]["parts"][0]["diagnostics"][0]["properties"]["refusal"];
+        assert_eq!(refusal["tier"], 1);
+        for key in ["target", "exists", "conduits"] {
+            assert!(refusal.get(key).is_none());
+        }
+        for event in ["access-decision", "request-ended"] {
+            let record = t.records.iter().find(|r| r["type"] == event).unwrap();
+            assert_eq!(record["data"]["ruleId"], "ACC-001");
+            assert_eq!(record["data"]["caller"], "root");
+            assert_eq!(record["data"]["consumer"], "agent");
+            assert_eq!(record["data"]["refusalTier"], refusal["tier"]);
+        }
+    }
+    #[test]
     fn setup_part_copies_child_protocol_error_diagnostics_and_reason() {
-        let t = refused_part(true);
+        let t = refused_part(true, "root");
         let r =
             &t.state.invocations[0]["setup"]["parts"][0]["diagnostics"][0]["properties"]["refusal"];
         assert_eq!(r["named"]["tool"], "access.open.v1");

@@ -256,7 +256,7 @@ impl<'a> PublicationView<'a> {
             .filter(move |(_, o)| open(o) && id(&o["consumer"]) == consumer)
             .map(|(i, _)| self.at(i))
     }
-    fn fixed(&self, reference: &Value, kind: &str) -> Result<Option<&Value>> {
+    pub(crate) fn fixed(&self, reference: &Value, kind: &str) -> Result<Option<&Value>> {
         // ACC-024/OBJ-006: a bare name uses the governing reference kind.
         if let Some(name) = reference.as_str() {
             self.object(&json!({"kind":kind,"name":name}))
@@ -465,12 +465,22 @@ fn owner<'a>(state: &'a State, resource: &Value) -> Option<&'a Value> {
     object(state, &resource["owner"])
 }
 fn current_path(state: &State, consumer: &Value, target: &Value, op: &str) -> bool {
+    has_current_path(state, consumer, target, op, |_| true)
+}
+fn has_current_path(
+    state: &State,
+    consumer: &Value,
+    target: &Value,
+    op: &str,
+    accepts: impl Fn(&Value) -> bool,
+) -> bool {
     target["state"] != "retired"
         && state.objects.iter().any(|p| {
             open(p)
                 && id(&p["consumer"]) == consumer
                 && id(&p["target"]) == &target["id"]
                 && values(p, "operations").any(|v| v == op)
+                && accepts(p)
         })
 }
 /// OPS-036: package visibility requires inspect.v1 on management itself, independently
@@ -494,24 +504,70 @@ pub(crate) fn may_inspect(
     item: &Value,
     context: &Context,
 ) -> Result<bool> {
+    Ok(current_path(
+        state,
+        actor,
+        inspection_route(state, item, context)?,
+        &context.qualified("inspect.v1"),
+    ))
+}
+fn inspection_route<'a>(state: &'a State, item: &Value, context: &Context) -> Result<&'a Value> {
     let management = management(state, "management", context)?;
-    let route =
+    Ok(
         if item.get("spec").is_none() && ["Resource", "Agent"].iter().any(|k| item["kind"] == *k) {
             owner(state, item)
                 .filter(|o| o["state"] != "retired")
                 .unwrap_or(management)
         } else {
             management
-        };
-    Ok(current_path(
+        },
+    )
+}
+/// ACC-056: inspection for refusal disclosure must have an unfiltered path.
+pub(crate) fn may_inspect_unfiltered(
+    state: &State,
+    actor: &Value,
+    item: &Value,
+    context: &Context,
+) -> Result<bool> {
+    Ok(unfiltered_inspection_path(
         state,
         actor,
-        route,
-        &context.qualified("inspect.v1"),
+        inspection_route(state, item, context)?,
+        context,
     ))
 }
+pub(crate) fn may_inspect_missing(state: &State, actor: &Value, context: &Context) -> Result<bool> {
+    Ok(unfiltered_inspection_path(
+        state,
+        actor,
+        management(state, "management", context)?,
+        context,
+    ))
+}
+fn unfiltered_inspection_path(
+    state: &State,
+    actor: &Value,
+    target: &Value,
+    context: &Context,
+) -> bool {
+    let core_prefix = format!("{}#", context.core_package);
+    has_current_path(
+        state,
+        actor,
+        target,
+        &context.qualified("inspect.v1"),
+        |p| {
+            !requirements(p).any(|r| {
+                r["requirement"]
+                    .as_str()
+                    .is_some_and(|q| !q.starts_with(&core_prefix))
+            })
+        },
+    )
+}
 /// First matching row of ACC-033. Unknown named objects are diagnosed only after access.
-fn routing<'a>(
+pub(crate) fn routing<'a>(
     state: &State,
     view: &'a PublicationView<'_>,
     path: &'a Value,
@@ -1081,6 +1137,7 @@ pub(crate) fn decide(
         "OPS-023", "IFC-025", "REC-001", "REC-002", "REC-003", "ACC-027", "ACC-036",
     ]);
     let reason = verdict.reason;
+    let mut refusal_tier = None;
     t.reply = match reason {
         Some(reason) => {
             let mut reply = json!({"reason":reason});
@@ -1093,6 +1150,7 @@ pub(crate) fn decide(
                 if verdict.route["operation"].is_string() {
                     route["operation"] = verdict.route["operation"].clone();
                 }
+                refusal_tier = Some(crate::explain::tier(&t.state, &route, context)?);
                 route
             } else {
                 json!({"tool":request.tool,"operation":request.tool})
@@ -1130,14 +1188,8 @@ pub(crate) fn decide(
     if let Some(reason) = reason {
         data["reason"] = json!(reason);
         data["ruleId"] = json!(verdict.rules[0]);
-        if reason == "refused" {
-            data["refusalTier"] = json!(crate::explain::tier(
-                &t.state,
-                established(&t.state, &request.identity)
-                    .ok()
-                    .and_then(|o| o["id"].as_str()),
-                context
-            ));
+        if let Some(tier) = refusal_tier {
+            data["refusalTier"] = json!(tier);
         }
     }
     if let Some(restriction) = verdict.restriction {

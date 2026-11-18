@@ -683,7 +683,8 @@ index](../docs/archive/README.md#removed-from-the-tree); [FR-482][fr482]; ruling
 
 The core checks refusing rules in ACC-056's order and gives every reason its deciding error
 diagnostic (IFC-050). Each refusal holds one `refusal.v1` explanation: tier 1 for every
-sender, tier 2 for root. The sending instance determines disclosure for onward calls.
+sender, and tier 2 for root and for a sender that may inspect the authorizing target and every
+named object (order 046b). The sending instance determines disclosure for onward calls.
 Reason records state `ruleId`, and refusal records `refusalTier`, without tier-2 details.
 Tool diagnostics occupy `structuredContent.diagnostics`; IFC-012 errors carry them in
 `error.data.diagnostics`. The first text block is computed from the final diagnostics.
@@ -694,7 +695,6 @@ cases. Three cases exercise refusal tiers, other reasons and an Agent's tier-1 r
 
 Still unfinished:
 
-- Tier 2 for callers other than root, and closed Conduits from tombstones: order 046b.
 - A bounded holder's request naming no Conduit remains invalid under OPS-029. Its F2
   vectors and F3's other public-boundary vectors belong to an admin order not yet numbered.
 - An https fetch still cites PKG-023. Order 046d makes it answer as unbuilt under D37,
@@ -731,3 +731,14 @@ Still unfinished:
 - The runner validates reason diagnostics against `diagnostic.v1`. A follow-up order
   needs to apply that validation to outcome diagnostics and test rejection of a missing
   `message`. This lets portable cases keep their wording-independent projections.
+
+## Tier 2 for inspectors and closed Conduits (order 046b)
+
+A sender other than root gets tier 2 if open Conduits with no filter let it inspect all
+authorizing targets and every named object. An unresolved named object requires inspection
+authority on `management` itself. The coordinator's reading gives tier 1 to a sender other
+than root whose request resolves no Conduit and no tombstone, since it finds no authorizing target.
+Refusals for `answer.v1`, `sign-in.v1` and the enrollment operations stay at tier 1 for
+senders other than root until their ACC-033 routes are built.
+Tier 2 lists live Conduits first, then visible closed Conduits by tombstone time and ID. A
+request through a closed Conduit can show its kept target in tier 2 with `exists` false.

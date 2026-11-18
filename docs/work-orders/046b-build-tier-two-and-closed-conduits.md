@@ -545,3 +545,133 @@ the merge the admin runs `python3 tools/gate.py`, and merges on its PASS
 it. A fresh Codex verifier and a fresh read-only Opus reader read the result before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2). The admin writes this order's Record at
 the foot of this file when it merges.
+
+## Record
+
+Run on 2026-11-18, from about 09:15 to 10:19 UTC, on the Mac from `main` `f72c2bc3` (the merge of
+orders 046b and 047c, #354), in two rounds: the worker (about 1761 s) and a fresh Codex verifier
+(about 525 s), then the worker again (about 1125 s) and a second fresh Codex verifier (about 434 s).
+The change is the files of Scope: `explain.rs`, `access.rs`, `lib.rs`, `lifecycle.rs`,
+`registration.rs` and `requests.rs` in the core, `engine/CONFORMANCE.md`, `engine/STANDING.md`
+through the tool, and the new case with its index entry; no other core file, and
+`experiments/011-short-form-spike/` needed no change. `tier(state: &State, route: &Value, c:
+&Context) -> Result<u8>` applies decision 1's condition, and `access::may_inspect_unfiltered`, with
+the same arguments as `may_inspect`, shares its route choice. `access::may_inspect_missing(state,
+actor, context) -> Result<bool>` applies the same unfiltered test to `management` itself for a named
+object that does not exist, and `PublicationView::fixed` became `pub(crate)` so that `tier` finds a
+registration owner as `evaluate_path` does. The route reaches `tier` from `diagnostic` and from the
+five record sites: `access::decide`, `lib.rs`'s `end_request` (from Submit, both branches of an
+input that names a request by IDs, and registration), the refused setup part in `lifecycle.rs`, and
+`requests.rs`'s `invoke_inner` and `reject_diagnostics`. Registration's ACC-054 routes hold the
+submitted documents. Decision 2's tier-2 block lists live Conduits first, then visible closed ones
+by time and tombstone ID. The rows of `engine/STANDING.md` are `| ACC-056 | convention | must | 4 |
+0 | outside | core | case passes |` and `| ACC-001 | convention | must | 8 | 0 | cases | core | case
+passes |`. The worker's own choices: an ID-only target for the Conduit read through a tombstone;
+tombstone times sorted as instants with the existing `chrono`, an unparseable time by its text
+before the valid ones; one resolver of named objects shared by the tier and `exists`; one route,
+`rejection_route` in `requests.rs`, for the access record's tier and the diagnostic where the route
+has no operation; and non-root refusals of `sign-in.v1`, `answer.v1`, `enroll-machine.v1`,
+`admit-machine.v1` and `refuse-machine.v1` kept at tier 1, since `access::routing` does not yet
+route them as ACC-033 does. The Rust diff, 848 insertions and 140 deletions in six files after the
+fixes, most of them tests in `explain.rs`, exceeds the order's estimate of 0.2 to 0.35k lines; the
+second verifier noted it as a should, and nothing was trimmed.
+
+The first verifier found four musts and three shoulds. Musts: the refused setup part's route took
+`v["caller"]` as `consumer`; an ID-based refusal could use another instance's live Conduit to reach
+tier 2 and disclose its target; operations ACC-033 routes that `routing` does not yet implement took
+the Conduit's target as the authorizing target; and `046b-declared.yaml`, unchanged in bytes from
+the base, was not read by CI's `--declared-changed`. Shoulds: the ordering test passed without the
+sort, the parity of the two inspection functions was not asserted in every unfiltered fixture, and
+the worker report carried a private path. Round 2 used `v["sender"]` in the setup part's route, with
+the test `setup_part_without_request_uses_the_sender_for_disclosure`; required the Conduit of tier
+eligibility and of tier 2's details to be the sender's (`sender_live_path`), with
+`id_refusal_cannot_use_a_foreign_live_conduit_for_disclosure`; kept the five operations above at
+tier 1, with `unimplemented_authorizing_routes_keep_non_root_refusals_at_tier_one`; added
+`operation: add` to the declaration; reversed the ordering fixture's IDs against their times; added
+the parity assertions; and redacted the report. The second verifier found two musts and two shoulds:
+an owner given as a Pool ID to `Input::Submit` skipped the owner check; a `replace.v1` names its
+template outside the four keys of `named.objects`; the registration test built its route by hand;
+and the diff's size.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2) on a scratch clone at
+`d2484c90`, soft-reset to the base. Every check of "Done when" passed as worded: the case with 9
+steps, the five `explain-` cases, the full release run (332 passed, 0 failed, 4 ignored), both
+mutations failing as required and the restored file passing with `cmp` exit 0, the spike's 9 tests,
+and `vector_delta.py` with main's declared text (`1 changes; 0 flips; 0 undeclared; 0 errors`, exit
+0). It re-rated the second verifier's two musts as shoulds, since both follow the order's wording,
+and found one must and five shoulds:
+
+- r1 (must): round 2's filter of the route's Conduit ran for root too, so where root's request named
+  another instance's live Conduit by ID, tier 2 omitted `target` and said `exists` false, against
+  decision 2's "as now".
+- r2: the declaration gained `operation: add` only so that CI's `--declared-changed` would see a
+  diff; main's text already matches, and the coordinator's check line at the merge covers CI.
+- r3: a refused `replace.v1` names its template through `arguments.template`, outside the four keys
+  decision 1 fixes, so a sender may get tier 2 without inspecting the template (ACC-056: "every
+  object the request names").
+- r4: `tier` resolved a registration owner by name alone, where Submit's ACC-033 check finds a Pool
+  by name or ID, so an owner given by ID skipped its inspection check.
+- r5: round 2's change of the setup part's `consumer` from `v["caller"]` to `v["sender"]` changes an
+  observable and was reported only inside a decision note.
+- r6: the registration test built its route by hand, and the named-object test never removed
+  `management`'s owner Pool.
+
+The fixer found the branch already on `origin/main` at `f72c2bc3`, so the rebase with the work-order
+identity changed nothing, and applied each finding:
+
+- r1: in `diagnostic`'s tier-2 block the filter is
+  `is_root(state, sender, c) || sender_live_path(path, sender)`, so root's `target` and `exists`
+  come from the route's live Conduit, as in order 046a; `conduits` stays the sender's own.
+  `id_refusal_cannot_use_a_foreign_live_conduit_for_disclosure` now expects root's `target`
+  `{"kind":"Resource","name":"x","id":"x"}`, `exists` true and `conduits` `[]`.
+- r2: `046b-declared.yaml` is main's text again, unchanged in the diff.
+- r3: no code change, the coordinator's choice left open: a finding against ACC-056 for SO-H's
+  sweep, below.
+- r4: `tier`'s register.v1 loop finds the owner by name, then by ID (`access::object_by_id`), which
+  can only lower a tier. The new test `registration_owner_given_by_id_needs_inspection_of_that_pool`
+  gives the Pool `p` the name `pool-p` and drives Submit with owner `p`: ACC-033 decides, and the
+  diagnostic and both records hold tier 1.
+- r5: no code change. Round 2's `consumer` `v["sender"]` in the refused setup part's route
+  (`lifecycle.rs`) is a correction of order 046a's route, made under the reading that ACC-056's
+  caller is the sending instance; a setup sent by a non-root instance with root as caller now gets
+  tier 1, not 2. `setup_part_without_request_uses_the_sender_for_disclosure` covers it. As the
+  coordinator's acceptance, open to the owner's strike, the setup part's consumer is read as the
+  sending instance, and the change stands.
+- r6: `tier_two_checks_management_and_the_live_registration_owner` drives `Input::Submit` through
+  `crate::step` with a Conduit `v-register` to `management` listing `register.v1` and none to `p`,
+  and asserts that ACC-033 decides and that the diagnostic and both records go from tier 1 to tier 2
+  once `v` holds `inspect.v1` on `management`.
+  `tier_two_checks_named_objects_and_uses_management_itself_for_missing_objects` gains a variant
+  without `management`'s owner: a missing object gives tier 1 with no inspection, and tier 2 with
+  `exists` false with `inspect.v1` on `management`.
+
+Findings against the specification, for SO-H's sweep (decision 9 and others): ACC-056 does not say
+whether tier 2's target may be read through the tombstone of a closed Conduit named by its local
+name, nor what `exists` states then (the build gives the kept target and `exists` false); it names
+one authorizing target where ACC-033's rows 1, 1A and 3 name two (the build requires inspection of
+each); it says caller where the definitions distinguish the caller from the sending instance of an
+onward request (the build uses the sending instance); the tier-1 echo of an ID-based refusal can
+derive a tool spelling and local name from a Conduit ID that is not the sender's, though
+`refusal.v1` describes `named` as an echo of the request (kept, as this order requires); and
+ACC-056's "every object the request names" reaches a `replace.v1`'s template, which `named.objects`
+and the tier do not read (r3).
+
+With each fix taken out on the fixer's tree, its test failed: r1's filter without root, and r4's
+lookup by ID. The fixer then ran, on the files of this commit before it was made:
+`cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` (exit 0), the pieces example
+(`Nothing to move.`, `manifest.yaml` unchanged), the case
+(`PASS explain-tier-two-inspectors (9 steps; ACC-056, ACC-001)`, `1 cases passed`), the `explain-`
+cases (five PASS lines, `5 cases passed`), the vectors test (2 passed) and the full release run (333
+passed, 0 failed, 4 ignored), each with `CONDUIT_VECTOR_THREADS=4` and `RUST_TEST_THREADS=4` where
+cargo tests; both mutations again (a line holding `missing ordered record` and `"refusalTier":2`,
+and step 8's `conduits: expected 1 items, found 0`), the restored file passing with `cmp` exit 0;
+the spike (`test result: ok. 9 passed; 0 failed`); the order's eight Python checks (Errors: 0 each)
+and the tool tests (OK); `vector_delta.py` from `origin/main` to the worktree with the declaration
+(`1 shapes`, `1 changes; 0 flips; 0 undeclared; 0 errors`); the order's greps (1, 1, 1, 0, 0) and
+its `git status` on the forbidden paths (nothing); and `git diff --check` and
+`git diff --check origin/main...HEAD` (clean). The gate's run on this order's squash, which this
+merge waits on, is the coordinator's at the merge.
+
+At the merge the coordinator applied the last reader's should, if any remained, and added a check
+line to 046b-declared.yaml, which reached main with this order's text, so that the gate's vector
+check reads it. The gate runs on the squash, and the merge waits on its PASS.

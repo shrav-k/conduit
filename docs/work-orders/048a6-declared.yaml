@@ -1,0 +1,3 @@
+- name: requests-sign-in-return-not-taken
+  kind: added
+  cases: [requests-sign-in-return-not-taken]

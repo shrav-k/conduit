@@ -387,9 +387,6 @@
             "source": "urn:conduit:first-build",
             "specversion": "1.0"
           }
-        ],
-        "absent": [
-          "/reply/diagnostics"
         ]
       }
     },
@@ -409,10 +406,7 @@
         "required_promises": [
           "ACC-054"
         ],
-        "stateUnchanged": true,
-        "absent": [
-          "/reply/structuredContent"
-        ]
+        "stateUnchanged": true
       }
     },
     {
@@ -431,10 +425,7 @@
         "required_promises": [
           "ACC-054"
         ],
-        "stateUnchanged": true,
-        "absent": [
-          "/reply/structuredContent"
-        ]
+        "stateUnchanged": true
       }
     },
     {

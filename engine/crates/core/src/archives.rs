@@ -1,11 +1,12 @@
 //! Archive admission from supplied bytes only. No archive is extracted onto a filesystem.
+use crate::registration::ReportedFault;
 use crate::{Context, Result, Transition, decision, packages::*};
 use conduit_loader::{
     Document, FileRole, Names, Specification, Syntax, read_bytes, read_submitted_files,
 };
 use flate2::read::MultiGzDecoder;
 use serde::{Deserialize, Serialize};
-use serde_json::{Value, json};
+use serde_json::json;
 use std::{
     collections::{BTreeMap, BTreeSet},
     io::Read,
@@ -42,14 +43,19 @@ pub struct InstalledPackage {
     /// A virtual unpacked directory, retaining programs and other non-document files too.
     pub files: BTreeMap<String, Member>,
 }
-fn diagnostic(rule: &str, message: impl Into<String>) -> Value {
-    json!({"ruleId":rule,"level":"error","message":{"text":message.into()}})
+fn diagnostic(rule: &str, message: impl Into<String>) -> ReportedFault {
+    ReportedFault {
+        rule: rule.into(),
+        diagnostic: json!({"ruleId":rule,"level":"error","message":{"text":message.into()}}),
+    }
 }
-fn reject(t: &mut Transition, diagnostics: Vec<Value>) {
-    let mut rules: BTreeSet<_> = diagnostics
-        .iter()
-        .filter_map(|d| d["ruleId"].as_str())
-        .collect();
+fn reject(t: &mut Transition, diagnostics: Vec<ReportedFault>) -> crate::explain::Rejection {
+    let rule = diagnostics
+        .first()
+        .expect("archive rejection has a fault")
+        .rule
+        .clone();
+    let mut rules: BTreeSet<_> = diagnostics.iter().map(|d| d.rule.as_str()).collect();
     rules.insert("PKG-023");
     t.decisions.push(decision(
         "reject-archive",
@@ -59,7 +65,9 @@ fn reject(t: &mut Transition, diagnostics: Vec<Value>) {
         vec![],
     ));
     t.reply = json!({"accepted":false,"reason":"invalid","diagnostics":diagnostics});
+    crate::explain::Rejection::new("invalid", &rule)
 }
+
 fn specification(builtin: &Project, context: &Context) -> Result<Specification> {
     // The same supplied built-in schema documents as resolution uses. Reconstitute the
     // strict loader's pure interface, without reading spec/ or assigned names here.
@@ -93,7 +101,7 @@ pub(crate) fn install(
     snapshots: Vec<Snapshot>,
     builtin: Project,
     context: &Context,
-) -> Result<()> {
+) -> Result<Option<crate::explain::Rejection>> {
     let mut diagnostics = vec![];
     if !input.digest.strip_prefix("sha256:").is_some_and(|h| {
         h.len() == 64
@@ -118,8 +126,7 @@ pub(crate) fn install(
         ));
     }
     if !diagnostics.is_empty() {
-        reject(t, diagnostics);
-        return Ok(());
+        return Ok(Some(reject(t, diagnostics)));
     }
     let mut entries = catalog_entries(&t.state, snapshots);
     // Validate supplied catalog metadata even on an already-installed path.
@@ -140,8 +147,8 @@ pub(crate) fn install(
             json!({"address":input.address}),
             vec![],
         ));
-        t.reply = json!({"accepted":false,"reason":"conflict","diagnostics":[]});
-        return Ok(());
+        t.reply = json!({"accepted":false,"reason":"conflict","diagnostics":[crate::explain::diagnostic(&t.state, &json!({"operation":format!("install of {} {}", input.address, input.version)}), context, "conflict", "PKG-029")?]});
+        return Ok(Some(crate::explain::Rejection::new("conflict", "PKG-029")));
     }
     if let Some(package) = entries
         .iter()
@@ -158,9 +165,9 @@ pub(crate) fn install(
         t.reply = if same {
             json!({"accepted":true,"outcome":"succeeded","diagnostics":[],"changed":false})
         } else {
-            json!({"accepted":false,"reason":"conflict","diagnostics":[]})
+            json!({"accepted":false,"reason":"conflict","diagnostics":[crate::explain::diagnostic(&t.state, &json!({"operation":format!("install of {} {}", input.address, input.version)}), context, "conflict", "PKG-025")?]})
         };
-        return Ok(());
+        return Ok((!same).then(|| crate::explain::Rejection::new("conflict", "PKG-025")));
     }
     let bytes = match input.completion {
         FetchCompletion::Unavailable => {
@@ -171,14 +178,17 @@ pub(crate) fn install(
                 json!({"archive":input.name}),
                 vec![],
             ));
-            t.reply = json!({"accepted":false,"reason":"unavailable","diagnostics":[]});
-            return Ok(());
+            t.reply = json!({"accepted":false,"reason":"unavailable","diagnostics":[crate::explain::diagnostic(&t.state, &json!({"operation":format!("install of {} {}", input.address, input.version)}), context, "unavailable", "PKG-024")?]});
+            return Ok(Some(crate::explain::Rejection::new(
+                "unavailable",
+                "PKG-024",
+            )));
         }
         FetchCompletion::Complete { bytes } => bytes,
     };
     let digest = bytes_digest(&bytes);
     if digest != input.digest {
-        reject(
+        return Ok(Some(reject(
             t,
             vec![diagnostic(
                 "PKG-026",
@@ -187,8 +197,7 @@ pub(crate) fn install(
                     input.name, input.digest
                 ),
             )],
-        );
-        return Ok(());
+        )));
     }
     t.decisions.push(decision(
         "verify-archive-digest",
@@ -200,11 +209,10 @@ pub(crate) fn install(
     let files = match unpack(&bytes) {
         Ok(files) => files,
         Err((rule, message)) => {
-            reject(
+            return Ok(Some(reject(
                 t,
                 vec![diagnostic(rule, format!("{}: {message}", input.name))],
-            );
-            return Ok(());
+            )));
         }
     };
     t.decisions.push(decision(
@@ -238,15 +246,16 @@ pub(crate) fn install(
         ));
     }
     if !diagnostics.is_empty() {
-        reject(t, diagnostics);
-        return Ok(());
+        return Ok(Some(reject(t, diagnostics)));
     }
     let spec = specification(&builtin, context)?;
     let loaded = match read_submitted_files(&selected, &spec) {
         Ok(project) => project,
         Err(errors) => {
-            reject(t, errors.0.iter().map(loader_diagnostic).collect());
-            return Ok(());
+            return Ok(Some(reject(
+                t,
+                errors.0.iter().map(loader_diagnostic).collect(),
+            )));
         }
     };
     for document in &loaded.documents {
@@ -281,8 +290,7 @@ pub(crate) fn install(
         ));
     }
     if !diagnostics.is_empty() {
-        reject(t, diagnostics);
-        return Ok(());
+        return Ok(Some(reject(t, diagnostics)));
     }
     let package = Snapshot {
         source: SnapshotSource::InstalledArchive,
@@ -305,14 +313,17 @@ pub(crate) fn install(
         let mut diagnostics = resolution.reply["diagnostics"]
             .as_array()
             .ok_or("resolution diagnostics missing")?
-            .clone();
+            .iter()
+            .cloned()
+            .map(ReportedFault::received)
+            .collect::<Result<Vec<_>>>()?;
         for d in &mut diagnostics {
-            if d["ruleId"] == "PKG-006" {
-                d["ruleId"] = json!("PKG-028");
+            if d.rule == "PKG-006" {
+                d.rule = "PKG-028".into();
+                d.diagnostic["ruleId"] = json!("PKG-028");
             }
         }
-        reject(t, diagnostics);
-        return Ok(());
+        return Ok(Some(reject(t, diagnostics)));
     }
     // Resolve first so local and Schema-contract refs use the admitted catalog,
     // including each release's own dependency pins (NAM-014, SCH-015).
@@ -333,12 +344,12 @@ pub(crate) fn install(
         } else {
             (&candidate, &installed_scope)
         };
-        diagnostics.extend(release_default_diagnostics(
-            &env,
-            earlier,
-            later,
-            &context.core_package,
-        )?);
+        diagnostics.extend(
+            release_default_diagnostics(&env, earlier, later, &context.core_package)?
+                .into_iter()
+                .map(ReportedFault::received)
+                .collect::<Result<Vec<_>>>()?,
+        );
     }
     t.decisions.push(decision(
         "compare-release-defaults",
@@ -348,8 +359,7 @@ pub(crate) fn install(
         vec![],
     ));
     if !diagnostics.is_empty() {
-        reject(t, diagnostics);
-        return Ok(());
+        return Ok(Some(reject(t, diagnostics)));
     }
     t.decisions.push(decision(
         "install-archive",
@@ -364,10 +374,11 @@ pub(crate) fn install(
     t.state
         .installed_packages
         .push(InstalledPackage { package, files });
-    Ok(())
+    Ok(None)
 }
-fn loader_diagnostic(d: &conduit_loader::Diagnostic) -> Value {
-    let mut v = diagnostic(d.rule, d.message.to_string());
+fn loader_diagnostic(d: &conduit_loader::Diagnostic) -> ReportedFault {
+    let mut fault = diagnostic(d.rule, d.message.to_string());
+    let v = &mut fault.diagnostic;
     v["properties"] = json!({"file":d.file,"document":d.document});
     let mut location = json!({});
     if let Some(pointer) = &d.pointer {
@@ -387,7 +398,7 @@ fn loader_diagnostic(d: &conduit_loader::Diagnostic) -> Value {
     if let Some(k) = d.absolute_keyword_location() {
         v["properties"]["absoluteKeywordLocation"] = json!(k);
     }
-    v
+    fault
 }
 
 type ArchiveResult<T> = std::result::Result<T, (&'static str, String)>;
@@ -608,4 +619,21 @@ fn unpack(bytes: &[u8]) -> ArchiveResult<BTreeMap<String, Member>> {
         resolved_path(&files, name, false).map_err(|(rule, m)| (rule, format!("{name}: {m}")))?;
     }
     Ok(files)
+}
+
+#[cfg(test)]
+mod explanation_record_tests {
+    use super::*;
+
+    #[test]
+    fn archive_rejection_rule_is_independent_of_serialized_diagnostic() {
+        let (state, _) = crate::explain::tests::fixture();
+        let mut t = crate::explain::tests::transition(state);
+        let mut fault = diagnostic("PKG-004", "invalid digest");
+        fault.diagnostic.as_object_mut().unwrap().remove("ruleId");
+        let rejection = reject(&mut t, vec![fault]);
+        assert_eq!(rejection.reason, "invalid");
+        assert_eq!(rejection.rule, "PKG-004");
+        assert!(t.reply["diagnostics"][0].get("ruleId").is_none());
+    }
 }

@@ -678,3 +678,32 @@ index](../docs/archive/README.md#removed-from-the-tree); [FR-482][fr482]; ruling
 [log4]: ../docs/proposals/first-build/log-increment-4.md
 [claude]: ../packages/agent-claude-code/README.md
 [baseline]: ../experiments/007-s1-baseline/results-2026-11-09.md
+
+## Refusals and reasons (order 046a)
+
+The core checks refusing rules in ACC-056's order and gives every reason its deciding error
+diagnostic (IFC-050). Each refusal holds one `refusal.v1` explanation: tier 1 for every
+sender, tier 2 for root. The sending instance determines disclosure for onward calls.
+Reason records state `ruleId`, and refusal records `refusalTier`, without tier-2 details.
+Tool diagnostics occupy `structuredContent.diagnostics`; IFC-012 errors carry them in
+`error.data.diagnostics`. The first text block is computed from the final diagnostics.
+The shell's own rejections carry IFC-036 diagnostics. The CLI prints the returned result,
+so root sees tier 2. The runner checks reasons, refusal shape and the first text block on
+every request step, compares `list.v1` arrays as sets, and enforces D36 on new portable
+cases. Three cases exercise refusal tiers, other reasons and an Agent's tier-1 refusal.
+
+Still unfinished:
+
+- Tier 2 for callers other than root, and closed Conduits from tombstones: order 046b.
+- An outcome the engine decides as failed or unknown carries no diagnostic naming its
+  cause yet, except diagnostics already supplied by the cascade: order 046c.
+- A bounded holder's request naming no Conduit remains invalid under OPS-029. Its F2
+  vectors and F3's other public-boundary vectors belong to an admin order not yet numbered.
+- An https fetch still cites PKG-023. Order 046d makes it answer as unbuilt under D37,
+  until PSD3 builds https.
+- A tools/call from a client with no established instance still receives a tool result
+  refused under IFC-032 or IFC-022. IFC-032 and IFC-025 require IFC-012's -32602 error
+  with the reason in `data`; order 046e changes it. `records-expected-id` step 10 pins
+  the current tool result.
+- The unavailable stubs of `answer.v1` and `sign-in.v1` now carry diagnostics but remain
+  unbuilt: orders 047 and 048a-2.

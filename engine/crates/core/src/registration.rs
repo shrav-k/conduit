@@ -51,8 +51,42 @@ fn list(v: &Value, key: &str) -> Vec<String> {
         .map(str::to_owned)
         .collect()
 }
-fn diagnostic(rule: &str, name: &str, text: &str, level: &str) -> Value {
-    json!({"ruleId":rule,"level":level,"message":{"text":format!("{name}: {text}")},"locations":[{"logicalLocations":[{"fullyQualifiedName":format!("/objects/{}", name.replace('~', "~0").replace('/', "~1"))}]}]})
+// Keep the deciding rule apart from the public diagnostic (record.v1 / IFC-050).
+// Loader faults arrive as public diagnostics; capture their rule on admission, before
+// any registration diagnostic is serialized or rewritten.
+#[derive(Clone, PartialEq)]
+pub(crate) struct ReportedFault {
+    pub(crate) rule: String,
+    pub(crate) diagnostic: Value,
+}
+impl ReportedFault {
+    pub(crate) fn received(diagnostic: Value) -> Result<Self> {
+        let rule = diagnostic["ruleId"]
+            .as_str()
+            .ok_or("incoming registration fault lacks its rule")?
+            .into();
+        Ok(Self { rule, diagnostic })
+    }
+}
+impl std::ops::Deref for ReportedFault {
+    type Target = Value;
+    fn deref(&self) -> &Value {
+        &self.diagnostic
+    }
+}
+impl Serialize for ReportedFault {
+    fn serialize<S: serde::Serializer>(
+        &self,
+        serializer: S,
+    ) -> std::result::Result<S::Ok, S::Error> {
+        self.diagnostic.serialize(serializer)
+    }
+}
+fn diagnostic(rule: &str, name: &str, text: &str, level: &str) -> ReportedFault {
+    ReportedFault {
+        rule: rule.into(),
+        diagnostic: json!({"ruleId":rule,"level":level,"message":{"text":format!("{name}: {text}")},"locations":[{"logicalLocations":[{"fullyQualifiedName":format!("/objects/{}", name.replace('~', "~0").replace('/', "~1"))}]}]}),
+    }
 }
 impl Held {
     fn select(&self, reference: &str, kind: &str, core: &str) -> Checked<(Self, Value, String)> {
@@ -266,7 +300,7 @@ struct Builder<'a> {
     allocation: Allocation<'a>,
     suffix: usize,
     objects: Vec<Value>,
-    diagnostics: Vec<Value>,
+    diagnostics: Vec<ReportedFault>,
     templates: Vec<Value>,
     reserved_names: BTreeSet<(String, String)>,
     snapshots: Vec<Snapshot>,
@@ -1396,7 +1430,7 @@ fn template_diagnostics(
     references: &References<'_>,
     template: &Value,
     h: &Held,
-) -> Vec<Value> {
+) -> Vec<ReportedFault> {
     let name = template["name"].as_str().unwrap();
     let core = references.core;
     let mut diagnostics = vec![];
@@ -1529,7 +1563,7 @@ fn template_diagnostics(
     for (path, f) in missing_templates {
         report(&path, f);
     }
-    diagnostics.sort_by_key(Value::to_string);
+    diagnostics.sort_by_key(|d| d.diagnostic.to_string());
     diagnostics.dedup();
     diagnostics
 }
@@ -1579,19 +1613,47 @@ pub(crate) fn register(
                 .any(|c| permits(c, &request.sender, &pool["id"], &request.operation));
         }
     }
-    if !permitted || !pool_authority {
+    let root = t
+        .state
+        .objects
+        .iter()
+        .find(|o| o["from"] == context.qualified("root"))
+        .ok_or("root absent")?;
+    let root_own = root["id"] == request.sender && root["id"] == request.caller;
+    let rule = if !permitted {
+        Some("ACC-001")
+    } else if !root_own
+        && project
+            .documents
+            .iter()
+            .any(|d| d["kind"] == "Agent" && d.get("from").is_some())
+    {
+        Some("ACC-057")
+    } else if !pool_authority {
+        Some("ACC-033")
+    } else {
+        None
+    };
+    if let Some(rule) = rule {
         t.decisions.push(decision(
             "refuse-unauthorized-registration",
-            &["ACC-033", "OPS-023"],
+            &[rule, "OPS-023"],
             &[],
             json!({}),
             vec![],
         ));
-        end_request(t, evidence, request, None, "refused", context)?;
-        t.reply = json!({"accepted":false,"reason":"refused"});
+        end_request(t, evidence, request, None, "refused", rule, context)?;
+        let diagnostic = crate::explain::diagnostic(
+            &t.state,
+            &crate::explain::ids(request, json!({"documents":project.documents})),
+            context,
+            "refused",
+            rule,
+        )?;
+        t.reply = json!({"accepted":false,"reason":"refused","diagnostics":[diagnostic]});
         return Ok(());
     }
-    prepare(t, snapshots, builtin, project, evidence, request, context)
+    prepare(t, snapshots, builtin, project, evidence, request, context).map(|_| ())
 }
 
 /// ACC-054 / OPS-023: inspect the consumer independently of template or target validity.
@@ -1607,7 +1669,7 @@ fn refuse_root_registration(
     evidence: &Evidence,
     request: &Request,
     context: &Context,
-) -> Result<()> {
+) -> Result<Option<crate::explain::Rejection>> {
     t.decisions.push(decision(
         "refuse-root-consumer-registration",
         &["ACC-054", "OPS-023"],
@@ -1615,9 +1677,16 @@ fn refuse_root_registration(
         json!({}),
         vec![],
     ));
-    end_request(t, evidence, request, None, "refused", context)?;
-    t.reply = json!({"accepted":false,"reason":"refused"});
-    Ok(())
+    end_request(t, evidence, request, None, "refused", "ACC-054", context)?;
+    let diagnostic = crate::explain::diagnostic(
+        &t.state,
+        &crate::explain::ids(request, json!({})),
+        context,
+        "refused",
+        "ACC-054",
+    )?;
+    t.reply = json!({"accepted":false,"reason":"refused","diagnostics":[diagnostic]});
+    Ok(Some(crate::explain::Rejection::new("refused", "ACC-054")))
 }
 
 /// Resolve and stage a submission, also used for one-template replacement.
@@ -1630,7 +1699,7 @@ pub(crate) fn prepare(
     evidence: &Evidence,
     request: &Request,
     context: &Context,
-) -> Result<()> {
+) -> Result<Option<crate::explain::Rejection>> {
     let root = t
         .state
         .objects
@@ -1652,9 +1721,16 @@ pub(crate) fn prepare(
             json!({}),
             vec![],
         ));
-        end_request(t, evidence, request, None, "refused", context)?;
-        t.reply = json!({"accepted":false,"reason":"refused"});
-        return Ok(());
+        end_request(t, evidence, request, None, "refused", "ACC-057", context)?;
+        let diagnostic = crate::explain::diagnostic(
+            &t.state,
+            &crate::explain::ids(request, json!({"documents":project.documents})),
+            context,
+            "refused",
+            "ACC-057",
+        )?;
+        t.reply = json!({"accepted":false,"reason":"refused","diagnostics":[diagnostic]});
+        return Ok(Some(crate::explain::Rejection::new("refused", "ACC-057")));
     }
     // ACC-054 precedes every validation or conflict, even if catalog resolution fails.
     if !root_own
@@ -1745,7 +1821,10 @@ pub(crate) fn prepare(
             resolution.reply["diagnostics"]
                 .as_array()
                 .cloned()
-                .unwrap_or_default(),
+                .unwrap_or_default()
+                .into_iter()
+                .map(ReportedFault::received)
+                .collect::<Result<Vec<_>>>()?,
         );
         return reject(t, diagnostics, evidence, request, context);
     }
@@ -1753,7 +1832,10 @@ pub(crate) fn prepare(
         resolution.reply["diagnostics"]
             .as_array()
             .cloned()
-            .unwrap_or_default(),
+            .unwrap_or_default()
+            .into_iter()
+            .map(ReportedFault::received)
+            .collect::<Result<Vec<_>>>()?,
     );
     let mut indexes = BTreeMap::from([
         ("core".into(), packages::index(&builtin)),
@@ -1988,12 +2070,15 @@ pub(crate) fn prepare(
     matching_state.objects.extend(resolved.iter().cloned());
     for object in &resolved {
         if let Some(stone) = crate::inventory::matching(&matching_state, object) {
-            b.diagnostics.push(crate::inventory::diagnostic(
-                &b.state,
-                &json!(request.caller),
-                stone,
-                context,
-            ));
+            b.diagnostics.push(ReportedFault {
+                rule: "LIF-041".into(),
+                diagnostic: crate::inventory::diagnostic(
+                    &b.state,
+                    &json!(request.caller),
+                    stone,
+                    context,
+                ),
+            });
         }
     }
     if b.diagnostics.iter().any(|d| d["level"] == "error") {
@@ -2174,27 +2259,24 @@ pub(crate) fn prepare(
             .collect(),
     ));
     t.reply = json!({"accepted":true,"objects":registered,"diagnostics":b.diagnostics});
-    Ok(())
+    Ok(None)
 }
 fn reject(
     t: &mut Transition,
-    mut diagnostics: Vec<Value>,
+    mut diagnostics: Vec<ReportedFault>,
     evidence: &Evidence,
     request: &Request,
     context: &Context,
-) -> Result<()> {
-    diagnostics.sort_by_key(Value::to_string);
+) -> Result<Option<crate::explain::Rejection>> {
+    diagnostics.sort_by_key(|d| d.diagnostic.to_string());
     diagnostics.dedup();
     let invalid = diagnostics.iter().any(|d| {
-        d["level"] == "error"
-            && d["ruleId"] != "OBJ-002"
-            && d["ruleId"] != "OBJ-025"
-            && d["ruleId"] != "LIF-041"
+        d["level"] == "error" && d.rule != "OBJ-002" && d.rule != "OBJ-025" && d.rule != "LIF-041"
     });
     let reason = if invalid { "invalid" } else { "conflict" };
     let mut promises = diagnostics
         .iter()
-        .filter_map(|d| d["ruleId"].as_str())
+        .map(|d| d.rule.as_str())
         .collect::<BTreeSet<_>>();
     promises.extend([
         "SUB-001",
@@ -2209,9 +2291,18 @@ fn reject(
         json!({}),
         vec![],
     ));
-    end_request(t, evidence, request, None, reason, context)?;
+    let rule = diagnostics
+        .iter()
+        .find(|d| {
+            d["level"] == "error"
+                && (!invalid || !["OBJ-002", "OBJ-025", "LIF-041"].contains(&d.rule.as_str()))
+        })
+        .map(|d| d.rule.as_str())
+        .ok_or("registration rejection lacks a deciding rule")?;
+    end_request(t, evidence, request, None, reason, rule, context)?;
+    let rejection = crate::explain::Rejection::new(reason, rule);
     t.reply = json!({"accepted":false,"reason":reason,"diagnostics":diagnostics});
-    Ok(())
+    Ok(Some(rejection))
 }
 
 /// OBJ-009 / LIF-021: collect references through the same governing schemas as resolution.
@@ -2527,7 +2618,7 @@ pub(crate) fn replacement(
         )?;
     }
     if let Some(d) = b.diagnostics.first() {
-        return Ok(json!({"rule":d["ruleId"],"message":d["message"]["text"]}));
+        return Ok(json!({"rule":d.rule,"message":d["message"]["text"]}));
     }
     let all: Vec<_> = b.state.objects.iter().chain(&b.objects).cloned().collect();
     let mut resolved = vec![];
@@ -2566,4 +2657,38 @@ pub(crate) fn replacement(
     a.cursor = b.allocation.cursor;
     t.state = b.state;
     Ok(result)
+}
+
+#[cfg(test)]
+mod explanation_record_tests {
+    use super::*;
+    #[test]
+    fn registration_record_rule_is_independent_of_serialized_diagnostic() {
+        let (state, c) = crate::explain::tests::fixture();
+        let mut t = crate::explain::tests::transition(state);
+        let mut fault = diagnostic("SCH-001", "submitted", "invalid schema", "error");
+        fault.diagnostic.as_object_mut().unwrap().remove("ruleId");
+        let request = Request {
+            sender: "root".into(),
+            caller: "root".into(),
+            conduit: "root-management".into(),
+            target: "management".into(),
+            operation: c.qualified("register.v1"),
+        };
+        let rejection = reject(
+            &mut t,
+            vec![
+                diagnostic("OBJ-002", "a-conflict", "existing name", "error"),
+                fault,
+            ],
+            &crate::explain::tests::evidence(),
+            &request,
+            &c,
+        )
+        .unwrap();
+        let rejection = rejection.unwrap();
+        assert_eq!(rejection.reason, "invalid");
+        assert_eq!(rejection.rule, "SCH-001");
+        assert!(t.records.iter().all(|r| r["data"]["ruleId"] == "SCH-001"));
+    }
 }

@@ -1,0 +1,228 @@
+{
+  "id": "explain-refusal-tiers",
+  "layers": [
+    "convention",
+    "interface"
+  ],
+  "promises": [
+    "ACC-056",
+    "IFC-050",
+    "IFC-025",
+    "IFC-012",
+    "ACC-001",
+    "LIF-034"
+  ],
+  "title": "A refusal names one rule, with tier 2 for root",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {},
+  "steps": [
+    {
+      "input": {
+        "kind": "first-start",
+        "evidence": {
+          "time": "2026-11-09T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000000001",
+            "00000000-0000-4000-8000-000000000002",
+            "00000000-0000-4000-8000-000000000003",
+            "00000000-0000-4000-8000-000000000004",
+            "00000000-0000-4000-8000-000000000005",
+            "00000000-0000-4000-8000-000000000006",
+            "00000000-0000-4000-8000-000000000007",
+            "00000000-0000-4000-8000-000000000008",
+            "00000000-0000-4000-8000-000000000009",
+            "00000000-0000-4000-8000-000000000010",
+            "00000000-0000-4000-8000-000000000011",
+            "00000000-0000-4000-8000-000000000012",
+            "00000000-0000-4000-8000-000000000013",
+            "00000000-0000-4000-8000-000000000014",
+            "00000000-0000-4000-8000-000000000015",
+            "00000000-0000-4000-8000-000000000016",
+            "00000000-0000-4000-8000-000000000017",
+            "00000000-0000-4000-8000-000000000018",
+            "00000000-0000-4000-8000-000000000019",
+            "00000000-0000-4000-8000-000000000020",
+            "00000000-0000-4000-8000-000000000021",
+            "00000000-0000-4000-8000-000000000022",
+            "00000000-0000-4000-8000-000000000023",
+            "00000000-0000-4000-8000-000000000024"
+          ],
+          "revisions": [
+            "r1",
+            "r2",
+            "r3",
+            "r4",
+            "r5",
+            "r6",
+            "r7",
+            "r8"
+          ],
+          "suffixes": [
+            "abc01",
+            "abc02",
+            "abc03"
+          ]
+        },
+        "machine": {
+          "hostname": " WORKSTATION.Example ",
+          "labels": {
+            "kubernetes.io/hostname": "workstation.example",
+            "kubernetes.io/os": "darwin",
+            "kubernetes.io/arch": "arm64",
+            "example.org/role": "test"
+          },
+          "state": "reachable"
+        },
+        "trustDomain": "vectors-040.example"
+      },
+      "expect": {
+        "reply": {
+          "started": true
+        },
+        "external_intents": [],
+        "required_promises": [
+          "FST-001"
+        ],
+        "state": {
+          "started": true
+        },
+        "record_facts": []
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T13:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8046-a00000000001",
+            "00000000-0000-4000-8046-a00000000002",
+            "00000000-0000-4000-8046-a00000000003",
+            "00000000-0000-4000-8046-a00000000004"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.retire.v1",
+          "arguments": {
+            "instance": {
+              "kind": "Pool",
+              "name": "system"
+            }
+          }
+        }
+      },
+      "expect": {
+        "external_intents": [],
+        "record_facts": [
+          {
+            "type": "request-ended",
+            "data": {
+              "reason": "refused",
+              "ruleId": "LIF-034",
+              "refusalTier": 2
+            }
+          }
+        ],
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "refused"
+          },
+          "isError": true,
+          "structuredContent": {
+            "diagnostics": [
+              {
+                "ruleId": "LIF-034",
+                "level": "error",
+                "properties": {
+                  "refusal": {
+                    "tier": 2,
+                    "operation": "@core#retire.v1",
+                    "named": {
+                      "tool": "management.retire.v1",
+                      "conduit": "management",
+                      "objects": [
+                        {
+                          "kind": "Pool",
+                          "name": "system"
+                        }
+                      ]
+                    },
+                    "target": {
+                      "kind": "Resource",
+                      "name": "management",
+                      "id": "00000000-0000-4000-8000-000000000003"
+                    },
+                    "exists": true,
+                    "conduits": [
+                      {
+                        "as": "management",
+                        "state": "open"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T13:00:01Z",
+          "ids": [
+            "00000000-0000-4000-8046-a00000000005",
+            "00000000-0000-4000-8046-a00000000006",
+            "00000000-0000-4000-8046-a00000000007",
+            "00000000-0000-4000-8046-a00000000008"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "nope.list.v1",
+          "arguments": {}
+        }
+      },
+      "expect": {
+        "external_intents": [],
+        "reply": {
+          "error": {
+            "code": -32602,
+            "data": {
+              "io.github.shrav-k.conduit/reason": "refused",
+              "diagnostics": [
+                {
+                  "ruleId": "ACC-001",
+                  "level": "error",
+                  "properties": {
+                    "refusal": {
+                      "tier": 2,
+                      "operation": "nope.list.v1",
+                      "named": {
+                        "tool": "nope.list.v1"
+                      },
+                      "exists": false,
+                      "conduits": []
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

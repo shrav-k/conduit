@@ -114,7 +114,7 @@ fn envelope(
     outcome: Option<&str>,
     reason: Option<&str>,
     invocation: Option<&Value>,
-    rule: &str,
+    _rule: &str,
     outputs: Option<Value>,
     content: Value,
     restriction: Option<&Value>,
@@ -138,15 +138,12 @@ fn envelope(
     }
     let mut blocks = vec![];
     if error {
-        blocks.push(json!({"type":"text","text":status}));
+        blocks.push(json!({"type":"text"}));
     }
     blocks.extend(content.as_array().into_iter().flatten().cloned());
     let mut reply = json!({"_meta":meta,"isError":error,"content":blocks});
     if !error && let Some(outputs) = outputs {
         reply["structuredContent"] = outputs;
-    }
-    if matches!(reason, Some("invalid" | "conflict")) {
-        reply["structuredContent"] = json!({"diagnostics":[{"ruleId":rule,"level":"error","message":{"text":format!("The request reports {status}.")}}]});
     }
     reply
 }
@@ -564,6 +561,21 @@ pub(crate) fn reject(
     id: Option<&Value>,
     restriction: Option<&Value>,
 ) -> Result<()> {
+    reject_diagnostics(t, a, c, route, reason, rule, id, restriction, None)
+}
+
+#[allow(clippy::too_many_arguments)]
+fn reject_diagnostics(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    route: &Value,
+    reason: &str,
+    rule: &str,
+    id: Option<&Value>,
+    restriction: Option<&Value>,
+    diagnostics: Option<Value>,
+) -> Result<()> {
     t.reply = envelope(
         c,
         None,
@@ -574,6 +586,53 @@ pub(crate) fn reject(
         json!([]),
         restriction,
     );
+    let subject = route["tool"]
+        .as_str()
+        .or_else(|| route["operation"].as_str())
+        .ok_or("rejection lacks subject")?;
+    let specific = match rule {
+        "PND-009" => Some(format!(
+            "{subject} reports unavailable under {rule}: not built yet, order 047."
+        )),
+        "PND-010" => Some(format!(
+            "{subject} reports unavailable under {rule}: not built yet, order 048a."
+        )),
+        "PKG-023" => Some("install fetch requires an absolute local file URL; https fetching and package-source providers are unfinished".into()),
+        "LIF-037" => {
+            let args = &route["arguments"];
+            let reference = args
+                .get("object")
+                .or_else(|| args.get("instance"))
+                .unwrap_or(&args["conduit"]);
+            let conduit = reference
+                .as_str()
+                .map(|name| json!({"kind":"Conduit","name":name}));
+            access::object(&t.state, conduit.as_ref().unwrap_or(reference)).map(|o| {
+                format!(
+                    "expected ID {}, resolved ID {}",
+                    args["expectedId"], o["id"]
+                )
+            })
+        }
+        _ => None,
+    };
+    let diagnostic = if let Some(diagnostics) = &diagnostics {
+        diagnostics
+            .as_array()
+            .and_then(|ds| ds.first())
+            .cloned()
+            .ok_or("specific rejection diagnostics are empty")?
+    } else if let Some(message) = specific {
+        json!({"ruleId":rule,"level":"error","message":{"text":message}})
+    } else {
+        let mut explanation = route.clone();
+        if explanation.get("operation").is_none() {
+            explanation["operation"] = route["tool"].clone();
+        }
+        crate::explain::diagnostic(&t.state, &explanation, c, reason, rule)?
+    };
+    t.reply["structuredContent"] =
+        json!({"diagnostics":diagnostics.unwrap_or_else(|| json!([diagnostic]))});
     if rule == "OPS-029"
         && let Some(named) = missing_reference(route, c)
     {
@@ -582,7 +641,11 @@ pub(crate) fn reject(
         ));
     }
     if rule == "ACC-001" || rule == "TPL-013" {
-        t.reply = json!({"error":{"code":-32602,"message":"The tool is not presented.","data":{mark(c,"reason"):reason}}});
+        let diagnostics = t.reply["structuredContent"]["diagnostics"].clone();
+        let message = diagnostics[0]["message"]["text"]
+            .as_str()
+            .ok_or("diagnostic has no message")?;
+        t.reply = json!({"error":{"code":-32602,"message":format!("No tool named {subject} is presented to this instance. {message}"),"data":{mark(c,"reason"):reason,"diagnostics":diagnostics}}});
     }
     if rule == "LIF-037" {
         let args = &route["arguments"];
@@ -604,7 +667,16 @@ pub(crate) fn reject(
         json!({"reason":reason}),
         vec![],
     ));
-    end(t, a, c, route, None, Some(reason), id)
+    let mut ending = route.clone();
+    ending["ruleId"] = json!(rule);
+    if reason == "refused" {
+        ending["refusalTier"] = json!(crate::explain::tier(
+            &t.state,
+            route["consumer"].as_str(),
+            c
+        ));
+    }
+    end(t, a, c, &ending, None, Some(reason), id)
 }
 
 fn missing_reference(route: &Value, c: &Context) -> Option<String> {
@@ -735,6 +807,7 @@ fn invoke_inner(
             json!([]),
             None,
         );
+        t.reply["structuredContent"] = json!({"diagnostics":[crate::explain::diagnostic(&t.state, &crate::explain::access_route(&t.state, request, c), c, "invalid", "IFC-036")?]});
         t.decisions.push(decision(
             "unreadable-unidentified-request",
             &["IFC-036", "REC-001", "OPS-023"],
@@ -752,6 +825,27 @@ fn invoke_inner(
         true,
     )?;
     let mut route = v.route;
+    let explanation = if v.reason == Some("refused") {
+        crate::explain::access_route(&t.state, request, c)
+    } else {
+        // ACC-037: an unavailable access state must reveal no named-object facts.
+        json!({"consumer":access::established(&t.state, &request.identity).ok().map(|o| &o["id"]),"tool":request.tool,"operation":request.tool,"arguments":request.arguments})
+    };
+    if !route.is_object() {
+        route = json!({});
+    }
+    for key in ["consumer", "conduit", "operation", "arguments"] {
+        if route.get(key).is_none()
+            && !explanation[key].is_null()
+            && (key != "operation"
+                || explanation[key]
+                    .as_str()
+                    .is_some_and(|op| op != request.tool))
+        {
+            route[key] = explanation[key].clone();
+        }
+    }
+    route["tool"] = json!(request.tool);
     // OPS-029 follows authorization. Preserve the caller's spelling for its diagnostic
     // even when access evaluation has no resolved object from which to build a route.
     if v.rules.contains(&"OPS-029") {
@@ -788,6 +882,18 @@ fn invoke_inner(
     access_data["permitted"] = json!(v.reason.is_none());
     if let Some(reason) = v.reason {
         access_data["reason"] = json!(reason);
+        access_data["ruleId"] = json!(if v.rules[0] == "SCH-001" {
+            "OPS-033"
+        } else {
+            v.rules[0]
+        });
+        if reason == "refused" {
+            access_data["refusalTier"] = json!(crate::explain::tier(
+                &t.state,
+                explanation["consumer"].as_str(),
+                c
+            ));
+        }
         access_data["dispatched"] = json!(false);
     }
     if access_data.get("caller").is_none()
@@ -929,7 +1035,7 @@ fn invoke_inner(
     if (previous.is_none() || redispatch)
         && let Some(rejection) = crate::records::preflight(&t.state, &route, c, a)?
     {
-        reject(
+        reject_diagnostics(
             t,
             a,
             c,
@@ -938,11 +1044,8 @@ fn invoke_inner(
             &rejection.rule,
             None,
             None,
+            rejection.diagnostics,
         )?;
-        // OBJ-025 / IFC-025: preflight rejection carries the trial's full diagnostics.
-        if let Some(diagnostics) = rejection.diagnostics {
-            t.reply["structuredContent"] = json!({"diagnostics":diagnostics});
-        }
         return Ok(());
     }
     // OPS-023: after authority/schema, decide reconciliation's invalid/conflict
@@ -981,7 +1084,6 @@ fn invoke_inner(
                     .ok_or("invocation ID is not a string")?
             );
             t.reply["structuredContent"]["diagnostics"][0]["message"]["text"] = json!(&message);
-            t.reply["content"][0]["text"] = json!(format!("conflict: {message}"));
             return Ok(());
         }
         let old = &t.state.invocations[i];
@@ -1045,7 +1147,7 @@ fn invoke_inner(
     }
     // C11's temporary stubs: authority and arguments have already been checked.
     // OPS-005: unavailable ends before dispatch; its message names the build order.
-    if let Some((_, order, promise)) = [
+    if let Some((_, _order, promise)) = [
         ("answer.v1", "047", "PND-009"),
         ("sign-in.v1", "048a", "PND-010"),
     ]
@@ -1053,8 +1155,6 @@ fn invoke_inner(
     .find(|(name, _, _)| op == c.qualified(name))
     {
         reject(t, a, c, &route, "unavailable", promise, None, None)?;
-        t.reply["content"] =
-            json!([{"type":"text","text":format!("not built yet, order {order}")}]);
         return Ok(());
     }
     if op == c.qualified("register-replacement.v1") {
@@ -1098,7 +1198,7 @@ fn invoke_inner(
             &route["arguments"]["nested"],
         )?;
         if let Some(rule) = result["rule"].as_str() {
-            reject(
+            reject_diagnostics(
                 t,
                 a,
                 c,
@@ -1111,6 +1211,11 @@ fn invoke_inner(
                 rule,
                 None,
                 None,
+                result["message"].as_str().map(|message| {
+                    json!([
+                        {"ruleId":rule,"level":"error","message":{"text":message}}
+                    ])
+                }),
             )?;
             if rule == "LIF-041" {
                 t.reply["structuredContent"]["diagnostics"] =
@@ -1143,9 +1248,6 @@ fn invoke_inner(
                     .is_none_or(|u| u.scheme() != "file" || u.to_file_path().is_err())
         {
             reject(t, a, c, &route, "invalid", "PKG-023", None, None)?;
-            t.reply["structuredContent"]["diagnostics"][0]["message"]["text"] = json!(
-                "install fetch requires an absolute local file URL; https fetching and package-source providers are unfinished"
-            );
             return Ok(());
         }
         let input = archive.unwrap_or(crate::archives::ArchiveInput {
@@ -1183,33 +1285,35 @@ fn invoke_inner(
             reply: Value::Null,
             request_replies: vec![],
         };
-        crate::archives::install(
+        let rejection = crate::archives::install(
             &mut trial,
             input,
             t.state.preinstalled_snapshots.clone(),
             c.builtin.clone().ok_or("missing built-in project")?,
             c,
         )?;
-        if trial.reply["accepted"] != true {
-            let reason = trial.reply["reason"].as_str().unwrap_or("invalid");
-            let rule = trial.reply["diagnostics"]
-                .as_array()
-                .and_then(|d| d.first())
-                .and_then(|d| d["ruleId"].as_str())
-                .unwrap_or(if reason == "conflict" {
-                    "PKG-025"
-                } else {
-                    "PKG-024"
-                });
+        if let Some(rejection) = rejection {
             t.decisions
                 .extend(trial.decisions.into_iter().skip(t.decisions.len()));
-            reject(t, a, c, &route, reason, rule, None, None)?;
-            if trial.reply["diagnostics"]
-                .as_array()
-                .is_some_and(|d| !d.is_empty())
-            {
-                t.reply["structuredContent"] = json!({"diagnostics":trial.reply["diagnostics"]});
-            }
+            // These generic archive reasons must name the invoking tool. Specific
+            // archive and loader faults retain their original diagnostics.
+            let diagnostics =
+                if matches!(rejection.rule.as_str(), "PKG-024" | "PKG-025" | "PKG-029") {
+                    None
+                } else {
+                    Some(trial.reply["diagnostics"].clone())
+                };
+            reject_diagnostics(
+                t,
+                a,
+                c,
+                &route,
+                rejection.reason,
+                &rejection.rule,
+                None,
+                None,
+                diagnostics,
+            )?;
             return Ok(());
         }
         Some(trial)
@@ -1640,7 +1744,7 @@ pub(crate) fn complete(
                             t,
                             &mut a,
                             c,
-                            &json!({"target":v["target"],"caller":v["caller"],"consumer":v["sender"]}),
+                            &json!({"target":v["target"],"caller":v["caller"],"consumer":v["sender"],"conduit":v["conduit"],"operation":v["operation"],"arguments":v["arguments"]}),
                             reason.unwrap(),
                             "IFC-026",
                             None,

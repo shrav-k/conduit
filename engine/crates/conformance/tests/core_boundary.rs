@@ -193,7 +193,19 @@ fn registration_requires_both_open_conduits_listing_the_operation() {
             assert_eq!(result.reply["reason"], "invalid");
             assert_eq!(result.reply["diagnostics"][0]["ruleId"], "FST-006");
         } else {
-            assert_eq!(result.reply, json!({"reason":"refused"}), "{fault}");
+            assert_eq!(result.reply["reason"], "refused", "{fault}");
+            assert_eq!(
+                result.reply["diagnostics"][0]["ruleId"],
+                if fault.starts_with("management-") {
+                    "ACC-001"
+                } else {
+                    "ACC-033"
+                }
+            );
+            assert_eq!(
+                result.reply["diagnostics"][0]["properties"]["refusal"]["tier"],
+                2
+            );
             assert!(
                 result
                     .decisions

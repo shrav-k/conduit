@@ -680,13 +680,11 @@
           "isError": true,
           "content": [
             {
-              "type": "text",
-              "text": "refused"
+              "type": "text"
             }
           ]
         },
         "absent": [
-          "/reply/structuredContent",
           "/reply/diagnostics",
           "/reply/_meta/io.github.shrav-k.conduit~1invocation",
           "/records/0/data/object",
@@ -928,13 +926,11 @@
           "isError": true,
           "content": [
             {
-              "type": "text",
-              "text": "refused"
+              "type": "text"
             }
           ]
         },
         "absent": [
-          "/reply/structuredContent",
           "/reply/diagnostics",
           "/reply/_meta/io.github.shrav-k.conduit~1invocation",
           "/records/0/data/object",

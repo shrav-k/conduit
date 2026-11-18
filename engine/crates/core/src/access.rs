@@ -357,7 +357,14 @@ pub(crate) fn list(t: &mut Transition, identity: &Identity, context: &Context) -
             ));
         }
         Err((reason, rule)) => {
-            t.reply = json!({"reason":reason});
+            let diagnostic = crate::explain::diagnostic(
+                &t.state,
+                &json!({"operation":"tools/list","arguments":{}}),
+                context,
+                reason,
+                rule,
+            )?;
+            t.reply = json!({"reason":reason,"diagnostics":[diagnostic]});
             t.decisions.push(decision(
                 "reject-tool-list",
                 &[rule, "OPS-023"],
@@ -662,6 +669,16 @@ pub(crate) fn evaluate(
     } else if instance["kind"] != "Agent" && instance["kind"] != "Interface" {
         return Ok(Verdict::reason("refused", "IFC-021"));
     }
+    if instance["state"] == "retired"
+        && !request.serving.as_ref().is_some_and(|serving| {
+            state
+                .invocations
+                .iter()
+                .any(|v| v["id"] == *serving && v["retirement_of"] == instance["id"])
+        })
+    {
+        return Ok(Verdict::reason("refused", "ACC-039"));
+    }
     let instance = view
         .find(|o| o["id"] == instance["id"])?
         .ok_or("missing established instance")?;
@@ -681,9 +698,6 @@ pub(crate) fn evaluate(
     let Some((path, op)) = selected else {
         return Ok(Verdict::reason("refused", "ACC-001"));
     };
-    if op == context.qualified("get-secret.v1") {
-        return Ok(Verdict::reason("refused", "SEC-007"));
-    }
     let mut verdict = evaluate_path(
         state, view, request, context, instance, &caller, filters, path, op, defer,
     )?;
@@ -718,25 +732,21 @@ fn evaluate_path(
         }
         Err(e) => return Err(e),
     };
-    let (route, named) = routing(state, view, path, op, &request.arguments, context)?;
-    if route.is_none_or(|r| r["id"] != path["target"]) {
-        return Ok(Verdict::reason("refused", "ACC-033"));
+    let (publication, publication_decision) = schemas::publish(
+        view,
+        instance["id"].as_str().ok_or("missing instance ID")?,
+        path["id"].as_str().ok_or("missing Conduit ID")?,
+        op,
+        context,
+    )?;
+    if publication_decision.action == "omit-unavailable-tool" {
+        return Ok(Verdict::reason("refused", "ACC-001"));
     }
     let root = view.management("root")?;
     if contract["spec"]["reservedToRoot"] == true
         && (instance["id"] != root["id"] || request.serving.is_some())
     {
         return Ok(Verdict::reason("refused", "ACC-032"));
-    }
-    if instance["state"] == "retired"
-        && !request.serving.as_ref().is_some_and(|serving| {
-            state
-                .invocations
-                .iter()
-                .any(|v| v["id"] == *serving && v["retirement_of"] == instance["id"])
-        })
-    {
-        return Ok(Verdict::reason("refused", "ACC-039"));
     }
     let registration = op == context.qualified("register.v1");
     // ACC-057: neither delegation nor an onward request serving root may make Agents.
@@ -749,15 +759,14 @@ fn evaluate_path(
     {
         return Ok(Verdict::reason("refused", "ACC-057"));
     }
+    if op == context.qualified("get-secret.v1") {
+        return Ok(Verdict::reason("refused", "SEC-007"));
+    }
+    let (route, named) = routing(state, view, path, op, &request.arguments, context)?;
+    if route.is_none_or(|r| r["id"] != path["target"]) {
+        return Ok(Verdict::reason("refused", "ACC-033"));
+    }
     if registration {
-        // ACC-054 / SEC-008 / OPS-023: decide authority before validating any document.
-        // An onward request, including one whose sender is root, is not root's own act.
-        if (instance["id"] != root["id"] || request.serving.is_some())
-            && values(&request.arguments, "documents")
-                .any(|doc| crate::registration::root_consumed(state, doc, root))
-        {
-            return Ok(Verdict::reason("refused", "ACC-054"));
-        }
         for doc in values(&request.arguments, "documents").filter(|d| {
             (d["kind"] == "Resource" || d["kind"] == "Agent") && d.get("from").is_some()
         }) {
@@ -781,72 +790,9 @@ fn evaluate_path(
     {
         return Ok(Verdict::reason("refused", "ACC-033"));
     }
-    // LIF-034 also protects the container named implicitly by a cascade.
-    if crate::cascade::handles(op, context) && target["first_start"] == true {
-        return Ok(Verdict::reason("refused", "LIF-034"));
-    }
-    if named.is_some_and(|o| {
-        o["first_start"] == true
-            && (["retire.v1", "unregister.v1"]
-                .iter()
-                .any(|name| op == context.qualified(name))
-                || op == context.qualified("declare-lost.v1") && o["name"] == "local")
-    }) {
-        return Ok(Verdict::reason("refused", "LIF-034"));
-    }
     let opening = op == context.qualified("open.v1");
     let closing = op == context.qualified("close.v1");
     if let Some(conduit) = named.filter(|_| opening || closing) {
-        // ACC-024: only root's own act can close its ordinary Conduits;
-        // first-start declarations and FLEET-005 defaults stay protected.
-        if closing
-            && id(&conduit["consumer"]) == &root["id"]
-            && (instance["id"] != root["id"]
-                || request.serving.is_some()
-                || conduit["provenance"]["cause"] == "default"
-                || conduit["provenance"]["cause"] == "first-start"
-                || (["management", "access", "system"]
-                    .iter()
-                    .any(|name| conduit["local_name"] == *name)
-                    && ["root-management", "root-access", "root-pool"]
-                        .iter()
-                        .any(|name| conduit["from"] == context.qualified(name))))
-        {
-            return Ok(Verdict::reason("refused", "ACC-024"));
-        }
-        if opening {
-            // ACC-054 / SEC-008: an onward request is never root's own act.
-            if id(&conduit["consumer"]) == &root["id"]
-                && (instance["id"] != root["id"] || request.serving.is_some())
-            {
-                return Ok(Verdict::reason("refused", "ACC-054"));
-            }
-            for operation in values(conduit, "operations").filter_map(Value::as_str) {
-                if operation == context.qualified("get-secret.v1")
-                    && (instance["id"] != root["id"]
-                        || request.serving.is_some()
-                        || view
-                            .object(&conduit["consumer"])?
-                            .is_none_or(|c| c["kind"] != "Resource" && c["kind"] != "Agent"))
-                {
-                    return Ok(Verdict::reason("refused", "SEC-008"));
-                }
-                if context
-                    .core_environment
-                    .scopes
-                    .values()
-                    .flat_map(|s| s.contracts.values())
-                    .any(|d| {
-                        d["spec"]["reservedToRoot"] == true
-                            && operation
-                                == context.qualified(d["metadata"]["name"].as_str().unwrap_or(""))
-                    })
-                    && id(&conduit["consumer"]) != &root["id"]
-                {
-                    return Ok(Verdict::reason("refused", "ACC-032"));
-                }
-            }
-        }
         let access_target = id(&conduit["target"]) == &view.management("access")?["id"];
         let old = bound(path, context);
         let new = bound(conduit, context);
@@ -934,18 +880,83 @@ fn evaluate_path(
             });
         }
     }
-    let (publication, _) = schemas::publish(
-        view,
-        instance["id"].as_str().ok_or("missing instance ID")?,
-        path["id"].as_str().ok_or("missing Conduit ID")?,
-        op,
-        context,
-    )?;
+    if registration {
+        // ACC-054 / SEC-008 / OPS-023: decide authority before validating any document.
+        // An onward request, including one whose sender is root, is not root's own act.
+        if (instance["id"] != root["id"] || request.serving.is_some())
+            && values(&request.arguments, "documents")
+                .any(|doc| crate::registration::root_consumed(state, doc, root))
+        {
+            return Ok(Verdict::reason("refused", "ACC-054"));
+        }
+    }
+    // LIF-034 also protects the container named implicitly by a cascade.
+    if crate::cascade::handles(op, context) && target["first_start"] == true {
+        return Ok(Verdict::reason("refused", "LIF-034"));
+    }
+    if named.is_some_and(|o| {
+        o["first_start"] == true
+            && (["retire.v1", "unregister.v1"]
+                .iter()
+                .any(|name| op == context.qualified(name))
+                || op == context.qualified("declare-lost.v1") && o["name"] == "local")
+    }) {
+        return Ok(Verdict::reason("refused", "LIF-034"));
+    }
+    if let Some(conduit) = named.filter(|_| opening || closing) {
+        // ACC-024: only root's own act can close its ordinary Conduits;
+        // first-start declarations and FLEET-005 defaults stay protected.
+        if closing
+            && id(&conduit["consumer"]) == &root["id"]
+            && (instance["id"] != root["id"]
+                || request.serving.is_some()
+                || conduit["provenance"]["cause"] == "default"
+                || conduit["provenance"]["cause"] == "first-start"
+                || (["management", "access", "system"]
+                    .iter()
+                    .any(|name| conduit["local_name"] == *name)
+                    && ["root-management", "root-access", "root-pool"]
+                        .iter()
+                        .any(|name| conduit["from"] == context.qualified(name))))
+        {
+            return Ok(Verdict::reason("refused", "ACC-024"));
+        }
+        if opening {
+            // ACC-054 / SEC-008: an onward request is never root's own act.
+            if id(&conduit["consumer"]) == &root["id"]
+                && (instance["id"] != root["id"] || request.serving.is_some())
+            {
+                return Ok(Verdict::reason("refused", "ACC-054"));
+            }
+            for operation in values(conduit, "operations").filter_map(Value::as_str) {
+                if operation == context.qualified("get-secret.v1")
+                    && (instance["id"] != root["id"]
+                        || request.serving.is_some()
+                        || view
+                            .object(&conduit["consumer"])?
+                            .is_none_or(|c| c["kind"] != "Resource" && c["kind"] != "Agent"))
+                {
+                    return Ok(Verdict::reason("refused", "SEC-008"));
+                }
+                if context
+                    .core_environment
+                    .scopes
+                    .values()
+                    .flat_map(|s| s.contracts.values())
+                    .any(|d| {
+                        d["spec"]["reservedToRoot"] == true
+                            && operation
+                                == context.qualified(d["metadata"]["name"].as_str().unwrap_or(""))
+                    })
+                    && id(&conduit["consumer"]) != &root["id"]
+                {
+                    return Ok(Verdict::reason("refused", "ACC-032"));
+                }
+            }
+        }
+    }
     if publication["reason"] == "invalid" {
         return Ok(Verdict::reason("invalid", "TPL-013"));
-    }
-    if publication["tool"].is_null() {
-        return Ok(Verdict::reason("refused", "ACC-001"));
     }
     let schema = contract["spec"]
         .get("inputSchema")
@@ -1076,9 +1087,23 @@ pub(crate) fn decide(
             if let Some(restriction) = &verdict.restriction {
                 reply["restriction"] = restriction.clone();
             }
-            if reason == "invalid" {
-                reply["diagnostics"] = json!([{"ruleId":verdict.rules[0],"level":"error","message":{"text":"The request is invalid."}}]);
-            }
+            let explanation = if reason == "refused" {
+                let mut route = crate::explain::access_route(&t.state, request, context);
+                // An operation that selection found is exact: keep it over the spelling's.
+                if verdict.route["operation"].is_string() {
+                    route["operation"] = verdict.route["operation"].clone();
+                }
+                route
+            } else {
+                json!({"tool":request.tool,"operation":request.tool})
+            };
+            reply["diagnostics"] = json!([crate::explain::diagnostic(
+                &t.state,
+                &explanation,
+                context,
+                reason,
+                verdict.rules[0]
+            )?]);
             reply
         }
         None => json!({"permitted":true,"request":verdict.route}),
@@ -1104,6 +1129,16 @@ pub(crate) fn decide(
     }
     if let Some(reason) = reason {
         data["reason"] = json!(reason);
+        data["ruleId"] = json!(verdict.rules[0]);
+        if reason == "refused" {
+            data["refusalTier"] = json!(crate::explain::tier(
+                &t.state,
+                established(&t.state, &request.identity)
+                    .ok()
+                    .and_then(|o| o["id"].as_str()),
+                context
+            ));
+        }
     }
     if let Some(restriction) = verdict.restriction {
         data["restriction"] = restriction;

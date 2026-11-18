@@ -16,6 +16,7 @@ pub mod archives;
 mod cascade;
 #[cfg(feature = "differential")]
 mod differential;
+pub mod explain;
 mod inventory;
 pub mod lifecycle;
 pub mod packages;
@@ -326,7 +327,11 @@ pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition
 pub fn step_owned(state: State, input: Input, context: &Context) -> Result<Transition> {
     #[cfg(feature = "differential")]
     let before = state.clone();
-    let transition = step_body(state, input, context)?;
+    let mut transition = step_body(state, input, context)?;
+    explain::first_text(&mut transition.reply, context);
+    for stored in &mut transition.request_replies {
+        explain::first_text(&mut stored.reply, context);
+    }
     #[cfg(feature = "differential")]
     differential::check(&before, &transition.state, context)?;
     Ok(transition)
@@ -593,7 +598,14 @@ fn step_body(state: State, input: Input, context: &Context) -> Result<Transition
             if !management_authority || !pool_authority {
                 transition.decisions.push(decision(
                     "refuse-unauthorized-registration",
-                    &["ACC-033", "OPS-023"],
+                    &[
+                        if management_authority {
+                            "ACC-033"
+                        } else {
+                            "ACC-001"
+                        },
+                        "OPS-023",
+                    ],
                     &[],
                     json!({"request":request}),
                     vec![],
@@ -604,9 +616,26 @@ fn step_body(state: State, input: Input, context: &Context) -> Result<Transition
                     &request,
                     None,
                     "refused",
+                    if management_authority {
+                        "ACC-033"
+                    } else {
+                        "ACC-001"
+                    },
                     context,
                 )?;
-                transition.reply = json!({"reason":"refused"});
+                let rule = if management_authority {
+                    "ACC-033"
+                } else {
+                    "ACC-001"
+                };
+                let diagnostic = explain::diagnostic(
+                    &transition.state,
+                    &explain::ids(&request, json!({"documents":documents})),
+                    context,
+                    "refused",
+                    rule,
+                )?;
+                transition.reply = json!({"reason":"refused","diagnostics":[diagnostic]});
                 return Ok(transition);
             }
             let protected = ["system", "node", "management", "access", "root"];
@@ -637,6 +666,7 @@ fn step_body(state: State, input: Input, context: &Context) -> Result<Transition
                 &request,
                 None,
                 "invalid",
+                "FST-006",
                 context,
             )?;
             transition.reply = json!({"reason":"invalid", "diagnostics":diagnostics});
@@ -646,9 +676,34 @@ fn step_body(state: State, input: Input, context: &Context) -> Result<Transition
             request,
             object,
         } => {
-            // Validate the supplied path. LIF-034 forbids these operations whether or
-            // not that path grants access, so its refusal also covers missing authority.
-            authorized_path(&transition.state, &request, context)?;
+            // ACC-056: missing permission decides before object protection.
+            if !authorized_path(&transition.state, &request, context)? {
+                transition.decisions.push(decision(
+                    "refuse-unauthorized-request",
+                    &["ACC-001", "OPS-023"],
+                    &[],
+                    json!({"request":request}),
+                    vec![],
+                ));
+                end_request(
+                    &mut transition,
+                    &evidence,
+                    &request,
+                    None,
+                    "refused",
+                    "ACC-001",
+                    context,
+                )?;
+                let diagnostic = explain::diagnostic(
+                    &transition.state,
+                    &explain::ids(&request, json!({"object":object})),
+                    context,
+                    "refused",
+                    "ACC-001",
+                )?;
+                transition.reply = json!({"reason":"refused","diagnostics":[diagnostic]});
+                return Ok(transition);
+            }
             let named = transition
                 .state
                 .objects
@@ -678,9 +733,17 @@ fn step_body(state: State, input: Input, context: &Context) -> Result<Transition
                 &request,
                 Some(&object),
                 "refused",
+                "LIF-034",
                 context,
             )?;
-            transition.reply = json!({"reason":"refused"});
+            let diagnostic = explain::diagnostic(
+                &transition.state,
+                &explain::ids(&request, json!({"object":object})),
+                context,
+                "refused",
+                "LIF-034",
+            )?;
+            transition.reply = json!({"reason":"refused","diagnostics":[diagnostic]});
         }
     }
     Ok(transition)
@@ -903,8 +966,10 @@ fn end_request(
     request: &Request,
     object: Option<&str>,
     reason: &str,
+    rule: &str,
     context: &Context,
 ) -> Result<()> {
+    let refusal_tier = explain::tier(&t.state, Some(&request.sender), context);
     let mut allocation = Allocation {
         evidence,
         cursor: 0,
@@ -912,7 +977,10 @@ fn end_request(
     for event in ["access-decision", "request-ended"] {
         let mut data = json!({"caller":request.caller,
             "consumer":request.sender, "conduit":request.conduit, "target":request.target,
-            "operation":request.operation, "reason":reason, "dispatched":false});
+            "operation":request.operation, "reason":reason, "ruleId":rule, "dispatched":false});
+        if reason == "refused" {
+            data["refusalTier"] = json!(refusal_tier);
+        }
         if let Some(object) = object {
             data["object"] = json!(object);
         }

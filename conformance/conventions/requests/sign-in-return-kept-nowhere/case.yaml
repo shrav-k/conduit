@@ -1473,8 +1473,7 @@
           "isError": true,
           "content": [
             {
-              "type": "text",
-              "text": "invalid"
+              "type": "text"
             }
           ],
           "structuredContent": {

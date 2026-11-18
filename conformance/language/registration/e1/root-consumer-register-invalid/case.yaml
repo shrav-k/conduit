@@ -131,9 +131,6 @@
             "source": "urn:conduit:first-build",
             "specversion": "1.0"
           }
-        ],
-        "absent": [
-          "/reply/diagnostics"
         ]
       }
     },
@@ -238,9 +235,6 @@
             "source": "urn:conduit:first-build",
             "specversion": "1.0"
           }
-        ],
-        "absent": [
-          "/reply/diagnostics"
         ]
       }
     },
@@ -345,9 +339,6 @@
             "source": "urn:conduit:first-build",
             "specversion": "1.0"
           }
-        ],
-        "absent": [
-          "/reply/diagnostics"
         ]
       }
     },
@@ -368,10 +359,7 @@
           "ACC-054",
           "OPS-023"
         ],
-        "stateUnchanged": true,
-        "absent": [
-          "/reply/structuredContent"
-        ]
+        "stateUnchanged": true
       }
     },
     {

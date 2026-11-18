@@ -244,7 +244,111 @@ pub(super) fn check(
             }
         }
     }
-    projection(actual, &Value::Object(fields), "")
-        .map_err(|e| format!("step {}: {e}; reply: {}", index + 1, actual["reply"]))?;
+    let expected = Value::Object(fields);
+    if raw_step["input"]["kind"] == "invoke"
+        && raw_step["input"]["request"]["tool"]
+            .as_str()
+            .is_some_and(|t| t.ends_with(".list.v1"))
+    {
+        let mut comparable = actual.clone();
+        list_sets(&mut comparable, &expected);
+        projection(&comparable, &expected, "")
+    } else {
+        projection(actual, &expected, "")
+    }
+    .map_err(|e| format!("step {}: {e}; reply: {}", index + 1, actual["reply"]))?;
     Ok(())
+}
+
+/// OPS-036 states no list ordering. Match projections by augmenting paths, so an early
+/// broad expected item cannot consume the only match of a later specific item.
+fn list_sets(actual: &mut Value, expected: &Value) {
+    let Some(expected) = expected
+        .pointer("/reply/structuredContent")
+        .and_then(Value::as_object)
+    else {
+        return;
+    };
+    for (key, expected) in expected {
+        let Some(expected) = expected.as_array() else {
+            continue;
+        };
+        let Some(actual) = actual["reply"]["structuredContent"][key].as_array_mut() else {
+            continue;
+        };
+        if expected.len() != actual.len() {
+            continue;
+        }
+        let edges: Vec<Vec<usize>> = expected
+            .iter()
+            .map(|item| {
+                actual
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(i, a)| projection(a, item, "").is_ok().then_some(i))
+                    .collect()
+            })
+            .collect();
+        fn augment(
+            e: usize,
+            edges: &[Vec<usize>],
+            matched: &mut [Option<usize>],
+            seen: &mut [bool],
+        ) -> bool {
+            for &a in &edges[e] {
+                if seen[a] {
+                    continue;
+                }
+                seen[a] = true;
+                if matched[a].is_none_or(|old| augment(old, edges, matched, seen)) {
+                    matched[a] = Some(e);
+                    return true;
+                }
+            }
+            false
+        }
+        let mut matched = vec![None; actual.len()];
+        if (0..expected.len())
+            .all(|e| augment(e, &edges, &mut matched, &mut vec![false; actual.len()]))
+        {
+            let mut ordered = vec![Value::Null; actual.len()];
+            for (a, e) in matched.into_iter().enumerate() {
+                ordered[e.unwrap()] = actual[a].clone();
+            }
+            *actual = ordered;
+        }
+    }
+}
+
+#[cfg(test)]
+mod list_set_tests {
+    use super::*;
+    #[test]
+    fn reversed_list_items_pass_and_missing_item_fails() {
+        let expected =
+            json!({"reply":{"structuredContent":{"objects":[{"name":"b"},{"name":"a"}]}}});
+        let mut actual = json!({"reply":{"structuredContent":{"objects":[{"name":"a","id":"1"},{"name":"b","id":"2"}]}}});
+        list_sets(&mut actual, &expected);
+        projection(&actual, &expected, "").unwrap();
+        actual["reply"]["structuredContent"]["objects"]
+            .as_array_mut()
+            .unwrap()
+            .pop();
+        list_sets(&mut actual, &expected);
+        assert!(
+            projection(&actual, &expected, "")
+                .unwrap_err()
+                .contains("expected 2 items, found 1")
+        );
+    }
+    #[test]
+    fn augmenting_paths_preserve_specific_matches() {
+        let expected = json!({"reply":{"structuredContent":{"objects":[{"kind":"Pool"},{"kind":"Pool","name":"only"}]}}});
+        let mut actual = json!({"reply":{"structuredContent":{"objects":[{"kind":"Pool","name":"only"},{"kind":"Pool","name":"other"}]}}});
+        list_sets(&mut actual, &expected);
+        projection(&actual, &expected, "").unwrap();
+        actual["reply"]["structuredContent"]["objects"][1]["name"] = json!("wrong");
+        list_sets(&mut actual, &expected);
+        assert!(projection(&actual, &expected, "").is_err());
+    }
 }

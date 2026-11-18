@@ -645,11 +645,19 @@ fn advance(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) ->
                             .or_else(|| {
                                 t.reply["_meta"]
                                     .get(format!("{}reason", c.meta_prefix))
+                                    .or_else(|| {
+                                        t.reply["error"]["data"]
+                                            .get(format!("{}reason", c.meta_prefix))
+                                    })
                                     .and_then(Value::as_str)
                             })
                             .unwrap_or("refused")
                             .into();
-                        part_diagnostics = t.reply["structuredContent"]["diagnostics"].clone();
+                        part_diagnostics = t.reply["structuredContent"]
+                            .get("diagnostics")
+                            .or_else(|| t.reply["error"]["data"].get("diagnostics"))
+                            .cloned()
+                            .unwrap_or(Value::Null);
                         if t.reply["pending"] == true {
                             t.state.invocations[i]["setup"]["phase"] = json!("entry");
                             t.state.invocations[i]["setup"]["waiting"] =
@@ -659,13 +667,18 @@ fn advance(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) ->
                         }
                     } else {
                         outcome = "refused".into();
+                        let route = json!({"consumer":v["caller"],"operation":op,"arguments":args});
+                        let tier = crate::explain::tier(&t.state, v["caller"].as_str(), c);
+                        part_diagnostics = json!([crate::explain::diagnostic(
+                            &t.state, &route, c, "refused", "ACC-001"
+                        )?]);
                         for event in ["access-decision", "request-ended"] {
                             requests::record(
                                 t,
                                 a,
                                 c,
                                 event,
-                                json!({"target":target,"caller":v["caller"],"consumer":v["sender"],"operation":op,"serving":v["id"],"reason":"refused","dispatched":false}),
+                                json!({"target":target,"caller":v["caller"],"consumer":v["sender"],"operation":op,"serving":v["id"],"reason":"refused","ruleId":"ACC-001","refusalTier":tier,"dispatched":false}),
                             )?;
                         }
                     }
@@ -1276,5 +1289,73 @@ mod observation_tests {
             "2026-11-10T00:00:02Z"
         );
         assert_eq!(object["state"], "ready");
+    }
+}
+
+#[cfg(test)]
+mod explanation_tests {
+    use super::*;
+    use crate::explain::tests::{evidence, fixture, transition};
+
+    fn refused_part(child_request: bool) -> Transition {
+        let (mut state, mut c) = fixture();
+        state.objects[0]["conduits"] = json!({"child":{}});
+        state.objects[0]["slots"] = json!({"conduits":{"child":{"id":"child"}}});
+        state.objects.push(json!({"kind":"Conduit","id":"child","name":"child","consumer":"root","target":"management","state":"registered","open":false,"operations":[],"nested":{"parent":"root","slot":"conduits","name":"child"}}));
+        if child_request {
+            // A candidate request exists, but the target's operation contract cannot resolve.
+            state.objects[4]["schema_environment"]["scopes"]["core"]["contracts"]
+                .as_object_mut()
+                .unwrap()
+                .remove("open.v1");
+            state.objects[4].as_object_mut().unwrap().remove("type");
+        } else {
+            state.objects.retain(|o| o["id"] != "root-access");
+        }
+        // Supply the subject invocation directly to exercise each setup-part branch.
+        state.invocations.push(json!({"id":"setup","state":"in-progress","target":"management","object":"root","caller":"root","sender":"root","conduit":"root-management","operation":c.qualified("set-up.v1"),"arguments":{"instance":"root"},"attempt":1,"contract":{"spec":{}},"setup":{"phase":"declarations","cursor":0,"parts":[]}}));
+        c.templates.clear();
+        let mut t = transition(state);
+        let e = evidence();
+        let mut a = Allocation {
+            evidence: &e,
+            cursor: 0,
+        };
+        advance(&mut t, &mut a, &c, 0).unwrap();
+        crate::explain::first_text(&mut t.reply, &c);
+        let part = &t.state.invocations[0]["setup"]["parts"][0];
+        assert_eq!(part["outcome"], "refused");
+        assert_eq!(part["diagnostics"][0]["ruleId"], "ACC-001");
+        assert_eq!(t.state.objects[0]["status"]["setup"]["parts"][0], *part);
+        assert!(t.reply.get("structuredContent").is_none());
+        assert_eq!(t.reply["content"][0]["text"], "failed");
+        t
+    }
+    #[test]
+    fn setup_part_without_request_has_operation_but_no_tool_and_records_rule() {
+        let t = refused_part(false);
+        let r =
+            &t.state.invocations[0]["setup"]["parts"][0]["diagnostics"][0]["properties"]["refusal"];
+        assert_eq!(r["operation"], "test.core#open.v1");
+        assert!(r["named"].get("tool").is_none());
+        assert_eq!(r["tier"], 2);
+        let records: Vec<_> = t
+            .records
+            .iter()
+            .filter(|r| r["data"]["reason"] == "refused")
+            .collect();
+        assert_eq!(records.len(), 2);
+        for r in records {
+            assert_eq!(r["data"]["ruleId"], "ACC-001");
+            assert_eq!(r["data"]["refusalTier"], 2);
+        }
+    }
+    #[test]
+    fn setup_part_copies_child_protocol_error_diagnostics_and_reason() {
+        let t = refused_part(true);
+        let r =
+            &t.state.invocations[0]["setup"]["parts"][0]["diagnostics"][0]["properties"]["refusal"];
+        assert_eq!(r["named"]["tool"], "access.open.v1");
+        assert_eq!(r["named"]["conduit"], "access");
     }
 }

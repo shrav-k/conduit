@@ -74,7 +74,7 @@ all eight instances through root's three declared Conduits (OPS-036).
 ## Assertions
 
 Maps are required-field projections: every specified member must exist and match. An empty
-map asserts an empty map. Arrays have exact cardinality and order; in particular an expected
+map asserts an empty map. Arrays have exact cardinality and order, except the arrays of a `list.v1` result, which are compared without regard to order, since OPS-036 states none; in particular an expected
 object array lists every object, including both declared Conduits and their complete operation
 lists. Object order in this runner follows the supplied first-start allocations; it is not an
 inspection ordering promise. Records follow the one source's order. Projection never permits
@@ -85,7 +85,11 @@ An empty intent list rejects every dispatch. Every emitted record is validated a
 `record.v1`; the fixtures additionally assert IDs, supplied times, causes and applicable causal
 fields. `stateUnchanged` compares object definitions and lifecycle, allowing required records
 and allocation bookkeeping to grow. `absent` asserts that JSON Pointers do not exist, for
-example `/reply/outcome` on an undispatched request.
+example `/reply/outcome` on an undispatched request. Every request step is checked for an
+error diagnostic naming its deciding promise whenever it reports a reason (IFC-050), and
+exactly one refusal diagnostic in the form `refusal.v1` when refused (ACC-056). An error tool
+result's first text block states its reason or outcome and its final error diagnostic messages
+(IFC-025); the runner checks that block before projections.
 
 Loader diagnostics compare exact arrays of required-field projections. `diagnostic_facts`
 checks message facts and schema keyword attribution by following the evaluation pointer from a pinned root Schema contract
@@ -100,6 +104,7 @@ records per instance: registration and registered-to-ready, with `cause: first-s
 invented caller or invocation. LIF-034 and protected-template requests emit an access decision
 and an undispatched request end. This vocabulary and the additional event data are runner
 conventions, as decision 7 allows; the required fields remain REC-001 and REC-002's.
+A reason's records hold `ruleId`, and a refusal's `refusalTier`, without tier-2 details.
 Lifecycle records retain the named object in `data.object` separately from `data.target`,
 which is the actual Conduit target REC-002 requires.
 
@@ -272,6 +277,45 @@ followed by the failure lines. A listed case that passes gives this failure line
 
 A listed case keeps its coverage-index entry. Its tags say what the case tests, not that the
 build passes it.
+
+## Portable cases
+
+[internal-cases.yaml](internal-cases.yaml) freezes the existing case IDs at order 046a.
+Those cases stay as they are (D36); no later order adds an ID to its `cases` list. Every
+other case is portable: it starts with `{"recipe":"empty"}`, sends client or provider inputs
+and asserts only what a client can observe. The runner validates the control file before
+running any case and enforces these rules before running portable steps.
+
+Allowed inputs are `first-start`, `install-archive`, `resolve-project`, `register-project`,
+`registration-orders`, `submit-files`, `invoke`, `complete`, `setup-report`, `cancel`,
+`restore-state`, `list-tools`, `export-records`, `load` and `read`. Excluded inputs are
+`access-fixture`, `request-fixture`, `lifecycle-fixture`, `request`, `expire-outputs`,
+`schema-case`, `schema-admission`, `schema-evaluation` and `validate-values`. A future input
+kind stays excluded until an order adds it to the allowed list.
+
+A portable expectation holds no `object_facts`, `invocation_facts`, `object_count`,
+`absent_objects`, `tombstone_count`, `tombstone_facts`, `tombstones`, `absent_tombstones`,
+`objectIds`, `inventory_facts` or `stored_record_facts`. `state`, `stateUnchanged` and
+`required_promises` are allowed only on the steps for which the schema requires them:
+`first-start`, `submit-files`, `register-project`, `registration-orders`, `install-archive`
+and `resolve-project`. These steps build the case's state and keep only what the schema asks.
+An `absent` pointer begins `/reply`, `/records` or `/external_intents`; a `capture` pointer
+begins `/reply` or `/records`. Whenever an actual reply ends with a reason, the expected
+reply states that reason at the same place and its diagnostic array's first item states
+`ruleId`.
+
+D36 permits exceptions for recovery, crash and restore states that requests cannot reach.
+An item in `exceptions`, sorted by `case` in byte order without duplicates, has this form:
+
+```json
+{"case":"a-case-id","initial":true,"steps":[2],"state":"recovery","why":"Requests cannot reach this recovery state."}
+```
+
+`case` names an existing portable case, `initial` permits a nonempty initial recipe when
+true, `steps` lists ascending unique step numbers from 1 that may use `lifecycle-fixture`
+or `request-fixture`, `state` is `recovery`, `crash` or `restore`, and `why` is a nonempty
+sentence explaining why requests cannot reach it. An exception lifts only those initial
+and fixture rules; every other portable rule still holds. Order 046a adds no exception.
 
 ## Reviewing vector changes
 
@@ -479,7 +523,7 @@ supplied object with `append`. An optional `after` supplies a second observation
 then compares the two private tool lists and names the consumers whose subscribed streams the
 shell must notify. The runner checks that each call preserves its actual supplied objects,
 invocations, installed packages and start state, produces no intent or invocation record, and
-that refused/unavailable replies contain only a reason and an optional restriction. Only its
+that refused/unavailable replies contain only a reason and an optional restriction and the deciding diagnostic. Only its
 records and consumed record IDs continue into the outer sequence.
 
 The public core inputs take the established identity (`instance`, `none` or `unreadable`),

@@ -1542,8 +1542,7 @@
           "isError": true,
           "content": [
             {
-              "type": "text",
-              "text": "conflict"
+              "type": "text"
             }
           ],
           "structuredContent": {
@@ -1819,8 +1818,7 @@
           "isError": true,
           "content": [
             {
-              "type": "text",
-              "text": "conflict"
+              "type": "text"
             }
           ],
           "structuredContent": {
@@ -1882,8 +1880,7 @@
           "isError": true,
           "content": [
             {
-              "type": "text",
-              "text": "conflict"
+              "type": "text"
             }
           ],
           "structuredContent": {

@@ -9,9 +9,9 @@ have left the tree; their results, decisions and observations are in
 ## Orders still in the directory
 
 One row for each order file in this directory, in file-name order. Orders 048a5d to 048a5h, 048a7,
-048a8 and 050i to 050o, which the coordinator's cuts of 048a-2, 048a-5, 048a-6 and 050 plan
-(order 117), are not yet written; they have rows without links where their names sort, each saying
-what it comes after.
+048a8, 050j, 050k and 050m to 050o, which the coordinator's cuts of 048a-2, 048a-5, 048a-6 and 050
+plan (order 117), are not yet written; they have rows without links where their names sort, each
+saying what it comes after.
 
 | Order | What |
 | --- | --- |
@@ -60,10 +60,10 @@ what it comes after.
 | [050f](050f-agents-v2-inputs.md) | the .v2 inputs: account, toolsDirectory, and the description sentences (i) and (ii), with no apiKey, and the wrappers' `.env` refusal reworded without its apiKey reason (ruling 83); after 050e, and 048a-1 and order 202's work merged (the coordinator's split, open to the owner's strike) |
 | [050g](050g-logout-revocation-read.md) | desk reads: what each client's logout revokes, and the scope of each; after nothing (the coordinator's split, open to the owner's strike) |
 | [050h](050h-agents-v2-retire-hook.md) | the retire hook: each .v2 Agent signs its client out of its own home and empties the home at retirement (D53), with Q1 (iv)'s description sentence; after 050f, and 050g merged; its tip is where the two lanes split (the coordinator's split, open to the owner's strike) |
-| 050i | claude-code.v2's account and sign-out hooks; after 050h, and 048a-4 written (planned; the coordinator's split, open to the owner's strike) |
+| [050i](050i-claude-account-sign-out-hooks.md) | claude-code.v2's account and sign-out hooks: the `.v2` item serves `account`, the account that `claude auth status` names in the Agent's own home, and `sign-out`, the client's own logout there with the home kept, neither yet required by the Type; the first order of the Claude lane, after 050h, and 048a-4 written (the coordinator's split, open to the owner's strike) |
 | 050j | claude-code.v2 states signIn, with its redirect login and sign-in hook; after 050i, and 048a-1 merged (planned; the coordinator's split, open to the owner's strike) |
 | 050k | claude-code.v2's code-page login, chosen by signInLogin; after 050j (planned; the coordinator's split, open to the owner's strike) |
-| 050l | codex.v2's account hook asks Codex itself through account/read, and its sign-out hook; after 050h, the coordinator's reading that order 197 confirms the route (if not, the owner's decision first), and 048a-4 written (planned; the coordinator's split, open to the owner's strike) |
+| [050l](050l-codex-account-hook.md) | codex.v2's account hook asks Codex itself through account/read, with refreshToken false and a deadline, never opening the login file and failing closed, and its sign-out hook; the first order of the Codex lane, after 050h, the coordinator's reading that order 197 confirms the route, and 048a-4 written (the coordinator's split, open to the owner's strike) |
 | 050m | codex.v2 states signIn: its browser login, its device login refused, and its keyed sign-in hook; after 050l, and 048a-1 merged (planned; the coordinator's split, open to the owner's strike) |
 | 050n | the Agent packages 0.2.0, joined and merged, the last 050 order; after 048b-join merged, the live check's results merged, 050b merged, and 050k and, on a pass, 050m (planned; the coordinator's split, open to the owner's strike) |
 | 050o | the managed connection for a Claude sign-in, built in the Interface; after 051b-3 merged and 050b merged (planned; the coordinator's split, open to the owner's strike) |
@@ -178,6 +178,8 @@ what it comes after.
 | [201](201-mc9a-pending-actions-sign-in-registered.md) | MC9a's pre-registration, with `conflict` for a second `sign-in.v1` of one instance; merges before 048a-2 is dispatched (the coordinator's decision, open to the owner's strike) |
 | [202](202-agents-v2-fixture-subscription-only.md) | the 0.2.0 fixture's `.v2` Types subscription-only under ruling 83: no `apiKey` and no `oneOf`, `account` required, a string or null, and the case `agents-v2-defaults` with them; after ruling 83's record merged, and merges before 050f is dispatched (ruling 83's What follows; the coordinator's order, open to the owner's strike) |
 | [203](203-new-conversation.md) | a new conversation without restarting the engine: `new-conversation.v1` in each Agent package, released as 0.2.1 (the full review's order 62, numbered 203 since 062 is a merged order's number); after 050n merged, or from its verified branch by a dispatch note (the coordinator's placement, open to the owner's strike) |
+| [204](204-mc9a-model-run.md) | MC9a's model built and run on the Linux node as order 201 registered it, with no new registration since the texts it reads are as registered, and its results recorded beside the registration (the full review's order 24; the coordinator's placement and bounds, open to the owner's strike) |
+| [205](205-gateway-probe.md) | the gateway probe pre-registered: experiment 032 and its register row A85, with A84's row as the full review assigned it; the first of three parts, the harness in Rust (205b) and the run on the Linux node (205c) following, each written after the one before it merges (the coordinator's split, open to the owner's strike) |
 | [206](206-sign-in-login-path-and-page.md) | a redirect login's `path` refuses `?` and `#`, and a page or service login's `page` refuses user information, in `sign-in-login.v1` and CTR-013, with three examples and three steps of `contracts-sign-in-logins` (the two schema points order 048a-1's Record left open); CTR-013's comparisons across Types follow in three later orders it names (the coordinator's, open to the owner's strike) |
 
 ## Shared and staged files

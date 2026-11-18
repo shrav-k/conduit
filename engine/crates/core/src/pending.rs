@@ -1,5 +1,5 @@
-//! Pending actions computed from invocation history, without storing an action.
-use crate::{Context, Result, State, access, inventory};
+//! Setup actions computed from invocation history and retained once answered.
+use crate::{Allocation, Context, Result, State, Transition, access, inventory, requests};
 use chrono::{DateTime, SecondsFormat, TimeDelta};
 use serde_json::{Value, json};
 
@@ -21,11 +21,7 @@ pub(crate) fn setup_action(state: &State, object: &Value, setup_operation: &str)
     let (time, outcome) = if let Some(ended) = setup.get("ended") {
         (&ended["time"], &ended["outcome"])
     } else {
-        let ended = state.records.iter().rev().find(|r| {
-            r["type"] == "invocation-ended"
-                && r["data"]["invocation"] == id
-                && r["data"]["reconciled"] != true
-        })?;
+        let ended = legacy_ending(&state.records, &setup["id"])?;
         (&ended["time"], &ended["data"]["outcome"])
     };
     if !matches!(outcome.as_str(), Some("failed" | "unknown")) {
@@ -107,6 +103,14 @@ pub(crate) fn setup_action(state: &State, object: &Value, setup_operation: &str)
     }))
 }
 
+fn legacy_ending<'a>(records: &'a [Value], id: &Value) -> Option<&'a Value> {
+    records.iter().rev().find(|r| {
+        r["type"] == "invocation-ended"
+            && r["data"]["invocation"] == *id
+            && r["data"]["reconciled"] != true
+    })
+}
+
 pub(crate) fn is_raised_at(action: &Value, time: &str) -> bool {
     let Some(expiry) = action["expiry"].as_str() else {
         return false;
@@ -114,6 +118,111 @@ pub(crate) fn is_raised_at(action: &Value, time: &str) -> bool {
     matches!(
         (DateTime::parse_from_rfc3339(time), DateTime::parse_from_rfc3339(expiry)),
         (Ok(time), Ok(expiry)) if time < expiry
+    )
+}
+
+pub(crate) fn action_named(
+    state: &State,
+    id: &str,
+    time: Option<&str>,
+    context: &Context,
+) -> Option<Value> {
+    let stored = state.pending_actions.get(id);
+    let operation = context.qualified("set-up.v1");
+    if let Some(setup) = state
+        .invocations
+        .iter()
+        .find(|v| v["id"] == id && v["operation"] == operation)
+        && let Some(object) = access::object_by_id(state, &setup["object"])
+        && let Some(mut action) = setup_action(state, object, &operation)
+        && action["id"] == id
+        && stored.is_none_or(|entry| entry["dispatched"] != setup["dispatched"])
+    {
+        if time.is_some_and(|time| !is_raised_at(&action, time)) {
+            action["answer"] = expired_answer(&action);
+        }
+        return Some(action);
+    }
+    stored.map(|entry| entry["action"].clone())
+}
+
+const ACCEPTED_ANSWERS: &[(&str, &str)] = &[("setup", "dismissed")];
+
+pub(crate) fn accepts_answer(kind: &Value, answer: &Value) -> bool {
+    ACCEPTED_ANSWERS
+        .iter()
+        .any(|(k, a)| kind == *k && answer == *a)
+}
+
+fn expired_answer(action: &Value) -> Value {
+    json!({"value":"expired","at":action["expiry"]})
+}
+
+pub(crate) fn invocation_answer(value: &str, invocation: &Value, time: &str) -> Value {
+    json!({"value":value,"actor":invocation["caller"],"invocation":invocation["id"],"at":time})
+}
+
+fn setup_dispatch<'a>(state: &'a State, id: &str) -> &'a Value {
+    state
+        .invocations
+        .iter()
+        .find(|v| v["id"] == id)
+        .map_or(&Value::Null, |v| &v["dispatched"])
+}
+
+pub(crate) fn store_answer(state: &mut State, mut action: Value, answer: Value) -> Value {
+    let id = action["id"]
+        .as_str()
+        .expect("pending action has an ID")
+        .to_owned();
+    action["answer"] = answer;
+    let entry = json!({"action":action,"dispatched":setup_dispatch(state, &id)});
+    state.pending_actions.insert(id, entry);
+    action
+}
+
+pub(crate) fn answer_before_change(
+    state: &mut State,
+    object: &Value,
+    time: &str,
+    value: &str,
+    invocation: &Value,
+    context: &Context,
+) -> Option<Value> {
+    let action = setup_action(state, object, &context.qualified("set-up.v1"))?;
+    let id = action["id"].as_str()?;
+    if state
+        .pending_actions
+        .get(id)
+        .is_some_and(|entry| &entry["dispatched"] == setup_dispatch(state, id))
+    {
+        return None;
+    }
+    if !is_raised_at(&action, time) {
+        let answer = expired_answer(&action);
+        store_answer(state, action, answer);
+        return None;
+    }
+    Some(store_answer(
+        state,
+        action,
+        invocation_answer(value, invocation, time),
+    ))
+}
+
+pub(crate) fn record_answer(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    action: &Value,
+) -> Result<()> {
+    requests::record(
+        t,
+        a,
+        c,
+        "pending-action-answered",
+        json!({"subject":action["subject"][0]["id"],"pendingAction":[action["id"]],
+            "answer":action,"invocation":action["answer"]["invocation"]}),
     )
 }
 
@@ -144,10 +253,44 @@ fn is_raised_for(
     time: &str,
     context: &Context,
 ) -> bool {
-    if !is_interface(holder) || !is_raised_at(action, time) {
-        return false;
+    is_raised_at(action, time)
+        && action.get("answer").is_none()
+        && action["id"]
+            .as_str()
+            .filter(|id| state.pending_actions.contains_key(*id))
+            .and_then(|id| action_named(state, id, Some(time), context))
+            .is_none_or(|action| action.get("answer").is_none())
+        && is_raised_at_holder(action, holder, state, context)
+}
+
+fn is_raised_at_holder(action: &Value, holder: &Value, state: &State, context: &Context) -> bool {
+    is_interface(holder)
+        && (is_root(holder, state, context)
+            || scope_contains_subject(action, holder, state, context))
+}
+
+pub(crate) fn may_answer(
+    state: &State,
+    instance: &Value,
+    serving: Option<&str>,
+    id: &Value,
+    context: &Context,
+) -> bool {
+    action_for_answer(state, instance, serving, id, context).is_some()
+}
+
+pub(crate) fn action_for_answer(
+    state: &State,
+    instance: &Value,
+    serving: Option<&str>,
+    id: &Value,
+    context: &Context,
+) -> Option<Value> {
+    if serving.is_some() || !is_interface(instance) {
+        return None;
     }
-    is_root(holder, state, context) || scope_contains_subject(action, holder, state, context)
+    action_named(state, id.as_str()?, None, context)
+        .filter(|action| is_raised_at_holder(action, instance, state, context))
 }
 
 fn scope_contains_subject(
@@ -477,5 +620,222 @@ mod tests {
             (true, None)
         );
         assert_eq!(view(&state, &root, &conduit_notice), Some(conduit_notice));
+    }
+
+    #[test]
+    fn stored_answers_follow_their_ending() {
+        let (_, context) = crate::explain::tests::fixture();
+        let ended = "2026-11-09T12:30:00Z";
+        let first = "2026-11-09T12:30:01Z";
+        let answered = "2026-11-09T13:30:00Z";
+        let second_end = "2026-11-09T14:30:00Z";
+        let expiry = "2026-11-16T12:30:00Z";
+        let eight_days = "2026-11-17T12:30:00Z";
+        let nine_days = "2026-11-18T12:30:00Z";
+        let operation = context.qualified("set-up.v1");
+        let root = json!({"id":"r","kind":"Interface","from":context.qualified("root")});
+        let viewer = json!({"id":"v","kind":"Interface"});
+        let agent = json!({"id":"a1","name":"a1","kind":"Agent","owner":"f"});
+        let resource = json!({"id":"x","name":"x","kind":"Resource","owner":"p"});
+        let initial = State {
+            objects: vec![
+                root.clone(),
+                viewer.clone(),
+                agent.clone(),
+                resource.clone(),
+                json!({"id":"f","name":"f","kind":"Fleet"}),
+                json!({"id":"p","name":"p","kind":"Pool"}),
+                json!({"id":"management","kind":"Resource","from":context.qualified("management")}),
+                json!({"id":"c1","name":"c1","kind":"Conduit","consumer":"v","target":"f",
+                    "open":true,"state":"ready","operations":[context.qualified("inspect.v1")]}),
+            ],
+            invocations: vec![
+                json!({"id":"s1","operation":operation,"object":"a1","state":"failed",
+                "dispatched":1,"ended":{"time":ended,"outcome":"failed"}}),
+            ],
+            records: vec![json!({"type":"invocation-ended","time":ended,
+                "data":{"invocation":"s1","outcome":"failed"}})],
+            ..State::default()
+        };
+        let lookup = |state: &State, id, time| action_named(state, id, time, &context).unwrap();
+        let original = lookup(&initial, "s1", Some(first));
+        let expired = json!({"value":"expired","at":expiry});
+        let assert_answer = |state: &State, id, time, expected: &Value| {
+            assert_eq!(&lookup(state, id, Some(time))["answer"], expected);
+            let mut purged = state.clone();
+            purged.records.clear();
+            assert_eq!(&lookup(&purged, id, Some(time))["answer"], expected);
+        };
+        assert_eq!(original.get("answer"), None);
+        assert_answer(&initial, "s1", expiry, &expired);
+
+        let mut dismissed = initial.clone();
+        let dismissal = json!({"value":"dismissed","actor":"r","invocation":"d1","at":answered});
+        let stored = store_answer(&mut dismissed, original.clone(), dismissal.clone());
+        assert_eq!(
+            dismissed.pending_actions["s1"],
+            json!({"action":stored,"dispatched":1})
+        );
+        assert_answer(&dismissed, "s1", answered, &dismissal);
+        assert_answer(&dismissed, "s1", eight_days, &dismissal);
+        let raised = |state, holder, time| is_raised_for(&original, holder, state, time, &context);
+        assert_eq!(
+            [
+                raised(&dismissed, &root, answered),
+                raised(&dismissed, &viewer, answered)
+            ],
+            [false, false]
+        );
+
+        let allowed =
+            |state, holder, serving, id| may_answer(state, holder, serving, &json!(id), &context);
+        let mut expired_state = initial.clone();
+        let retry = json!({"id":"s2","caller":"r"});
+        assert_eq!(
+            answer_before_change(
+                &mut expired_state,
+                &agent,
+                eight_days,
+                "retried",
+                &retry,
+                &context
+            ),
+            None
+        );
+        for state in [&initial, &dismissed, &expired_state] {
+            assert_eq!(
+                [
+                    allowed(state, &root, None, "s1"),
+                    allowed(state, &viewer, None, "s1")
+                ],
+                [true, true]
+            );
+        }
+        let mut closed = dismissed.clone();
+        closed.objects.iter_mut().find(|o| o["id"] == "c1").unwrap()["open"] = json!(false);
+        assert_eq!(
+            [
+                allowed(&closed, &viewer, None, "s1"),
+                allowed(&initial, &agent, None, "s1"),
+                allowed(&initial, &root, Some("d1"), "s1"),
+                allowed(&initial, &root, None, "absent"),
+            ],
+            [false; 4]
+        );
+
+        let target = |state: &State, action| {
+            access::action_inspection_target(state, action, &context)
+                .unwrap()
+                .clone()
+        };
+        assert_eq!(target(&initial, &original), json!("f"));
+        let mut retired_owner = initial.clone();
+        retired_owner
+            .objects
+            .iter_mut()
+            .find(|o| o["id"] == "f")
+            .unwrap()["state"] = json!("retired");
+        assert_eq!(target(&retired_owner, &original), json!("management"));
+        let resource_action = json!({"subject":[inventory::object(&resource)]});
+        assert_eq!(target(&initial, &resource_action), json!("p"));
+        retired_owner.objects.retain(|o| o["id"] != "a1");
+        assert_eq!(target(&retired_owner, &original), json!("management"));
+
+        let mut retried = initial.clone();
+        let retry_answer = json!({"value":"retried","actor":"r","invocation":"s2","at":answered});
+        let action =
+            answer_before_change(&mut retried, &agent, answered, "retried", &retry, &context)
+                .unwrap();
+        assert_eq!(action["answer"], retry_answer);
+        assert_answer(&retried, "s1", answered, &retry_answer);
+        retried
+            .invocations
+            .push(json!({"id":"s2","operation":operation,"object":"a1",
+            "state":"failed","dispatched":2,"ended":{"time":second_end,"outcome":"failed"}}));
+        assert_eq!(lookup(&retried, "s2", Some(second_end)).get("answer"), None);
+        assert_answer(&retried, "s1", second_end, &retry_answer);
+
+        let mut retired = initial.clone();
+        let retirement = json!({"id":"t1","caller":"r"});
+        let retire_answer = json!({"value":"retired","actor":"r","invocation":"t1","at":answered});
+        let action = answer_before_change(
+            &mut retired,
+            &agent,
+            answered,
+            "retired",
+            &retirement,
+            &context,
+        )
+        .unwrap();
+        assert_eq!(action["answer"], retire_answer);
+        assert_eq!(
+            answer_before_change(
+                &mut dismissed,
+                &agent,
+                answered,
+                "retired",
+                &retirement,
+                &context
+            ),
+            None
+        );
+        for state in [&mut retired, &mut dismissed] {
+            state.objects.iter_mut().find(|o| o["id"] == "a1").unwrap()["state"] = json!("retired");
+        }
+        assert_answer(&retired, "s1", answered, &retire_answer);
+        assert_answer(&dismissed, "s1", answered, &dismissal);
+
+        let redispatch = |state: &mut State| {
+            state.invocations[0] = json!({"id":"s1","operation":operation,"object":"a1",
+                "state":"in-progress","dispatched":2,"caller":"r"});
+        };
+        let end_redispatch = |state: &mut State, time| {
+            state.invocations[0]["state"] = json!("failed");
+            state.invocations[0]["ended"] = json!({"time":time,"outcome":"failed"});
+            lookup(state, "s1", Some(time))
+        };
+        let mut redispatched = initial.clone();
+        store_answer(&mut redispatched, original.clone(), dismissal.clone());
+        let retry = json!({"id":"s1","caller":"r"});
+        assert_eq!(
+            answer_before_change(
+                &mut redispatched,
+                &agent,
+                eight_days,
+                "retried",
+                &retry,
+                &context
+            ),
+            None
+        );
+        redispatch(&mut redispatched);
+        assert_answer(&redispatched, "s1", eight_days, &dismissal);
+        let action = end_redispatch(&mut redispatched, eight_days);
+        assert_eq!(action.get("answer"), None);
+        assert_eq!(
+            (
+                &action["expiry"],
+                is_raised_for(
+                    &action,
+                    &root,
+                    &redispatched,
+                    "2026-11-17T12:30:01Z",
+                    &context
+                ),
+            ),
+            (&json!("2026-11-24T12:30:00Z"), true)
+        );
+
+        redispatch(&mut expired_state);
+        assert_answer(&expired_state, "s1", eight_days, &expired);
+        let action = end_redispatch(&mut expired_state, nine_days);
+        assert_eq!(action.get("answer"), None);
+        assert_eq!(action["expiry"], json!("2026-11-25T12:30:00Z"));
+
+        assert_eq!(
+            ["dismissed", "retried", "retired", "expired"]
+                .map(|value| accepts_answer(&json!("setup"), &json!(value))),
+            [true, false, false, false]
+        );
     }
 }

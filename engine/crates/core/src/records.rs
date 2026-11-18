@@ -12,6 +12,7 @@ pub(crate) fn handles(op: &str, c: &Context) -> bool {
         "purge.v1",
         "replace.v1",
         "register.v1",
+        "answer.v1",
     ]
     .iter()
     .any(|n| op == c.qualified(n))
@@ -34,6 +35,36 @@ pub(crate) fn preflight(
     a: &Allocation<'_>,
 ) -> Result<Option<PreflightRejection>> {
     let args = &route["arguments"];
+    if route["operation"] == c.qualified("answer.v1") {
+        let time = &a.evidence.time;
+        let id = args["action"].as_str().ok_or("answer action has no ID")?;
+        let action = pending::action_named(s, id, Some(time), c)
+            .ok_or("answer action absent after access")?;
+        let tool = route["tool"].as_str().ok_or("answer route has no tool")?;
+        let (reason, rule, text) = if !pending::accepts_answer(&action["kind"], &args["answer"]) {
+            (
+                "invalid",
+                "PND-009",
+                format!(
+                    "{tool} reports invalid under PND-009: answer.v1 answers a setup action only dismissed; a further set-up.v1 answers it retried, and retire.v1 or a cascade's retirement answers it retired."
+                ),
+            )
+        } else if let Some(value) = action["answer"]["value"].as_str() {
+            (
+                "conflict",
+                "PND-003",
+                format!(
+                    "{tool} reports conflict under PND-003: action {id} is already answered {value}; an answered or expired action takes no further answer."
+                ),
+            )
+        } else {
+            return Ok(None);
+        };
+        let mut rejection = PreflightRejection::new(reason, rule);
+        rejection.diagnostics =
+            Some(json!([{"ruleId":rule,"level":"error","message":{"text":text}}]));
+        return Ok(Some(rejection));
+    }
     if route["operation"] == c.qualified("inspect.v1") {
         let o = access::object(s, &args["object"])
             .ok_or("inspection object absent after validation")?;
@@ -181,6 +212,10 @@ fn record_names(r: &Value, id: &Value) -> bool {
             .iter()
             .any(|f| r["data"][f] == *id)
         || names(&r["data"]["inputs"], id)
+        || r["type"] == "pending-action-answered"
+            && r["data"]["answer"]["subject"]
+                .as_array()
+                .is_some_and(|subjects| subjects.iter().any(|subject| subject["id"] == *id))
 }
 
 pub(crate) fn export(t: &mut Transition, unreadable: &[String]) -> Result<()> {
@@ -219,7 +254,45 @@ pub(crate) fn execute(
     let v = t.state.invocations[i].clone();
     let args = &v["arguments"];
     let mut outputs;
-    if v["operation"] == c.qualified("register.v1") {
+    if v["operation"] == c.qualified("answer.v1") {
+        let time = &a.evidence.time;
+        let id = args["action"].as_str().ok_or("answer action has no ID")?;
+        let value = args["answer"]
+            .as_str()
+            .ok_or("answer value is not a string")?;
+        let action = pending::action_named(&t.state, id, Some(time), c)
+            .ok_or("answer action absent after preflight")?;
+        let action = pending::store_answer(
+            &mut t.state,
+            action,
+            pending::invocation_answer(value, &v, time),
+        );
+        requests::finish(t, a, c, i, "succeeded", json!({}), json!([]), None)?;
+        let ended = t
+            .records
+            .iter_mut()
+            .rev()
+            .find(|r| r["type"] == "invocation-ended" && r["data"]["invocation"] == v["id"])
+            .ok_or("answer invocation has no ending record")?;
+        ended["data"]["pendingAction"] = json!([id]);
+        let stored = t
+            .state
+            .records
+            .iter_mut()
+            .rev()
+            .find(|r| r["id"] == ended["id"])
+            .ok_or("answer invocation ending record absent from state")?;
+        *stored = ended.clone();
+        pending::record_answer(t, a, c, &action)?;
+        t.decisions.push(decision(
+            "answer-pending-action",
+            &["PND-003", "PND-006", "PND-009", "PND-012"],
+            &["DL19"],
+            json!({"action":id,"answer":value}),
+            vec![],
+        ));
+        return Ok(());
+    } else if v["operation"] == c.qualified("register.v1") {
         let start = t.records.len();
         let route = json!({"consumer":v["sender"],"caller":v["caller"],"conduit":v["conduit"],"target":v["target"]});
         register_project(t, args, c, a, &route)?;
@@ -624,4 +697,183 @@ pub(crate) fn registration_boundary(
         vec![],
     ));
     Ok(())
+}
+
+#[cfg(test)]
+mod answer_tests {
+    use super::*;
+    use crate::{
+        Evidence, Input,
+        access::{AccessRequest, Identity},
+        explain::tests::fixture,
+    };
+
+    const SETUP: &str = "00000000-0000-4000-8000-000000001000";
+    const ENDED: &str = "2026-11-09T12:00:00Z";
+    const NOW: &str = "2026-11-10T12:00:00Z";
+
+    fn setup_fixture() -> (State, Context) {
+        let (mut s, mut c) = fixture();
+        let names = ["answer.v1", "inspect.v1", "purge.v1", "set-up.v1"];
+        let operations: Vec<_> = names.iter().map(|name| c.qualified(name)).collect();
+        let capability = c.qualified("capability.v1");
+        let contracts = &mut c.core_environment.scopes.get_mut("core").unwrap().contracts;
+        for name in names {
+            let mut spec = json!({"inputSchema":{"type":"object"}});
+            if name == "inspect.v1" {
+                spec["outputSchema"] = json!({"type":"object"});
+            }
+            contracts.insert(
+                name.into(),
+                json!({"kind":"Operation","metadata":{"name":name},"spec":spec}),
+            );
+        }
+        contracts.get_mut("type.v1").unwrap()["spec"]["requires"] = json!(operations);
+        contracts.insert(
+            "capability.v1".into(),
+            json!({"kind":"Capability","spec":{"operations":operations}}),
+        );
+        s.objects.retain(|o| o["id"] != "root-management");
+        s.objects.extend([
+            json!({"kind":"Fleet","name":"fleet","id":"fleet","state":"ready","type":c.qualified("type.v1"),"config":{}}),
+            json!({"kind":"Conduit","name":"group","local_name":"group","id":"group","consumer":"root","target":"fleet","open":true,"state":"ready","capability":capability,"operations":operations}),
+            json!({"kind":"Conduit","name":"own","local_name":"own","id":"own","consumer":"agent","target":"fleet","open":true,"state":"ready","capability":capability,"operations":[c.qualified("inspect.v1")]}),
+            json!({"kind":"Conduit","name":"management","local_name":"management","id":"root-management","consumer":"root","target":"management","open":true,"state":"ready","capability":capability,"operations":operations}),
+        ]);
+        for o in &mut s.objects {
+            o.as_object_mut().unwrap().remove("schema_environment");
+            if o["id"] == "agent" {
+                o["owner"] = json!("fleet");
+            }
+        }
+        s.invocations.push(
+            json!({"id":SETUP,"operation":c.qualified("set-up.v1"),"object":"agent",
+            "state":"failed","dispatched":1,"ended":{"time":ENDED,"outcome":"failed"}}),
+        );
+        (s, c)
+    }
+
+    fn invoke(
+        state: &State,
+        c: &Context,
+        step: u32,
+        time: &str,
+        route: (&str, &str),
+        args: Value,
+        key: Option<&str>,
+    ) -> Transition {
+        crate::step(
+            state,
+            Input::Invoke {
+                evidence: Evidence {
+                    time: time.into(),
+                    ids: (0..20)
+                        .map(|i| format!("00000000-0000-4000-8000-{step:08}{i:04}"))
+                        .collect(),
+                    revisions: vec![],
+                    suffixes: vec![],
+                },
+                request: AccessRequest {
+                    identity: Identity::Instance { id: route.0.into() },
+                    tool: route.1.into(),
+                    arguments: args,
+                    serving: None,
+                    readable: true,
+                    authority_readable: true,
+                },
+                key: key.map(str::to_owned),
+                archive: None,
+            },
+            c,
+        )
+        .unwrap()
+    }
+
+    fn answer_record(records: &Value) -> &Value {
+        records
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|r| r["type"] == "pending-action-answered")
+            .unwrap()
+    }
+
+    #[test]
+    fn answer_records_name_the_subject() {
+        let (s, c) = setup_fixture();
+        let dismiss = invoke(
+            &s,
+            &c,
+            1,
+            NOW,
+            ("root", "group.answer.v1"),
+            json!({"action":SETUP,"answer":"dismissed"}),
+            None,
+        );
+        let inspect = |state, step, route| {
+            invoke(
+                state,
+                &c,
+                step,
+                NOW,
+                route,
+                json!({"object":{"kind":"Agent","name":"agent"}}),
+                None,
+            )
+        };
+        let root = inspect(&dismiss.state, 2, ("root", "group.inspect.v1"));
+        let answer = &answer_record(&root.reply["structuredContent"]["records"])["data"]["answer"];
+        assert_eq!(answer["answer"]["value"], "dismissed");
+        assert!(!answer["evidence"].as_array().unwrap().is_empty());
+
+        let retry = invoke(
+            &s,
+            &c,
+            3,
+            NOW,
+            ("root", "group.set-up.v1"),
+            json!({"instance":{"kind":"Agent","name":"agent"}}),
+            None,
+        );
+        let agent = inspect(&retry.state, 4, ("agent", "own.inspect.v1"));
+        let answer = &answer_record(&agent.reply["structuredContent"]["records"])["data"]["answer"];
+        assert_eq!(answer["answer"]["value"], "retried");
+        // Inspection returns the stored record whole; PND-004's withholding is a later order's.
+        assert_eq!(
+            answer_record(&agent.reply["structuredContent"]["records"]),
+            answer_record(&json!(retry.state.records))
+        );
+    }
+
+    #[test]
+    fn unsupported_keyed_answer_is_invalid_and_matching_repeat_succeeds() {
+        let (s, c) = setup_fixture();
+        let answer = |state, step, value| {
+            invoke(
+                state,
+                &c,
+                step,
+                NOW,
+                ("root", "group.answer.v1"),
+                json!({"action":SETUP,"answer":value}),
+                Some("answer-key"),
+            )
+        };
+        let first = answer(&s, 1, "dismissed");
+        let invalid = answer(&first.state, 2, "retried");
+        assert_eq!(invalid.reply["_meta"]["test/reason"], "invalid");
+        assert_eq!(
+            invalid.reply["structuredContent"]["diagnostics"][0]["ruleId"],
+            "PND-009"
+        );
+        let repeat = answer(&first.state, 3, "dismissed");
+        assert_eq!(first.reply["_meta"]["test/outcome"], "succeeded");
+        assert_eq!(repeat.reply, first.reply);
+        assert!(
+            repeat
+                .records
+                .iter()
+                .all(|r| r["type"] != "pending-action-answered")
+        );
+    }
 }

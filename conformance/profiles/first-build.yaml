@@ -55,7 +55,8 @@
     "invocation-dispatched",
     "invocation-ended",
     "provider-call",
-    "object-change"
+    "object-change",
+    "pending-action-answered"
   ],
   "implemented_here": [
     "DL6",

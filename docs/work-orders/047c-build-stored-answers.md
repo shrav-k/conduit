@@ -348,8 +348,10 @@ places in `engine/CONFORMANCE.md`.
    where 047 sets `dispatched`, call it with `retried` and the new invocation, before the write,
    since a redispatch overwrites the old invocation and its `dispatched`, for the object: the
    instance that the request's `arguments.instance` names, resolved in state with
-   `access::object`, as lifecycle's `named` resolves it (a fresh invocation has no `object` yet);
-   at a redispatch, the old invocation's `object`. Since the function is called before the
+   `access::object`, as lifecycle's `named` resolves it (a fresh invocation has no `object` yet),
+   at a redispatch as well, since lifecycle sets up the instance the name resolves to now, which
+   may replace a removed instance whose name it reuses (amended at the merge; see the Record).
+   Since the function is called before the
    write, put `"pendingAction": [ID]`, only, into the `json!` that `record` receives for
    `invocation-dispatched` (requests.rs, `"invocation-dispatched",` after
    `link_access(t, &id);`) where the function returned an action, rather than editing the record
@@ -448,13 +450,17 @@ places in `engine/CONFORMANCE.md`.
     10. Same time: root asks `group.answer.v1` with
         `{"action": "$setup", "answer": "dismissed"}`. `expect`
         `{"reply": {"isError": false, "_meta": {"META/outcome": "succeeded"}}, "absent": [U], "record_facts": [{"type": "invocation-ended", "data": {"pendingAction": ["$setup"]}}, {"type": "pending-action-answered", "data": {"pendingAction": ["$setup"], "answer": {"id": "$setup", "kind": "setup", "subject": [{"kind": "Agent", "name": "a", "id": "$a"}], "expiry": "2026-11-19T12:00:00Z", "answer": {"value": "dismissed", "actor": ROOT, "at": "2026-11-13T12:00:00Z"}}}}]}`,
-        with ROOT written as root's ID.
+        with ROOT written as root's ID; `capture` `{"dismissalRecord": "/records/4/id"}`.
     11. Same time: step 9's request. `expect`
         `{"reply": {"isError": false}, "absent": ["/reply/structuredContent/status/pending", U]}`.
     12. Same time: step 10's request. `expect`
         `{"reply": {"isError": true, "_meta": {"META/reason": "conflict"}, "structuredContent": {"diagnostics": [{"ruleId": "PND-003"}]}}}`.
     13. Time `2026-11-14T12:00:00Z`: root asks `management.purge.v1` with
-        `{"before": "2026-11-14T00:00:00Z"}`. `expect` `{"reply": {"isError": false}}`.
+        `{"before": "2026-11-14T00:00:00Z"}`. `expect`
+        `{"reply": {"isError": false}, "record_facts": [{"type": "object-change", "data": {"action": "records-purged", "purged": P}}]}`,
+        where `P` is 104 entries `{"source": "urn:conduit:first-build"}`, one for each record the
+        purge removes, in order, the 98th of which also holds `"id": "$dismissalRecord"`: the
+        purge removes the record that step 10 captured.
     14. Same time: step 10's request. `expect` step 12's: the answer survives the purge.
     15. Same time: step 9's request. `expect` step 11's.
     16. Time `2026-11-15T12:00:00Z`: root asks `group.set-up.v1` with
@@ -475,7 +481,7 @@ places in `engine/CONFORMANCE.md`.
         `{"action": "$second", "answer": "dismissed"}`. `expect` step 12's.
     23. Same time: root asks `group.retire.v1` with
         `{"instance": {"kind": "Agent", "name": "a"}}`. `expect`
-        `{"record_facts": [{"type": "object-change", "data": {"action": "retired", "pendingAction": ["$third"]}}, {"type": "pending-action-answered", "data": {"pendingAction": ["$third"], "answer": {"id": "$third", "kind": "setup", "answer": {"value": "retired", "actor": ROOT, "at": "2026-11-15T12:00:00Z"}}}}]}`.
+        `{"reply": {"pending": true}, "record_facts": [{"type": "object-change", "data": {"action": "retired", "pendingAction": ["$third"]}}, {"type": "pending-action-answered", "data": {"pendingAction": ["$third"], "answer": {"id": "$third", "kind": "setup", "answer": {"value": "retired", "actor": ROOT, "at": "2026-11-15T12:00:00Z"}}}}]}`.
     24. Same time: root asks `group.answer.v1` with
         `{"action": "$third", "answer": "dismissed"}`. `expect` step 12's.
     25. Time `2026-11-16T12:00:00Z`: root asks `elsewhere.set-up.v1` with
@@ -487,6 +493,13 @@ places in `engine/CONFORMANCE.md`.
     28. Time `2026-11-23T12:00:00Z`, the expiry of `$fourth`'s action: root asks
         `elsewhere.answer.v1` with `{"action": "$fourth", "answer": "dismissed"}`. `expect`
         step 12's: an expired action takes no answer.
+
+    Step 10's `capture`, step 13's `record_facts` and step 23's `reply` come from the admin
+    session's direction in round 2, on the first verifier's findings on this case, and are
+    written into this decision at the merge (see the Record). The 104 entries and the dismissal's
+    98th place were counted from the records of steps 1 to 12 as the build wrote them, the one
+    exception to the rule below that no expectation is generated from the engine's output; the
+    coordinator accepts it.
 
     Steps 6 to 28 are new; the route is new and has not been run, since orders 047 and 047b are
     not yet built. Before running it, check that no ID repeats across the case's steps' `ids`.
@@ -638,8 +651,9 @@ cargo run --release -p conduit-conformance -- .. setup-action-answers
 
 The first two runner commands must each fail, printing `FAIL 0 cases passed; 1 failed`: the
 first at step 6 with an error beginning `ACC-056: a refused reply holds`, because `HEAD`'s
-`requests.rs` still gives PND-009 the stub's message; the second with an error at
-step 23 that names the missing ordered record. After both restores the third ends
+`requests.rs` still gives PND-009 the stub's message; the second with an error that names the
+missing ordered `object-change` record whose `pendingAction` is `$third`, which only step 23
+asserts. After both restores the third ends
 `1 cases passed`. Restore with `cp`, not `mv`: a moved file keeps its older modification time, so
 cargo would not rebuild the crate. Git ignores `target/`. If `HEAD`'s file does not build against
 the rest of your change, revert that decision's lines by hand in the copy instead, and say so.
@@ -717,3 +731,165 @@ point 10, has each merge wait on, `tools/gate.py`; CI runs on the pull request a
 for it. A fresh Codex verifier and a fresh read-only Opus reader read the result before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2). The admin writes this order's Record at
 the foot of this file when it merges.
+
+## Record
+
+Run on 2026-11-18, from about 12:37 to 13:44 UTC, on the Mac from `main` `f414e438` (orders 048a-2
+and 201's merge), in two rounds: the worker (about 820 s) and a fresh Codex verifier (about 490 s),
+then the worker again (about 2100 s) and a second fresh Codex verifier (about 625 s), the times
+those of the run's files. The change is 16 files in Scope, and this file. `State` gains
+`pending_actions`; `pending.rs` gains `action_named(state, id, time: Option<&str>, context)`,
+`store_answer`, `may_answer(state, instance, serving, id, context)`,
+`accepts_answer(kind, answer)` and `answer_before_change(state, object, time, value, invocation,
+context)`; `access.rs` gains `inspection_route` and `action_inspection_target` and row 17's arm in
+`routing`; `explain.rs` PND-009's row and `acc033_target`'s arm; `records.rs` `answer.v1`'s
+`handles`, `preflight` and `execute`; `requests.rs` loses the stub and answers `retried` at a
+setup's dispatch, the one place a set-up.v1 invocation is written; `retirement.rs` answers
+`retired` in `retirement::execute`, the one place an instance's `state` becomes `retired`, shared
+by direct and cascade retirement. The shell test, five places in `engine/CONFORMANCE.md`, the
+seventh record type in the runner, the profile and `conformance/README.md`, `engine/README.md`,
+`engine/STANDING.md` (written by the tool) and the case `setup-action-answers` with its index
+entry complete it. The worker's own choices: ID-only lookup of retained subjects; the answer
+record keeps its three `data` members, skipping the generic invocation enrichment for that event;
+grouped boolean assertions, so that the unit test uses `assert_eq!`; the loop-local
+`#[allow(clippy::single_element_loop)]` in the shell test (R6 below); in round 2, the subject's ID
+as the answer record's CloudEvent `subject`, with a matcher for nested subjects in inspection; and,
+under decision 5's REC-002 rule, `pending-action-answered` records dropped from an inspection's
+recorded outputs, as `status.pending` is (requests.rs, `record_content`); the purge record's
+104-entry projection at step 13; and `f414e438` for the mutation controls and the declaration
+check, since `HEAD` held the checkpoint.
+
+The worker stopped at step 23, as the order asks: the runner reads an `expect` that holds only
+`record_facts` as an empty projection of the whole transition. The first verifier found six musts
+and one should: step 23, the order's fault; an Agent's inspection read the evidence of a retry's
+answer record (PND-004); inspecting the dismissed action's subject omitted the dismissal's record
+(LIF-013); under a reused key, an unsupported answer reported OPS-010's conflict before PND-009's
+invalid (OPS-023); the inherited tier guard gave every non-root `answer.v1` refusal tier 1
+(ACC-056); a pre-047 setup whose fallback ending record a purge removed turned from conflict to
+refusal (PND-012); and the should, that step 13 did not show that the purge removed the
+dismissal's record. Round 2, on the admin session's direction (those seven findings), gave step
+23 `"reply": {"pending": true}`, made step 10 capture `dismissalRecord` and step 13 require the
+`records-purged` record to name it, projected answer evidence on inspection, gave answer records
+the subject's ID and matched it on inspection, ran the answer's invalid before the key check,
+used row 17 for tier 2 once the caller passed PND-009, and wrote `ended` onto pre-047 setups
+whose fallback record a purge removes. The second verifier found five musts and one should: that
+backfill rewrites the invocation index (REC-004); tier 2 through a closed Conduit showed the
+tombstone's target; a keyed redispatch after a name's reuse left the replacement's action
+unanswered; an answering Interface's inspection omits an answer record that names it only as
+actor (LIF-013); the runner's exact comparison of inspected records rejects the evidence
+projection; and the should, that DL19 and DL8 in `engine/CONFORMANCE.md` disagree with the
+backfill.
+
+A fresh read-only Opus reader then verified the checkpoint `dc9c1ef7` against `f414e438` (ruling
+79, point 2), in a scratch clone outside the repository soft-reset to the base. Every check of
+"Done when" passed as worded: fmt and clippy; the pending, explain and refusal-cause tests (3, 39
+and 1); `Nothing to move.`; the runner's 1, 3, 2 and 42 cases (047b's Record gives 41 for
+`setup-`); the shell test; the vectors (2, 0 failed); the full release suite with
+`RUST_TEST_THREADS=4` and `CONDUIT_VECTOR_THREADS=4` (340 passed, 0 failed, 4 ignored); both
+mutation controls, `FAIL 0 cases passed; 1 failed`, the first at step 6 with
+`ACC-056: a refused reply holds`, the second on the missing ordered `object-change` record whose
+`pendingAction` is `$third`, which only step 23 asserts (the runner prints no step number for it),
+and `1 cases passed` after both restores; the spike (9, 0 failed); the nine Python checks
+(Errors: 0 or OK, the unit tests 129); `vector_delta.py` from the base (`1 shapes`, then
+`1 changes; 0 flips; 0 undeclared; 0 errors`, exit 0); the excluded paths' status (empty);
+`git diff --cached --check` (clean); and the greps (1 where 1, 0 where 0). Steps 1 to 5 match
+`setup-action-by-scope`, steps 6 to 28 follow the formulas (2762 unique IDs), only the 16 files
+in scope change, the commits carry the neutral identity and the diff no private path. It found two
+musts and four shoulds:
+
+- R1 (must): purge now rewrote set-up.v1 invocations: `pending::retain_setup_endings`, called in
+  `purge.v1`, set `ended` on pre-047 setups before their fallback record was removed, against
+  REC-004, decision 1 ("a purge removes records and nothing else") and DL8 ("Purge never alters
+  the invocation index"); the runner rejects exactly this, and the core test went around it. The
+  order did not ask for it.
+- R2 (must): the case departed from decision 10's step text at steps 10 (a `capture`), 13 (a
+  `records-purged` record fact with a 104-entry `purged` list) and 23 (`"reply": {"pending":
+  true}`), all three directed by round 2, while the order on `main` was unchanged and forbids
+  changing expectations.
+- R3 (should): a refused `answer.v1` through a closed Conduit was granted tier 2 on the action's
+  row-17 target, but `diagnostic()` tested the route's tool spelling against `answer.v1` and
+  showed the tombstone's target and the Conduits to it, a target whose inspection was not
+  checked (ACC-056).
+- R4 (should): inspection rewrote `data.answer.evidence` in `pending-action-answered` records,
+  which the runner's oracle compares byte for byte, so the portable suite cannot cover it; and
+  decision 14 leaves withholding on wire reads to a later order.
+- R5 (should): at a keyed redispatch, `retried` went to the old invocation's object, as decision
+  6 says, while lifecycle sets up the instance the name resolves to now; after a name's reuse,
+  the replacement's action was not answered `retried` (PND-006). A fault in the order, not the
+  build.
+- R6 (should): `#[allow(clippy::single_element_loop)]` was added in the shell test, though
+  decision 11 says "Nothing else in the file changes", and no report named it as the worker's
+  choice.
+
+The fixer rebased the branch onto `origin/main` at `280a7fcc` (orders 050e, 047d and 048a-3) with
+the work-order identity, without conflict, and applied each finding:
+
+- R1: `retain_setup_endings`, its call in `purge.v1` and the test
+  `expired_legacy_setup_stays_answerable_as_conflict_after_purge` are deleted; `legacy_ending`
+  stays only as `setup_action`'s fallback, and DL19's sentence on legacy setups stands as it is.
+  A finding for the coordinator and the owner: a pre-047 setup whose fallback record was purged
+  names no action, so `answer.v1` is refused under PND-009 instead of conflicting under PND-003.
+  A later order can close it by writing the endings when an older state is loaded (shell), or an
+  owner ruling can, never inside purge.
+- R2: decision 10 now states what the case holds: step 10 gains `capture`
+  `{"dismissalRecord": "/records/4/id"}`, step 13's `expect` the `records-purged` record fact
+  whose `purged` list holds `$dismissalRecord` at its place, the 98th of 104, and step 23's
+  `expect` `"reply": {"pending": true}`; a paragraph cites the admin session's direction in round
+  2. The 104 entries pin the number of records that first start and the e4 fixture produce, so a
+  later change to those counts changes this case.
+- R3: `diagnostic()` resolves the operation as `tier()` does: with no live path and a closed
+  Conduit, `closed_operation` gives the operation tested against `answer.v1`. The test
+  `answer_refusals_disclose_only_the_authority_the_caller_may_inspect` gains a closed Conduit:
+  `v-x` removed and kept as a tombstone to `x` listing `answer.v1`; the ACC-033 refusal is tier 2
+  with target `p` and the Conduit `p`; with `v-p` closed, the PND-009 refusals for a known and an
+  unknown action are equal, at tier 1. With the old test in `diagnostic()` the new assertion of
+  the target fails.
+- R4: the fixer chose (b). Inspection returns the stored records whole again (`.cloned()`), and
+  `pending::answer_evidence` is removed; the records test, now `answer_records_name_the_subject`,
+  checks that the Agent's inspection returns the stored `retried` record whole. A finding for the
+  coordinator: an Agent inspecting itself reads the full evidence of the answer record of its own
+  setup action, against PND-004 ("Evidence with an answer follows its disclosure"); the later
+  order that withholds evidence on wire reads (decision 14) must teach the runner's inspection
+  oracle the same projection.
+- R5: the fixer amended decision 6: at a redispatch as well, the object is the instance the
+  request's `arguments.instance` names, resolved with `access::object` as lifecycle's `named`
+  resolves it, and `requests.rs` resolves it so in both branches. No step covers a name's reuse
+  yet.
+- R6: the attribute stays, since the one-entry loop decision 11 prescribes needs it to pass
+  clippy; it is the worker's own choice, made to satisfy clippy within decision 11.
+
+The second verifier's must on an answer record that names the answering Interface only as its
+actor is not taken: the answering request's own records name it through `caller`, and the
+runner's LIF-013 oracle, like the core, matches no nested actor. Whether a nested actor names the
+instance under LIF-013 goes to SO-H's sweep, as the coordinator's disposition.
+
+The fixer then ran, from `engine/` and one at a time, on the files of this commit before it was
+made: `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` (exit 0 each); the
+pending, explain and refusal-cause tests (3, 39 and 1 passed); the pieces tool
+(`Nothing to move.`); the runner for `setup-action-answers`, `setup-action-`,
+`e4-reconcile-setup-` and `setup-` (1, 3, 2 and 42 cases passed, one more than 047b's 41); the
+shell test (1 passed); the vectors and the full release suite with `RUST_TEST_THREADS=4` and
+`CONDUIT_VECTOR_THREADS=4` (2 passed; then 339 passed, 0 failed and 4 ignored, one fewer than the
+reader's 340 by R1's deleted test); and the mutation controls with `origin/main`'s files: both
+ended `FAIL 0 cases passed; 1 failed`, the first at step 6 with
+`ACC-056: a refused reply holds 1 diagnostics`, the second on the missing ordered `object-change`
+record whose action is `retired`, and after both restores, identical by `cmp`, the case ended
+`1 cases passed`. The spike ran 9 passed, 0 failed. From the root: `check_schemas.py`,
+`check_rulings.py`, `check_docs.py`, `check_roadmap.py`, `check_model_account.py`,
+`check_private_paths.py` and `promise_standing.py --check` (Errors: 0 each), `set_names.py --check`
+(exit 0), the tool tests under `/usr/bin/python3` (129, OK), `vector_delta.py` from `origin/main`
+(`1 shapes`, then `1 changes; 0 flips; 0 undeclared; 0 errors.`, exit 0), the excluded paths'
+`git status` (empty), the order's greps (nine 1s and four 0s, the `--stat` from `origin/main`) and
+`git diff --check`, and after the commit `git diff --check origin/main...HEAD` (clean each). The
+local gate this merge waits on, and the Record's last paragraph, are the coordinator's at the
+merge.
+
+A second fresh Opus reader found no must and four shoulds: the inspection filter of
+`pending-action-answered` records left unnamed (S1), the second verifier's open must (S2), the
+counted
+purge against decision 10's rule (S3) and the mutation control's step (S4). A fixer applied each as
+its fix states, with the coordinator's dispositions for S2 (SO-H's sweep) and S3 (the one
+exception),
+and `check_docs.py`, `check_private_paths.py` and `git diff --check` passed. A third reader's two
+shoulds, on the done-when's wording of that control and this paragraph, the coordinator applied at
+the merge.

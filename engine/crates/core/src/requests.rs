@@ -2,7 +2,7 @@
 //! the embedding shell persists the transition before carrying out any call (DL2).
 use crate::{
     Allocation, Context, Evidence, Result, State, Transition, access, decision, explain, packages,
-    schemas,
+    pending, schemas,
 };
 use serde::Deserialize;
 use serde_json::{Value, json};
@@ -466,11 +466,15 @@ fn record_content(t: &Transition, c: &Context, data: &mut Value) -> Result<()> {
         if let Some(mut value) = value {
             // Pending inspection evidence is scoped to the reply, including its repeats.
             // Shared records keep the rest of the inspection output.
-            if setting == "outputs"
-                && op == c.qualified("inspect.v1")
-                && let Some(status) = value.get_mut("status").and_then(Value::as_object_mut)
-            {
-                status.remove("pending");
+            if setting == "outputs" && op == c.qualified("inspect.v1") {
+                if let Some(status) = value.get_mut("status").and_then(Value::as_object_mut) {
+                    status.remove("pending");
+                }
+                // Keep answer evidence in its standalone record, even when the Type
+                // keeps the rest of the inspection output.
+                if let Some(records) = value.get_mut("records").and_then(Value::as_array_mut) {
+                    records.retain(|r| r["type"] != "pending-action-answered");
+                }
             }
             if setting == "outputs"
                 && op == c.qualified("list.v1")
@@ -550,7 +554,8 @@ pub(crate) fn record(
         ] {
             data.as_object_mut().unwrap().remove(field);
         }
-    } else {
+    } else if event != "pending-action-answered" {
+        // The answer event carries its own defined data. Enrich other request records.
         record_content(t, c, &mut data)?;
     }
     if let Some(fields) = data.as_object_mut() {
@@ -610,6 +615,26 @@ fn rejection_route(route: &Value) -> Cow<'_, Value> {
     Cow::Owned(explanation)
 }
 
+fn reject_preflight(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    route: &Value,
+    rejection: crate::explain::Rejection,
+) -> Result<()> {
+    reject_diagnostics(
+        t,
+        a,
+        c,
+        route,
+        rejection.reason,
+        &rejection.rule,
+        None,
+        None,
+        rejection.diagnostics,
+    )
+}
+
 #[allow(clippy::too_many_arguments)]
 fn reject_diagnostics(
     t: &mut Transition,
@@ -637,9 +662,6 @@ fn reject_diagnostics(
         .or_else(|| route["operation"].as_str())
         .ok_or("rejection lacks subject")?;
     let specific = match rule {
-        "PND-009" => Some(format!(
-            "{subject} reports unavailable under {rule}: not built yet, order 047c."
-        )),
         "PND-010" => Some(format!(
             "{subject} reports unavailable under {rule}: not built yet, order 048a."
         )),
@@ -985,6 +1007,19 @@ fn invoke_inner(
     )?;
     let op = route["operation"].as_str().ok_or("missing operation")?;
     let (_, _, contract) = schemas::operation(&target, op, &c.core_package)?;
+    // OPS-023: an unsupported answer is invalid even if the key conflicts.
+    // Defer PND-003 conflict so a matching repeat can return its retained outcome.
+    let answer = op == c.qualified("answer.v1");
+    let answer_conflict = if answer {
+        match crate::records::preflight(&t.state, &route, c, a)? {
+            Some(rejection) if rejection.reason == "invalid" => {
+                return reject_preflight(t, a, c, &route, rejection);
+            }
+            rejection => rejection,
+        }
+    } else {
+        None
+    };
     let digest = packages::bytes_digest(
         &serde_json_canonicalizer::to_vec(&json!({"operation":op,"arguments":route["arguments"]}))
             .map_err(|e| e.to_string())?,
@@ -1059,21 +1094,15 @@ fn invoke_inner(
         }
         return Ok(());
     }
-    if (previous.is_none() || redispatch)
-        && let Some(rejection) = crate::records::preflight(&t.state, &route, c, a)?
-    {
-        reject_diagnostics(
-            t,
-            a,
-            c,
-            &route,
-            rejection.reason,
-            &rejection.rule,
-            None,
-            None,
-            rejection.diagnostics,
-        )?;
-        return Ok(());
+    if previous.is_none() || redispatch {
+        let rejection = if answer {
+            answer_conflict
+        } else {
+            crate::records::preflight(&t.state, &route, c, a)?
+        };
+        if let Some(rejection) = rejection {
+            return reject_preflight(t, a, c, &route, rejection);
+        }
     }
     // OPS-023: after authority/schema, decide reconciliation's invalid/conflict
     // before ordinary unavailability. A kept repeat performs no new reconciliation.
@@ -1163,12 +1192,9 @@ fn invoke_inner(
     }
     // C11's temporary stubs: authority and arguments have already been checked.
     // OPS-005: unavailable ends before dispatch; its message names the build order.
-    if let Some((_, _order, promise)) = [
-        ("answer.v1", "047c", "PND-009"),
-        ("sign-in.v1", "048a", "PND-010"),
-    ]
-    .iter()
-    .find(|(name, _, _)| op == c.qualified(name))
+    if let Some((_, _order, promise)) = [("sign-in.v1", "048a", "PND-010")]
+        .iter()
+        .find(|(name, _, _)| op == c.qualified(name))
     {
         reject(t, a, c, &route, "unavailable", promise, None, None)?;
         return Ok(());
@@ -1399,7 +1425,7 @@ fn invoke_inner(
     if let Some(old) = previous {
         invocation["previous"] = old;
     }
-    if op == c.qualified("set-up.v1") {
+    let retried = if op == c.qualified("set-up.v1") {
         let last = t
             .state
             .invocations
@@ -1411,7 +1437,22 @@ fn invoke_inner(
             .checked_add(1)
             .ok_or("setup dispatch order exhausted")?;
         invocation["dispatched"] = json!(dispatched);
-    }
+        // The instance lifecycle sets up, at a redispatch too: a reused name names the replacement.
+        access::object(&t.state, &route["arguments"]["instance"])
+            .cloned()
+            .and_then(|subject| {
+                pending::answer_before_change(
+                    &mut t.state,
+                    &subject,
+                    &a.evidence.time,
+                    "retried",
+                    &invocation,
+                    c,
+                )
+            })
+    } else {
+        None
+    };
     let i = if let Some(i) = existing {
         t.state.invocations[i] = invocation.clone();
         i
@@ -1420,13 +1461,21 @@ fn invoke_inner(
         t.state.invocations.len() - 1
     };
     link_access(t, &id);
-    record(
-        t,
-        a,
-        c,
-        "invocation-dispatched",
-        json!({"target":route["target"],"caller":route["caller"],"consumer":route["consumer"],"conduit":route["conduit"],"operation":op,"invocation":id,"attempt":invocation["attempt"]}),
-    )?;
+    let mut data = json!({"target":route["target"],"caller":route["caller"],"consumer":route["consumer"],"conduit":route["conduit"],"operation":op,"invocation":id,"attempt":invocation["attempt"]});
+    if let Some(action) = &retried {
+        data["pendingAction"] = json!([action["id"]]);
+    }
+    record(t, a, c, "invocation-dispatched", data)?;
+    if let Some(action) = retried {
+        pending::record_answer(t, a, c, &action)?;
+        t.decisions.push(decision(
+            "answer-setup-retried",
+            &["PND-003", "PND-006", "PND-012"],
+            &["DL19"],
+            json!({"action":action["id"]}),
+            vec![],
+        ));
+    }
     t.decisions.push(decision(
         "dispatch-invocation",
         &[

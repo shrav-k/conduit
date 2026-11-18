@@ -1380,7 +1380,10 @@ metadata:
     The optional request _meta signInLogin asks for one stated login; an unknown name reports
     invalid before any part, with the stated names. Without one the hook chooses. Before any
     part, a fixed port shared with a login an in-progress sign-in may start reports
-    unavailable, naming the port and only a visible pending action (PND-010). The hook's URL
+    unavailable, naming the port and only a visible pending action (PND-010). Before any part,
+    a sign-in.v1 for an instance whose earlier sign-in.v1, setup or retirement has been
+    dispatched and has not ended reports conflict, naming PND-010 and only a visible pending
+    action. The hook's URL
     must match exactly one stated login and the asked-for one; the engine writes the message
     (IFC-049). Only the receiving Interface's tools/call retry in its bound
     invocation may carry signInReturn under PND-013; its checked value reaches only the

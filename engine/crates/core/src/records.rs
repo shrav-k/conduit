@@ -49,6 +49,10 @@ pub(crate) fn preflight(
                     format!(
                         "{tool} reports invalid under PND-009: answer.v1 answers a notice only acknowledged."
                     )
+                } else if action["kind"] == "sign-in" {
+                    format!(
+                        "{tool} reports invalid under PND-009: answer.v1 does not answer a sign-in action; sign-in.v1 answers it signed-in once the expected account is verified, and retirement answers it void."
+                    )
                 } else {
                     format!(
                         "{tool} reports invalid under PND-009: answer.v1 answers a setup action only dismissed; a further set-up.v1 answers it retried, and retire.v1 or a cascade's retirement answers it retired."
@@ -504,6 +508,11 @@ pub(crate) fn execute(
             for action in &actions {
                 let (name, promises): (&str, &[&str]) = if action["kind"] == "notice" {
                     ("show-notice", &["PND-001", "PND-002", "PND-004", "PND-007"])
+                } else if action["kind"] == "sign-in" {
+                    (
+                        "show-sign-in-action",
+                        &["PND-001", "PND-002", "PND-004", "PND-005"],
+                    )
                 } else {
                     (
                         "raise-setup-action",
@@ -522,6 +531,7 @@ pub(crate) fn execute(
                 status["pending"] = json!(actions);
             }
         }
+        let holder = pending::own_interface(&t.state, &v["caller"], &v["sender"]);
         let records: Vec<_> = t
             .state
             .records
@@ -534,8 +544,17 @@ pub(crate) fn execute(
                                 || r["data"]["serving"] == v["id"])
                     })
             })
-            .cloned()
-            .collect();
+            .map(|r| {
+                let mut record = r.clone();
+                if r["type"] == "pending-action-answered"
+                    && r["data"]["answer"]["kind"] == "sign-in"
+                {
+                    record["data"]["answer"]["evidence"] =
+                        pending::answer_evidence(&r["data"]["answer"], holder, &t.state, c)?;
+                }
+                Ok(record)
+            })
+            .collect::<Result<_>>()?;
         outputs = json!({"id":o["id"],"revision":o["revision"],"packages":o.get("packages").cloned().unwrap_or_else(|| json!([{ "address":c.core_package,"version":c.builtin.as_ref().and_then(|b| b.manifest.as_ref()).map(|m|m["version"].clone()).unwrap_or(Value::Null)}])),"declared":declared,"status":status,"records":records,"recordGaps":t.state.record_gaps,"recordsComplete":t.state.record_gaps.is_empty()});
         if o.get("spec").is_none() && o["kind"] != "Conduit" {
             outputs["inventory"] = crate::inventory::read(&t.state, &o, c)?;
@@ -1024,6 +1043,48 @@ mod answer_tests {
             answer_record(&agent.reply["structuredContent"]["records"]),
             answer_record(&json!(retry.state.records))
         );
+    }
+
+    #[test]
+    fn inspection_withholds_sign_in_answer_evidence_from_agents() {
+        let (mut s, c) = setup_fixture();
+        let evidence = json!([{
+            "kind":"fact","value":"primary-account","where":"config/account",
+            "proves":"the account this instance is configured for"
+        }]);
+        s.records.push(json!({
+            "type":"pending-action-answered","subject":"agent",
+            "data":{"answer":{"kind":"sign-in","subject":[{"id":"agent"}],
+                "evidence":evidence,"answer":{"value":"void"}}}
+        }));
+        let mut scope = access::object_by_id(&s, &json!("group")).unwrap().clone();
+        scope["id"] = json!("other-group");
+        scope["consumer"] = json!("other");
+        s.objects.push(scope);
+
+        for (step, route, expected) in [
+            (1, ("root", "group.inspect.v1"), evidence.clone()),
+            (2, ("other", "group.inspect.v1"), evidence.clone()),
+            (3, ("agent", "own.inspect.v1"), json!([])),
+        ] {
+            let inspected = invoke(
+                &s,
+                &c,
+                step,
+                NOW,
+                route,
+                json!({"object":{"kind":"Agent","name":"agent"}}),
+                None,
+            );
+            let answer =
+                &answer_record(&inspected.reply["structuredContent"]["records"])["data"]["answer"];
+            assert_eq!(answer["answer"]["value"], "void");
+            assert_eq!(answer["evidence"], expected);
+            assert_eq!(
+                inspected.state.records[0]["data"]["answer"]["evidence"],
+                evidence
+            );
+        }
     }
 
     #[test]

@@ -67,8 +67,8 @@ prints these measurements; they are not a persistence format or compaction polic
 | DL13 | Gate proof, TLS and authorization-server integration. No public OAuth issuer/grant or remote-runtime credential delivery is claimed by the loopback-only authority. |
 | DL16 | Platforms beyond Unix process groups and lifetime sockets; qualification beyond the npm filesystem server and local scripted servers. |
 | DL17 | Multi-machine restart/partition/fencing. No distributed configuration or guarantee is demonstrated by this core. |
-| DL18 | Not built: `sign-in.v1` answers unavailable under PND-010, with the text "not built yet, order 048a" ([requests.rs](crates/core/src/requests.rs)), so no URL action waits and no wait is chosen. |
-| DL19 | Partly built. A setup action (PND-006) expires seven days after its set-up.v1 invocation first ended, counted from the time of the step that ended it, and is raised while a step's time is before its expiry and not from then on. A successful repeat under OPS-009 returns its original inspection or `list.v1` outputs while retained, including any `status.pending` or `pending`, and the inspection's shared records omit `status.pending`. The record of an inspection that raises it does not yet name the action's ID (PND-012). A setup that ended before order 047 kept no end time: its expiry counts from the last `invocation-ended` record of that invocation that no reconciliation wrote, and where none remains, as after a purge, it is not raised. While raised it is raised at root and at each Interface whose scope holds its instance, never at an Agent (order 047b): it is listed in `status.pending` of that Interface's own inspection of the instance and in the `pending` output of its own `list.v1` through any Pool, Fleet or management, and counted in the `unanswered` key of its own results; another Interface sees its evidence only where it may inspect the instance, and no Interface sees a code or fingerprint item. `answer.v1` answers a setup action dismissed (order 047c) ([pending.rs](crates/core/src/pending.rs)); a further set-up.v1 answers it retried and its retirement retired, and once its expiry passes it is expired; each answer is kept in the engine's state, which no purge touches, for the ending it answered, so that a redispatch that ends unsuccessfully makes a new action under the same invocation ID. A notice (PND-007, order 047d) expires seven days after the step of the retirement that raised it. One is raised for each Fleet, other than the sender's where the sender is an Agent, whose Agent consumed a Conduit that a Resource's retirement sent by an instance other than root closed; it is stored with an engine ID, named in the `pendingAction` key of the retirement's result and in the `pendingAction` of its `object-change` record, raised at root, at each Interface whose scope holds that Fleet, and, while the Resource's shutdown is unconfirmed, at each Interface whose scope holds the Resource, and answered `acknowledged` through `answer.v1` with a Conduit to that Fleet, or to `management` where that Fleet is retired or gone. At an Interface other than root it shows a closed Conduit and its evidence where that Interface may inspect the Conduit's consumer, and the Resource and its evidence where it may inspect the Resource while the Resource's shutdown is unconfirmed. No other kind is held, so no other duration is chosen. |
+| DL18 | Not built: `sign-in.v1` answers invalid or conflict under PND-010 where order 048a-2's checks apply, and otherwise unavailable, with the text "not built yet, order 048a" ([requests.rs](crates/core/src/requests.rs)), so no URL action waits and no wait is chosen. Where those checks apply, a stale `expectedId` reports conflict under LIF-037. |
+| DL19 | Partly built. A setup action (PND-006) expires seven days after its set-up.v1 invocation first ended, counted from the time of the step that ended it, and is raised while a step's time is before its expiry and not from then on. A successful repeat under OPS-009 returns its original inspection or `list.v1` outputs while retained, including any `status.pending` or `pending`, and the inspection's shared records omit `status.pending`. The record of an inspection that raises it does not yet name the action's ID (PND-012). A setup that ended before order 047 kept no end time: its expiry counts from the last `invocation-ended` record of that invocation that no reconciliation wrote, and where none remains, as after a purge, it is not raised. While raised it is raised at root and at each Interface whose scope holds its instance, never at an Agent (order 047b): it is listed in `status.pending` of that Interface's own inspection of the instance and in the `pending` output of its own `list.v1` through any Pool, Fleet or management, and counted in the `unanswered` key of its own results; another Interface sees its evidence only where it may inspect the instance, and no Interface sees a code or fingerprint item. `answer.v1` answers a setup action dismissed (order 047c) ([pending.rs](crates/core/src/pending.rs)); a further set-up.v1 answers it retried and its retirement retired, and once its expiry passes it is expired; each answer is kept in the engine's state, which no purge touches, for the ending it answered, so that a redispatch that ends unsuccessfully makes a new action under the same invocation ID. A notice (PND-007, order 047d) expires seven days after the step of the retirement that raised it. One is raised for each Fleet, other than the sender's where the sender is an Agent, whose Agent consumed a Conduit that a Resource's retirement sent by an instance other than root closed; it is stored with an engine ID, named in the `pendingAction` key of the retirement's result and in the `pendingAction` of its `object-change` record, raised at root, at each Interface whose scope holds that Fleet, and, while the Resource's shutdown is unconfirmed, at each Interface whose scope holds the Resource, and answered `acknowledged` through `answer.v1` with a Conduit to that Fleet, or to `management` where that Fleet is retired or gone. At an Interface other than root it shows a closed Conduit and its evidence where that Interface may inspect the Conduit's consumer, and the Resource and its evidence where it may inspect the Resource while the Resource's shutdown is unconfirmed. A sign-in action (PND-005, order 048a-2) expires seven days after the step that raised it. It is raised, unless the instance holds one unanswered or is retired, when a call to an instance whose Type states `signIn` with a string account ends with its implementation's error diagnostic naming PND-005 or with a URL elicitation outside `sign-in.v1` (IFC-016); `answer.v1` does not answer it, retirement answers it void, and neither the hold of PND-005 nor `sign-in.v1`'s answer is built yet. No other kind is held, so no other duration is chosen. |
 
 DL11 and DL14 are removed identifiers, not unanswered choices. The
 [increment 3 handoff](README.md#the-cores-boundary) assigns the next
@@ -135,7 +135,9 @@ close.v1, register-replacement.v1, register.v1, replace.v1, inspect.v1, purge.v1
 reconcile.v1, install.v1, retire.v1, unregister.v1, retire-with-resources.v1,
 retire-with-agents.v1, list.v1 and lift.v1, subject to the core's preflights.
 The shell also passes answer.v1 to the core, which answers pending actions with it (order 047c),
-and sign-in.v1, which the core answers unavailable, naming the order that builds it (048a; OPS-005).
+and sign-in.v1, which the core answers invalid or conflict under PND-010, or conflict under
+LIF-037 for a stale expectedId, where order 048a-2's checks apply, and otherwise unavailable,
+naming the order that builds it (048a; OPS-005).
 Declare-lost.v1 and control dispatch remain unfinished public invocation paths.
 Control reconciliation applies the held input values to the current revision (REV-010);
 Agent reconciliation uses the owning Fleet, with management as the retired-owner fallback
@@ -431,7 +433,9 @@ what a statement says changes the statement ([order 183][wo183]).
   and working directory"). It calls no runtime provider, makes no remote connection and serves no
   secret (row "DL16: executor coverage"; I4-01, "Secrets are unserved too: the engine reads no
   secret through a secret store").
-- `sign-in.v1` answers unavailable, naming order 048a (row DL18 in "Choices still required").
+- `sign-in.v1` answers invalid or conflict under PND-010, or conflict under LIF-037 for a stale
+  `expectedId`, where order 048a-2's checks apply, and otherwise unavailable, naming order 048a
+  (row DL18 in "Choices still required").
 - The Agent packages on `main` are 0.1.1: their Types, `claude-code.v1` and `codex.v1`, keep the
   client's own tools off apart from the remaining tools and reach inputs stated below; neither
   states `toolsDirectory`, so inspection reports `ownTools` with `stated: false` (I3-04; I4-02;
@@ -702,8 +706,15 @@ Still unfinished:
   refused under IFC-032 or IFC-022. IFC-032 and IFC-025 require IFC-012's -32602 error
   with the reason in `data`; order 046e changes it. `records-expected-id` step 10 pins
   the current tool result.
-- The unavailable stub of `sign-in.v1` now carries a diagnostic but remains unbuilt: order
-  048a-2.
+- The unavailable stub of `sign-in.v1` now carries a diagnostic but remains unbuilt. Before it,
+  order 048a-2 decides two of PND-010's refusals: invalid for an instance whose Type states no
+  `signIn` or whose expected account is not a string, and conflict while that instance's setup,
+  retirement or earlier `sign-in.v1` is in progress. Where those checks apply, a stale
+  `expectedId` reports conflict under LIF-037. They apply only for root, or for an Interface on
+  its own behalf through an Agent's owning Fleet; any other caller, and any caller but root for a
+  Resource, gets the stub's unavailable. IFC-049's missing capability, an unknown `signInLogin`
+  and PND-013's return on a first request, each invalid, are not yet checked, so such a request
+  reports conflict or unavailable instead.
 
 ## Outcomes the engine decides (order 046c)
 

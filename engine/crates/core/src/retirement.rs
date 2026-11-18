@@ -217,6 +217,7 @@ pub(crate) fn execute(
     t.state.invocations[i]["retirement_of"] = o["id"].clone();
     let retired =
         pending::answer_before_change(&mut t.state, o, &a.evidence.time, "retired", &v, c);
+    let voided = pending::void_sign_in(&mut t.state, o, &a.evidence.time, &v);
     let notices = if o["kind"] == "Resource" && o["state"] != "retired" {
         pending::raise_notices(&mut t.state, o, &v, &a.evidence.time, a, c)?
     } else {
@@ -236,7 +237,11 @@ pub(crate) fn execute(
         object["retirement_tombstone"] = tombstone;
     }
     let mut extra = json!({"state":"retired","shutdown":shutdown});
-    let mut pending_ids: Vec<_> = retired.iter().map(|action| action["id"].clone()).collect();
+    let mut pending_ids: Vec<_> = retired
+        .iter()
+        .chain(&voided)
+        .map(|action| action["id"].clone())
+        .collect();
     pending_ids.extend(notices.iter().map(|id| json!(id)));
     if !pending_ids.is_empty() {
         extra["pendingAction"] = json!(pending_ids);
@@ -276,6 +281,16 @@ pub(crate) fn execute(
         t.decisions.push(decision(
             "answer-setup-retired",
             &["PND-003", "PND-006", "PND-012"],
+            &["DL19"],
+            json!({"action":action["id"]}),
+            vec![],
+        ));
+    }
+    if let Some(action) = voided {
+        pending::record_answer(t, a, c, &action)?;
+        t.decisions.push(decision(
+            "answer-sign-in-void",
+            &["PND-003", "PND-005", "PND-012"],
             &["DL19"],
             json!({"action":action["id"]}),
             vec![],
@@ -645,6 +660,104 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn retire_hook_lapse_leaves_no_unanswered_action() {
+        let (mut t, c, evidence) = fixture(false, None);
+        let (_, mut contracts) = crate::explain::tests::fixture();
+        let scope = contracts.core_environment.scopes.get_mut("core").unwrap();
+        scope.contracts.get_mut("type.v1").unwrap()["spec"]["signIn"] =
+            json!({"account":"/account"});
+        scope.contracts.insert(
+            "retire-hook.v1".into(),
+            json!({"kind":"Operation","metadata":{"name":"retire-hook.v1"},"spec":{}}),
+        );
+        let ty = scope.contracts["type.v1"].clone();
+        let subject = &mut t.state.objects[0];
+        subject["type"] = json!(c.qualified("type.v1"));
+        subject["config"] = json!({"account":"primary-account"});
+        subject["held"] = json!({
+            "environment":contracts.core_environment, "scope":"core",
+            "indexes":{"core":{"type.v1":ty}}, "contexts":{}
+        });
+        let subject = subject.clone();
+        t.state.invocations[1]["retirement"] =
+            json!({"phase":"begin","unregister":false,"parts":[]});
+        let mut a = Allocation {
+            evidence: &evidence,
+            cursor: 0,
+        };
+        hook(&mut t, &mut a, &c, 1, &subject).unwrap();
+        let id = t.state.invocations[2]["id"].as_str().unwrap().to_owned();
+        let mut completion_evidence = evidence.clone();
+        completion_evidence.ids = (0..20).map(|n| format!("completion-{n}")).collect();
+
+        requests::complete(
+            &mut t,
+            &completion_evidence,
+            &id,
+            1,
+            requests::Completion::Result {
+                result: json!({
+                    "isError":true,"_meta":{"test/outcome":"failed"},
+                    "structuredContent":{"diagnostics":[{"ruleId":"PND-005","level":"error"}]}
+                }),
+            },
+            &c,
+        )
+        .unwrap();
+        let reply = &t.request_replies[0].reply;
+        assert_eq!(reply["_meta"]["test/outcome"], "failed");
+        assert_cause(reply, "PND-005", "after the instance retired");
+        assert!(t.state.pending_actions.is_empty());
+        assert_eq!(
+            t.state.invocations[1]["retirement"]["parts"][0]["outcome"],
+            "failed"
+        );
+    }
+
+    #[test]
+    fn retirement_answers_an_unanswered_sign_in_action_void() {
+        let (mut t, c, evidence) = fixture(false, None);
+        let time = evidence.time.clone();
+        t.state.pending_actions.insert(
+            "action-id".into(),
+            json!({
+                "action":{"id":"action-id","kind":"sign-in","subject":[{"kind":"Agent","name":"test","id":"subject"}],
+                    "evidence":[],"expiry":"2026-11-17T12:00:00Z"},
+                "dispatched":null,"raisedBy":"call-id"
+            }),
+        );
+        let mut a = Allocation {
+            evidence: &evidence,
+            cursor: 0,
+        };
+        let object = t.state.objects[0].clone();
+        execute(&mut t, &mut a, &c, 1, &object).unwrap();
+
+        assert_eq!(
+            t.state.pending_actions["action-id"]["action"]["answer"],
+            json!({"value":"void","actor":"root","invocation":"parent","at":time})
+        );
+        assert_eq!(t.state.pending_actions["action-id"]["raisedBy"], "call-id");
+        let retired = t
+            .records
+            .iter()
+            .position(|r| r["type"] == "object-change" && r["data"]["action"] == "retired")
+            .unwrap();
+        assert_eq!(
+            t.records[retired]["data"]["pendingAction"],
+            json!(["action-id"])
+        );
+        let answered = &t.records[retired + 1];
+        assert_eq!(answered["type"], "pending-action-answered");
+        assert_eq!(answered["data"]["pendingAction"], json!(["action-id"]));
+        assert_eq!(answered["data"]["answer"]["answer"]["value"], "void");
+        assert_eq!(answered["data"]["invocation"], "parent");
+        assert!(t.decisions.iter().any(|d| d.action == "answer-sign-in-void"
+            && d.promises == ["PND-003", "PND-005", "PND-012"]
+            && d.facts == json!({"action":"action-id"})));
     }
 
     #[test]

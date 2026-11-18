@@ -2,7 +2,7 @@
 //! the embedding shell persists the transition before carrying out any call (DL2).
 use crate::{
     Allocation, Context, Evidence, Result, State, Transition, access, decision, explain, packages,
-    pending, schemas,
+    pending, schemas, sign_in,
 };
 use serde::Deserialize;
 use serde_json::{Value, json};
@@ -1104,6 +1104,11 @@ fn invoke_inner(
             return reject_preflight(t, a, c, &route, rejection);
         }
     }
+    if (previous.is_none() || redispatch)
+        && let Some(rejection) = sign_in::preflight(&t.state, &route, &a.evidence.time, c)?
+    {
+        return reject_preflight(t, a, c, &route, rejection);
+    }
     // OPS-023: after authority/schema, decide reconciliation's invalid/conflict
     // before ordinary unavailability. A kept repeat performs no new reconciliation.
     let reconcile = op == c.qualified("reconcile.v1");
@@ -1783,6 +1788,7 @@ pub(crate) fn complete(
     let mut outputs = json!({});
     let mut outcome = "unknown";
     let mut rule = Some(if plain { "IFC-010" } else { "OPS-007" });
+    let mut lapse = None;
     match completion {
         Completion::ProtocolError { code: -32020, .. } if v["wire_retried"] != true && readonly => {
             t.state.invocations[i]["wire_retried"] = json!(true);
@@ -1830,6 +1836,9 @@ pub(crate) fn complete(
                 outcome = "failed";
                 rule = None;
             }
+        }
+        Completion::Result { result } if sign_in::url_elicitation(&result) => {
+            lapse = Some(sign_in::Trigger::UrlElicitation);
         }
         Completion::Result { result } => {
             if plain {
@@ -1908,6 +1917,13 @@ pub(crate) fn complete(
                     };
                     rule = None;
                 }
+                if rule.is_none()
+                    && response_ends_call(&result)
+                    && matches!(outcome, "failed" | "unknown")
+                    && sign_in::lapse_diagnostic(&result)
+                {
+                    lapse = Some(sign_in::Trigger::LapsedLogin);
+                }
             }
             if outcome == "succeeded" {
                 outputs = result
@@ -1932,15 +1948,81 @@ pub(crate) fn complete(
         }
         _ => {}
     }
-    if outcome != "succeeded" {
-        outputs = json!({});
+    if let Some(trigger) = lapse {
+        finish_login_lapse(t, &mut a, c, i, &v, outcome, trigger)?;
+    } else {
+        if outcome != "succeeded" {
+            outputs = json!({});
+        }
+        let cause = rule
+            .map(|rule| explain::outcome_cause(&v, outcome, rule).map(|d| vec![d]))
+            .transpose()?;
+        finish(t, &mut a, c, i, outcome, outputs, content, cause)?;
     }
-    let cause = rule
-        .map(|rule| explain::outcome_cause(&v, outcome, rule).map(|d| vec![d]))
-        .transpose()?;
-    finish(t, &mut a, c, i, outcome, outputs, content, cause)?;
     crate::lifecycle::child_ended(t, &mut a, c, i)
 }
+
+fn finish_login_lapse(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    v: &Value,
+    outcome: &str,
+    trigger: sign_in::Trigger,
+) -> Result<()> {
+    let instance = access::object_by_id(&t.state, &v["target"])
+        .cloned()
+        .unwrap_or(Value::Null);
+    let expected = sign_in::expected_account(&instance, c)?;
+    let cause = explain::outcome_diagnostic(
+        v,
+        outcome,
+        trigger.rule(),
+        trigger.cause(&expected, instance["state"] == "retired"),
+    )?;
+    finish(t, a, c, i, outcome, json!({}), json!([]), Some(vec![cause]))?;
+    if let sign_in::ExpectedAccount::Set { pointer, account } = expected
+        && let Some(action) = pending::raise_sign_in(
+            &mut t.state,
+            &instance,
+            account,
+            &pointer,
+            v,
+            trigger.label(),
+            a,
+        )?
+    {
+        let ended = t
+            .records
+            .iter_mut()
+            .rev()
+            .find(|r| r["type"] == "invocation-ended" && r["data"]["invocation"] == v["id"])
+            .ok_or("sign-in lapse invocation has no ending record")?;
+        ended["data"]["pendingAction"] = json!([action["id"]]);
+        let stored = t
+            .state
+            .records
+            .iter_mut()
+            .rev()
+            .find(|r| r["id"] == ended["id"])
+            .ok_or("sign-in lapse invocation ending record absent from state")?;
+        *stored = ended.clone();
+        let mut rules = vec!["PND-001", "PND-005", "PND-012"];
+        if matches!(trigger, sign_in::Trigger::UrlElicitation) {
+            rules.push("IFC-016");
+        }
+        t.decisions.push(decision(
+            "raise-sign-in-action",
+            &rules,
+            &["DL19"],
+            json!({"action":action["id"], "instance":instance["id"]}),
+            vec![],
+        ));
+    }
+    Ok(())
+}
+
 pub(crate) fn cancel(
     t: &mut Transition,
     evidence: &Evidence,
@@ -2606,6 +2688,31 @@ mod tests {
             },
         );
         assert_ending(&ended, &c, "failed", None);
+    }
+
+    #[test]
+    fn aware_nonterminal_result_does_not_take_the_lapse_path() {
+        let (t, c) = call_fixture(false, json!({}));
+        let task = json!({"resultType":"task","task":{"taskId":"t"},
+            "_meta":{"test/outcome":"failed"},"isError":true});
+        let mut keyed = task.clone();
+        keyed["structuredContent"] = json!({"diagnostics":[{"ruleId":"PND-005","level":"error"}]});
+        let [plain, lapse] =
+            [task, keyed].map(|result| answer(&t, &c, Completion::Result { result }));
+        for ended in [&plain, &lapse] {
+            assert_ending(ended, &c, "failed", None);
+            assert!(ended.state.pending_actions.is_empty());
+            assert!(
+                !serde_json::to_string(&ended.records)
+                    .unwrap()
+                    .contains("PND-005")
+            );
+        }
+        assert_eq!(
+            plain.request_replies.last().unwrap().reply,
+            lapse.request_replies.last().unwrap().reply
+        );
+        assert_eq!(plain.state.invocations[0], lapse.state.invocations[0]);
     }
 
     #[test]

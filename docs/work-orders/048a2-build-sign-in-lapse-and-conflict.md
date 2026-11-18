@@ -839,3 +839,205 @@ point 10, has each merge wait on, `tools/gate.py`; CI runs on the pull request a
 for it. A fresh Codex verifier and a fresh read-only Opus reader read the result before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2). The admin writes this order's Record at
 the foot of this file when it merges.
+
+## Record
+
+Run on 2026-11-18, from about 15:03 to 15:58 UTC, on the Mac from `main` `e4ceb4c8` (order 047c's
+merge), in two rounds: the worker (750 s) and a fresh Codex verifier (658 s), then the worker again
+(1344 s) and a second fresh Codex verifier (578 s). The change is the files of Scope: PND-005's
+`observable` and PND-010's `then` (decisions 1 and 2), `sign-in.v1`'s description (decision 3), the
+new `sign_in.rs` with the expected account, the lapse signals and decision 6's preflight, the stored
+sign-in kind and its raise and void in `pending.rs`, `complete`'s two lapse arms and the preflight's
+call in `requests.rs`, the void in `retirement.rs`, the inspection's decision and the `answer.v1`
+text in `records.rs`, the Type lookup exposed in `inventory.rs`, the shell test of decision 9, the
+five places of `engine/CONFORMANCE.md`, `engine/STANDING.md` written by the tool, the two bullets of
+`IN_FORCE.md` made three, and the case `requests-sign-in-lapse-and-conflict` with its fixture and
+its index entry.
+
+The worker's own choices: the LIF-037 refusal uses the existing lifecycle diagnostic, so a stale
+`expectedId` reports the same message and properties as other lifecycle preconditions; an inspector
+without authority to see a sign-in answer's evidence reads an empty `evidence`; steps 28 to 31 come
+after the 27, keeping the keyed re-raise; and `e4ceb4c8` served as the base for the checks that
+compare with the tree before the order. Its findings for the coordinator, as decision 14 asks: order
+048a-4, which adds setup's account check, changes steps 3 to 10 of the case; the other lines of
+`IN_FORCE.md`, the reason of the expected failure `requests-sign-in-return-kept-nowhere` and the
+stub's lines of `engine/CONFORMANCE.md` still name 048a-2 for work the split gives to 048a-3 to
+048a-6; no promise places the keyed PND-005 diagnostic, which the engine reads at
+`structuredContent.diagnostics` as the order directs (PND-005, IFC-009); and the order that writes
+ruling 78 point 7 changes the URL arm, which ends unknown under the current IFC-016.
+
+In round 1 the worker built decisions 1 to 9, 12 and 13, wrote decision 10's 27 steps, fixture and
+index entry and decision 11's five places of `engine/CONFORMANCE.md`, and stopped at decision 10's
+stop condition: the case's step 2 reported invalid, since both Agent templates inherit the control
+`#set-limit.v1`, which no implementation selected (TPL rule `implementation-selected`). The first
+verifier confirmed that stop and found six more musts: decision 6's preflight disclosed an Agent's
+account state or work in progress to an Interface whose Conduit reaches another Fleet; a retire
+hook's lapse could raise a new unanswered action after retirement voided the old one; the void's
+`pending-action-answered` record carried the expected account and the triggering request to any
+inspector (PND-004); a stale `expectedId` reached the stub where LIF-037 reports conflict;
+`engine/STANDING.md` was stale; and the report lacked the inventory of the paths to `complete`
+outside decision 5's arm. Its should: the URL steps could pass if a URL elicitation never raised. In
+round 2 the worker mapped `#set-limit.v1` to `signed-server` in the manifest and the Type's
+`implementation`, captured `signedId` at step 16 and added steps 28 to 31 (a stale `expectedId`
+conflict under LIF-037, a URL elicitation that raises at `2026-11-26T12:00:00Z` and an inspection of
+it); added the LIF-037 conflict to the preflight; made the raise give none for a retired instance,
+with two cause texts of its own; projected a sign-in answer's evidence in an inspection by the
+reader (records.rs) with the test `inspection_withholds_sign_in_answer_evidence_from_agents`; added
+a retire-hook lapse test; and wrote `engine/STANDING.md` with the tool (PND-001 2, PND-005, PND-010
+and IFC-016 1 each, all `case passes`; totals 304 case passes and 328 named in the engine's source).
+It left the cross-Fleet finding open, as it needs `access.rs`. The second verifier found nine musts:
+that cross-Fleet disclosure; the opening of a Conduit that lists `sign-in.v1` for a consumer that is
+not an Interface; a missing instance falling to the stub; a reused idempotency key reporting
+conflict before the account's invalid; the keyed lapse arm reachable from a result that does not end
+the call; the retired guard as a new exception to PND-005's raise; an inspection of the retirement's
+actor omitting the void record; the case's inputs and steps beyond decision 10; and the projection
+in `records.rs` beyond Scope. Its shoulds: the portable runner's exact record comparison cannot read
+a projected record; no test reaches retirement's production void call; and the worker's report held
+a local path in one check line.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2) on the branch before its
+rebase. It ran every check of "Done when", in a scratch copy for those that write:
+`cargo fmt --check` and clippy (exit 0), the `sign_in` filter (4 passed; the fourth is the worker's
+records test), `pending::tests` (4 passed), the pieces tool (`Nothing to move.`), the case
+(`1 cases passed`), `setup-action-` (`3 cases passed`), `requests-` (64 passed and 3 expected
+failures, 63 and 3 on the base), the shell test, the vectors (2 passed) and the whole engine (343
+passed, 4 ignored), the negative control (`FAIL 0 cases passed; 1 failed`, step 4 unavailable where
+conflict is expected, then `1 cases passed` after the restore), the S1 spike (9 passed), the eight
+Python checks (Errors: 0 each), the tool tests (129, OK), `vector_delta.py` (1 change, 0 flips, 0
+undeclared, 0 errors, exit 0), the protected paths (nothing), the greps (eighteen 1s, three 0s),
+`IN_FORCE.md`'s numstat (3 and 2), PND-010's new sentence against MC9a's X10 quote (equal) and a
+privacy scan (clean). It found two musts and six shoulds:
+
+- R1 (must): decision 6's preflight resolves `arguments.instance` from the whole state, and the
+  access tier routes `sign-in.v1` to the Conduit's target whatever the instance, so an Interface
+  whose Conduit reaches another Fleet learned the instance's account state, work in progress and,
+  through LIF-037, its ID, where before it got only the stub's unavailable.
+- R2 (must): round 2 changed the case's inputs and added steps 28 to 31, which decision 10 forbids,
+  though the fixture fix was needed.
+- R3: the LIF-037 conflict is a third refusal decision 6 does not have, and the four places of
+  `engine/CONFORMANCE.md` did not cover it.
+- R4: the retired guard and its two texts are a choice the order does not make, and DL19's sentence
+  did not state it.
+- R5: the projection in `records.rs` goes beyond Scope, covers sign-in answers only, and the
+  portable runner cannot express it.
+- R6: no test reaches `pending::void_sign_in` through `retirement::execute`.
+- R7: "Done when" says `requests-` keeps "its one expected failure"; it has three.
+- R8: one check line of the worker's report held a local path, not to be copied here.
+
+The fixer rebased the branch onto `origin/main`, still `e4ceb4c8`, with the work-order identity,
+without conflict, and applied each finding:
+
+- R1: the reader's in-scope alternative. `sign_in::preflight`, after resolving the instance, gives
+  none, leaving the stub's unavailable, unless the caller is root, or the instance is an Agent whose
+  owning Fleet is the route's target and the caller is an Interface sending on its own behalf
+  (`own_interface`, caller equal to sender); a Resource stays root's, as PND-010 says.
+  `sign_in_refusals_before_dispatch` now also checks that `v` through its own Fleet gets the
+  invalid, and that `w` or `v` through another Fleet, the Agent `s2` through its owner, and `v`
+  through the Pool `p` naming its Resource `x`, get none even with a stale `expectedId`. The access
+  tier's own binding and its refusal stay for a later order (048a-5), with `access.rs` in its scope.
+- R2: kept as built, accepted by the coordinator at the merge as an amendment of decision 10, open
+  to the owner's strike, in the reader's words: the Type's `implementation` and `signed-server`'s
+  `implements` also map `#set-limit.v1` (TPL rule implementation-selected), step 16 also captures
+  `signedId` from `/reply/structuredContent/id`, and steps 28-31 are added as built.
+- R3: the LIF-037 conflict kept, accepted by the coordinator at the merge as an amendment of
+  decision 6, open to the owner's strike. In `engine/CONFORMANCE.md`, the shell's paragraph and the
+  item of the unbuilt list now read "answers invalid or conflict under PND-010, or conflict under
+  LIF-037 for a stale expectedId, where order 048a-2's checks apply, and otherwise unavailable";
+  DL18's row and the section "Refusals and reasons" gain the sentence "Where those checks apply, a
+  stale `expectedId` reports conflict under LIF-037." DL18 takes a sentence, not the reader's words,
+  since those would break the order's grep of DL18's text. The section also says that the checks
+  apply only for root or an Interface on its own behalf through an Agent's owning Fleet, and that
+  any other caller, and any caller but root for a Resource, gets the stub's unavailable.
+- R4: DL19's sentence now reads "It is raised, unless the instance holds one unanswered or is
+  retired, when ...". The guard is kept, accepted by the coordinator at the merge as an amendment of
+  decision 5, open to the owner's strike, with its two texts: "The implementation asked for a URL
+  elicitation outside sign-in.v1 after the instance retired." and "The implementation reports a
+  missing or lapsed login after the instance retired."
+- R5: the projection kept, accepted by the coordinator at the merge as an extension of Scope, open
+  to the owner's strike; a setup answer's evidence is not projected and still reaches an Agent's
+  inspection, as after 047c.
+- R6: `retirement_answers_an_unanswered_sign_in_action_void` retires, through `execute`, an instance
+  holding an unanswered sign-in action, and checks the stored answer `void` with actor, invocation
+  and time, the kept `raisedBy`, the `object-change` record's `pendingAction`, the
+  `pending-action-answered` record right after it and the decision `answer-sign-in-void`. With the
+  call to `void_sign_in` taken out, on the file restored after with `cp`, the test fails.
+- R7: `requests-` went from 63 cases passed with 3 expected failures to 64 with 3, all three
+  unchanged.
+- R8: that check is written here as `/usr/bin/python3 -m unittest discover -s tools/tests`: 129
+  tests, OK.
+
+Of the second verifier's musts that the reader did not raise: the keyed lapse arm now also requires
+a result that ends the call (`response_ends_call`), so a nonterminal result keeps its former ending;
+the test `aware_nonterminal_result_does_not_take_the_lapse_path` pins it and fails with the check
+taken out. The rest are left, each as a finding for the coordinator: a missing instance reaches the
+stub, as decision 6 says and as before this order; the repeat check precedes the preflight, where
+decision 6 places it, as it precedes `records::preflight`; the opening of a Conduit that lists
+`sign-in.v1` for a consumer that is not an Interface is the access tier's, unchanged here, and R1's
+check keeps such a consumer at the stub; and the retirement's actor is named as the caller in the
+retirement's own records, which its inspection finds, while the nested actor of a
+`pending-action-answered` record is 047c's form for setup answers too. The runner's exact comparison
+is in the conformance crate, outside Scope, and stays a finding.
+
+The fixer then ran, from `engine/`: `cargo fmt --check` and
+`cargo clippy --all-targets -- -D warnings` (exit 0), the `sign_in` filter (5 passed: the order's
+three, the records test and the new retirement test), `pending::tests` (4 passed), the pieces tool
+(`Nothing to move.`), the case (`1 cases passed`), `setup-action-` (`3 cases passed`), `requests-`
+(`64 cases passed; 3 expected failures`), the shell test (1 passed), the vectors with 4 threads (2
+passed) and the whole engine with 4 threads (exit 0; 344 passed, 0 failed, 4 ignored); the negative
+control (`FAIL 0 cases passed; 1 failed`, step 4 ending unavailable; restored with `cp`,
+`1 cases passed`); with the new check of R1 taken out, on the file restored after with `cp`,
+`sign_in_refusals_before_dispatch` fails. From the root: `check_schemas.py`, `set_names.py --check`,
+`check_rulings.py`, `check_docs.py`, `check_roadmap.py`, `check_model_account.py`,
+`check_private_paths.py` and `promise_standing.py --check` (Errors: 0 each; the standing file
+current, unchanged by this round), `/usr/bin/python3 -m unittest discover -s tools/tests` (129, OK),
+`vector_delta.py origin/main WORKTREE` with the declaration (1 shape; 1 change, 0 flips, 0
+undeclared, 0 errors; exit 0), the protected paths' `git status --short` and `git diff --stat`
+(nothing), the order's greps (eighteen 1s and three 0s),
+`git diff --numstat origin/main -- IN_FORCE.md` (3 and 2), and `git diff --check origin/main...HEAD`
+and `git diff --check` (clean); in `experiments/011-short-form-spike/`, `cargo test --release`
+(`tests/spike.rs`: 9 passed). The gate's run on this order's squash, which this merge waits on, is
+the coordinator's at the merge.
+
+A second fresh read-only Opus reader found no must and four shoulds: R1's gate let a non-root
+Interface through a Pool for a Resource, which PND-010 keeps for root; no test pinned
+`response_ends_call` in the keyed lapse arm; this Record left out the worker's own choices and
+decision 14's findings, and understated round 1; and `origin/main` had moved. The first three are
+applied above: the gate now requires an Agent, `sign_in_refusals_before_dispatch` checks the
+Resource through its Pool, and `engine/CONFORMANCE.md`'s section and this Record say so; the new
+requests test pins the arm; and the round-1 sentence and the two sentences after the Scope paragraph
+are added. The coordinator accepted R2 to R5 at the merge, as written above.
+
+At the merge the branch was rebased, with the work-order identity, onto `origin/main` `3c761dd9`
+(order 047d's merge, over `578835bd` for ruling 83 and orders 048a-4 and 202); the conflicts were
+resolved on 047d's branch commit `5560f5b3`, whose tree is `3c761dd9`'s, and the rebase onto
+`3c761dd9` was then clean. Order 047d's notices and this order's sign-in kind are kept side by side
+in each conflict: in `engine/CONFORMANCE.md`, DL18 takes this order's text and DL19 keeps 047d's
+notice sentences and this order's sign-in sentences, setup, then notice, then sign-in; in
+`pending.rs`, both orders had drawn the seven-day expiry into a helper, so 047d's `week_after` stays
+and the sign-in raise calls it, 047d's `agent_fleet` and `raise_notices` stand beside
+`unanswered_sign_in`, `raise_sign_in` and `void_sign_in`, the imports take 047d's `retirement`,
+`ACCEPTED_ANSWERS` takes 047d's two pairs under this order's comment that `answer.v1` does not
+answer a sign-in action, and both tests, `notices_follow_their_fleet` and
+`sign_in_action_raised_by_a_lapsed_login`, are kept; in `records.rs`, `answer.v1`'s invalid text and
+the inspection's decision each test notice, then sign-in, then setup, with 047d's `promises`
+binding; in `retirement.rs`, the void follows the setup answer and comes before `raise_notices`, the
+`object-change` record's `pendingAction` lists the retired setup action, the voided sign-in action
+and the notices in that order, 047d's notices on the invocation and its `raise-notice` decision are
+kept, and both tests, `retirement_names_its_notices` and the two of this order, are kept; and
+`engine/STANDING.md` was written again by `tools/promise_standing.py --write`, now 305 case passes
+and 329 named in the engine's source, PND-010's row
+`| PND-010 | convention | must | 1 | 0 | outside | core, shell | case passes |`. `requests.rs`,
+`access.rs`, the setup index and `IN_FORCE.md` merged without conflict.
+
+After the rebase, from `engine/`: `cargo fmt --check` and clippy (exit 0), the `sign_in` filter (5
+passed), `pending::tests` (5 passed, with 047d's), the pieces tool (`Nothing to move.`), the runner
+(`1 cases passed`, `3 cases passed`, and `64 cases passed; 3 expected failures` for `requests-`,
+which 047d left at 63 and 3), the shell test (1 passed), the vectors with 4 threads (2 passed) and
+the whole engine with 4 threads (exit 0; 349 passed, 0 failed, 4 ignored); the negative control with
+`origin/main`'s `requests.rs` (`FAIL 0 cases passed; 1 failed`, step 4 ending unavailable; restored
+with `cp`, `1 cases passed`). From the root, the eight Python checks (Errors: 0 each), the tool
+tests (129, OK), `vector_delta.py origin/main WORKTREE` with the declaration (1 shapes; 1 changes, 0
+flips, 0 undeclared, 0 errors; exit 0), the protected paths (nothing), the greps (eighteen 1s and
+three 0s), `git diff --numstat origin/main -- IN_FORCE.md` (3 and 2), `git diff --check
+origin/main...HEAD` (clean), and the spike's `tests/spike.rs` (9 passed). The gate's run on this
+order's squash, which this merge waits on, is the coordinator's.

@@ -560,3 +560,102 @@ point 10, has each merge wait on, `tools/gate.py`; CI runs on the pull request a
 for it. A fresh Codex verifier and a fresh read-only Opus reader read the result before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2). The admin writes this order's Record at
 the foot of this file when it merges.
+
+## Record
+
+Run on 2026-11-18, from about 16:07 to 17:12 UTC, on the Mac, by the stacked dispatch the owner
+approved that day: from order 048a-2's verified branch at `2a1af4cb`, before 048a-2 merged, in two
+rounds: the worker (1784 s) and a fresh Codex verifier (471 s), then the worker again (1227 s) and a
+second fresh Codex verifier (404 s). The change is the twelve files of Scope. `State` gains
+`sign_in_holds`, read empty where a state lacks it; no struct literal of `State` names every member,
+so none changed. 048a-2's raise, `raise_sign_in`, takes its raising request as a
+`SignInRequest<'_>`, either `SignInRequest::Invocation` or `SignInRequest::Held` (the
+`access-decision` record's ID and the request's `operation`), and inserts the instance's hold where
+it stores an action, keeping an earlier hold's `since`. `unanswered_sign_in` is the one test for an
+unanswered action, called from the raise, the hold, 048a-2's refusal and the retirement's void
+answer. `sign_in::request_is_held` gives the hold from the instance and the operation's contract,
+and `invoke_inner` decides it after ordinary availability and the kept repeat's answer and before
+C11's stubs: the request ends unavailable with the action's ID in `META/pendingAction` on its result
+and its `request-ended` record, a PND-005 diagnostic that names neither the account nor the action,
+and the decision `hold-for-sign-in`; after an expiry the first held request raises a new action. The
+unit tests `held_requests_by_family_and_model_work` and `hold_outlasts_expiry` and the portable case
+`requests-sign-in-hold` (16 steps, 1574 unique IDs) pin it. DL19 takes the order's sentence, and
+`STANDING.md` changes only PND-001 (2 to 3) and PND-005 (1 to 2), its totals unchanged. The worker's
+own choices: the borrowed enum `SignInRequest`, the route's `pendingAction` list used for both the
+record and the reply, the expiry test's check of the allocation cursor, and, for the negative
+control, the hold block cut out by hand, since `HEAD`'s file did not build against the new raise
+(round 1) or already held the hold (round 2), with a temporary trace in round 1 showing step 10's
+reply `{"pending": true}` before the runner's record check failed. Its findings, for the
+coordinator: 048a-4's account-hook part will change the case's setup at steps 3 to 5; a held result
+names the action for an Agent caller too (row 44 of the owner's review list); setup's account check
+does not lift the hold (row 45); MC9a's H05 wants both diagnostics where PND-005's hold and
+SignInUndone meet, 048a-4's; a lapse's own result does not carry `pendingAction`, though IFC-025
+names raised actions, and no order holds it; and no check reaches a held Resource through dispatch,
+an Agent caller's held result or a kept repeat answered while held. MC9a-003 stays reported, and
+nothing lifts a hold.
+
+The first verifier found no must and three shoulds: a state written by a 048a-2 build with an
+unanswered sign-in action loads with no hold; step 10 did not check the diagnostic's text; and no
+step tied the replacement action's evidence to the `access-decision` record of the request that
+raised it. Round 2 changed only the case: step 10 asserts the diagnostic's full text, step 14
+asserts its two ordered records and no third and captures the `access-decision` record's ID as
+`heldAccess`, and step 15 checks that ID in the replacement action's evidence; the upgrade case it
+reported as the finding 048a3-upgrade. The second verifier found one must, that the first start
+check printed 0, since 048a-2's Record was not yet on the stacked base, as the dispatch note
+foresaw; and two shoulds: step 14 does not assert that its reply and its `request-ended` record name
+the same replacement action, and the report gave only `OK` for the Python unit tests and the spike's
+last zero-test line for its `tests/spike.rs`. Order 048a-2 then merged (#364), and the coordinator
+rebased the branch onto `main` at `506aa144` (order 202's merge).
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2), on the rebased branch
+`d7cce4e8`. It ran the start checks against `origin/main`, which printed as the order expects,
+settling the second verifier's must; `cargo fmt --check` and clippy (exit 0); the `sign_in` filter
+(6 passed, not the order's 4: main added `retirement_answers_an_unanswered_sign_in_action_void` and
+`records::answer_tests::inspection_withholds_sign_in_answer_evidence_from_agents`) and
+`pending::tests` (6, not 5: 047d's `notices_follow_their_fleet`); the pieces tool in a scratch copy
+(`Nothing to move.`, `conformance/` unchanged); the runner's `requests-sign-in-hold`,
+`requests-sign-in-lapse-and-conflict` and `setup-action-` (1, 1 and 3 cases passed) and `requests-`
+(65 cases passed; 3 expected failures, one more than 048a-2's Record's 64, with
+`expected-failures.yaml` unchanged); the shell test (1 passed), the vectors (2 passed) and the whole
+suite (351 passed, 0 failed, 4 ignored); the Python checks (Errors: 0 each), the tool tests (129,
+OK), `vector_delta.py` against `origin/main` (1 change, 0 flips, 0 undeclared, exit 0), the
+protected paths' status (nothing), `git diff --check origin/main...HEAD` (clean), the spike's
+`tests/spike.rs` in a scratch copy (9 passed; 0 failed), the eight checks that print 1 and the two
+that print 0. Its negative control, in a scratch copy with the hold block cut out by hand, printed
+`FAIL 0 cases passed; 1 failed` on step 10's missing `request-ended` record naming the action, not
+on the reply the order foresaw, since the runner checks the records first. It found the code true to
+decisions 1 to 4, the tests to decision 5 and the case to decision 6, the prep's three conflict
+resolutions true to both orders, and the commits the work-order identity's alone. It did not file
+the second verifier's step-14 point, since step 16 checks the same path and the order's step 14 does
+not ask for it. It found no must and one should:
+
+- 048a3-R1: a state written by a 048a-2 build that holds an unanswered sign-in action loads with no
+  hold, so the instance's model work is dispatched until that action expires and a later lapse
+  raises a new action; nothing in the merge recorded it.
+
+The fixer rebased the branch onto `origin/main` at `d891543f` (the thirteen order texts, #366),
+which changed only `docs/work-orders/`, with the work-order identity and without conflict, and
+applied the finding as it asked, keeping the order as written, since decision 1 has a state without
+the member read as before:
+
+- 048a3-R1: a hold begins only at a raise from this build on. A state that a 048a-2 build wrote,
+  with an unanswered sign-in action, loads with no hold: the instance's model work is dispatched
+  until that action expires and a later lapse raises a new action, which begins the hold. The case
+  is row 46 of the owner's review list, for the coordinator; a later order could seed
+  `sign_in_holds` on load, `{"since": the action's raise time}` for each unanswered sign-in action.
+
+The fixer then ran the order's checks on the rebased branch: from `engine/` with
+`RUST_TEST_THREADS=4` and `CONDUIT_VECTOR_THREADS=4`, `cargo fmt --check` and clippy (exit 0); the
+`sign_in` filter and `pending::tests` (6 passed each, as the reader found); the pieces tool
+(`Nothing to move.`); the runner's `requests-sign-in-hold`, `requests-sign-in-lapse-and-conflict`
+and `setup-action-` (1, 1 and 3 cases passed) and `requests-` (65 cases passed; 3 expected
+failures); the shell test (1 passed), the vectors (2 passed) and the whole suite (351 passed, 0
+failed, 4 ignored); and the spike's `tests/spike.rs` (9 passed; 0 failed). From the root, with
+`/usr/bin/python3`: the order's eight Python checks (Errors: 0 each, `set_names.py --check` its
+names line, each exit 0), the tool tests (129, OK) and `vector_delta.py` against `origin/main` (1
+change, 0 flips, 0 undeclared, exit 0); the protected paths' status printed nothing, the eight
+checks that print 1 printed 1, and the two that print 0 printed 0, the second against `origin/main`.
+The negative control was not rerun: the engine and the case are unchanged since the reader's run. On
+this commit, `python3 tools/check_docs.py` and `python3 tools/check_private_paths.py` gave Errors: 0
+each, and `git diff --check origin/main...HEAD` was clean. The gate's run on this order's squash,
+which this merge waits on, is the coordinator's at the merge.

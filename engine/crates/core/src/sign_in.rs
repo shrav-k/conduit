@@ -1,4 +1,4 @@
-//! PND-005 lapse signals and PND-010 checks before dispatch.
+//! PND-005 lapse signals and holds, and PND-010 checks before dispatch.
 use crate::{Context, Result, State, access, explain::Rejection, inventory, pending};
 use serde_json::{Value, json};
 
@@ -6,6 +6,18 @@ pub(crate) enum ExpectedAccount<'a> {
     NoSignIn,
     NotString { pointer: String },
     Set { pointer: String, account: &'a str },
+}
+
+pub(crate) fn request_is_held(state: &State, target: &Value, contract: &Value) -> bool {
+    target.get("spec").is_none()
+        && match target["kind"].as_str() {
+            Some("Resource") => true,
+            Some("Agent") => contract["spec"]["startsModelWork"] == true,
+            _ => false,
+        }
+        && target["id"]
+            .as_str()
+            .is_some_and(|id| state.sign_in_holds.contains_key(id))
 }
 
 pub(crate) fn expected_account<'a>(
@@ -207,6 +219,43 @@ fn rejection(reason: &'static str, tool: &str, cause: &str) -> Rejection {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn held_requests_by_family_and_model_work() {
+        let held_agent = json!({"kind":"Agent","id":"s1"});
+        let other_agent = json!({"kind":"Agent","id":"s2"});
+        let resource = json!({"kind":"Resource","id":"x1"});
+        let template = json!({"kind":"Agent","id":"t1","spec":{}});
+        let hold = json!({"since":"2026-11-12T12:00:00Z"});
+        let state = State {
+            objects: vec![
+                held_agent.clone(),
+                other_agent.clone(),
+                resource.clone(),
+                template.clone(),
+            ],
+            sign_in_holds: [
+                ("s1".into(), hold.clone()),
+                ("x1".into(), hold.clone()),
+                ("t1".into(), hold),
+            ]
+            .into(),
+            ..State::default()
+        };
+        let model = json!({"spec":{"startsModelWork":true}});
+        let plain = json!({"spec":{"effect":"A fixture effect."}});
+        assert_eq!(
+            [
+                request_is_held(&state, &held_agent, &model),
+                request_is_held(&state, &held_agent, &plain),
+                request_is_held(&state, &resource, &plain),
+                request_is_held(&state, &resource, &model),
+                request_is_held(&state, &other_agent, &model),
+                request_is_held(&state, &template, &model),
+            ],
+            [true, false, true, true, false, false]
+        );
+    }
 
     #[test]
     fn sign_in_refusals_before_dispatch() {

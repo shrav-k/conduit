@@ -1,3 +1,4 @@
+# Checked at the merge of order 048a3, against main at d891543f: the work's vector delta matches these shapes.
 - name: requests-sign-in-hold
   kind: added
   cases: [requests-sign-in-hold]

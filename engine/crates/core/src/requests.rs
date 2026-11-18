@@ -463,6 +463,14 @@ fn record_content(t: &Transition, c: &Context, data: &mut Value) -> Result<()> {
             continue;
         }
         if let Some(mut value) = value {
+            // Pending inspection evidence is scoped to the reply, including its repeats.
+            // Shared records keep the rest of the inspection output.
+            if setting == "outputs"
+                && op == c.qualified("inspect.v1")
+                && let Some(status) = value.get_mut("status").and_then(Value::as_object_mut)
+            {
+                status.remove("pending");
+            }
             if op == c.qualified("run.v1") && setting == "inputs" {
                 value
                     .as_object_mut()
@@ -614,7 +622,7 @@ fn reject_diagnostics(
         .ok_or("rejection lacks subject")?;
     let specific = match rule {
         "PND-009" => Some(format!(
-            "{subject} reports unavailable under {rule}: not built yet, order 047."
+            "{subject} reports unavailable under {rule}: not built yet, order 047c."
         )),
         "PND-010" => Some(format!(
             "{subject} reports unavailable under {rule}: not built yet, order 048a."
@@ -1150,7 +1158,7 @@ fn invoke_inner(
     // C11's temporary stubs: authority and arguments have already been checked.
     // OPS-005: unavailable ends before dispatch; its message names the build order.
     if let Some((_, _order, promise)) = [
-        ("answer.v1", "047", "PND-009"),
+        ("answer.v1", "047c", "PND-009"),
         ("sign-in.v1", "048a", "PND-010"),
     ]
     .iter()
@@ -1385,6 +1393,19 @@ fn invoke_inner(
     if let Some(old) = previous {
         invocation["previous"] = old;
     }
+    if op == c.qualified("set-up.v1") {
+        let last = t
+            .state
+            .invocations
+            .iter()
+            .filter_map(|v| v["dispatched"].as_u64())
+            .max()
+            .unwrap_or(0);
+        let dispatched = last
+            .checked_add(1)
+            .ok_or("setup dispatch order exhausted")?;
+        invocation["dispatched"] = json!(dispatched);
+    }
     let i = if let Some(i) = existing {
         t.state.invocations[i] = invocation.clone();
         i
@@ -1426,7 +1447,12 @@ fn invoke_inner(
         t.state.invocations[reconciled]["state"] = json!(outcome);
         let previous_end = t.state.invocations[reconciled].as_object_mut().unwrap();
         previous_end.remove("retained");
-        previous_end.remove("cause");
+        if let Some(cause) = previous_end.remove("cause")
+            && previous_end["operation"] == c.qualified("set-up.v1")
+        {
+            // Older setups have only the reply's cause. Preserve it for action evidence.
+            previous_end.entry("setup_cause").or_insert(cause);
+        }
         record(
             t,
             a,
@@ -1573,8 +1599,17 @@ pub(crate) fn finish(
 ) -> Result<()> {
     let v = &mut t.state.invocations[i];
     v["state"] = json!(outcome);
-    v.as_object_mut().unwrap().remove("previous");
     let cause = cause.filter(|_| outcome != "succeeded");
+    if v.get("ended").is_none() {
+        v["ended"] = json!({"time":a.evidence.time,"outcome":outcome});
+        if matches!(outcome, "failed" | "unknown")
+            && v["operation"] == c.qualified("set-up.v1")
+            && let Some(cause) = &cause
+        {
+            v["setup_cause"] = json!(cause);
+        }
+    }
+    v.as_object_mut().unwrap().remove("previous");
     if let Some(cause) = &cause {
         v["cause"] = json!(cause);
     } else {
@@ -2104,6 +2139,165 @@ mod tests {
         let mut next = evidence();
         next.ids.retain(|id| !state.allocated_ids.contains(id));
         next
+    }
+
+    fn interrupted_setup() -> (Transition, Context) {
+        let (mut state, c) = fixture();
+        let inspect = c.qualified("inspect.v1");
+        let reconcile = c.qualified("reconcile.v1");
+        let capability = c.qualified("capability.v1");
+        let pool = &mut state.objects[5];
+        let contracts = &mut pool["schema_environment"]["scopes"]["core"]["contracts"];
+        contracts["type.v1"]["spec"]["records"]["outputs"] = json!(true);
+        contracts["capability.v1"] =
+            json!({"kind":"Capability","spec":{"operations":[inspect,reconcile]}});
+        contracts["inspect.v1"] = json!({"kind":"Operation","metadata":{"name":"inspect.v1"},
+            "spec":{"inputSchema":{"type":"object"},"outputSchema":{"type":"object"}}});
+        for operation in [&inspect, &reconcile] {
+            pool["resolved_implementations"][operation] = json!({"source":"engine"});
+        }
+        let held_pool = pool.clone();
+        state
+            .objects
+            .push(json!({"id":"o1","kind":"Resource","name":"shared",
+            "owner":"owners","state":"registered"}));
+        for caller in ["root", "agent"] {
+            state
+                .objects
+                .push(json!({"id":format!("{caller}-owners"),"kind":"Conduit",
+                "local_name":"owners","consumer":caller,"target":"owners","state":"ready",
+                "open":true,"capability":capability,"operations":[inspect,reconcile]}));
+        }
+        state
+            .invocations
+            .push(json!({"id":"s1","operation":c.qualified("set-up.v1"),
+            "state":"in-progress","object":"o1","target":"owners","held_target":held_pool,
+            "caller":"root","sender":"root","attempt":1}));
+        let mut evidence = evidence();
+        evidence.time = "2026-11-09T12:30:00Z".into();
+        let recovered = step(&state, Input::Recover { evidence }, &c).unwrap();
+        (recovered, c)
+    }
+
+    fn inspect_setup(
+        state: &State,
+        c: &Context,
+        caller: &str,
+        time: &str,
+        key: Option<&str>,
+    ) -> Transition {
+        let mut evidence = unused_evidence(state);
+        evidence.time = time.into();
+        step(
+            state,
+            Input::Invoke {
+                evidence,
+                request: AccessRequest {
+                    identity: Identity::Instance { id: caller.into() },
+                    tool: "owners.inspect.v1".into(),
+                    arguments: json!({"object":{"kind":"Resource","name":"shared"}}),
+                    serving: None,
+                    readable: true,
+                    authority_readable: true,
+                },
+                key: key.map(str::to_owned),
+                archive: None,
+            },
+            c,
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn setup_action_is_private_to_root_inspection_and_its_retained_reply() {
+        let (setup, c) = interrupted_setup();
+        let before = "2026-11-16T12:29:59Z";
+        let expiry = "2026-11-16T12:30:00Z";
+        let root = inspect_setup(&setup.state, &c, "root", before, Some("key"));
+        assert_eq!(root.reply["isError"], false, "{}", root.reply);
+        let mut recorded_outputs = root.reply["structuredContent"].clone();
+        assert_eq!(recorded_outputs["status"]["pending"][0]["id"], "s1");
+        recorded_outputs["status"]
+            .as_object_mut()
+            .unwrap()
+            .remove("pending");
+
+        let agent = inspect_setup(&root.state, &c, "agent", before, None);
+        assert_eq!(agent.reply["isError"], false, "{}", agent.reply);
+        let outputs = &agent.reply["structuredContent"];
+        assert!(outputs["status"].get("pending").is_none());
+        let inspection = &root.reply["_meta"][mark(&c, "invocation")];
+        for event in ["invocation-ended", "request-ended"] {
+            let record = outputs["records"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|r| r["type"] == event && r["data"]["invocation"] == *inspection)
+                .unwrap();
+            assert_eq!(record["data"]["outputs"], recorded_outputs);
+        }
+
+        let repeated = inspect_setup(&agent.state, &c, "root", expiry, Some("key"));
+        assert_eq!(repeated.reply, root.reply);
+        let repeated_record = repeated
+            .records
+            .iter()
+            .find(|r| r["type"] == "request-ended");
+        assert_eq!(
+            repeated_record.unwrap()["data"]["outputs"],
+            recorded_outputs
+        );
+        assert!(repeated.request_replies.is_empty());
+        let fresh = inspect_setup(&repeated.state, &c, "root", expiry, None);
+        assert_eq!(fresh.reply["isError"], false, "{}", fresh.reply);
+        assert!(
+            fresh.reply["structuredContent"]["status"]
+                .get("pending")
+                .is_none()
+        );
+    }
+
+    #[test]
+    fn setup_action_preserves_first_ending_diagnostics_after_reconciliation() {
+        let (setup, c) = interrupted_setup();
+        let original = &setup.request_replies[0].reply["structuredContent"]["diagnostics"];
+        assert_eq!(original[0]["ruleId"], "IMP-007");
+        for legacy in [false, true] {
+            let mut state = setup.state.clone();
+            if legacy {
+                let invocation = state.invocations[0].as_object_mut().unwrap();
+                invocation.remove("ended");
+                invocation.remove("setup_cause");
+            }
+            let reconciled = step(
+                &state,
+                Input::Invoke {
+                    evidence: unused_evidence(&state),
+                    request: AccessRequest {
+                        identity: Identity::Instance { id: "root".into() },
+                        tool: "owners.reconcile.v1".into(),
+                        arguments: json!({"invocation":"s1","occurred":true,"checked":"observed"}),
+                        serving: None,
+                        readable: true,
+                        authority_readable: true,
+                    },
+                    key: None,
+                    archive: None,
+                },
+                &c,
+            )
+            .unwrap();
+            assert_eq!(reconciled.reply["isError"], false, "{}", reconciled.reply);
+            let invocation = &reconciled.state.invocations[0];
+            assert_eq!(invocation["state"], "succeeded");
+            assert!(invocation.get("cause").is_none());
+            let inspected = inspect_setup(&reconciled.state, &c, "root", &evidence().time, None);
+            let action = &inspected.reply["structuredContent"]["status"]["pending"][0];
+            assert_eq!(action["id"], "s1");
+            assert_eq!(action["evidence"][1]["value"], "unknown");
+            assert_eq!(action["evidence"][2]["value"], *original);
+            assert_eq!(action["expiry"], "2026-11-16T12:30:00Z");
+        }
     }
 
     fn answer(t: &Transition, c: &Context, completion: Completion) -> Transition {

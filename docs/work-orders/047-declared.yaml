@@ -1,3 +1,4 @@
+# Checked at the merge of order 047, against main at facb4ff4: the work's vector delta matches these shapes.
 - name: setup-action-at-root
   kind: added
   cases: [setup-action-at-root]

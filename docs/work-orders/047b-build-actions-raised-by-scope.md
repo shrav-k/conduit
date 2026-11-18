@@ -51,13 +51,17 @@ built; this order starts only once it is merged (below). From 047, as its Record
   "evidence", "expiry"}`, every evidence item of kind `fact` (047's decision 2); and the test
   whether an action is raised at a time, true before its expiry and false at it and after. Their
   names are those 047's Record gives. Its unit test `setup_action_follows_the_latest_setup`.
-- The members `ended` and `dispatched` on set-up.v1 invocations (047's decision 1), which only
-  those two functions read.
+- The members `ended` and `dispatched` on set-up.v1 invocations (047's decision 1), and
+  `setup_cause`, the diagnostics a failed or unknown setup first ended with, which `finish` sets
+  where they exist and a reconciliation moves there from `cause` (047's Record); only those two
+  functions read them.
 - In `records::execute`'s `inspect.v1` branch, right after `status["unreconciled"]` is set,
   `status["pending"]`, a list of the object's one raised setup action, set where the object is not
   a template and the inspection's caller and sender are both root's ID, with the decision
   `raise-setup-action` (047's decision 3); `status.pending` left out otherwise. Root is the object
-  whose `from` is the core's `root`, through the lookup that 047 reused or exposed.
+  whose `from` is the core's `root`, through the lookup that 047 reused or exposed. Where a Type
+  records outputs, the record writer in `requests.rs` removes `status.pending` from an
+  `inspect.v1` invocation's recorded outputs (047's Record).
 - The portable case `setup-action-at-root` in `conformance/conventions/setup/`, the expected
   failure `e4-reconcile-setup-action-open` lifted, `answer.v1`'s stub naming 047c, and DL19's row
   in `engine/CONFORMANCE.md` beginning `| DL19 | Partly built. A setup action (PND-006) expires
@@ -119,29 +123,29 @@ this one (046b, 048a-1, 050 and others): whichever lands second keeps both chang
 `engine/STANDING.md` again with the tool.
 
 **Who decided what.** PND-002, PND-004 and the definitions decide where an action is raised, what
-raised means and who sees what. Everything else here is the coordinator's, each open to the
-owner's strike ([ruling 48](../proposals/ruling-48/README.md)): reading "an Interface's own
-request" as one whose caller and sender are both that Interface, and finding a result's request
-by the invocation its `_meta` names, or else by the identity of the request the step decided,
-or, for a non-invoke input that carries a `request` with no invocation, by that request's
-`caller` and `sender`;
-counting at the time of the step that gives the result; that an Agent's scope over its own Fleet
-raises nothing, as PND-002 says, and that an Interface template is raised at nothing; reading
-"an owner of either end of a Conduit" as the owner of the Conduit's consumer or target; that a
-non-root Interface's view keeps an action's evidence only where it may inspect every subject, and
-otherwise none, since no evidence item names the object it is about; that an action whose view
-keeps no subject is neither shown nor counted at that Interface; that the views withhold code and
-fingerprint items at every Interface, root included, for every kind; that `list.v1`'s `pending`
-holds every action raised at the caller, whatever Pool, Fleet or management the list goes
-through, and that `list.v1`'s `kind` argument narrows `objects` only, so that `pending` is the
-same with or without it; leaving `pending` and the key out where nothing is raised, as 047 leaves
-out `status.pending`; ordering actions by ID; the decisions' names; the case, its route through order
-042's e4 fixture, its IDs and its times; tagging the case with PND-002 alone, since no step
-asserts PND-004's disclosure, which decision 7's unit test pins, so that PND-004's row stays
-`no case` with source `core`; and DL19's new sentence. Apply them as written and report
-them under `decisions` as the coordinator's. Rulings 80 to 82 and the targeted review's
-[section 6](../proposals/review-signin-2026-11-16/README.md#6-must-state-lists) put nothing on
-047b; nothing here touches sign-in.
+raised means and who sees what. Everything else here is the coordinator's, each open to the owner's
+strike ([ruling 48](../proposals/ruling-48/README.md)): reading "an Interface's own request" as one
+whose caller and sender are both that Interface, and finding a result's request by the invocation
+its `_meta` names, or else by the identity of the request the step decided, or, for a non-invoke
+input that carries a `request` with no invocation, by that request's `caller` and `sender`; counting
+at the time of the step that gives the result; that an Agent's scope over its own Fleet raises
+nothing, as PND-002 says, and that an Interface template is raised at nothing; reading "an owner of
+either end of a Conduit" as the owner of the Conduit's consumer or target; that a non-root
+Interface's view keeps an action's evidence only where it may inspect every subject, and otherwise
+none, since no evidence item names the object it is about; that an action whose view keeps no
+subject is neither shown nor counted at that Interface; that the views withhold code and fingerprint
+items at every Interface, root included, for every kind; that `list.v1`'s `pending` holds every
+action raised at the caller, whatever Pool, Fleet or management the list goes through, and that
+`list.v1`'s `kind` argument narrows `objects` only, so that `pending` is the same with or without
+it; leaving `pending` and the key out where nothing is raised, as 047 leaves out `status.pending`;
+removing `pending` from `list.v1`'s recorded outputs where a Type records outputs, as 047's Record
+removes `status.pending` from `inspect.v1`'s; ordering actions by ID; the decisions' names; the
+case, its route through order 042's e4 fixture, its IDs and its times; tagging the case with PND-002
+alone, since no step asserts PND-004's disclosure, which decision 7's unit test pins, so that
+PND-004's row stays `no case` with source `core`; and DL19's new sentence. Apply them as written and
+report them under `decisions` as the coordinator's. Rulings 80 to 82 and the targeted review's
+[section 6](../proposals/review-signin-2026-11-16/README.md#6-must-state-lists) put nothing on 047b;
+nothing here touches sign-in.
 
 **Read first:**
 
@@ -223,37 +227,38 @@ sentence in `engine/CONFORMANCE.md`.
    kinds"; report that silence as a finding (decision 11). Leave `pending` out where there are
    none, and for every other caller. Where it is present, push one decision named
    `list-pending-actions`, citing `PND-001`, `PND-002`, `PND-003` and `PND-004`, with `DL19`, and
-   the facts `{"actions": [IDs]}`. `objects`, `packages` and `tombstones` do not change.
+   the facts `{"actions": [IDs]}`. `objects`, `packages` and `tombstones` do not change. Where a
+   Type records outputs, the record writer in `requests.rs` removes `pending` from a `list.v1`
+   invocation's recorded outputs, as 047 removes `status.pending` from `inspect.v1`'s, so that no
+   action or evidence reaches the shared records.
 
-6. **The `unanswered` key.** After `step_body` gives the transition, beside
-   `explain::first_text` in `step_owned` or at the end of `step_body`, mark each tool result the
-   transition gives: `reply`, and the `reply` of each of `request_replies`. A tool result is an
-   object holding the member `isError`; a `{"pending": true}` reply, a JSON-RPC error and every
-   other reply are not, and are left as they are. A tool result's request is the invocation in
-   the transition's state whose ID it carries (the entry's `invocation`, or the `_meta` key
-   `invocation` of `reply`); where it carries none, as a request that was not dispatched, it is
-   the request of the step's `invoke` input, if the step is one, or else the `request` that the
-   step's input carries with a `caller` and a `sender`, if it carries one (as an access or
-   registration input may). `Input::Request`'s refused lifecycle request is not such a case
-   today: its reply (`lib.rs:674-701`) holds no `isError`, so it is not a tool result and gets
-   no key. The
-   result is the Interface's own where that invocation's `caller` and `sender` are both one
-   Interface's ID; for the request of an `invoke` input with no invocation, where its identity is
-   an Interface's ID and it names no `serving`; and for another input's `request` with no
-   invocation, where that request's `caller` and `sender` are both one Interface's ID. For such a
-   result, where decision 3's count at that Interface is not zero, set the `_meta` key
-   `unanswered` to that count, an integer. Count over the transition's state
-   (`transition.state`), the state after the step, at the evidence time of the step's input. Read
-   the input's evidence time and request before `step_body` consumes the input.
-   Write the key's qualification in `pending.rs`, or in `lib.rs` beside the marking, by the same
-   rule that `mark` (`requests.rs:22`) applies: `format!("{}unanswered", context.meta_prefix)`
-   (`Context`'s `meta_prefix`, `lib.rs:68`). Do not change `requests.rs`, which the Scope leaves
-   out, and do not expose `mark`. Set nothing otherwise, and never on an Agent's
-   result. A result whose invocation the state no longer holds, or a step whose input carries no
-   evidence time, gets no key: report each path by which a tool result reaches either case.
-   Report also each non-invoke input whose tool result is found through the `request` it
-   carries, and whether that result got the key.
-   Push no decision for the key. Nothing else in any reply changes.
+6. **The `unanswered` key.** After `step_body` gives the transition, beside `explain::first_text` in
+   `step_owned` or at the end of `step_body`, mark each tool result the transition gives: `reply`,
+   and the `reply` of each of `request_replies`. A tool result is an object holding the member
+   `isError`; a `{"pending": true}` reply, a JSON-RPC error and every other reply are not, and are
+   left as they are. A tool result's request is the invocation in the transition's state whose ID it
+   carries (the entry's `invocation`, or the `_meta` key `invocation` of `reply`); where it carries
+   none, as a request that was not dispatched, it is the request of the step's `invoke` input, if
+   the step is one, or else the `request` that the step's input carries with a `caller` and a
+   `sender`, if it carries one (as an access or registration input may). `Input::Request`'s refused
+   lifecycle request is not such a case today: its reply (`lib.rs:674-701`) holds no `isError`, so
+   it is not a tool result and gets no key. The result is the Interface's own where that
+   invocation's `caller` and `sender` are both one Interface's ID; for the request of an `invoke`
+   input with no invocation, where its identity is an Interface's ID and it names no `serving`; and
+   for another input's `request` with no invocation, where that request's `caller` and `sender` are
+   both one Interface's ID. For such a result, where decision 3's count at that Interface is not
+   zero, set the `_meta` key `unanswered` to that count, an integer. Count over the transition's
+   state (`transition.state`), the state after the step, at the evidence time of the step's input.
+   Read the input's evidence time and request before `step_body` consumes the input. Write the key's
+   qualification in `pending.rs`, or in `lib.rs` beside the marking, by the same rule that `mark`
+   (`requests.rs:22`) applies: `format!("{}unanswered", context.meta_prefix)` (`Context`'s
+   `meta_prefix`, `lib.rs:68`). Do not change `requests.rs` for the key, since the Scope admits it
+   only for decision 5's removal, and do not expose `mark`. Set nothing otherwise, and never on an
+   Agent's result. A result whose invocation the state no longer holds, or a step whose input
+   carries no evidence time, gets no key: report each path by which a tool result reaches either
+   case. Report also each non-invoke input whose tool result is found through the `request` it
+   carries, and whether that result got the key. Push no decision for the key. Nothing else in any
+   reply changes.
 
 7. **A unit test pins the rules.** In `pending.rs`'s tests, add one test,
    `actions_raised_by_scope`, that builds `State` values by hand, as 047's test does, and asserts
@@ -405,7 +410,8 @@ sentence in `engine/CONFORMANCE.md`.
 Change only `engine/crates/core/src/pending.rs` (decisions 1 to 3 and 7), `records.rs` (the
 inspection and `list.v1`), `lib.rs` (decision 6), `inventory.rs` only to move decision 1's scope
 test into its one `pub(crate) fn` and call it from `read`, and `access.rs` only to expose a lookup
-that decision 1 or 6 reuses, each without changing what it gives,
+that decision 1 or 6 reuses, each without changing what it gives, `requests.rs` only for decision
+5's removal of `pending` from `list.v1`'s recorded outputs,
 `engine/CONFORMANCE.md` (one sentence), `engine/STANDING.md`, written only by the tool,
 `conformance/conventions/setup/index.yaml` and the new
 `conformance/conventions/setup/action-by-scope/case.yaml`. `docs/work-orders/047b-declared.yaml`

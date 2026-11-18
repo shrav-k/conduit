@@ -1,6 +1,16 @@
 {
   "cases": [
     {
+      "id": "setup-action-at-root",
+      "case": "conventions/setup/action-at-root/case.yaml",
+      "promises": [
+        "PND-006",
+        "PND-001",
+        "PND-002",
+        "PND-003"
+      ]
+    },
+    {
       "id": "setup-base",
       "case": "conventions/setup/base/case.yaml",
       "promises": [

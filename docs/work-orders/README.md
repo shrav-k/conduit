@@ -36,7 +36,7 @@ comes after.
 | [048a1](048a1-build-sign-in-type-checks.md) | CTR-013's checks on a Type's sign-in, and the .v2 fixture's apiKey |
 | [048a2](048a2-build-sign-in-lapse-and-conflict.md) | a lapsed login raises the instance's sign-in action (F84's two halves, IFC-016's detection), and a second sign-in of one instance reports conflict (PND-010); after 047, 047b, 047c and 048a-1, the first part of 048a-2 (the coordinator's split, open to the owner's strike) |
 | [048a3](048a3-build-sign-in-hold.md) | the hold of an instance awaiting sign-in (PND-005's `then`): held requests unavailable with `pendingAction` and a PND-005 diagnostic, an expiry lifting nothing, and a new action on the next held request; after 048a-2 (the coordinator's split, open to the owner's strike) |
-| 048a4 | setup's account check (PND-011's setup half), the wrong-account undo and SignInUndone; after 048a-3 (planned; the coordinator's split, open to the owner's strike) |
+| [048a4](048a4-build-sign-in-setup-account.md) | setup's account check in TPL-012's order (PND-011's setup half): no account or another raises the sign-in action, another is undone by a sign-out part, and a failed undo reports SignInUndone=False and holds the instance under PND-011, beside PND-005's hold, until an account check clears it; after 048a-3 (the coordinator's split, open to the owner's strike) |
 | 048a5 | `sign-in.v1` dispatched, with IFC-049's relay and polling; after 048a-4, and may need its own split (planned; the coordinator's split, open to the owner's strike) |
 | 048a6 | the returns of a browser login (PND-013, PND-014); after 048a-5, and before 048b-join (planned; the coordinator's split, open to the owner's strike) |
 | [049a1](049a1-build-enrollment-core.md) | enrollment in the core |
@@ -161,6 +161,7 @@ comes after.
 | [191](191-log-marks-closed-settings-written.md) | the '(log)' marks closed, and the repository's settings written down (the full review's order 37) |
 | [192](192-register-rows-mc-mutation-native.md) | register rows: model checking, mutation testing, native probes (the full review's order 39) |
 | [201](201-mc9a-pending-actions-sign-in-registered.md) | MC9a's pre-registration, with `conflict` for a second `sign-in.v1` of one instance; merges before 048a-2 is dispatched (the coordinator's decision, open to the owner's strike) |
+| [202](202-agents-v2-fixture-subscription-only.md) | the 0.2.0 fixture's `.v2` Types subscription-only under ruling 83: no `apiKey` and no `oneOf`, `account` required, a string or null, and the case `agents-v2-defaults` with them; after ruling 83's record merged, and merges before 050f is dispatched (ruling 83's What follows; the coordinator's order, open to the owner's strike) |
 
 ## Shared and staged files
 

@@ -471,6 +471,12 @@ fn record_content(t: &Transition, c: &Context, data: &mut Value) -> Result<()> {
             {
                 status.remove("pending");
             }
+            if setting == "outputs"
+                && op == c.qualified("list.v1")
+                && let Some(outputs) = value.as_object_mut()
+            {
+                outputs.remove("pending");
+            }
             if op == c.qualified("run.v1") && setting == "inputs" {
                 value
                     .as_object_mut()
@@ -2238,7 +2244,13 @@ mod tests {
         }
 
         let repeated = inspect_setup(&agent.state, &c, "root", expiry, Some("key"));
-        assert_eq!(repeated.reply, root.reply);
+        assert_eq!(
+            repeated.reply["structuredContent"],
+            root.reply["structuredContent"]
+        );
+        let unanswered = mark(&c, "unanswered");
+        assert_eq!(root.reply["_meta"][&unanswered], 1);
+        assert!(repeated.reply["_meta"].get(&unanswered).is_none());
         let repeated_record = repeated
             .records
             .iter()
@@ -2690,6 +2702,46 @@ mod tests {
         let mut reply = ended_reply(&c, restored, &restored["contract"], "failed");
         explain::first_text(&mut reply, &c);
         assert_eq!(reply, ended.reply);
+    }
+
+    #[test]
+    fn first_filter_refusal_counts_actions_for_the_waiting_interface() {
+        let (setup, _) = interrupted_setup();
+        let (mut state, c, request) = repeat_fixture(true);
+        let subject = setup
+            .state
+            .objects
+            .iter()
+            .find(|o| o["id"] == "o1")
+            .unwrap();
+        state.objects.push(subject.clone());
+        let mut pending = invoke_repeat(&state, &c, &request);
+        assert_eq!(pending.reply["pending"], true);
+        let restriction = pending.state.invocations[0]["filters"][0].clone();
+        assert!(restriction.is_object());
+        pending
+            .state
+            .invocations
+            .push(setup.state.invocations[0].clone());
+        let result = Completion::Result {
+            result: json!({"_meta":{"test/reason":"refused","test/restriction":restriction},"isError":true}),
+        };
+        let refused = answer(&pending, &c, result.clone());
+        assert_eq!(refused.state.invocations.len(), 1);
+        assert_eq!(refused.state.invocations[0]["id"], "s1");
+        assert_eq!(refused.reply["_meta"][mark(&c, "reason")], "refused");
+        assert_eq!(refused.reply["_meta"][mark(&c, "unanswered")], 1);
+        assert_eq!(refused.request_replies[0].reply, refused.reply);
+
+        pending.state.invocations[0]["sender"] = json!("agent");
+        let delegated = answer(&pending, &c, result);
+        assert_eq!(delegated.reply["_meta"][mark(&c, "reason")], "refused");
+        assert!(
+            delegated.reply["_meta"]
+                .get(mark(&c, "unanswered"))
+                .is_none()
+        );
+        assert_eq!(delegated.request_replies[0].reply, delegated.reply);
     }
 
     fn fence_fixture() -> (Transition, Context, Evidence) {

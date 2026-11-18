@@ -328,7 +328,43 @@ pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition
 pub fn step_owned(state: State, input: Input, context: &Context) -> Result<Transition> {
     #[cfg(feature = "differential")]
     let before = state.clone();
+    let request = reply_context(&input);
+    let completion = completion_caller(&state, &input);
     let mut transition = step_body(state, input, context)?;
+    if let Some((time, caller)) = request {
+        let caller_for_attempt = |stored: &RequestReply| {
+            completion
+                .as_ref()
+                .filter(|(id, attempt, _)| stored.invocation == *id && stored.attempt == *attempt)
+                .map(|(_, _, caller)| caller.as_str())
+        };
+        // A filter refusal has no invocation in the primary reply. Its matching
+        // waiting reply still identifies the attempt that produced it.
+        let primary_caller = transition.request_replies.iter().find_map(|stored| {
+            caller_for_attempt(stored).filter(|_| stored.reply == transition.reply)
+        });
+        mark_unanswered(
+            &transition.state,
+            &mut transition.reply,
+            None,
+            primary_caller.or(caller.as_deref()),
+            None,
+            &time,
+            context,
+        )?;
+        for stored in &mut transition.request_replies {
+            let completed_caller = caller_for_attempt(stored);
+            mark_unanswered(
+                &transition.state,
+                &mut stored.reply,
+                Some(&stored.invocation),
+                None,
+                completed_caller,
+                &time,
+                context,
+            )?;
+        }
+    }
     explain::first_text(&mut transition.reply, context);
     for stored in &mut transition.request_replies {
         explain::first_text(&mut stored.reply, context);
@@ -336,6 +372,96 @@ pub fn step_owned(state: State, input: Input, context: &Context) -> Result<Trans
     #[cfg(feature = "differential")]
     differential::check(&before, &transition.state, context)?;
     Ok(transition)
+}
+
+fn completion_caller(state: &State, input: &Input) -> Option<(String, u64, String)> {
+    let Input::Complete {
+        invocation,
+        attempt,
+        completion: requests::Completion::Result { .. },
+        ..
+    } = input
+    else {
+        return None;
+    };
+    let entry = state
+        .invocations
+        .iter()
+        .find(|entry| entry["id"] == invocation.as_str() && entry["attempt"] == *attempt)?;
+    let holder = pending::own_interface(state, &entry["caller"], &entry["sender"])?;
+    Some((invocation.clone(), *attempt, holder["id"].as_str()?.into()))
+}
+
+fn reply_context(input: &Input) -> Option<(String, Option<String>)> {
+    let (evidence, caller) = match input {
+        Input::Invoke {
+            evidence, request, ..
+        } => {
+            let caller = match &request.identity {
+                access::Identity::Instance { id } if request.serving.is_none() => Some(id),
+                _ => None,
+            };
+            (evidence, caller)
+        }
+        Input::RegisterProject {
+            evidence, request, ..
+        }
+        | Input::Submit {
+            evidence, request, ..
+        }
+        | Input::Request {
+            evidence, request, ..
+        } => (
+            evidence,
+            (request.caller == request.sender).then_some(&request.caller),
+        ),
+        Input::Access { evidence, .. }
+        | Input::Complete { evidence, .. }
+        | Input::Cancel { evidence, .. }
+        | Input::SetupReport { evidence, .. }
+        | Input::Recover { evidence }
+        | Input::BuiltinRunStopped { evidence, .. }
+        | Input::FirstStart { evidence, .. } => (evidence, None),
+        _ => return None,
+    };
+    Some((evidence.time.clone(), caller.cloned()))
+}
+
+fn mark_unanswered(
+    state: &State,
+    reply: &mut Value,
+    invocation: Option<&str>,
+    caller: Option<&str>,
+    completed_caller: Option<&str>,
+    time: &str,
+    context: &Context,
+) -> Result<()> {
+    if reply.get("isError").is_none() {
+        return Ok(());
+    }
+    let invocation = invocation
+        .or_else(|| reply["_meta"][format!("{}invocation", context.meta_prefix)].as_str());
+    let entry = invocation.and_then(|id| state.invocations.iter().find(|entry| entry["id"] == id));
+    let holder = if let Some(entry) = entry {
+        pending::own_interface(state, &entry["caller"], &entry["sender"])
+    } else {
+        let fallback = if invocation.is_some() {
+            completed_caller
+        } else {
+            caller
+        };
+        fallback.and_then(|id| {
+            let id = json!(id);
+            pending::own_interface(state, &id, &id)
+        })
+    };
+    if let Some(holder) = holder {
+        let count = pending::raised_views(holder, state, time, context)?.len();
+        if count != 0 {
+            reply["_meta"][format!("{}unanswered", context.meta_prefix)] = json!(count);
+        }
+    }
+    Ok(())
 }
 
 fn step_body(state: State, input: Input, context: &Context) -> Result<Transition> {

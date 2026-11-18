@@ -11,6 +11,13 @@
       ]
     },
     {
+      "id": "setup-action-by-scope",
+      "case": "conventions/setup/action-by-scope/case.yaml",
+      "promises": [
+        "PND-002"
+      ]
+    },
+    {
       "id": "setup-base",
       "case": "conventions/setup/base/case.yaml",
       "promises": [

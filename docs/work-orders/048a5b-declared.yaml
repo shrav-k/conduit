@@ -1,0 +1,19 @@
+- name: requests-sign-in-account-first
+  kind: added
+  cases: [requests-sign-in-account-first]
+- name: sign-in.v1's stub removed, so the request that met it now dispatches the account check and reports no reason
+  kind: flip
+  cases: [requests-sign-in-lapse-and-conflict]
+  paths: ['/steps/11/*']
+- name: sign-in.v1's stub removed, so the request that met it now expects the account check's dispatch
+  kind: expectation
+  cases: [requests-sign-in-lapse-and-conflict]
+  paths: ['/steps/11/*']
+- name: sign-in.v1's stub removed, so the last request, which met it, now dispatches the account check and reports no reason
+  kind: flip
+  cases: [requests-sign-in-refusals-before-parts]
+  paths: ['/steps/17/*']
+- name: sign-in.v1's stub removed, so the last request, which met it, now expects the account check's dispatch
+  kind: expectation
+  cases: [requests-sign-in-refusals-before-parts]
+  paths: ['/steps/17/*']

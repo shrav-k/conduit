@@ -1,0 +1,10 @@
+- name: IFC-045 cited by the sign-in lapse and conflict case
+  kind: metadata
+  cases: [requests-sign-in-lapse-and-conflict]
+  operation: add
+  paths: ['/promises/*']
+- name: IFC-045, the first call to each signIn Agent declares URL elicitation
+  kind: expectation
+  cases: [requests-sign-in-lapse-and-conflict]
+  operation: add
+  paths: ['/steps/*/expect/external_intents*']

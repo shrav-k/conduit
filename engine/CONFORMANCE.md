@@ -752,3 +752,14 @@ Refusals for `answer.v1`, `sign-in.v1` and the enrollment operations stay at tie
 senders other than root until their ACC-033 routes are built.
 Tier 2 lists live Conduits first, then visible closed Conduits by tombstone time and ID. A
 request through a closed Conduit can show its kept target in tier 2 with `exists` false.
+
+## IFC-049's relay (order 048b-relay1)
+
+IFC-049's URL action is relayed by the shell (order 048b-relay1). Its requestState is a random
+handle of 43 characters that the shell issues and keeps in memory, bound to the authenticated
+Interface, the tool, the invocation and its attempt, and expiring at the output's DL18 instant;
+each retry is checked there before anything reaches the core, and an accepted one consumes its
+handle. A restart forgets every handle; the engine's recovery ends the invocations they named
+unknown (DL6), so a retry after it is refused as not issued. rmcp 3.9.0 writes every URL
+elicitation with `elicitationId` empty: the engine correlates nothing by it and sends no
+completion notification, which is how this build reads IFC-049's "There is no elicitationId".

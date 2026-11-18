@@ -1061,6 +1061,7 @@ pub(crate) mod tests {
             external_intents: vec![],
             reply: Value::Null,
             request_replies: vec![],
+            input_required: vec![],
         }
     }
     fn request(sender: &str, tool: &str, args: Value) -> AccessRequest {

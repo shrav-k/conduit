@@ -151,6 +151,16 @@ pub enum Input {
         attempt: u64,
         completion: requests::Completion,
     },
+    Respond {
+        evidence: Evidence,
+        invocation: String,
+        attempt: u64,
+        identity: access::Identity,
+        #[serde(default)]
+        responses: Value,
+        #[serde(default)]
+        meta: Value,
+    },
     Cancel {
         evidence: Evidence,
         invocation: String,
@@ -251,6 +261,22 @@ pub struct RequestReply {
     pub reply: Value,
 }
 
+/// IFC-049: an interim answer to one dispatched request attempt, which asks the Interface
+/// that sent it for input. The invocation stays in progress. The shell relays it and keeps
+/// its requestState. No step gives one until order 048a-5e.
+#[derive(Clone, Debug, Serialize)]
+pub struct InputRequired {
+    pub invocation: String,
+    pub attempt: u64,
+    /// The one input request:
+    /// {"method": "elicitation/create", "params": {"mode": "url", "message": M, "url": U}}.
+    pub request: Value,
+    /// The result's own `_meta`, such as IFC-049's signInLogin, or null for none.
+    pub meta: Value,
+    /// RFC 3339: the end of the URL action's wait (DL18), from which its requestState is refused.
+    pub expires: String,
+}
+
 #[derive(Clone, Debug, Serialize)]
 pub struct Transition {
     pub state: State,
@@ -259,6 +285,8 @@ pub struct Transition {
     pub external_intents: Vec<Value>,
     pub reply: Value,
     pub request_replies: Vec<RequestReply>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub input_required: Vec<InputRequired>,
 }
 
 fn decision(
@@ -478,6 +506,7 @@ fn step_body(state: State, input: Input, context: &Context) -> Result<Transition
         external_intents: vec![],
         reply: Value::Null,
         request_replies: vec![],
+        input_required: vec![],
     };
     match input {
         Input::ExportRecords { unreadable } => records::export(&mut transition, &unreadable)?,
@@ -513,6 +542,11 @@ fn step_body(state: State, input: Input, context: &Context) -> Result<Transition
             completion,
             context,
         )?,
+        Input::Respond {
+            invocation,
+            attempt,
+            ..
+        } => requests::respond(&mut transition, &invocation, attempt, context),
         Input::Cancel {
             evidence,
             invocation,

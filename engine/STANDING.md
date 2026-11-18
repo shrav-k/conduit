@@ -46,7 +46,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | reason, no case | 57 | 15 | 2 | 74 |
 | no case, no reason | 40 | 77 | 21 | 138 |
 | all | 226 | 246 | 48 | 520 |
-| named in engine source | 141 | 164 | 25 | 330 |
+| named in engine source | 141 | 164 | 26 | 331 |
 
 ## The promises
 
@@ -189,7 +189,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | IFC-045 | interface | must | 0 | 0 | reason | core | reason, no case |
 | IFC-046 | interface | must | 21 | 0 | cases | core | case passes |
 | IFC-047 | interface | must | 2 | 0 | outside | core | case passes |
-| IFC-049 | interface | must | 0 | 0 | outside | none | no case, no reason |
+| IFC-049 | interface | must | 0 | 0 | outside | core, shell | no case, no reason |
 | IFC-050 | interface | must | 4 | 0 | outside | core | case passes |
 | IMP-001 | convention | must | 0 | 0 | reason | none | reason, no case |
 | IMP-002 | convention | must not | 5 | 0 | cases | core | case passes |

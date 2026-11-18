@@ -591,6 +591,7 @@ mod tests {
             external_intents: vec![],
             reply: Value::Null,
             request_replies: vec![],
+            input_required: vec![],
         };
         let evidence = Evidence {
             time: "2026-11-10T12:00:00Z".into(),
@@ -962,6 +963,7 @@ mod tests {
             external_intents: vec![],
             reply: Value::Null,
             request_replies: vec![],
+            input_required: vec![],
         };
         let evidence = Evidence {
             time: "2026-11-10T12:00:00Z".into(),

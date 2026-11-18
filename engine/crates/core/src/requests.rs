@@ -740,6 +740,29 @@ fn reject_diagnostics(
     end(t, a, c, &ending, None, Some(reason), id)
 }
 
+pub(crate) fn respond(t: &mut Transition, invocation: &str, attempt: u64, c: &Context) {
+    let message = format!(
+        "invocation {invocation} has no input request outstanding, so the retry was not passed on; no request in this build asks for input yet (order 048a-5e)"
+    );
+    t.decisions.push(decision(
+        "refuse-input-response",
+        &["IFC-049"],
+        &[],
+        json!({"invocation":invocation,"attempt":attempt}),
+        vec![],
+    ));
+    t.reply = json!({
+        "error": {
+            "code": -32602,
+            "message": message,
+            "data": {
+                mark(c, "reason"): "invalid",
+                "diagnostics": [{"ruleId":"IFC-049","level":"error","message":{"text":message}}]
+            }
+        }
+    });
+}
+
 fn named_reference(operation: &Value, arguments: &Value, c: &Context) -> Option<String> {
     let operation = operation.as_str()?;
     let core_op = operation.strip_prefix(&format!("{}#", c.core_package))?;
@@ -1328,6 +1351,7 @@ fn invoke_inner(
             external_intents: vec![],
             reply: Value::Null,
             request_replies: vec![],
+            input_required: vec![],
         };
         let mut allocation = Allocation {
             evidence: a.evidence,
@@ -1427,6 +1451,7 @@ fn invoke_inner(
             external_intents: vec![],
             reply: Value::Null,
             request_replies: vec![],
+            input_required: vec![],
         };
         let rejection = crate::archives::install(
             &mut trial,
@@ -2455,6 +2480,36 @@ mod tests {
     };
     use std::collections::BTreeMap;
 
+    #[test]
+    fn respond_is_refused_until_input_requests_are_built() {
+        let (state, c) = fixture();
+        let ids: Vec<_> = (1..50)
+            .map(|n| format!("00000000-0000-4000-8046-a0000000{n:04}"))
+            .collect();
+        let input: Input = serde_json::from_value(json!({
+            "kind": "respond",
+            "evidence": {"time":"2026-11-09T13:00:00Z","ids":ids},
+            "invocation": "absent-invocation",
+            "attempt": 1,
+            "identity": {"kind":"instance","id":"root"},
+            "responses": {"url":{"action":"accept"}},
+            "meta": {}
+        }))
+        .unwrap();
+        let t = step(&state, input, &c).unwrap();
+        assert_eq!(t.reply["error"]["code"], -32602);
+        let data = &t.reply["error"]["data"];
+        assert_eq!(data[mark(&c, "reason")], "invalid");
+        let diagnostics = data["diagnostics"].as_array().unwrap();
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0]["ruleId"], "IFC-049");
+        assert!(t.records.is_empty());
+        assert!(t.input_required.is_empty());
+        assert_eq!(t.state, state);
+        assert_eq!(t.decisions.len(), 1);
+        assert_eq!(t.decisions[0].action, "refuse-input-response");
+    }
+
     fn call_fixture(plain: bool, spec: Value) -> (Transition, Context) {
         let (mut state, c, _) = repeat_fixture(false);
         state.invocations.push(json!({
@@ -3371,6 +3426,7 @@ mod tests {
                 external_intents: vec![],
                 reply: Value::Null,
                 request_replies: vec![],
+                input_required: vec![],
             },
             c,
         )

@@ -431,13 +431,31 @@ DL16). Until Agents are confined, a package keeping a Resource's login runs wher
 unconfined Agent runs; the engine does not check that placement in v0 (ruling 75 C1).
 
 In v0 the person's Interface runs on the engine's machine. From another machine or a phone,
-the person reaches it over SSH and pastes the return, or uses a device code. An SSH forward
-of a redirect's port is the person's own and carries nothing through Conduit. A phone
+the person reaches it over SSH and pastes the return, or uses a device code. A phone
 Interface is v1's; root on another machine waits until Agents are confined (ruling 75 C4, C5).
-Claude Code Agent Types state carried: false in v0: those Agents sign in only with a browser
-on their own machine, because Anthropic's terms forbid intermediating Claude.ai credentials.
-This is to be revisited in v1 (ruling 75 C3). The Interface receiving a sign-in is root in
-practice in v0, within PND-010's scoped authority (ruling 75 C2).
+Claude Code Agent Types state carried: false in v0, because Anthropic's terms forbid
+intermediating Claude.ai credentials: Conduit never reads, holds or relays the credential that
+such a sign-in returns. The person completes the login on the Agent's own machine, at it or
+over a connection that Conduit opens, limits and closes, the tunnel or SSH session, by remote
+desktop or by SSH, pasting the code or forwarding the port (ruling 80 point 8, amending ruling
+75 C3; IFC-049). This is to be revisited in v1 (ruling 75 C3). The Interface receiving a
+sign-in is root in practice in v0, within PND-010's scoped authority (ruling 75 C2).
+
+That connection serves only logins stating carried: false; nothing changes for carried: true.
+The channel that carries the return ends at each end in a program that is not Conduit's: the
+node's own server for the route, and that route's client on the person's side. No process
+running Conduit's code decrypts, terminates or copies it. A forward opens only after IFC-049
+relayed this sign-in's URL, for the port its redirect_uri names, to that node's loopback only,
+and closes when sign-in.v1 ends; where the local port cannot be bound, the Interface says so,
+naming the port, and opens no forward on another port. A Claude Agent's paste route is the
+person's own delivery, on the node, of the return or of a page login's code, held by no engine
+or Interface process (IFC-049). The connection Conduit manages for a Claude sign-in does not
+bind the person who completes the login; the expected account (PND-011) remains the only
+binding.
+
+On the engine's own runner, Codex's browser login may open the default browser of the engine
+user's graphical session, where one exists. The hook still relays the printed URL under
+IFC-049, and the account check (PND-011) stays the only guard.
 
 Network membership grants nothing. Identity is per instance, and the target's owner authorizes
 every request (PRV-018, IFC-022, ACC-001). A relationship across parties has two halves, each

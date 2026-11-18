@@ -27,6 +27,7 @@ pub mod requests;
 mod retirement;
 mod revisions;
 pub mod schemas;
+mod sign_in;
 
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};

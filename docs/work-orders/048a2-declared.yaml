@@ -1,3 +1,4 @@
+# Checked at the merge of order 048a2, against main at 3c761dd9: the work's vector delta matches these shapes.
 - name: requests-sign-in-lapse-and-conflict
   kind: added
   cases: [requests-sign-in-lapse-and-conflict]

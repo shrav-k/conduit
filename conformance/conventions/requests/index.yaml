@@ -689,6 +689,17 @@
       ]
     },
     {
+      "id": "requests-sign-in-lapse-and-conflict",
+      "case": "conventions/requests/sign-in-lapse-and-conflict/case.yaml",
+      "promises": [
+        "PND-005",
+        "PND-010",
+        "IFC-016",
+        "PND-001"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "requests-sign-in-return-kept-nowhere",
       "case": "conventions/requests/sign-in-return-kept-nowhere/case.yaml",
       "promises": [

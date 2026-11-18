@@ -310,13 +310,18 @@ pub(crate) fn provenance(s: &State, v: &Value, c: &Context) -> Result<Value> {
         json!({"actor":source["caller"],"sentBy":source["sender"],"invocation":source["id"],"openedThrough":paths}),
     )
 }
-fn own_tools(o: &Value, c: &Context) -> Result<Value> {
+pub(crate) fn instance_type(o: &Value, c: &Context) -> Result<Value> {
     let published = crate::registration::publication_object(o, c)?;
     let (_, _, ty) = crate::schemas::operation(
         &published,
         o["type"].as_str().ok_or("Agent Type absent")?,
         &c.core_package,
     )?;
+    Ok(ty)
+}
+
+fn own_tools(o: &Value, c: &Context) -> Result<Value> {
+    let ty = instance_type(o, c)?;
     let Some(pointer) = ty["spec"]["toolsDirectory"]["directory"].as_str() else {
         return Ok(json!({"stated":false}));
     };

@@ -158,9 +158,12 @@
   observable: >-
     Every held request is final. Nothing is queued, resumed or dispatched after it ends; the
     caller sends a new request. A mid-call URL elicitation ends that call unknown under
-    IFC-016. No action is raised for a Type without signIn or with a null account setting;
-    its call ends unknown with an explicit diagnostic. After expiry a new sign-in is raised
-    on the next held request or setup, never by expiry alone.
+    IFC-016. A contract reports a missing or lapsed login in one of two forms: an
+    implementation that carries Conduit's keys ends the call failed or unknown, as it can
+    tell, with an error diagnostic naming PND-005; a plain one reports it only by a URL
+    request, under IFC-016. No action is raised for a Type without signIn or with a null
+    account setting; its call ends as that form ends it, with an explicit diagnostic. After
+    expiry a new sign-in is raised on the next held request or setup, never by expiry alone.
   vectors: []
 
 - id: PND-010
@@ -180,7 +183,10 @@
     the request reports unavailable where an in-progress sign-in.v1 invocation may start a
     login stating a fixed port that a login this request may start also states. The diagnostic
     names PND-010 and the port, and names the other invocation's pending action only where
-    the caller may see it (PND-002). A request may start its asked-for login or, without one,
+    the caller may see it (PND-002). A sign-in.v1 for an instance whose earlier sign-in.v1,
+    setup or retirement has been dispatched and has not ended is not dispatched and reports
+    conflict, with a diagnostic naming PND-010 and, where the caller may see it (PND-002), the
+    other invocation's pending action. A request may start its asked-for login or, without one,
     any of its Type's logins. These decisions follow OPS-023's order.
   observable: >-
     The engine first dispatches account-hook.v1 as a part, before sign-in-hook.v1. If that

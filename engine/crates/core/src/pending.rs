@@ -265,6 +265,72 @@ pub(crate) fn action_named(
     })
 }
 
+pub(crate) fn unanswered_sign_in<'a>(
+    state: &'a State,
+    instance: &Value,
+    time: &str,
+) -> Option<&'a Value> {
+    state
+        .pending_actions
+        .values()
+        .map(|entry| &entry["action"])
+        .find(|action| {
+            action["kind"] == "sign-in"
+                && action["subject"][0]["id"] == instance["id"]
+                && action.get("answer").is_none()
+                && is_raised_at(action, time)
+        })
+}
+
+pub(crate) fn raise_sign_in(
+    state: &mut State,
+    instance: &Value,
+    account: &str,
+    pointer: &str,
+    invocation: &Value,
+    trigger: &str,
+    a: &mut Allocation<'_>,
+) -> Result<Option<Value>> {
+    let time = &a.evidence.time;
+    if instance["state"] == "retired" || unanswered_sign_in(state, instance, time).is_some() {
+        return Ok(None);
+    }
+    let expiry = week_after(time).ok_or("cannot compute sign-in action expiry")?;
+    let id = a.next(state)?;
+    let action = json!({
+        "id": id,
+        "kind": "sign-in",
+        "subject": [{"kind":instance["kind"], "name":instance["name"], "id":instance["id"]}],
+        "evidence": [
+            fact(json!(account), &format!("config{pointer}"), "the account this instance is configured for"),
+            fact(invocation["id"].clone(), "records", "the request whose call reported a missing or lapsed login"),
+            fact(invocation["operation"].clone(), "records", "the operation of that request"),
+            fact(json!(trigger), "records", "how the implementation reported it")
+        ],
+        "expiry": expiry
+    });
+    state.pending_actions.insert(
+        id,
+        json!({"action":action, "dispatched":null, "raisedBy":invocation["id"]}),
+    );
+    Ok(Some(action))
+}
+
+pub(crate) fn void_sign_in(
+    state: &mut State,
+    instance: &Value,
+    time: &str,
+    invocation: &Value,
+) -> Option<Value> {
+    let id = unanswered_sign_in(state, instance, time)?["id"]
+        .as_str()?
+        .to_owned();
+    let action = &mut state.pending_actions.get_mut(&id)?["action"];
+    action["answer"] = invocation_answer("void", invocation, time);
+    Some(action.clone())
+}
+
+// Sign-in actions are answered by sign-in or retirement, not answer.v1.
 const ACCEPTED_ANSWERS: &[(&str, &str)] = &[("setup", "dismissed"), ("notice", "acknowledged")];
 
 pub(crate) fn accepts_answer(kind: &Value, answer: &Value) -> bool {
@@ -547,6 +613,22 @@ fn action_view(
     Ok(Some(view))
 }
 
+/// PND-004: an answer's evidence follows the action's holder and inspection rules.
+pub(crate) fn answer_evidence(
+    action: &Value,
+    holder: Option<&Value>,
+    state: &State,
+    context: &Context,
+) -> Result<Value> {
+    if let Some(holder) = holder
+        && is_raised_at_holder(action, holder, state, context)
+        && let Some(view) = action_view(action, holder, state, context)?
+    {
+        return Ok(view["evidence"].clone());
+    }
+    Ok(json!([]))
+}
+
 fn held_actions(state: &State, context: &Context) -> Vec<Value> {
     let setup_operation = context.qualified("set-up.v1");
     let mut actions: Vec<_> = state
@@ -567,6 +649,20 @@ fn held_actions(state: &State, context: &Context) -> Vec<Value> {
     actions
 }
 
+pub(crate) fn raised_view(
+    action: &Value,
+    holder: &Value,
+    state: &State,
+    time: &str,
+    context: &Context,
+) -> Result<Option<Value>> {
+    if is_raised_for(action, holder, state, time, context) {
+        action_view(action, holder, state, context)
+    } else {
+        Ok(None)
+    }
+}
+
 pub(crate) fn raised_views(
     holder: &Value,
     state: &State,
@@ -575,9 +671,7 @@ pub(crate) fn raised_views(
 ) -> Result<Vec<Value>> {
     let mut views = Vec::new();
     for action in held_actions(state, context) {
-        if is_raised_for(&action, holder, state, time, context)
-            && let Some(view) = action_view(&action, holder, state, context)?
-        {
+        if let Some(view) = raised_view(&action, holder, state, time, context)? {
             views.push(view);
         }
     }
@@ -846,6 +940,120 @@ mod tests {
         ] {
             assert_eq!(accepts_answer(&json!(kind), &json!(answer)), accepted);
         }
+    }
+
+    #[test]
+    fn sign_in_action_raised_by_a_lapsed_login() {
+        let (_, context) = crate::explain::tests::fixture();
+        let time = "2026-11-12T12:00:00Z";
+        let later = "2026-11-12T12:00:01Z";
+        let expiry = "2026-11-19T12:00:00Z";
+        let retired = "2026-11-12T13:00:00Z";
+        let root = json!({"id":"r","kind":"Interface","from":context.qualified("root")});
+        let viewer = json!({"id":"v","kind":"Interface"});
+        let agent = json!({"id":"s1","name":"s1","kind":"Agent","owner":"f",
+            "config":{"account":"primary-account"}});
+        let mut state = State {
+            objects: vec![
+                root.clone(),
+                viewer.clone(),
+                agent.clone(),
+                json!({"id":"u","kind":"Interface"}),
+                json!({"id":"f","name":"f","kind":"Fleet"}),
+                json!({"id":"p","name":"p","kind":"Pool"}),
+                json!({"id":"x","name":"x","kind":"Resource","owner":"p"}),
+                json!({"id":"a1","name":"a1","kind":"Agent","owner":"f"}),
+                json!({"id":"a2","kind":"Agent","owner":"f"}),
+                json!({"id":"management","kind":"Resource","from":context.qualified("management")}),
+                json!({"id":"scope","kind":"Conduit","consumer":"v","target":"f",
+                    "open":true,"state":"ready","operations":[context.qualified("inspect.v1")]}),
+            ],
+            records: vec![json!({"type":"invocation-ended","data":{"invocation":"c1"}})],
+            ..State::default()
+        };
+        let raise = |state: &mut State, at, invocation, id, trigger| {
+            let evidence = serde_json::from_value(json!({"time":at,"ids":[id]})).unwrap();
+            let mut allocation = Allocation {
+                evidence: &evidence,
+                cursor: 0,
+            };
+            let action = raise_sign_in(
+                state,
+                &agent,
+                "primary-account",
+                "/account",
+                &json!({"id":invocation,"operation":"example.org/agent#ping.v1"}),
+                trigger,
+                &mut allocation,
+            )
+            .unwrap();
+            assert_eq!(allocation.cursor, usize::from(action.is_some()));
+            action
+        };
+        let action = raise(&mut state, time, "c1", "first-action", "lapsed-login").unwrap();
+        assert_eq!(
+            action,
+            json!({
+                "id":"first-action", "kind":"sign-in", "subject":[{"kind":"Agent","name":"s1","id":"s1"}],
+                "evidence":[
+                    {"kind":"fact","value":"primary-account","where":"config/account",
+                        "proves":"the account this instance is configured for"},
+                    {"kind":"fact","value":"c1","where":"records",
+                        "proves":"the request whose call reported a missing or lapsed login"},
+                    {"kind":"fact","value":"example.org/agent#ping.v1","where":"records",
+                        "proves":"the operation of that request"},
+                    {"kind":"fact","value":"lapsed-login","where":"records",
+                        "proves":"how the implementation reported it"}
+                ],
+                "expiry":expiry
+            })
+        );
+        assert_eq!(
+            state.pending_actions["first-action"],
+            json!({"action":action,"dispatched":null,"raisedBy":"c1"})
+        );
+        let mut before_expiry = state.clone();
+        assert!(raise(&mut state, later, "c2", "unused-action", "url-elicitation").is_none());
+        assert_eq!(state.pending_actions, before_expiry.pending_actions);
+        let views = |state: &State, holder, at| raised_views(holder, state, at, &context).unwrap();
+        assert_eq!(views(&state, &root, later), vec![action.clone()]);
+        assert_eq!(views(&state, &viewer, later), vec![action.clone()]);
+        assert_eq!(views(&state, &viewer, later).len(), 1);
+        assert!(views(&state, &root, expiry).is_empty());
+        assert!(views(&state, &viewer, expiry).is_empty());
+        let lookup =
+            |state: &State, at| action_named(state, "first-action", Some(at), &context).unwrap();
+        let expired_answer = json!({"value":"expired","at":expiry});
+        assert_eq!(lookup(&state, expiry)["answer"], expired_answer);
+        let replacement = raise(
+            &mut state,
+            expiry,
+            "c3",
+            "replacement-action",
+            "lapsed-login",
+        )
+        .unwrap();
+        assert_ne!(replacement["id"], action["id"]);
+        assert_eq!(replacement["expiry"], "2026-11-26T12:00:00Z");
+        assert!(may_answer(&state, &root, None, &action["id"], &context));
+        assert!(ACCEPTED_ANSWERS.iter().all(|(kind, _)| *kind != "sign-in"));
+        assert!(!accepts_answer(&action["kind"], &json!("dismissed")));
+
+        let retirement = json!({"id":"retirement","caller":"r"});
+        let voided = void_sign_in(&mut before_expiry, &agent, retired, &retirement).unwrap();
+        let void_answer =
+            json!({"value":"void","actor":"r","invocation":"retirement","at":retired});
+        assert_eq!(voided["answer"], void_answer);
+        assert_eq!(
+            before_expiry.pending_actions["first-action"],
+            json!({"action":voided,"dispatched":null,"raisedBy":"c1"})
+        );
+        assert!(views(&before_expiry, &root, retired).is_empty());
+        assert!(void_sign_in(&mut before_expiry, &agent, retired, &retirement).is_none());
+        state.records.clear();
+        before_expiry.records.clear();
+        assert_eq!(lookup(&state, expiry)["answer"], expired_answer);
+        assert_eq!(lookup(&before_expiry, expiry)["answer"], void_answer);
     }
 
     #[test]

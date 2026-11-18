@@ -1615,28 +1615,21 @@ fn first_start_presents_final_lists_and_unbuilt_operations_name_their_orders() {
         lift["structuredContent"]["diagnostics"][0]["ruleId"],
         "OPS-029"
     );
-    #[allow(clippy::single_element_loop)]
-    for (tool, arguments, order) in [(
-        "system.sign-in.v1",
-        json!({"instance":{"kind":"Resource","name":"management"}}),
-        "048a",
-    )] {
-        let reply = shell.submit(json!({"kind":"invoke","request":{"identity":{"kind":"instance","id":root},"tool":tool,"arguments":arguments}}), &MissingExecutor).unwrap();
-        assert_eq!(
-            reply["_meta"][format!("{}reason", shell.context.meta_prefix)],
-            "unavailable"
-        );
-        assert_eq!(
-            reply["structuredContent"]["diagnostics"][0]["ruleId"],
-            "PND-010"
-        );
-        assert!(
-            reply["content"][0]["text"]
-                .as_str()
-                .unwrap()
-                .contains(&format!("not built yet, order {order}"))
-        );
-    }
+    let reply = shell.submit(json!({"kind":"invoke","request":{"identity":{"kind":"instance","id":root},"tool":"system.sign-in.v1","arguments":{"instance":{"kind":"Resource","name":"management"}}}}), &MissingExecutor).unwrap();
+    assert_eq!(
+        reply["_meta"][format!("{}reason", shell.context.meta_prefix)],
+        "invalid"
+    );
+    assert_eq!(
+        reply["structuredContent"]["diagnostics"][0]["ruleId"],
+        "PND-010"
+    );
+    assert!(
+        reply["content"][0]["text"]
+            .as_str()
+            .unwrap()
+            .contains("the instance's Type states no signIn")
+    );
     let answer = shell.submit(json!({"kind":"invoke","request":{"identity":{"kind":"instance","id":root},"tool":"management.answer.v1","arguments":{"action":"00000000-0000-4000-8000-000000009999","answer":"dismissed"}}}), &MissingExecutor).unwrap();
     assert_eq!(
         answer["_meta"][format!("{}reason", shell.context.meta_prefix)],

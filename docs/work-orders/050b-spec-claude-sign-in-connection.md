@@ -444,3 +444,71 @@ sentence word for word. It merges on a pass of `tools/gate.py`; CI runs on the p
 second opinion that the merge does not wait for ([ruling 80](../proposals/ruling-80/README.md)).
 It may merge at any time, before or after order 048a-1 (decision 5), and before orders 050n and
 050o, which cite it.
+
+## Record
+
+Run on 2026-11-17, from about 11:27 to 12:03 UTC, on the Mac from `main` `5eb71667` (the merge that
+added this order), in one round: the worker (1895 s) and a fresh Codex verifier (254 s). The change
+is the four files of Scope: decision 1's four lines for the `carried` description in
+`spec/schemas/contracts.yaml`; decision 2's three lines for IFC-049's `then` and decision 3's
+fifteen lines at the end of its `observable` in `spec/interface/implementation.yaml`; decision 4's
+three paragraphs in place of the one paragraph of the limits in `spec/README.md`; and decision 5's
+lines in `IN_FORCE.md`. The worker found line 228 in state A, so F97's sentence stays pending, now
+ending `with one loader vector (82 point 6, o5).`, and F95's new line follows F96's.
+`tools/promise_standing.py --write` changed nothing, and `check_model_account.py` printed the same
+counts as on the starting tree (246 rows, 232 safety, 14 not safety, 0 uncatalogued). The worker
+made no choice of wording or behaviour of its own; its one choice was to run cargo offline, with no
+toolchain installed on demand. It reported, outside this order's Scope, that order 048a-1's decision
+8 and its two F95 checks need the coordinator's amendment before that order is dispatched. Its
+sandbox denied loopback binds: `cargo test --release` in `engine/` exited 101, 13 HTTP tests failing
+with `PermissionDenied`, and `tools/gate.py` failed six test gates on the same denials and skipped
+`secrets`, since gitleaks was not installed. The verifier found no must and no should; it confirmed
+from the saved logs that those failures were the sandbox's socket denials, and left the engine's
+tests and the gate to a run outside the sandbox.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2), against ruling 82 point
+6's lines o2, o3 and o5 and the record's section 6 above all. Since the order's checks compare with
+`HEAD` and the worktree's `HEAD` was the checkpoint, it ran every check of "Done when" in a scratch
+clone reset to the base, with the change unstaged. All passed: the eight `tools/` checks (each
+ending `Errors: 0`, `check_model_account.py`'s output identical on the changed and the base tree,
+`engine/STANDING.md` unchanged by `--write`) and `git diff --check` (no output);
+`cargo test --release` in `engine/` with `CONDUIT_VECTOR_THREADS=4`, which the worker's sandbox had
+stopped (28 `test result:` lines, all `ok` with `0 failed`); the ten `tr` and `grep` checks and the
+four whole-line checks (1 each); `F97, by order 048a-1` (1, as before: state A) and the
+loader-vector line (1); the two Python checks (`True True True True` and `True True True`); the scan
+of `spec/` for the stale route sentences (0); the four pending-line checks (0 each);
+`git diff --numstat IN_FORCE.md` (`5`, `4`); and `git status --short` (the four files of Scope,
+modified, nothing staged). It compared decisions 1 to 4 and decision 5's four lines with the order's
+text, the order's indent removed: equal byte for byte. It found that the texts say only what o2, o3,
+o5 and the record's section 6 items 1 to 4 say; that, beyond text already there, they name no
+software or protocol but SSH, remote desktop, a tunnel and redirect_uri; that they add no promise
+ID; and that F95's sentence is the same word for word in both places. The added lines held no
+private detail, and the checkpoint's author and committer were the work-order identity. It found no
+must and no should, and noted that `tools/gate.py`, not a check of "Done when", was still owed a run
+outside the sandbox before the merge.
+
+The fixer fetched and rebased the branch onto `origin/main` at `5eb71667` with the work-order
+identity; the branch was already on it, so nothing moved. With no finding from the verifier or the
+reader, it changed no file but this Record. It then ran, from the worktree's root, every check of
+"Done when", with `origin/main` in place of `HEAD`, since the change is now committed: in the two
+Python checks, and as `git diff --numstat origin/main -- IN_FORCE.md` and
+`git diff --name-status origin/main` for the numstat and the status. The eight `tools/` checks each
+ended `Errors: 0`, and `check_model_account.py`'s output was identical to the base tree's, from an
+export of `origin/main`; `engine/STANDING.md` was unchanged.
+`CONDUIT_VECTOR_THREADS=4 cargo test --release` in `engine/` exited 0 with 28 `test result:` lines,
+all `ok` with `0 failed`, the last
+`test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s`. The
+ten `tr` and `grep` checks and the four whole-line checks printed 1 each; `F97, by order 048a-1` and
+the loader-vector line 1 each; the Python checks `True True True True` and `True True True`; the
+scan of `spec/` 0; and the four pending-line checks 0 each. The numstat printed `5`, `4` and
+`IN_FORCE.md`, and the status, before this Record was written, listed exactly the four files of
+Scope, each modified. With this Record in place, `python3 tools/check_docs.py` and
+`python3 tools/check_private_paths.py` ended `Errors: 0`, and `git diff --check origin/main...HEAD`
+and `git diff --check` printed nothing. The gate's run on this order's squash, which this merge
+waits on, is the coordinator's at the merge.
+
+At the merge the coordinator applied the second reader's one should, in this Record: the worker's
+one choice, running cargo offline. This order merges before order 048a-1 is dispatched, so the
+coordinator amends 048a-1's decision 8 and its two checks that name F95's sentence before that
+dispatch, as this order's note on 048a-1 says. The gate runs on the squash, and the merge waits on
+its PASS.

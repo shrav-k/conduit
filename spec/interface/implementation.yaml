@@ -1382,7 +1382,9 @@
     or part of an enrollment action. For sign-in the engine writes the message: it names the
     instance, its Type and package, its node, the URL's host, the expected account and what
     the person brings back, if anything; for device it says the code is in the engine's
-    panel. For carried: false it says to open the URL in a browser on that node's machine.
+    panel. For carried: false it says that nothing comes back through the Interface, and that
+    the person completes the login on that node's machine, at it or over a connection Conduit
+    manages, by remote desktop or by SSH, pasting the code or forwarding the port.
     No text from the hook is relayed. No message holds a code or fingerprint.
     The URL is HTTPS only,
     contains no credential or personal data and is not pre-authenticated. No tool content,
@@ -1435,4 +1437,19 @@
     It is kept nowhere (PND-014). PND-013 alone accepts it, only from
     the Interface that received the sign-in, in its bound invocation. No Agent
     receives a sign-in's URL, login metadata or return (PND-002, IFC-016).
+    Where Conduit manages the connection over which a person completes a login stating
+    carried: false (spec/README.md), the connection meets these conditions; nothing here
+    changes a login stating carried: true. The channel that carries the return ends at each
+    end in a program that is not Conduit's: the node's own server for the route, and that
+    route's client on the person's side. No process running Conduit's code decrypts,
+    terminates or copies it, and no engine, Interface or provider log, record or diagnostic
+    holds what passes over it. A forward opens only after the engine relayed this sign-in's
+    URL under this rule, for the port its redirect_uri names, to that node's loopback only,
+    and closes when sign-in.v1 ends, signed in, failed or unknown at DL18. Where the local
+    port cannot be bound, the Interface says so, naming the port, and opens no forward on
+    another port. A Claude Agent's paste route, the person's own delivery, on the node, of the
+    return or of a page login's code, is held by no engine or Interface process, and no
+    result, record, diagnostic or log of either holds a page login's code, as PND-014 holds
+    for a carried value. The connection Conduit manages for a Claude sign-in does not bind the
+    person who completes the login; the expected account (PND-011) remains the only binding.
   vectors: []

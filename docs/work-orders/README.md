@@ -178,6 +178,7 @@ what it comes after.
 | [201](201-mc9a-pending-actions-sign-in-registered.md) | MC9a's pre-registration, with `conflict` for a second `sign-in.v1` of one instance; merges before 048a-2 is dispatched (the coordinator's decision, open to the owner's strike) |
 | [202](202-agents-v2-fixture-subscription-only.md) | the 0.2.0 fixture's `.v2` Types subscription-only under ruling 83: no `apiKey` and no `oneOf`, `account` required, a string or null, and the case `agents-v2-defaults` with them; after ruling 83's record merged, and merges before 050f is dispatched (ruling 83's What follows; the coordinator's order, open to the owner's strike) |
 | [203](203-new-conversation.md) | a new conversation without restarting the engine: `new-conversation.v1` in each Agent package, released as 0.2.1 (the full review's order 62, numbered 203 since 062 is a merged order's number); after 050n merged, or from its verified branch by a dispatch note (the coordinator's placement, open to the owner's strike) |
+| [206](206-sign-in-login-path-and-page.md) | a redirect login's `path` refuses `?` and `#`, and a page or service login's `page` refuses user information, in `sign-in-login.v1` and CTR-013, with three examples and three steps of `contracts-sign-in-logins` (the two schema points order 048a-1's Record left open); CTR-013's comparisons across Types follow in three later orders it names (the coordinator's, open to the owner's strike) |
 
 ## Shared and staged files
 

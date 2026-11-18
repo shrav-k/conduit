@@ -362,7 +362,6 @@
       "expect": {
         "reply": {
           "accepted": false,
-          "diagnostics": [],
           "reason": "conflict"
         },
         "stateUnchanged": true,

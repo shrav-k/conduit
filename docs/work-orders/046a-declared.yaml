@@ -1,3 +1,4 @@
+# Checked at the merge of order 046a, against main at 93415960: the work's vector delta matches these shapes.
 - name: one deciding rule and a diagnostic on every reason, in three portable cases
   kind: added
   cases: [explain-agent-results, explain-reason-diagnostic, explain-refusal-tiers]

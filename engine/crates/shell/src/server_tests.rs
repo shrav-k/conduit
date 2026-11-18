@@ -1614,3 +1614,76 @@ async fn authentication_waiting_for_commit_does_not_block_async_worker() {
     stop.cancel();
     serving.await.unwrap().unwrap();
 }
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn root_refusal_carries_tier_two() {
+    let temp = temporary();
+    let shell = Arc::new(fixed_shell(temp.path()));
+    server::preflight(&shell).unwrap();
+    shell.issue_client_token(&actor(&shell, "root")).unwrap();
+    let executor = Arc::new(ServingExecutor::new(Arc::new(crate::MissingExecutor)));
+    let stop = CancellationToken::new();
+    let task = tokio::spawn(server::serve(shell.clone(), executor, stop.clone()));
+    ready(&shell.config.engine_url).await;
+    let reply = server::client(
+        temp.path(),
+        None,
+        Some("management.retire.v1"),
+        json!({"instance":{"kind":"Pool","name":"system"}}),
+    )
+    .await
+    .unwrap();
+    let refusal = &reply["structuredContent"]["diagnostics"][0]["properties"]["refusal"];
+    assert_eq!(refusal["tier"], 2);
+    assert_eq!(refusal["conduits"].as_array().unwrap().len(), 1);
+    assert_eq!(refusal["conduits"][0]["as"], "management");
+    stop.cancel();
+    tokio::time::timeout(Duration::from_secs(60), task)
+        .await
+        .unwrap()
+        .unwrap()
+        .unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn shell_rejection_carries_diagnostic() {
+    let temp = temporary();
+    let shell = Arc::new(fixed_shell(temp.path()));
+    server::preflight(&shell).unwrap();
+    let root = actor(&shell, "root");
+    shell.issue_client_token(&root).unwrap();
+    let token = token(&shell, "root");
+    let executor = Arc::new(ServingExecutor::new(Arc::new(crate::MissingExecutor)));
+    let stop = CancellationToken::new();
+    let task = tokio::spawn(server::serve(shell.clone(), executor, stop.clone()));
+    ready(&shell.config.engine_url).await;
+    let session = raw_session(&shell.config.engine_url, &token, "2025-06-18")
+        .await
+        .unwrap();
+    let prefix = &shell.context.meta_prefix;
+    let response = reqwest::Client::new().post(&shell.config.engine_url).bearer_auth(&token)
+        .header("accept", "application/json, text/event-stream")
+        .header("mcp-session-id", session)
+        .header("mcp-protocol-version", "2025-06-18")
+        .json(&json!({"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"management.list.v1","arguments":{},"_meta":{format!("{prefix}serving"):"","io.modelcontextprotocol/clientCapabilities":{"extensions":{format!("{prefix}implementation-interface"): {"revision":"v0"}}}}}}))
+        .send().await.unwrap();
+    let text = response.text().await.unwrap();
+    let value: Value = text
+        .lines()
+        .filter_map(|line| line.strip_prefix("data:"))
+        .filter_map(|body| serde_json::from_str::<Value>(body.trim()).ok())
+        .find(|value| value["id"] == 2)
+        .or_else(|| serde_json::from_str(&text).ok())
+        .expect("protocol rejection must contain a JSON reply");
+    assert_eq!(value["error"]["code"], -32602);
+    assert_eq!(
+        value["error"]["data"]["diagnostics"][0]["ruleId"],
+        "IFC-036"
+    );
+    stop.cancel();
+    tokio::time::timeout(Duration::from_secs(60), task)
+        .await
+        .unwrap()
+        .unwrap()
+        .unwrap();
+}

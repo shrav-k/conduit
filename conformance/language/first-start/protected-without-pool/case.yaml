@@ -47,6 +47,15 @@
       },
       "expect": {
         "stateUnchanged": true,
+        "record_facts": [
+          {
+            "type": "request-ended",
+            "data": {
+              "ruleId": "ACC-033",
+              "refusalTier": 1
+            }
+          }
+        ],
         "records": [
           {
             "specversion": "1.0",
@@ -83,14 +92,22 @@
         ],
         "external_intents": [],
         "reply": {
-          "reason": "refused"
+          "reason": "refused",
+          "diagnostics": [
+            {
+              "ruleId": "ACC-033",
+              "level": "error",
+              "properties": {
+                "refusal": {
+                  "tier": 1
+                }
+              }
+            }
+          ]
         },
         "required_promises": [
           "ACC-033",
           "OPS-023"
-        ],
-        "absent": [
-          "/reply/diagnostics"
         ]
       }
     },
@@ -117,6 +134,15 @@
       },
       "expect": {
         "stateUnchanged": true,
+        "record_facts": [
+          {
+            "type": "request-ended",
+            "data": {
+              "ruleId": "ACC-033",
+              "refusalTier": 1
+            }
+          }
+        ],
         "records": [
           {
             "specversion": "1.0",
@@ -153,14 +179,22 @@
         ],
         "external_intents": [],
         "reply": {
-          "reason": "refused"
+          "reason": "refused",
+          "diagnostics": [
+            {
+              "ruleId": "ACC-033",
+              "level": "error",
+              "properties": {
+                "refusal": {
+                  "tier": 1
+                }
+              }
+            }
+          ]
         },
         "required_promises": [
           "ACC-033",
           "OPS-023"
-        ],
-        "absent": [
-          "/reply/diagnostics"
         ]
       }
     },
@@ -187,6 +221,15 @@
       },
       "expect": {
         "stateUnchanged": true,
+        "record_facts": [
+          {
+            "type": "request-ended",
+            "data": {
+              "ruleId": "ACC-033",
+              "refusalTier": 1
+            }
+          }
+        ],
         "records": [
           {
             "specversion": "1.0",
@@ -223,14 +266,22 @@
         ],
         "external_intents": [],
         "reply": {
-          "reason": "refused"
+          "reason": "refused",
+          "diagnostics": [
+            {
+              "ruleId": "ACC-033",
+              "level": "error",
+              "properties": {
+                "refusal": {
+                  "tier": 1
+                }
+              }
+            }
+          ]
         },
         "required_promises": [
           "ACC-033",
           "OPS-023"
-        ],
-        "absent": [
-          "/reply/diagnostics"
         ]
       }
     }

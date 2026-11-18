@@ -28,8 +28,7 @@
       "expect": {
         "reply": {
           "accepted": false,
-          "reason": "conflict",
-          "diagnostics": []
+          "reason": "conflict"
         },
         "records": [],
         "external_intents": [],

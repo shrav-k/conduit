@@ -155,7 +155,7 @@ fn retire_part(
                 a,
                 c,
                 event,
-                json!({"target":p["target"],"object":object["id"],"caller":p["caller"],"consumer":p["sender"],"operation":route["operation"],"serving":p["id"],"reason":reason,"dispatched":false}),
+                json!({"target":p["target"],"object":object["id"],"caller":p["caller"],"consumer":p["sender"],"operation":route["operation"],"serving":p["id"],"reason":reason,"ruleId":rule,"dispatched":false}),
             )?;
         }
         return Ok(None);
@@ -349,4 +349,47 @@ pub(crate) fn cancel(
         vec![],
     ));
     advance(t, a, c, i)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::explain::tests::{evidence, fixture, transition};
+
+    /// Decision 5 of order 046a: a held member's records name the deciding rule beside the
+    /// reason, and the hold is unchanged.
+    #[test]
+    fn held_member_records_carry_the_rule() {
+        let (mut state, c) = fixture();
+        state.objects.push(
+            json!({"kind":"Agent","id":"member","name":"member","state":"ready","owner":"owners"}),
+        );
+        state.invocations.push(json!({"id":"cascade","state":"in-progress","sender":"root","caller":"root","target":"owners","operation":c.qualified("retire-with-agents.v1")}));
+        // REV-014: another management invocation on the member is in progress.
+        state
+            .invocations
+            .push(json!({"id":"busy","state":"in-progress","object":"member","management":true}));
+        let mut t = transition(state);
+        let evidence = evidence();
+        let mut a = Allocation {
+            evidence: &evidence,
+            cursor: 0,
+        };
+        let member = t.state.objects.last().unwrap().clone();
+        assert_eq!(retire_part(&mut t, &mut a, &c, 0, &member).unwrap(), None);
+        assert_eq!(t.state.invocations.len(), 2);
+        let decision = t.decisions.last().unwrap();
+        assert_eq!(decision.action, "hold-cascade-member");
+        assert_eq!(decision.promises, ["REV-014", "LIF-021"]);
+        let held: Vec<_> = t
+            .records
+            .iter()
+            .filter(|r| r["data"]["reason"] == "conflict")
+            .collect();
+        assert_eq!(held.len(), 2, "{:?}", t.records);
+        for record in held {
+            assert_eq!(record["data"]["ruleId"], "REV-014", "{record}");
+            assert_eq!(record["data"]["dispatched"], false);
+        }
+    }
 }

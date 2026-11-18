@@ -38,10 +38,7 @@
           "ACC-054",
           "OPS-023"
         ],
-        "stateUnchanged": true,
-        "absent": [
-          "/reply/structuredContent"
-        ]
+        "stateUnchanged": true
       }
     },
     {
@@ -61,10 +58,7 @@
           "ACC-054",
           "OPS-023"
         ],
-        "stateUnchanged": true,
-        "absent": [
-          "/reply/structuredContent"
-        ]
+        "stateUnchanged": true
       }
     },
     {
@@ -84,10 +78,7 @@
           "ACC-054",
           "OPS-023"
         ],
-        "stateUnchanged": true,
-        "absent": [
-          "/reply/structuredContent"
-        ]
+        "stateUnchanged": true
       }
     },
     {
@@ -107,10 +98,7 @@
           "ACC-054",
           "OPS-023"
         ],
-        "stateUnchanged": true,
-        "absent": [
-          "/reply/structuredContent"
-        ]
+        "stateUnchanged": true
       }
     },
     {
@@ -130,10 +118,7 @@
           "ACC-054",
           "OPS-023"
         ],
-        "stateUnchanged": true,
-        "absent": [
-          "/reply/structuredContent"
-        ]
+        "stateUnchanged": true
       }
     },
     {
@@ -153,10 +138,7 @@
           "ACC-054",
           "OPS-023"
         ],
-        "stateUnchanged": true,
-        "absent": [
-          "/reply/structuredContent"
-        ]
+        "stateUnchanged": true
       }
     }
   ]

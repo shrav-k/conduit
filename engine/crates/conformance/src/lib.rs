@@ -5,6 +5,7 @@ mod expect;
 mod expected;
 mod packages;
 pub mod pieces;
+mod portable;
 mod records;
 mod schemas;
 mod steps;
@@ -282,6 +283,18 @@ pub fn run_matching_with_threads(
         )
     })?;
     let expected = expected::validate(&expected_value, &ids)?;
+    let portable_value = read_value(&directory.join("internal-cases.yaml")).map_err(|e|
+        format!("conformance/internal-cases.yaml: {e}; restore a readable control document. See conformance/README.md, \"Portable cases\"."))?;
+    let case_map = prepared
+        .iter()
+        .map(|(_, case)| (case.id.as_str(), case))
+        .collect();
+    let portable = portable::Controls::read(&portable_value, &case_map)?;
+    for (_, case) in &prepared {
+        portable
+            .check_case(case)
+            .map_err(|e| format!("{}: {e}", case.id))?;
+    }
     let matching: Vec<_> = prepared
         .iter()
         .filter(|(_, case)| case.id.starts_with(prefix))
@@ -295,6 +308,7 @@ pub fn run_matching_with_threads(
                 let spec = &spec;
                 let context = &context;
                 let known = &known_promises;
+                let portable = &portable;
                 scope.spawn(move || {
                     let mut completed = vec![];
                     loop {
@@ -302,7 +316,10 @@ pub fn run_matching_with_threads(
                         let Some((path, case)) = matching.get(index) else {
                             break;
                         };
-                        completed.push((index, run_case(path, case, spec, context, known)));
+                        completed.push((
+                            index,
+                            run_case_portable(path, case, spec, context, known, portable),
+                        ));
                     }
                     completed
                 })
@@ -531,12 +548,31 @@ fn keyword_value(spec: &Specification, root: &str, location: &str) -> Result<Val
     Ok(current)
 }
 
+#[cfg(test)]
 fn run_case(
     path: &Path,
     case: &Case,
     spec: &Specification,
     context: &Context,
     known: &BTreeSet<String>,
+) -> Result<Vec<Value>> {
+    run_case_portable(
+        path,
+        case,
+        spec,
+        context,
+        known,
+        &portable::Controls::default(),
+    )
+}
+
+fn run_case_portable(
+    path: &Path,
+    case: &Case,
+    spec: &Specification,
+    context: &Context,
+    known: &BTreeSet<String>,
+    portable: &portable::Controls,
 ) -> Result<Vec<Value>> {
     if case.profile != "first-build" || case.title.is_empty() || case.layers.is_empty() {
         return Err("unsupported profile or initial recipe".into());
@@ -571,6 +607,13 @@ fn run_case(
             Ok((actual, next))
         };
         let (mut actual, next) = run().map_err(|e| format!("step {}: {e}", index + 1))?;
+        portable.after_step(
+            &case.id,
+            index + 1,
+            &expand(&raw_step["expect"], &symbols, spec)?,
+            &actual,
+            context,
+        )?;
         expect::prepare(&mut actual, &next)?;
         expect::check(raw_step, &symbols, spec, &state, &next, &actual, index)?;
         if let Some(captures) = raw_step["capture"].as_object() {
@@ -659,5 +702,341 @@ mod coverage_tests {
         let mut false_claim = valid;
         false_claim["s1_coverage"][1] = json!({"promise":"IFC-045","vectors":["access"]});
         assert!(validate_s1_coverage(&false_claim, &entries, &inventory, &known).is_err());
+    }
+}
+
+#[cfg(test)]
+mod explanation_regressions {
+    use super::*;
+    use conduit_core::{
+        Evidence, Input, State,
+        access::{AccessRequest, Identity},
+    };
+
+    fn started() -> (State, Context) {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let spec = Specification::read(&root.join("spec")).unwrap();
+        let mut context = Context {
+            builtin: Some(packages::builtin(&spec).unwrap()),
+            core_package: spec.names().core_package.clone(),
+            meta_prefix: read_value(&root.join("spec/names.yaml")).unwrap()["metaPrefix"]
+                .as_str()
+                .unwrap()
+                .into(),
+            templates: BTreeMap::new(),
+            core_environment: schemas::environment(
+                &root,
+                &json!({"environment":{"scopes":{}}}),
+                &spec,
+            )
+            .unwrap(),
+            record_source: "urn:conduit:test".into(),
+        };
+        for doc in read_file(&root.join("spec/core/templates.yaml")).unwrap() {
+            let doc = doc.root.to_json();
+            context
+                .templates
+                .insert(doc["metadata"]["name"].as_str().unwrap().into(), doc);
+        }
+        let case =
+            read_value(&root.join("conformance/conventions/list/from-first-start/case.yaml"))
+                .unwrap();
+        let input = serde_json::from_value(case["steps"][0]["input"].clone()).unwrap();
+        let state = conduit_core::step(&State::default(), input, &context)
+            .unwrap()
+            .state;
+        (state, context)
+    }
+
+    fn call(
+        state: &State,
+        context: &Context,
+        tool: &str,
+        arguments: Value,
+        archive: Option<conduit_core::archives::ArchiveInput>,
+    ) -> conduit_core::Transition {
+        let root = state
+            .objects
+            .iter()
+            .find(|o| o["from"] == format!("{}#root", context.core_package))
+            .unwrap();
+        conduit_core::step(
+            state,
+            Input::Invoke {
+                evidence: Evidence {
+                    time: "2026-11-09T13:00:00Z".into(),
+                    ids: (1000 + state.allocated_ids.len()..1100 + state.allocated_ids.len())
+                        .map(|n| format!("00000000-0000-4000-8046-a0000000{n:04}"))
+                        .collect(),
+                    revisions: (0..100)
+                        .map(|n| format!("review-{}-{n}", state.allocated_ids.len()))
+                        .collect(),
+                    suffixes: (0..100).map(|n| format!("a{n:04}")).collect(),
+                },
+                request: AccessRequest {
+                    identity: Identity::Instance {
+                        id: root["id"].as_str().unwrap().into(),
+                    },
+                    tool: tool.into(),
+                    arguments,
+                    serving: None,
+                    readable: true,
+                    authority_readable: true,
+                },
+                key: None,
+                archive,
+            },
+            context,
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn root_declaring_first_start_node_lost_by_bare_name_reports_exists() {
+        let (state, context) = started();
+        let result = call(
+            &state,
+            &context,
+            "management.declare-lost.v1",
+            json!({"node":"local"}),
+            None,
+        );
+        let diagnostic = &result.reply["structuredContent"]["diagnostics"][0];
+        assert_eq!(diagnostic["ruleId"], "LIF-034");
+        let refusal = &diagnostic["properties"]["refusal"];
+        assert_eq!(refusal["tier"], 2);
+        assert_eq!(refusal["exists"], true);
+        assert_eq!(refusal["named"]["objects"], json!(["local"]));
+    }
+
+    #[test]
+    fn install_generic_diagnostics_name_the_invoking_tool() {
+        use conduit_core::archives::{ArchiveInput, FetchCompletion};
+        use conduit_core::packages::{Project, Snapshot, SnapshotSource};
+        let (started, context) = started();
+        let address = "example.org/sample";
+        let digest = format!("sha256:{}", "0".repeat(64));
+        for (rule, reason) in [
+            ("PKG-024", "unavailable"),
+            ("PKG-025", "conflict"),
+            ("PKG-029", "conflict"),
+        ] {
+            let mut state = started.clone();
+            if rule == "PKG-025" {
+                state.preinstalled_snapshots.push(Snapshot {
+                    source: SnapshotSource::PreinstalledSnapshot,
+                    address: address.into(),
+                    version: "0.1.0".into(),
+                    digest: format!("sha256:{}", "1".repeat(64)),
+                    project: Project {
+                        manifest: None,
+                        documents: vec![],
+                        directory: None,
+                    },
+                });
+            } else if rule == "PKG-029" {
+                state.objects[0]["held"]["contexts"]["project"]["address"] = json!(address);
+                state.objects[0]["packages"] = json!([{"address":address}]);
+            }
+            let input = ArchiveInput {
+                name: "sample".into(),
+                address: address.into(),
+                version: "0.1.0".into(),
+                digest: digest.clone(),
+                directory: None,
+                completion: FetchCompletion::Unavailable,
+            };
+            let result = call(
+                &state,
+                &context,
+                "management.install.v1",
+                json!({"name":"sample","address":address,"version":"0.1.0","digest":digest,"fetch":"file:///sample.tar.gz"}),
+                Some(input.clone()),
+            );
+            assert_eq!(
+                result.reply["_meta"][format!("{}reason", context.meta_prefix)],
+                reason
+            );
+            let diagnostic = &result.reply["structuredContent"]["diagnostics"][0];
+            assert_eq!(diagnostic["ruleId"], rule);
+            let message = format!(
+                "management.install.v1 reports {reason} under {rule}: {}",
+                conduit_core::explain::REASON_CAUSES
+                    .iter()
+                    .find(|(id, _)| *id == rule)
+                    .unwrap()
+                    .1
+            );
+            assert_eq!(diagnostic["message"]["text"], message);
+            assert_eq!(
+                result.reply["content"][0]["text"],
+                format!("{reason}: {message}")
+            );
+            let ended = result
+                .records
+                .iter()
+                .find(|r| r["type"] == "request-ended")
+                .unwrap();
+            assert_eq!(ended["data"]["ruleId"], rule);
+            let direct = conduit_core::step(
+                &state,
+                Input::InstallArchive {
+                    archive: input,
+                    snapshots: state.preinstalled_snapshots.clone(),
+                    builtin: context.builtin.clone().unwrap(),
+                },
+                &context,
+            )
+            .unwrap();
+            assert_eq!(direct.reply["diagnostics"][0]["ruleId"], rule);
+            assert_eq!(
+                direct.reply["diagnostics"][0]["message"]["text"],
+                message.replacen(
+                    "management.install.v1",
+                    &format!("install of {address} 0.1.0"),
+                    1
+                )
+            );
+        }
+    }
+
+    #[test]
+    fn registration_preflight_records_invalid_rule_after_sorted_conflict() {
+        let (state, context) = started();
+        let api = context.builtin.as_ref().unwrap().documents[0]["apiVersion"].clone();
+        let result = call(
+            &state,
+            &context,
+            "management.register.v1",
+            json!({"documents":[
+                {"apiVersion":api,"kind":"Interface","metadata":{"name":"person"},"spec":{"type":format!("{}#interface.v1",context.core_package)}},
+                {"apiVersion":api,"kind":"Interface","metadata":{"name":"root"},"from":"#person"},
+                {"apiVersion":api,"kind":"Interface","metadata":{"name":"zz-invalid"},"from":"#missing"}
+            ]}),
+            None,
+        );
+        assert_eq!(
+            result.reply["_meta"][format!("{}reason", context.meta_prefix)],
+            "invalid"
+        );
+        let diagnostics = result.reply["structuredContent"]["diagnostics"]
+            .as_array()
+            .unwrap();
+        assert_eq!(diagnostics[0]["ruleId"], "OBJ-002");
+        assert!(diagnostics.iter().any(|d| d["ruleId"] == "INS-002"));
+        let ended = result
+            .records
+            .iter()
+            .find(|r| r["type"] == "request-ended")
+            .unwrap();
+        assert_eq!(ended["data"]["reason"], "invalid");
+        assert_eq!(ended["data"]["ruleId"], "INS-002");
+    }
+
+    #[test]
+    fn install_trial_records_its_deciding_rule_and_specific_message() {
+        use conduit_core::archives::{ArchiveInput, FetchCompletion};
+        let (state, context) = started();
+        let result = call(
+            &state,
+            &context,
+            "management.install.v1",
+            json!({
+                "name":"sample", "address":"example.org/sample", "version":"0.1.0",
+                "digest":format!("sha256:{}", "0".repeat(64)), "fetch":"file:///sample.tar.gz"
+            }),
+            Some(ArchiveInput {
+                name: "sample".into(),
+                address: "example.org/sample".into(),
+                version: "0.1.0".into(),
+                digest: format!("sha256:{}", "0".repeat(64)),
+                directory: None,
+                completion: FetchCompletion::Complete {
+                    bytes: vec![1, 2, 3],
+                },
+            }),
+        );
+        assert_eq!(
+            result.reply["_meta"][format!("{}reason", context.meta_prefix)],
+            "invalid"
+        );
+        assert_eq!(
+            result.reply["structuredContent"]["diagnostics"][0]["ruleId"],
+            "PKG-026"
+        );
+        assert!(
+            result.reply["structuredContent"]["diagnostics"][0]["message"]["text"]
+                .as_str()
+                .unwrap()
+                .contains("expected")
+        );
+        let ended = result
+            .records
+            .iter()
+            .find(|r| r["type"] == "request-ended")
+            .unwrap();
+        assert_eq!(ended["data"]["ruleId"], "PKG-026");
+    }
+    #[test]
+    fn replacement_rejection_preserves_retired_placement_fault_message() {
+        let (state, context) = started();
+        let api = context.builtin.as_ref().unwrap().documents[0]["apiVersion"].clone();
+        let core = &context.core_package;
+        let result = call(
+            &state,
+            &context,
+            "management.register.v1",
+            json!({"documents":[
+                {"apiVersion":api,"kind":"Resource","metadata":{"name":"member-template"},"spec":{"type":format!("{core}#management.v1")}},
+                {"apiVersion":api,"kind":"Pool","metadata":{"name":"custom-template"},"spec":{
+                    "type":format!("{core}#pool.v1"),"entries":{"entry":{"from":"#member-template"}}}},
+                {"apiVersion":api,"kind":"Pool","metadata":{"name":"custom"},"from":"#custom-template"}
+            ]}),
+            None,
+        );
+        assert_eq!(
+            result.reply["_meta"][format!("{}outcome", context.meta_prefix)],
+            "succeeded",
+            "{}",
+            result.reply
+        );
+        let mut state = result.state;
+        for object in &mut state.objects {
+            if object["nested"]["slot"] == "entries" || object["name"] == "local" {
+                object["state"] = json!("retired");
+            }
+        }
+        let result = call(
+            &state,
+            &context,
+            "management.register-replacement.v1",
+            json!({"instance":{"kind":"Pool","name":"custom"},"nested":"entry"}),
+            None,
+        );
+        assert_eq!(
+            result.reply["_meta"][format!("{}reason", context.meta_prefix)],
+            "invalid"
+        );
+        assert_eq!(
+            result.reply["structuredContent"]["diagnostics"][0]["ruleId"],
+            "PLC-018"
+        );
+        assert_eq!(
+            result.reply["structuredContent"]["diagnostics"][0]["message"]["text"],
+            "placement is retired"
+        );
+        assert!(
+            result.reply["content"][0]["text"]
+                .as_str()
+                .unwrap()
+                .ends_with("placement is retired")
+        );
+        let ended = result
+            .records
+            .iter()
+            .find(|r| r["type"] == "request-ended")
+            .unwrap();
+        assert_eq!(ended["data"]["ruleId"], "PLC-018");
+        assert!(result.external_intents.is_empty());
     }
 }

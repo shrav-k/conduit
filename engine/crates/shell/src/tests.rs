@@ -814,7 +814,14 @@ fn assert_filter_reply(shell: &Shell, ticket: &Ticket, completion: &Ticket) {
             .get(format!("{}outcome", shell.context.meta_prefix))
             .is_none()
     );
-    assert!(actual.get("structuredContent").is_none());
+    assert_eq!(
+        actual["structuredContent"]["diagnostics"][0]["ruleId"],
+        "IFC-026"
+    );
+    assert_eq!(
+        actual["structuredContent"]["diagnostics"][0]["properties"]["refusal"]["tier"],
+        1
+    );
 }
 
 #[test]
@@ -1624,6 +1631,10 @@ fn first_start_presents_final_lists_and_unbuilt_operations_name_their_orders() {
         assert_eq!(
             reply["_meta"][format!("{}reason", shell.context.meta_prefix)],
             "unavailable"
+        );
+        assert_eq!(
+            reply["structuredContent"]["diagnostics"][0]["ruleId"],
+            if order == "047" { "PND-009" } else { "PND-010" }
         );
         assert!(
             reply["content"][0]["text"]

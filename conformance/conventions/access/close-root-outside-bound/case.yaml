@@ -1486,7 +1486,6 @@
           "/reply/invocation",
           "/reply/outcome",
           "/reply/outputs",
-          "/reply/diagnostics",
           "/reply/request",
           "/reply/object",
           "/reply/target"

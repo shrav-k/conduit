@@ -352,10 +352,7 @@
         "required_promises": [
           "ACC-054"
         ],
-        "stateUnchanged": true,
-        "absent": [
-          "/reply/structuredContent"
-        ]
+        "stateUnchanged": true
       }
     },
     {

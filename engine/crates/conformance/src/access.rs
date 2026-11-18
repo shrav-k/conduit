@@ -53,7 +53,9 @@ pub(super) fn run(
         .iter()
         .any(|reason| t.reply["reason"] == *reason)
     {
-        let allowed: BTreeSet<_> = ["reason", "restriction"].into_iter().collect();
+        let allowed: BTreeSet<_> = ["reason", "restriction", "diagnostics"]
+            .into_iter()
+            .collect();
         if t.reply
             .as_object()
             .ok_or("reply must be a map")?

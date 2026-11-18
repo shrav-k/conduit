@@ -25,21 +25,7 @@ fn template<'a>(s: &'a State, args: &Value) -> Option<&'a Value> {
     })
 }
 
-pub(crate) struct PreflightRejection {
-    pub reason: &'static str,
-    pub rule: String,
-    pub diagnostics: Option<Value>,
-}
-
-impl PreflightRejection {
-    fn new(reason: &'static str, rule: &str) -> Self {
-        Self {
-            reason,
-            rule: rule.into(),
-            diagnostics: None,
-        }
-    }
-}
+use crate::explain::Rejection as PreflightRejection;
 
 pub(crate) fn preflight(
     s: &State,
@@ -77,29 +63,10 @@ pub(crate) fn preflight(
             reply: Value::Null,
             request_replies: vec![],
         };
-        register_project(&mut trial, args, c, a, route)?;
-        if trial.reply["reason"] == "refused" {
-            return Ok(Some(PreflightRejection::new("refused", "ACC-054")));
-        }
-        if trial.reply["accepted"] != true {
-            let rule = trial.reply["diagnostics"]
-                .as_array()
-                .and_then(|d| d.first())
-                .and_then(|d| d["ruleId"].as_str())
-                .unwrap_or("SUB-003");
-            // OBJ-025 / FLEET-006: retain the resolver's diagnostic naming both objects.
-            return Ok(Some(PreflightRejection {
-                reason: if trial.reply["reason"] == "conflict" {
-                    "conflict"
-                } else {
-                    "invalid"
-                },
-                rule: rule.into(),
-                diagnostics: trial.reply["diagnostics"]
-                    .as_array()
-                    .filter(|d| !d.is_empty())
-                    .map(|d| json!(d)),
-            }));
+        if let Some(mut rejection) = register_project(&mut trial, args, c, a, route)? {
+            // Keep the chosen reason class and rule even when the diagnostics sort differently.
+            rejection.diagnostics = Some(trial.reply["diagnostics"].clone());
+            return Ok(Some(rejection));
         }
     }
     Ok(None)
@@ -161,7 +128,7 @@ fn register_project(
     c: &Context,
     a: &Allocation<'_>,
     route: &Value,
-) -> Result<()> {
+) -> Result<Option<PreflightRejection>> {
     let evidence = crate::Evidence {
         time: a.evidence.time.clone(),
         ids: a.evidence.ids[a.cursor..].to_vec(),

@@ -441,7 +441,9 @@ impl ServerHandler for Handler {
                 self.handled(&context);
                 return Err(ErrorData::invalid_params(
                     format!("{field} must be a nonempty string"),
-                    Some(json!({format!("{prefix}reason"):"invalid"})),
+                    Some(
+                        json!({format!("{prefix}reason"):"invalid","diagnostics":[{"ruleId":"IFC-036","level":"error","message":{"text":format!("{field} must be a nonempty string")}}]}),
+                    ),
                 ));
             }
         }
@@ -629,7 +631,7 @@ async fn authenticate(State(handler): State<Handler>, request: Request, next: Ne
         {
             return StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
-        return (StatusCode::BAD_REQUEST,axum::Json(json!({"jsonrpc":"2.0","id":value["id"],"error":{"code":-32021,"message":"Missing required client capability","data":{"requiredCapabilities":{"extensions":{format!("{prefix}implementation-interface"): {"revision":"v0"}}},format!("{prefix}reason"):"invalid"}}}))).into_response();
+        return (StatusCode::BAD_REQUEST,axum::Json(json!({"jsonrpc":"2.0","id":value["id"],"error":{"code":-32021,"message":"Missing required client capability","data":{"requiredCapabilities":{"extensions":{format!("{prefix}implementation-interface"): {"revision":"v0"}}},format!("{prefix}reason"):"invalid","diagnostics":[{"ruleId":"IFC-036","level":"error","message":{"text":"Missing required client capability"}}]}}}))).into_response();
     }
     let response = next
         .run(Request::from_parts(parts, Body::from(bytes)))
@@ -704,6 +706,9 @@ async fn authenticate(State(handler): State<Handler>, request: Request, next: Ne
                         value["error"]["data"]
                             [format!("{}reason", handler.shell.context.meta_prefix)] =
                             json!("invalid");
+                        if value["error"]["data"].get("diagnostics").is_none() {
+                            value["error"]["data"]["diagnostics"] = json!([{"ruleId":"IFC-036","level":"error","message":{"text":value["error"]["message"]}}]);
+                        }
                         if data_line.is_some() {
                             Ok(text
                                 .split_inclusive('\n')

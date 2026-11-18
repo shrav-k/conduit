@@ -1542,8 +1542,7 @@
           "isError": true,
           "content": [
             {
-              "type": "text",
-              "text": "conflict"
+              "type": "text"
             }
           ],
           "structuredContent": {
@@ -1604,8 +1603,7 @@
           "isError": true,
           "content": [
             {
-              "type": "text",
-              "text": "invalid"
+              "type": "text"
             }
           ],
           "structuredContent": {
@@ -1666,8 +1664,7 @@
           "isError": true,
           "content": [
             {
-              "type": "text",
-              "text": "invalid"
+              "type": "text"
             }
           ],
           "structuredContent": {
@@ -1728,8 +1725,7 @@
           "isError": true,
           "content": [
             {
-              "type": "text",
-              "text": "unavailable"
+              "type": "text"
             }
           ]
         },
@@ -1830,8 +1826,7 @@
           "isError": true,
           "content": [
             {
-              "type": "text",
-              "text": "conflict"
+              "type": "text"
             }
           ],
           "structuredContent": {

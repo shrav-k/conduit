@@ -873,7 +873,9 @@ Change:
   `conventions/explain/` with its three cases and its `index.yaml`; the new `internal-cases.yaml`;
   `expected-failures.yaml`, one entry removed; `README.md`;
 - `docs/work-orders/046a-declared.yaml`, only as decision 15 allows;
-- `experiments/011-short-form-spike/`, only if its tests need it: it depends on the core.
+- `experiments/011-short-form-spike/`, only if its tests need it: it depends on the core;
+- `engine/crates/core/src/cascade.rs`, by the fixer's amendment alone (see the Record): `ruleId`
+  in the data of a held member's two records, and a test of it.
 
 Do not change:
 
@@ -885,8 +887,8 @@ Do not change:
 - the shell's `main.rs`, `runner.rs` and `lib.rs`;
 - `access::routing`, the repeat index in `requests.rs`, and OPS-029's invalid answer (F2's
   order, not yet numbered);
-- how an outcome ends: `requests::finish`'s signature, `retirement.rs`, `cascade.rs`, and the
-  outcome sites of `requests.rs` and `lifecycle.rs` (order 046c's).
+- how an outcome ends: `requests::finish`'s signature, `retirement.rs`, `cascade.rs` but for the
+  amendment above, and the outcome sites of `requests.rs` and `lifecycle.rs` (order 046c's).
 
 ## Done when
 
@@ -1021,3 +1023,149 @@ new files and runs `python3 tools/check_private_paths.py` and `git diff --cached
 the merge the admin runs `python3 tools/gate.py`, and merges on its PASS
 ([ruling 80](../proposals/ruling-80/README.md)); GitHub's CI runs on the pull request too, and the
 merge does not wait for it.
+
+## Record
+
+Run on 2026-11-17, from about 09:52 to 12:53 UTC, on the Mac from `main` `cbb49fc1` (#342, which
+added this order), in three rounds: the worker (6236 s) and a fresh Codex verifier (574 s), the
+worker again (1704 s) and a second fresh verifier (418 s), then the worker a third time (1457 s)
+and a third fresh verifier (448 s).
+
+The core gains `explain.rs`, with decision 2's 21 refusal rows verbatim as `REFUSAL_CAUSES` and 40
+`REASON_CAUSES` entries, whose wording is the worker's (beyond the seed list: CON-025, INS-002,
+LIF-029, OBJ-025, OPS-010, OPS-030 and OPS-033, and POOL-003 from round 2). A refusal carries one
+diagnostic, at tier 2 where root sends and tier 1 for every other sender; `access.rs` checks the
+bound before ACC-024 (decision 1) and splits registration and submission authority; every other
+reason gains a diagnostic, and specific fault messages are kept; reason records carry `ruleId`, and
+refusal records `refusalTier`; the shell's `server.rs` answers IFC-036 with a diagnostic. The
+conformance runner checks every request step's reason, refusal and first text block (decision 7),
+matches `list.v1` arrays as sets (decision 9), and gains `portable.rs` and the frozen
+`internal-cases.yaml` of 510 cases (decision 10). Decision 8's script changed 34 cases (25 text
+assertions, 15 `structuredContent` absences, 35 `diagnostics` absences and 7 empty lists), and its
+hand edit steps 1 to 3 of `first-start-protected-without-pool`; the three `explain-` cases are new,
+and `access-close-root-outside-bound` left `expected-failures.yaml`. `vector_delta.py` gave
+`195 changes; 0 flips; 0 undeclared; 0 errors.` `engine/CONFORMANCE.md`, `conformance/README.md` and
+`engine/STANDING.md`, through the tool, follow; decision 13's 32 tests were added. The worker's own
+choices include a private carrier for a registration fault's rule, and, of several registration
+faults, recording the first error of the chosen reason class. Its finding for SO-H's sweep: ACC-056
+says "caller", where an onward request's caller is not its sending instance; the build follows the
+coordinator's reading, the sending instance.
+
+The first verifier found five musts: POOL-003 and replacement faults such as PLC-018 had no cause,
+so replacing a live Pool entry gave a core error; tier 2's `exists` read an ID as a Conduit name; a
+replacement refused for the named Pool's authority, and a reconciliation through an owning Pool or
+Fleet, were described as needing management; and trial-based registration and installation
+records took their rule from the serialized diagnostics. Round 2 fixed the five, with POOL-003's
+cause and the deciding rule carried apart from the diagnostics, which also changed `records.rs`
+(reported under the scope's allowance), and eight new tests. The second verifier found three musts
+and a should: tier 2 read a bare node name only as an ID; setup and retirement under a retired
+owner were described as needing management, a fallback ACC-033 gives inspection alone; install.v1's
+generic PKG-024, PKG-025 and PKG-029 diagnostics took install-archive's subject; and the
+registration precedence test never made ACC-057 and ACC-033 both refuse. Round 3 fixed the four,
+with three new tests and two strengthened. The third verifier found two musts, which the run left
+open: R1 and R2 below.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2), on a scratch clone of
+the branch before its rebase. It ran every check of "Done when": each Python check ended
+`Errors: 0`, the tool tests ran 123, OK, and `vector_delta.py` ended
+`195 changes; 0 flips; 0 undeclared; 0 errors.` against both the base and `origin/main`; the count
+script printed `0 0 0 0 42` and the greps `1 1 1 1` and `0 0 0 0`; fmt and clippy were clean, the
+pieces tool printed `Nothing to move.`, the `explain-` run passed 3 cases and
+`access-close-root-outside-bound` passed (2 steps; ACC-029, ACC-056); the vectors passed 2, the
+full run 285 passed, 0 failed and 4 ignored, and the spike 9. Both runs that must fail failed with
+the stated lines and were restored by `cp` and `cmp`. Decision 8's script, rerun on the base,
+matched the branch byte for byte in the 34 cases but the listed hand edit. A probe test showed R1.
+It found one must and one should:
+
+- R1 (must): `explain::access_route` took the operation from the first scope, in the environment's
+  key order, that held an Operation of the tool's name, so where a package's operation shares an
+  export name with the core's, which `spec/interface/implementation.yaml` permits, a refusal named
+  the core's operation; `access::decide` always recomputed it that way, even after selection.
+- R2 (should): a held cascade member's access-decision and request-ended records held `reason`
+  without `ruleId`, against decision 5, though `lifecycle::preflight` hands over the rule (REV-014,
+  for example); the scope kept `cascade.rs` for order 046c, and no report named the conflict.
+
+The fixer rebased the branch onto `origin/main` at `5eb71667` (#343) with the work-order identity,
+without conflict, and applied each finding:
+
+- R1: `access_route` takes the found Conduit's own listed operation whose name after `#` is the
+  tool's after its first dot; otherwise it resolves `#{name}` in the target's own contract scope,
+  then the core's, and never follows the environment's order. `access::decide` keeps the operation
+  of the verdict's route where selection found one. The test
+  `operation_identification_names_the_package_operation_on_a_name_collision` gives a package scope
+  `example.org/p` a `list.v1` beside the core's, and checks that `access_route`, an
+  `access::decide` refused after selection (ACC-032) and an invocation refused before it (ACC-001,
+  a closed Conduit listing nothing) each name `example.org/p#list.v1`. With the old order restored
+  on a scratch copy, it failed, naming `test.core#list.v1`.
+- R2: of the reader's two ways, the fixer took the amendment, for the coordinator to confirm at the
+  merge: Scope now allows one metadata change in `cascade.rs`, `"ruleId":rule` in the data of both
+  records, and its test. The test `held_member_records_carry_the_rule` holds a member under REV-014
+  and checks that both records carry `ruleId` REV-014 and `dispatched` false, that the decision is
+  `hold-cascade-member` citing REV-014 and LIF-021, and that no child invocation is made. Without
+  the change it failed. The cascade's outcome sites, order 046c's, are unchanged.
+
+The fixer then ran, on the files of this commit before it was made: every Python check of "Done
+when" (`Errors: 0` each), the tool tests (123, OK), `git diff --check origin/main...HEAD` and
+`git diff --check` (clean), `vector_delta.py HEAD` (`0 changes; 0 flips; 0 undeclared; 0 errors.`)
+and `vector_delta.py origin/main` (`195 changes; 0 flips; 0 undeclared; 0 errors.`), the count
+script (`0 0 0 0 42`), the greps (`1 1 1 1` and `0 0 0 0`), and the empty `git status` of the
+protected paths. From `engine/`: `cargo fmt --check` and clippy (clean), pieces
+(`Nothing to move.`), the `explain-` run (3 cases passed), `access-close-root-outside-bound`
+(`PASS access-close-root-outside-bound (2 steps; ACC-029, ACC-056)`), the vectors (2 passed) and
+the full run (287 passed, 0 failed, 4 ignored). Both runs that must fail failed with the stated
+lines, and after `cp` both `cmp` exited 0 and both cases passed; the spike passed 9. The gate's run
+on this order's squash, which the merge waits on, is the coordinator's.
+
+A second fresh Opus reader then verified the branch at the fixer's commit, on a scratch clone. It
+reran every check of "Done when", with the same results as the fixer's above: each Python check
+`Errors: 0`, the tool tests 123, OK, `git diff --check` clean, `vector_delta.py` 0 changes against
+HEAD and 195 against `origin/main`, the count script `0 0 0 0 42`, the greps `1 1 1 1` and
+`0 0 0 0`, fmt and clippy clean, pieces `Nothing to move.`, the `explain-` run 3 cases passed,
+`access-close-root-outside-bound` passed, the vectors 2 passed, the full run 287 passed, 0 failed
+and 4 ignored, both runs that must fail failing with the stated lines and restored by `cp` and
+`cmp`, and the spike 9. It found R2's fix correct and in scope. It found one must and one should:
+
+- R3 (must): R1's fix narrowed the lookup too far. After the Conduit's listed operations it tried
+  only `#{name}` in the target's contract scope, then the core, but a Type may offer a Capability
+  whose operations live in a pinned dependency package, as the in-tree
+  `scenario-s2-linear-adapter` does. Such an operation, not listed by the Conduit, was then named
+  by the tool's spelling, not its qualified name, against decision 2. A probe test showed it: the
+  old code passed and the new failed.
+- R4 (should): the summary above said 39 `REASON_CAUSES` entries, round 1's count; the table holds
+  40, with round 2's POOL-003.
+
+The fixer applied each finding, then rebased the branch onto `origin/main` at `93415960` (#344,
+which adds only order 200's file) with the work-order identity, without conflict:
+
+- R3: between the Conduit's listed operations and the `#{name}` lookup, `access_route` now
+  resolves the Conduit's own Capability through the target, and of its operations whose name after
+  `#` is the tool's, qualifies each by the Capability's scope's address where its address is
+  empty, and takes the first that resolves through the target to an Operation; it still never
+  follows the environment's order. The test
+  `operation_identification_names_a_dependency_operation_the_conduit_does_not_list` builds a scope
+  `example.org/adapter` holding a Capability `cap.v1` of `example.org/dep#fetch.v1`, pinned to a
+  scope `example.org/dep` that exports `fetch.v1`, and a closed Conduit with that Capability that
+  lists no operation; `access_route` names `example.org/dep#fetch.v1`. With the new lookup disabled
+  on a scratch copy, it failed, naming `files.fetch.v1`; restored, `cmp` exited 0. The collision
+  test still passes.
+- R4: the summary now says 40 entries and names POOL-003 from round 2.
+
+The fixer then ran, on the files of this commit before the rebase: every Python check of "Done
+when" (`Errors: 0` each), the tool tests (123, OK), `git diff --check origin/main...HEAD` and
+`git diff --check` (clean), `vector_delta.py HEAD` (`0 changes; 0 flips; 0 undeclared; 0 errors.`)
+and `vector_delta.py origin/main` (`195 changes; 0 flips; 0 undeclared; 0 errors.`), the count
+script (`0 0 0 0 42`), the greps (`1 1 1 1` and `0 0 0 0`), and the empty `git status` of the
+protected paths. From `engine/`: `cargo fmt --check` and clippy (clean), pieces
+(`Nothing to move.`), the `explain-` run (3 cases passed), `access-close-root-outside-bound`
+(`PASS access-close-root-outside-bound (2 steps; ACC-029, ACC-056)`), the vectors (2 passed) and
+the full run (288 passed, 0 failed, 4 ignored, one more than before for R3's test). Both runs that
+must fail failed with the stated lines, and after `cp` both `cmp` exited 0 and both cases passed;
+the spike passed 9. After the rebase, `check_docs.py` and `check_private_paths.py` ended
+`Errors: 0`, `git diff --check origin/main...HEAD` was clean, and `vector_delta.py origin/main`
+ended `195 changes; 0 flips; 0 undeclared; 0 errors.` The gate's run on this order's squash, which
+the merge waits on, is the coordinator's.
+
+At the merge the coordinator confirmed the fixer's choice of the first reader's option (a): the one
+metadata-only change in `cascade.rs` that gives a held member's access-decision and request-ended
+records their `ruleId`, so that decision 5 holds for every record that carries a reason. The gate
+runs on the squash, and the merge waits on its PASS.

@@ -1,0 +1,40 @@
+{
+  "cases": [
+    {
+      "id": "explain-agent-results",
+      "case": "conventions/explain/agent-results/case.yaml",
+      "promises": [
+        "ACC-056",
+        "IFC-050",
+        "IFC-012",
+        "ACC-001"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "explain-reason-diagnostic",
+      "case": "conventions/explain/reason-diagnostic/case.yaml",
+      "promises": [
+        "IFC-050",
+        "IFC-025",
+        "OPS-005",
+        "PKG-024",
+        "OPS-029"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "explain-refusal-tiers",
+      "case": "conventions/explain/refusal-tiers/case.yaml",
+      "promises": [
+        "ACC-056",
+        "IFC-050",
+        "IFC-025",
+        "IFC-012",
+        "ACC-001",
+        "LIF-034"
+      ],
+      "safety_rows": []
+    }
+  ]
+}

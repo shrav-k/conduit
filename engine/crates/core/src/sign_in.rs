@@ -7,6 +7,7 @@ use crate::{
     inventory, pending, requests,
 };
 use serde_json::{Value, json};
+use std::collections::BTreeSet;
 
 pub(crate) enum ExpectedAccount<'a> {
     NoSignIn,
@@ -529,24 +530,131 @@ pub(crate) fn preflight(
         )));
     }
     let expected = expected_account(instance, context)?;
-    let names = if matches!(expected, ExpectedAccount::Set { .. }) {
-        stated_login_names(instance, context)?
+    let logins = if matches!(expected, ExpectedAccount::Set { .. }) {
+        stated_logins(instance, context)?
     } else {
         Vec::new()
     };
-    refusal(
+    let names = stated_login_names(&logins);
+    if let Some(rejection) = refusal(
         state, route, instance, time, expected, request, &names, context,
-    )
+    )? {
+        return Ok(Some(rejection));
+    }
+
+    let others = other_sign_in_ports(state, instance, context)?;
+    if others.is_empty() {
+        return Ok(None);
+    }
+    let asked = request
+        .sign_in_login
+        .as_ref()
+        .and_then(|v| v["name"].as_str());
+    let own = may_start_fixed_ports(&logins, asked);
+    fixed_port_refusal(state, route, instance, &own, &others, time, context)
 }
 
-fn stated_login_names(instance: &Value, context: &Context) -> Result<Vec<String>> {
-    let ty = inventory::instance_type(instance, context)?;
-    Ok(ty["spec"]["signIn"]["logins"]
-        .as_array()
-        .into_iter()
-        .flatten()
+fn stated_logins(instance: &Value, context: &Context) -> Result<Vec<Value>> {
+    let mut ty = inventory::instance_type(instance, context)?;
+    Ok(match ty["spec"]["signIn"]["logins"].take() {
+        Value::Array(logins) => logins,
+        _ => Vec::new(),
+    })
+}
+
+fn stated_login_names(logins: &[Value]) -> Vec<String> {
+    logins
+        .iter()
         .filter_map(|login| login["name"].as_str().map(str::to_owned))
-        .collect())
+        .collect()
+}
+
+pub(crate) fn may_start_fixed_ports(logins: &[Value], asked: Option<&str>) -> BTreeSet<u64> {
+    logins
+        .iter()
+        .filter(|login| {
+            login["return"] == "redirect"
+                && asked.is_none_or(|name| login["name"].as_str() == Some(name))
+        })
+        .filter_map(|login| login["redirect"]["ports"].as_array())
+        .flatten()
+        .filter_map(|value| {
+            value.as_u64().or_else(|| {
+                // JSON Schema accepts whole-valued decimals as integers. Ports fit exactly in f64.
+                let port = value.as_f64()?;
+                ((0.0..=f64::from(u16::MAX)).contains(&port) && port.fract() == 0.0)
+                    .then_some(port as u64)
+            })
+        })
+        .collect()
+}
+
+pub(crate) fn other_sign_in_ports(
+    state: &State,
+    instance: &Value,
+    c: &Context,
+) -> Result<Vec<(Value, BTreeSet<u64>)>> {
+    let operation = c.qualified("sign-in.v1");
+    let mut others = Vec::new();
+    for invocation in &state.invocations {
+        if invocation["state"] != "in-progress"
+            || invocation["operation"] != operation
+            || invocation["object"] == instance["id"]
+        {
+            continue;
+        }
+        let Some(other) = invocation
+            .get("object")
+            .and_then(|id| access::object_by_id(state, id))
+        else {
+            continue;
+        };
+        if !matches!(expected_account(other, c)?, ExpectedAccount::Set { .. }) {
+            continue;
+        }
+        let logins = stated_logins(other, c)?;
+        let ports = may_start_fixed_ports(&logins, invocation["asked_login"].as_str());
+        others.push((other["id"].clone(), ports));
+    }
+    Ok(others)
+}
+
+pub(crate) fn fixed_port_refusal(
+    state: &State,
+    route: &Value,
+    instance: &Value,
+    own: &BTreeSet<u64>,
+    others: &[(Value, BTreeSet<u64>)],
+    time: &str,
+    context: &Context,
+) -> Result<Option<Rejection>> {
+    if own.is_empty() {
+        return Ok(None);
+    }
+    let Some((id, ports)) = others.iter().find(|(_, ports)| !own.is_disjoint(ports)) else {
+        return Ok(None);
+    };
+    let shared: Vec<_> = own.intersection(ports).map(u64::to_string).collect();
+    let label = if shared.len() == 1 { "port" } else { "ports" };
+    let ports = shared.join(", ");
+    let tool = route["tool"].as_str().ok_or("sign-in route has no tool")?;
+    let mut cause = format!(
+        "another sign-in.v1 in progress may start a login on the fixed {label} {ports}, which a login this request may start also states, and one fixed port serves one login at a time; send sign-in.v1 again once that sign-in ends."
+    );
+    if let Some(other) = access::object_by_id(state, id)
+        && let Some(action) = visible_sign_in_action(state, other, &route["caller"], time, context)?
+    {
+        cause.push_str(&format!(
+            " The other instance's pending sign-in action is {action}."
+        ));
+    }
+    Ok(Some(rejection(
+        "unavailable",
+        "PND-010",
+        tool,
+        instance,
+        &cause,
+    )))
 }
 
 fn request_member_refusal(
@@ -665,16 +773,28 @@ fn refusal(
     let mut text = format!(
         "the instance's earlier {what} has been dispatched and has not ended; send sign-in.v1 again once it ends."
     );
-    if let Some(action) = pending::unanswered_sign_in(state, instance, time)
-        && let Some(holder) = access::object_by_id(state, &route["caller"])
-        && pending::raised_view(action, holder, state, time, context)?.is_some()
-        && let Some(id) = action["id"].as_str()
-    {
+    if let Some(id) = visible_sign_in_action(state, instance, &route["caller"], time, context)? {
         text.push_str(&format!(" Its pending sign-in action is {id}."));
     }
     Ok(Some(rejection(
         "conflict", "PND-010", tool, instance, &text,
     )))
+}
+
+fn visible_sign_in_action<'a>(
+    state: &'a State,
+    instance: &Value,
+    caller: &Value,
+    time: &str,
+    context: &Context,
+) -> Result<Option<&'a str>> {
+    if let Some(action) = pending::unanswered_sign_in(state, instance, time)
+        && let Some(holder) = access::object_by_id(state, caller)
+        && pending::raised_view(action, holder, state, time, context)?.is_some()
+    {
+        return Ok(action["id"].as_str());
+    }
+    Ok(None)
 }
 
 fn rejection(
@@ -1190,5 +1310,120 @@ mod tests {
         assert_refusal(check(&state, "w", set()), "conflict", &setup_busy);
         state.pending_actions.get_mut("action-id").unwrap()["action"]["expiry"] = json!(time);
         assert_refusal(check(&state, "r", set()), "conflict", &setup_busy);
+    }
+
+    #[test]
+    fn sign_in_fixed_port_refusal() {
+        let logins = [
+            json!({"name":"browser","return":"redirect",
+                "redirect":{"host":"127.0.0.1","ports":[8400,8401],"path":"/callback"}}),
+            json!({"name":"device","return":"device"}),
+            json!({"name":"any-port","return":"redirect",
+                "redirect":{"host":"127.0.0.1","ports":"any","path":"/cb"}}),
+            json!({"name":"pasted","return":"page","page":"https://example.org/code"}),
+            json!({"name":"second","return":"redirect",
+                "redirect":{"host":"localhost","ports":[8402,8401],"path":"/other"}}),
+        ];
+        let all = BTreeSet::from([8400, 8401, 8402]);
+        let browser = BTreeSet::from([8400, 8401]);
+        let second = BTreeSet::from([8401, 8402]);
+        let empty = BTreeSet::new();
+        assert_eq!(may_start_fixed_ports(&logins, None), all);
+        assert_eq!(may_start_fixed_ports(&logins, Some("browser")), browser);
+        assert_eq!(may_start_fixed_ports(&logins, Some("second")), second);
+        for name in ["device", "any-port", "pasted", "phone"] {
+            assert_eq!(may_start_fixed_ports(&logins, Some(name)), empty);
+        }
+        assert_eq!(may_start_fixed_ports(&[], None), empty);
+        let mut decimal_ports = logins[0].clone();
+        decimal_ports["redirect"]["ports"] = json!([8400.0, 8401.0]);
+        assert_eq!(may_start_fixed_ports(&[decimal_ports], None), browser);
+
+        let (_, context) = crate::explain::tests::fixture();
+        let time = "2026-11-12T12:00:00Z";
+        let expiry = "2026-11-19T12:00:00Z";
+        let agent = json!({"id":"s1","name":"signed","kind":"Agent","owner":"f"});
+        let mut state = State {
+            objects: vec![
+                json!({"id":"r","kind":"Interface","from":context.qualified("root")}),
+                json!({"id":"v","kind":"Interface"}),
+                json!({"id":"w","kind":"Interface"}),
+                json!({"id":"management","kind":"Resource","from":context.qualified("management")}),
+                json!({"id":"f","name":"f","kind":"Fleet"}),
+                agent.clone(),
+                json!({"id":"s2","kind":"Agent","owner":"f"}),
+                json!({"id":"scope","kind":"Conduit","consumer":"v","target":"f",
+                    "open":true,"state":"ready","operations":[context.qualified("inspect.v1")]}),
+            ],
+            ..State::default()
+        };
+        state.pending_actions.insert(
+            "action-id".into(),
+            json!({
+                "action":{"id":"action-id","kind":"sign-in","subject":[{"id":"s2"}],
+                    "evidence":[],"expiry":expiry},
+                "dispatched":null,"raisedBy":"call-id"
+            }),
+        );
+        let check = |caller, time, own: &BTreeSet<u64>, others: &[(Value, BTreeSet<u64>)]| {
+            let route = json!({"tool":"group.sign-in.v1","caller":caller});
+            fixed_port_refusal(&state, &route, &agent, own, others, time, &context).unwrap()
+        };
+        let assert_unavailable = |actual: Option<Rejection>, ports, visible| {
+            let actual = actual.unwrap();
+            assert_eq!(actual.reason, "unavailable");
+            assert_eq!(actual.rule, "PND-010");
+            let mut text = format!(
+                "group.sign-in.v1 reports unavailable under PND-010 for Agent/signed: another sign-in.v1 in progress may start a login on the fixed {ports}, which a login this request may start also states, and one fixed port serves one login at a time; send sign-in.v1 again once that sign-in ends."
+            );
+            if visible {
+                text.push_str(" The other instance's pending sign-in action is action-id.");
+            } else {
+                assert!(
+                    !actual
+                        .diagnostics
+                        .as_ref()
+                        .unwrap()
+                        .to_string()
+                        .contains("action-id")
+                );
+            }
+            assert_eq!(
+                actual.diagnostics,
+                Some(json!([{"ruleId":"PND-010","level":"error","message":{"text":text}}]))
+            );
+        };
+        let others = [(json!("s2"), second.clone())];
+        for caller in ["r", "v"] {
+            assert_unavailable(check(caller, time, &browser, &others), "port 8401", true);
+        }
+        assert_unavailable(check("w", time, &browser, &others), "port 8401", false);
+        assert_unavailable(check("r", expiry, &browser, &others), "port 8401", false);
+        assert_unavailable(
+            check(
+                "w",
+                time,
+                &all,
+                &[(json!("s1"), empty.clone()), (json!("s2"), second.clone())],
+            ),
+            "ports 8401, 8402",
+            false,
+        );
+        assert_unavailable(
+            check(
+                "w",
+                time,
+                &browser,
+                &[
+                    (json!("s1"), BTreeSet::from([8400])),
+                    (json!("s2"), second.clone()),
+                ],
+            ),
+            "port 8400",
+            false,
+        );
+        assert!(check("r", time, &BTreeSet::from([8400]), &others).is_none());
+        assert!(check("r", time, &empty, &others).is_none());
+        assert!(check("r", time, &browser, &[]).is_none());
     }
 }

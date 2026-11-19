@@ -350,7 +350,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | OPS-020 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | OPS-021 | convention | must | 3 | 0 | outside | core | case passes |
 | OPS-022 | convention | must | 29 | 0 | cases | core | case passes |
-| OPS-023 | convention | must | 25 | 0 | cases | core | case passes |
+| OPS-023 | convention | must | 26 | 0 | cases | core | case passes |
 | OPS-024 | convention | must | 9 | 0 | cases | core | case passes |
 | OPS-025 | convention | must | 2 | 0 | cases | core | case passes |
 | OPS-026 | convention | must | 3 | 0 | cases | core | case passes |
@@ -417,7 +417,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | PND-007 | convention | must | 1 | 0 | outside | core | case passes |
 | PND-008 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | PND-009 | convention | must | 2 | 0 | outside | core, shell | case passes |
-| PND-010 | convention | must | 3 | 0 | outside | core, shell | case passes |
+| PND-010 | convention | must | 4 | 0 | outside | core, shell | case passes |
 | PND-011 | convention | must | 2 | 0 | outside | core | case passes |
 | PND-012 | convention | must | 1 | 0 | outside | core | case passes |
 | PND-013 | convention | must | 3 | 0 | outside | core, shell | case passes |

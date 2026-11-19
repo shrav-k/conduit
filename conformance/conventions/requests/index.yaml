@@ -700,6 +700,15 @@
       "safety_rows": []
     },
     {
+      "id": "requests-sign-in-fixed-port",
+      "case": "conventions/requests/sign-in-fixed-port/case.yaml",
+      "promises": [
+        "PND-010",
+        "OPS-023"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "requests-sign-in-hold",
       "case": "conventions/requests/sign-in-hold/case.yaml",
       "promises": [

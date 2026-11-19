@@ -1,3 +1,4 @@
+# Checked at the merge of order 048a-5c, against main at 1d3c7301: the work's vector delta matches these shapes.
 - name: requests-sign-in-fixed-port
   kind: added
   cases: [requests-sign-in-fixed-port]

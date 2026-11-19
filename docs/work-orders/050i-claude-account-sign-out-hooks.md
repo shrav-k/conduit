@@ -21,17 +21,20 @@ project.
 ## What and why
 
 **Where this order starts.** Your tree is the branch that the coordinator names as `BASE`, not
-`main`: the Claude lane's branch, cut from `wo/050-agents-0.2.0` at order 050h's tip, which holds
-orders 050a, 076 and 078, 050a's Record, orders 050c, 050d and 050e, each with its Record, and
-orders 050f and 050h, verified, rebased onto `main`. This order is the first of the Claude lane
-(050i, 050j, 050k). The Codex lane (050l, 050m) runs on a branch of its own, cut from the same
-tip, and does not share `BASE`. `BASE`'s tip holds this order file, committed: the coordinator
-rebases the lane's branch onto `main` after this order's text merges, and sets `BASE` to that
-branch's tip. Orders 050f and 050h were not built when this order was written, so every line below
-that reads what they bring is an assumption about them, checked here. Before you change anything,
-check from the repository root that you find there what that gives, and stop, change nothing and
-report if any check prints otherwise. The first Python line needs a Python with PyYAML, as
-`tools/check_schemas.py` does (AGENTS.md, "Checks").
+`main`: the Claude lane's branch, cut from `wo/050-agents-0.2.0` at order 050h's tip, `f817139e`,
+which holds orders 050a, 076 and 078, 050a's Record, and orders 050c, 050d, 050e, 050f and 050h,
+each with its Record. This order is the first of the Claude lane (050i, 050j, 050k). The Codex lane
+(050l, 050m) starts from the same tip, `f817139e`, on a branch of its own, and does not share
+`BASE`; neither lane holds the other's work. `BASE`'s tip holds this order file, committed, in this
+refreshed text rather than the one first merged on `main` (#369): the coordinator puts it on the
+lane's branch after this refreshed text merges, or rebases the lane onto `main` once it has, and
+sets `BASE` to that branch's tip. Orders 050f and 050h were not built when this order was first
+written; it was then read again against `f817139e`, and every line below that reads what they
+brought is checked here (order 050h's Record, R1 and R8, changed its `logout` and `retire_within`,
+as "What the branch already does" says). Before you change anything, check from the repository root
+that you find there what that gives, and stop, change nothing and report if any check prints
+otherwise. The first Python line needs a Python with PyYAML, as `tools/check_schemas.py` does
+(AGENTS.md, "Checks").
 
 ```bash
 P=packages/agent-claude-code
@@ -39,7 +42,7 @@ git merge-base --is-ancestor d891543f "$BASE"; echo "main $?"
 test "$(git rev-parse HEAD)" = "$(git rev-parse "$BASE")"; echo "head $?"
 git ls-files --error-unmatch docs/work-orders/050i-claude-account-sign-out-hooks.md >/dev/null; echo "order $?"
 git status --short | wc -l
-grep -c '^## Record' docs/work-orders/050a-agents-v2-own-tools.md docs/work-orders/050c-agents-v2-client-home.md docs/work-orders/050d-agents-v2-process-tree.md docs/work-orders/050e-agents-v2-failed-turn-fields.md
+grep -c '^## Record' docs/work-orders/050a-agents-v2-own-tools.md docs/work-orders/050c-agents-v2-client-home.md docs/work-orders/050d-agents-v2-process-tree.md docs/work-orders/050e-agents-v2-failed-turn-fields.md docs/work-orders/050f-agents-v2-inputs.md docs/work-orders/050h-agents-v2-retire-hook.md
 python3 -c "import yaml; s=[d for d in yaml.safe_load_all(open('packages/agent-claude-code/contracts.yaml')) if d['metadata']['name'] == 'claude-code.v2'][0]['spec']; print(s['schema']['required'].count('account'), s['schema']['properties']['account'], 'apiKey' in s['schema']['properties'], 'signIn' in s, s.get('toolsDirectory'), s['requires'], s['implementation'])"
 grep -c "^    implements: \['#turn.v1', 'github.com/shrav-k/conduit/core#retire-hook.v1'\]$" $P/conduit.yaml
 grep -c "^      'github.com/shrav-k/conduit/core#retire-hook.v1': retire$" $P/conduit.yaml
@@ -68,9 +71,9 @@ for s in 'serde_json::from_str::<Value>(stdout.trim())' 'path.join(".")' 'matche
 They print, in order:
 
 - `main 0` (`d891543f` is `main` with the texts of orders 050f, 050h and 048a-4 and this plan's
-  rows), `head 0`, `order 0` and `0`; then `1` for each of the four order files (their Records).
-  Orders 050f's and 050h's Records are not asked for: their readers may finish after this order
-  starts, and the lines below, not a Record, check what they bring.
+  rows), `head 0`, `order 0` and `0`; then `1` for each of the six order files (their Records,
+  050f's and 050h's among them, both at `f817139e`). The lines below, not a Record, check what
+  orders 050f and 050h brought.
 - From order 050f, with order 050h's `requires` and default (one line):
 
   ```text
@@ -207,12 +210,15 @@ hook.
   builds the client's command with the launch's environment, `CLAUDE_CONFIG_DIR` set to the home,
   both API-key variables removed, the client directory as its working directory, its own process
   group and `kill_on_drop`; `logout` (order 050h), which runs `logout_arguments()` (here
-  `["auth", "logout"]`) under the tree's state lock, records its group, waits within its deadline
-  and fails with `client logout did not start`, `client logout failed: client exit: ...` or
+  `["auth", "logout"]`) under the tree's state lock, in the client directory or, where that is
+  gone, in the wrapper's working directory or else the home (050h's Record, R1), records its
+  group, waits within its deadline, stopping the tree at it, and fails with
+  `client logout did not start`, `client logout failed: client exit: ...` or
   `client logout failed: no exit within N seconds`; `exit_cause`; `process`; the tree's state with
   `groups` and `closed`; and `Session` with `config`, `tree`, `stream`, `failed`, `turns_started`
   and `retired`, `shutdown`, and `retire_within`, which reads the configuration's refusal only
-  where the state directory is unset.
+  where the state directory is unset and, after the logout, checks the home again before emptying
+  it (050h's Record, R8).
 - `src/main.rs`'s `Wrapper(Arc<Mutex<Session>>, bool)`, the second field `config.v2`, lists `turn`
   and, for `.v2`, `retire`; its `call_tool` serves `retire` before `turn` and answers any other name
   with `ErrorData::invalid_params("unknown tool", None)`.
@@ -220,8 +226,12 @@ hook.
   logout before it writes `client-started` (appending a line to `logouts.jsonl` in its working
   directory, and removing `fixture-login` from the home), and otherwise runs turns.
 - `tests/wrapper.rs` has 18 tests, among them order 050h's `v2_retire_tool_through_the_wrapper`,
-  and the helpers `plant_default_home`, `entry_names`, `assert_default_home` and
-  `assert_client_environment`, and the constants `LOGIN_TOKEN` and `LOGIN_CLAIM`.
+  whose three `.v2` wrapper runs (no named directory; a named directory removed after a turn; the
+  same with a logout exit 3) share one tool-list assertion, `tests/wrapper.rs:2126`, and the
+  helpers `plant_default_home`, `entry_names`, `assert_default_home` and
+  `assert_client_environment`, and the constants `LOGIN_TOKEN` and `LOGIN_CLAIM`. Order 050h also
+  added `plant_login`, `assert_no_login_canary` and `recorded_logouts`, which this order leaves as
+  they are.
 
 ## The decisions it applies
 
@@ -387,19 +397,21 @@ again (see "Who decided what").
    ```
 
    So the account hook checks the home with every launch's refusals and creates it where it is
-   missing; runs `claude auth status` in it with the launch's environment, its output read and
-   never kept, its standard error discarded; answers the `email` that a JSON object with
-   `loggedIn` true names on exit 0, as the status gives it, and null for `loggedIn` false on exit
-   1; and fails with a fixed text on anything else. It leaves a running conversation's client
-   running, and at its deadline kills its own process group alone, not the tree, since stopping
-   the tree would stop the conversation too. The sign-out hook stops the conversation's client
-   first, as order 050h's retire hook does, since a running client may still hold or rewrite the
-   login; where a client was running, it ends that conversation as a failed turn does, so that no
-   later turn restarts it implicitly with a new login; where no client was running, later turns
-   run as before. It then runs order 050h's `logout` unchanged and keeps the home and every other
-   entry in it, where the conversation's files live. Neither hook sets order 050h's `retired`. Where
-   the code cannot be applied as written (a name at `BASE` differs from what the start check
-   read), stop and report rather than adapt it.
+   missing; runs `claude auth status` in it with the launch's environment, its output read and never
+   kept, its standard error discarded; answers the `email` that a JSON object with `loggedIn` true
+   names on exit 0, as the status gives it, and null for `loggedIn` false on exit 1; and fails with
+   a fixed text on anything else. Unlike the sign-out hook, which inherits `logout`'s fallback
+   (050h's Record, R1), it runs the status in the client directory alone: where the named directory
+   is gone, the status cannot start, and the hook fails as `client status did not start`. It leaves
+   a running conversation's client running, and at its deadline kills its own process group alone,
+   not the tree, since stopping the tree would stop the conversation too. The sign-out hook stops
+   the conversation's client first, as order 050h's retire hook does, since a running client may
+   still hold or rewrite the login; where a client was running, it ends that conversation as a
+   failed turn does, so that no later turn restarts it implicitly with a new login; where no client
+   was running, later turns run as before. It then runs order 050h's `logout` unchanged and keeps
+   the home and every other entry in it, where the conversation's files live. Neither hook sets
+   order 050h's `retired`. Where the code cannot be applied as written (a name at `BASE` differs
+   from what the start check read), stop and report rather than adapt it.
 
 3. **The tools, in `src/main.rs`.**
    - `list_tools`, where the second field is true, lists after `retire`, in this order:
@@ -483,22 +495,25 @@ again (see "Who decided what").
 5. **The tests**, in `tests/wrapper.rs`. Add the constant `ACCOUNT` `Synthetic-Account`; import
    `SIGNED_OUT`, `SIGNED_OUT_CAUSE`, `STATUS_DID_NOT_START`, `STATUS_NO_ACCOUNT`,
    `STATUS_UNREADABLE` and `status_arguments` from `agent_adapter::sign_in`; and add three helpers:
-   `write_signed_in_login(home: &Path, email: Option<&str>)`, which writes `fixture-login` in
-   `home` holding `{"token":LOGIN_TOKEN,"claims":{"account":LOGIN_CLAIM}}`, with the member
-   `"email"` holding `email` where it is `Some`; `hook_lines(path: &Path) -> Vec<Value>`, the JSON
-   lines of a `.jsonl` file, empty where the file is missing; and
-   `assert_no_hook_canary(text: &str)`, which asserts that `text` holds none of `LOGIN_TOKEN`,
-   `LOGIN_CLAIM` and `ACCOUNT`. "Set up" below means: a fresh temporary directory with the default
-   home planted (`plant_default_home`), `config(...)` as order 050h's tests build it with `c.v2`
-   true and `directory` null, `MCP_TOOL_TIMEOUT` `10000` in `c.env`, `prepare` run, and the client
-   home `state/client-home` made with mode 0700; "the launch's environment" is `c.env` less both
-   API-key variables with `CLAUDE_CONFIG_DIR` the home's canonical path, compared with
-   `assert_client_environment`; and the client directory is `c.cwd`.
+   `write_signed_in_login(home: &Path, email: Option<&str>)`, which writes `fixture-login` in `home`
+   holding `{"token":LOGIN_TOKEN,"claims":{"account":LOGIN_CLAIM}}`, with the member `"email"`
+   holding `email` where it is `Some`, by calling order 050h's `plant_login` where `email` is
+   `None`; `hook_lines(path: &Path) -> Vec<Value>`, the JSON lines of a `.jsonl` file, empty where
+   the file is missing, used for `statuses.jsonl`, while `logouts.jsonl` is read with order 050h's
+   `recorded_logouts`; and `assert_no_hook_canary(text: &str)`, which calls order 050h's
+   `assert_no_login_canary` and asserts that `text` does not hold `ACCOUNT` either. "Set up" below
+   means: a fresh temporary directory with the default home planted (`plant_default_home`),
+   `config(...)` as order 050h's tests build it with `c.v2` true and `directory` null,
+   `MCP_TOOL_TIMEOUT` `10000` in `c.env`, `prepare` run, and the client home `state/client-home`
+   made with mode 0700; "the launch's environment" is `c.env` less both API-key variables with
+   `CLAUDE_CONFIG_DIR` the home's canonical path, compared with `assert_client_environment`; and the
+   client directory is `c.cwd`.
    - **Two tests change in their tool lists alone.** In
-     `stdio_v2_defaults_and_invalid_configuration_remain_callable`, wherever order 050h's
-     assertion expects the names `["turn", "retire"]` it expects
-     `["turn", "retire", "account", "sign-out"]`, and where it expects `["turn"]` it does not
-     change. In `v2_retire_tool_through_the_wrapper`, the `.v2` wrapper's listed names become
+     `stdio_v2_defaults_and_invalid_configuration_remain_callable`, where order 050h's
+     assertion expects the names `["turn", "retire"]` (`tests/wrapper.rs:1405` at `BASE`) it
+     expects `["turn", "retire", "account", "sign-out"]`, and where it expects `["turn"]` it does
+     not change. In `v2_retire_tool_through_the_wrapper`, the listed names of its `.v2` runs, which
+     one assertion checks in each of the three (`tests/wrapper.rs:2126`), become
      `["turn", "retire", "account", "sign-out"]`; its `.v1` list stays `["turn"]`. Every other test
      keeps passing unchanged.
    - **A new test, `v2_account_reports_only_the_status_account`**, through `Session`. Set up, with
@@ -582,11 +597,11 @@ again (see "Who decided what").
      no entry. It `eprintln!`s each case's answer.
    - **A new test, `v2_account_and_sign_out_tools_through_the_wrapper`**, through the wrapper
      binary over stdio, its `.v2` wrapper started as order 050h's
-     `v2_retire_tool_through_the_wrapper` starts it, with the default home planted and the client
-     home made with mode 0700 and no login. In this order:
+     `v2_retire_tool_through_the_wrapper` starts its first run, with no `AGENT_DIRECTORY`, with the
+     default home planted and the client home made with mode 0700 and no login. In this order:
      1. the listed tools' names are `["turn", "retire", "account", "sign-out"]`;
      2. `account` and then `sign-out`, each with the arguments `{"extra":true}`, are each an error
-        of the call;
+        of the call, and each error's text passes `assert_no_hook_canary`;
      3. `account` with `{}` answers, as JSON, `isError` false, `resultType` `complete`, `content`
         exactly one text block `{"account":null}`, `structuredContent` `{"account":null}`, and no
         `_meta` member;
@@ -601,14 +616,16 @@ again (see "Who decided what").
 
      `statuses.jsonl` in the client directory then holds three lines, each with `args` equal to
      `status_arguments()` and `environment[CLAUDE_CONFIG_DIR]` the client home's canonical path;
-     `logouts.jsonl` holds one line, with `args` equal to `logout_arguments()`; and the default
-     home passes `assert_default_home`. After `cancel`, the wrapper exits successfully, and its
-     stderr holds none of `LOGIN_TOKEN`, `LOGIN_CLAIM`, `ACCOUNT`, `synthetic-test-token`,
-     `synthetic-anthropic-key` and `synthetic-openai-key`. Then a `.v1` wrapper, started in a fresh
-     temporary directory as `stdio_exposes_only_turn_and_setup_never_launches_client` starts it,
-     lists `["turn"]`, answers `account` and `sign-out`, each with `{}`, as errors of the call, and
-     leaves neither `statuses.jsonl` nor `logouts.jsonl`. It `eprintln!`s the `.v2` answers of
-     steps 4 and 6.
+     `logouts.jsonl` holds one line, with `args` equal to `logout_arguments()`; and the default home
+     passes `assert_default_home`. The test keeps the wrapper's raw standard output, as order 050h's
+     test does. After `cancel`, the wrapper exits successfully; its stderr holds none of
+     `LOGIN_TOKEN`, `LOGIN_CLAIM`, `ACCOUNT`, `synthetic-test-token`, `synthetic-anthropic-key` and
+     `synthetic-openai-key`; and its raw stdout holds none of `LOGIN_TOKEN`, `LOGIN_CLAIM`,
+     `synthetic-test-token`, `synthetic-anthropic-key` and `synthetic-openai-key` (not `ACCOUNT`,
+     which step 4 rightly answers). Then a `.v1` wrapper, started in a fresh temporary directory as
+     `stdio_exposes_only_turn_and_setup_never_launches_client` starts it, lists `["turn"]`, answers
+     `account` and `sign-out`, each with `{}`, as errors of the call, and leaves neither
+     `statuses.jsonl` nor `logouts.jsonl`. It `eprintln!`s the `.v2` answers of steps 4 and 6.
 
    The test count in `packages/agent-claude-code/tests/wrapper.rs` goes from 18 to 23; Codex's
    stays 18.
@@ -635,7 +652,9 @@ again (see "Who decided what").
        whose `loggedIn` is true and whose `email` is a non-empty string A, reported as the status
        gives it, and `{"account": null}` where it exits 1 and `loggedIn` is false. It leaves a
        running conversation's client running and keeps nothing of the output;
-     - its failures, each a fixed text: `client status did not start`;
+     - its failures, each a fixed text: `client status did not start`, also where the named
+       directory is gone, since the status, unlike the sign-out hook's logout, runs in the client
+       directory alone;
        `client status failed: client exit: status N`, `... signal N` or `... status unknown`;
        `client status failed: no exit within 30 seconds`, after which the status's own process
        group is killed; `client status unreadable`, for an output longer than the limit, not a JSON
@@ -837,14 +856,16 @@ nothing.
 choice you made yourself as your own, and give the last line of every check and each count above.
 Tests that bind loopback ports may fail in your sandbox; if they do, say so, and the admin reruns
 them. Where the sandbox denies PID-scoped `ps`, `v2_client_tree_stop_leaves_no_survivor` stops at
-its preflight; say so, report 22 passed and that one failed for that reason, and the reader reruns
-it on the Mac.
+its preflight, and any test that stops a tree with recorded groups may fail with the stop's note (on
+macOS every sign-out stops the tree first, and the account hook and the logout record their groups,
+so new sign-out cases and order 050h's retire tests among them); say so, name each such test, report
+the counts passed and failed for that reason, and the reader reruns them on the Mac.
 
 The admin then runs `python3 tools/check_private_paths.py` and `git diff --cached --check` on the
 staged change. This order is a checkpoint on the Claude lane's branch, cut from
-`wo/050-agents-0.2.0` at order 050h's tip: it does not merge alone, and its Record is written at the
-foot of this file on that branch, as orders 050c's to 050h's are. A fresh Codex verifier and a fresh
-read-only Opus reader read the result before the checkpoint stands ([ruling
+`wo/050-agents-0.2.0` at order 050h's tip, `f817139e`: it does not merge alone, and its Record is
+written at the foot of this file on that branch, as orders 050c's to 050h's are. A fresh Codex
+verifier and a fresh read-only Opus reader read the result before the checkpoint stands ([ruling
 79](../proposals/ruling-79/README.md), point 2). The local gate that [ruling
 80](../proposals/ruling-80/README.md) has a merge wait on, `tools/gate.py`, runs at order 050n's
 merge, read with the expected engine failure known.

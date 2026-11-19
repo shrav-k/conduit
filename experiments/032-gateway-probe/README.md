@@ -10,6 +10,10 @@ run. Not run: the harness (order 205b) and the run (order 205c) come later, each
 before it merges. The text below changes only by a dated amendment, written before the run it
 changes.
 
+Amended on 2026-11-18, before order 205b is written, by the coordinator's change that commits the
+study's record: under Why, the sentence saying that the record is not yet in the tree now links
+it. Nothing else changes.
+
 ## Why
 
 [Ruling 83](../../docs/proposals/ruling-83/README.md), point 2, sets a direction: an Agent never
@@ -17,11 +21,11 @@ holds a model service's API key, and model API access comes later as a declared 
 credential-injecting gateway that a provider runs, to which the Agent's client is pointed instead
 of the vendor. Its point 3 has a grounded study read each client's gateway support before the route
 is designed. The study recommended this probe, so that what it read is seen in the clients
-themselves. The study's record is not yet in the tree: the coordinator commits it under
-`docs/research/` by a separate change before order 205b is written, and links it from A85's
-Source cell and from here; the link here is added by a dated amendment. The study has no register
-row of its own: it ran with no order, so ruling 83's planned row for it is taken up by A85, by the
-coordinator's reading. The claims under test, K1 to K4, are the study's statements, not facts:
+themselves. The study's record, linked here by the amendment of 2026-11-18 above, is
+[Model access through a gateway](../../docs/research/model-access-gateways.md); A85's Source cell
+links it too. The study has no register row of its own: it ran with no order, so ruling 83's
+planned row for it is taken up by A85, by the coordinator's reading. The claims under test, K1 to
+K4, are the study's statements, not facts:
 
 - **K1.** Claude Code can be pointed at a gateway by `ANTHROPIC_BASE_URL`, with the gateway's
   credential in `ANTHROPIC_AUTH_TOKEN` or given by an `apiKeyHelper`.

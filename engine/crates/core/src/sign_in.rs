@@ -7,7 +7,8 @@ use crate::{
     inventory, pending, requests,
 };
 use serde_json::{Value, json};
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
+use url::Url;
 
 pub(crate) enum ExpectedAccount<'a> {
     NoSignIn,
@@ -383,6 +384,174 @@ pub(crate) fn hook_answer_cause(check: &str, field: &str) -> String {
     )
 }
 
+pub(crate) fn url_match(
+    url: &str,
+    logins: &[Value],
+    asked: Option<&str>,
+) -> std::result::Result<String, (&'static str, &'static str, Option<String>)> {
+    let url = Url::parse(url).map_err(|_| ("parses as a URL", "params.url", None))?;
+    if !url.username().is_empty() || url.password().is_some() {
+        return Err(("no user information", "userinfo", None));
+    }
+    if url.fragment().is_some() {
+        return Err(("no fragment", "fragment", None));
+    }
+    let mut query = BTreeMap::new();
+    for (name, value) in url.query_pairs() {
+        if query.insert(name, value).is_some() {
+            return Err(("no repeated parameter", "query", None));
+        }
+    }
+    let same_endpoint: Vec<_> = logins
+        .iter()
+        .filter(|login| {
+            login["authorization"]
+                .as_str()
+                .and_then(|authorization| Url::parse(authorization).ok())
+                .is_some_and(|authorization| {
+                    authorization.origin() == url.origin() && authorization.path() == url.path()
+                })
+        })
+        .collect();
+    if same_endpoint.is_empty() {
+        return Err(("a stated login", "origin and path", None));
+    }
+    if let Some(name) = asked
+        && !same_endpoint
+            .iter()
+            .any(|login| login["name"].as_str() == Some(name))
+    {
+        return Err(("the asked-for login", "origin and path", Some(name.into())));
+    }
+
+    let parameter = |name| query.get(name).map(|value| value.as_ref());
+    let mut matched = None;
+    let mut latest_failure = None;
+    let exactly_one = ("exactly one login", "params.url", None);
+    for login in same_endpoint {
+        let (Some(name), Some(kind @ ("device" | "redirect" | "page" | "service"))) =
+            (login["name"].as_str(), login["return"].as_str())
+        else {
+            continue;
+        };
+        if asked.is_some_and(|asked| asked != name) {
+            continue;
+        }
+        match check_login_url(login, kind, url.query().is_some(), parameter) {
+            Ok(()) => {
+                if matched.replace(name).is_some() {
+                    return Err(exactly_one);
+                }
+            }
+            Err((row, check, field)) => {
+                // Keep the first login in the Type's order when rows tie.
+                if latest_failure.is_none_or(|(previous, _, _, _)| row > previous) {
+                    latest_failure = Some((row, check, field, name));
+                }
+            }
+        }
+    }
+    if let Some(name) = matched {
+        return Ok(name.into());
+    }
+    Err(match latest_failure {
+        Some((_, check, field, name)) => (check, field, Some(name.into())),
+        None => exactly_one,
+    })
+}
+
+fn check_login_url<'a>(
+    login: &Value,
+    kind: &str,
+    has_query: bool,
+    parameter: impl Fn(&'static str) -> Option<&'a str>,
+) -> std::result::Result<(), (u8, &'static str, &'static str)> {
+    if kind == "device" {
+        return if has_query {
+            Err((7, "no query", "query"))
+        } else {
+            Ok(())
+        };
+    }
+    if !parameter("client_id").is_some_and(|client| Some(client) == login["clientId"].as_str()) {
+        return Err((8, "the client ID", "client_id"));
+    }
+    if parameter("response_type") != Some("code") {
+        return Err((9, "response type code", "response_type"));
+    }
+    let redirect_matches = parameter("redirect_uri").is_some_and(|uri| match kind {
+        "redirect" => redirect_uri_matches(uri, &login["redirect"]),
+        _ => login["page"].as_str() == Some(uri),
+    });
+    if !redirect_matches {
+        return Err((10, "the redirect URI", "redirect_uri"));
+    }
+    if kind == "service" {
+        return Ok(());
+    }
+    if parameter("code_challenge_method") != Some("S256") {
+        return Err((11, "S256", "code_challenge_method"));
+    }
+    if !parameter("code_challenge").is_some_and(|challenge| {
+        challenge.len() == 43
+            && challenge
+                .bytes()
+                .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_'))
+    }) {
+        return Err((12, "a code challenge", "code_challenge"));
+    }
+    if !parameter("state").is_some_and(|state| {
+        state.len() >= 22
+            && state
+                .bytes()
+                .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'-' | b'.' | b'_' | b'~'))
+    }) {
+        return Err((13, "a state", "state"));
+    }
+    Ok(())
+}
+
+fn redirect_uri_matches(uri: &str, redirect: &Value) -> bool {
+    let (Some(host), Some(path)) = (redirect["host"].as_str(), redirect["path"].as_str()) else {
+        return false;
+    };
+    let Some(port) = uri
+        .strip_prefix("http://")
+        .and_then(|rest| rest.strip_prefix(host))
+        .and_then(|rest| rest.strip_prefix(':'))
+        .and_then(|rest| rest.strip_suffix(path))
+    else {
+        return false;
+    };
+    if port.starts_with('0') || !port.bytes().all(|b| b.is_ascii_digit()) {
+        return false;
+    }
+    let Ok(port) = port.parse::<u16>() else {
+        return false;
+    };
+    let ports = &redirect["ports"];
+    if ports == "any" {
+        return port >= 1024;
+    }
+    // Every u16 fits exactly in f64, including a whole-valued JSON decimal.
+    ports.as_array().is_some_and(|ports| {
+        ports
+            .iter()
+            .any(|stated| stated.as_f64() == Some(f64::from(port)))
+    })
+}
+
+pub(crate) fn url_match_cause(check: &str, field: &str, login: Option<&str>) -> String {
+    match login {
+        Some(name) => format!(
+            "The sign-in hook's URL does not match the login \"{name}\" of the instance's Type, so nothing was relayed and the instance is not signed in: it fails the check \"{check}\" at the field {field}."
+        ),
+        None => format!(
+            "The sign-in hook's URL does not match exactly one login of the instance's Type, so nothing was relayed and the instance is not signed in: it fails the check \"{check}\" at the field {field}."
+        ),
+    }
+}
+
 pub(crate) fn keep_hook_input(part: &mut Value, key: &str, state: Option<&str>) {
     let mut input = json!({"key":key});
     if let Some(state) = state {
@@ -429,10 +598,22 @@ pub(crate) fn hook_input(
     }
 
     let action = hook_url_action(result);
-    let retired = hook_subject_retired(t, p);
-    if !retired && let Ok((key, state)) = &action {
-        keep_hook_input(&mut t.state.invocations[i], key, state.as_deref());
-    }
+    let matched = match (active_hook_subject(t, p), action) {
+        (Some(instance), Ok((key, state))) => {
+            let url = result["inputRequests"][&key]["params"]["url"]
+                .as_str()
+                .unwrap();
+            let logins = stated_logins(instance, c)?;
+            let asked = t.state.invocations[p]["asked_login"].as_str();
+            let matched = url_match(url, &logins, asked);
+            if matched.is_ok() {
+                keep_hook_input(&mut t.state.invocations[i], &key, state.as_deref());
+            }
+            Some(matched.map_err(|(check, field, login)| HookAnswerFault::Url(check, field, login)))
+        }
+        (Some(_), Err((check, field))) => Some(Err(HookAnswerFault::Form(check, field))),
+        (None, _) => None,
+    };
     finish_hook_input(
         t,
         a,
@@ -441,17 +622,16 @@ pub(crate) fn hook_input(
         "The hook asked for input that sign-in.v1 did not relay, so whether the login it began is still waiting is not known.",
     )?;
     record_hook_part(t, p, &hook, "unknown");
-    if retired {
-        return end_sign_in(t, a, c, p, "failed", "PND-003", RETIRED_DURING_HOOK);
-    }
-    if let Err((check, field)) = action {
-        return refuse_hook_answer(t, a, c, p, &hook, check, field);
-    }
+    let login = match matched {
+        Some(Ok(login)) => login,
+        Some(Err(fault)) => return refuse_hook_answer(t, a, c, p, &hook, fault),
+        None => return end_sign_in(t, a, c, p, "failed", "PND-003", RETIRED_DURING_HOOK),
+    };
     t.decisions.push(decision(
         "end-sign-in-unrelayed",
         &["PND-010", "IFC-010", "IFC-049"],
         &[],
-        json!({"invocation":invocation,"hook":hook}),
+        json!({"invocation":invocation,"hook":hook,"login":login}),
         vec![],
     ));
     end_sign_in(t, a, c, p, "failed", "PND-010", HOOK_UNRELAYED_CAUSE)
@@ -478,12 +658,12 @@ fn finish_hook_input(
     )
 }
 
-fn hook_subject_retired(t: &Transition, i: usize) -> bool {
+fn active_hook_subject(t: &Transition, i: usize) -> Option<&Value> {
     t.state
         .objects
         .iter()
         .find(|o| o["id"] == t.state.invocations[i]["object"])
-        .is_none_or(|o| o["state"] == "retired")
+        .filter(|o| o["state"] != "retired")
 }
 
 fn record_hook_part(t: &mut Transition, i: usize, hook: &Value, outcome: &str) {
@@ -493,31 +673,42 @@ fn record_hook_part(t: &mut Transition, i: usize, hook: &Value, outcome: &str) {
         .push(json!({"name":"sign-in","outcome":outcome,"invocation":hook}));
 }
 
+enum HookAnswerFault {
+    Form(&'static str, &'static str),
+    Url(&'static str, &'static str, Option<String>),
+}
+
 fn refuse_hook_answer(
     t: &mut Transition,
     a: &mut Allocation<'_>,
     c: &Context,
     i: usize,
     hook: &Value,
-    check: &str,
-    field: &str,
+    fault: HookAnswerFault,
 ) -> Result<()> {
+    let (check, field, login, cause) = match fault {
+        HookAnswerFault::Form(check, field) => {
+            (check, field, None, hook_answer_cause(check, field))
+        }
+        HookAnswerFault::Url(check, field, login) => {
+            let cause = url_match_cause(check, field, login.as_deref());
+            (check, field, login, cause)
+        }
+    };
+    let mut facts = json!({
+        "invocation":t.state.invocations[i]["id"],"hook":hook,"check":check,"field":field
+    });
+    if let Some(login) = login {
+        facts["login"] = json!(login);
+    }
     t.decisions.push(decision(
         "refuse-sign-in-hook-answer",
         &["IFC-049", "IFC-010"],
         &[],
-        json!({"invocation":t.state.invocations[i]["id"],"hook":hook,"check":check,"field":field}),
+        facts,
         vec![],
     ));
-    end_sign_in(
-        t,
-        a,
-        c,
-        i,
-        "failed",
-        "IFC-049",
-        &hook_answer_cause(check, field),
-    )
+    end_sign_in(t, a, c, i, "failed", "IFC-049", &cause)
 }
 
 fn hook_ended(
@@ -529,11 +720,18 @@ fn hook_ended(
     outcome: &str,
 ) -> Result<()> {
     record_hook_part(t, i, hook, outcome);
-    if hook_subject_retired(t, i) {
+    if active_hook_subject(t, i).is_none() {
         return end_sign_in(t, a, c, i, "failed", "PND-003", RETIRED_DURING_HOOK);
     }
     if outcome == "succeeded" {
-        return refuse_hook_answer(t, a, c, i, hook, "asks for input", "resultType");
+        return refuse_hook_answer(
+            t,
+            a,
+            c,
+            i,
+            hook,
+            HookAnswerFault::Form("asks for input", "resultType"),
+        );
     }
     let (outcome, cause) = match outcome {
         "failed" => ("failed", "The sign-in hook ended failed, so no login was started and sign-in.v1 signs nothing in.".into()),
@@ -1082,6 +1280,250 @@ mod tests {
         })
     }
 
+    fn fixture_logins() -> Vec<Value> {
+        vec![
+            json!({
+                "name":"browser","return":"redirect","authorization":"https://example.org/authorize",
+                "clientId":"placeholder-signed-agent","carried":true,
+                "redirect":{"host":"127.0.0.1","ports":[8400,8401],"path":"/callback"}
+            }),
+            json!({
+                "name":"device","return":"device","authorization":"https://example.org/device",
+                "clientId":"placeholder-signed-agent"
+            }),
+        ]
+    }
+
+    #[test]
+    fn sign_in_url_match() {
+        const CC: &str = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
+        const ST: &str = "Wt3qK8xZp_LmN2vB-c.Y7h~R";
+        const DEVICE: &str = "https://example.org/device";
+        let mut logins = fixture_logins();
+        logins.extend([
+            json!({
+                "name":"loopback","return":"redirect",
+                "authorization":"https://auth.example.net/oauth/authorize",
+                "clientId":"loopback-client","carried":true,
+                "redirect":{"host":"localhost","ports":"any","path":"/auth/callback"}
+            }),
+            json!({
+                "name":"code-page","return":"page",
+                "authorization":"https://pages.example.com/oauth/authorize",
+                "clientId":"page-client","page":"https://pages.example.com/oauth/code/callback",
+                "carried":false
+            }),
+            json!({
+                "name":"service","return":"service",
+                "authorization":"https://pages.example.com/oauth/authorize",
+                "clientId":"service-client","page":"https://service.example.com/done?from=login"
+            }),
+        ]);
+        let pkce = format!("code_challenge={CC}&code_challenge_method=S256&state={ST}");
+        let redirect = "http%3A%2F%2F127.0.0.1%3A8401%2Fcallback";
+        let browser = format!(
+            "https://example.org/authorize?response_type=code&client_id=placeholder-signed-agent&redirect_uri={redirect}&scope=openid&{pkce}"
+        );
+        let loopback = format!(
+            "https://auth.example.net/oauth/authorize?response_type=code&client_id=loopback-client&redirect_uri=http%3A%2F%2Flocalhost%3A1455%2Fauth%2Fcallback&{pkce}"
+        );
+        let page_uri = "https%3A%2F%2Fpages.example.com%2Foauth%2Fcode%2Fcallback";
+        let service_uri = "https%3A%2F%2Fservice.example.com%2Fdone%3Ffrom%3Dlogin";
+        let page = format!(
+            "https://pages.example.com/oauth/authorize?response_type=code&client_id=page-client&redirect_uri={page_uri}&{pkce}"
+        );
+        let service = format!(
+            "https://pages.example.com/oauth/authorize?response_type=code&client_id=service-client&redirect_uri={service_uri}"
+        );
+
+        for (url, asked, login) in [
+            (DEVICE.into(), None, "device"),
+            (DEVICE.into(), Some("device"), "device"),
+            (browser.clone(), None, "browser"),
+            (browser.clone(), Some("browser"), "browser"),
+            (browser.replace("8401", "8400"), None, "browser"),
+            (
+                browser.replace("scope=openid", "prompt=login"),
+                None,
+                "browser",
+            ),
+            (loopback.clone(), None, "loopback"),
+            (loopback.replace("1455", "1024"), None, "loopback"),
+            (loopback.replace("1455", "65535"), None, "loopback"),
+            (page.clone(), None, "code-page"),
+            (service.clone(), None, "service"),
+        ] {
+            assert_eq!(url_match(&url, &logins, asked), Ok(login.into()), "{url}");
+        }
+        let mut decimal_port = logins[0].clone();
+        decimal_port["redirect"]["ports"] = json!([8401.0]);
+        assert_eq!(
+            url_match(&browser, &[decimal_port], None),
+            Ok("browser".into())
+        );
+        let reject = |url: &str, asked, check, field, login: Option<&str>| {
+            assert_eq!(
+                url_match(url, &logins, asked),
+                Err((check, field, login.map(str::to_owned))),
+                "{url}"
+            );
+        };
+        reject("not a url", None, "parses as a URL", "params.url", None);
+        for url in [
+            "https://user@example.org/device",
+            "https://user:secret@example.org/device",
+            "https://:secret@example.org/device",
+        ] {
+            reject(url, None, "no user information", "userinfo", None);
+        }
+        for suffix in ["#x", "#"] {
+            reject(
+                &format!("{DEVICE}{suffix}"),
+                None,
+                "no fragment",
+                "fragment",
+                None,
+            );
+        }
+        reject(
+            &format!("{browser}&state={ST}"),
+            None,
+            "no repeated parameter",
+            "query",
+            None,
+        );
+        for url in [
+            "https://example.org/devices",
+            "http://example.org/device",
+            "https://example.org:8443/device",
+        ] {
+            reject(url, None, "a stated login", "origin and path", None);
+        }
+        reject(
+            DEVICE,
+            Some("browser"),
+            "the asked-for login",
+            "origin and path",
+            Some("browser"),
+        );
+        for suffix in ["?user_code=WDJB-MJHT", "?"] {
+            reject(
+                &format!("{DEVICE}{suffix}"),
+                None,
+                "no query",
+                "query",
+                Some("device"),
+            );
+        }
+
+        let reject_browser =
+            |url: &str, check, field| reject(url, None, check, field, Some("browser"));
+        for url in [
+            browser.replace("placeholder-signed-agent", "another-client"),
+            browser.replace("client_id=placeholder-signed-agent&", ""),
+        ] {
+            reject_browser(&url, "the client ID", "client_id");
+        }
+        reject_browser(
+            &browser.replace("response_type=code", "response_type=token"),
+            "response type code",
+            "response_type",
+        );
+        for uri in [
+            "http%3A%2F%2F127.0.0.1%3A8402%2Fcallback",
+            "http%3A%2F%2F127.0.0.1%3A08401%2Fcallback",
+            "http%3A%2F%2Flocalhost%3A8401%2Fcallback",
+            "http%3A%2F%2F127.0.0.1%3A8401%2Fcallback%2Fx",
+            "https%3A%2F%2F127.0.0.1%3A8401%2Fcallback",
+            "http%3A%2F%2F127.0.0.1%3A8401%2Fcallback%3Fx%3D1",
+        ] {
+            reject_browser(
+                &browser.replace(redirect, uri),
+                "the redirect URI",
+                "redirect_uri",
+            );
+        }
+        reject_browser(
+            &browser.replace("code_challenge_method=S256", "code_challenge_method=plain"),
+            "S256",
+            "code_challenge_method",
+        );
+        let short_cc = &CC[..CC.len() - 1];
+        for challenge in [short_cc.into(), format!("{short_cc}%3D")] {
+            reject_browser(
+                &browser.replace(CC, &challenge),
+                "a code challenge",
+                "code_challenge",
+            );
+        }
+        for state in [
+            ST[..ST.len() - 3].into(),
+            format!("{}%21", &ST[..ST.len() - 1]),
+        ] {
+            reject_browser(&browser.replace(ST, &state), "a state", "state");
+        }
+        reject(
+            &loopback.replace("1455", "1023"),
+            None,
+            "the redirect URI",
+            "redirect_uri",
+            Some("loopback"),
+        );
+        reject(
+            &page.replace(page_uri, service_uri),
+            None,
+            "the redirect URI",
+            "redirect_uri",
+            Some("code-page"),
+        );
+        reject(
+            &service.replace("response_type=code&", ""),
+            None,
+            "response type code",
+            "response_type",
+            Some("service"),
+        );
+        reject(
+            &service,
+            Some("code-page"),
+            "the client ID",
+            "client_id",
+            Some("code-page"),
+        );
+        reject(
+            &page.replace("client_id=page-client&", ""),
+            None,
+            "the client ID",
+            "client_id",
+            Some("code-page"),
+        );
+        reject(
+            &page.replace(
+                page_uri,
+                "https%3A%2F%2FPAGES.example.com%2Foauth%2Fcode%2Fcallback",
+            ),
+            None,
+            "the redirect URI",
+            "redirect_uri",
+            Some("code-page"),
+        );
+
+        let mut second_device = logins[1].clone();
+        second_device["name"] = json!("device-again");
+        assert_eq!(
+            url_match(DEVICE, &[logins[1].clone(), second_device], None),
+            Err(("exactly one login", "params.url", None))
+        );
+        assert_eq!(
+            url_match_cause("no query", "query", Some("device")),
+            "The sign-in hook's URL does not match the login \"device\" of the instance's Type, so nothing was relayed and the instance is not signed in: it fails the check \"no query\" at the field query."
+        );
+        assert_eq!(
+            url_match_cause("a stated login", "origin and path", None),
+            "The sign-in hook's URL does not match exactly one login of the instance's Type, so nothing was relayed and the instance is not signed in: it fails the check \"a stated login\" at the field origin and path."
+        );
+    }
+
     #[test]
     fn sign_in_hook_answer_form() {
         let action = url_action();
@@ -1187,8 +1629,21 @@ mod tests {
 
     fn hook_part_fixture() -> (Transition, Context) {
         let (_, c) = fixture();
+        let mut environment = c.core_environment.clone();
+        let contracts = &mut environment.scopes.get_mut("core").unwrap().contracts;
+        contracts.get_mut("type.v1").unwrap()["spec"]["signIn"] =
+            json!({"account":"/account","logins":fixture_logins()});
+        let sign_in_hook = json!({
+            "kind":"Operation","metadata":{"name":"sign-in-hook.v1"},
+            "spec":{"effect":"Start a login"}
+        });
+        contracts.insert("sign-in-hook.v1".into(), sign_in_hook.clone());
+        let indexes = json!({"core":contracts});
         let instance = json!({"id":"s1","name":"s1","kind":"Agent","owner":"f",
+            "type":c.qualified("type.v1"),
+            "held":{"environment":environment,"indexes":indexes,"contexts":{},"scope":"core"},
             "config":{"account":"primary-account"}});
+        let held_target = crate::registration::publication_object(&instance, &c).unwrap();
         let mut parent = json!({
             "id":"g1","plain":false,"contract":{"spec":{}},"state":"in-progress",
             "attempt":1,"operation":c.qualified("sign-in.v1"),"target":"f",
@@ -1199,10 +1654,10 @@ mod tests {
         });
         parent["named_subject"] = json!("Agent/s1");
         let part = json!({
-            "id":"h1","plain":true,"contract":{"spec":{"effect":"Start a login"}},
+            "id":"h1","plain":true,"contract":sign_in_hook,
             "state":"in-progress","attempt":1,
             "operation":c.qualified("sign-in-hook.v1"),"target":"s1",
-            "held_target":instance,"sender":"r","caller":"r","setup_parent":"g1","serving":"g1"
+            "held_target":held_target,"sender":"r","caller":"r","setup_parent":"g1","serving":"g1"
         });
         let state = State {
             objects: vec![
@@ -1331,6 +1786,135 @@ mod tests {
                 .any(|d| d.action == "drop-sign-in-hook-answer")
         );
         absent(&cancelled);
+    }
+
+    #[test]
+    fn sign_in_url_mismatch_kept_nowhere() {
+        let (base, c) = hook_part_fixture();
+        let complete = |t: &mut Transition, result| {
+            requests::complete(
+                t,
+                &evidence(),
+                "h1",
+                1,
+                requests::Completion::Result { result },
+                &c,
+            )
+            .unwrap();
+        };
+        let assert_ended = |t: &Transition, rule, cause: &str| {
+            let parent = &t.state.invocations[0];
+            let part = &t.state.invocations[1];
+            assert_eq!(part["state"], "unknown");
+            assert!(part.get("hook_input").is_none());
+            let part_cause = part["cause"].as_array().unwrap();
+            assert_eq!(part_cause.len(), 1);
+            assert_eq!(part_cause[0]["ruleId"], "IFC-010");
+            assert_eq!(parent["state"], "failed");
+            assert_eq!(parent["sign_in"]["phase"], "ended");
+            assert_eq!(
+                parent["sign_in"]["parts"]
+                    .as_array()
+                    .unwrap()
+                    .last()
+                    .unwrap(),
+                &json!({"name":"sign-in","outcome":"unknown","invocation":"h1"})
+            );
+            let diagnostics = t.reply["structuredContent"]["diagnostics"]
+                .as_array()
+                .unwrap();
+            assert_eq!(diagnostics.len(), 1);
+            assert_eq!(diagnostics[0]["ruleId"], rule);
+            assert!(
+                diagnostics[0]["message"]["text"]
+                    .as_str()
+                    .unwrap()
+                    .ends_with(cause)
+            );
+            assert!(t.state.pending_actions.is_empty());
+            assert!(t.state.sign_in_holds.is_empty());
+            assert!(t.input_required.is_empty());
+            assert!(
+                !t.decisions
+                    .iter()
+                    .any(|d| d.action == "raise-sign-in-action")
+            );
+            let facts: Vec<_> = t.decisions.iter().map(|d| &d.facts).collect();
+            let surfaced = serde_json::to_string(&json!([
+                t.reply,
+                t.records,
+                t.request_replies,
+                t.external_intents,
+                t.state.records,
+                facts
+            ]))
+            .unwrap();
+            for value in [
+                "WDJB-MJHT",
+                "user_code",
+                "example.org/device",
+                "opaque-hook-state-0001",
+                "Open the device page.",
+            ] {
+                assert!(!surfaced.contains(value), "{value}");
+            }
+        };
+        let mut device_with_code = url_action();
+        device_with_code["inputRequests"]["sign-in"]["params"]["url"] =
+            json!("https://example.org/device?user_code=WDJB-MJHT");
+        for (asked, answer, check, field, login) in [
+            (None, device_with_code, "no query", "query", "device"),
+            (
+                Some("browser"),
+                url_action(),
+                "the asked-for login",
+                "origin and path",
+                "browser",
+            ),
+        ] {
+            let mut t = base.clone();
+            if let Some(asked) = asked {
+                t.state.invocations[0]["asked_login"] = json!(asked);
+            }
+            complete(&mut t, answer);
+            assert_ended(&t, "IFC-049", &url_match_cause(check, field, Some(login)));
+            let refused: Vec<_> = t
+                .decisions
+                .iter()
+                .filter(|d| d.action == "refuse-sign-in-hook-answer")
+                .map(|d| &d.facts)
+                .collect();
+            assert_eq!(
+                refused,
+                [&json!({
+                    "invocation":"g1","hook":"h1","check":check,"field":field,"login":login
+                })]
+            );
+            assert!(
+                !t.decisions
+                    .iter()
+                    .any(|d| d.action == "end-sign-in-unrelayed")
+            );
+        }
+
+        let mut matched = base;
+        complete(&mut matched, url_action());
+        assert_ended(&matched, "PND-010", HOOK_UNRELAYED_CAUSE);
+        let unrelayed = matched
+            .decisions
+            .iter()
+            .find(|d| d.action == "end-sign-in-unrelayed")
+            .unwrap();
+        assert_eq!(
+            unrelayed.facts,
+            json!({"invocation":"g1","hook":"h1","login":"device"})
+        );
+        assert!(
+            !matched
+                .decisions
+                .iter()
+                .any(|d| d.action == "refuse-sign-in-hook-answer")
+        );
     }
 
     #[test]

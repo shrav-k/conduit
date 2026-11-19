@@ -802,6 +802,16 @@
       "safety_rows": []
     },
     {
+      "id": "requests-sign-in-plain-url-match",
+      "case": "conventions/requests/sign-in-plain-url-match/case.yaml",
+      "promises": [
+        "PND-010",
+        "IFC-010",
+        "IFC-049"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "requests-sign-in-refusals-before-parts",
       "case": "conventions/requests/sign-in-refusals-before-parts/case.yaml",
       "promises": [
@@ -861,6 +871,15 @@
         "TPL-012",
         "TPL-017",
         "OPS-022"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "requests-sign-in-url-match",
+      "case": "conventions/requests/sign-in-url-match/case.yaml",
+      "promises": [
+        "PND-010",
+        "IFC-049"
       ],
       "safety_rows": []
     },

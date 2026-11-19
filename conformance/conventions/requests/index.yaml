@@ -759,6 +759,17 @@
       "safety_rows": []
     },
     {
+      "id": "requests-sign-in-hook-part",
+      "case": "conventions/requests/sign-in-hook-part/case.yaml",
+      "promises": [
+        "PND-010",
+        "IFC-006",
+        "IFC-010",
+        "IFC-049"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "requests-sign-in-lapse-and-conflict",
       "case": "conventions/requests/sign-in-lapse-and-conflict/case.yaml",
       "promises": [
@@ -776,6 +787,17 @@
       "promises": [
         "PND-010",
         "IFC-007"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "requests-sign-in-plain-hook-part",
+      "case": "conventions/requests/sign-in-plain-hook-part/case.yaml",
+      "promises": [
+        "PND-010",
+        "IFC-007",
+        "IFC-010",
+        "IFC-049"
       ],
       "safety_rows": []
     },

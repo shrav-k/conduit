@@ -847,6 +847,9 @@ fn dispatch_intent(v: &Value, url_elicitation: bool, c: &Context) -> Value {
         if !v["key"].is_null() {
             meta[mark(c, "idempotencyKey")] = v["key"].clone();
         }
+        if v["sign_in_login"].is_string() {
+            meta[mark(c, "signInLogin")] = json!({"name":v["sign_in_login"]});
+        }
         if item["plain"] == true {
             meta[CAPABILITIES]["extensions"][mark(c, "implementation-interface")] =
                 json!({"revision":"v0"});
@@ -866,7 +869,7 @@ fn dispatch_intent(v: &Value, url_elicitation: bool, c: &Context) -> Value {
 /// `params.inputResponses`, keyed as its input requests were. The runner sends it as written.
 /// The core keeps that state with the part and never relays, records or shows it.
 /// IFC-049: the requestState the shell relays to an Interface is another value.
-#[allow(dead_code)] // Orders 048a-5d and 048a-7 call it.
+#[allow(dead_code)] // Order 048a-7 calls it.
 pub(crate) fn retry_intent(
     first: &Value,
     request_state: &str,
@@ -1882,6 +1885,7 @@ pub(crate) fn finish(
         }
     }
     v.as_object_mut().unwrap().remove("previous");
+    v.as_object_mut().unwrap().remove("hook_input");
     if let Some(cause) = &cause {
         v["cause"] = json!(cause);
     } else {
@@ -1999,6 +2003,7 @@ pub(crate) fn complete(
         cursor: 0,
     };
     let plain = v["plain"] == true;
+    let sign_in_hook = sign_in::sign_in_hook_part(&t.state, &v, c);
     let readonly = read_only(&v["contract"]["spec"]);
     let mut content = json!([]);
     let mut outputs = json!({});
@@ -2052,6 +2057,11 @@ pub(crate) fn complete(
                 outcome = "failed";
                 rule = None;
             }
+        }
+        Completion::Result { result }
+            if sign_in_hook && result["resultType"] == "input_required" =>
+        {
+            return crate::sign_in::hook_input(t, &mut a, c, i, &result);
         }
         Completion::Result { result } if sign_in::url_elicitation(&result) => {
             lapse = Some(sign_in::Trigger::UrlElicitation);
@@ -2546,6 +2556,7 @@ pub(crate) fn hook(
         object,
         (op, implementation),
         HookKey::Stable(previous),
+        None,
     )?;
     t.decisions.push(decision(
         "dispatch-setup-hook",
@@ -2559,6 +2570,7 @@ pub(crate) fn hook(
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn setup_sign_in_hook(
     t: &mut Transition,
     a: &mut Allocation<'_>,
@@ -2567,6 +2579,7 @@ pub(crate) fn setup_sign_in_hook(
     object: &Value,
     name: &str,
     promises: &[&str],
+    login: Option<&str>,
 ) -> Result<bool> {
     let op = c.qualified(name);
     let Some(implementation) = object["resolved_implementations"].get(&op) else {
@@ -2580,11 +2593,12 @@ pub(crate) fn setup_sign_in_hook(
         object,
         (op, implementation),
         HookKey::Fresh,
+        login,
     )?;
-    let decision_name = if name == "account-hook.v1" {
-        "dispatch-account-check"
-    } else {
-        "dispatch-sign-out"
+    let decision_name = match name {
+        "account-hook.v1" => "dispatch-account-check",
+        "sign-in-hook.v1" => "dispatch-sign-in-hook",
+        _ => "dispatch-sign-out",
     };
     t.decisions.push(decision(
         decision_name,
@@ -2608,6 +2622,7 @@ pub(crate) fn keyed_hook(item: &Value, operation: &str) -> bool {
             .is_some_and(|hooks| hooks.iter().any(|hook| hook.as_str() == Some(operation)))
 }
 
+#[allow(clippy::too_many_arguments)]
 fn dispatch_hook(
     t: &mut Transition,
     a: &mut Allocation<'_>,
@@ -2616,6 +2631,7 @@ fn dispatch_hook(
     object: &Value,
     (op, implementation): (String, &Value),
     key: HookKey,
+    login: Option<&str>,
 ) -> Result<Value> {
     let p = t.state.invocations[parent].clone();
     let (key, previous) = match key {
@@ -2639,6 +2655,9 @@ fn dispatch_hook(
     let item = &implementation["item"];
     let keyed = keyed_hook(item, &op);
     let mut v = json!({"id":id,"key":key,"hook":true,"setup_parent":p["id"],"serving":p["id"],"sender":p["sender"],"caller":p["caller"],"target":object["id"],"operation":op,"arguments":{},"filters":p["filters"],"state":"in-progress","plain":item["plain"] == true && !keyed,"contract":contract,"held_target":target,"implementation":implementation,"needs_result":false,"attempt":attempt,"config":object["config"],"revision":object["revision"]});
+    if let Some(login) = login {
+        v["sign_in_login"] = json!(login);
+    }
     start_attempt(&mut v, previous.map(|i| &t.state.invocations[i]));
     if let Some(id) = p.get("retirement_of") {
         v["retirement_of"] = id.clone();
@@ -2852,6 +2871,38 @@ mod tests {
             "held_target":state.objects[3],"sender":"root","caller":"root"
         }));
         (transition(state), c)
+    }
+
+    #[test]
+    fn sign_in_hook_call_carries_asked_login() {
+        let (t, c) = call_fixture(false, json!({}));
+        let mut v = t.state.invocations[0].clone();
+        let operation = c.qualified("sign-in-hook.v1");
+        let key = mark(&c, "signInLogin");
+        v["operation"] = json!(operation);
+        v["implementation"] = json!({"item":{"command":["x"]}});
+        v["sign_in_login"] = json!("device");
+        let params = |v: &Value| dispatch_intent(v, false, &c)["call"]["params"].clone();
+        assert_eq!(params(&v)["_meta"][&key], json!({"name":"device"}));
+        v.as_object_mut().unwrap().remove("sign_in_login");
+        assert!(params(&v)["_meta"].get(&key).is_none());
+
+        v["implementation"] = json!({"item":{
+            "plain":true,"tools":{&operation:"sign_in_hook"},"keyed":[operation]
+        }});
+        v["sign_in_login"] = json!("device");
+        let keyed = params(&v);
+        assert_eq!(keyed["name"], "sign_in_hook");
+        assert_eq!(keyed["_meta"][&key], json!({"name":"device"}));
+
+        v["implementation"]["item"]
+            .as_object_mut()
+            .unwrap()
+            .remove("keyed");
+        v["plain"] = json!(true);
+        let plain = params(&v);
+        assert_eq!(plain["name"], "sign_in_hook");
+        assert!(plain.get("_meta").is_none());
     }
 
     fn unused_evidence(state: &State) -> Evidence {

@@ -771,3 +771,122 @@ point 2):
   `origin/main`;
 - have the reader read the rebase's resolutions and any amendment as new content (ruling 79,
   point 2), and write this order's Record.
+
+## Record
+
+Run on 2026-11-19, from about 20:30 to 21:06 UTC, on the Linux node from `a0d253e5` (order
+048a-5gh's round 1 with its Record, stacked, not yet merged), in one round: the worker (1865 s)
+and a fresh Codex verifier (272 s). The order's text that governed is the one on `origin/main` at
+`fe31d191` (the stacked start, the second connection in step 5 and decision 8's session findings);
+the copy in this tree at `a0d253e5` is older. The worker changed three files of Scope:
+`engine/crates/shell/src/server_tests.rs` (+627 -8) gains `url_client`, `established_case`,
+`fixed_case_shell`, `fixed_endpoint_shell`, `SignInScript` and its helpers, and decision 6's three
+tests, `sign_in_relays_through_the_interface_and_polls_to_signed_in`,
+`sign_in_decline_through_the_interface_ends_failed` and
+`sign_in_plain_hook_through_the_interface_signs_in`; `engine/CONFORMANCE.md` takes decision 7's
+sentence right after 048a-5ef's in the same paragraph; and `engine/STANDING.md`, written by the
+tool, adds the shell as a source for IFC-006, IFC-007, IFC-045, PND-005, PND-011 and PND-014. The
+worker's own choices: endpoint setup shared between `fixed_shell` and `fixed_case_shell`; the
+test's root client token read from its temporary `client-tokens` directory, as `server::client`
+reads it; failure output limited to the reply's kind, the step, the protocol error code and the
+known rule; and the byte scans run before the server's shutdown. It reported the five seams of
+decision 1 with the orders that joined them; the three scripts received four, two and three
+dispatch intents and no cancel intent; the shell library rose from 65 to 68 passed and the shell
+suite from 106 to 109, with 4 ignored; `requests-` passed 85 cases with the start's 2 expected
+failures; and the whole engine suite passed 391, with 4 ignored. With the extension of
+`invoke.request` by `sign_in_members` removed from `server.rs`, step 2 failed with error -32021
+under IFC-049. It disclosed under "could not" that the store scan skipped every file named
+`authority.json`, since the signing authority holds keys the order forbids reading, and reported
+three findings: `conduit call`'s client declares no URL elicitation (IFC-049, PND-010, left to
+051b-2), delivery of an accepted return to the waiting hook stays with 048a-7 and 048a-8 (IFC-049,
+PND-013), and DL10's session idle limit gives 051b-2 no reason to reconnect under rmcp 3.9.0's
+stateless start (IFC-049). The verifier found no must and five shoulds:
+
+- V1: the start check is labelled "as written" where the admin's instruction on the stacked base
+  was an exception.
+- V2: the test's fixture types lack the runner's `deny_unknown_fields`.
+- V3: the second prompt and the final reply do not check all four `signInLogin` members.
+- V4: the decline test does not scan the captured cancel intents for the return.
+- V5: the store scan skips a file named `authority.json` at any depth, not only the root one.
+
+A fresh read-only Opus reader then read the round, on the Mac and the Linux node. It ran fmt and
+clippy (exit 0), the three filtered tests (1 passed each, 67 filtered out), the shell suite (109
+passed, 4 ignored), `requests-` (85 cases passed; 2 expected failures), the negative control in
+place (failing at step 2 with -32021 under IFC-049, restored with `cp`, `cmp` identical, 1 passed
+again), the Python checks (Errors: 0 each), the tool tests (130, OK), `vector_delta.py` (0 shapes,
+0 changes, exit 0), and the scope, privacy, identity and whitespace checks (clean). It refuted V1
+(the governing text accepts the stacked base, and the worker's note discloses it), V2 (the cases
+the test reads are the ones the runner parses under `deny_unknown_fields`), V3 (decision 6 sets
+what each step asserts, and the test asserts exactly that) and V4 (a core cancel intent is
+`{kind, invocation, attempt}` and can carry no value), confirmed V5, and added no must:
+
+- R1 (should, V5): skip only the root signing authority, `root.join("authority.json")`, and scan
+  every other file, a nested file of that name included.
+
+The fixer left the branch on `a0d253e5` and applied R1: `assert_sign_in_store_excludes` takes the
+store's root and calls a new `scan_sign_in_store`, which recurses with the root's
+`authority.json` path and skips a file only when its path equals it. V1 to V4 are not changed, as
+the reader refuted them. The fixer then ran, in the worktree on the Mac, warm, with
+`RUST_TEST_THREADS=4` and `CONDUIT_VECTOR_THREADS=4`: `cargo fmt --check` and
+`cargo clippy --all-targets -- -D warnings` (exit 0 each); the three filtered tests (1 passed each,
+67 filtered out); the shell suite (68 + 2 + 1 + 10 + 7 + 17 + 4 = 109 passed, 4 ignored, 0
+failed); and `requests-` (85 cases passed; 2 expected failures). A mutation that wrote the hook's
+state to a nested `planted/authority.json` before the first test's scan failed it with "a
+persisted file contained a value that should not be kept"; the same plant on the round's code
+passed, and the file was restored with `cp` and checked with `cmp`. `check_docs.py` and
+`check_private_paths.py` each ended `Errors: 0`, and `git diff --check` was clean. The whole
+engine suite was not rerun here, since no shared code changed. The gate's run on this order's
+squash, after the rebase onto 048a-5gh's squash, is the coordinator's at the merge.
+
+This order started from a stacked base, under the coordinator's dispatch note (private): `a0d253e5`,
+order 048a-5gh's head after its read and fixes, then unmerged, with 048a-5ef's round 1 beneath it
+and the round-1 builds of 209, 048a-5d and 048a-5d2 (merged on `main` since). After order 048a-5gh merged (#422, `246038e6`), on 2026-11-19,
+the branch was rebased onto `main` at `705a228f` with `git rebase --onto origin/main a0d253e5`,
+after a check that `a0d253e5` was an ancestor of the tip (`e839a0c8`) and that 048a-5gh's squash was
+on `main`, so that only this order's two commits were replayed, under the work orders' identity;
+order 211 (#425) then landed on `main`, changing only two files under `docs/work-orders/`, and the
+two commits were replayed again onto `85227914` with no conflict. The worker's commit replayed
+without a conflict: `server_tests.rs`, `engine/CONFORMANCE.md` (decision 7's sentence still follows
+048a-5ef's, unchanged on `main`) and `engine/STANDING.md`. At the reader's commit one file
+conflicted, this order's own: `main`'s refreshed text ends "Done when" with the paragraph on the
+stacked dispatch and the rebase where this Record was appended; it was resolved with `main`'s
+paragraph kept whole and this Record after it. `engine/STANDING.md` did not conflict, and
+`promise_standing.py --check` found it current (520 rows), so it was not written again; no case or
+index changed, so the pieces tool was not run. What `main` holds beyond the base in the engine is
+the fixes of 209, 048a-5d2 and 048a-5ef, carried into 048a-5gh's squash at its rebase: the URL-match
+refusal message is now a separate sentence for a named login and for exactly one login, with more
+refusal tests (048a-5d2's); the relay message gains a
+sentence where the last account check ended failed or unknown (`unexplained_check` in `sign_in.rs`),
+a repeat of a sign-in keeps `signInLogin`, a keyed hook's `server/discover` carries `_meta` and
+fences its attempt, and DL18's row says a cancelled sign-in leaves its hook part in progress until a
+restart. 048a-5gh's own fixes were already on the base. None changes what a decision reads: decision
+6 asserts of the message only `example.org`, `primary-account` and no text of the hook;
+`signInLogin`'s members, the poll's answer (another input request with a fresh requestState),
+`end_hook_wait` and the timer `end_sign_in_wait_at` (`server.rs`) are as on the base; `call_tool`'s
+statement that extends the request with `sign_in_members` is unchanged; and 048a-5ef's sentence that
+decision 7 follows reads as quoted. So no amendment of this order's text or build was needed, and no
+`wip: rebased onto 048a-5gh as merged` commit was made. The start check, run on a clean copy of
+`main`'s tree at `705a228f` (by `git archive`, cold), printed what the order gives at every item:
+four `:0` lines and `1` (209, 048a-5d, 048a-5d2, 048a-5ef and 048a-5gh all merged); `1`, `1`, `0`;
+`1`, `1`, `1`; `1` (`end_sign_in_wait_at`); `2`; `3`; `True False ['account_hook', 'sign_in_hook',
+'sign_out_hook']`; the plain case's line as written; the keyed case's nine steps as written; and
+`0`. There `intent_declares_url_elicitation_only_toward_sign_in_types` and
+`sign_in_wait_end_is_submitted_at_expiry` each passed 1, the shell suite passed 106 (65 + 2 + 1 + 10
++ 7 + 17 + 4) with 4 ignored, and `requests-` passed 85 cases with 2 expected failures; the names
+the start takes are `poll-sign-in-account`, `ask-sign-in-again`, `end_hook_wait` (`sign_in.rs`) and
+`end_sign_in_wait_at` (`server.rs`). Warm in the worktree on the Mac, from `engine/` with 4 test and
+vector threads: `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` (exit 0 each);
+the three filtered tests (1 passed each, 67 filtered out); the shell suite (68 + 2 + 1 + 10 + 7 + 17
++ 4 = 109 passed, three more than on `main`, 4 ignored, 0 failed), with
+`sign_in_wait_end_is_submitted_at_expiry` 1 passed; `requests-sign-in-` (18 cases passed) and
+`requests-` (85 cases passed; 2 expected failures, as on `main`); and the negative control, the four
+lines of that statement removed, failing at step 2 with -32021 under IFC-049, restored with `cp` and
+checked with `cmp`, then 1 passed, `git diff -- crates/shell/src/server.rs` empty. From the root:
+`check_schemas.py`, `set_names.py --check`, `check_rulings.py`, `check_docs.py`, `check_roadmap.py`,
+`check_model_account.py`, `check_private_paths.py` and `promise_standing.py --check` (Errors: 0
+each); the tools' unit tests (130, OK); `/usr/bin/python3 tools/vector_delta.py origin/main WORKTREE
+--declared docs/work-orders/048b-join-declared.yaml` (0 shapes, `Vector delta: 0 changes; 0 flips; 0
+undeclared; 0 errors.`, exit 0); the protected paths and `apiKey` (nothing, `0`), the scope as `git
+diff origin/main --stat` (the three files of Scope and this file); and `git diff --check` (clean).
+The whole engine suite, `tools/gate.py` against `origin/main` and the reader's read of this rebase
+remain the coordinator's before the merge.

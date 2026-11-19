@@ -146,6 +146,34 @@ async fn modern(url: &str, token: &str) -> RunningService<RoleClient, ()> {
     .await
     .unwrap()
 }
+
+async fn url_client(
+    url: &str,
+    token: &str,
+    prefix: &str,
+) -> RunningService<RoleClient, ClientConfig> {
+    use rmcp::{ClientServiceExt, service::ClientLifecycleMode};
+    let mut config = ClientConfig::default();
+    config.capabilities.elicitation =
+        Some(ElicitationCapability::new().with_url(UrlElicitationCapability::new()));
+    config.capabilities.extensions = Some(BTreeMap::from([(
+        format!("{prefix}implementation-interface"),
+        json!({"revision":"v0"}).as_object().unwrap().clone(),
+    )]));
+    config
+        .serve_with_lifecycle(
+            StreamableHttpClientTransport::with_client(
+                reqwest::Client::new(),
+                StreamableHttpClientTransportConfig::with_uri(url.to_owned()).auth_header(token),
+            ),
+            ClientLifecycleMode::Discover {
+                preferred_versions: vec![ProtocolVersion::V_2026_07_28],
+            },
+        )
+        .await
+        .unwrap()
+}
+
 struct Memory {
     content: Mutex<String>,
     shell: Weak<Shell>,
@@ -187,8 +215,147 @@ impl Executor for Memory {
     }
 }
 fn fixed_shell(path: &Path) -> Shell {
-    let shell = established(path);
-    drop(shell);
+    drop(established(path));
+    fixed_endpoint_shell(path)
+}
+
+fn established_case(path: &Path, case: &Path, through: usize) -> Shell {
+    use conduit_core::packages::{Project, Snapshot, SnapshotSource};
+
+    #[derive(serde::Deserialize)]
+    struct Recipe {
+        files: BTreeMap<String, String>,
+        directory: Option<String>,
+    }
+    #[derive(serde::Deserialize)]
+    struct SnapshotRecipe {
+        source: SnapshotSource,
+        address: String,
+        version: String,
+        digest: String,
+        archive: Option<String>,
+        project: Recipe,
+    }
+    #[derive(serde::Deserialize)]
+    struct Artifact {
+        address: String,
+        implementation: String,
+        sha256: String,
+    }
+    #[derive(serde::Deserialize)]
+    struct Fixture {
+        snapshots: Vec<SnapshotRecipe>,
+        project: Recipe,
+        #[serde(default)]
+        artifacts: Vec<Artifact>,
+    }
+
+    let shell = open(path);
+    let vector = boundary::value(&case.join("case.yaml")).unwrap();
+    let files = vector["files"].as_object().unwrap();
+    let fixture_path = |alias: &str| case.join(files[alias].as_str().unwrap());
+    let spec = conduit_loader::Specification::read(&repository().join("spec")).unwrap();
+    let load = |recipe: Recipe| {
+        let bytes: Vec<_> = recipe
+            .files
+            .into_iter()
+            .map(|(name, alias)| (name, fs::read(fixture_path(&alias)).unwrap()))
+            .collect();
+        let project = conduit_loader::read_submitted_files(&bytes, &spec).unwrap();
+        Project {
+            manifest: project.manifest.map(|file| file.root.to_json()),
+            documents: project
+                .documents
+                .iter()
+                .map(|file| file.root.to_json())
+                .collect(),
+            directory: recipe.directory,
+        }
+    };
+
+    *shell.trace.lock().unwrap() = Some(Vec::new());
+    let mut symbols = BTreeMap::new();
+    for step in &vector["steps"].as_array().unwrap()[..through] {
+        let mut input = expand(&step["input"], &symbols, &shell.context.core_package);
+        let fields = input.as_object_mut().unwrap();
+        fields.remove("evidence");
+        if let Some(evidence) = step["input"].get("evidence") {
+            shell.evidence.lock().unwrap().push_back(evidence.clone());
+        }
+        match fields["kind"].as_str().unwrap() {
+            "first-start" => {
+                fields.remove("trustDomain");
+            }
+            "register-project" | "resolve-project" => {
+                let file = fields.remove("file").unwrap();
+                let reverse = fields.remove("reverse").is_some_and(|v| v == true);
+                let fixture: Fixture = serde_json::from_value(
+                    boundary::value(&fixture_path(file.as_str().unwrap())).unwrap(),
+                )
+                .unwrap();
+                let snapshots: Vec<_> = fixture
+                    .snapshots
+                    .into_iter()
+                    .map(|recipe| {
+                        assert!(matches!(
+                            recipe.source,
+                            SnapshotSource::PreinstalledSnapshot
+                        ));
+                        if let Some(archive) = recipe.archive {
+                            let bytes = fs::read(fixture_path(&archive)).unwrap();
+                            assert_eq!(conduit_core::packages::bytes_digest(&bytes), recipe.digest);
+                        }
+                        Snapshot {
+                            source: recipe.source,
+                            address: recipe.address,
+                            version: recipe.version,
+                            digest: recipe.digest,
+                            project: load(recipe.project),
+                        }
+                    })
+                    .collect();
+                for artifact in fixture.artifacts {
+                    let snapshot = snapshots
+                        .iter()
+                        .find(|s| s.address == artifact.address)
+                        .unwrap();
+                    let item = &snapshot.project.manifest.as_ref().unwrap()["implementations"]
+                        [&artifact.implementation];
+                    assert_eq!(item["package"]["fileSha256"], artifact.sha256);
+                }
+                let mut project = load(fixture.project);
+                if reverse {
+                    project.documents.reverse();
+                }
+                input["snapshots"] = json!(snapshots);
+                input["builtin"] = json!(shell.context.builtin);
+                input["project"] = json!(project);
+            }
+            _ => {}
+        }
+        shell.commit(input).unwrap();
+        if let Some(captures) = step["capture"].as_object() {
+            let trace = shell.trace.lock().unwrap();
+            let value = capture_value(trace.as_ref().unwrap().last().unwrap());
+            for (name, pointer) in captures {
+                symbols.insert(
+                    name.clone(),
+                    value.pointer(pointer.as_str().unwrap()).unwrap().clone(),
+                );
+            }
+        }
+    }
+    shell.evidence.lock().unwrap().clear();
+    *shell.trace.lock().unwrap() = None;
+    shell
+}
+
+fn fixed_case_shell(path: &Path, case: &Path, through: usize) -> Shell {
+    drop(established_case(path, case, through));
+    fixed_endpoint_shell(path)
+}
+
+fn fixed_endpoint_shell(path: &Path) -> Shell {
     let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
     let port = listener.local_addr().unwrap().port();
     drop(listener);
@@ -831,6 +998,475 @@ async fn pending_http_completion_and_client_cancellation() {
         .unwrap()
         .unwrap()
         .unwrap();
+}
+
+const SIGN_IN_URL: &str = concat!(
+    "https://example.org/authorize?client_id=placeholder-signed-agent&response_type=code",
+    "&redirect_uri=http%3A%2F%2F127.0.0.1%3A8400%2Fcallback&code_challenge_method=S256",
+    "&code_challenge=E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM&state=join-state-0123456789abcdef",
+);
+const HOOK_STATE: &str = "hook-state-1";
+const HOOK_MESSAGE: &str = "Open the page to sign in.";
+const CLIENT_CAPABILITIES: &str = "io.modelcontextprotocol/clientCapabilities";
+
+struct SignInScript {
+    plain: bool,
+    prefix: String,
+    dispatches: Mutex<Vec<Value>>,
+    cancellations: Mutex<Vec<Value>>,
+    account: Mutex<Value>,
+}
+
+impl SignInScript {
+    fn new(shell: &Shell, plain: bool) -> Self {
+        Self {
+            plain,
+            prefix: shell.context.meta_prefix.clone(),
+            dispatches: Mutex::default(),
+            cancellations: Mutex::default(),
+            account: Mutex::new(Value::Null),
+        }
+    }
+
+    async fn serve(
+        self: &Arc<Self>,
+        shell: &Arc<Shell>,
+        stop: &CancellationToken,
+    ) -> tokio::task::JoinHandle<Result<()>> {
+        let executor = Arc::new(ServingExecutor::new(self.clone()));
+        let task = tokio::spawn(server::serve(shell.clone(), executor, stop.clone()));
+        ready(&shell.config.engine_url).await;
+        task
+    }
+
+    fn expect_dispatches(&self, names: &[&str]) -> Vec<Value> {
+        let dispatches = self.dispatches.lock().unwrap().clone();
+        let actual: Vec<_> = dispatches
+            .iter()
+            .map(|intent| intent["call"]["params"]["name"].as_str().unwrap())
+            .collect();
+        assert_eq!(actual, names);
+        dispatches
+    }
+
+    fn report_cancellations(&self, shell: &Shell) {
+        let state = shell.state().unwrap();
+        let cancellations = self.cancellations.lock().unwrap();
+        eprintln!(
+            "Sign-in script received {} cancel intents.",
+            cancellations.len()
+        );
+        for intent in cancellations.iter() {
+            let operation = state
+                .invocations
+                .iter()
+                .find(|invocation| invocation["id"] == intent["invocation"])
+                .and_then(|invocation| invocation["operation"].as_str());
+            eprintln!("Cancel operation: {}", operation.unwrap_or("unresolved"));
+        }
+    }
+}
+
+impl Executor for SignInScript {
+    fn dispatch(&self, intent: &Value) -> Result<Execution> {
+        self.dispatches.lock().unwrap().push(intent.clone());
+        let (account_hook, sign_in_hook) = if self.plain {
+            ("account_hook", "sign_in_hook")
+        } else {
+            ("account-hook.v1", "sign-in-hook.v1")
+        };
+        let name = intent["call"]["params"]["name"].as_str().unwrap();
+        let mut result = if name == sign_in_hook {
+            json!({
+                "resultType": "input_required",
+                "inputRequests": {"login": {"method": "elicitation/create", "params": {
+                    "mode": "url", "message": HOOK_MESSAGE, "url": SIGN_IN_URL
+                }}},
+                "requestState": HOOK_STATE
+            })
+        } else {
+            let mut result = json!({"content": []});
+            if name == account_hook {
+                result["structuredContent"] = json!({"account": *self.account.lock().unwrap()});
+            }
+            result
+        };
+        if name != sign_in_hook && !self.plain {
+            result["_meta"] = json!({format!("{}outcome", self.prefix): "succeeded"});
+        }
+        Ok(Execution::Complete(
+            json!({"kind": "result", "result": result}),
+        ))
+    }
+
+    fn cancel(&self, intent: &Value) -> Result<Execution> {
+        self.cancellations.lock().unwrap().push(intent.clone());
+        Ok(Execution::Done)
+    }
+}
+
+fn sign_in_root_token(shell: &Shell, path: &Path) -> String {
+    let root = actor(shell, "root");
+    shell.issue_client_token(&root).unwrap();
+    String::from_utf8(store::private_read(&path.join("client-tokens").join(root)).unwrap()).unwrap()
+}
+
+fn sign_in_request() -> CallToolRequestParams {
+    call(
+        "group.sign-in.v1",
+        json!({"instance": {"kind": "Agent", "name": "signed"}}),
+    )
+}
+
+fn sign_in_retry(prompt: &Value, action: &str) -> CallToolRequestParams {
+    sign_in_request()
+        .with_request_state(prompt["requestState"].as_str().unwrap())
+        .with_input_responses(BTreeMap::from([("url".into(), json!({"action": action}))]))
+}
+
+fn sign_in_reply(
+    response: std::result::Result<CallToolResponse, rmcp::ServiceError>,
+    step: &str,
+) -> CallToolResponse {
+    match response {
+        Ok(reply) => reply,
+        Err(rmcp::ServiceError::McpError(error)) => {
+            let rule = error
+                .data
+                .as_ref()
+                .and_then(|data| data["diagnostics"][0]["ruleId"].as_str());
+            let rule =
+                rule.filter(|rule| matches!(*rule, "IFC-036" | "IFC-049" | "PND-010" | "PND-013"));
+            panic!("{step}: MCP error {}, rule {rule:?}", error.code.0);
+        }
+        Err(_) => panic!("{step}: MCP transport error"),
+    }
+}
+
+fn sign_in_prompt(
+    response: std::result::Result<CallToolResponse, rmcp::ServiceError>,
+    step: &str,
+) -> Value {
+    let reply = match sign_in_reply(response, step) {
+        CallToolResponse::InputRequired(reply) => reply,
+        CallToolResponse::Complete(reply) => {
+            panic!(
+                "{step}: expected input-required reply, received complete (is_error {:?})",
+                reply.is_error
+            )
+        }
+        _ => panic!("{step}: expected input-required reply"),
+    };
+    let reply = serde_json::to_value(reply).unwrap();
+    assert!(
+        reply["inputRequests"]
+            .as_object()
+            .is_some_and(|requests| requests.len() == 1),
+        "{step}: expected one input request"
+    );
+    let request = &reply["inputRequests"]["url"];
+    assert!(
+        request["method"] == "elicitation/create",
+        "{step}: expected elicitation/create under url"
+    );
+    assert!(
+        request["params"]["mode"] == "url",
+        "{step}: expected URL mode"
+    );
+    assert!(
+        request["params"]["url"] == SIGN_IN_URL,
+        "{step}: relayed URL differs"
+    );
+    assert!(
+        reply["requestState"]
+            .as_str()
+            .is_some_and(|state| state.chars().count() == 43),
+        "{step}: expected a 43-character requestState"
+    );
+    reply
+}
+
+fn assert_keyed_sign_in_prompt(reply: &Value, login_key: &str) {
+    let message = reply["inputRequests"]["url"]["params"]["message"]
+        .as_str()
+        .unwrap();
+    assert!(message.contains("example.org") && message.contains("primary-account"));
+    assert!(!message.contains(HOOK_STATE) && !message.contains(HOOK_MESSAGE));
+    let login = &reply["_meta"][login_key];
+    assert!(login["name"] == "browser");
+    assert!(login["return"] == "redirect");
+    assert!(login.get("node").is_some());
+    assert!(login["acceptsReturn"] == true);
+    assert!(login.get("returned").is_none());
+}
+
+fn assert_sign_in_store_excludes(root: &Path, markers: &[&str]) {
+    scan_sign_in_store(&root.join("authority.json"), root, markers);
+}
+
+fn scan_sign_in_store(authority: &Path, directory: &Path, markers: &[&str]) {
+    for entry in fs::read_dir(directory).unwrap() {
+        let entry = entry.unwrap();
+        let kind = entry.file_type().unwrap();
+        if kind.is_dir() {
+            scan_sign_in_store(authority, &entry.path(), markers);
+        } else if entry.path() != authority {
+            // The root signing authority file contains private keys and is not an output of
+            // sign-in; any other file of that name, at any depth, is scanned.
+            assert!(kind.is_file(), "unexpected file type in the test store");
+            let bytes = fs::read(entry.path()).unwrap();
+            for marker in markers {
+                assert!(
+                    !bytes
+                        .windows(marker.len())
+                        .any(|window| window == marker.as_bytes()),
+                    "a persisted file contained a value that should not be kept"
+                );
+            }
+        }
+    }
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn sign_in_relays_through_the_interface_and_polls_to_signed_in() {
+    let temp = temporary();
+    let case = repository().join("conformance/conventions/requests/sign-in-hold");
+    let shell = Arc::new(fixed_case_shell(temp.path(), &case, 9));
+    let signed = actor(&shell, "signed");
+    assert!(shell.state().unwrap().sign_in_holds.contains_key(&signed));
+
+    let token = sign_in_root_token(&shell, temp.path());
+    let script = Arc::new(SignInScript::new(&shell, false));
+    let stop = CancellationToken::new();
+    let task = script.serve(&shell, &stop).await;
+    let url = &shell.config.engine_url;
+    let prefix = &shell.context.meta_prefix;
+    let client = url_client(url, &token, prefix).await;
+
+    let login_key = format!("{prefix}signInLogin");
+    let mut request = sign_in_request();
+    request.meta = Some(serde_json::from_value(json!({&login_key: {"name": "browser"}})).unwrap());
+    let first = sign_in_prompt(
+        client.call_tool_once(request).await,
+        "step 2, first request",
+    );
+    assert_keyed_sign_in_prompt(&first, &login_key);
+
+    let mut names = vec!["account-hook.v1", "sign-in-hook.v1"];
+    let dispatches = script.expect_dispatches(&names);
+    // IFC-006 and IFC-045 govern the metadata of the hook's call.
+    let hook_meta = &dispatches[1]["call"]["params"]["_meta"];
+    assert!(hook_meta[&login_key] == json!({"name": "browser"}));
+    assert!(hook_meta[CLIENT_CAPABILITIES]["elicitation"] == json!({"url": {}}));
+
+    let second = sign_in_prompt(
+        client.call_tool_once(sign_in_retry(&first, "accept")).await,
+        "step 4, first poll",
+    );
+    assert!(first["requestState"] != second["requestState"]);
+    names.push("account-hook.v1");
+    script.expect_dispatches(&names);
+    assert!(shell.state().unwrap().sign_in_holds.contains_key(&signed));
+
+    *script.account.lock().unwrap() = json!("primary-account");
+    *shell.trace.lock().unwrap() = Some(Vec::new());
+    client.cancel().await.unwrap();
+    let close_transitions = shell.trace.lock().unwrap().take().unwrap().len();
+    eprintln!("Closing the first client committed {close_transitions} core inputs.");
+    let client = url_client(url, &token, prefix).await;
+    let retry = sign_in_retry(&second, "accept");
+
+    let step = "step 5, poll from second connection";
+    let CallToolResponse::Complete(result) =
+        sign_in_reply(client.call_tool_once(retry.clone()).await, step)
+    else {
+        panic!("{step}: expected a complete reply");
+    };
+    assert_ne!(result.is_error, Some(true), "{step}");
+    let final_reply = serde_json::to_value(result).unwrap();
+    assert!(
+        final_reply["structuredContent"]["account"] == "primary-account",
+        "{step}"
+    );
+    assert!(
+        final_reply["_meta"][format!("{prefix}outcome")] == "succeeded",
+        "{step}"
+    );
+    let login = &final_reply["_meta"][&login_key];
+    assert!(
+        login["name"] == "browser" && login.get("returned").is_none(),
+        "{step}"
+    );
+
+    names.push("account-hook.v1");
+    for dispatch in script.expect_dispatches(&names) {
+        let params = &dispatch["call"]["params"];
+        assert!(params.get("requestState").is_none());
+        assert!(params.get("inputResponses").is_none());
+    }
+    // PND-005 lifts the hold after the expected account is verified under PND-011.
+    assert!(!shell.state().unwrap().sign_in_holds.contains_key(&signed));
+
+    let Err(rmcp::ServiceError::McpError(error)) = client.call_tool_once(retry).await else {
+        panic!("step 8: expected an MCP error for the consumed requestState");
+    };
+    assert_eq!(error.code, ErrorCode::INVALID_PARAMS, "step 8");
+    assert!(
+        error.message.starts_with("requestState was already used"),
+        "step 8"
+    );
+    script.expect_dispatches(&names);
+
+    let error = serde_json::to_value(error).unwrap();
+    for reply in [&first, &second, &final_reply, &error] {
+        assert!(!reply.to_string().contains(HOOK_STATE));
+    }
+    let state = shell.state().unwrap();
+    for record in &state.records {
+        let record = record.to_string();
+        assert!(!record.contains(HOOK_STATE));
+        assert!(!record.contains(SIGN_IN_URL));
+    }
+    assert!(!final_reply.to_string().contains(SIGN_IN_URL));
+
+    assert_sign_in_store_excludes(temp.path(), &[HOOK_STATE]);
+    client.cancel().await.unwrap();
+    stop.cancel();
+    task.await.unwrap().unwrap();
+    script.report_cancellations(&shell);
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn sign_in_decline_through_the_interface_ends_failed() {
+    const RETURN: &str =
+        "http://127.0.0.1:8400/callback?code=join-code-0001&state=join-state-0123456789abcdef";
+    let temp = temporary();
+    let case = repository().join("conformance/conventions/requests/sign-in-hold");
+    let shell = Arc::new(fixed_case_shell(temp.path(), &case, 9));
+    let signed = actor(&shell, "signed");
+    assert!(shell.state().unwrap().sign_in_holds.contains_key(&signed));
+
+    let token = sign_in_root_token(&shell, temp.path());
+    let script = Arc::new(SignInScript::new(&shell, false));
+    let stop = CancellationToken::new();
+    let task = script.serve(&shell, &stop).await;
+    let prefix = &shell.context.meta_prefix;
+    let client = url_client(&shell.config.engine_url, &token, prefix).await;
+
+    let first = sign_in_prompt(
+        client.call_tool_once(sign_in_request()).await,
+        "step 2, first request",
+    );
+    let login_key = format!("{prefix}signInLogin");
+    assert_keyed_sign_in_prompt(&first, &login_key);
+    let names = ["account-hook.v1", "sign-in-hook.v1"];
+    let dispatches = script.expect_dispatches(&names);
+    let hook_meta = &dispatches[1]["call"]["params"]["_meta"];
+    assert!(hook_meta.get(&login_key).is_none());
+    assert!(hook_meta[CLIENT_CAPABILITIES]["elicitation"] == json!({"url": {}}));
+
+    let mut retry = sign_in_retry(&first, "decline");
+    retry.meta = Some(
+        serde_json::from_value(json!({
+            format!("{prefix}signInReturn"): {"value": RETURN, "via": "paste"}
+        }))
+        .unwrap(),
+    );
+    let step = "declined retry";
+    let CallToolResponse::Complete(result) =
+        sign_in_reply(client.call_tool_once(retry).await, step)
+    else {
+        panic!("{step}: expected a complete reply");
+    };
+    assert_eq!(result.is_error, Some(true), "{step}");
+    let reply = serde_json::to_value(result).unwrap();
+    assert!(
+        reply["_meta"][format!("{prefix}outcome")] == "failed",
+        "{step}"
+    );
+    assert!(
+        reply["structuredContent"]["diagnostics"]
+            .as_array()
+            .is_some_and(|diagnostics| diagnostics.iter().any(|d| d["ruleId"] == "PND-010")),
+        "{step}: expected a PND-010 diagnostic"
+    );
+    script.expect_dispatches(&names);
+    let state = shell.state().unwrap();
+    assert!(state.sign_in_holds.contains_key(&signed));
+
+    // Under PND-013 a decline passes on no return, and PND-014 forbids keeping it.
+    let markers = [RETURN, "join-code-0001"];
+    for value in [&first, &reply].into_iter().chain(&state.records) {
+        let serialized = value.to_string();
+        assert!(markers.iter().all(|marker| !serialized.contains(*marker)));
+    }
+    assert_sign_in_store_excludes(temp.path(), &markers);
+    client.cancel().await.unwrap();
+    stop.cancel();
+    task.await.unwrap().unwrap();
+    script.report_cancellations(&shell);
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn sign_in_plain_hook_through_the_interface_signs_in() {
+    let temp = temporary();
+    let case = repository().join("conformance/conventions/requests/sign-in-plain-hook-part");
+    let shell = Arc::new(fixed_case_shell(temp.path(), &case, 2));
+    let token = sign_in_root_token(&shell, temp.path());
+    let script = Arc::new(SignInScript::new(&shell, true));
+    let stop = CancellationToken::new();
+    let task = script.serve(&shell, &stop).await;
+    let prefix = &shell.context.meta_prefix;
+    let client = url_client(&shell.config.engine_url, &token, prefix).await;
+
+    let first = sign_in_prompt(
+        client.call_tool_once(sign_in_request()).await,
+        "step 1, first request",
+    );
+    let login = &first["_meta"][format!("{prefix}signInLogin")];
+    assert!(login["name"] == "browser");
+    assert!(login["acceptsReturn"] == false);
+
+    // IFC-007 strips Conduit's keys while IFC-045 still declares URL elicitation.
+    let dispatches = script.expect_dispatches(&["account_hook", "sign_in_hook"]);
+    for dispatch in &dispatches {
+        let meta = dispatch["call"]["params"]["_meta"].as_object().unwrap();
+        assert!(meta.keys().all(|key| !key.starts_with(prefix)));
+    }
+    let hook_meta = &dispatches[1]["call"]["params"]["_meta"];
+    assert!(hook_meta[CLIENT_CAPABILITIES]["elicitation"] == json!({"url": {}}));
+
+    *script.account.lock().unwrap() = json!("primary-account");
+    let step = "step 3, poll after browser login";
+    let CallToolResponse::Complete(result) = sign_in_reply(
+        client.call_tool_once(sign_in_retry(&first, "accept")).await,
+        step,
+    ) else {
+        panic!("{step}: expected a complete reply");
+    };
+    assert_ne!(result.is_error, Some(true), "{step}");
+    let reply = serde_json::to_value(result).unwrap();
+    assert!(
+        reply["structuredContent"]["account"] == "primary-account",
+        "{step}"
+    );
+    assert!(
+        reply["_meta"][format!("{prefix}outcome")] == "succeeded",
+        "{step}"
+    );
+    script.expect_dispatches(&["account_hook", "sign_in_hook", "account_hook"]);
+
+    for reply in [&first, &reply] {
+        assert!(!reply.to_string().contains(HOOK_STATE));
+    }
+    for record in &shell.state().unwrap().records {
+        assert!(!record.to_string().contains(HOOK_STATE));
+    }
+    assert_sign_in_store_excludes(temp.path(), &[HOOK_STATE]);
+    client.cancel().await.unwrap();
+    stop.cancel();
+    task.await.unwrap().unwrap();
+    script.report_cancellations(&shell);
 }
 
 async fn raw_session(url: &str, token: &str, revision: &str) -> Option<String> {

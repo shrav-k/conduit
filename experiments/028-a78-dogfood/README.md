@@ -92,6 +92,9 @@ The raw export leaves at the next condensation; the results then link its last v
 | [inputs/fleet/templates.yaml](inputs/fleet/templates.yaml) | Agent, Pool and Conduit templates |
 | [inputs/harness.md](inputs/harness.md) | Harness README; code stays outside the tree |
 | [inputs/plan.md](inputs/plan.md) | Coordinator's plan cited by ruling 74 |
+| [stage-2/fleet/conduit.yaml](stage-2/fleet/conduit.yaml) | Stage 2's manifest template, written before 0.2.0 |
+| [stage-2/fleet/instances.yaml](stage-2/fleet/instances.yaml) | Stage 2's Fleet, Agents, Pool and Conduit instances |
+| [stage-2/fleet/templates.yaml](stage-2/fleet/templates.yaml) | Stage 2's Agent, Pool and Conduit templates |
 | `NNN-name/`, from order 2 on | One directory per order: its scrubbed records export, the harness's log and measures, its reports and its dated result, as the registration below says |
 
 ## What it cannot show
@@ -329,3 +332,97 @@ are judged, and each result says which verifier read each pass.
   cuts of the network under the `.v2` wrapper and under a plain launch, and P2, a lost caller,
   before order 5; each is registered before it runs. P3, the process tree, the review moved to
   experiment 022 and A7, and P4, upgrading a signed-in Agent's package, it did not register.
+
+## Stage 2: the multi-slot Fleet, written before 0.2.0
+
+Written on 2026-11-19 by work order 210, before order 050n merges the Agent packages 0.2.0. It
+registers nothing: no order has run in stage 2, and the claim, the measures and the pass
+conditions of stage 2's orders are registered by a dated amendment, merged before the first of
+them runs ([ruling 45](../../docs/proposals/ruling-45/README.md)). Its choices are the
+coordinator's, each open to the owner's strike
+([ruling 48](../../docs/proposals/ruling-48/README.md)).
+
+Stage 2 runs on the store that is initialized again once 0.2.0 merges. The `conduit-core` Fleet's
+documents for it are [its manifest](stage-2/fleet/conduit.yaml),
+[its templates](stage-2/fleet/templates.yaml) and [its instances](stage-2/fleet/instances.yaml).
+They are templates, not rendered copies: the harness fills the placeholders below into a copy
+outside the repository and submits that copy. It writes each directory and account as a quoted
+YAML string, and each digest as one quoted string that includes its `sha256:` prefix; before it
+submits the copy, it checks that the copy reads back to the values it was given.
+
+| Agent | Type | Directory | Turn deadline | Root's Conduit |
+| --- | --- | --- | --- | --- |
+| `worker-1` | `codex.v2` | `<slot-1>` | 14400 s | `turn-worker-1` |
+| `verifier-1` | `codex.v2` | `<slot-1>` | 3600 s | `turn-verifier-1` |
+| `worker-2` | `codex.v2` | `<slot-2>` | 14400 s | `turn-worker-2` |
+| `verifier-2` | `codex.v2` | `<slot-2>` | 3600 s | `turn-verifier-2` |
+| `reader-1` | `claude-code.v2` | `<slot-r>` | 3600 s | `turn-reader-1` |
+
+- Every Agent has effort `high` and its account services off
+  ([ruling 48](../../docs/proposals/ruling-48/README.md), point 1), and `reader-1` has the model
+  `opus` and peer messaging off. Each names a directory, so its client's own tools are on and
+  nothing confines them in v0 ([ruling 70](../../docs/proposals/ruling-70/README.md)).
+- Each keeps its client's login in a home of its own inside its state directory
+  ([order 050c](../../docs/work-orders/050c-agents-v2-client-home.md)), which keeps the accounts
+  apart for the clients but is no wall against an Agent that runs code
+  ([ruling 84](../../docs/proposals/ruling-84/README.md), point 2). Each names in `account` the
+  owner's primary account of its client, and no Agent names a second account until the owner says
+  so (ruling 84, point 3).
+- Two pairs of a worker and a verifier, each pair in a slot clone of its own: the coordinator
+  dispatches at most two Codex runs at once on the Mac, and each Agent costs the owner one
+  sign-in. A third pair is four more documents and two more sign-ins.
+- `reader-1` is [the Claude verifier slot](#the-claude-verifier-slot) of stage 1's registration:
+  the fresh read on Claude Opus before each merge
+  ([ruling 79](../../docs/proposals/ruling-79/README.md)). It works in a clone of its own, into
+  which the harness brings each order's branch, so no Conduit and no directory of its names a
+  worker's slot. The coordinator proposes to read the reach over the worker's tree that waits for
+  D59 as a Conduit or a directory naming that tree, which `reader-1` does not have; order 211's
+  dated amendment records it, or the owner's answer, before `reader-1`'s first turn. Its own
+  tools, like every unconfined Agent's, still reach the worker's slot.
+- The Pool `trees` stays empty, as in stage 1: no tree is granted through Conduit before orders 4
+  and 5.
+
+Placeholders, filled only in the rendered copy and never committed:
+
+| Placeholder | Stands for | Class |
+| --- | --- | --- |
+| `<codex-version>`, `<codex-digest>` | The agent-codex archive's version and SHA-256 | other |
+| `<claude-version>`, `<claude-digest>` | The same for the agent-claude-code archive | other |
+| `<slot-1>`, `<slot-2>` | The absolute paths of the two slot clones | path |
+| `<slot-r>` | The absolute path of the reader's clone | path |
+| `<codex-account>` | The owner's primary ChatGPT account, as Codex names it | account |
+| `<claude-account>` | The owner's primary Claude account, as Claude Code names it | account |
+
+Before stage 2's first turn:
+
+1. Order 050n has merged the Agent packages 0.2.0, and the store is initialized again with their
+   archives; by the coordinator's notes (private), stage 1's store holds archives that also carry
+   the version 0.2.0.
+2. Before the store is initialized with these documents, and so before `reader-1` becomes a
+   dogfood slot or is signed in, D58's guard is in the harness: it runs nothing an Agent could
+   have written, so nothing from a slot or from the reader's clone, and reads its own helpers
+   only from its own directory and the main checkout; it never runs git inside a slot or the
+   reader's clone, but reads each with the harness's own git directory and the slot or clone only
+   as the working tree, or by plain file reads; and each of its guards answers held, broken or
+   unknown, an unknown checked again before the next turn
+   ([D58](../../docs/proposals/full-review/decisions.md);
+   [IN_FORCE.md, topic 15](../../IN_FORCE.md#15-how-the-work-is-governed)). A22 no longer runs
+   first ([ruling 84](../../docs/proposals/ruling-84/README.md), point 1).
+   Until then the harness may submit these documents without `reader-1` and `turn-reader-1`,
+   and stage 2 begins with its Codex slots (ruling 89, point 5).
+3. The owner has signed each of the five Agents in once, on the Mac, through `conduit sign-in`
+   ([order 051b-2](../../docs/work-orders/051b2-cli-sign-in.md);
+   [ruling 85](../../docs/proposals/ruling-85/README.md), point 5), one Agent at a time: Codex's
+   browser login listens on fixed ports, and a sign-in that may share one with another in
+   progress reports unavailable
+   ([order 048a-5c](../../docs/work-orders/048a5c-build-sign-in-fixed-port.md)).
+   If `reader-1` joins later, as item 2 allows, this holds for the Agents submitted at the start,
+   and `reader-1` is signed in so before its own first turn.
+4. Until [order 203](../../docs/work-orders/203-new-conversation.md)'s `new-conversation.v1` is
+   installed with the packages 0.2.1, a fresh conversation still restarts the engine, and a
+   restart ends every Agent's conversation. Until then the harness sends one turn at a time,
+   whatever the number of slots. Root's turn Conduits gain that operation by a later change, made
+   with 0.2.1, and the slots then run at once.
+
+Every Agent of stage 2 runs under the owner's operating-system user too, so
+[What it cannot show](#what-it-cannot-show) holds for every result of stage 2.

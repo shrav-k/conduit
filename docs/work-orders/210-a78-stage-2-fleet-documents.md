@@ -409,7 +409,9 @@ Stage 2 runs on the store that is initialized again once 0.2.0 merges. The `cond
 documents for it are [its manifest](stage-2/fleet/conduit.yaml),
 [its templates](stage-2/fleet/templates.yaml) and [its instances](stage-2/fleet/instances.yaml).
 They are templates, not rendered copies: the harness fills the placeholders below into a copy
-outside the repository and submits that copy.
+outside the repository and submits that copy. It writes each directory and account as a quoted
+YAML string, and each digest as one quoted string that includes its `sha256:` prefix; before it
+submits the copy, it checks that the copy reads back to the values it was given.
 
 | Agent | Type | Directory | Turn deadline | Root's Conduit |
 | --- | --- | --- | --- | --- |
@@ -460,16 +462,25 @@ Before stage 2's first turn:
    archives; by the coordinator's notes (private), stage 1's store holds archives that also carry
    the version 0.2.0.
 2. Before the store is initialized with these documents, and so before `reader-1` becomes a
-   dogfood slot or is signed in, the harness runs nothing from a slot or from the reader's clone,
-   and reads its own helpers only from its own directory and the main checkout (D58;
+   dogfood slot or is signed in, D58's guard is in the harness: it runs nothing an Agent could
+   have written, so nothing from a slot or from the reader's clone, and reads its own helpers
+   only from its own directory and the main checkout; it never runs git inside a slot or the
+   reader's clone, but reads each with the harness's own git directory and the slot or clone only
+   as the working tree, or by plain file reads; and each of its guards answers held, broken or
+   unknown, an unknown checked again before the next turn
+   ([D58](../../docs/proposals/full-review/decisions.md);
    [IN_FORCE.md, topic 15](../../IN_FORCE.md#15-how-the-work-is-governed)). A22 no longer runs
    first ([ruling 84](../../docs/proposals/ruling-84/README.md), point 1).
+   Until then the harness may submit these documents without `reader-1` and `turn-reader-1`,
+   and stage 2 begins with its Codex slots (ruling 89, point 5).
 3. The owner has signed each of the five Agents in once, on the Mac, through `conduit sign-in`
    ([order 051b-2](../../docs/work-orders/051b2-cli-sign-in.md);
    [ruling 85](../../docs/proposals/ruling-85/README.md), point 5), one Agent at a time: Codex's
    browser login listens on fixed ports, and a sign-in that may share one with another in
    progress reports unavailable
    ([order 048a-5c](../../docs/work-orders/048a5c-build-sign-in-fixed-port.md)).
+   If `reader-1` joins later, as item 2 allows, this holds for the Agents submitted at the start,
+   and `reader-1` is signed in so before its own first turn.
 4. Until [order 203](../../docs/work-orders/203-new-conversation.md)'s `new-conversation.v1` is
    installed with the packages 0.2.1, a fresh conversation still restarts the engine, and a
    restart ends every Agent's conversation. Until then the harness sends one turn at a time,
@@ -643,3 +654,80 @@ The coordinator renders the documents with real values, submits them to a store 
 that shows only once order 050n has merged; this order checks what can be checked before. The
 admin then has a fresh, read-only Opus reader read the diff before it merges (ruling 79). Do not
 stage anything. Report each choice you make as your own, and every check's last line.
+
+## Record
+
+Run on 2026-11-19, from about 18:55 to 19:01 UTC, on the Linux node from `main` `ac53b20f`
+(order 204b's merge), in one round: the worker (111 s), then a fresh Codex verifier (208 s). The
+worker created the three YAML files of decisions 1 to 3 and changed only the README, by decisions
+4 and 5, with DATE as 2026-11-19; it ran no cargo command, since the order changes no code. The
+verifier found the four files identical to the order's blocks, byte for byte, all five Agent
+configurations and all 21 documents valid, and `check_docs` and `check_private_paths` at Errors: 0.
+It found one must: item 2 of "Before stage 2's first turn" cited D58 for the condition before
+`reader-1` joins (ruling 89, point 5), but stated less than D58, leaving a harness free to run git
+inside a slot with the slot's own git directory, the fault D58 rules out. It found two shoulds: the
+README did not say how the harness writes the placeholders into the copy, and a directory filled in
+literally, such as one holding ` #`, loads cut short and still validates; and `check_private_paths`
+scans only `git ls-files`, so the order's run of it did not cover the three new files while they
+were untracked, which the verifier closed by running it again after the checkpoint (Errors: 0).
+
+A fresh read-only Opus reader then read the order (ruling 79, point 2) on the branch as the worker
+left it. It compared the four files with the order's blocks (identical), ran `check_docs`,
+`check_private_paths` (after the checkpoint, the files tracked), `check_schemas`, `check_roadmap`,
+`check_rulings` and `check_model_account` (Errors: 0 each), `git diff --check origin/main...HEAD`
+(clean), the order's eleven one-line checks and its two Python checks (`agents 5 valid 5`,
+`documents valid 21`), compared the templates with the `.v2` Types' inputs on the lane tips
+`34f4e662` and `f1ede6a5`, and checked that every private value is a placeholder and the commit
+identity neutral. With a scratch script it loaded literal substitutions: a synthetic directory
+holding ` #` read back cut short at it, and `: ` or a leading at sign failed to load. It ran no
+cargo command, the order changing no code. It found one must and four shoulds:
+
+- M1: the verifier's must, with the text of item 2 that states D58's guard.
+- S1: the verifier's first should, with a sentence on how the harness writes the values.
+- S2: the verifier's second should; a later tools order could give the checker an option that
+  also scans untracked files.
+- S3: item 2 made D58's guard a condition of initializing the store with these documents at all,
+  stricter than ruling 89, point 5, by which milestone 1 may begin with its Codex slots while the
+  Claude slot waits.
+- S4: the README names order 211's dated amendment, and no order 211 was on `main`.
+
+The fixer found `origin/main` still at `ac53b20f`, so the branch needed no rebase, and acted on
+each finding, in the README and in decision 4's block alike, so that the two stay the same:
+
+- M1: item 2 now says that D58's guard is in the harness before the store is initialized: it runs
+  nothing an Agent could have written, never runs git inside a slot or the reader's clone but reads
+  each with the harness's own git directory or by plain file reads, and each of its guards answers
+  held, broken or unknown, an unknown checked again before the next turn; it links D58. The
+  reader's text, verbatim; item 2 still starts `2. `.
+- S1: after "and submits that copy." the README says: "It writes each directory and account as a
+  quoted YAML string, and each digest as one quoted string that includes its `sha256:` prefix;
+  before it submits the copy, it checks that the copy reads back to the values it was given."
+- S2: no change to this order's files: the fix is the coordinator's verification step, which runs
+  `check_private_paths` after the checkpoint for an order that creates files, as both reads did.
+- S3: item 2 ends: "Until then the harness may submit these documents without `reader-1` and
+  `turn-reader-1`, and stage 2 begins with its Codex slots (ruling 89, point 5)."
+- S4: no change: order 211 is the order that registers stage 2, as the README says.
+
+The fixer then ran, in the worktree: `python3 tools/check_docs.py`,
+`python3 tools/check_private_paths.py`, `check_schemas`, `check_rulings` and `check_roadmap`
+(Errors: 0 each); `git diff --check` (clean); the order's eleven one-line checks, which print
+`conduit.yaml instances.yaml templates.yaml`, 268, 0, 0, 1, 0, 5, 4, 1, 3 and 0, as the order
+states; its two Python checks (`agents 5 valid 5`, `documents valid 21`); and a comparison of the
+README's new section with decision 4's block, DATE filled (identical). The gate's run on this
+order's squash is the coordinator's at the merge.
+
+A second fresh read-only Opus reader then read the branch with these fixes. It reran the checks
+above, which held, and found no must and five shoulds, which the coordinator applied as amendments
+of its own, in the README and in decision 4's block alike, each open to the owner's strike
+(ruling 48): S1, item 2's D58 clause now reads each slot or clone with the harness's own git
+directory and the slot or clone only as the working tree; S2, the harness quotes each directory and
+account, and writes each digest as one quoted string that includes its `sha256:` prefix, since a
+value quoted after the prefix loads as a malformed digest; S3, item 3 now holds for the Agents
+submitted at the start, and `reader-1`, if it joins later, is signed in before its own first turn,
+so that items 2 and 3 agree under ruling 89, point 5; S4, this Record names the host as the Linux
+node, as order 204b's does; S5, a garbled sentence of this Record mended. The quotations of M1 and
+S1 in the fixer's list above are given as amended. The coordinator then reran the order's eleven
+one-line checks (as the order states), its two Python checks (`agents 5 valid 5`,
+`documents valid 21`), `check_docs`, `check_private_paths` and `check_roadmap` (Errors: 0 each)
+and `git diff --check` (clean), and found the README's new section still identical to decision 4's
+block, DATE filled.

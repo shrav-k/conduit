@@ -365,6 +365,35 @@ orders, as registered, and does not count the baseline's. This note changes none
 the orders, the paired read, the records or the verdicts. It is the coordinator's, open to the
 owner's strike.
 
+### Amendment of 2026-11-19: pairing paused until 050n merges
+
+Amended on 2026-11-19 by the coordinator, on the owner's choice quoted below, which
+[ruling 89](../proposals/ruling-89/README.md), point 6, records. On 2026-11-19 the owner was asked:
+"A77's paired reads add a blind Opus read, my judging, and a second Codex round to each paired
+order. Pause pairing until 050n merges, to save time and Claude allowance on the dogfood path?"
+The owner chose "Pause until 050n (Recommended)".
+
+- *Paired orders.* No order is paired that is dispatched from the owner's answer until order 050n
+  merges.
+
+By the coordinator's reading, open to the owner's strike:
+
+- Pairing starts again with the first of A77's orders dispatched after 050n merges, in dispatch
+  order, as the section above and the amendment of 2026-11-19 that restarted the window have it.
+- The 20-order window keeps counting. An order dispatched in the pause is one of A77's orders and
+  is not paired, and its record says why, as the section above has it for an order dispatched
+  while the Claude allowance runs low.
+- An order whose paired read ran before the owner's answer keeps its pairing, and the round 2 that
+  the paired read prescribes.
+- The section's rule, that it changes only by a dated amendment merged before the first order it
+  changes is dispatched, could not hold for order 209: it was dispatched unpaired on the owner's
+  answer, before this amendment merged, as the coordinator's notes (private) record. Its record
+  says so.
+- A group with fewer than five paired orders when the window ends is not shown, as the verdicts
+  above have it; the result says that pairing was paused, and for which orders.
+
+Everything else stands as registered and as amended before.
+
 ## The record
 
 One row per merged order, 001 to 036k and 060 to 066, as the condensation plan's E30 set under

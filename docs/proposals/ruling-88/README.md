@@ -1,6 +1,6 @@
 # Ruling 88: the carried return leaves the dogfood path for the keyed release, and 048a-5's last four planned parts are batched in pairs
 
-Status: in force (ruled by the owner on 2026-11-19, as the coordinator's notes date the answers). Holds now: [IN_FORCE.md](../../../IN_FORCE.md), topics 9 and 11 (point 2, in the lines naming the orders that build the sign-in hook part, the relay and polling) and topic 13 (points 1 to 3), and A78's row of [ROADMAP.md](../../../ROADMAP.md#experiments-and-probes) (point 3), and a row of [docs/AUDIT.md](../../AUDIT.md#waiting-for-the-owner) (what is left for the owner). This record says why.
+Status: in force; amended by 89 (point 1, the coordinator's reading that the S1 rerun's pin waits for 048a-7, 048a-8 and 051b-3, and so for the keyed release's stage: the six sign-in orders are 0.2.0's, and the pin comes at the first dogfood milestone) (ruled by the owner on 2026-11-19, as the coordinator's notes date the answers). Holds now: [IN_FORCE.md](../../../IN_FORCE.md), topics 9 and 11 (point 2, in the lines naming the orders that build the sign-in hook part, the relay and polling) and topic 13 (points 1 to 3), and A78's row of [ROADMAP.md](../../../ROADMAP.md#experiments-and-probes) (point 3), and a row of [docs/AUDIT.md](../../AUDIT.md#waiting-for-the-owner) (what is left for the owner). This record says why.
 
 On 2026-11-19 the owner asked: "Check in, what's our progress like? Why is our parallelism so low?
 How close are we to dogfood?"

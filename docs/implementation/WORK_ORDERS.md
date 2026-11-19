@@ -11,7 +11,7 @@ of merged orders. Who decides and who merges, lanes included (ruling 71), is in
 | Who | Does | Does not |
 | --- | --- | --- |
 | The owner | Rules on behavior, on what Conduit is for and on the order of the work. Can strike any decision of the coordinator | |
-| The admin session, the coordinator (Claude Code) | Plans the work and writes each order: what it applies, its scope, its done-when, its report. Makes the decisions an order applies, under rulings 37, 38 and 46, point 4, each logged and strikeable. Reviews what comes back, runs the checks, commits, and opens and merges the pull request. Puts to the owner what is the owner's | Spend its own session on work that an order can state |
+| The admin session, the coordinator (Claude Code) | Plans the work and writes each order: what it applies, its scope, its done-when, its report. Makes the decisions an order applies, under rulings 37, 38 and 46, point 4, each logged and strikeable. Reviews what comes back, runs the checks, commits, and opens the pull request. Merges it where the order's fresh read found a must; an order whose fresh read found none merges on the local gate's pass without waiting, and the coordinator reviews that merge after it ([ruling 85](../proposals/ruling-85/README.md), point 1). By the coordinator's reading of that point, an order whose first read found a must is its to merge even after a clean reread, and an order whose clean read leaves shoulds merges once their diff-only reread finds no must. Puts to the owner what is the owner's | Spend its own session on work that an order can state |
 | A Codex worker | Carries out one order in a working tree of its own: a build increment, an experiment, a sweep of the promises, a verification of another order's result, or a fresh read | Commit, push or open a pull request. Decide what the order leaves to the admin: it reports instead |
 
 Codex gets work whose result the admin can check: a done-when that the checks show, counts that
@@ -35,7 +35,9 @@ an experiment. It holds:
    [one schema](../work-orders/README.md#shared-and-staged-files).
 7. **Rules**: those of [AGENTS.md](../../AGENTS.md#if-you-were-given-a-work-order), which every
    Codex session in this repository reads, and any of the order's own.
-8. **Record**: the admin's account of the run, written in the order's file at merge.
+8. **Record**: the admin's account of the run, written in the order's file at merge, or, for an
+   order merged on a clean read, with the coordinator's review after that merge (the
+   coordinator's reading of ruling 85, point 1).
    [The record](#the-record) holds those of 001 to 036k and 060 to 066; a later merged order keeps
    its Record in its own file under `docs/work-orders/` until a later condensation (A80) carries
    it here.

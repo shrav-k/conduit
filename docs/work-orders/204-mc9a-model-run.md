@@ -641,3 +641,156 @@ Codex verifier and a fresh read-only Opus reader read the result before it merge
 ([ruling 79](../proposals/ruling-79/README.md), point 2), and the merge waits on the local gate
 ([ruling 80](../proposals/ruling-80/README.md), point 10). The admin writes this order's Record at
 the foot of this file when it merges.
+
+## Record
+
+Run on 2026-11-19, from about 03:30 to 04:09 UTC, on the Linux node from `main` `7eed5a4d` (MC9a's
+dated amendment of 2026-11-19), in two rounds: the worker (1263 s) and a fresh Codex verifier
+(327 s), then the worker again (376 s) and a second fresh Codex verifier (400 s). Decision 9's stop
+condition held in both rounds, so no recorded run was made and the README is unchanged; the order is
+not done.
+
+In round 1 the worker wrote `src/pending.rs` and the one line of `src/lib.rs`. Its first exploratory
+row, Sign-in Correct/Base, reached the registered 400,000-state ceiling: the harness printed `run
+truncated: Some("unique state ceiling")`, at 8.7 s wall and a peak of 1652 MiB. It stopped there,
+kept the code and wrote nothing in the README. Its own choices: the scripts as ordered stages with
+sent and replied masks; a wire request key apart from its invocation attempt; symbolic accounts and
+one program per invocation in the home, where H chooses the page's completion, a sign-out failure
+and a lapse; an initial and a final poll for the finite polling script; and ordered ledgers from
+which the oracles rebuild their state. The first verifier found eleven musts and one should: an
+exploratory test that always panicked; `cargo fmt --check` failing (171 hunks); 14 local imports
+against the order's grep; the first poll, and with it DL18, possible before the person completed the
+page; the overlap switch still blocking dispatch during an open retirement; RetainHold keeping
+`SignInUndone=False` as well as the hold; a forgotten dismissal exposing an action past its expiry;
+K11 accepting a failed ending with the sign-out result outstanding; R13 checking `already-returned`
+only when a refusal was present; S02 and U06 accepting a list result whose pending list was omitted;
+A03 not checking that an expiry dispatches nothing; and, the should, the restart-overlap witness
+dropping a program when it took the return.
+
+Round 2 changed only `src/pending.rs` and addressed the twelve. The actions control printed one
+`MC9a table mismatch: Actions Correct/Base` line and exited 1 (460 states, 0.008 s). The sign-in
+control, with overlap refusal off, truncated at its first row, Sign-in Correct/Base (9.8 s wall,
+peak 2314 MiB), before its mismatch assertion. Both restores passed `cmp`. The worker stopped before
+the plain and counts runs. The second verifier found nine musts: K11 crediting the sign-out
+diagnostic to the newest attempt of the key, which under CopyAsNew is the duplicate; the first poll
+enabled before Q sends the retry; `already-returned` while the first return is only buffered
+(ReplayState); K11 accepting a success that answers the pending action with something other than
+signed-in; H05 not requiring the held turn's diagnostics; A03's window opening only at `Expired`;
+R13 and V14 accepting a PND-013 diagnostic on a rejected retry; `SignInUndone=False` not cleared by
+a check that reports no account; and the report omitting round 1's exploratory truncation.
+
+A first fresh read-only Opus reader then read the order (ruling 79, point 2) at the branch's head.
+On the Mac it ran `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` (exit 0 each),
+the order's module and import greps (1 and 0), the private-path grep over the experiment (nothing)
+and the commits' identities (the work-order identity, no trailers); in a scratch clone reset to
+`7eed5a4d` with `pending.rs` intent-to-add, `check_docs`, `check_roadmap`, `check_model_account` and
+`check_private_paths` (Errors: 0 each) and `git diff --check` (nothing), and the record's greps (no
+README change, 12 MC9a headings, no dated results). On the node it compared the node's `run.py` with
+the order's (identical) and read the three control logs; in a scratch copy outside the repository,
+through the order's `run.py`, it ran `sign_in_table` (truncated at Correct/Base, 9.9 s, peak
+2113 MiB), the same with the ceiling at the harness's maximum of 1,000,000 and 120 s (still
+truncated, 26.2 s, peak 4919 MiB), `actions_table` (17 rows as registered, largest 42918 states) and
+the plain run (exit 101, 148.9 s, peak 2442 MiB; 66 passed, 3 failed: `sign_in_table`,
+`sign_in_first_refutations` at UndoInitial/Base and `finding_witnesses` at retire-during-sign-in,
+all truncations). It found six musts and two shoulds:
+
+- R204-1: the sign-in part truncates in Correct/Base, so the plain and counts runs cannot pass, and
+  decision 9's stop applies to the committed code; even the harness's maximum ceiling does not fit
+  the space.
+- R204-2: decision 11's record is absent, which is right under decision 9's stop.
+- R204-3: the sign-in control prints no `MC9a table mismatch: Sign-in Correct/Base` line, since it
+  truncates first.
+- R204-4: the first poll is enabled once the person completes the page, before Q sends the retry,
+  against stage 4's order and PND-010's "Each retry polls account-hook.v1".
+- R204-5: E refuses a retry `already-returned` while the first return is only buffered, where
+  R13(b)'s rule is that no return has been passed on.
+- R204-6: H05 never requires the PND-005 diagnostic on a held turn, nor PND-011's where both holds
+  apply; it only rejects a PND-005 diagnostic that names an account.
+- R204-7: the second verifier's other findings stand in the code: `SignInUndone=False` cleared only
+  on the expected account; the sign-out diagnostic credited through the key's newest attempt; a
+  success accepted without a signed-in answer for the pending action; a PND-013 diagnostic accepted
+  on a rejected retry. A03's window, it found, covers the step as written.
+- R204-8: round 2 never ran the committed Correct sign-in model alone, and the report gives no
+  Correct/Base size or its cause.
+
+The fixer rebased the branch onto `origin/main` at `9e2a1410` (order 048a-5) with the work-order
+identity, without conflict, and took each finding:
+
+- R204-1: not applied, since no change within this order can make it pass: decision 9 forbids
+  changing a bound and the order forbids changing the harness. The coordinator chooses between a
+  dated revision of MC9a's section registered before the next run and a finishing order that removes
+  branching the registration does not state. After the fixes below, `sign_in_table` alone, on the
+  Mac, still truncated at Correct/Base (5.4 s, peak 2338 MiB).
+- R204-2: not applied: as the reader's fix says, no result is written until R204-1 is resolved and
+  the controls, plain and counts runs pass.
+- R204-3: not applied: the sign-in control is rerun once R204-1 is resolved.
+- R204-4: `Local::Poll(InitialPoll)` is enabled once E has passed the invocation's return on, in
+  place of the program's choice. The poll can still run before H applies the return, so the
+  registered empty observation stays.
+- R204-5: E refuses `already-returned` only when a return has been passed on. The fixer's reading of
+  a further accepted retry while a return is buffered, which only ReplayState's replayed copy can
+  make: E passes the buffered return on first, in the same step, then refuses the retry
+  `already-returned` with PND-013's diagnostic, so at most one return is passed on and each refusal
+  follows a pass.
+- R204-6: H05 scans the held turn's emissions up to its result: it requires a PND-005 diagnostic for
+  that turn without an account, rejects one that carries an account, and where sign-out failure also
+  holds the instance requires PND-011's. The turn's PND-011 diagnostic now reads `PND-011:
+  SignInUndone=False`, naming its condition.
+- R204-7: the model clears `SignInUndone=False` on any incorporated account-hook result of the
+  expected account or none, in setup's check, sign-in's first check or either poll, as PND-011 says,
+  and not on success alone; the oracles' history clears it on the same results and no longer on a
+  successful ending, so WrongAccountKept, whose success on another account clears nothing, does not
+  drift from the model. K11 credits the sign-out diagnostic to the attempt whose failed sign-out
+  result precedes it in the ledger, and records the action pending when the expected account's
+  result is incorporated, requiring a signed-in answer for it from that attempt. R13 rejects a
+  PND-013 diagnostic unless the ledger's event before it is an `already-returned` refusal for the
+  same key. A03 is unchanged, as the reader found.
+- R204-8: not applied: it asks the finishing order's worker to report Correct/Base's count at a
+  diagnostic ceiling and the choices that drive it, on the node.
+
+Since the sign-in table truncates, no sign-in mutant row ran, and the changed predicates were not
+tested against the registered table. The fixer then ran, from `experiments/012-model-checking/` on
+the Mac: `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` (exit 0 each), `cargo
+test --release --no-run` (built), the order's module and import greps (1 and 0), and `cargo test
+--release -- --test-threads=4` with `CONDUIT_MC_THREADS=2`, skipping the three truncating tests (66
+passed, 0 failed, 59.8 s, peak 2319 MiB); and from the root `python3 tools/check_docs.py`, `python3
+tools/check_roadmap.py`, `python3 tools/check_model_account.py` and `python3
+tools/check_private_paths.py` (Errors: 0 each) and `git diff --check` (clean).
+
+A second fresh read-only Opus reader then read the branch at the fixer's head. On the Mac it read
+the fixes against the diff and ran `cargo fmt --check` and `cargo clippy --all-targets -- -D
+warnings` (exit 0 each), the module and import greps (1 and 0), the private-path grep (nothing),
+the commits' identities (the work-order identity, no trailers), and, in a scratch clone reset to
+`9e2a1410` with `pending.rs` intent-to-add, the four repository checks (Errors: 0 each), `git diff
+--check` (nothing) and the record's greps (no README change, 12 MC9a headings, no dated results).
+It checked this Record against the run's log and the reports (timings, finding counts and control
+figures agree). On the node, in a scratch copy outside the repository with sources identical to the
+head, it ran `sign_in_table` (truncated at Correct/Base, 9.7 s, peak 2038 MiB) and the plain run
+(exit 101, 139.9 s, peak 2294 MiB; 66 passed, 3 failed, the same three truncations), and a
+scratch-only probe that caught each truncation and went on (568.6 s, peak 2259 MiB). The probe found
+every completed mutant first refutation refuting its registered target, Correct refuting none of
+K11, R13 and H05 within 400,000 states in its six configurations, and Correct/Base reaching
+return-passed (27 actions), already-returned (33), signed-in (33) and held (9). Three more runs
+truncate at the ceiling, at round 2's `pending.rs` as at the head: RetainHold/Base's H05 first
+refutation (MC9a-003's row), UndoInitial/Base's K11 first refutation and Correct/Base's undo-failed
+witness. It found the four applied fixes correct, no regression from them, and three musts:
+
+- R204-1: still stands: sign-in truncates at Correct/Base, and beyond it the UndoInitial/Base K11
+  and RetainHold/Base H05 first refutations and the Correct/Base undo-failed witness do not fit
+  400,000 states either. A dated revision or a finishing order must make every sign-in full row
+  fit the 400,000-state, 15 s bound, then rerun from the controls on, as decision 13 says.
+- R204-2: still stands: decision 11's record is absent, which is right while R204-1 holds.
+- R204-3: still stands: the sign-in control cannot print its mismatch line while Correct/Base
+  truncates before its assertion.
+
+The second fixer rebased the branch onto `origin/main` at `6ce1f97b` (order 048a-6 refreshed) with
+the work-order identity, without conflict. It applied none of the three: no change within this order
+can fix R204-1, since decision 9 forbids changing a bound and the order forbids changing the
+harness, and R204-2 and R204-3 wait on it, as the reader's fixes say. From
+`experiments/012-model-checking/` on the Mac it ran `cargo fmt --check`, `cargo clippy --all-targets
+-- -D warnings` and `cargo test --release --no-run` (exit 0 each), the module and import greps (1
+and 0), the private-path grep (nothing) and `sign_in_table` alone (truncated at Correct/Base,
+5.4 s, peak 2339 MiB); and from the root `python3 tools/check_docs.py` and `python3
+tools/check_private_paths.py` (Errors: 0 each) and `git diff --check` (clean). MC9a-002 and
+MC9a-003 are not run and not settled. The next step, a dated revision of MC9a or a finishing order,
+and the gate's run on any squash are the coordinator's.

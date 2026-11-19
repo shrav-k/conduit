@@ -7636,3 +7636,186 @@ off”, which is Base and the test of "one step" above. That section reads as it
 `f72c2bc3`. No script, bound, configuration, property, reach predicate, mutant, expected
 verdict, finding or limit above reads row A22, and none changes. The registration otherwise
 stands as written.
+
+### MC9a state-space measurement — 2026-11-19
+
+Measured 2026-11-19 under work order 204b on the Linux node (WSL Ubuntu 24.04, x86_64, 24 CPUs),
+from `main` `d91ef7b2`, on the model that order 204 wrote, as its branch left it at `49b96ec4` with
+the fixes for its readers’ findings R204-4 to R204-7, which order 204b carried to `main`. This is
+not a run of MC9a: the census reads no property, and each harness run below stops at its ceiling
+before any verdict is read or reports its count alone, so nothing in this section is a verdict, and
+the registration above is unchanged.
+[Order 204's Record](../../docs/work-orders/204-mc9a-model-run.md#record)
+states what its readers saw of MC9a's outcomes before this measurement.
+These files under `spec/` changed between `6ce1f97b` and `d91ef7b2`, with order 207:
+`spec/conventions/operations.yaml`, `spec/core/README.md`, `spec/core/operations.yaml`,
+`spec/definitions.md`, `spec/interface/implementation.yaml`, `spec/promises/manifest.yaml`,
+`spec/promises/packages.yaml`, `spec/promises/pending.yaml`, `spec/promises/templates.yaml`,
+`spec/schemas/README.md`, `spec/schemas/examples/invalid/PKG-020-manifest-keyed-not-plain.yaml`,
+`spec/schemas/manifest.yaml`; the census counts the model as written to the registration, before
+order 207.
+
+The census in `src/measure.rs` searches depth first over the harness’s own transitions and counts
+distinct states by a 64-bit fingerprint. Each run’s caps bound its traversal. A count with the stop
+`state cap` or `time cap` is a lower bound. For n states, two fingerprints coincide with probability
+below n²/2^65. On the eight Correct rows of MC7b’s records model, the census counted the states that
+the checker counts: 8 of 8 equal.
+
+**Census.**
+
+| Part | Row | States | Stop | Seconds |
+| --- | --- | ---: | --- | ---: |
+| Sign-in | Correct/Base | 98138450 | time cap | 600.0 |
+| Sign-in | Correct/LossQ | 93908171 | time cap | 600.0 |
+| Sign-in | Correct/ReorderQ | 97205096 | time cap | 600.0 |
+| Sign-in | Correct/CopyQ | 88231602 | time cap | 600.0 |
+| Sign-in | Correct/Crash | 104983686 | time cap | 600.0 |
+| Sign-in | Correct/Wait | 99790976 | time cap | 600.0 |
+| Sign-in | Correct/Base, without expiry | 48489214 | time cap | 300.0 |
+| Sign-in | Correct/Base, page as e only | 51620210 | exhausted | 279.8 |
+| Sign-in | Correct/Base, page as O only | 47966942 | time cap | 300.0 |
+| Sign-in | Correct/Base, one input request | 49234450 | time cap | 300.0 |
+| Sign-in | Correct/Base, sign-out succeeds | 48320016 | time cap | 300.0 |
+| Sign-in | Correct/Base, no lapse | 49960620 | time cap | 300.0 |
+| Sign-in | Correct/Base, bracket in order | 51148044 | time cap | 300.0 |
+| Sign-in | Correct/Base, internal steps first | 3795818 | exhausted | 24.2 |
+| Sign-in | Correct/Base, choices fixed | 17551 | exhausted | 0.3 |
+| Sign-in | Correct/Base, choices fixed, with expiry | 507033 | exhausted | 3.9 |
+| Sign-in | Correct/Base, choices fixed, with either page | 441541 | exhausted | 3.5 |
+| Sign-in | Correct/Base, choices fixed, with a second input request | 106549 | exhausted | 0.9 |
+| Sign-in | Correct/Base, choices fixed, with a failed sign-out | 17551 | exhausted | 0.3 |
+| Sign-in | Correct/Base, choices fixed, with a lapse | 31663 | exhausted | 0.4 |
+| Sign-in | Correct/Base, choices fixed, with either bracket order | 73392 | exhausted | 0.7 |
+| Sign-in | Correct/Base, choices fixed, internal steps first | 1605 | exhausted | 0.2 |
+| Sign-in | Correct/Base, projections | 41601179 | time cap | 600.0 |
+| Actions | Correct/Base | 460 | exhausted | 0.2 |
+| Actions | Correct/LossQ | 774 | exhausted | 0.2 |
+| Actions | Correct/ReorderQ | 680 | exhausted | 0.2 |
+| Actions | Correct/CopyQ | 42918 | exhausted | 0.4 |
+| Actions | Correct/Crash | 32997 | exhausted | 0.4 |
+| Actions | WrongScope/Base | 460 | exhausted | 0.1 |
+| Actions | AgentSees/Base | 460 | exhausted | 0.1 |
+| Actions | VolatileScope/Crash | 32997 | exhausted | 0.3 |
+| Actions | SkipRaisedAt/Base | 460 | exhausted | 0.1 |
+| Actions | AnswerTwice/CopyQ | 42918 | exhausted | 0.4 |
+| Actions | AnswerExpired/Base | 460 | exhausted | 0.1 |
+| Actions | VolatileAnswers/Crash | 32997 | exhausted | 0.3 |
+| Actions | ForgetOnPurge/Base | 460 | exhausted | 0.1 |
+| Actions | RecomputeDismissed/Base | 460 | exhausted | 0.1 |
+| Actions | VolatileScope/Base | 460 | exhausted | 0.1 |
+| Actions | AnswerTwice/Base | 460 | exhausted | 0.1 |
+| Actions | VolatileAnswers/Base | 460 | exhausted | 0.1 |
+
+- `without expiry` removes every `Local(E, Expire(_))`.
+- `page as e only` removes every `Local(H, CompletePage(_, Other))`.
+- `page as O only` removes each `Local(H, CompletePage(id, LowerE))` when the list also holds
+  `Local(H, CompletePage(id, Other))`. W2's page, which offers only `e`, keeps it.
+- `one input request` removes every `Local(E, OfferSecond(_, true))`.
+- `sign-out succeeds` removes every `Local(H, Undo(_, false))`.
+- `no lapse` removes every `Local(H, Turn(_, false))`.
+- `bracket in order` removes `Local(Q, Send(X_SIGN))` while `R_SIGN` is unsent and
+  `Local(Q, Send(FINAL_SIGN))` while `RETIRE` is unsent.
+- `internal steps first` keeps only the first `Local(E, PassReturn(_))`, `Local(E, Poll(_, _))`
+  or `Local(H, ApplyReturn(_))` in the enabled list's order when any is present.
+- `choices fixed` combines `without expiry`, `page as e only`, `one input request`,
+  `sign-out succeeds`, `no lapse` and `bracket in order`. Each `with` row restores the named choice.
+  `choices fixed, internal steps first` adds the internal-step restriction to the six removals.
+
+With `page as e only` kept, no poll finds `O`, so no sign-out is dispatched:
+`choices fixed, with a failed sign-out` equals `choices fixed`, as its census and stages lines show.
+
+`internal steps first` is a measure only. It drops interleavings that no registered sentence drops,
+and adopting it requires registering that restriction.
+
+The sign-in mutants were not measured: Correct/Base did not exhaust within its caps.
+
+**Stages.**
+
+Index 0 is the README’s stage 1. Indices 1 and 2 are stage 2’s two requests. Indices 3 through 7 are
+stages 3 through 7. Index 8 is the script’s end.
+
+| Row | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Correct/Base | 8 | 3 | 3 | 147 | 49098 | 1714483 | 2496343 | 84273647 | 9604718 |
+| Correct/LossQ | 8 | 3 | 3 | 126 | 32326 | 1119997 | 1811528 | 85685265 | 5258915 |
+| Correct/ReorderQ | 8 | 3 | 3 | 117 | 38463 | 1346340 | 1957807 | 84081221 | 9781134 |
+| Correct/CopyQ | 8 | 3 | 3 | 10 | 14111 | 966312 | 1566226 | 77052671 | 8632258 |
+| Correct/Crash | 7 | 3 | 3 | 63 | 14913 | 3562658 | 2376824 | 88281785 | 10747430 |
+| Correct/Wait | 8 | 3 | 3 | 10 | 2974 | 631045 | 1342062 | 86950732 | 10864139 |
+| Correct/Base, without expiry | 7 | 3 | 3 | 73 | 24386 | 846928 | 1233427 | 41638789 | 4745598 |
+| Correct/Base, page as e only | 11 | 12 | 18 | 2337 | 509012 | 0 | 960764 | 44748172 | 5399884 |
+| Correct/Base, page as O only | 8 | 3 | 3 | 73 | 16343 | 846835 | 1220022 | 41189287 | 4694368 |
+| Correct/Base, one input request | 9 | 6 | 6 | 274 | 26623 | 700977 | 1005944 | 42462706 | 5037905 |
+| Correct/Base, sign-out succeeds | 8 | 3 | 3 | 141 | 40700 | 836207 | 1228917 | 41485868 | 4728169 |
+| Correct/Base, no lapse | 9 | 6 | 6 | 203 | 79930 | 2526525 | 2778503 | 39978273 | 4597165 |
+| Correct/Base, bracket in order | 9 | 6 | 6 | 110 | 58659 | 2578844 | 3987429 | 38820114 | 5702867 |
+| Correct/Base, internal steps first | 11 | 12 | 18 | 2337 | 20048 | 67984 | 70784 | 3244696 | 389928 |
+| Correct/Base, choices fixed | 7 | 3 | 3 | 94 | 1988 | 0 | 2016 | 11760 | 1680 |
+| Correct/Base, choices fixed, with expiry | 11 | 12 | 18 | 1172 | 43932 | 0 | 51072 | 357616 | 53200 |
+| Correct/Base, choices fixed, with either page | 7 | 3 | 3 | 94 | 4970 | 50064 | 50400 | 294000 | 42000 |
+| Correct/Base, choices fixed, with a second input request | 7 | 3 | 3 | 94 | 10248 | 0 | 12754 | 73010 | 10430 |
+| Correct/Base, choices fixed, with a failed sign-out | 7 | 3 | 3 | 94 | 1988 | 0 | 2016 | 11760 | 1680 |
+| Correct/Base, choices fixed, with a lapse | 7 | 3 | 3 | 94 | 1988 | 0 | 2688 | 23520 | 3360 |
+| Correct/Base, choices fixed, with either bracket order | 7 | 3 | 3 | 187 | 3976 | 0 | 4032 | 58464 | 6720 |
+| Correct/Base, choices fixed, internal steps first | 7 | 3 | 3 | 94 | 210 | 0 | 168 | 980 | 140 |
+
+**Projections of Correct/Base.**
+
+| Projection | Distinct values |
+| --- | ---: |
+| without the ledger | 8714 |
+| ledger unordered | 8860 |
+| ledger alone | 11208606 |
+
+The stop for `Correct/Base, projections` was `time cap`. Within the states counted, dropping the
+ledger gives a floor for changes to the ledger alone. The unordered projection keeps its events as a
+multiset.
+
+**Transitions by kind, Correct/Base.**
+
+| Kind | Transitions | To a new state |
+| --- | ---: | ---: |
+| Deliver E->H Hook | 26751433 | 20452011 |
+| Deliver E->H HookRetry | 15014 | 15014 |
+| Deliver E->Q Reply | 40653164 | 28529937 |
+| Deliver H->E PartResult | 30029643 | 30029643 |
+| Deliver Q->E Request | 18597284 | 11781020 |
+| Deliver Q->E Retry | 160491 | 125902 |
+| Local E Expire | 1 | 1 |
+| Local E OfferSecond | 319084 | 145750 |
+| Local E PassReturn | 7508 | 7508 |
+| Local E Poll | 208375 | 193362 |
+| Local H ApplyReturn | 279065 | 279065 |
+| Local H CompletePage | 7508 | 7508 |
+| Local H Turn | 619660 | 619660 |
+| Local H Undo | 6532 | 6532 |
+| Local Q Send | 8372884 | 5894243 |
+| Local Q SendRetry | 57986 | 51293 |
+
+The second count depends on the search order. The first count also depends on it because the census
+stopped at a cap.
+
+**The harness at this size.**
+
+| Ceiling | Threads | Seconds | Ended | Peak MiB |
+| ---: | ---: | ---: | --- | ---: |
+| 400000 | 2 | 10.189 | truncated | 2039 |
+| 400000 | 1 | 9.958 | truncated | 2038 |
+| 1000000 | 2 | 26.492 | truncated | 4850 |
+
+These runs use a measurement's configuration (600 seconds and the ceiling shown), not a
+registered one.
+
+**Runs.**
+
+| Test | Threads | Wall seconds | Peak MiB |
+| --- | ---: | ---: | ---: |
+| measure::tests::census_counts_as_the_checker | 2 | 0.1 | 32 |
+| pending::sign_in::census::census_correct | 2 | 3602.3 | 2308 |
+| pending::sign_in::census::census_without | 2 | 2107.2 | 2308 |
+| pending::sign_in::census::census_fixed | 2 | 11.1 | 1529 |
+| pending::sign_in::census::census_projections | 2 | 600.5 | 2632 |
+| pending::actions::census::census_rows | 2 | 4.4 | 421 |
+| pending::sign_in::census::throughput_400k | 2 | 10.4 | 2039 |
+| pending::sign_in::census::throughput_400k | 1 | 10.2 | 2038 |
+| pending::sign_in::census::throughput_1m | 2 | 27.0 | 4850 |

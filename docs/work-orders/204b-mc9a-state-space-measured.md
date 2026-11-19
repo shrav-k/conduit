@@ -503,3 +503,100 @@ A fresh Codex verifier and then a fresh read-only Opus reader read the result be
 ([ruling 79](../proposals/ruling-79/README.md), point 2, as rulings 85 and 87 apply it), and the
 merge waits on the local gate ([ruling 80](../proposals/ruling-80/README.md), point 10). The admin
 writes this order's Record at the foot of this file when it merges.
+
+## Record
+
+Run on 2026-11-19, from about 17:00 to 18:28 UTC, on the Linux node from `main` `d91ef7b2` (the
+sign-in chain written ahead to ruling 88's shape), in one round: the worker (4874 s) and a fresh
+Codex verifier (311 s). The change is the five files of Scope. `src/pending.rs` is order 204's file
+at `49b96ec4` with additions only: the actions census, `census_rows`, and the sign-in census, its
+ablations, projections and throughput runs, and the six ignore lines of decision 2. `src/lib.rs`
+gains the two module lines, `src/measure.rs` is new (the depth-first census, its 64-bit
+fingerprints, caps, stages, kinds and projections, and the calibration test), the README gains the
+dated section "MC9a state-space measurement — 2026-11-19", and order 204's file is carried
+byte-equal. The worker ran decision 9's nine runs on the node, each exit 0. Correct/Base stopped at
+its time cap at 98,138,450 states, a lower bound; the sign-in mutants were therefore not run, and
+the section says so. The worker's own choices: one stack frame per state on the active path, with a
+cursor through its retained actions, so the harness's list order is kept, and the state cap taking
+precedence when both caps are reached together; Debug-derived labels for the kinds; the ablations as
+ordered action filters, `page as O only` snapshotting the attempts with an `Other` choice before
+filtering; projection fields fingerprinted as tuples, the events' fingerprints sorted with
+repetitions kept; the default panic output for throughput, accepting either string payload; and a
+type-only clippy change to the projection vector after the measurements, so the logs come from the
+build before it. It wrote the three carried blobs directly because the node's index was read-only;
+the result is byte-identical. Its one finding, R204b-1, an ambiguity: stage 4 leaves the scheduling
+of the return, the account's update and polling open; the model splits applying the return into its
+own H transition and gives E an explicit `OfferSecond(false)` step before the final poll, which the
+registration does not state as a separate step.
+
+The verifier found one must and four shoulds: the model can issue `rs2` and complete the invocation
+before Q sends `v2`, a branch the worker's report omitted (the must); the `with a failed sign-out`
+row cannot show a failed sign-out's cost under `page as e only`; the collision bound is stated
+without its assumption of uniform independent fingerprints; the order's at-sign scan of the added
+lines misses the untracked carried source, where seven at signs stand, all Rust pattern bindings
+carried from `49b96ec4`; and the worker's report links to the node's absolute paths.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2, as ruling 87 applies
+it), on the branch before its rebase. On the Mac it ran `check_docs`, `check_roadmap`,
+`check_model_account` and `check_private_paths` (Errors: 0 each), `git diff --check
+origin/main...HEAD` (clean), the order's greps on the README (13, 1 and 1), a width check of the new
+section (no line over 100 characters), and a scan of the added lines for private paths, names and
+at signs (none in the README or `measure.rs`; the seven in `pending.rs` are the carried bindings);
+the diff held the five files of Scope, `pending.rs` differed from `49b96ec4` by added hunks only,
+and order 204's file was byte-equal. On the node it ran `cargo fmt --check` and `cargo clippy
+--offline --all-targets -- -D warnings` (exit 0 each), `cargo test --offline --release` (64 passed,
+0 failed, 15 ignored), the order's greps over the logs and sources (each as specified), and the
+order's README-to-logs script, which printed `census 40 40; stages 22 22; projections 3 3; kinds 16
+16; throughput 3 3; runs 9 9`. It reran the calibration, `census_rows` and `census_fixed` into a
+separate target directory, leaving the record's logs untouched; each reproduced its logged lines,
+apart from seconds, on the committed build. It found no must and two shoulds. It confirmed the
+verifier's must as a model fact, by tracing the code, but took it as a should: no census line
+separates the branch, the code is order 204's, which decision 2 forbids editing, and no done-when
+or recorded value is wrong. It confirmed the second, and refuted the other three as defects: the
+bound is the standard birthday union bound, in the sentence decisions 3 and 10 prescribe, and the
+calibration matched 8 of 8; the at signs are pattern bindings, syntax `main` already holds, and
+`check_private_paths` reports no error (the scan's gap is the order's text, not the work); and the
+added lines hold no private path, so only this Record must keep to repository-relative references.
+It noted for the coordinator's revision that each time-capped row's count tracks its cap at about
+160,000 states a second (about 98 million at 600 s, 48 to 51 million at 300 s), and that the search
+took a single `Expire` transition in Correct/Base, so the capped ablation rows measure throughput,
+not each choice's share; only the exhausted rows compare choices: `page as e only` (51,620,210),
+`internal steps first` (3,795,818) and every `census_fixed` row.
+
+- R204b-r1: the carried model lets the invocation end on v1's return after `rs2` is issued, with
+  `v2` never sent. `PassReturn` passes v1, H takes the return and its result sets `can_offer`,
+  `OfferSecond(true)` issues `rs2` while the program still waits, `ApplyReturn` installs the
+  account, the initial poll needs only `return_passed` and on `e` completes the invocation, and the
+  ending's reply clears Q's input, so `SendRetry(v2)` is never enabled. The registration says only
+  that the caller then retries with v2 and that its result comes at the invocation's end.
+- R204b-r2: under `page as e only` a failed sign-out cannot occur, so the row `choices fixed, with a
+  failed sign-out` cannot add a state, and the record listed it without saying so; and the
+  throughput sentence left out decision 10's "not a registered one".
+
+The fixer rebased the branch onto `origin/main` at `791fe1f2` (order 048a-5ef refreshed for its
+stacked dispatch) with the work-order identity, without conflict; the commits since the base touch
+no file of this order. It applied each finding:
+
+- R204b-r1: no code changes, as the reader asked. This Record names it as a second ambiguity beside
+  R204b-1: the model lets the invocation end on v1's return after `rs2` is issued, with `v2` never
+  sent. The coordinator's dated revision of MC9a then states whether `v2` must precede completion,
+  or registers the branch.
+- R204b-r2: after the ablation list in the README's Census part, the section adds "With `page as e
+  only` kept, no poll finds `O`, so no sign-out is dispatched: `choices fixed, with a failed
+  sign-out` equals `choices fixed`, as its census and stages lines show." The throughput sentence
+  now reads "These runs use a measurement's configuration (600 seconds and the ceiling shown), not a
+  registered one." Both are prose only: no table line changes, so the README-to-logs script's
+  pairs are unaffected.
+
+The fixer then ran, in the worktree on the Mac (aarch64), on the files of this commit before it was
+made: from `experiments/012-model-checking/`, `cargo fmt --check` and `cargo clippy --offline
+--all-targets -- -D warnings` (exit 0 each), `cargo test --offline --release` (64 passed, 0 failed,
+15 ignored), and, one at a time, the calibration, `census_fixed` and `census_rows`, each naming its
+one test (each 1 passed): the calibration's 8 lines all equal, and the 25 census lines and 8 stages
+lines of the other two each matched the README's row exactly, so the counts reproduce off the node.
+The nine logs stay on the node, so the README-to-logs script was not rerun; the fix changes no
+table line. From the repository root, `python3 tools/check_docs.py`, `check_roadmap.py`,
+`check_model_account.py` and `check_private_paths.py` (Errors: 0 each), and `git diff --check` and
+`git diff --check origin/main...HEAD` (clean); no line of the new section or of this Record is over
+100 characters. The gate's run on this order's squash, which this merge waits on, is the
+coordinator's at the merge.

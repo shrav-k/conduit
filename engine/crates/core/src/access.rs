@@ -24,6 +24,12 @@ pub struct AccessRequest {
     pub readable: bool,
     #[serde(default = "yes")]
     pub authority_readable: bool,
+    #[serde(default, rename = "clientCapabilities")]
+    pub client_capabilities: Option<Value>,
+    #[serde(default, rename = "signInLogin")]
+    pub sign_in_login: Option<Value>,
+    #[serde(default, rename = "signInReturn")]
+    pub sign_in_return: Option<Value>,
 }
 fn yes() -> bool {
     true

@@ -710,6 +710,16 @@
       "safety_rows": []
     },
     {
+      "id": "requests-sign-in-refusals-before-parts",
+      "case": "conventions/requests/sign-in-refusals-before-parts/case.yaml",
+      "promises": [
+        "IFC-049",
+        "PND-013",
+        "PND-010"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "requests-sign-in-return-kept-nowhere",
       "case": "conventions/requests/sign-in-return-kept-nowhere/case.yaml",
       "promises": [

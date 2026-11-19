@@ -14,7 +14,7 @@
     },
     {
       "id": "requests-sign-in-return-kept-nowhere",
-      "reason": "The core's request has no member for signInReturn and reads no return; the sign-in orders 048a-1 and 048a-2 build PND-013 and PND-014."
+      "reason": "The core's request has the member signInReturn but reads it only on sign-in.v1 (order 048a-5), so a return on another operation's request is not refused; order 048a-6 refuses it under PND-013, builds PND-014 and removes this entry."
     }
   ]
 }

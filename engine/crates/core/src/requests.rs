@@ -712,6 +712,16 @@ fn reject_diagnostics(
             .ok_or("diagnostic has no message")?;
         t.reply = json!({"error":{"code":-32602,"message":format!("No tool named {subject} is presented to this instance. {message}"),"data":{mark(c,"reason"):reason,"diagnostics":diagnostics}}});
     }
+    if rule == "IFC-049" {
+        t.reply = json!({"error":{
+            "code":-32021,"message":"Missing required client capability",
+            "data":{
+                "requiredCapabilities":{"elicitation":{"url":{}}},
+                mark(c,"reason"):reason,
+                "diagnostics":t.reply["structuredContent"]["diagnostics"]
+            }
+        }});
+    }
     if rule == "LIF-037" {
         let args = &route["arguments"];
         let reference = args
@@ -1172,7 +1182,7 @@ fn invoke_inner(
         }
     }
     if (previous.is_none() || redispatch)
-        && let Some(rejection) = sign_in::preflight(&t.state, &route, &a.evidence.time, c)?
+        && let Some(rejection) = sign_in::preflight(&t.state, &route, request, &a.evidence.time, c)?
     {
         return reject_preflight(t, a, c, &route, rejection);
     }
@@ -2687,6 +2697,9 @@ mod tests {
                     serving: None,
                     readable: true,
                     authority_readable: true,
+                    client_capabilities: None,
+                    sign_in_login: None,
+                    sign_in_return: None,
                 },
                 key: key.map(str::to_owned),
                 archive: None,
@@ -2774,6 +2787,9 @@ mod tests {
                         serving: None,
                         readable: true,
                         authority_readable: true,
+                        client_capabilities: None,
+                        sign_in_login: None,
+                        sign_in_return: None,
                     },
                     key: None,
                     archive: None,
@@ -3127,6 +3143,9 @@ mod tests {
             serving: None,
             readable: true,
             authority_readable: true,
+            client_capabilities: None,
+            sign_in_login: None,
+            sign_in_return: None,
         };
         (state, c, request)
     }

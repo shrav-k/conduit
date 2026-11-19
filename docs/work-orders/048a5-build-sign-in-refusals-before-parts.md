@@ -688,3 +688,91 @@ point 10, has each merge wait on, `tools/gate.py`; CI runs on the pull request a
 for it. A fresh Codex verifier and a fresh read-only Opus reader read the result before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2). The admin writes this order's Record at
 the foot of this file when it merges.
+
+## Record
+
+Run on 2026-11-19, from about 02:29 to 03:20 UTC, on the Mac from `main` `10ad9931` (the refresh of
+orders 048a-5 and 048a-6), in two rounds: the worker (1406 s) and a fresh Codex verifier (347 s),
+then the worker again (972 s) and a second fresh Codex verifier (368 s). The change is the 16 files
+of Scope. `AccessRequest` gains `clientCapabilities`, `signInLogin` and `signInReturn`, and its nine
+other struct literals set them to `None`; the shell's `sign_in_members(meta: &Value, prefix: &str)`
+forwards the first two through `call_tool` and `record_rejection`. `sign_in.rs`'s preflight, after
+048a-2's invalid and before its conflicts, checks in turn the URL capability (IFC-049), a first
+request's return (PND-013) and the asked-for login (PND-010), through `stated_login_names`,
+`request_member_refusal` and `refusal`, with decision 2's words; `reject_diagnostics` answers the
+missing capability with the error -32021 and `requiredCapabilities`. The unit test
+`sign_in_request_member_refusals` is new (8 to 9 sign-in tests on `10ad9931`), as is the 18-step
+case `requests-sign-in-refusals-before-parts` (1774 unique IDs, its six copied steps equal to their
+sources); steps 4, 12 and 29 of 048a-2's case declare the capability, `requests-` went from 66 to 67
+cases with the same three expected failures, and `requests-sign-in-return-kept-nowhere` now fails
+with `unexpected field /reply/_meta/io.github.shrav-k.conduit~1outcome`. With decision 2's call
+deleted, the new case failed at step 3 with the stub's unavailable, and passed after the restore.
+Round 1's worker applied every decision as written. The first verifier found one must: the three new
+diagnostics name the tool and the cause but not the instance the request named, against IFC-050's
+"what the request named"; and three shoulds on the case, which the second verifier repeated (below):
+`/reply/inputRequired`, `external_intents` and the qualified `signInReturn` key. Since the order
+prescribes those words, the second worker changed nothing and reported the remedies for the
+coordinator. The second verifier found two musts, the same wording and an idempotency key reused
+with another digest, which returns OPS-010 conflict before the sign-in invalids though OPS-023 puts
+invalid first, and four shoulds on the case: the MISSING steps do not assert `/reply/inputRequired`
+absent nor the access decision's `data.permitted`, the PND-013 and PND-010 steps assert no
+`external_intents`, and the return steps check only the bare `signInReturn` key in record data.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2), on the branch before
+its rebase. It ran each command of "Done when" (the core's sign-in tests 9 passed, `Nothing to
+move.`, both cases `1 cases passed`, `requests-` 67 passed with the three expected failures, both
+shell tests, the vectors and the whole engine, 0 failed), the Python checks (Errors: 0 each, 129
+tool tests OK), `vector_delta.py` (4 changes; 0 flips; 0 undeclared; 0 errors), the spike (9
+passed), the order's greps (each 1, 3, 0 or the line expected) and a privacy grep of the changed
+files; on a scratch copy it deleted decision 2's call (step 3 failed) and restored it (passed). It
+merged the branch with `origin/main` at `fa8ca9ae` in a scratch tree: only `engine/STANDING.md`
+conflicted, and with it written again the core's sign-in tests gave 10, both cases passed and
+`requests-` gave 67 with the three expected failures. It found no must and four shoulds:
+
+- R1: the branch conflicts with `origin/main` in `engine/STANDING.md`, which 048b-relay2 changed
+  (the IFC-045 row and the totals); rebase, write the file with the tool and check the IFC-049,
+  PND-013 and IFC-045 rows.
+- R2: the three new diagnostics, like 048a-2's, name the tool and the cause but not the instance
+  the request named (IFC-050, ruling 52); not a fix to this work, since the order prescribes the
+  words: in 048a-5b or an order of its own, `rejection()` takes the instance's label and writes
+  `{tool} reports {reason} under {rule} for {Kind}/{name}: {cause}` for all of `sign-in.v1`'s
+  preflight texts, 048a-2's included, with both unit tests updated.
+- R3: the case does not fully prove "before any part": in 048a-5b, the first order that dispatches
+  a part, add `"external_intents": []` to each REFUSED expectation, `/reply/inputRequired` to the
+  absent list of the MISSING steps, and the qualified record-data pointers for `signInReturn` to
+  steps 6 and 10, each an expect-only change, declared as such.
+- R4: a keyed `sign-in.v1` request that reuses a key with another digest gets OPS-010 conflict
+  before the sign-in invalids, from the preflight's placement that 048a-2 chose; for the
+  coordinator, beside the access-tier finding: the order that binds `sign-in.v1`'s checks at the
+  access tier runs the invalids before the OPS-010 and OPS-032 key conflicts, with a case step
+  that reuses a setup's key without the capability and expects MISSING.
+
+The fixer rebased the branch onto `origin/main` at `7eed5a4d` (#381) with the work-order identity.
+Only `engine/STANDING.md` conflicted; the fixer took this order's side and wrote the file again
+with `promise_standing.py --write` (Errors: 0), which gives IFC-049
+`1 | 0 | outside | core, shell | case passes`, PND-013 `2 | 1 | outside | core | case passes`,
+IFC-045 `1 | 0 | reason | core | case passes` and the totals `case passes | 129 | 153 | 27 | 309`
+and `expected failure | 0 | 1 | 0 | 1`. That is R1. R2, R3 and R4 ask for no change in this order,
+each by the reader's own fix, and the fixer made none: they stand here for the coordinator, R2
+and R3 toward 048a-5b and R4 beside the access-tier finding. They answer the verifiers' open
+points too: R2 is both verifiers' must on the wording, R4 the second verifier's must on the key
+conflict, and R3 covers three of its shoulds, though not the return should's asks to assert
+the records at the positions the absence checks use and to check step 9 too. The fourth, that the
+MISSING steps project no `data.permitted: true` on the access decision, the reader did not raise;
+these go to the coordinator with R3. On the rebased tree the fixer ran, from `engine/` with
+`RUST_TEST_THREADS=4 CONDUIT_VECTOR_THREADS=4`, each command of "Done when": `cargo fmt --check`
+and `cargo clippy --all-targets -- -D warnings` (exit 0), the core's sign-in tests (10 passed, 0
+failed), the pieces tool (`Nothing to move.`), both cases (`1 cases passed` each), `requests-`
+(`67 cases passed; 3 expected failures`, the three of decision 7), both shell tests (1 passed
+each), the vectors (2 passed, 0 failed) and the whole engine (exit 0; 364 passed, 0 failed, 4
+ignored). With decision 2's call deleted, the new case printed `FAIL 0 cases passed; 1 failed`,
+step 3 ending with reason unavailable, and after the restore with `cp` `1 cases passed`. From the
+root, `check_schemas.py`, `set_names.py --check`, `check_rulings.py`, `check_docs.py`,
+`check_roadmap.py`, `check_model_account.py`, `check_private_paths.py` and
+`promise_standing.py --check` gave Errors: 0 each, the tool tests Ran 129 tests, OK, and
+`vector_delta.py origin/main HEAD --declared docs/work-orders/048a5-declared.yaml`
+`4 changes; 0 flips; 0 undeclared; 0 errors.`, exit 0. The order's greps printed each 1, 3, 0 or
+the line expected, `git diff --check origin/main...HEAD` was clean, the branch's diff holds the 16
+files of Scope and this Record, and the spike's `tests/spike.rs` gave `ok. 9 passed; 0 failed`.
+The gate's run on this order's squash, which this merge waits on, is the coordinator's at the
+merge.

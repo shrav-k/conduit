@@ -469,7 +469,12 @@ impl ServerHandler for Handler {
         let input = match retry {
             Ok(Some(input)) => input,
             Ok(None) => {
-                json!({"kind":"invoke","request":{"identity":instance(&identity),"tool":request.name,"arguments":request.arguments.unwrap_or_default(),"serving":serving},"key":key})
+                let mut input = json!({"kind":"invoke","request":{"identity":instance(&identity),"tool":request.name,"arguments":request.arguments.unwrap_or_default(),"serving":serving},"key":key});
+                input["request"]
+                    .as_object_mut()
+                    .unwrap()
+                    .extend(sign_in_members(&meta, prefix));
+                input
             }
             Err(text) => {
                 record_rejection(
@@ -558,6 +563,22 @@ impl ServerHandler for Handler {
         }
     }
 }
+pub(crate) fn sign_in_members(meta: &Value, prefix: &str) -> serde_json::Map<String, Value> {
+    let mut members = serde_json::Map::new();
+    for (key, value) in [
+        (
+            "clientCapabilities",
+            &meta["io.modelcontextprotocol/clientCapabilities"],
+        ),
+        ("signInLogin", &meta[format!("{prefix}signInLogin")]),
+    ] {
+        if !value.is_null() {
+            members.insert(key.to_owned(), value.clone());
+        }
+    }
+    members
+}
+
 async fn record_rejection(
     handler: &Handler,
     identity: Option<&str>,
@@ -573,7 +594,11 @@ async fn record_rejection(
             .and_then(Value::as_str)
             .filter(|s| !s.is_empty())
     };
-    let input = json!({"kind":"invoke","request":{"identity":identity,"tool":body["params"]["name"].as_str().unwrap_or(""),"arguments":body["params"].get("arguments").cloned().unwrap_or(json!({})),"readable":readable,"serving":valid_metadata("serving")},"key":valid_metadata("idempotencyKey")});
+    let mut input = json!({"kind":"invoke","request":{"identity":identity,"tool":body["params"]["name"].as_str().unwrap_or(""),"arguments":body["params"].get("arguments").cloned().unwrap_or(json!({})),"readable":readable,"serving":valid_metadata("serving")},"key":valid_metadata("idempotencyKey")});
+    input["request"]
+        .as_object_mut()
+        .unwrap()
+        .extend(sign_in_members(meta, &shell.context.meta_prefix));
     tokio::task::spawn_blocking(move || shell.submit(input, executor.as_ref()))
         .await
         .map_err(|_| "rejection task failed")??;

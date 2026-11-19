@@ -1,5 +1,10 @@
 //! PND-005 lapse signals and holds, PND-010 checks, and PND-011 sign-out conditions.
-use crate::{Context, Result, State, access, explain::Rejection, inventory, pending};
+use crate::{
+    Context, Result, State,
+    access::{self, AccessRequest},
+    explain::Rejection,
+    inventory, pending,
+};
 use serde_json::{Value, json};
 
 pub(crate) enum ExpectedAccount<'a> {
@@ -194,6 +199,7 @@ pub(crate) fn lapse_diagnostic(result: &Value) -> bool {
 pub(crate) fn preflight(
     state: &State,
     route: &Value,
+    request: &AccessRequest,
     time: &str,
     context: &Context,
 ) -> Result<Option<Rejection>> {
@@ -214,22 +220,88 @@ pub(crate) fn preflight(
     {
         return Ok(None);
     }
+    let expected = expected_account(instance, context)?;
+    let names = if matches!(expected, ExpectedAccount::Set { .. }) {
+        stated_login_names(instance, context)?
+    } else {
+        Vec::new()
+    };
     refusal(
-        state,
-        route,
-        instance,
-        time,
-        expected_account(instance, context)?,
-        context,
+        state, route, instance, time, expected, request, &names, context,
     )
 }
 
+fn stated_login_names(instance: &Value, context: &Context) -> Result<Vec<String>> {
+    let ty = inventory::instance_type(instance, context)?;
+    Ok(ty["spec"]["signIn"]["logins"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|login| login["name"].as_str().map(str::to_owned))
+        .collect())
+}
+
+fn request_member_refusal(
+    route: &Value,
+    request: &AccessRequest,
+    names: &[String],
+    context: &Context,
+) -> Option<Rejection> {
+    let tool = route["tool"].as_str()?;
+    if !request
+        .client_capabilities
+        .as_ref()
+        .is_some_and(|capabilities| capabilities["elicitation"]["url"].is_object())
+    {
+        return Some(rejection(
+            "invalid",
+            "IFC-049",
+            tool,
+            r#"the request does not declare URL elicitation in its client capabilities, and sign-in.v1 relays a login only by URL elicitation; send it again with {"elicitation": {"url": {}}} in io.modelcontextprotocol/clientCapabilities."#,
+        ));
+    }
+    if request.sign_in_return.is_some() {
+        let key = format!("{}signInReturn", context.meta_prefix);
+        return Some(rejection(
+            "invalid",
+            "PND-013",
+            tool,
+            &format!(
+                "the request carries {key} on a first sign-in.v1 request, which takes no return; a return travels only on a retry of sign-in.v1 in the invocation its requestState binds."
+            ),
+        ));
+    }
+    let login = request.sign_in_login.as_ref()?;
+    let cause = match login["name"].as_str() {
+        Some(name) if names.iter().any(|stated| stated == name) => return None,
+        Some(name) => format!(
+            "signInLogin asks for the login {}, which the instance's Type does not state",
+            json!(name)
+        ),
+        None => "signInLogin must hold the name of one login the instance's Type states".into(),
+    };
+    let names = names
+        .iter()
+        .map(|name| json!(name).to_string())
+        .collect::<Vec<_>>()
+        .join(", ");
+    Some(rejection(
+        "invalid",
+        "PND-010",
+        tool,
+        &format!("{cause}; its stated logins are {names}."),
+    ))
+}
+
+#[allow(clippy::too_many_arguments)]
 fn refusal(
     state: &State,
     route: &Value,
     instance: &Value,
     time: &str,
     expected: ExpectedAccount<'_>,
+    request: &AccessRequest,
+    names: &[String],
     context: &Context,
 ) -> Result<Option<Rejection>> {
     let tool = route["tool"].as_str().ok_or("sign-in route has no tool")?;
@@ -244,7 +316,10 @@ fn refusal(
         ExpectedAccount::Set { .. } => None,
     };
     if let Some(invalid) = invalid {
-        return Ok(Some(rejection("invalid", tool, &invalid)));
+        return Ok(Some(rejection("invalid", "PND-010", tool, &invalid)));
+    }
+    if let Some(rejection) = request_member_refusal(route, request, names, context) {
+        return Ok(Some(rejection));
     }
     if route["arguments"]
         .get("expectedId")
@@ -280,14 +355,14 @@ fn refusal(
     {
         text.push_str(&format!(" Its pending sign-in action is {id}."));
     }
-    Ok(Some(rejection("conflict", tool, &text)))
+    Ok(Some(rejection("conflict", "PND-010", tool, &text)))
 }
 
-fn rejection(reason: &'static str, tool: &str, cause: &str) -> Rejection {
-    let mut rejection = Rejection::new(reason, "PND-010");
+fn rejection(reason: &'static str, rule: &'static str, tool: &str, cause: &str) -> Rejection {
+    let mut rejection = Rejection::new(reason, rule);
     rejection.diagnostics = Some(json!([{
-        "ruleId":"PND-010", "level":"error",
-        "message":{"text":format!("{tool} reports {reason} under PND-010: {cause}")}
+        "ruleId":rule, "level":"error",
+        "message":{"text":format!("{tool} reports {reason} under {rule}: {cause}")}
     }]));
     rejection
 }
@@ -396,6 +471,142 @@ mod tests {
     }
 
     #[test]
+    fn sign_in_request_member_refusals() {
+        let (_, context) = crate::explain::tests::fixture();
+        let route = json!({
+            "tool":"group.sign-in.v1",
+            "operation":context.qualified("sign-in.v1"),
+            "caller":"r",
+            "arguments":{"instance":{"kind":"Agent","name":"agent-template"}}
+        });
+        let names = ["browser".to_owned(), "device".to_owned()];
+        let url = json!({"elicitation":{"url":{}}});
+        let returned = json!({
+            "value":"http://127.0.0.1:49152/callback?code=not-a-code&state=not-a-state",
+            "via":"paste"
+        });
+        let request = |members: Value| {
+            let mut request = json!({
+                "identity":{"kind":"instance","id":"r"},
+                "tool":route["tool"],
+                "arguments":route["arguments"]
+            });
+            request
+                .as_object_mut()
+                .unwrap()
+                .extend(members.as_object().unwrap().clone());
+            serde_json::from_value::<AccessRequest>(request).unwrap()
+        };
+        let assert_diagnostic = |actual: Rejection, rule: &str, text: &str| {
+            assert_eq!(actual.reason, "invalid");
+            assert_eq!(actual.rule, rule);
+            let diagnostics = actual.diagnostics.unwrap();
+            assert_eq!(
+                diagnostics,
+                json!([{"ruleId":rule,"level":"error","message":{"text":text}}])
+            );
+            diagnostics
+        };
+        let missing_text = r#"group.sign-in.v1 reports invalid under IFC-049: the request does not declare URL elicitation in its client capabilities, and sign-in.v1 relays a login only by URL elicitation; send it again with {"elicitation": {"url": {}}} in io.modelcontextprotocol/clientCapabilities."#;
+        let return_text = format!(
+            "group.sign-in.v1 reports invalid under PND-013: the request carries {}signInReturn on a first sign-in.v1 request, which takes no return; a return travels only on a retry of sign-in.v1 in the invocation its requestState binds.",
+            context.meta_prefix
+        );
+        let unknown_login_text = |asked| {
+            format!(
+                r#"group.sign-in.v1 reports invalid under PND-010: signInLogin asks for the login "{asked}", which the instance's Type does not state; its stated logins are "browser", "device"."#
+            )
+        };
+        let malformed_login_text = r#"group.sign-in.v1 reports invalid under PND-010: signInLogin must hold the name of one login the instance's Type states; its stated logins are "browser", "device"."#;
+        let check =
+            |members: Value| request_member_refusal(&route, &request(members), &names, &context);
+        for (members, rule, text) in [
+            (json!({}), "IFC-049", missing_text),
+            (
+                json!({"clientCapabilities":{"elicitation":{}}}),
+                "IFC-049",
+                missing_text,
+            ),
+            (
+                json!({"clientCapabilities":{"elicitation":{"url":true}}}),
+                "IFC-049",
+                missing_text,
+            ),
+            (
+                json!({"clientCapabilities":url,"signInReturn":returned}),
+                "PND-013",
+                &return_text,
+            ),
+            (
+                json!({"clientCapabilities":url,"signInLogin":{"name":"phone"}}),
+                "PND-010",
+                &unknown_login_text("phone"),
+            ),
+            (
+                json!({"clientCapabilities":url,"signInLogin":"browser"}),
+                "PND-010",
+                malformed_login_text,
+            ),
+            (
+                json!({"clientCapabilities":url,"signInLogin":{"name":"BROWSER"}}),
+                "PND-010",
+                &unknown_login_text("BROWSER"),
+            ),
+            (
+                json!({"signInReturn":returned,"signInLogin":{"name":"phone"}}),
+                "IFC-049",
+                missing_text,
+            ),
+            (
+                json!({"clientCapabilities":url,"signInReturn":returned,"signInLogin":{"name":"phone"}}),
+                "PND-013",
+                &return_text,
+            ),
+        ] {
+            let diagnostics = assert_diagnostic(check(members).unwrap(), rule, text).to_string();
+            if rule == "PND-013" {
+                assert!(!diagnostics.contains("not-a-code"));
+                assert!(!diagnostics.contains("not-a-state"));
+            }
+        }
+        for members in [
+            json!({"clientCapabilities":url}),
+            json!({"clientCapabilities":url,"signInReturn":null}),
+            json!({"clientCapabilities":url,"signInLogin":{"name":"browser"}}),
+            json!({"clientCapabilities":url,"signInLogin":{"name":"device"}}),
+        ] {
+            assert!(check(members).is_none());
+        }
+        let state = State {
+            objects: vec![
+                json!({"id":"r","kind":"Interface","from":context.qualified("root")}),
+                json!({"id":"f","name":"f","kind":"Fleet"}),
+                json!({
+                    "id":"t","name":"agent-template","kind":"Agent","revision":"t1",
+                    "metadata":{"name":"agent-template"},
+                    "spec":{"type":"#signed-agent.v1"},"resolved_implementations":{},
+                    "held":{},"packages":[]
+                }),
+            ],
+            ..State::default()
+        };
+        let actual = preflight(
+            &state,
+            &route,
+            &request(json!({"clientCapabilities":url,"signInLogin":{"name":"phone"}})),
+            "2026-11-12T12:00:00Z",
+            &context,
+        )
+        .unwrap()
+        .unwrap();
+        assert_diagnostic(
+            actual,
+            "PND-010",
+            "group.sign-in.v1 reports invalid under PND-010: the instance's Type states no signIn, so it has no expected account to sign in to.",
+        );
+    }
+
+    #[test]
     fn sign_in_refusals_before_dispatch() {
         let (_, context) = crate::explain::tests::fixture();
         let time = "2026-11-12T12:00:00Z";
@@ -419,6 +630,13 @@ mod tests {
             "operation":context.qualified("sign-in.v1"),
             "arguments":{"instance":{"kind":"Agent","name":"signed"}}})
         };
+        let request: AccessRequest = serde_json::from_value(json!({
+            "identity":{"kind":"instance","id":"r"},
+            "tool":"group.sign-in.v1",
+            "arguments":{"instance":{"kind":"Agent","name":"signed"}},
+            "clientCapabilities":{"elicitation":{"url":{}}}
+        }))
+        .unwrap();
         let assert_refusal = |actual: Option<Rejection>, reason: &str, cause: &str| {
             let actual = actual.unwrap();
             assert_eq!(actual.reason, reason);
@@ -435,7 +653,7 @@ mod tests {
             "the instance's Type states no signIn, so it has no expected account to sign in to.";
         let not_string = "the instance's expected account, at its Type's account pointer /account, is not a string.";
         assert_refusal(
-            preflight(&state, &route("r"), time, &context).unwrap(),
+            preflight(&state, &route("r"), &request, time, &context).unwrap(),
             "invalid",
             no_sign_in,
         );
@@ -450,13 +668,13 @@ mod tests {
             .objects
             .push(json!({"id":"f2","name":"f2","kind":"Fleet"}));
         assert_refusal(
-            preflight(&state, &through("v", "f"), time, &context).unwrap(),
+            preflight(&state, &through("v", "f"), &request, time, &context).unwrap(),
             "invalid",
             no_sign_in,
         );
         for (caller, target) in [("w", "f2"), ("v", "f2"), ("s2", "f")] {
             assert!(
-                preflight(&state, &through(caller, target), time, &context)
+                preflight(&state, &through(caller, target), &request, time, &context)
                     .unwrap()
                     .is_none()
             );
@@ -468,12 +686,22 @@ mod tests {
         let mut resource = through("v", "p");
         resource["arguments"]["instance"] = json!({"kind":"Resource","name":"x"});
         assert!(
-            preflight(&state, &resource, time, &context)
+            preflight(&state, &resource, &request, time, &context)
                 .unwrap()
                 .is_none()
         );
         let check = |state: &State, caller, expected| {
-            refusal(state, &route(caller), &agent, time, expected, &context).unwrap()
+            refusal(
+                state,
+                &route(caller),
+                &agent,
+                time,
+                expected,
+                &request,
+                &[],
+                &context,
+            )
+            .unwrap()
         };
         let unset = || ExpectedAccount::NotString {
             pointer: "/account".into(),

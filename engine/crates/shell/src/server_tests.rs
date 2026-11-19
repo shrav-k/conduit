@@ -11,6 +11,31 @@ use rmcp::{
 use std::sync::atomic::AtomicBool;
 use tokio_util::sync::CancellationToken;
 
+#[test]
+fn sign_in_members_reach_the_core() {
+    let prefix = context().meta_prefix;
+    let capabilities = json!({"elicitation":{"url":{}},"extensions":{}});
+    let login = json!({"name":"browser"});
+    let meta = json!({
+        "io.modelcontextprotocol/clientCapabilities":capabilities,
+        format!("{prefix}signInLogin"):login,
+        format!("{prefix}signInReturn"):{"value":"x","via":"paste"}
+    });
+    assert_eq!(
+        Value::Object(server::sign_in_members(&meta, &prefix)),
+        json!({"clientCapabilities":capabilities,"signInLogin":login})
+    );
+    for meta in [
+        json!({"io.modelcontextprotocol/clientCapabilities":null,format!("{prefix}signInLogin"):null}),
+        json!({}),
+    ] {
+        assert_eq!(
+            server::sign_in_members(&meta, &prefix),
+            serde_json::Map::new()
+        );
+    }
+}
+
 #[derive(Clone)]
 struct Consumer {
     changes: Arc<AtomicUsize>,

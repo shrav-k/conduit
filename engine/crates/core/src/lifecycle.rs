@@ -481,6 +481,9 @@ fn request_for(
             serving: parent["serving"].as_str().map(str::to_owned),
             readable: true,
             authority_readable: true,
+            client_capabilities: None,
+            sign_in_login: None,
+            sign_in_return: None,
         };
         if access::evaluate(&t.state, &view, &request, c, true)?
             .reason
@@ -1633,6 +1636,9 @@ mod explanation_tests {
                     serving: Some("serving-hook".into()),
                     readable: true,
                     authority_readable: true,
+                    client_capabilities: None,
+                    sign_in_login: None,
+                    sign_in_return: None,
                 },
                 key: None,
                 archive: None,

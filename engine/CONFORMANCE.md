@@ -798,6 +798,10 @@ elicitation with `elicitationId` empty: the engine correlates nothing by it and 
 completion notification, which is how this build reads IFC-049's "There is no elicitationId".
 From order 048a-5ef, `sign-in.v1` gives such an output when it relays its URL action, and an accepted
 retry reaches the core as its `respond` input, which polls the account (row DL18).
+`sign-in.v1` runs through the shell as far as polling: the request's URL elicitation and
+`signInLogin` reach the core, its URL action reaches the calling Interface as an input-required
+result with the shell's own requestState, and each accepted retry polls the account check, asking
+again until the expected account signs the instance in (order 048b-join).
 
 ## A sign-in return where none is taken (order 048a-6)
 

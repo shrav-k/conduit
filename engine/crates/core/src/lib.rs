@@ -263,7 +263,7 @@ pub struct RequestReply {
 
 /// IFC-049: an interim answer to one dispatched request attempt, which asks the Interface
 /// that sent it for input. The invocation stays in progress. The shell relays it and keeps
-/// its requestState. No step gives one until order 048a-5e.
+/// its requestState. `sign-in.v1` gives one when it relays its URL action.
 #[derive(Clone, Debug, Serialize)]
 pub struct InputRequired {
     pub invocation: String,
@@ -450,6 +450,7 @@ fn reply_context(input: &Input) -> Option<(String, Option<String>)> {
         ),
         Input::Access { evidence, .. }
         | Input::Complete { evidence, .. }
+        | Input::Respond { evidence, .. }
         | Input::Cancel { evidence, .. }
         | Input::SetupReport { evidence, .. }
         | Input::Recover { evidence }
@@ -543,10 +544,21 @@ fn step_body(state: State, input: Input, context: &Context) -> Result<Transition
             context,
         )?,
         Input::Respond {
+            evidence,
             invocation,
             attempt,
+            identity,
+            responses,
             ..
-        } => requests::respond(&mut transition, &invocation, attempt, context),
+        } => requests::respond(
+            &mut transition,
+            &evidence,
+            &invocation,
+            attempt,
+            &identity,
+            &responses,
+            context,
+        )?,
         Input::Cancel {
             evidence,
             invocation,

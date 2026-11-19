@@ -42,6 +42,7 @@ impl Checks {
             "install-archive",
             "resolve-project",
             "complete",
+            "respond",
             "cancel",
             "setup-report",
             "list-tools",

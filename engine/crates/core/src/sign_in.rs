@@ -1,11 +1,12 @@
 //! PND-005 lapse signals and holds, PND-010 checks, and PND-011 sign-out conditions.
 use crate::{
-    Allocation, Context, Result, State, Transition,
+    Allocation, Context, InputRequired, Result, State, Transition,
     access::{self, AccessRequest},
     decision,
     explain::{self, Rejection},
     inventory, pending, requests,
 };
+use chrono::{DateTime, SecondsFormat, TimeDelta};
 use serde_json::{Value, json};
 use std::collections::{BTreeMap, BTreeSet};
 use url::Url;
@@ -130,7 +131,7 @@ pub(crate) fn expected_account<'a>(
 const ACCOUNT_NOT_STRING: &str = "The instance's expected account is not a string, so sign-in.v1 cannot check it and signs nothing in.";
 const RETIRED_DURING_CHECK: &str = "The instance was retired while its account check was in progress, so sign-in.v1 signs nothing in and answers no sign-in action.";
 const RETIRED_DURING_HOOK: &str = "The instance was retired while its sign-in hook was in progress, so sign-in.v1 relays nothing and signs nothing in.";
-const HOOK_UNRELAYED_CAUSE: &str = "The sign-in hook asked for a URL action, and its relay to the Interface is not built yet (order 048a-5e), so nothing was relayed and the instance is not signed in.";
+const ACCOUNT_HOOK_NOT_RESOLVED: &str = "No implementation of account-hook.v1 is resolved for the instance, so its account cannot be checked and sign-in.v1 signs nothing in.";
 
 pub(crate) fn begin(
     t: &mut Transition,
@@ -177,15 +178,7 @@ pub(crate) fn begin(
         &["PND-010", "PND-011", "CTR-013", "ACC-018", "IMP-002"],
         None,
     )? {
-        return end_sign_in(
-            t,
-            a,
-            c,
-            i,
-            "failed",
-            "PND-011",
-            "No implementation of account-hook.v1 is resolved for the instance, so its account cannot be checked and sign-in.v1 signs nothing in.",
-        );
+        return end_sign_in(t, a, c, i, "failed", "PND-011", ACCOUNT_HOOK_NOT_RESOLVED);
     }
     Ok(())
 }
@@ -212,6 +205,57 @@ pub(crate) fn first_check(outcome: &str, outputs: &Value, expected: &str) -> Fir
     }
 }
 
+/// IFC-049: the person's answer to the one URL input request, under its key `url` in the
+/// retry's inputResponses; None for anything else.
+pub(crate) fn url_action(responses: &Value) -> Option<&'static str> {
+    let responses = responses.as_object()?;
+    if responses.len() != 1 {
+        return None;
+    }
+    let action = responses.get("url")?.get("action")?.as_str()?;
+    ["accept", "decline", "cancel"]
+        .into_iter()
+        .find(|a| *a == action)
+}
+
+/// PND-011: while polling, no account, or the account that the check before
+/// sign-in-hook.v1 found, compared ignoring ASCII case, counts as no account yet.
+pub(crate) fn no_account_yet(found: &Value, first: &Value) -> bool {
+    match (found.as_str(), first.as_str()) {
+        (None, _) => found.is_null(),
+        (Some(found), Some(first)) => found.eq_ignore_ascii_case(first),
+        (Some(_), None) => false,
+    }
+}
+
+/// PND-010 and PND-011: what a poll while sign-in.v1 waits after its URL action found.
+#[derive(Debug, PartialEq)]
+pub(crate) enum Poll {
+    Expected(String),
+    NoneYet,
+    Other,
+    NotKnown,
+}
+
+/// A poll that failed or ended unknown counts as no account yet (PND-010); one that states
+/// a reason, or whose account cannot be read, is not known.
+pub(crate) fn poll_check(outcome: &str, outputs: &Value, expected: &str, first: &Value) -> Poll {
+    if matches!(outcome, "failed" | "unknown") {
+        return Poll::NoneYet;
+    }
+    if outcome != "succeeded" {
+        return Poll::NotKnown;
+    }
+    match outputs.get("account") {
+        Some(Value::String(found)) if found.eq_ignore_ascii_case(expected) => {
+            Poll::Expected(found.clone())
+        }
+        Some(found) if no_account_yet(found, first) => Poll::NoneYet,
+        Some(Value::String(_)) => Poll::Other,
+        _ => Poll::NotKnown,
+    }
+}
+
 pub(crate) fn part_answered(
     t: &mut Transition,
     a: &mut Allocation<'_>,
@@ -221,15 +265,16 @@ pub(crate) fn part_answered(
     outcome: &str,
 ) -> Result<()> {
     let invocation = &mut t.state.invocations[i];
-    match invocation["sign_in"]["phase"].as_str() {
+    let name = match invocation["sign_in"]["phase"].as_str() {
         Some("sign-in-pending") => return hook_ended(t, a, c, i, &part["id"], outcome),
-        Some("account-pending") => {}
+        Some("poll-pending") if part["id"] == invocation["sign_in"]["poll"] => "poll",
+        Some("account-pending") => "account",
         _ => return Ok(()),
-    }
+    };
     invocation["sign_in"]["parts"]
         .as_array_mut()
         .unwrap()
-        .push(json!({"name":"account","outcome":outcome,"invocation":part["id"]}));
+        .push(json!({"name":name,"outcome":outcome,"invocation":part["id"]}));
     let Some(object) = t
         .state
         .objects
@@ -256,6 +301,9 @@ pub(crate) fn part_answered(
     }
     if instance["state"] == "retired" {
         return end_sign_in(t, a, c, i, "failed", "PND-003", RETIRED_DURING_CHECK);
+    }
+    if name == "poll" {
+        return poll_answered(t, a, c, i, part, outcome, account);
     }
     match check {
         FirstCheck::Expected(found) => return signed_in(t, a, c, i, &found),
@@ -314,6 +362,9 @@ pub(crate) fn part_answered(
     let login = t.state.invocations[i]["asked_login"]
         .as_str()
         .map(str::to_owned);
+    t.state.invocations[i]["sign_in"]["first_account"] =
+        json!(part["retained"]["outputs"]["account"].as_str());
+    t.state.invocations[i]["sign_in"]["check"] = unexplained_check(outcome);
     if !requests::setup_sign_in_hook(
         t,
         a,
@@ -336,6 +387,177 @@ pub(crate) fn part_answered(
     }
     t.state.invocations[i]["sign_in"]["phase"] = json!("sign-in-pending");
     Ok(())
+}
+
+fn poll_answered(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    part: &Value,
+    outcome: &str,
+    account: &str,
+) -> Result<()> {
+    let invocation = &t.state.invocations[i];
+    match poll_check(
+        outcome,
+        &part["retained"]["outputs"],
+        account,
+        &invocation["sign_in"]["first_account"],
+    ) {
+        Poll::Expected(found) => signed_in(t, a, c, i, &found),
+        Poll::NoneYet => {
+            let id = invocation["id"]
+                .as_str()
+                .ok_or("sign-in has no ID")?
+                .to_owned();
+            t.state.invocations[i]["sign_in"]["check"] = unexplained_check(outcome);
+            t.decisions.push(decision(
+                "ask-sign-in-again",
+                &["IFC-049", "PND-010", "PND-011"],
+                &["DL18"],
+                json!({"invocation":id,"hook":part["id"]}),
+                vec![],
+            ));
+            relay_output(t, &id, &a.evidence.time, c)
+        }
+        Poll::Other => {
+            t.decisions.push(decision(
+                "end-sign-in-other-account",
+                &["PND-011"],
+                &[],
+                json!({"invocation":invocation["id"],"hook":part["id"]}),
+                vec![],
+            ));
+            end_sign_in(
+                t,
+                a,
+                c,
+                i,
+                "failed",
+                "PND-011",
+                "While polling, the account check found an account that is neither the expected one nor the one the first check found; undoing it with a sign-out-hook.v1 part is not built yet (order 048a-5gh), so sign-in.v1 ends failed and nothing was signed in.",
+            )
+        }
+        Poll::NotKnown => end_sign_in(
+            t,
+            a,
+            c,
+            i,
+            "failed",
+            "PND-011",
+            &format!(
+                "The account check while polling after the person's sign-in reported {outcome}, so the account is not known and sign-in.v1 completes nothing; send sign-in.v1 again."
+            ),
+        ),
+    }
+}
+
+/// PND-011: an account check that ended failed or unknown, which the relay's message explains.
+fn unexplained_check(outcome: &str) -> Value {
+    match outcome {
+        "failed" | "unknown" => json!(outcome),
+        _ => Value::Null,
+    }
+}
+
+pub(crate) fn waiting_for_retry(v: &Value, attempt: u64) -> bool {
+    v["sign_in"]["phase"] == "retry-pending" && v["sign_in_wait"]["attempt"] == attempt
+}
+
+pub(crate) fn retried(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    responses: &Value,
+) -> Result<()> {
+    let invocation = &t.state.invocations[i];
+    match url_action(responses) {
+        Some("accept") => {
+            let Some(instance) = access::object_by_id(&t.state, &invocation["object"])
+                .filter(|o| o["state"] != "retired")
+                .cloned()
+            else {
+                return end_sign_in(
+                    t,
+                    a,
+                    c,
+                    i,
+                    "failed",
+                    "PND-003",
+                    "The instance was retired while sign-in.v1 waited for the person, so it polls nothing and signs nothing in.",
+                );
+            };
+            if !requests::setup_sign_in_hook(
+                t,
+                a,
+                c,
+                i,
+                &instance,
+                "account-hook.v1",
+                &["PND-010", "PND-011", "IFC-049", "ACC-018", "IMP-002"],
+                None,
+            )? {
+                return end_sign_in(t, a, c, i, "failed", "PND-011", ACCOUNT_HOOK_NOT_RESOLVED);
+            }
+            let invocation = &mut t.state.invocations[i];
+            let hook = &t.reply["hook"];
+            invocation["sign_in"]["phase"] = json!("poll-pending");
+            invocation["sign_in"]["poll"] = hook.clone();
+            t.decisions.push(decision(
+                "poll-sign-in-account",
+                &["IFC-049", "PND-010", "PND-011"],
+                &[],
+                json!({"invocation":invocation["id"],"hook":hook}),
+                vec![],
+            ));
+            Ok(())
+        }
+        Some(action @ ("decline" | "cancel")) => {
+            t.decisions.push(decision(
+                "end-sign-in-declined",
+                &["PND-010", "PND-013", "IFC-049"],
+                &[],
+                json!({"invocation":invocation["id"],"action":action}),
+                vec![],
+            ));
+            let did = if action == "decline" {
+                "declined"
+            } else {
+                "cancelled"
+            };
+            end_sign_in(
+                t,
+                a,
+                c,
+                i,
+                "failed",
+                "PND-010",
+                &format!(
+                    "The person {did} the URL action on a retry, so no part was dispatched and nothing the retry carried was passed on."
+                ),
+            )
+        }
+        _ => {
+            t.decisions.push(decision(
+                "end-sign-in-malformed-response",
+                &["IFC-049"],
+                &[],
+                json!({"invocation":invocation["id"]}),
+                vec![],
+            ));
+            end_sign_in(
+                t,
+                a,
+                c,
+                i,
+                "failed",
+                "IFC-049",
+                "The retry's inputResponses held no response under url whose action is accept, decline or cancel, and its requestState was used, so no part was dispatched and nothing the retry carried was passed on.",
+            )
+        }
+    }
 }
 
 pub(crate) fn sign_in_hook_part(state: &State, part: &Value, c: &Context) -> bool {
@@ -560,6 +782,182 @@ pub(crate) fn keep_hook_input(part: &mut Value, key: &str, state: Option<&str>) 
     part["hook_input"] = input;
 }
 
+pub(crate) fn accepts_return(login: &Value, plain: bool) -> bool {
+    matches!(login["return"].as_str(), Some("redirect" | "page"))
+        && login["carried"] == true
+        && !plain
+}
+
+pub(crate) fn wait_end(time: &str) -> Option<String> {
+    Some(
+        DateTime::parse_from_rfc3339(time)
+            .ok()?
+            .checked_add_signed(TimeDelta::minutes(10))?
+            .to_utc()
+            .to_rfc3339_opts(SecondsFormat::AutoSi, true),
+    )
+}
+
+pub(crate) fn relay_request(message: &str, url: &str) -> Value {
+    json!({"method":"elicitation/create","params":{"mode":"url","message":message,"url":url}})
+}
+
+pub(crate) fn login_meta(login: &Value, node: &Value, accepts: bool) -> Value {
+    json!({"name":login["name"],"return":login["return"],"node":node,"acceptsReturn":accepts})
+}
+
+pub(crate) struct RelayFacts<'a> {
+    pub kind: &'a str,
+    pub name: &'a str,
+    pub type_name: &'a str,
+    pub package: &'a str,
+    pub node: &'a str,
+    pub host: &'a str,
+    pub account: &'a str,
+    pub login: &'a Value,
+    pub accepts: bool,
+    pub check: Option<&'a str>,
+}
+
+pub(crate) fn relay_message(f: &RelayFacts<'_>) -> String {
+    let RelayFacts {
+        kind,
+        name,
+        type_name,
+        package,
+        node,
+        host,
+        account,
+        login,
+        accepts,
+        check,
+    } = f;
+    let ending = match login["return"].as_str() {
+        Some("device") => format!(
+            "The code to enter at {host} is shown in the engine's panel, never here; nothing comes back through this Interface."
+        ),
+        Some("service") => {
+            let page = login["page"].as_str().unwrap_or_default();
+            format!(
+                "The service's own page {page} receives the login's return, so nothing comes back through this Interface."
+            )
+        }
+        Some("redirect") if *accepts => {
+            let rhost = login["redirect"]["host"].as_str().unwrap_or_default();
+            let rpath = login["redirect"]["path"].as_str().unwrap_or_default();
+            format!(
+                "After you sign in, the browser is sent to an address on {rhost} with the path {rpath}. Where the browser runs on the node {node}'s machine, the login completes there; elsewhere, that address is what you bring back, and your Interface carries it or asks you to paste it."
+            )
+        }
+        Some("page") if *accepts => {
+            let page = login["page"].as_str().unwrap_or_default();
+            format!(
+                "After you sign in, the page {page} shows a code: that code is what you bring back, and you paste it into your Interface."
+            )
+        }
+        _ => format!(
+            "Nothing comes back through this Interface: complete the login on the node {node}'s machine, at it or over a connection Conduit manages, by remote desktop or by SSH, pasting the code or forwarding the port."
+        ),
+    };
+    let check = check
+        .map(|check| format!("The last account check ended {check}, so whether the account is signed in is not known; it counts as no account yet (PND-011). "))
+        .unwrap_or_default();
+    format!(
+        "Sign in the {kind} {name} (Type {type_name}, package {package}) on the node {node} at {host}, as the account {account}. {check}{ending}"
+    )
+}
+
+pub(crate) fn keep_sign_in_wait(v: &mut Value, login: &str, url: &str, plain: bool) {
+    v["sign_in_wait"] = json!({"login":login,"url":url,"plain":plain});
+}
+
+pub(crate) fn relay_output(
+    t: &mut Transition,
+    sign_in: &str,
+    time: &str,
+    c: &Context,
+) -> Result<()> {
+    let i = t
+        .state
+        .invocations
+        .iter()
+        .position(|v| v["id"] == sign_in)
+        .ok_or("sign-in invocation missing")?;
+    let v = &t.state.invocations[i];
+    let instance = access::object(&t.state, &v["object"]).ok_or("sign-in instance missing")?;
+    let w = &v["sign_in_wait"];
+    let login_name = w["login"].as_str().ok_or("sign-in wait missing")?;
+    let url = w["url"].as_str().ok_or("sign-in wait missing")?;
+    let plain = w["plain"].as_bool().ok_or("sign-in wait missing")?;
+    let ExpectedAccount::Set { account, .. } = expected_account(instance, c)? else {
+        return Err("PND-010: sign-in expected account missing".into());
+    };
+    let (ty, package) = inventory::instance_type_and_package(instance, c)?;
+    let login = ty["spec"]["signIn"]["logins"]
+        .as_array()
+        .and_then(|logins| logins.iter().find(|login| login["name"] == login_name))
+        .ok_or("sign-in login missing")?;
+    let node = inventory::object(
+        access::object(&t.state, &instance["placement"]).ok_or("sign-in node missing")?,
+    );
+    let parsed = Url::parse(url).map_err(|_| "sign-in URL did not parse")?;
+    let host = parsed.host_str().ok_or("sign-in URL host missing")?;
+    let accepts = accepts_return(login, plain);
+    let expires = w["expires"]
+        .as_str()
+        .map(str::to_owned)
+        .or_else(|| wait_end(time))
+        .ok_or("sign-in expiry could not be determined")?;
+    let attempt = v["attempt"].as_u64().ok_or("sign-in attempt missing")?;
+    let meta = login_meta(login, &node, accepts);
+    let check = v["sign_in"]["check"].as_str().map(str::to_owned);
+    let message = relay_message(&RelayFacts {
+        kind: instance["kind"]
+            .as_str()
+            .ok_or("sign-in instance kind missing")?,
+        name: instance["name"]
+            .as_str()
+            .ok_or("sign-in instance name missing")?,
+        type_name: ty["metadata"]["name"]
+            .as_str()
+            .ok_or("sign-in Type name missing")?,
+        package: &package,
+        node: node["name"].as_str().ok_or("sign-in node missing")?,
+        host,
+        account,
+        login,
+        accepts,
+        check: check.as_deref(),
+    });
+    let output = InputRequired {
+        invocation: sign_in.to_owned(),
+        attempt,
+        request: relay_request(&message, url),
+        meta: json!({format!("{}signInLogin", c.meta_prefix):meta}),
+        expires: expires.clone(),
+    };
+    let mut facts =
+        json!({"invocation":sign_in,"attempt":attempt,"login":login_name,"expires":expires});
+    if let Some(check) = check {
+        facts["check"] = json!(check);
+    }
+    let v = &mut t.state.invocations[i];
+    v["sign_in_wait"]["attempt"] = json!(attempt);
+    v["sign_in_wait"]["expires"] = json!(expires);
+    v["sign_in_wait"]["meta"] = meta;
+    v["sign_in"]["phase"] = json!("retry-pending");
+    t.input_required.push(output);
+    t.decisions.push(decision(
+        "relay-sign-in-url",
+        &["IFC-049", "IFC-010", "PND-010"],
+        &["DL18"],
+        facts,
+        vec![],
+    ));
+    t.reply = json!({"pending":true,"invocation":sign_in});
+    Ok(())
+}
+
 pub(crate) fn hook_input(
     t: &mut Transition,
     a: &mut Allocation<'_>,
@@ -577,16 +975,20 @@ pub(crate) fn hook_input(
         .position(|v| v["id"] == *parent)
         .ok_or("missing sign-in parent")?;
     let invocation = t.state.invocations[p]["id"].clone();
-    if t.state.invocations[p]["state"] != "in-progress"
-        || t.state.invocations[p]["sign_in"]["phase"] != "sign-in-pending"
-    {
-        finish_hook_input(
-            t,
-            a,
-            c,
-            i,
+    let parent = &t.state.invocations[p];
+    let drop_cause = if parent["state"] != "in-progress" {
+        Some(
             "The sign-in hook asked for input after its sign-in.v1 had ended, so nothing was relayed and no sign-in action was raised.",
-        )?;
+        )
+    } else if parent["sign_in"]["phase"] != "sign-in-pending" {
+        Some(
+            "The sign-in hook asked for input again after its URL request was relayed, so nothing was relayed again and sign-in.v1 goes on waiting.",
+        )
+    } else {
+        None
+    };
+    if let Some(cause) = drop_cause {
+        finish_hook_input(t, a, c, i, cause)?;
         t.decisions.push(decision(
             "drop-sign-in-hook-answer",
             &["IFC-010", "OPS-027"],
@@ -605,14 +1007,29 @@ pub(crate) fn hook_input(
                 .unwrap();
             let logins = stated_logins(instance, c)?;
             let asked = t.state.invocations[p]["asked_login"].as_str();
-            let matched = url_match(url, &logins, asked);
-            if matched.is_ok() {
-                keep_hook_input(&mut t.state.invocations[i], &key, state.as_deref());
-            }
-            Some(matched.map_err(|(check, field, login)| HookAnswerFault::Url(check, field, login)))
+            Some(
+                url_match(url, &logins, asked)
+                    .map(|login| (login, key, state, url))
+                    .map_err(|(check, field, login)| HookAnswerFault::Url(check, field, login)),
+            )
         }
         (Some(_), Err((check, field))) => Some(Err(HookAnswerFault::Form(check, field))),
         (None, _) => None,
+    };
+    let fault = match matched {
+        Some(Ok((login, key, state, url))) => {
+            let plain = t.state.invocations[i]["plain"] == true;
+            keep_hook_input(&mut t.state.invocations[i], &key, state.as_deref());
+            keep_sign_in_wait(&mut t.state.invocations[p], &login, url, plain);
+            return relay_output(
+                t,
+                invocation.as_str().ok_or("sign-in has no ID")?,
+                &a.evidence.time,
+                c,
+            );
+        }
+        Some(Err(fault)) => Some(fault),
+        None => None,
     };
     finish_hook_input(
         t,
@@ -622,19 +1039,10 @@ pub(crate) fn hook_input(
         "The hook asked for input that sign-in.v1 did not relay, so whether the login it began is still waiting is not known.",
     )?;
     record_hook_part(t, p, &hook, "unknown");
-    let login = match matched {
-        Some(Ok(login)) => login,
-        Some(Err(fault)) => return refuse_hook_answer(t, a, c, p, &hook, fault),
-        None => return end_sign_in(t, a, c, p, "failed", "PND-003", RETIRED_DURING_HOOK),
-    };
-    t.decisions.push(decision(
-        "end-sign-in-unrelayed",
-        &["PND-010", "IFC-010", "IFC-049"],
-        &[],
-        json!({"invocation":invocation,"hook":hook,"login":login}),
-        vec![],
-    ));
-    end_sign_in(t, a, c, p, "failed", "PND-010", HOOK_UNRELAYED_CAUSE)
+    match fault {
+        Some(fault) => refuse_hook_answer(t, a, c, p, &hook, fault),
+        None => end_sign_in(t, a, c, p, "failed", "PND-003", RETIRED_DURING_HOOK),
+    }
 }
 
 fn finish_hook_input(
@@ -759,6 +1167,42 @@ pub(crate) fn answer_and_lift(
     (answered, lifted)
 }
 
+pub(crate) fn end_hook_wait(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    why: &str,
+) -> Result<()> {
+    let parent = t.state.invocations[i]["id"].clone();
+    let operation = c.qualified("sign-in-hook.v1");
+    let cause =
+        format!("The sign-in.v1 invocation it serves ended {why}, so its retry is never sent.");
+    for p in 0..t.state.invocations.len() {
+        let part = &t.state.invocations[p];
+        if part["setup_parent"] == parent
+            && part["operation"] == operation
+            && part["state"] == "in-progress"
+            && part.get("hook_input").is_some()
+        {
+            let hook = part["id"].clone();
+            let diagnostic = explain::outcome_diagnostic(part, "unknown", "PND-010", &cause)?;
+            requests::finish(
+                t,
+                a,
+                c,
+                p,
+                "unknown",
+                json!({}),
+                json!([]),
+                Some(vec![diagnostic]),
+            )?;
+            record_hook_part(t, i, &hook, "unknown");
+        }
+    }
+    Ok(())
+}
+
 pub(crate) fn signed_in(
     t: &mut Transition,
     a: &mut Allocation<'_>,
@@ -766,6 +1210,7 @@ pub(crate) fn signed_in(
     i: usize,
     found: &str,
 ) -> Result<()> {
+    end_hook_wait(t, a, c, i, "succeeded")?;
     let invocation = t.state.invocations[i].clone();
     let instance = invocation["object"]
         .as_str()
@@ -814,6 +1259,7 @@ fn end_sign_in(
     rule: &str,
     cause: &str,
 ) -> Result<()> {
+    end_hook_wait(t, a, c, i, &format!("{outcome} under {rule}"))?;
     let diagnostic = explain::outcome_diagnostic(&t.state.invocations[i], outcome, rule, cause)?;
     requests::finish(
         t,
@@ -1295,6 +1741,197 @@ mod tests {
     }
 
     #[test]
+    fn sign_in_relay_message_and_wait() {
+        let logins = fixture_logins();
+        let [browser, device] = logins.as_slice() else {
+            panic!("expected browser and device logins");
+        };
+        let page = json!({
+            "name":"code","return":"page","authorization":"https://example.org/authorize",
+            "clientId":"placeholder-signed-agent","page":"https://example.org/code","carried":true
+        });
+        let service = json!({
+            "name":"service","return":"service","authorization":"https://example.org/authorize",
+            "clientId":"placeholder-signed-agent","page":"https://example.org/done"
+        });
+        let mut local = browser.clone();
+        local["carried"] = json!(false);
+        for (login, plain, accepts) in [
+            (browser, false, true),
+            (browser, true, false),
+            (&local, false, false),
+            (&page, false, true),
+            (device, false, false),
+            (&service, false, false),
+        ] {
+            assert_eq!(accepts_return(login, plain), accepts);
+        }
+        for (login, accepts, message) in [
+            (
+                browser,
+                true,
+                "Sign in the Agent signed (Type signed-agent.v1, package example.org/sign-in-lapse) on the node local at example.org, as the account primary-account. After you sign in, the browser is sent to an address on 127.0.0.1 with the path /callback. Where the browser runs on the node local's machine, the login completes there; elsewhere, that address is what you bring back, and your Interface carries it or asks you to paste it.",
+            ),
+            (
+                browser,
+                false,
+                "Sign in the Agent signed (Type signed-agent.v1, package example.org/sign-in-lapse) on the node local at example.org, as the account primary-account. Nothing comes back through this Interface: complete the login on the node local's machine, at it or over a connection Conduit manages, by remote desktop or by SSH, pasting the code or forwarding the port.",
+            ),
+            (
+                &page,
+                true,
+                "Sign in the Agent signed (Type signed-agent.v1, package example.org/sign-in-lapse) on the node local at example.org, as the account primary-account. After you sign in, the page https://example.org/code shows a code: that code is what you bring back, and you paste it into your Interface.",
+            ),
+            (
+                device,
+                false,
+                "Sign in the Agent signed (Type signed-agent.v1, package example.org/sign-in-lapse) on the node local at example.org, as the account primary-account. The code to enter at example.org is shown in the engine's panel, never here; nothing comes back through this Interface.",
+            ),
+            (
+                &service,
+                false,
+                "Sign in the Agent signed (Type signed-agent.v1, package example.org/sign-in-lapse) on the node local at example.org, as the account primary-account. The service's own page https://example.org/done receives the login's return, so nothing comes back through this Interface.",
+            ),
+        ] {
+            let actual = relay_message(&RelayFacts {
+                kind: "Agent",
+                name: "signed",
+                type_name: "signed-agent.v1",
+                package: "example.org/sign-in-lapse",
+                node: "local",
+                host: "example.org",
+                account: "primary-account",
+                login,
+                accepts,
+                check: None,
+            });
+            assert_eq!(actual, message);
+            assert!(!actual.contains("Open the device page"));
+        }
+        assert_eq!(
+            relay_message(&RelayFacts {
+                kind: "Agent",
+                name: "signed",
+                type_name: "signed-agent.v1",
+                package: "example.org/sign-in-lapse",
+                node: "local",
+                host: "example.org",
+                account: "primary-account",
+                login: device,
+                accepts: false,
+                check: Some("failed"),
+            }),
+            "Sign in the Agent signed (Type signed-agent.v1, package example.org/sign-in-lapse) on the node local at example.org, as the account primary-account. The last account check ended failed, so whether the account is signed in is not known; it counts as no account yet (PND-011). The code to enter at example.org is shown in the engine's panel, never here; nothing comes back through this Interface."
+        );
+        assert_eq!(
+            relay_request("M", "https://example.org/x"),
+            json!({"method":"elicitation/create","params":{"mode":"url","message":"M","url":"https://example.org/x"}})
+        );
+        let node = json!({"kind":"Resource","name":"local","id":"n1"});
+        assert_eq!(
+            login_meta(browser, &node, true),
+            json!({"name":"browser","return":"redirect","node":{"kind":"Resource","name":"local","id":"n1"},"acceptsReturn":true})
+        );
+        assert_eq!(
+            wait_end("2026-11-12T12:00:00Z").as_deref(),
+            Some("2026-11-12T12:10:00Z")
+        );
+        assert_eq!(
+            wait_end("2026-11-12T23:55:00+02:00").as_deref(),
+            Some("2026-11-12T22:05:00Z")
+        );
+        assert_eq!(wait_end("soon"), None);
+    }
+
+    #[test]
+    fn sign_in_polling_answers() {
+        for (responses, action) in [
+            (json!({"url":{"action":"accept"}}), Some("accept")),
+            (
+                json!({"url":{"action":"accept","content":{}}}),
+                Some("accept"),
+            ),
+            (json!({"url":{"action":"decline"}}), Some("decline")),
+            (json!({"url":{"action":"cancel"}}), Some("cancel")),
+            (json!({"url":{"action":"ACCEPT"}}), None),
+            (json!({"url":{}}), None),
+            (json!({"url":"accept"}), None),
+            (json!({}), None),
+            (json!({"login":{"action":"accept"}}), None),
+            (
+                json!({"url":{"action":"accept"},"login":{"action":"accept"}}),
+                None,
+            ),
+            (json!(null), None),
+        ] {
+            assert_eq!(super::url_action(&responses), action);
+        }
+        for (found, first, none_yet) in [
+            (json!(null), json!("other-account"), true),
+            (json!(null), json!(null), true),
+            (json!("other-account"), json!("other-account"), true),
+            (json!("OTHER-ACCOUNT"), json!("other-account"), true),
+            (json!("third-account"), json!("other-account"), false),
+            (json!("other-account"), json!(null), false),
+            (json!(7), json!(null), false),
+        ] {
+            assert_eq!(no_account_yet(&found, &first), none_yet);
+        }
+        for (outcome, outputs, first, poll) in [
+            (
+                "succeeded",
+                json!({"account":"Primary-Account"}),
+                json!(null),
+                Poll::Expected("Primary-Account".into()),
+            ),
+            (
+                "succeeded",
+                json!({"account":null}),
+                json!("other-account"),
+                Poll::NoneYet,
+            ),
+            (
+                "succeeded",
+                json!({"account":null}),
+                json!(null),
+                Poll::NoneYet,
+            ),
+            (
+                "succeeded",
+                json!({"account":"OTHER-ACCOUNT"}),
+                json!("other-account"),
+                Poll::NoneYet,
+            ),
+            ("failed", json!({}), json!(null), Poll::NoneYet),
+            ("unknown", json!({}), json!(null), Poll::NoneYet),
+            (
+                "succeeded",
+                json!({"account":"third-account"}),
+                json!("other-account"),
+                Poll::Other,
+            ),
+            (
+                "succeeded",
+                json!({"account":"other-account"}),
+                json!(null),
+                Poll::Other,
+            ),
+            ("unavailable", json!({}), json!(null), Poll::NotKnown),
+            (
+                "succeeded",
+                json!({"account":7}),
+                json!(null),
+                Poll::NotKnown,
+            ),
+        ] {
+            assert_eq!(
+                poll_check(outcome, &outputs, "primary-account", &first),
+                poll
+            );
+        }
+    }
+
+    #[test]
     fn sign_in_url_match() {
         const CC: &str = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
         const ST: &str = "Wt3qK8xZp_LmN2vB-c.Y7h~R";
@@ -1639,7 +2276,7 @@ mod tests {
         });
         contracts.insert("sign-in-hook.v1".into(), sign_in_hook.clone());
         let indexes = json!({"core":contracts});
-        let instance = json!({"id":"s1","name":"s1","kind":"Agent","owner":"f",
+        let instance = json!({"id":"s1","name":"s1","kind":"Agent","owner":"f","placement":"n1",
             "type":c.qualified("type.v1"),
             "held":{"environment":environment,"indexes":indexes,"contexts":{},"scope":"core"},
             "config":{"account":"primary-account"}});
@@ -1663,11 +2300,74 @@ mod tests {
             objects: vec![
                 json!({"id":"r","kind":"Interface","from":c.qualified("root")}),
                 instance,
+                json!({"id":"n1","kind":"Resource","name":"local"}),
             ],
             invocations: vec![parent, part],
             ..State::default()
         };
         (transition(state), c)
+    }
+
+    fn assert_device_relay(t: &Transition, c: &Context) {
+        let parent = &t.state.invocations[0];
+        let part = &t.state.invocations[1];
+        assert_eq!(part["state"], "in-progress");
+        assert_eq!(
+            part["hook_input"],
+            json!({"key":"sign-in","request_state":"opaque-hook-state-0001"})
+        );
+        assert_eq!(parent["state"], "in-progress");
+        assert_eq!(parent["sign_in"]["phase"], "retry-pending");
+        assert_eq!(parent["sign_in_wait"]["url"], "https://example.org/device");
+        assert_eq!(parent["sign_in_wait"]["expires"], "2026-11-09T13:10:00Z");
+        assert_eq!(t.reply, json!({"pending":true,"invocation":"g1"}));
+        assert_eq!(t.input_required.len(), 1);
+        let entry = &t.input_required[0];
+        assert_eq!(
+            entry.request["params"],
+            json!({
+                "mode":"url",
+                "message":"Sign in the Agent s1 (Type type.v1, package test.core) on the node local at example.org, as the account primary-account. The code to enter at example.org is shown in the engine's panel, never here; nothing comes back through this Interface.",
+                "url":"https://example.org/device"
+            })
+        );
+        assert_eq!(
+            entry.meta[format!("{}signInLogin", c.meta_prefix)],
+            json!({"name":"device","return":"device","node":{"kind":"Resource","name":"local","id":"n1"},"acceptsReturn":false})
+        );
+        assert_hook_input_private(t);
+        let entry = serde_json::to_string(entry).unwrap();
+        for value in ["opaque-hook-state-0001", "Open the device page."] {
+            assert!(!entry.contains(value));
+        }
+    }
+
+    fn assert_hook_input_private(t: &Transition) {
+        assert!(t.state.pending_actions.is_empty());
+        assert!(t.state.sign_in_holds.is_empty());
+        assert!(t.external_intents.is_empty());
+        assert!(
+            !t.decisions
+                .iter()
+                .any(|d| d.action == "raise-sign-in-action")
+        );
+        let facts: Vec<_> = t.decisions.iter().map(|d| &d.facts).collect();
+        let surfaced = serde_json::to_string(&json!([
+            t.reply,
+            t.records,
+            t.request_replies,
+            t.external_intents,
+            t.state.records,
+            facts
+        ]))
+        .unwrap();
+        for value in [
+            "opaque-hook-state-0001",
+            "example.org/device",
+            "Open the device page.",
+        ] {
+            assert!(!surfaced.contains(value));
+        }
     }
 
     #[test]
@@ -1685,32 +2385,8 @@ mod tests {
             .unwrap();
         };
         let absent = |t: &Transition| {
-            assert!(t.state.pending_actions.is_empty());
-            assert!(t.state.sign_in_holds.is_empty());
-            assert!(t.external_intents.is_empty());
+            assert_hook_input_private(t);
             assert!(t.input_required.is_empty());
-            assert!(
-                !t.decisions
-                    .iter()
-                    .any(|d| d.action == "raise-sign-in-action")
-            );
-            let facts: Vec<_> = t.decisions.iter().map(|d| &d.facts).collect();
-            let surfaced = serde_json::to_string(&json!([
-                t.reply,
-                t.records,
-                t.request_replies,
-                t.external_intents,
-                t.state.records,
-                facts
-            ]))
-            .unwrap();
-            for value in [
-                "opaque-hook-state-0001",
-                "example.org/device",
-                "Open the device page.",
-            ] {
-                assert!(!surfaced.contains(value));
-            }
         };
         let part_ended = |t: &Transition| {
             let part = &t.state.invocations[1];
@@ -1747,17 +2423,13 @@ mod tests {
 
         let mut plain = base.clone();
         complete(&mut plain, url_action());
-        part_ended(&plain);
-        sign_in_failed(&plain, "PND-010", HOOK_UNRELAYED_CAUSE);
-        absent(&plain);
+        assert_device_relay(&plain, &c);
 
         let mut keyed = base.clone();
         keyed.state.invocations[1]["plain"] = json!(false);
         complete(&mut keyed, url_action());
-        part_ended(&keyed);
-        assert_eq!(keyed.state.invocations[0], plain.state.invocations[0]);
-        assert_eq!(keyed.reply, plain.reply);
-        absent(&keyed);
+        assert_device_relay(&keyed, &c);
+        assert_eq!(keyed.state.invocations[0]["sign_in_wait"]["plain"], false);
 
         let mut malformed = base.clone();
         let mut action = url_action();
@@ -1771,7 +2443,7 @@ mod tests {
         );
         absent(&malformed);
 
-        let mut cancelled = base;
+        let mut cancelled = base.clone();
         cancelled.state.invocations[0]["state"] = json!("unknown");
         cancelled.state.invocations[0]["ended"] =
             json!({"time":evidence().time,"outcome":"unknown"});
@@ -1786,6 +2458,25 @@ mod tests {
                 .any(|d| d.action == "drop-sign-in-hook-answer")
         );
         absent(&cancelled);
+
+        let mut waiting = base;
+        waiting.state.invocations[0]["sign_in"]["phase"] = json!("retry-pending");
+        keep_hook_input(
+            &mut waiting.state.invocations[1],
+            "sign-in",
+            Some("opaque-hook-state-0001"),
+        );
+        let parent = waiting.state.invocations[0].clone();
+        complete(&mut waiting, url_action());
+        part_ended(&waiting);
+        assert_eq!(waiting.state.invocations[0], parent);
+        assert!(
+            waiting
+                .decisions
+                .iter()
+                .any(|d| d.action == "drop-sign-in-hook-answer")
+        );
+        absent(&waiting);
     }
 
     #[test]
@@ -1890,24 +2581,20 @@ mod tests {
                     "invocation":"g1","hook":"h1","check":check,"field":field,"login":login
                 })]
             );
-            assert!(
-                !t.decisions
-                    .iter()
-                    .any(|d| d.action == "end-sign-in-unrelayed")
-            );
+            assert!(!t.decisions.iter().any(|d| d.action == "relay-sign-in-url"));
         }
 
         let mut matched = base;
         complete(&mut matched, url_action());
-        assert_ended(&matched, "PND-010", HOOK_UNRELAYED_CAUSE);
-        let unrelayed = matched
+        assert_device_relay(&matched, &c);
+        let relayed = matched
             .decisions
             .iter()
-            .find(|d| d.action == "end-sign-in-unrelayed")
+            .find(|d| d.action == "relay-sign-in-url")
             .unwrap();
         assert_eq!(
-            unrelayed.facts,
-            json!({"invocation":"g1","hook":"h1","login":"device"})
+            relayed.facts,
+            json!({"invocation":"g1","attempt":1,"login":"device","expires":"2026-11-09T13:10:00Z"})
         );
         assert!(
             !matched

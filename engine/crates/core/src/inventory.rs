@@ -314,13 +314,22 @@ pub(crate) fn provenance(s: &State, v: &Value, c: &Context) -> Result<Value> {
     )
 }
 pub(crate) fn instance_type(o: &Value, c: &Context) -> Result<Value> {
+    instance_type_and_package(o, c).map(|(ty, _)| ty)
+}
+
+pub(crate) fn instance_type_and_package(o: &Value, c: &Context) -> Result<(Value, String)> {
     let published = crate::registration::publication_object(o, c)?;
-    let (_, _, ty) = crate::schemas::operation(
+    let (environment, scope, ty) = crate::schemas::operation(
         &published,
         o["type"].as_str().ok_or("Agent Type absent")?,
         &c.core_package,
     )?;
-    Ok(ty)
+    let package = &environment.scopes[&scope];
+    let name = match &package.version {
+        Some(version) => format!("{} {version}", package.address),
+        None => package.address.clone(),
+    };
+    Ok((ty, name))
 }
 
 fn own_tools(o: &Value, c: &Context) -> Result<Value> {

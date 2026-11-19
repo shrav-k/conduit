@@ -1211,7 +1211,7 @@ Below, `Q(x)` is `c.qualified(x)`, S is the `sign-in.v1` invocation and SI its m
       unbuilt step, not a reading of PND-010.", in the same line, become:
 
       ```text
-      From order 048a-5ef, a URL elicitation whose URL passes IFC-049's checks is relayed to the Interface that asked: one input request holding only `mode`, the engine's message and the URL, and in the result's own `_meta` a `signInLogin` naming the login, its return, the instance's node and whether a return is taken (PND-013's first check). The message names the instance, its Type and package, its node, the URL's host, the expected account and what the person brings back: for a device login, that the code is shown in the engine's panel; for a service login, that its page receives the return; and for a login whose return is not taken, that nothing comes back through the Interface and the login is completed on the node's machine. The hook part stays in progress, and `sign-in.v1` waits for the person's retry for ten minutes from the step that first relays the URL: every input request of the invocation carries that instant as its expiry, and the shell refuses its requestState from then on. Each accepted retry polls `account-hook.v1`: the expected account, compared ignoring ASCII case, ends `sign-in.v1` succeeded as the first check does; no account, the account the first check found, or a poll that ends failed or unknown counts as no account yet and answers another input request with the same expiry, for which the shell issues a fresh requestState; and a poll that ends with a reason ends it failed (PND-011). A decline or cancel ends it failed under PND-010, dispatching no part, and any other response ends it failed under IFC-049; a retry that names no `sign-in.v1` waiting at that attempt for that Interface is refused invalid under IFC-049 and recorded. Whenever `sign-in.v1` ends, its waiting hook part ends unknown, and its final result holds `signInLogin`. The URL is kept with the waiting invocation until it ends, and in no record. Until order 048a-5gh, another account found while polling ends `sign-in.v1` failed with no sign-out, and nothing ends the invocation at its expiry: a sign-in that gets no retry stays in progress until a restart ends it unknown (DL6), and a further `sign-in.v1` of the instance reports conflict meanwhile. A return that a retry carries is not read, and no retry of the hook is sent: PND-013's checks of a return come after the dogfood path (ruling 88).
+      From order 048a-5ef, a URL elicitation whose URL passes IFC-049's checks is relayed to the Interface that asked: one input request holding only `mode`, the engine's message and the URL, and in the result's own `_meta` a `signInLogin` naming the login, its return, the instance's node and whether a return is taken (PND-013's first check). The message names the instance, its Type and package, its node, the URL's host, the expected account and what the person brings back: for a device login, that the code is shown in the engine's panel; for a service login, that its page receives the return; and for a login whose return is not taken, that nothing comes back through the Interface and the login is completed on the node's machine. The hook part stays in progress, and `sign-in.v1` waits for the person's retry for ten minutes from the step that first relays the URL: every input request of the invocation carries that instant as its expiry, and the shell refuses its requestState from then on. Each accepted retry polls `account-hook.v1`: the expected account, compared ignoring ASCII case, ends `sign-in.v1` succeeded as the first check does; no account, the account the first check found, or a poll that ends failed or unknown counts as no account yet and answers another input request with the same expiry, for which the shell issues a fresh requestState; and a poll that ends with a reason ends it failed (PND-011). A decline or cancel ends it failed under PND-010, dispatching no part, and any other response ends it failed under IFC-049; a retry that names no `sign-in.v1` waiting at that attempt for that Interface is refused invalid under IFC-049 and recorded. Whenever `sign-in.v1` ends, but by a cancel of its request, its waiting hook part ends unknown; a cancelled sign-in leaves it in progress until a restart ends it (DL6), and its final result holds `signInLogin`. The URL is kept with the waiting invocation until it ends, and in no record. Until order 048a-5gh, another account found while polling ends `sign-in.v1` failed with no sign-out, and nothing ends the invocation at its expiry: a sign-in that gets no retry stays in progress until a restart ends it unknown (DL6), and a further `sign-in.v1` of the instance reports conflict meanwhile. A return that a retry carries is not read, and no retry of the hook is sent: PND-013's checks of a return come after the dogfood path (ruling 88).
       ```
 
     - In the section "Keys per hook and the sign-in fixes: ruling 86 (orders 207 and 209)":
@@ -1344,12 +1344,12 @@ RUST_TEST_THREADS=4 cargo test --release -p conduit-shell forged_retry_state_is_
 RUST_TEST_THREADS=4 cargo test --release -p conduit-shell first_start_presents_final_lists
 ```
 
-The third reports three more tests passed than the start's run, 0 failed: the new
-`sign_in_relay_message_and_wait` and `sign_in_polling_answers`, and `requests.rs`'s renamed
-`respond_without_a_waiting_sign_in_is_refused_and_recorded`, whose new name holds `sign_in`;
-report both counts. The fourth
-reports 1 passed. The fifth passes as at the start; report its count. The pieces tool prints
-`Nothing to move.` The nine single-case runner commands each end `1 cases passed`;
+The third reports four more tests passed than the start's run, 0 failed: the new
+`sign_in_relay_message_and_wait` and `sign_in_polling_answers`, `requests.rs`'s renamed
+`respond_without_a_waiting_sign_in_is_refused_and_recorded`, whose new name holds `sign_in`, and
+`requests.rs`'s `succeeded_repeat_keeps_sign_in_login` (the read's R3); report both counts.
+The fourth reports 1 passed. The fifth passes as at the start; report its count. The pieces tool
+prints `Nothing to move.` The nine single-case runner commands each end `1 cases passed`;
 `requests-sign-in-` gives two more cases than at the start, every one passing, and `requests-` two
 more cases than at the start, with the start's expected failures, each still failing; report each
 count. The shell tests pass. If any other case, or any shell, CLI or experiment test, fails because
@@ -1458,9 +1458,10 @@ tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -c 'an accepted retry reaches th
 ```
 
 `grep -c '"respond",' engine/crates/conformance/src/portable.rs` prints 2, and
-`grep -c 'mark(c, "signInLogin")' engine/crates/core/src/requests.rs` prints one more than
+`grep -c 'mark(c, "signInLogin")' engine/crates/core/src/requests.rs` prints two more than
 `git show HEAD:engine/crates/core/src/requests.rs | grep -c 'mark(c, "signInLogin")'`: 048a-5d's
-in `dispatch_intent`, and decision 5's in `finish`. These print, in order,
+in `dispatch_intent`, decision 5's in `finish`, and the read's R3 in `invoke_inner`'s repeat path.
+These print, in order,
 `['$hook1', '$sign1', '$hook2', '$sign2', '$hook3', '$sign3', '$hook5'] ['respond', 'respond', 'respond'] L1`,
 `['$hook1', 'respond', '$hook2', L2] $sign1`, `L3 $signhook1 group.inspect.v1`,
 `L4 respond L5 respond L6 respond respond L7 respond`, and
@@ -1554,4 +1555,236 @@ with it orders 209 and 048a-5d before it, and then only once the coordinator has
 
 ## Record
 
-Not yet run.
+Run on 2026-11-19, from about 18:48 to 19:24 UTC, on the Mac, stacked on `59ddb296` (order
+048a-5d2's round 1, itself on 048a-5d's and 209's), against this order as refreshed on
+`origin/main`, in one round: the worker (1837 s) and a fresh Codex verifier (320 s). The worker
+built decisions 1 to 13 in the files of Scope: in `sign_in.rs`, `accepts_return`, `wait_end`,
+`relay_request`, `login_meta`, `RelayFacts` and `relay_message`, `url_action`, `no_account_yet`,
+`Poll` and `poll_check`, `keep_sign_in_wait`, `relay_output`, `end_hook_wait`, `waiting_for_retry`,
+`retried` and `poll_answered`, with `hook_input`'s passing branch relaying the URL and the hook part
+left in progress; in `inventory.rs`, `instance_type_and_package`; in `requests.rs`, the new
+`respond` and `finish`'s removal of the URL and its `signInLogin`; in `lib.rs`, the `Respond` arm
+and `reply_context`; the two new cases `requests-sign-in-url-relayed` and
+`requests-sign-in-polling`, the seven cases decision 12 names, the two schema pieces, `index.yaml`,
+the README's sentence, the five places of `engine/CONFORMANCE.md` and the tool's
+`engine/STANDING.md`. Its own choices: the instance lookup, the clearing of `SignInUndone` and the
+retirement check shared by the first check and the poll; the device relay's and privacy's assertions
+shared by 048a-5d's two unit tests; and the cases generated from the order's steps and compared with
+their sources. It reported the start's counts (24 `sign_in` tests, 15 and 82 cases), and after the
+build 27 tests, 17 and 84 cases with the start's 2 expected failures, the engine's suite at 384
+passed and 4 ignored, and the spike's 9. It could not make the stock `vector_delta.py` pass: it
+stopped on a recursion, and with a guard in memory it gave 11553 changes, 0 flips, 0 undeclared and
+0 errors.
+
+The verifier, which ran the cases with the built runner (17 and 84, 2 expected failures) and rebuilt
+nothing, found four musts and four shoulds: V1, that the relay could pass on personal data in a
+query parameter that 048a-5d2's match does not check; V2, that a repeat of a sign-in that succeeded
+after a relay answers without `signInLogin`; V3, that a poll that ends failed with no diagnostic is
+answered by another relay that explains nothing, against PND-011; V4, the stock `vector_delta.py`'s
+recursion; V5, that DL18's row says every ending of `sign-in.v1` ends its waiting hook part, which a
+cancel of the request does not; V6, that the redirect relay's step does not pin the request's whole
+key set; V7, that the stale retry's step does not show `$signin2` untouched; and V8, that the
+polling case does not pin the first relay's expiry.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2, as ruling 87 amends it),
+on `1b22f371`. It ran fmt and clippy, the unit tests (27 `sign_in`, 1 `respond`, 4 `portable`, the
+core's whole library 143), the pieces tool (`Nothing to move.`), the nine single cases (1 each),
+`requests-sign-in-` (17), `requests-` (84, 2 expected failures), `inventory-` (3) and `setup-` (43),
+the shell's three tests and the spike (9), the order's four mutations (each failed at its named step
+and passed after a `cp` restore), the tools' checks (Errors: 0 each) and unit tests (129, OK), the
+order's greps, one-liners and standing rows, and the stock `vector_delta.py` (exit 2), and on a
+scratch copy guarded as R1 says (11553 changes, 0 flips, 0 undeclared, 0 errors, every change in the
+two added cases or the seven named). It refuted V1 (decision 4 relays the URL as the hook gives it
+after 048a-5d2's match, whose order carries the login hint to the coordinator as an open choice), V6
+(`assert_device_relay` asserts the whole `params`, and `relay_request` is the only constructor), V7
+(the step is the order's own, and the refusal changes no invocation, as the renamed unit test
+asserts) and V8 (step 14's expiry, 12:10 at 12:01, shows the first relay's instant kept). It found
+two musts and two shoulds:
+
+- R1 (V4): the stock `tools/vector_delta.py` recursed where an empty map under a step met a missing
+  value, since its fallback for a container called `differences` again with the same arguments;
+  `tools/gate.py` runs the same tool and would fail this merge.
+- R2 (V3, with the coordinator's amendment carried from 048a-5d's reader): an account check, the
+  first or a poll, that ends failed or unknown without diagnostics had its uncertainty explained
+  nowhere, against PND-011.
+- R3 (V2, downgraded to a should): an idempotent repeat of a sign-in that ended after a relay
+  answered through `ended_reply` without `signInLogin`.
+- R4 (V5): DL18's row, the order's verbatim text, overstated which endings close the waiting hook
+  part.
+
+The fixer left the branch on `59ddb296`, without a rebase, and applied each finding:
+
+- R1: at the line the reader named, the fallback for a container under a step recurses only into a
+  non-empty map, `(isinstance(before, dict) and before) or (isinstance(after, dict) and after)`, and
+  `tools/tests/test_vector_delta.py` gains `test_added_empty_map_under_a_step`, which adds `"meta":
+  {}` to a step's input and expects one `add` at `/steps/0/input/meta`; it errors on the stock tool.
+  It lies outside this order's Scope (`tools/`) and landed as its own change (#420) before this
+  merge, so the branch's copy was dropped at the rebase.
+- R2, the coordinator's amendment as the reader wrote it: SI keeps the member `check`, set by
+  `unexplained_check` to the outcome where it is `failed` or `unknown` and otherwise null, in
+  `part_answered` beside `first_account` and in `poll_answered`'s `NoneYet` arm before
+  `relay_output`. `RelayFacts` gains `check: Option<&str>`; where it is set, `relay_message` puts
+  between the lead and the ending the sentence `The last account check ended {check}, so whether the
+  account is signed in is not known; it counts as no account yet (PND-011).`, and
+  `relay-sign-in-url`'s facts gain `"check"`. `check` joins `first_account`, `poll` and
+  `sign_in_wait` among the members decision 5 keeps in the state alone, but for these facts.
+  `sign_in_relay_message_and_wait` asserts the whole text for DEVICE-LOGIN with `Some("failed")`,
+  and passes `None` for the five as before; no case changes, since the cases assert no words
+  (IFC-050). Where S ends from the hook before any relay after a failed or unknown first check, its
+  end cause names only the hook; the second read's R3 carries this to the follow-up order after
+  the dogfood (see the rebase below).
+- R3: after `ended_reply` on a repeat, where the old invocation's `sign_in_wait.meta` is an object,
+  the reply's `_meta` holds it under `signInLogin`; the new test
+  `succeeded_repeat_keeps_sign_in_login` repeats a succeeded call without and with that member.
+  This lies outside the requests.rs functions that Scope names (respond, finish and the renamed
+  test); the coordinator took it as an amendment. With it, Done when's `sign_in` count is four more
+  than the start, and its count of `mark(c, "signInLogin")` in `requests.rs` two more, both amended
+  so by the coordinator.
+- R4: the row and decision 13 now read "Whenever `sign-in.v1` ends, but by a cancel of its request,
+  its waiting hook part ends unknown; a cancelled sign-in leaves it in progress until a restart ends
+  it (DL6), and its final result holds `signInLogin`."
+
+With R2's sentence taken out of `relay_message`, `sign_in_relay_message_and_wait` failed, and with
+R3's lines taken out, `succeeded_repeat_keeps_sign_in_login` failed; both passed once restored. On a
+scratch change of `requests-sign-in-polling`, restored with `cp` and compared clean, the relay's
+message at step 16, after a poll that found no account, held no such sentence, and at step 18, after
+a poll that ended failed, held it with `failed`. The fixer then ran, in the worktree: `cargo fmt
+--check` and `cargo clippy --all-targets -- -D warnings` (clean); the core's `sign_in` tests (28
+passed, the new repeat test's name holding `sign_in`), the `respond` test (1), the new test (1), the
+core's whole library (144) and `portable` (4); the pieces tool (`Nothing to move.`); the nine single
+cases (1 each), `requests-sign-in-` (17), `requests-` (84, 2 expected failures), `inventory-` (3)
+and `setup-` (43); the order's four mutations, each failing at its named step (9, 16, 18 and 20) and
+passing after a `cp` restore; the shell's three tests (2, 1 and 1) and the spike (9); the tools'
+checks, `check_docs.py` and `check_private_paths.py` among them (Errors: 0 each), and their unit
+tests (130, OK); `vector_delta.py 59ddb296 WORKTREE --declared
+docs/work-orders/048a5ef-declared.yaml` with the fixed tool (5 shapes, 11553 changes, 0 flips, 0
+undeclared, 0 errors, exit 0); and `git diff --check` (clean). Early on it ran one `git fetch` by
+mistake, which moved only a remote-tracking ref, not the branch.
+
+The same reader then reread the result, read-only, on `b43b2707` (the round and the fix, still on
+`59ddb296`), against the order as refreshed on `origin/main`, to which the fix's text applies with
+offsets only. It reran the checks above (fmt and clippy clean; 28 `sign_in`, 1 `respond`, the
+core's whole library 144, `portable` 4; `Nothing to move.`; the nine single cases, 17, 84 with the
+2 expected failures, `inventory-` 3, `setup-` 43, `records-` 17 and `first-start-` 8; the shell's
+three tests and the spike's 9; the four mutations at steps 9, 16, 18 and 20; Errors: 0 from the
+tools' checks and 130 unit tests OK; the stock `vector_delta.py` against `59ddb296`, now with the
+guard, 11553 changes, 0 flips, 0 undeclared, 0 errors, exit 0), took R3's lines out (the new test
+failed, and passed once restored), and on a scratch copy of `requests-sign-in-polling`, restored
+with `cp` and compared clean, made step 18's poll end unknown with an engine cause. It found every
+fix as described, and one must and four shoulds:
+
+- R1 (must): two Done-when lines, moved by R3 above, no longer held as worded: the `sign_in` count
+  is four more than the start (28 against 24), and `requests.rs`'s `mark(c, "signInLogin")` count
+  two more (3 against 1). The behaviour is right; the text was stale.
+- R2: the sentence's clause "and said why nowhere" was false where the account part carries an
+  engine cause: a keyed poll with no stated outcome ends unknown with an OPS-007 cause, and the
+  probe's relay still said it.
+- R3: where the first check ends failed or unknown and `sign-in.v1` then ends before any relay
+  (no `sign-in-hook.v1` implementation, or the hook's own endings), `end_sign_in` never reads SI's
+  `check`, so nothing explains that check's uncertainty; the coordinator's amendment covers only
+  this order's relay.
+- R4: R1 of the first read landed on `main` as its own change (#420), so the branch's `tools/`
+  hunks are now redundant and the Record's R1 bullet was out of date.
+- R5: the Record's R3 bullet did not say the fix lies outside the `requests.rs` functions that
+  Scope names.
+
+The fixer again left the branch on `59ddb296`, without a rebase, and applied each:
+
+- R1: Done when's two lines now read "four more tests passed than the start's run", adding
+  `requests.rs`'s `succeeded_repeat_keeps_sign_in_login` (the read's R3), and "prints 3, two more
+  than at the start", adding the read's R3 in `invoke_inner`'s repeat path; the R3 bullet above
+  records them as the coordinator's amendment.
+- R2: `relay_message`'s sentence and `sign_in_relay_message_and_wait`'s literal drop the clause, so
+  it reads "The last account check ended {check}, so whether the account is signed in is not known;
+  it counts as no account yet (PND-011).", as the R2 bullet above now quotes; no case changes
+  (IFC-050).
+- R3: of the reader's two options, carried as a finding to a later order (at the rebase, the
+  follow-up order after the dogfood; see below); no code changes here.
+- R4: the R1 bullet above now says the branch's copy was dropped at the rebase; without a rebase,
+  the fixer left that step to the coordinator: at the rebase onto `origin/main`, take `main`'s
+  `tools/vector_delta.py` and `tools/tests/test_vector_delta.py`, so the squash changes no `tools/`
+  file.
+- R5: the R3 bullet above gains the reader's sentence on Scope.
+
+The fixer then ran, in the worktree, after refreshing the kept copies in `target/`: `cargo fmt
+--check` and `cargo clippy --all-targets -- -D warnings` (clean); the core's `sign_in` tests (28),
+the `respond` test (1), `succeeded_repeat_keeps_sign_in_login` (1), the core's whole library (144)
+and `portable` (4); the pieces tool (`Nothing to move.`); the nine single cases (1 each),
+`requests-sign-in-` (17), `requests-` (84, 2 expected failures), `inventory-` (3) and `setup-`
+(43); the order's four mutations, each failing at its named step (9, 16, 18 and 20) and passing
+after a `cp` restore, compared clean; the shell's three tests (2, 1 and 1) and the spike (9); the
+tools' checks, `check_docs.py` and `check_private_paths.py` among them (Errors: 0 each), and their
+unit tests (130, OK); `vector_delta.py 59ddb296 WORKTREE --declared
+docs/work-orders/048a5ef-declared.yaml` (5 shapes, 11553 changes, 0 flips, 0 undeclared, 0 errors,
+exit 0); and `git diff --check` (clean). The rebase, the engine's full suite and the gate's run on
+this order's squash are the coordinator's at the merge.
+
+A third read, read-only, on `303b8a5a` (the round and both fixes, still on `59ddb296`), found no
+must and three shoulds, each the coordinator's at the rebase: R1, that the second fix's hunk on the
+`mark(c, "signInLogin")` line would not apply to the governing text on `main`; R2, that the
+branch's `tools/` copy was not yet dropped; and R3, that the second read's R3 was not in 048a-5gh's
+text. After order 048a-5d2 merged (#419, `f2d972df`), on 2026-11-19, the branch was rebased onto
+`main` at `9c313097` (#420 on top of it) with `git rebase --onto origin/main 59ddb296`, after a
+check, in the same command, that `59ddb296`, 048a-5d2's round-1 checkpoint this order started from,
+was an ancestor of the tip and that 048a-5d2's squash was on `main`, so that only this order's three
+commits were replayed, under the work orders' identity. One conflict: in this file, at the second
+fix's commit, whose amendment of the `mark(c, "signInLogin")` line did not apply to `main`'s
+wording ("one more than `git show HEAD:...`"). It was resolved by keeping `main`'s form and writing
+the same amendment into it, as the coordinator's: the line now reads "two more than", naming the
+read's R3 in `invoke_inner`'s repeat path beside 048a-5d's mark and decision 5's, and the lengths
+stay `main`'s `L1` to `L7`. The commit's other hunks applied: the `sign_in` count of four more
+tests, adding `succeeded_repeat_keeps_sign_in_login` (the governing text now says so), decision
+13's DL18 sentence as V5 amended it, and this Record. Everything else merged without a conflict.
+`tools/tests/test_vector_delta.py` kept the branch's `test_added_empty_map_under_a_step` beside
+#420's own test, so, as the third read's R2 asks, `main`'s `tools/vector_delta.py` and
+`tools/tests/test_vector_delta.py` were checked out over the branch's: the squash changes no
+`tools/` file, `git diff origin/main --stat -- tools/` prints nothing, and the vector delta below
+passes with `main`'s tool. `sign_in.rs` took 048a-5d2's fixes (`url_match_cause`'s two whole
+texts, `sign_in_url_match`'s three new rejections and its empty-username URL, and the mismatch
+test's `t.input_required` check); `requests-keyed-hook-dispatch` took order 209's `_meta` on its
+five `server/discover` intents; `requests.rs` took 048a-5d's and 209's `fence_attempt` calls in
+`complete_hook_discovery`, and the shell's `discover_call_parses_as_a_client_request` test took
+209's `_meta`, each merging cleanly; and `requests-sign-in-plain-hook-part` took 048a-5d's R2, the
+`invocation-ended` fact for `$check2` ending failed, now at step 8, one step later than on `main`,
+after the DECLINE that decision 12 inserts at step 6. `engine/STANDING.md` did not conflict and
+`promise_standing.py --check` found it current, so it was not written again; the index did not
+conflict, and the pieces tool prints `Nothing to move.` Following 048a-5d2's fixes needed no change
+in this order's build: the mismatch test's new check sits in the assertion its failing answers
+share, while the matched URL's assertions are decision 8's; `url_match_cause`'s words are unchanged
+and this order quotes none; the fixes changed neither of 048a-5d2's cases; and neither new case
+holds a `server/discover` intent or copies the plain case's step 7. The only text amendment is the
+`mark` line above. The second read's R3, where `sign-in.v1` ends from the hook before any relay
+after a failed or unknown first check, its end cause naming only the hook, is not carried to
+048a-5gh, which is already built: as the bullets above now say, it is carried to the follow-up order
+after the dogfood, beside 048a-5gh's deferred shoulds (the third read's R3).
+
+This order's start check, run on a clean copy of `main`'s tree at `9c313097` (by `git archive`),
+printed what the order gives at every item: `:0` for 207, 209 and 048a-5d2 and `1` for 048a-5d
+(all three merged); `7`; `1` five times; `1`, `1`, `1`, `4`, `1`, `1`, `1` and `1`, then `1` and
+`1`; `1`, `1`, `1`, `0` and `relay 0`; `0`, two lines ending `:0`, `0` and `0`; item 7's
+`24 $hook1 group.sign-in.v1 $hook4 group.sign-in.v1 8 $hook1 group.sign-in.v1`; `1` eight times;
+items 9 to 13 as written; and item 14's three sources, `lib.rs`, `requests.rs` and `sign_in.rs`. On
+`main`, `part_answered` is at `sign_in.rs` line 215, the part function `sign_in_hook_part` at 341,
+`url_match` at 387, `hook_input` at 563, `signed_in` at 762 and `end_sign_in` at 808; `respond` at
+`requests.rs` line 750 and `finish` at 1865; and `reply_context` at `lib.rs` line 428. Its runs gave
+the `sign_in` filter 24 passed, `portable` 4, `requests-sign-in-` 15 cases passed and `requests-` 82
+with the 2 expected failures, and the five rows stand at IFC-049 5, PND-004 0, PND-010 12, PND-011
+5 and PND-013 3. So 048a-5d2's merge changed nothing a decision reads. Warm in the worktree, from
+`engine/` with 4 test and vector threads: `cargo fmt --check` and clippy with `-D warnings` (exit
+0); the `sign_in` tests (28 passed, four more than on `main`), the `respond` test (1) and
+`succeeded_repeat_keeps_sign_in_login` (1); `portable` (4); the pieces tool (`Nothing to move.`);
+the nine single-case runs (`1 cases passed` each); `requests-sign-in-` (17 cases passed) and
+`requests-` (84 cases passed; the same 2 expected failures); and the shell's `relay::tests` (2),
+`forged_retry_state_is_refused_and_recorded` (1) and `first_start_presents_final_lists` (1). From
+the root: `promise_standing.py --check` (Errors: 0; the five rows move by `IFC-049:2 PND-004:0
+PND-010:2 PND-011:1 PND-013:1` against `main`); `vector_delta.py origin/main WORKTREE --declared
+docs/work-orders/048a5ef-declared.yaml` (5 shapes, 11564 changes, 0 flips, 0 undeclared, 0 errors,
+exit 0; eleven more than against `59ddb296`, five in `requests-keyed-hook-dispatch` and six in
+`requests-sign-in-plain-hook-part`, from the predecessors' fixes in steps that decision 12 moves);
+`check_schemas.py`, `set_names.py --check`, `check_rulings.py`, `check_docs.py`,
+`check_roadmap.py`, `check_model_account.py` and `check_private_paths.py` (Errors: 0 each); the
+tools' unit tests (130, OK); every grep and one-liner of "Done when" as the governing text gives
+them (31 lines print 1, the five lengths' lines, seven zeros, and the protected paths' 0); and `git
+diff --check` (clean). The whole engine suite, the spike, the four mutations, `tools/gate.py`
+against `origin/main` and the reader's read of this rebase remain the coordinator's before the
+merge.

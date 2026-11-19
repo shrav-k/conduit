@@ -1,0 +1,17 @@
+# Example. It must be rejected:
+# only an item marked `plain: true` and reached by `command` or `package` states `keyed`, the
+# hooks whose calls carry Conduit's keys (PKG-020); an item that is not plain carries them on
+# every call. This item is not marked plain and lists its sign-in hook under `keyed`.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
+
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/agent
+version: 0.2.0
+implementations:
+  wrapper:
+    implements:
+      - '#turn.v1'
+      - github.com/shrav-k/conduit/core#sign-in-hook.v1
+    command: [agent-wrapper]
+    keyed: [github.com/shrav-k/conduit/core#sign-in-hook.v1]

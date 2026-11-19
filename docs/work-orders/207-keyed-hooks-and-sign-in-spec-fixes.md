@@ -402,7 +402,7 @@ The script after decision 19 applies decisions 1 to 16 exactly; decision 17 is y
       registration. Steps 3 to 5 ask `group.sign-in.v1` for `signed`, declaring URL elicitation,
       with `signInLogin` `{"name": "browser"}` and `{"name": "device"}`, the Type's two stated
       logins, and `{"name": "phone"}`, which stays invalid beside them, and expect invalid with a
-      PND-010 diagnostic, no external intent and the records `access-decision` and `request-ended`
+      PND-010 diagnostic, no external intent and the record `access-decision`, and `request-ended`
       with reason invalid and `ruleId` PND-010.
     - **`requests-sign-in-setup-check-failed`**, `promises: [PND-011, PND-005, TPL-012, OPS-022]`,
       an expected failure until order 209, on the files of `requests-sign-in-hold`, whose item
@@ -1216,26 +1216,27 @@ account row's note as the note already holds them; save it as UTF-8.
 
 ## Scope
 
-Change only `spec/definitions.md` (the two rows "plain", the rows "implementation item",
-"Conduit's extension", "account check" and "set up", and the new row "`keyed`"),
-`spec/schemas/manifest.yaml` (`implementation-item.v1`), `spec/schemas/README.md` (one sentence
-and one row), `spec/promises/packages.yaml` (PKG-020's `then` and `observable`),
-`spec/interface/implementation.yaml` (IFC-001's `then` and `observable`, IFC-004's `then` and `observable`,
-the `when` of IFC-006, IFC-007, IFC-009, IFC-010 and IFC-047, IFC-010's `then`, IFC-037's `then`
-and `observable`, IFC-045's `observable`), `spec/promises/pending.yaml` (PND-005's `when`,
-PND-010's `then` and `observable`, PND-011's `then` and `observable`, PND-013's `then`),
-`spec/promises/templates.yaml` (TPL-012's `then` and `observable`),
-`spec/conventions/operations.yaml` (OPS-022's `then` and `observable`),
-`spec/core/operations.yaml` (`sign-in.v1`'s description), `spec/core/README.md` (one sentence),
+Change only `spec/definitions.md` (the two rows "plain", the rows "implementation item", "Conduit's
+extension", "account check" and "set up", and the new row "`keyed`"), `spec/schemas/manifest.yaml`
+(`implementation-item.v1`), `spec/schemas/README.md` (one sentence and one row),
+`spec/promises/packages.yaml` (PKG-020's `then` and `observable`), `spec/promises/manifest.yaml`
+(MAN-009's `then` and `observable`, MAN-010's `then`), `spec/interface/implementation.yaml`
+(IFC-001's `then` and `observable`, IFC-004's `then` and `observable`, the `when` of IFC-006,
+IFC-007, IFC-009, IFC-010 and IFC-047, IFC-010's `then`, IFC-037's `then` and `observable`,
+IFC-045's `observable`), `spec/promises/pending.yaml` (PND-005's `when`, PND-010's `then` and
+`observable`, PND-011's `then` and `observable`, PND-013's `then`), `spec/promises/templates.yaml`
+(TPL-012's `then` and `observable`), `spec/conventions/operations.yaml` (the `when` of OPS-006 and
+OPS-007, OPS-022's `then` and `observable`), `spec/core/operations.yaml` (`sign-in.v1`'s
+description), `spec/core/README.md` (one sentence),
 `engine/crates/loader/tests/expected/invalid-verdicts.txt` (one line),
-`experiments/012-model-checking/account.yaml` (TPL-012's and OPS-022's rows),
+`experiments/012-model-checking/account.yaml` (TPL-012's, OPS-022's and OPS-007's rows),
 `conformance/conventions/requests/index.yaml`, `conformance/expected-failures.yaml`,
 `engine/CONFORMANCE.md` (one section appended), `engine/STANDING.md`, written only by the tool,
 `docs/proposals/first-build/to-review-with-the-owner.md` (four rows) and `IN_FORCE.md` (decision
 17's lines). Create only `spec/schemas/examples/invalid/PKG-020-manifest-keyed-not-plain.yaml` and
 the four case directories of decision 13, with `case.yaml` in each and `manifest.json` in all but
-`sign-in-setup-check-failed/`. `docs/work-orders/207-declared.yaml` comes with this order; change
-it only as decision 18 says. Anything else that needs changing goes in your report.
+`sign-in-setup-check-failed/`. `docs/work-orders/207-declared.yaml` comes with this order; change it
+only as decision 18 says. Anything else that needs changing goes in your report.
 
 ## Done when
 
@@ -1244,7 +1245,7 @@ From the repository root, after the script and decisions 17 and 18, each of thes
 well. On `7f56262a` the hashes, the counts and the runner's four cases each fail, since none of
 this exists there; the schema there rejects the first case's manifest, `'keyed' was unexpected`.
 
-This prints twenty lines, each ending `: OK`, and exits 0 (`sha256sum -c` on Linux):
+This prints twenty-one lines, each ending `: OK`, and exits 0 (`sha256sum -c` on Linux):
 
 ```bash
 shasum -a 256 -c <<'END'
@@ -1257,21 +1258,22 @@ e73638b22bfc5111dfeedcaffc7338a878df1bed625dedcbf03df7d15bbd3aa3  conformance/co
 4270391afec76bea89e7a3d7b02fe2a2ef5027e91f656608bcac17f0f1ce0dbd  conformance/conventions/requests/sign-in-setup-check-failed/case.yaml
 f4d30ef52905b06454914274d6b8e55bc561a791ef9aac69b44ae0cbe5b456e5  spec/schemas/examples/invalid/PKG-020-manifest-keyed-not-plain.yaml
 1e09b16efea4b883889835bada77b5b95dce2524f02ee0d50fd400da0bf78876  spec/definitions.md
-6dd97178ee34a8c42169b311aaa974762fab7442b325ab3f783bfa379a98d33f  spec/schemas/manifest.yaml
-a8ec53632abc8e11f492924455e0c28ee3c6b28455c616957f785c8b91b91116  spec/schemas/README.md
-bd6a0d4a2948b3362fe0022f462e9599d1580fa434da7895647fc6c5ad9f2b5b  spec/promises/packages.yaml
-325410518e879da2c4035a5d5727b183b4d9092f24fdf4a3293dbe04abc63ad6  spec/interface/implementation.yaml
+17d0b324ab34bc58ff47b27d16e38a0df98e9dd777ec2b63c88525c7938e9c4c  spec/schemas/manifest.yaml
+88d0963ac76ab5e438afc7ccabdf8834c5d14e8fb266e0e0e6682c5003e6ad7f  spec/schemas/README.md
+3174e6d1b01385350caaafac3c2a628c770614be454dcffe47bc1c8ef97a868a  spec/promises/packages.yaml
+2087040def1759bd85650de678852967c3cc3f91b098c24015526ce53be9a44f  spec/promises/manifest.yaml
+5485bfbed555ed85f764ede457f5044f4851ebc0c142eb4a6f383a46e7e79111  spec/interface/implementation.yaml
 0538e40bd36e2ca789a33a46115571ca420e2dd75b500203206cd16b08c569f8  spec/promises/pending.yaml
 93611f8ac83a92f2d511275267a0ec6de9c15bf5a4de764e498f2ca2691a4b30  spec/promises/templates.yaml
-9e5bae76b197e77ab9d68c9fbc46c198930c68f606b553e71e12f25c1265297b  spec/conventions/operations.yaml
+c633889b06f85ceda859d037514405d89f09bccfd7009a38ddb1b564cd59b24f  spec/conventions/operations.yaml
 ac3005032874db60d7e28d33c84580659ec4755e9f5d324dc0a1fd806d5a414b  spec/core/operations.yaml
-bab15559ec6d8c9e447951a569c46b1b870aa940f15cec43d4d88eaea649b6f9  spec/core/README.md
-6070d5bb8693d208bb172d49d9efd645a0f4f58f9fa653820a0af2ae357098a3  experiments/012-model-checking/account.yaml
+7783f737fa31cb801b19b95ce002714f098cacfda8b905ca133c336ddf7fd934  spec/core/README.md
+16e6dc6f5a644f24dd9c540f23d416a5ef1f7378b66e8eac01767ed0fb4a33e9  experiments/012-model-checking/account.yaml
 05361841f52fe68379d6a8e71fda4d7a8f83d83e091c1ff3b116ecbc800b892a  engine/crates/loader/tests/expected/invalid-verdicts.txt
 END
 ```
 
-The last twelve are the files of `7f56262a`, each unchanged since `c704275f`, with this order's
+The last thirteen are the files of `7f56262a`, each unchanged since `c704275f`, with this order's
 change; if one of them changed on `main` since, report its hash. The first eight must
 still match: the cases copy only steps that no order beside this one changes.
 
@@ -1285,7 +1287,7 @@ tr -s ' \n' '  ' < spec/promises/packages.yaml | grep -c 'One reached by .comman
 tr -s ' \n' '  ' < spec/interface/implementation.yaml | grep -c "An engine sends a call for a request or a hook to an implementation marked .plain., other than a call for a hook that its item's .keyed. lists (PKG-020)."
 tr -s ' \n' '  ' < spec/interface/implementation.yaml | grep -c "the name its .tools. map gives under PKG-020, on every call, one for a hook that its item's .keyed. lists among them."
 tr -s ' \n' '  ' < spec/interface/implementation.yaml | grep -c "Before its first such call to each run of the implementation, which for an implementation marked .plain. is its first call for a hook that its item's .keyed. lists (PKG-020)"
-tr -s ' \n' '  ' < spec/interface/implementation.yaml | grep -c 'An .input_required. result holding a URL-mode input request from the sign-in-hook.v1 part of sign-in.v1 ends nothing of itself: it is relayed as IFC-016 and PND-010 state or, where it fails a check of IFC-049, ends sign-in.v1 failed under IFC-049; one from any other part of sign-in.v1 is unknown under this table; for a plain implementation, IFC-016'"'"'s relay of URL-mode elicitation arising as a part of sign-in.v1 is this one.'
+tr -s ' \n' '  ' < spec/interface/implementation.yaml | grep -c "From the sign-in-hook.v1 part, it relays the request under PND-010 and keeps the part and sign-in.v1 in progress when the request passes IFC-049's checks. This is IFC-016's relay of URL-mode elicitation arising as a part of sign-in.v1."
 tr -s ' \n' '  ' < spec/promises/pending.yaml | grep -c "reports invalid where the instance's sign-in-hook.v1 is a plain hook, its implementation marked .plain. and its item's .keyed. not listing sign-in-hook.v1 (PKG-020)"
 tr -s ' \n' '  ' < spec/promises/pending.yaml | grep -c "its implementation not marked .plain. or its item's .keyed. listing sign-in-hook.v1 (IFC-007, PKG-020), else not-accepted;"
 tr -s ' \n' '  ' < spec/promises/pending.yaml | grep -c 'succeeds with no account or another account, or fails or ends unknown, the engine invokes sign-in-hook.v1 as a part'
@@ -1311,7 +1313,7 @@ grep 'order 209\|048a-5e' IN_FORCE.md | grep -c ' today\|as it stands'
 grep 'order 209\|048a-5e' IN_FORCE.md | grep -c 'until then it does not'
 ```
 
-This prints exactly these lines, tab-separated, so that no other line of the fourteen files
+This prints exactly these lines, tab-separated, so that no other line of the fifteen files
 changed (at `7f56262a`; the index and the expected failures differ where an order beside this one
 has landed, and then report them):
 
@@ -1323,17 +1325,18 @@ git diff --numstat -- conformance/conventions/requests/index.yaml conformance/ex
 37	0	conformance/conventions/requests/index.yaml
 12	0	conformance/expected-failures.yaml
 1	0	engine/crates/loader/tests/expected/invalid-verdicts.txt
-6	4	experiments/012-model-checking/account.yaml
-6	3	spec/conventions/operations.yaml
-3	1	spec/core/README.md
+9	6	experiments/012-model-checking/account.yaml
+10	5	spec/conventions/operations.yaml
+4	1	spec/core/README.md
 7	4	spec/core/operations.yaml
 7	6	spec/definitions.md
-39	20	spec/interface/implementation.yaml
-25	6	spec/promises/packages.yaml
+52	25	spec/interface/implementation.yaml
+8	7	spec/promises/manifest.yaml
+27	7	spec/promises/packages.yaml
 40	20	spec/promises/pending.yaml
 11	5	spec/promises/templates.yaml
 3	1	spec/schemas/README.md
-13	2	spec/schemas/manifest.yaml
+15	4	spec/schemas/manifest.yaml
 ```
 
 Each of these passes:
@@ -1424,7 +1427,7 @@ line reports a failure.
 
 Last, after deleting `engine/target/order-207-write.py` and
 `engine/target/expected-failures.yaml.fixed`, `git status --short` prints exactly these
-twenty-three lines, in this order:
+twenty-four lines, in this order:
 
 ```text
  M IN_FORCE.md
@@ -1440,6 +1443,7 @@ twenty-three lines, in this order:
  M spec/core/operations.yaml
  M spec/definitions.md
  M spec/interface/implementation.yaml
+ M spec/promises/manifest.yaml
  M spec/promises/packages.yaml
  M spec/promises/pending.yaml
  M spec/promises/templates.yaml
@@ -1491,7 +1495,9 @@ For the coordinator, not the worker:
     step 24 of `requests-sign-in-account-first`, which completes a check with a failed result,
     changes its expected `ruleId` accordingly, a flip that order 209 declares.
 
-  It removes this order's three expected failures. It builds no keyed `content` copy.
+  It removes this order's three expected failures. It builds no keyed `content` copy. Its cases
+  tell apart the two diagnostics of PND-010 that `requests-sign-in-login-plain-hook` does not:
+  the one for a stated login aimed at a plain hook from the one for a name no login states.
 - **The held drafts of the chain** follow the new text: 048a-5d dispatches `sign-in-hook.v1` after
   a failed or unknown check too, and its case relays a plain hook's URL request under IFC-010's
   new sentence; 048a-5f counts a failed or unknown poll as no account yet; 050m's `codex.v2` hook
@@ -1503,7 +1509,188 @@ For the coordinator, not the worker:
   whether MC9a is registered again before order 204 runs it is the coordinator's to decide under
   MC9a's own rule.
 - **IN_FORCE.md's ruling 86 lines** for points 1, 4 and 5 are not this order's.
+- **IFC-016's task path** (the reader's finding R207-9), for order 048a-5e's brief or a later spec
+  order: IFC-016 should apply IFC-010's part rule to a URL that a task surfaces through
+  `tasks/get`, keeping the `sign-in-hook.v1` part alone relayed. This order leaves IFC-016 as it
+  is (decision 19).
 
 ## Record
 
-Not yet run.
+Run on 2026-11-19, from about 10:10 to 11:04 UTC, on the Mac from `main` `1d3c7301` (this order's
+text, #396), in two rounds: the worker (1188 s) and a fresh Codex verifier (369 s), then the worker
+again (993 s) and a second fresh Codex verifier (378 s). The order was A77's paired order: between
+the rounds, a fresh Codex verifier and a fresh Opus reader read round 1 apart, and the coordinator
+judged their merged findings blind.
+
+Round 1 applied decisions 1 to 16 through the script, decision 17 by hand and decision 18 with the
+tool: `keyed` in spec/definitions.md, `manifest.v1`, the schemas' README, PKG-020 and the
+interface's promises that read `plain`; IFC-010's relay of the `sign-in-hook.v1` part's URL request;
+PND-010's refusal of a named login aimed at a plain hook; a failed or unknown account check going
+on, in `sign-in.v1` and in setup (PND-005, PND-010, PND-011, PND-013, TPL-012, OPS-022 and
+`sign-in.v1`'s description); the invalid example and its fixture line; the four cases, their index
+entries and three expected failures; TPL-012's and OPS-022's model-checking rows; the section of
+engine/CONFORMANCE.md; rows 49 to 52 of the owner's review list; IN_FORCE.md's five lines; and
+engine/STANDING.md. All twenty hashes matched; the first case passed its three steps and the other
+three failed with the errors of "Done when", each exiting 1 with its entry removed; `requests-`
+printed `71 cases passed; 5 expected failures` and the runner over every case `524 cases passed; 6
+expected failures`; the engine suite, the spike's 9 tests and the 129 tool tests passed; and the
+status matched the 23 lines. The worker's own choices: cargo run offline, an exit trap that restored
+the expected failures, the script and its hash followed where decision 13's prose asked more of the
+`access-decision` record, and a `set -o pipefail`, which the order's rule on `set` forbids, though
+it printed nothing.
+
+The paired read: Codex 4 must, 4 should, 0 nit; the Opus reader 0 must, 1 should, 1 nit; 10 merged
+findings, items 4 and 7 the Opus reader's and the rest Codex's. The coordinator's blind judgment
+accepted all 10, as 2 musts (items 8 and 9, both Codex's), 7 shoulds and 1 nit (item 6), which make
+9 faults, items 3 and 4 being one. The musts: a keyed sign-in hook's URL request still met IFC-009's
+terminal checks while it asked for input, and MAN-009's exhaustive list of an item's keys omitted
+`keyed`. The shoulds: IN_FORCE.md's (c) line stated the shipped Agent packages' restriction as the
+release's; the `access-decision` record was matched by its type alone; the setup case selects no
+setup hook, so TPL-012's going on is unshown (items 3 and 4); the expected-failure reason and the
+record generalized from a bare failure; OPS-006, OPS-007 and OPS-028 kept their per-item wording;
+and PKG-020's rejection omitted the `implements` check. The nit was the worker's `set -o pipefail`.
+
+Round 2 limited IN_FORCE.md's (c) line to the Agent packages shipped in 0.2.0; narrowed the
+expected-failure reason and the record to the bare failure, keeping PND-005's call-level trigger;
+named the `implements` check in PKG-020's rejection; had IFC-009's `when` give a URL-mode
+`input_required` result from a part of `sign-in.v1` to IFC-010, whose `then` now governs it for
+plain and keyed calls before the terminal checks, relaying from the `sign-in-hook.v1` part alone;
+and recorded in engine/CONFORMANCE.md the access record, the setup-hook case and a registration case
+for a hook in `keyed` and `tools` but not in `implements`, both for order 209. It left MAN-009
+unfixed as outside Scope, and the vector and decision 13's prose to the coordinator. The second
+verifier found 5 musts (MAN-009; IFC-016's task path; OPS-006 still asking a terminal outcome of the
+keyed hook's URL result; the core README's definition of a plain hook; the stale "Done when") and 5
+shoulds (the `access-decision` record's `permitted`; the two PND-010 diagnostics not told apart; the
+setup-hook case; PKG-016's trigger for a keyed call; PKG-020's `remote` clause read as rejecting
+every `remote` item).
+
+A fresh read-only Opus reader then verified the branch at round 2, before its rebase (ruling 79,
+point 2). It ran the twenty hash lines (18 OK; packages.yaml and implementation.yaml FAILED, moved
+by round 2), the 18 counts (17 print 1; the IFC-010 sentence's prints 0, round 2 having rewritten
+it), the five IN_FORCE.md counts (0, 4, 1, 0, 0), the numstat (implementation.yaml 52/25 and
+packages.yaml 26/7 against the order's 39/20 and 25/6), every Python check (Errors: 0 each; 78
+invalid documents, 520 promises, STANDING current), the 129 tool tests (OK), the vector delta from
+`1d3c7301` (4 changes, 0 undeclared, exit 0), `git diff --check` and the commit identities (clean),
+and privacy (clean). On a scratch copy it ran the four cases (1 PASS, 3 expected failures with the
+order's errors), `requests-` (71 passed, 5 expected failures), the three cases with the base's
+expected failures (each exit 1 with its error), the full engine suite (exit 0; the vectors 2
+passed), the spike (9 passed), and the four cases again on `origin/main` `c2bdcf90`'s core (the same
+results). It found 3 musts and 7 shoulds:
+
+- R207-1 (must): MAN-009's exhaustive key list, and MAN-010's types, still omitted `keyed`.
+- R207-2 (must): IFC-010 displaced the terminal checks of IFC-009, OPS-006 and OPS-007, but only
+  IFC-009 gained the exception, so OPS-006 and OPS-007 still ended a keyed hook's URL
+  `input_required` result unknown.
+- R207-3 (must): "Done when" still described round 1: two hashes failed, the IFC-010 count printed 0
+  and two numstat lines differed.
+- R207-4 (should): round 2 rewrote parts of engine/CONFORMANCE.md's section against decision 15, put
+  readings of the spec into it, and described IFC-010's relay as if the build did it.
+- R207-5 (should): the accepted fix to name OPS-006 and OPS-007 in PKG-020's list of what a keyed
+  call keeps went into engine/CONFORMANCE.md instead.
+- R207-6 (should): the core README defined a plain hook by its absence from `keyed` alone, where
+  PND-010 needs an implementation marked `plain` too.
+- R207-7 (should): decision 13c's prose asked for reason and `ruleId` on the `access-decision`
+  record, which the vector, rightly, does not assert.
+- R207-8 (should): IN_FORCE.md's line for point 3 (b) and row 52 of the owner's review list did not
+  record IFC-010's widening to keyed calls.
+- R207-9 (should): IFC-010's rule covers a URL in an `input_required` result, not one that a task
+  surfaces through `tasks/get`, which IFC-016 still relays from any part of `sign-in.v1`.
+- R207-10 (should): the schemas' README row and `manifest.v1`'s description gave PKG-020's `tools`
+  and hook conditions, not its `implements` one.
+
+The fixer rebased the branch onto `origin/main` at `c097ec81` (orders 048a-5c and 050k) with the
+work-order identity. The first commit conflicted in engine/STANDING.md alone, the index and
+engine/CONFORMANCE.md merging on their own; the fixer wrote engine/STANDING.md again with
+`promise_standing.py --write`, and the second commit applied cleanly. Each changed line of this
+order's text is the coordinator's amendment, applying the round-2 findings below (R207-1, R207-2,
+R207-3, R207-7 and R207-9): Scope, the hash lines, the IFC-010 count, the numstat block, the status
+list, decision 13c and "What follows". The text of decisions 2, 3, 4, 6, 11, 12, 14 to 16 and 17's
+(b) and (c) lines, and the script, are superseded where they differ from the files: round 2 wrote
+IFC-010's sentence, IFC-009's exception, PKG-020's `implements` check, the narrowed expected-failure
+reason, its additions to engine/CONFORMANCE.md's section and IN_FORCE.md's (c) line, and the files
+hold the amendments below. The fixer applied each finding:
+
+- R207-1: MAN-009's `then` reads "where they are given, `plain`, `keyed`, `tools`, `supports`, ...",
+  its `observable` "what `plain`, `keyed` and `tools` require of each other is PKG-020", and
+  MAN-010's `then` gains "`keyed` is the list of PKG-020." after "`plain` is a boolean.";
+  spec/promises/manifest.yaml joins Scope, with its hash line (twenty-one), its numstat line and its
+  status line (twenty-four).
+- R207-2: the `when` of OPS-006 and of OPS-007 each end "IFC-010 governs a URL-mode `input_required`
+  result from a part of sign-in.v1 in place of this rule."; OPS-007's row in
+  experiments/012-model-checking/account.yaml is `text changed, not rerun`, with `was: holds, not
+  graded`, and a note sentence naming this order; OPS-006's row is `static` and unchanged. Scope
+  names OPS-006's and OPS-007's `when` and OPS-007's row.
+- R207-3: the moved hash lines are recomputed after the last edit, the eight case, manifest and
+  example hashes unchanged: seven files moved (spec/schemas/manifest.yaml, spec/schemas/README.md,
+  spec/promises/packages.yaml, spec/interface/implementation.yaml, spec/conventions/operations.yaml,
+  spec/core/README.md and the account), and spec/promises/manifest.yaml is added. The IFC-010 count
+  reads round 2's sentence, "From the sign-in-hook.v1 part, it relays the request under PND-010 and
+  keeps the part and sign-in.v1 in progress when the request passes IFC-049's checks. This is
+  IFC-016's relay of URL-mode elicitation arising as a part of sign-in.v1.", and the numstat block
+  gives the final counts of the fifteen files. Against the base after the commit, the example also
+  shows `17 0`, since the commit tracks it.
+- R207-4: engine/CONFORMANCE.md's section again says "what this build does not do yet; order 209
+  builds it" and "Those calls have no case here: their steps need the discovery that order 209
+  builds."; the OPS-006, OPS-007 and OPS-028 sentence is gone; and its last paragraph reads
+  "IFC-010's relay of a URL request from the `sign-in-hook.v1` part, plain or keyed, has no case
+  here: this build runs no `sign-in-hook.v1` part; orders 048a-5d and 048a-5e build the hook part
+  and the relay, whose cases show it."
+- R207-5: PKG-020's `observable` reads "keeps IFC-008, IFC-009, IFC-019, IFC-026 and IFC-047, and
+  OPS-006 and OPS-007, for it".
+- R207-6: the core README reads "a plain hook, one whose implementation is marked `plain` and whose
+  item does not list it under `keyed`".
+- R207-7: decision 13c reads "the record `access-decision`, and `request-ended` with reason invalid
+  and `ruleId` PND-010"; the vector and its hash are unchanged. "What follows" asks order 209's
+  cases to tell apart the two PND-010 diagnostics.
+- R207-8: IN_FORCE.md's line for point 3 (b) gains "; it applies to a plain call and a keyed one
+  alike, in place of IFC-009's, OPS-006's and OPS-007's terminal checks" and cites IFC-009, IFC-010,
+  OPS-006 and OPS-007; row 52's "Why it matters" column gains the same clause and its "Where"
+  column cites IFC-009, OPS-006 and OPS-007 too.
+- R207-9: IFC-016 is unchanged (decision 19); "What follows" records the finding for order 048a-5e's
+  brief or a later spec order: IFC-016 should apply IFC-010's part rule to a URL that a task
+  surfaces, keeping the `sign-in-hook.v1` part alone relayed.
+- R207-10: the schemas' README row reads "That each selection in an item's `keyed` is in its
+  `implements`, is a key of its `tools` and names ...", and `manifest.v1`'s description "is in
+  `implements`, is a key of `tools` and is one of the core hooks"; both hashes are recomputed.
+
+The second verifier's PKG-016 and PKG-020 `remote` shoulds, which the reader did not take up, are
+left to the coordinator.
+
+The fixer then ran, from the worktree's root on the files of this commit before it was made: the
+twenty-one hash lines (each OK), the eighteen counts (each 1), the five IN_FORCE.md counts (0, 4, 1,
+0, 0), the numstat against the base (the block above, and the example's `17 0`), `check_schemas.py`
+(Errors: 0; 78 invalid documents in 78 files, `rejected PKG-020-manifest-keyed-not-plain.yaml: at
+/implementations/wrapper`, 520 promises), `set_names.py --check`, `check_rulings.py`,
+`check_docs.py`, `check_roadmap.py`, `check_model_account.py` and `check_private_paths.py` (Errors:
+0 each), `promise_standing.py --write` and `--check` (`engine/STANDING.md is current; promise rows:
+520.`, Errors: 0), the tool tests (129, OK), the vector delta from `origin/main` (4 shapes; `Vector
+delta: 4 changes; 0 flips; 0 undeclared; 0 errors.`, exit 0) and `git diff --check` (clean). From
+`engine/`, with `RUST_TEST_THREADS=4` and `CONDUIT_VECTOR_THREADS=4`: `PASS
+requests-keyed-hook-manifest (3 steps; PKG-020, PND-010)` and `1 cases passed`; each of the other
+three `EXPECTED FAILURE` with its error of "Done when" and `0 cases passed; 1 expected failures`,
+exit 0; `requests-` `72 cases passed; 5 expected failures`, one more case than at `1d3c7301`, order
+048a-5c's; with the base's expected failures, each of the three exited 1 with its error, and the
+file was restored, its numstat `12 0` again; and `cargo test --release` exited 0, 372 tests passed
+and 4 ignored, the vectors `2 passed; 0 failed`, no line reporting a failure. The spike's
+`tests/spike.rs` reported `9 passed; 0 failed`. The gate's run on this order's squash is the
+coordinator's at the merge.
+
+A second fresh read-only Opus reader then reread the branch at `bb16bcba` in full and reran the
+checks of "Done when" with the amended hashes and counts. It found no must and two shoulds:
+R207-2-1, that this Record named too few of the order's texts that the files supersede, and
+R207-2-2, that R207-8's clause stood in row 52's "Where" column, which holds only links and promise
+IDs. The coordinator applied both at the merge: the sentence above now names decisions 2, 3, 4, 6,
+11, 12, 14 to 16 and 17's (b) and (c) lines, and the clause moved to the row's "Why it matters"
+column. A77 paired this order: of the ten findings of round 1's blind list, Codex's verifier raised
+eight and the paired Opus reader two; the coordinator judged two musts (MAN-009's key list, from
+Codex; a keyed sign-in hook's URL request under IFC-009, from Codex), seven shoulds and a nit, and
+carried the nine to round 2. Round 2's worker left MAN-009 as outside the order's scope; the fixer
+applied it as the coordinator's amendment (R207-1).
+
+At the merge, the gate's run of `packages/runtime-provider-kit` failed its drift test (`schema
+copies drifted from spec`): the kit keeps a copy of the schemas that `run.v1`, `stop.v1` and
+`inspect-run.v1` reach, and `implementation-item.v1`, which this order changes, is one of them. The
+coordinator regenerated `packages/runtime-provider-kit/src/schemas.json` from `spec/` exactly as the
+drift test builds it (only `implementation-item.v1`'s `keyed` member and its two conditions change),
+as the coordinator's amendment outside the order's scope, and the kit's tests then passed (16, 71
+and 1 passed).

@@ -201,24 +201,44 @@
     from the selection of each operation it implements to the name of the tool that serves it.
     It states no `supports`. A plain implementation is reached by `command`, `package` or
     `remote`, and implements no operation of `runtime-provider.v1`, `machine-provider.v1` or
-    `package-source.v1`.
+    `package-source.v1`. One reached by `command` or `package` may state `keyed`, a list of
+    hooks, each a selection in its `implements` and a key of its `tools` that names
+    `setup-hook.v1`, `retire-hook.v1`, `sign-in-hook.v1`, `account-hook.v1` or
+    `sign-out-hook.v1`: the engine's calls for a hook that `keyed` lists carry Conduit's keys,
+    and its other calls to the implementation do not.
   observable: >-
     An operation in `implements` that is not a key of `tools`, a plain implementation that
     states `supports` or implements an operation of one of those three capabilities, and an item
     that is not marked `plain` and states `tools`, are each rejected when the package is
-    installed or the project is submitted. The operations of those capabilities are reached only
-    by provider calls, which carry Conduit's keys and declare Conduit's extension, under PRV-005
+    installed or the project is submitted, and so are an item that states `keyed` and is not
+    marked `plain` or is reached by `remote`, and a selection in `keyed` that is absent from
+    `implements`, absent from the keys of `tools` or names an operation other than those five
+    hooks. The operations of those capabilities are reached only by provider calls, which
+    carry Conduit's keys and declare Conduit's extension, under PRV-005
     and IFC-037, as a container runtime implements the CRI for the kubelet. A plain
     implementation of `get-secret.v1` is allowed, under SEC-006: a read is a request, and not
     a provider call. A plain implementation supports no requirement, and
     never counts as deduplicating under OPS-012, whatever the contracts of its operations
     declare. The `tools` map gives each tool's name and nothing else: the arguments of a call
-    are the operation's inputs under their own names, as IFC-001 states. A plain server reads
-    none of Conduit's keys, so it learns its instance's configuration only through the values
-    that its item's `environment`, `packageArguments` or `headers` take from it, under MAN-010.
+    are the operation's inputs under their own names, as IFC-001 states. A plain server is
+    sent none of Conduit's keys except on a call for a hook that `keyed` lists, so it learns
+    its instance's configuration only through the values that its item's `environment`,
+    `packageArguments` or `headers` take from it, under MAN-010, and on such a call through
+    IFC-006's keys.
     For the same reason a plain server reached by `remote` stands behind no gate and is reached
     as before, under PRV-025, and a `remote` server that cannot check an enforcement point's
-    proof is used as plain, under IFC-041.
+    proof is used as plain, under IFC-041. For a call for a hook that `keyed` lists, the
+    implementation is one that carries Conduit's keys: the engine reads its result of
+    `server/discover` before the first such call to each run and declares Conduit's
+    extension on the call, under IFC-037, the call holds the keys of IFC-006, and the
+    implementation keeps IFC-008, IFC-009, IFC-019, IFC-026 and IFC-047, and OPS-006 and
+    OPS-007, for it, and a keyed setup or retire hook is given its idempotency key and new
+    attempts under OPS-028. Every other call to it is plain, under IFC-007 and IFC-010. `keyed`
+    lists hooks alone, so a request for an operation of a plain implementation, its result and its
+    repeat stay plain, under IFC-025 and OPS-012; and an item reached by `remote` states none, so a
+    gate stands before it, under IFC-041, for all its calls or for none. So one item that is run
+    serves an Agent's plain turns beside a sign-in-hook.v1 that carries Conduit's keys, under
+    TPL-019.
   vectors: []
 
 

@@ -20,11 +20,12 @@
   note: 'MC7a: “Static: a static decision, to be shown by vectors”.'
 - id: TPL-012
   class: safety
-  standing: holds, not graded
+  standing: text changed, not rerun
+  was: holds, not graded
   model: lifecycle::S
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: fdf6d2f3b75ddc9cc561906994a879ec73376e8bec62186c87545b5e212a4cde
-  note: 'MC6 partial exclusion: “LIF-021/TPL-012 cancellation (OPS-027)”; “optional setup parts” are also absent.'
+  note: 'MC6 partial exclusion: “LIF-021/TPL-012 cancellation (OPS-027)”; “optional setup parts” are also absent. Order 207 (ruling 86, point 3 (d)): a setup account check that failed or ended unknown counts as one that succeeded with no account; text changed, not rerun.'
 - id: TPL-013
   class: safety
   standing: static
@@ -1120,11 +1121,12 @@
   note: 'MC7a: “Static: a static decision, to be shown by vectors”.'
 - id: OPS-007
   class: safety
-  standing: holds, not graded
+  standing: text changed, not rerun
+  was: holds, not graded
   model: controls::M
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: 39cc85324f0ac3f386b25ada5962ad2a57fe0d30761f9c399c406d1868baf35d
-  note: Bounded source slice; no individual finding.
+  note: 'Bounded source slice; no individual finding. Order 207 (ruling 86, point 3 (b)): IFC-010 governs a URL-mode input_required result from a part of sign-in.v1 in place of this rule; text changed, not rerun.'
 - id: OPS-008
   class: safety
   standing: searched
@@ -1234,13 +1236,14 @@
     78 point 6 withdrew.'
 - id: OPS-022
   class: safety
-  standing: 'contradiction: MC6-001'
+  standing: text changed, not rerun
+  was: 'contradiction: MC6-001'
   model: lifecycle::O
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: 89dcae7eb1f5a7c3bd521af9b5e9dbeff41c1976133cf874304f837706bbe875
   note: 'MC6-001: failed retire hook plus succeeded stop makes retirement/shutdown unknown under O/D; literal retire-hook
     contract predicate V demands pending and is refuted. HookPending instead refutes D. Order 081 is to take the
-    finding into the specification, not yet run.'
+    finding into the specification, not yet run. Order 207 (ruling 86, point 3 (d)): a setup account check that failed or ended unknown counts as succeeded; text changed, not rerun.'
 - id: OPS-023
   class: safety
   standing: static

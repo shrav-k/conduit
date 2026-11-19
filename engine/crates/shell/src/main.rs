@@ -12,6 +12,9 @@ fn run() -> Result<()> {
     }
     let help_requested = if raw[0] == "answer" {
         raw[1..] == ["--help"]
+    } else if raw[0] == "sign-in" {
+        // A `--help` given as `--login`'s value is the login's name, not a request for help.
+        (1..raw.len()).any(|i| raw[i] == "--help" && raw[i - 1] != "--login")
     } else {
         raw.iter().any(|arg| arg == "--help")
     };
@@ -20,7 +23,7 @@ fn run() -> Result<()> {
     }
     let mut args = raw.into_iter();
     let command = args.next().ok_or(
-        "usage: conduit init|register|submit|replace|install|retire|unregister|inspect|pending|answer|records|serve|tools|call --store DIR [ARGUMENTS]",
+        "usage: conduit init|register|submit|replace|install|retire|unregister|inspect|pending|answer|sign-in|records|serve|tools|call --store DIR [ARGUMENTS]",
     )?;
     let mut store = None;
     let mut project = None;
@@ -30,6 +33,7 @@ fn run() -> Result<()> {
     let mut url = None;
     let mut positional = Vec::new();
     let mut as_instance = None;
+    let mut login = None;
     while let Some(arg) = args.next() {
         // ANSWER is passed as given, even where it looks like an option; ACTION is an
         // engine-issued ID and goes through the normal match.
@@ -70,6 +74,9 @@ fn run() -> Result<()> {
             "--as" if command == "tools" => {
                 as_instance = Some(args.next().ok_or("--as needs INSTANCE")?)
             }
+            "--login" if command == "sign-in" => {
+                login = Some(args.next().ok_or("--login needs NAME")?)
+            }
             _ if [
                 "call",
                 "install",
@@ -79,6 +86,7 @@ fn run() -> Result<()> {
                 "unregister",
                 "pending",
                 "answer",
+                "sign-in",
             ]
             .contains(&command.as_str())
                 && !arg.starts_with('-') =>
@@ -120,6 +128,7 @@ fn run() -> Result<()> {
         "inspect",
         "pending",
         "answer",
+        "sign-in",
         "records",
         "serve",
         "call",
@@ -159,6 +168,19 @@ fn run() -> Result<()> {
             &store,
             &positional,
             &repository,
+        ));
+    }
+
+    if command == "sign-in" {
+        let repository = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let runtime = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
+        let mut person = conduit_shell::sign_in::Terminal;
+        return runtime.block_on(conduit_shell::sign_in::run(
+            &store,
+            &positional,
+            login.as_deref(),
+            &repository,
+            &mut person,
         ));
     }
 

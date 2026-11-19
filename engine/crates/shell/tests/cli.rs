@@ -413,6 +413,7 @@ fn help_describes_every_command_without_store_access() {
         "inspect",
         "pending",
         "answer",
+        "sign-in",
         "records",
         "serve",
         "tools",

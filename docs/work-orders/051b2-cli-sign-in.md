@@ -745,7 +745,7 @@ Each decision below is the coordinator's, as "Who decided what" says.
       `crate::sign_in::run(temp, &["Agent/signed".into()], None, &repository(), &mut person)`.
       The end of input at the consent prompt cancels, so the sign-in ends failed (PND-010) and
       `run` gives an `Err` containing `did not succeed`; `prompts` is the consent prompt once;
-      `opened` is empty. This step checks that `run` reads the prefix, prints and fails where the
+      `opened` is empty. This step checks that `run` reads the prefix and fails where the
       sign-in did not succeed.
    4. The script holds four intents: `account-hook.v1` and `sign-in-hook.v1` for each of the
       first and third sign-ins, and none for the second. `sign_in_holds` still has an entry for
@@ -780,7 +780,8 @@ Each decision below is the coordinator's, as "Who decided what" says.
    through `serve` and root's Conduit to its owner, declaring URL elicitation and, with
    `--login`, asking for one of its Type's stated logins, which the engine refuses before any
    part where the instance's sign-in hook is plain, as in the 0.2.0 Agent packages; without it,
-   the hook starts its default login. It shows the engine's message and the full URL on
+   the hook chooses among the Type's stated logins (in the 0.2.0 Agent packages, its
+   client's default login). It shows the engine's message and the full URL on
    standard error, opens the browser only after you type `y`, and retries each time you press
    Enter, until the engine answers: signed in, failed where you type `n` or input ends, or
    ended once the URL action's wait ends (DL18). It prints the result as one JSON line and
@@ -988,4 +989,138 @@ following (the coordinator's, under that lever):
 
 ## Record
 
-Not yet run.
+Run on 2026-11-19, from about 21:06 to 21:33 UTC, on the Mac, stacked on 048b-join's round-1
+checkpoint `1ec736e5` (ruling 87: one Codex round), from the dispatched text of this order,
+`593707c3` on `main`: the worker (1325 s) and a fresh Codex verifier (262 s). The change is the
+eight files of Scope, 844 lines added and 7 removed: the new `engine/crates/shell/src/sign_in.rs`
+with `Person`, `Terminal`, `connect`, `rounds`, `sign_in`, `run` and decision 7's five unit tests;
+the `sign-in` arm of `main.rs` with `--login` passed as given; `route` and `named` made
+`pub(crate)` in `author.rs`; help's fifteenth entry; the name in `tests/cli.rs`; decision 8's three
+tests with `Scripted` and `PollScript` in `server_tests.rs`; and decision 9's README text. The
+worker's own choices: the consent exchange factored into `answer_url`, one `KIND/NAME` formatter for
+`run` and `sign_in`, the text `could not flush the terminal: ...`, and shared fixture startup and
+refusal assertions in the tests; the Rust diff came to about 839 lines, above the order's estimate.
+It reported the full engine suite at 399 passed, 0 failed and 4 ignored across 28 targets, and the
+negative control failing at step 2 with `-32021`. Its findings for the coordinator: rmcp 3.9.0
+serves the `2026-07-28` Discover start with no MCP session, so DL10's idle limit does not govern
+the wait at the terminal (B2); the first poll with no account repeated the first URL (B6); an
+interrupted command leaves the invocation waiting until DL18; `connect` repeats `server::client`'s
+reading of root's token and tries once; no test runs the built command; the plain store holds no
+sign-in action or hold; the engine's message, shown on standard error, names the expected account;
+`route` matches by suffix; a failed retry's text is not exercised; and `run` reads
+`spec/names.yaml` from the build's source directory. The verifier found one must: a `--help` given
+as `--login`'s value printed help and exited 0. It found five shoulds: a protocol error's message
+reached standard error unescaped; the first test did not pin that the browser opens before the
+Enter prompt; the second test could not tell a decline from a cancel; no test observed `run`'s
+printed result; and the README's "the hook starts its default login" stated the 0.2.0 packages'
+behavior as a general rule.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2), on the checkpoint
+`3d238e71` before any rebase. It found the dispatched text identical to `593707c3` and ran
+`cargo fmt --check` (exit 0), clippy with `-D warnings` (exit 0), `sign_in::tests` (5 passed),
+`sign_in_command_` (3 passed in the library's target, 0 in every other), 048b-join's three tests
+(1 passed each), the `cli` target (7 passed) and the shell's library target (76 passed). It ran the
+negative control in place, restored with `cp`: the first test failed at step 2 with
+`sign-in.v1 through group.sign-in.v1 was answered with error -32021: Missing required client
+capability; nothing more was sent`, `cmp` showed the restore identical and the rerun passed.
+`check_docs`, `check_rulings`, `set_names --check`, `check_private_paths` and
+`promise_standing --check` each ended `Errors: 0`, `git diff --check` was clean, nothing outside
+Scope changed, the order's greps printed seven 1s, `COMMANDS` 15 and five 0s, and the commit
+identity was the work-order identity. It read rmcp 3.9.0 itself and confirmed B2. It ran neither
+the full engine suite nor the vectors. It refuted the verifier's must as a must, since a login name
+is `name.v1` and can never be `--help`, help sends nothing and every command shares the rule, and
+kept it as R1, an optional should. It confirmed the five shoulds as R2 to R6:
+
+- R1: `conduit sign-in ... --login --help` printed help; the fix adds a `sign-in` case to the help
+  rule in `main.rs`, as `answer` has.
+- R2: the protocol error's message reached standard error without `shown()`.
+- R3: the first test did not pin the order consent, browser open, Enter prompt.
+- R4: the second test's step 1 did not tell a decline from a cancel.
+- R5: no test observed `run`'s result line; the reader preferred rewording decision 8, step 3.
+- R6: the README sentence, and decision 9's text, should say the hook chooses among the Type's
+  stated logins.
+
+The fixer left the branch on its base `1ec736e5`, without a rebase, and applied each finding:
+
+- R1: the help rule in `main.rs` gains a `sign-in` case that reads `--help` as help only where it
+  does not follow `--login`. With no store given, `conduit sign-in --login --help` now ends
+  `conduit sign-in: --store DIR is required` with exit 1, and `conduit sign-in --help` and
+  `conduit sign-in Agent/a --login x --help` still print help.
+- R2: the error's text formats `shown(&error.message)`; the JSON line on standard output is
+  unchanged and the prescribed words stay.
+- R3: `Scripted` gains `events`, which `ask` and `open` both push to, and the first test asserts
+  that it begins with the consent prompt, `open:U` and the Enter prompt.
+- R4: the second test's step 1 asserts that a diagnostic's text contains `declined`. Step 3's
+  cancel is left to the unit test of `consent`, as the reader allowed, since another sign-in would
+  change step 4's count of intents.
+- R5: decision 8, step 3, now says the step checks that `run` "reads the prefix and fails" where
+  the sign-in did not succeed; no code changed.
+- R6: decision 9's text and `engine/README.md` now say "without it, the hook chooses among the
+  Type's stated logins (in the 0.2.0 Agent packages, its client's default login)", rewrapped over
+  two lines in each; the README's text still equals decision 9's block.
+
+On the worktree, each fix taken out in place and restored with `cp` failed its test: R3's browser
+opened once after the first Enter prompt failed the new `events` assertion, and R4's decline sent
+as a cancel failed the new `declined` assertion. The fixer then ran, from `engine/` with
+`RUST_TEST_THREADS=4` and `CONDUIT_VECTOR_THREADS=4`: `cargo fmt --check` (clean),
+`cargo clippy --offline --all-targets -- -D warnings` (exit 0), `sign_in::tests` (5 passed),
+`sign_in_command_` (3 passed), 048b-join's three tests (1 passed each),
+`--test cli help_describes_every_command` (1 passed), the shell's library target (76 passed) and
+the order's negative control (failed at step 2 with `-32021` and the text above; `cmp` identical;
+the rerun 1 passed). From the root: `check_docs.py`, `check_rulings.py`, `set_names.py --check`,
+`check_private_paths.py` and `promise_standing.py --check` (Errors: 0 each), `git diff --check`
+(clean), the Scope `git status` (empty) and the README greps (1, 1, and 1 for the new sentence).
+The full engine suite and the gate's run on this order's squash, which this merge waits on, are
+the coordinator's at the merge, after 048b-join merges and the branch is rebased.
+
+This order started from a stacked base, under the coordinator's dispatch note (private): `1ec736e5`,
+order 048b-join's round-1 checkpoint, then unmerged, on 048a-5gh's head after its read and fixes
+(`a0d253e5`) and 048a-5ef's round 1, with 209, 048a-5d and 048a-5d2 merged on `main`. After order
+048b-join merged (#426, `1af88985`), on 2026-11-19, the branch was rebased onto `main` at `1af88985`
+with `git rebase --onto origin/main 1ec736e5`, after a check, in the same command, that `1ec736e5`
+was an ancestor of the tip (`a24d9685`) and that 048b-join's squash was on `main`, so that only this
+order's two commits were replayed, under the work orders' identity. Neither conflicted.
+`server_tests.rs` merged by itself: 048b-join's one change after its round 1, its reader's R1, makes
+`assert_sign_in_store_excludes` take the store's root and recurse through a new `scan_sign_in_store`
+that skips only the root's `authority.json`, and none of decision 8's tests calls either. This
+order's file merged by itself as well: `main`'s text is the dispatched one, `593707c3`, and the
+fixer's two rewordings (decision 8, step 3, and decision 9) and this Record applied to it unchanged.
+`engine/STANDING.md`, the conformance index and the cases are not changed by this order, and
+`promise_standing.py --check` found the standing current (520 rows), so neither it nor the pieces
+tool was run to write. What `main` holds beyond the base is 048b-join's R1 and the fixes that came
+with the squashes of 209 (#412), 048a-5d2 (#419), 048a-5ef (#421) and 048a-5gh (#422):
+`server/discover`'s `_meta` in `requests.rs` and a test of `runner.rs`, a repeat of an ended sign-in
+keeping `signInLogin`, a keyed hook's discovery fencing its attempt, the URL-match refusal split
+into two sentences, 048a-5d2's further unit rejects in `core/src/sign_in.rs`, the relay message's
+sentence where the last account check ended failed or unknown (`unexplained_check`), the DL18 row's
+sentence that whenever `sign-in.v1` ends but by a cancel of its request its waiting hook part ends
+unknown, while a cancelled sign-in stays in progress until a restart ends it (DL6), and an
+invocation-ended record fact in `requests-sign-in-plain-hook-part`. None changes what a decision
+reads: 048b-join's helpers (`url_client`, `established_case`, `fixed_case_shell`,
+`fixed_endpoint_shell`), `SignInScript`, `U`, the two stores' steps, relay1's expired and not-issued
+texts in `relay.rs`, the plain hook's refusal and the repeated first URL are as on the base, and
+decision 8's tests assert of the engine's message only that it names `example.org`. So no amendment
+of this order's text or build was needed, and no `wip: rebased onto 048b-join as merged` commit was
+made. The start check, run on a clean copy of `main`'s tree at `1af88985` (by `git archive`, cold),
+printed what the order gives on a merged base: six lines `1 0` (209, 048a-5d, 048a-5d2, 048a-5ef,
+048a-5gh and 048b-join all merged); `1`; `1` five times; `0`; `1`, `1`, `1`; `const COMMANDS:
+[(&str, &str, &str); 14]`; `0` and `file 1`; `1`, `1`; `2`; and `1`; and there 048b-join's three
+tests passed 1 each, 67 filtered out. Warm in the worktree on the Mac, from `engine/` with 4 test
+and vector threads: `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` (exit 0
+each); `sign_in::tests` (5 passed); `sign_in_command_` (3 passed in the library's target, 0 in every
+other); 048b-join's three tests (1 passed each, 75 filtered out); `--test cli
+help_describes_every_command` (1 passed); `requests-sign-in-` (18 cases passed) and `requests-` (85
+cases passed; 2 expected failures, as on `main`). From the root: `promise_standing.py --check`
+(current, 520 rows, Errors: 0), `check_docs.py` and `check_private_paths.py` (Errors: 0 each),
+`/usr/bin/python3 tools/vector_delta.py origin/main WORKTREE` (`Vector delta: 0 changes; 0 flips; 0
+undeclared; 0 errors.`, exit 0), the order's greps (seven 1s, `COMMANDS` 15, and five 0s, nothing
+changed under `engine/crates/core`, `conformance` or `spec`), and `git diff --check` (clean). The
+whole engine suite, the negative control, `tools/gate.py` against `origin/main` and the reader's
+read of this rebase remain the coordinator's before the merge. The rebase's read found one point
+left to the coordinator (its S2): under `main`'s new DL18 sentence, interrupting `conduit sign-in`
+while a `tools/call` or a retry's poll is in flight cancels the sign-in, which then stays in
+progress until a restart, so decision 9's README sentence (interrupting leaves the sign-in waiting
+until that wait ends) holds for an interrupt at a prompt only; the code is unchanged since the base,
+and whether to amend decision 9 and the README or carry the point to experiment 027's sitting is
+left for a later order. This order gives the owner `conduit sign-in`, which A5's live check and the
+five dogfood sign-ins use (ruling 89; experiment 027's amendment).

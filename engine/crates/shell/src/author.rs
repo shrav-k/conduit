@@ -91,7 +91,7 @@ pub fn inspection_row(_objects: &[Value], object: &Value, reply: Value) -> Value
     }
     row
 }
-fn named(argument: &str) -> Result<Value> {
+pub(crate) fn named(argument: &str) -> Result<Value> {
     let (kind, name) = argument.split_once('/').ok_or_else(|| {
         format!(
             "object {argument:?}: expected KIND/NAME; use conduit inspect to find its kind and name"
@@ -132,7 +132,7 @@ fn requires_directory(value: &Value) -> bool {
         _ => false,
     }
 }
-fn route(directory: &Path, object: &Value, operation: &str) -> Result<String> {
+pub(crate) fn route(directory: &Path, object: &Value, operation: &str) -> Result<String> {
     let state = state(directory)?;
     let objects = state["objects"].as_array().ok_or("missing objects")?;
     let target = objects

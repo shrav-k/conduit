@@ -1,0 +1,137 @@
+# Instances of the conduit-core Fleet for stage 2 of A78, written by work order 210. The harness
+# fills the <...> values. Root's default Conduit to the Fleet is made and opened at registration
+# (FLEET-005); it gives no right to use an Agent, so root holds a turn Conduit to each.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Fleet
+metadata:
+  name: conduit-core
+from: github.com/shrav-k/conduit/core#fleet
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Pool
+metadata:
+  name: trees
+from: tree-pool
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: worker-1
+from: codex-worker
+owner: conduit-core
+arguments:
+  directory: <slot-1>
+  account: <codex-account>
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: verifier-1
+from: codex-verifier
+owner: conduit-core
+arguments:
+  directory: <slot-1>
+  account: <codex-account>
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: worker-2
+from: codex-worker
+owner: conduit-core
+arguments:
+  directory: <slot-2>
+  account: <codex-account>
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: verifier-2
+from: codex-verifier
+owner: conduit-core
+arguments:
+  directory: <slot-2>
+  account: <codex-account>
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: reader-1
+from: claude-reader
+owner: conduit-core
+arguments:
+  directory: <slot-r>
+  account: <claude-account>
+---
+# Root's explicit route to the Pool, as in stage 1.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: root-trees
+from: trees-admin
+consumer:
+  kind: Interface
+  name: root
+target:
+  kind: Pool
+  name: trees
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: turn-worker-1
+from: codex-turn
+consumer:
+  kind: Interface
+  name: root
+target:
+  kind: Agent
+  name: worker-1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: turn-verifier-1
+from: codex-turn
+consumer:
+  kind: Interface
+  name: root
+target:
+  kind: Agent
+  name: verifier-1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: turn-worker-2
+from: codex-turn
+consumer:
+  kind: Interface
+  name: root
+target:
+  kind: Agent
+  name: worker-2
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: turn-verifier-2
+from: codex-turn
+consumer:
+  kind: Interface
+  name: root
+target:
+  kind: Agent
+  name: verifier-2
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: turn-reader-1
+from: claude-turn
+consumer:
+  kind: Interface
+  name: root
+target:
+  kind: Agent
+  name: reader-1

@@ -1,6 +1,6 @@
 # Ruling 86: the Agent items stay plain in 0.2.0, the sign-in hook is keyed per operation (option D) in a later release with its engine half in 0.2.0, four changes to `spec/` are written now, and Codex's account check runs with refresh blocked
 
-Status: in force (ruled by the owner on 2026-11-18, by the repository's local date; the coordinator's notes date the answers 2026-11-19, a date that, by the coordinator's reading, is in UTC). Holds now: [IN_FORCE.md](../../../IN_FORCE.md), topic 9 (points 1, 2, 3 (c) and (d), 4 and 5) and topic 11 (points 2, 3 (a) and (b), and 4), and A5's row of [ROADMAP.md](../../../ROADMAP.md#experiments-and-probes) (point 5's probe). This record says why.
+Status: in force; amended by 88 (its line under What it does not change that orders 048a-7, 048a-8 and 051b-3 stay on 0.2.0's path: they leave it and the dogfood path and move after dogfood, beside the keyed release) (ruled by the owner on 2026-11-18, by the repository's local date; the coordinator's notes date the answers 2026-11-19, a date that, by the coordinator's reading, is in UTC). Holds now: [IN_FORCE.md](../../../IN_FORCE.md), topic 9 (points 1, 2, 3 (c) and (d), 4 and 5) and topic 11 (points 2, 3 (a) and (b), and 4), and A5's row of [ROADMAP.md](../../../ROADMAP.md#experiments-and-probes) (point 5's probe). This record says why.
 
 [Ruling 82](../ruling-82/README.md), point 6, accepted the targeted review's line o1: "the item
 that implements `sign-in-hook.v1` carries Conduit's keys, for `codex.v2` where it states `signIn`

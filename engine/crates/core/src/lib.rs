@@ -161,6 +161,11 @@ pub enum Input {
         #[serde(default)]
         meta: Value,
     },
+    SignInWaitEnded {
+        evidence: Evidence,
+        invocation: String,
+        attempt: u64,
+    },
     Cancel {
         evidence: Evidence,
         invocation: String,
@@ -454,6 +459,7 @@ fn reply_context(input: &Input) -> Option<(String, Option<String>)> {
         | Input::Cancel { evidence, .. }
         | Input::SetupReport { evidence, .. }
         | Input::Recover { evidence }
+        | Input::SignInWaitEnded { evidence, .. }
         | Input::BuiltinRunStopped { evidence, .. }
         | Input::FirstStart { evidence, .. } => (evidence, None),
         _ => return None,
@@ -557,6 +563,17 @@ fn step_body(state: State, input: Input, context: &Context) -> Result<Transition
             attempt,
             &identity,
             &responses,
+            context,
+        )?,
+        Input::SignInWaitEnded {
+            evidence,
+            invocation,
+            attempt,
+        } => crate::sign_in::sign_in_wait_ended(
+            &mut transition,
+            &evidence,
+            &invocation,
+            attempt,
             context,
         )?,
         Input::Cancel {

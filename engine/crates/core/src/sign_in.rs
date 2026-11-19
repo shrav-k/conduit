@@ -1,6 +1,6 @@
 //! PND-005 lapse signals and holds, PND-010 checks, and PND-011 sign-out conditions.
 use crate::{
-    Allocation, Context, InputRequired, Result, State, Transition,
+    Allocation, Context, Evidence, InputRequired, Result, State, Transition,
     access::{self, AccessRequest},
     decision,
     explain::{self, Rejection},
@@ -50,13 +50,19 @@ pub(crate) fn set_sign_in_undone_false(
     outcome: &str,
     hook: &Value,
     time: &str,
+    polling: bool,
 ) {
+    let check = if polling {
+        "sign-in.v1's account check, while polling,"
+    } else {
+        "setup's account check"
+    };
     let condition = json!({
         "type":"SignInUndone",
         "status":"False",
         "reason":if outcome == "failed" {"SignOutFailed"} else {"SignOutUnknown"},
         "message":format!(
-            "The sign-out hook ended {outcome} after setup's account check found an account other than the expected one, so that account may still be signed in. Requests to the instance other than the parts of sign-in.v1, of a setup and of its retirement report unavailable under PND-011 until an account check finds the expected account or none."
+            "The sign-out hook ended {outcome} after {check} found an account other than the expected one, so that account may still be signed in. Requests to the instance other than the parts of sign-in.v1, of a setup and of its retirement report unavailable under PND-011 until an account check finds the expected account or none."
         ),
         "lastTransitionTime":time,
         "source":format!("urn:uuid:{}", hook.as_str().unwrap())
@@ -268,6 +274,9 @@ pub(crate) fn part_answered(
     let name = match invocation["sign_in"]["phase"].as_str() {
         Some("sign-in-pending") => return hook_ended(t, a, c, i, &part["id"], outcome),
         Some("poll-pending") if part["id"] == invocation["sign_in"]["poll"] => "poll",
+        Some("undo-pending") if part["id"] == invocation["sign_in"]["undo"]["hook"] => {
+            return undo_part_answered(t, a, c, i, &part["id"], outcome);
+        }
         Some("account-pending") => "account",
         _ => return Ok(()),
     };
@@ -421,23 +430,51 @@ fn poll_answered(
             ));
             relay_output(t, &id, &a.evidence.time, c)
         }
-        Poll::Other => {
+        Poll::Other if wait_over(&invocation["sign_in_wait"]["expires"], &a.evidence.time) => {
+            let facts = json!({
+                "invocation":invocation["id"],
+                "attempt":invocation["sign_in_wait"]["attempt"],
+                "ended":true
+            });
+            end_sign_in(t, a, c, i, "unknown", "PND-010", WAIT_ENDED)?;
             t.decisions.push(decision(
-                "end-sign-in-other-account",
-                &["PND-011"],
-                &[],
-                json!({"invocation":invocation["id"],"hook":part["id"]}),
+                "sign-in-wait-ended",
+                &["PND-010", "IFC-049"],
+                &["DL18"],
+                facts,
                 vec![],
             ));
-            end_sign_in(
+            Ok(())
+        }
+        Poll::Other => {
+            let account = part["retained"]["outputs"]["account"].clone();
+            let instance = access::object_by_id(&t.state, &invocation["object"])
+                .ok_or("sign-in instance missing")?
+                .clone();
+            if !requests::setup_sign_in_hook(
                 t,
                 a,
                 c,
                 i,
-                "failed",
-                "PND-011",
-                "While polling, the account check found an account that is neither the expected one nor the one the first check found; undoing it with a sign-out-hook.v1 part is not built yet (order 048a-5gh), so sign-in.v1 ends failed and nothing was signed in.",
-            )
+                &instance,
+                "sign-out-hook.v1",
+                &["PND-011", "ACC-018", "IMP-002"],
+                None,
+            )? {
+                return end_sign_in(
+                    t,
+                    a,
+                    c,
+                    i,
+                    "failed",
+                    "PND-011",
+                    "While sign-in.v1 polled, the account check found an account that is neither the expected one nor the one its first check found, and no implementation of sign-out-hook.v1 is resolved for the instance, so that account was not signed out and sign-in.v1 signs nothing in.",
+                );
+            }
+            let sign_in = &mut t.state.invocations[i]["sign_in"];
+            sign_in["undo"] = json!({"account":account,"hook":t.reply["hook"]});
+            sign_in["phase"] = json!("undo-pending");
+            Ok(())
         }
         Poll::NotKnown => end_sign_in(
             t,
@@ -459,6 +496,109 @@ fn unexplained_check(outcome: &str) -> Value {
         "failed" | "unknown" => json!(outcome),
         _ => Value::Null,
     }
+}
+
+fn undo_part_answered(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    hook: &Value,
+    outcome: &str,
+) -> Result<()> {
+    let invocation = &mut t.state.invocations[i];
+    invocation["sign_in"]["parts"]
+        .as_array_mut()
+        .unwrap()
+        .push(json!({"name":"sign-out","outcome":outcome,"invocation":hook}));
+    let instance_id = invocation["object"].clone();
+    let invocation_id = invocation["id"].clone();
+    let Some(instance) = access::object_by_id(&t.state, &instance_id) else {
+        return end_sign_in(
+            t,
+            a,
+            c,
+            i,
+            "failed",
+            "PND-003",
+            "The instance was retired while its sign-out part was in progress, so sign-in.v1 signs nothing in and answers no sign-in action.",
+        );
+    };
+    let account = &t.state.invocations[i]["sign_in"]["undo"]["account"];
+    let expected = match expected_account(instance, c)? {
+        ExpectedAccount::Set { account, .. } => Some(account),
+        _ => None,
+    };
+    let account = serde_json::to_string(account).map_err(|error| error.to_string())?;
+    let expected = serde_json::to_string(&expected).map_err(|error| error.to_string())?;
+    undo_ended(
+        t,
+        &instance_id,
+        &invocation_id,
+        hook,
+        outcome,
+        &a.evidence.time,
+    )?;
+    t.decisions.push(decision(
+        "end-sign-in-other-account",
+        &["PND-011", "PND-005"],
+        &[],
+        json!({"invocation":invocation_id,"hook":hook,"outcome":outcome}),
+        vec![],
+    ));
+    t.state.invocations[i]["sign_in"]
+        .as_object_mut()
+        .unwrap()
+        .remove("undo");
+    let cause = if outcome == "succeeded" {
+        format!(
+            "While sign-in.v1 polled, the account check found the account {account}, which is neither the expected account {expected} nor the account its first check found, so a sign-out-hook.v1 part signed it out; any unanswered sign-in action of the instance stays pending. Send sign-in.v1 again and sign in to {expected}."
+        )
+    } else {
+        format!(
+            "While sign-in.v1 polled, the account check found the account {account}, which is neither the expected account {expected} nor the account its first check found, and the sign-out-hook.v1 part that was to sign it out ended {outcome}, so that account may still be signed in: SignInUndone is False, and requests to the instance other than the parts of sign-in.v1, of a setup and of its retirement report unavailable until an account check finds the expected account or none."
+        )
+    };
+    end_sign_in(t, a, c, i, "failed", "PND-011", &cause)
+}
+
+pub(crate) fn undo_ended(
+    t: &mut Transition,
+    instance: &Value,
+    invocation: &Value,
+    hook: &Value,
+    outcome: &str,
+    time: &str,
+) -> Result<()> {
+    if !t
+        .state
+        .objects
+        .iter()
+        .any(|object| object["id"] == *instance)
+    {
+        return Ok(());
+    }
+    if outcome != "succeeded" {
+        crate::lifecycle::report_sign_in_undone(t, instance, outcome, hook, time, true)?;
+    }
+    let result = match outcome {
+        "succeeded" => "signed-out",
+        "failed" => "sign-out-failed",
+        _ => "sign-out-unknown",
+    };
+    let instance = instance.as_str().ok_or("sign-in instance has no ID")?;
+    if let Some(action) =
+        pending::keep_sign_in_attempt(&mut t.state, instance, invocation, result, time)
+    {
+        t.decisions.push(decision(
+            "keep-sign-in-attempt",
+            &["PND-005", "PND-011"],
+            &[],
+            json!({"action":action,"invocation":invocation}),
+            vec![],
+        ));
+    }
+    Ok(())
 }
 
 pub(crate) fn waiting_for_retry(v: &Value, attempt: u64) -> bool {
@@ -1277,6 +1417,62 @@ fn end_sign_in(
         let (id, action) = (invocation["id"].clone(), action.clone());
         link_action(t, &id, &action)?;
     }
+    Ok(())
+}
+
+pub(crate) fn waits_on_person(state: &State, invocation: &str, attempt: u64, c: &Context) -> bool {
+    let operation = c.qualified("sign-in.v1");
+    state.invocations.iter().any(|v| {
+        v["id"] == invocation
+            && v["state"] == "in-progress"
+            && v["attempt"] == attempt
+            && v["operation"] == operation
+            && waiting_for_retry(v, attempt)
+    })
+}
+
+const WAIT_ENDED: &str = "No retry completed the sign-in within its URL action's wait (DL18), so it ended without signing in and no hook runs for it later; send sign-in.v1 again to sign in.";
+
+fn wait_over(expires: &Value, time: &str) -> bool {
+    matches!(
+        (
+            expires.as_str().map(DateTime::parse_from_rfc3339),
+            DateTime::parse_from_rfc3339(time)
+        ),
+        (Some(Ok(expires)), Ok(time)) if time >= expires
+    )
+}
+
+pub(crate) fn sign_in_wait_ended(
+    t: &mut Transition,
+    evidence: &Evidence,
+    invocation: &str,
+    attempt: u64,
+    c: &Context,
+) -> Result<()> {
+    let ended = waits_on_person(&t.state, invocation, attempt, c);
+    if ended {
+        let i = t
+            .state
+            .invocations
+            .iter()
+            .position(|v| v["id"] == invocation)
+            .ok_or("waiting sign-in invocation missing")?;
+        let mut a = Allocation {
+            evidence,
+            cursor: 0,
+        };
+        end_sign_in(t, &mut a, c, i, "unknown", "PND-010", WAIT_ENDED)?;
+    } else {
+        t.reply = json!({"waitEnded":false});
+    }
+    t.decisions.push(decision(
+        "sign-in-wait-ended",
+        &["PND-010", "IFC-049"],
+        &["DL18"],
+        json!({"invocation":invocation,"attempt":attempt,"ended":ended}),
+        vec![],
+    ));
     Ok(())
 }
 
@@ -2765,6 +2961,228 @@ mod tests {
     }
 
     #[test]
+    fn sign_in_undone_while_polling() {
+        let time = "2026-11-12T12:00:00Z";
+        let running = json!({"type":"Running","status":"True"});
+        let mut state = State {
+            objects: vec![
+                json!({"kind":"Agent","id":"s1","status":{"conditions":[running]}}),
+                json!({"kind":"Agent","id":"s2"}),
+            ],
+            ..State::default()
+        };
+        set_sign_in_undone_false(&mut state.objects[0], "failed", &json!("h1"), time, true);
+        assert_eq!(
+            state.objects[0]["status"]["conditions"],
+            json!([running, {
+                "type":"SignInUndone","status":"False","reason":"SignOutFailed",
+                "message":"The sign-out hook ended failed after sign-in.v1's account check, while polling, found an account other than the expected one, so that account may still be signed in. Requests to the instance other than the parts of sign-in.v1, of a setup and of its retirement report unavailable under PND-011 until an account check finds the expected account or none.",
+                "lastTransitionTime":time,"source":"urn:uuid:h1"
+            }])
+        );
+        assert_eq!(
+            [
+                request_is_held_for_sign_in_undone(&state, &json!("s1")),
+                request_is_held_for_sign_in_undone(&state, &json!("s2"))
+            ],
+            [true, false]
+        );
+        set_sign_in_undone_false(&mut state.objects[1], "unknown", &json!("h2"), time, false);
+        let condition = &state.objects[1]["status"]["conditions"][0];
+        assert_eq!(condition["reason"], "SignOutUnknown");
+        assert_eq!(
+            condition["message"],
+            "The sign-out hook ended unknown after setup's account check found an account other than the expected one, so that account may still be signed in. Requests to the instance other than the parts of sign-in.v1, of a setup and of its retirement report unavailable under PND-011 until an account check finds the expected account or none."
+        );
+        let mut t = transition(state.clone());
+        assert_eq!(
+            undo_ended(
+                &mut t,
+                &json!("absent"),
+                &json!("v1"),
+                &json!("h1"),
+                "failed",
+                time
+            ),
+            Ok(())
+        );
+        assert_eq!(t.state, state);
+        assert_eq!(t.records, Vec::<Value>::new());
+        assert_eq!(t.decisions.len(), 0);
+    }
+
+    #[test]
+    fn sign_in_wait_ends_unknown_at_its_expiry() {
+        let (mut state, context) = fixture();
+        let time = "2026-11-18T12:00:00Z";
+        let invocation = |id: &str, operation: &str, state: &str| {
+            json!({
+                "id":id,"attempt":1,"state":state,"operation":context.qualified(operation),
+                "object":"agent","target":"agent","caller":"root","sender":"root",
+                "conduit":null,"serving":null,"contract":{"spec":{}}
+            })
+        };
+        let wait = |id, state, sign_in| {
+            let mut value = invocation(id, "sign-in.v1", state);
+            value["sign_in"] = sign_in;
+            value["sign_in_wait"] = json!({"attempt":1,"expires":"2026-11-18T12:10:00Z"});
+            value
+        };
+        let part = |id, operation, parent| {
+            let mut value = invocation(id, operation, "in-progress");
+            value["setup_parent"] = json!(parent);
+            value
+        };
+        let waiting = json!({"phase":"retry-pending","parts":[]});
+        let mut h1 = part("h1", "sign-in-hook.v1", "w1");
+        h1["hook_input"] = json!({"key":"sign-in","request_state":"opaque-implementation-state"});
+        state.invocations.extend([
+            wait("w1", "in-progress", waiting.clone()),
+            h1,
+            wait(
+                "w2",
+                "in-progress",
+                json!({"phase":"poll-pending","poll":"a2"}),
+            ),
+            part("a2", "account-hook.v1", "w2"),
+            wait("w3", "failed", waiting),
+            wait(
+                "w4",
+                "in-progress",
+                json!({"phase":"undo-pending","undo":{"account":"third-account","hook":"k4"}}),
+            ),
+            part("k4", "sign-out-hook.v1", "w4"),
+        ]);
+        state.pending_actions.insert(
+            "action".into(),
+            json!({
+                "action":{"id":"action","kind":"sign-in","subject":[{"id":"agent"}],
+                    "evidence":[],"expiry":"2026-11-19T12:00:00Z"},
+                "dispatched":null,"raisedBy":"earlier-sign-in"
+            }),
+        );
+        state
+            .sign_in_holds
+            .insert("agent".into(), json!({"since":time}));
+        let make_evidence = |range: std::ops::Range<u32>| {
+            let ids: Vec<_> = range
+                .map(|n| format!("00000000-0000-4000-8048-b0000000{n:04}"))
+                .collect();
+            json!({"time":time,"ids":ids})
+        };
+        let expire = |state: &State, invocation: &str, attempt: u64| {
+            let input = serde_json::from_value(json!({
+                "kind":"sign-in-wait-ended","invocation":invocation,"attempt":attempt,
+                "evidence":make_evidence(1..50)
+            }))
+            .unwrap();
+            crate::step(state, input, &context).unwrap()
+        };
+        let assert_wait_unaffected = |state: &State, invocation: &str, attempt: u64| {
+            let t = expire(state, invocation, attempt);
+            assert_eq!(t.reply, json!({"waitEnded":false}));
+            assert_eq!(&t.state, state);
+            assert_eq!(t.records, Vec::<Value>::new());
+            assert_eq!(t.external_intents, Vec::<Value>::new());
+            assert_eq!(t.decisions.len(), 1);
+            assert_eq!(t.decisions[0].action, "sign-in-wait-ended");
+            assert_eq!(
+                t.decisions[0].facts,
+                json!({"invocation":invocation,"attempt":attempt,"ended":false})
+            );
+        };
+        for (id, attempt) in [("w1", 2), ("w2", 1), ("w4", 1), ("w3", 1), ("absent", 1)] {
+            assert_wait_unaffected(&state, id, attempt);
+        }
+        let expired = expire(&state, "w1", 1);
+        let (w1, h1) = (&expired.state.invocations[0], &expired.state.invocations[1]);
+        assert_eq!(w1["state"], "unknown");
+        assert_eq!(h1["state"], "unknown");
+        assert_eq!(w1["cause"].as_array().unwrap().len(), 1);
+        assert_eq!(w1["cause"][0]["ruleId"], "PND-010");
+        let text = w1["cause"][0]["message"]["text"].as_str().unwrap();
+        assert_eq!(
+            [text.ends_with("send sign-in.v1 again to sign in.")],
+            [true]
+        );
+        assert_eq!(h1["cause"].as_array().unwrap().len(), 1);
+        assert_eq!(h1["cause"][0]["ruleId"], "PND-010");
+        assert_eq!(h1.get("hook_input"), None);
+        assert_eq!(expired.state.invocations[2..], state.invocations[2..]);
+        assert_eq!(expired.external_intents, Vec::<Value>::new());
+        let ended: Vec<_> = expired
+            .records
+            .iter()
+            .filter(|record| record["type"] == "invocation-ended")
+            .map(|record| &record["data"]["invocation"])
+            .collect();
+        assert_eq!(ended, [&json!("h1"), &json!("w1")]);
+        assert_eq!(expired.state.pending_actions, state.pending_actions);
+        assert_eq!(expired.state.sign_in_holds, state.sign_in_holds);
+        assert_eq!(
+            expired.reply["_meta"][format!("{}outcome", context.meta_prefix)],
+            "unknown"
+        );
+        let decision = expired.decisions.last().unwrap();
+        assert_eq!(decision.action, "sign-in-wait-ended");
+        assert_eq!(
+            decision.facts,
+            json!({"invocation":"w1","attempt":1,"ended":true})
+        );
+
+        assert_wait_unaffected(&expired.state, "w1", 1);
+        let late = serde_json::from_value(json!({
+            "kind":"respond","invocation":"w1","attempt":1,"evidence":make_evidence(50..100),
+            "identity":{"kind":"instance","id":"root"},"responses":{"url":{"action":"accept"}},"meta":{}
+        })).unwrap();
+        let refused = crate::step(&expired.state, late, &context).unwrap();
+        assert_eq!(refused.external_intents, Vec::<Value>::new());
+        assert_eq!(
+            refused.state.invocations.len(),
+            expired.state.invocations.len()
+        );
+        assert_eq!(refused.state.invocations[0]["state"], "unknown");
+        assert_eq!(refused.decisions.len(), 1);
+        assert_eq!(refused.decisions[0].action, "refuse-input-response");
+
+        let late_poll = Evidence {
+            time: "2026-11-18T12:10:00Z".into(),
+            ids: (0..50)
+                .map(|n| format!("00000000-0000-4000-8048-b0000001{n:04}"))
+                .collect(),
+            revisions: vec![],
+            suffixes: vec![],
+        };
+        let mut a = Allocation {
+            evidence: &late_poll,
+            cursor: 0,
+        };
+        let mut t = crate::explain::tests::transition(state.clone());
+        let a2 = json!({"id":"a2","retained":{"outputs":{"account":"third-account"}}});
+        poll_answered(
+            &mut t,
+            &mut a,
+            &context,
+            2,
+            &a2,
+            "succeeded",
+            "primary-account",
+        )
+        .unwrap();
+        assert_eq!(t.external_intents, Vec::<Value>::new());
+        assert_eq!(t.state.invocations.len(), state.invocations.len());
+        assert_eq!(t.state.invocations[2]["state"], "unknown");
+        assert_eq!(t.state.invocations[2]["cause"][0]["ruleId"], "PND-010");
+        assert_eq!(t.state.invocations[2]["sign_in"].get("undo"), None);
+        let decision = t.decisions.last().unwrap();
+        assert_eq!(decision.action, "sign-in-wait-ended");
+        assert_eq!(
+            decision.facts,
+            json!({"invocation":"w2","attempt":1,"ended":true})
+        );
+    }
+
+    #[test]
     fn sign_in_undone_condition_and_hold() {
         let time = "2026-11-12T12:00:00Z";
         let later = "2026-11-12T12:00:01Z";
@@ -2779,7 +3197,7 @@ mod tests {
             ],
             ..State::default()
         };
-        set_sign_in_undone_false(&mut state.objects[0], "failed", &json!("h1"), time);
+        set_sign_in_undone_false(&mut state.objects[0], "failed", &json!("h1"), time, false);
         assert_eq!(
             state.objects[0]["status"]["conditions"],
             json!([running,{
@@ -2790,7 +3208,7 @@ mod tests {
         );
         let held = |state: &State, id: &str| request_is_held_for_sign_in_undone(state, &json!(id));
         assert_eq!([held(&state, "s1"), held(&state, "s2")], [true, false]);
-        set_sign_in_undone_false(&mut state.objects[0], "unknown", &json!("h2"), later);
+        set_sign_in_undone_false(&mut state.objects[0], "unknown", &json!("h2"), later, false);
         let unknown = state.objects[0]["status"]["conditions"][1].clone();
         assert_eq!(unknown["reason"], "SignOutUnknown");
         assert_eq!(unknown["source"], "urn:uuid:h2");

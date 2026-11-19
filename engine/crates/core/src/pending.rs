@@ -282,6 +282,26 @@ pub(crate) fn unanswered_sign_in<'a>(
         })
 }
 
+pub(crate) fn keep_sign_in_attempt(
+    state: &mut State,
+    instance: &str,
+    invocation: &Value,
+    result: &str,
+    time: &str,
+) -> Option<Value> {
+    let id = unanswered_sign_in(state, &json!({"id":instance}), time)?["id"].clone();
+    let action = &mut state.pending_actions.get_mut(id.as_str()?)?["action"];
+    action["evidence"].as_array_mut()?.extend([
+        fact(
+            invocation.clone(),
+            "records",
+            "a sign-in.v1 attempt whose account check, while polling, found an account other than the expected one",
+        ),
+        fact(json!(result), "records", "what the sign-out hook did with that account"),
+    ]);
+    Some(id)
+}
+
 pub(crate) enum SignInRequest<'a> {
     Invocation {
         invocation: &'a Value,
@@ -1147,6 +1167,77 @@ mod tests {
             ..State::default()
         };
         (state, agent)
+    }
+
+    #[test]
+    fn sign_in_attempt_kept_as_evidence() {
+        let (_, context) = crate::explain::tests::fixture();
+        let (mut state, agent) = sign_in_hold_fixture(&context);
+        let time = "2026-11-12T12:00:00Z";
+        let expiry = "2026-11-19T12:00:00Z";
+        let setup = json!({"id":"u1","operation":context.qualified("set-up.v1")});
+        let evidence = serde_json::from_value(json!({"time":time,"ids":["action"]})).unwrap();
+        let mut a = Allocation {
+            evidence: &evidence,
+            cursor: 0,
+        };
+        let action = raise_sign_in(
+            &mut state,
+            &agent,
+            "primary-account",
+            "/account",
+            SignInRequest::Setup {
+                invocation: &setup,
+                trigger: "setup-other-account",
+            },
+            &mut a,
+        )
+        .unwrap()
+        .unwrap();
+        let id = action["id"].as_str().unwrap();
+        let mut expected = state.pending_actions[id].clone();
+        for (time, invocation, result, len) in [
+            ("2026-11-12T12:00:01Z", "v1", "signed-out", 6),
+            ("2026-11-12T12:00:02Z", "v2", "sign-out-failed", 8),
+        ] {
+            assert_eq!(
+                keep_sign_in_attempt(&mut state, "s1", &json!(invocation), result, time),
+                Some(json!(id))
+            );
+            expected["action"]["evidence"].as_array_mut().unwrap().extend([
+                json!({"kind":"fact","value":invocation,"where":"records",
+                    "proves":"a sign-in.v1 attempt whose account check, while polling, found an account other than the expected one"}),
+                json!({"kind":"fact","value":result,"where":"records",
+                    "proves":"what the sign-out hook did with that account"}),
+            ]);
+            assert_eq!(state.pending_actions[id], expected);
+            assert_eq!(
+                state.pending_actions[id]["action"]["evidence"]
+                    .as_array()
+                    .unwrap()
+                    .len(),
+                len
+            );
+        }
+        assert_eq!(state.pending_actions[id]["action"]["expiry"], expiry);
+        assert_eq!(state.pending_actions[id]["raisedBy"], "u1");
+        let before = state.clone();
+        assert_eq!(
+            keep_sign_in_attempt(
+                &mut state,
+                "s2",
+                &json!("v2"),
+                "sign-out-failed",
+                "2026-11-12T12:00:02Z"
+            ),
+            None
+        );
+        assert_eq!(state, before);
+        assert_eq!(
+            keep_sign_in_attempt(&mut state, "s1", &json!("v3"), "sign-out-unknown", expiry),
+            None
+        );
+        assert_eq!(state, before);
     }
 
     #[test]

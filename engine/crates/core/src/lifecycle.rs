@@ -356,6 +356,7 @@ pub(crate) fn report_sign_in_undone(
     outcome: &str,
     hook: &Value,
     time: &str,
+    polling: bool,
 ) -> Result<()> {
     let object = t
         .state
@@ -363,7 +364,7 @@ pub(crate) fn report_sign_in_undone(
         .iter_mut()
         .find(|o| o["id"] == *instance)
         .ok_or("sign-out instance disappeared")?;
-    sign_in::set_sign_in_undone_false(object, outcome, hook, time);
+    sign_in::set_sign_in_undone_false(object, outcome, hook, time, polling);
     t.decisions.push(decision(
         "report-sign-in-undone",
         &["PND-011"],
@@ -1340,7 +1341,14 @@ fn sign_in_part_answered(
         t.state.invocations[i]["setup"]["accountCounted"] = json!(outcome);
     } else if outcome != "succeeded" {
         if !account_check {
-            report_sign_in_undone(t, &instance["id"], outcome, &child["id"], &a.evidence.time)?;
+            report_sign_in_undone(
+                t,
+                &instance["id"],
+                outcome,
+                &child["id"],
+                &a.evidence.time,
+                false,
+            )?;
             t.state.invocations[i]["setup"]["signOut"] = json!(outcome);
         }
         if !retired {
@@ -1452,7 +1460,7 @@ pub(crate) fn cancel(
             );
             if v["setup"]["phase"] == "undo-pending" {
                 let hook = t.state.invocations[child]["id"].clone();
-                report_sign_in_undone(t, &v["object"], "unknown", &hook, &a.evidence.time)?;
+                report_sign_in_undone(t, &v["object"], "unknown", &hook, &a.evidence.time, false)?;
                 t.state.invocations[i]["setup"]["signOut"] = json!("unknown");
             }
         }

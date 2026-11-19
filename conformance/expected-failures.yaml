@@ -5,24 +5,12 @@
       "reason": "LIF-028 under ruling 78 point 5: the first build opens the Conduit when a reconciliation records an open as having occurred; review order 22, the engine following SO-B, makes it pass and removes this entry"
     },
     {
-      "id": "requests-keyed-not-a-hook",
-      "reason": "PKG-020 under ruling 86, point 2, as the coordinator narrows it to hooks: the core checks no implementation item's keyed, so it registers a plain item whose keyed lists an operation that is not a hook; order 209 refuses it, makes the case pass and removes this entry."
-    },
-    {
       "id": "requests-repeat-failed-earlier-succeeded",
       "reason": "OPS-012, F13 of ruling 78 point 6 as ruling 80 point 2 refines it: the first build records failed when a new attempt is answered failed after an earlier attempt's late answer said succeeded; review order 22, the engine following SO-B, makes it pass and removes this entry"
     },
     {
       "id": "requests-repeat-failed-earlier-unanswered",
       "reason": "OPS-012, F13 of ruling 78 point 6: the first build records failed when a new attempt is answered failed while an earlier attempt has no answer; review order 22, the engine following SO-B, makes it pass and removes this entry"
-    },
-    {
-      "id": "requests-sign-in-login-plain-hook",
-      "reason": "PND-010 under ruling 86, point 3 (c): the core refuses only a signInLogin that names no stated login, so one aimed at a plain sign-in-hook.v1 goes on to the account check; order 209 refuses it before any part, makes the case pass and removes this entry."
-    },
-    {
-      "id": "requests-sign-in-setup-check-failed",
-      "reason": "PND-011 and TPL-012 under ruling 86, point 3 (d). The bare failed account check in this case stops setup. The core lacks the setup-specific sign-in action trigger for a failed or unknown check. A qualifying lapse diagnostic can already raise the action under PND-005. Order 209 counts the unsuccessful check as no account, makes the case pass and removes this entry."
     }
   ]
 }

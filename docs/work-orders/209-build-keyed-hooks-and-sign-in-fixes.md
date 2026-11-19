@@ -470,7 +470,12 @@ is `mark(c, "implementation-interface")`, Conduit's extension, as `capability_er
    - write no `invocation-dispatched` record, and push in place of `intent(&v, &t.state, c)?` the
      intent `{"kind": "dispatch", "invocation": <ID>, "attempt": <attempt>, "target": <the
      object's ID>, "implementation": <implementation>, "call": {"method": "server/discover",
-     "params": {}}}`;
+     "params": {"_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28",
+     "io.modelcontextprotocol/clientCapabilities": {"extensions": {EXT: {"revision":
+     "v0"}}}}}}}`. Amended on the reader's finding R209-1: `server/discover` exists only in
+     2026-07-28, an rmcp 3.9.0 server refuses with `invalid_params` one whose `_meta` lacks those
+     two keys, even on a session that `initialize` opened, and IFC-037 has the extension declared
+     on each call;
    - reply as now, `{"pending":true,"invocation":<parent>,"hook":<ID>}`.
 
    Move the record's `data`, as `dispatch_hook` writes it today, into one function that both places
@@ -508,7 +513,10 @@ is `mark(c, "implementation-interface")`, Conduit's extension, as `capability_er
    other, the URL arm included (decision 2). A later call for the same hook, or a re-dispatch under
    OPS-028, reads discovery again. Where `reject_diagnostics` cannot take this route or these diagnostics,
    use the nearest sound reading that keeps the reason, the rule, the two record members and the
-   text, and say so.
+   text, and say so. Amended on the reader's finding R209-2: whatever the discovery's completion, the Not listed arm, before it restores or removes the invocation, and the Listed arm with an ended
+   parent, before it finishes the hook, fence the attempt (OPS-014), as the IFC-026 arm fences an
+   answer before it restores, since no copy of the hook's call is in flight; the Listed arm that
+   sends the hook does not, and the hook's own answer fences it.
 
 4. **(c): a login name aimed at a plain hook.** In `request_member_refusal`, in place of the
    `return None` for a stated name (line 691), where the item of the instance's
@@ -597,8 +605,9 @@ is `mark(c, "implementation-interface")`, Conduit's extension, as `capability_er
      none; with `I` `{"plain": true, "tools": {}, "keyed": [Q("sign-in-hook.v1")]}` and
      `{"name": "browser"}`, none; with `I` `{"command": ["x"]}` and `{"name": "device"}`, none.
    - In `engine/crates/shell/src/runner.rs`'s tests, `discover_call_parses_as_a_client_request`:
-     `serde_json::from_value::<ClientRequest>(json!({"method": "server/discover", "params": {}}))`
-     is `Ok`, as `call` parses an intent's call.
+     `serde_json::from_value::<ClientRequest>(json!({"method": "server/discover", "params": P}))`
+     is `Ok`, as `call` parses an intent's call, `P` being decision 3's params with EXT written
+     `io.github.shrav-k.conduit/implementation-interface` (amended on R209-1).
 
 8. **Three portable cases.** The first, on 048a-3's fixture with a manifest of its own. Add the
    directory
@@ -626,7 +635,8 @@ is `mark(c, "implementation-interface")`, Conduit's extension, as `capability_er
    `suffixes` the 16 strings `q` followed by the four-digit, zero-padded decimal of 100n + j, for
    j = 0 to 15, where n is the step's number in this case; a copied step keeps its own evidence.
    These recur:
-   - DISCOVER: `{"kind": "dispatch", "attempt": 1, "call": {"method": "server/discover", "params": {}}}`;
+   - DISCOVER: `{"kind": "dispatch", "attempt": 1, "call": {"method": "server/discover", "params": {"_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28", "io.modelcontextprotocol/clientCapabilities": {"extensions": {"META/implementation-interface": {"revision": "v0"}}}}}}}`
+     (amended on R209-1, decision 3);
    - LISTED: `{"kind": "result", "result": {"resultType": "complete", "supportedVersions": ["2026-07-28"], "capabilities": {"tools": {}, "extensions": {"META/implementation-interface": {"revision": "v0"}}}, "ttlMs": 0, "cacheScope": "private"}}`;
    - UNLISTED: LISTED with `capabilities` `{"tools": {}}`;
    - KEYED: `{"kind": "dispatch", "attempt": 1, "call": {"method": "tools/call", "params": {"name": "account_hook", "_meta": {"META/operation": CORE(account-hook.v1), "META/caller": ROOT, "io.modelcontextprotocol/clientCapabilities": {"extensions": {"META/implementation-interface": {"revision": "v0"}}, "elicitation": {"url": {}}}}}}}`;
@@ -1081,7 +1091,8 @@ For the coordinator, not the worker:
   `requests-keyed-hook-dispatch`, whose unknown check then goes on to the plain sign-in hook, and
   step 15 of `requests-sign-in-setup-check-failed-hook`, whose failed check then goes on to a keyed
   sign-in hook; and it follows the section's last sentence as this order words it ("from the
-  `sign-in-hook.v1` part, plain or keyed").
+  `sign-in-hook.v1` part, plain or keyed"). Any `server/discover` intent its cases expect carries
+  decision 3's `_meta`, as amended on R209-1.
 - **The URL arm's sign-in action for a part of `sign-in.v1`** (decision 12): whether PND-005 asks
   for it, and if not which order removes it, is the coordinator's to settle; IFC-016's task path
   (order 207's Record, R207-9) is beside it.
@@ -1094,9 +1105,116 @@ For the coordinator, not the worker:
 - **Cases for the keyed hook's other readings**, outstanding: a keyed setup or retire hook given
   its idempotency key and re-dispatched under OPS-028, and its call and result under IFC-008,
   IFC-019, IFC-026 and IFC-047, which order 207's "What follows" asked of this order with cases of its own.
+- **Discovery bound to a run** (the reader's R209-3, the verifier's second must, the worker's
+  209-1): a hook intent is not yet bound to the session that answered its discovery, so a run
+  replaced between the two can receive the hook. A later order, which may keep a discovery result
+  per run, binds the discovery and hook intents to a runner session and requires fresh discovery
+  when the session changes, an IFC-046 resend included.
 - **IFC-037 for implementations not marked `plain`**: discovery and the extension's declaration
   for every keyed call, an order of its own if the coordinator puts it on 0.2.0's path.
 
 ## Record
 
-Not yet run.
+Run on 2026-11-19, from about 17:09 to 17:42 UTC, on the Mac from `main` `d4343f71` (this order's
+text, #407), in one round: the worker (1623 s) and a fresh Codex verifier (348 s). The change is the
+files of Scope. `check_items` checks `keyed` under PKG-020 (decision 1); `keyed_hook` and the
+per-call `plain` name a keyed hook's call from `tools`, give it Conduit's keys and declare the
+extension (decision 2); `dispatch_hook` sends `server/discover` first for a keyed hook of a plain
+item and `complete` reads its answer in `complete_hook_discovery`, with `record_hook_dispatch` and
+`restore_or_remove_invocation` beside it (decision 3); `request_member_refusal` refuses a stated
+login aimed at a plain sign-in hook (decision 4); a failed or unknown account check counts as no
+account in `sign-in.v1` and in setup, with `accountCounted` and `raise_setup_sign_in` (decisions 5
+and 6); the four unit tests, the three cases, step 24 of `requests-sign-in-account-first`, the
+three expected failures removed, `engine/CONFORMANCE.md`'s seven places and `engine/STANDING.md`
+(decisions 7 to 10). The worker's own choices: the IFC-026 arm's restoring reused for a refused
+discovery, the earlier state kept for a stable keyed hook being retried, and `sign_in::rejection`
+and the setup's existing raise reused. It reported the unit counts 18, 34, 9, 1 and 1, the eleven
+mutations failing as the table states, the workspace suite 376 passed with four ignored, the spike
+9 passed, and five findings: 209-1, a run replaced between discovery and the hook could receive
+the hook; 209-2, a keyed repeat still bypasses the login checks (048a-5's R4); 209-3, whether the
+URL arm's sign-in action for a part of `sign-in.v1` is PND-005's is open; 209-4, a cancelled
+`sign-in.v1` is the only path found to the Listed arm with an ended parent; 209-5, no test ran a
+real discovery server.
+
+The verifier found three musts and a should. V1: the discovery call carried no request metadata,
+and an rmcp 3.9.0 server refuses `server/discover` without it, so a keyed hook would always end
+unavailable. V2: a replacement run can receive a keyed hook on the strength of the previous run's
+discovery. V3: a refused discovery on a stable hook's retry leaves an unfenced attempt for a call
+that never went out, which can block a later reconciliation (OPS-014, OPS-030). V4 (should):
+nothing asserts that discovery writes no `invocation-dispatched` record.
+
+A fresh read-only Opus reader then verified the order (ruling 87, point 2; ruling 79, point 2) on
+the worker's checkpoint. It ran fmt and clippy (clean), the unit filters (18, 34, 9, 1 and 1
+passed), the pieces tool (`Nothing to move.`), the eight single-case filters (seven
+`1 cases passed`, `requests-sign-in-setup-check-failed` `2 cases passed`), `requests-sign-in-`
+(`11 cases passed`) and `requests-` (`78 cases passed; 2 expected failures`), the eleven mutation
+rows (each failing as the table states and passing after the `cp` restore), the Python checks and
+the tool tests (129, OK), `vector_delta.py` (`4 changes; 0 flips; 0 undeclared; 0 errors.`, exit
+0), the spike (9 passed), the order's greps, a comparison of `engine/CONFORMANCE.md`'s section
+with the order's block (identical) and of the three cases with decision 8 (as specified), and a
+probe that wrote the dispatch record at discovery time, which every case still passed. It read
+rmcp 3.9.0's source for V1. It judged V1 a must, in the order's text rather than the build, V2 not
+a must, a window the order's no-notion-of-a-run decision accepts and whose closing needs runner
+state outside Scope, V3 a should, since only a keyed setup or retire hook reaches it and no package
+lists one in 0.2.0, and V4 a should. Its findings:
+
+- R209-1 (must): the discovery call's params were `{}`; an rmcp 3.9.0 server refuses that with
+  `invalid_params` before its discover handler runs, which defeats ruling 86, point 4.
+- R209-2 (should): the Not listed arm and the Listed arm with an ended parent leave the
+  never-sent attempt unfenced.
+- R209-3 (should): record that a hook intent is not yet bound to the session that answered its
+  discovery.
+- R209-4 (should): nothing asserts that discovery writes no `invocation-dispatched` record.
+
+The fixer rebased the branch onto `origin/main` at `ddbc0f9f` (ruling 89, after order 048a-5d's
+refresh) with the work-order identity, without conflict, and applied each finding:
+
+- R209-1: decisions 3 and 7 and DISCOVER are amended, and the core's discovery call now holds
+  `_meta` with `io.modelcontextprotocol/protocolVersion` `2026-07-28` and
+  `io.modelcontextprotocol/clientCapabilities` declaring the extension at `v0`; the five DISCOVER
+  expectations of `requests-keyed-hook-dispatch` and the runner's parse test carry the same params.
+  The case is added, so `209-declared.yaml` does not change. "What follows" tells order 048a-5d
+  that any discovery intent its cases expect carries the same `_meta`. In a scratch Rust crate
+  outside the repository, built offline against rmcp 3.9.0, a server listing the extension at
+  `v0`, after rmcp's default client's `initialize` (negotiated `2025-11-25`), answered the former
+  call with -32602, `request _meta is missing or has malformed required fields`, naming both keys,
+  and the new call with a result listing the extension at `v0`.
+- R209-2: `complete_hook_discovery` fences the attempt (OPS-014) in the Not listed arm before it restores or removes the invocation, and in the Listed arm with
+  an ended parent before it finishes the hook; decision 3 says so. The reader's optional removal of
+  `previous` in the Listed arm was not made: it is not needed for the fence and changes how a keyed
+  hook's own answer restores. No case reaches the path, so no check shows the fence.
+- R209-3: no code change, as the reader says; "What follows" gains the item "Discovery bound to a
+  run", and the coordinator's decision that "no result read for one run is ever taken for another"
+  stands qualified by it.
+- R209-4: recorded here as a coverage gap rather than by a test, which the reader offered as the
+  alternative: the case's step 6 matches the record in order and allows an extra one, so a build
+  that wrote it at discovery time would pass.
+
+Then, in the worktree, the fixer ran from `engine/` `cargo fmt --check` (exit 0), clippy (no
+warnings), the four core filters (18, 34, 9 and 1 passed), the shell's parse test (1 passed), the
+pieces tool (`Nothing to move.`), the eight single-case filters (seven `1 cases passed`,
+`requests-sign-in-setup-check-failed` `2 cases passed`), `requests-sign-in-` (`11 cases passed`)
+and `requests-` (`78 cases passed; 2 expected failures`); the mutation rows on `requests.rs` again
+(rows 1, 2, 7 and 8, each failing as the table states and passing after the `cp` restore) and a
+new one, the discovery's params set back to `{}`, which failed at step 5 with
+`/external_intents/0/call/params/_meta: missing required field` and passed after the restore, the
+file then equal to its copy; and from the root `check_docs.py`, `check_private_paths.py`,
+`check_schemas.py` and `promise_standing.py --check` (Errors: 0 each), `vector_delta.py` against
+`origin/main` (`4 changes; 0 flips; 0 undeclared; 0 errors.`, exit 0) and `git diff --check`
+(clean). The full engine suite and the gate's run on this order's squash are the coordinator's at
+the merge.
+
+A second fresh read-only Opus reader then reread the order after the fixes. It ran fmt and clippy
+(clean), the unit filters (18, 34, 9 and 1 passed) and the shell's parse test (1 passed), the pieces
+tool, the eight single-case filters, `requests-sign-in-` (`11 cases passed`) and `requests-` (`78
+cases passed; 2 expected failures`), the mutation rows on `requests.rs` and the fixer's new row
+(each failing as stated and passing after the `cp` restore), the Python checks and the tool tests
+(129, OK), `vector_delta.py` (`4 changes; 0 flips; 0 undeclared; 0 errors.`, exit 0), the spike (9
+passed) and the order's greps, and read rmcp 3.9.0's source for the discovery metadata. It found no
+must and two shoulds, which the coordinator applied at the merge: R209r2-1, that a discovery ending
+with no answer also left the hook's attempt unfenced, though its call was never sent, so the Not
+listed arm now fences it whatever the discovery's completion (the core's library tests, 135 passed,
+clippy, fmt, `requests-keyed-hook-dispatch` and `requests-sign-in-` were run again and pass); and
+R209r2-2, this paragraph. The branch was rebased onto `origin/main` at the merge. Order 048a-5d,
+dispatched on this order's round-1 branch before R209-1's fix, follows the discovery's new `_meta`
+when it is rebased.

@@ -250,6 +250,25 @@ pub(crate) fn part_answered(
     }
     let (found, cause) = match check {
         FirstCheck::Expected(found) => return signed_in(t, a, c, i, &found),
+        FirstCheck::NotChecked if matches!(outcome, "failed" | "unknown") => {
+            t.decisions.push(decision(
+                "end-sign-in-before-relay",
+                &["PND-010", "PND-011"],
+                &[],
+                json!({"invocation":t.state.invocations[i]["id"],"found":"none","check":outcome}),
+                vec![],
+            ));
+            return end_failed(
+                t,
+                a,
+                c,
+                i,
+                "PND-010",
+                &format!(
+                    "The account check before sign-in-hook.v1 ended {outcome}, which counts as no account (PND-010, PND-011); sign-in.v1 would go on to start a login through sign-in-hook.v1 and relay it under IFC-049, which this build does not yet do (order 048a-5e), so it ends failed and nothing was signed in."
+                ),
+            );
+        }
         FirstCheck::NotChecked => {
             return end_failed(
                 t,
@@ -687,25 +706,41 @@ fn request_member_refusal(
         ));
     }
     let login = request.sign_in_login.as_ref()?;
+    let stated_logins = names
+        .iter()
+        .map(|name| json!(name).to_string())
+        .collect::<Vec<_>>()
+        .join(", ");
     let cause = match login["name"].as_str() {
-        Some(name) if names.iter().any(|stated| stated == name) => return None,
+        Some(name) if names.iter().any(|stated| stated == name) => {
+            let hook = context.qualified("sign-in-hook.v1");
+            let item = &instance["resolved_implementations"][&hook]["item"];
+            if item["plain"] == true && !requests::keyed_hook(item, &hook) {
+                return Some(rejection(
+                    "invalid",
+                    "PND-010",
+                    tool,
+                    instance,
+                    &format!(
+                        "signInLogin asks for the login {}, but the instance's sign-in-hook.v1 is a plain hook, its implementation item marked plain and not listing sign-in-hook.v1 under keyed (PKG-020), which gets no login name (IFC-007); send the request again without signInLogin, and the hook chooses among the stated logins {stated_logins}.",
+                        json!(name)
+                    ),
+                ));
+            }
+            return None;
+        }
         Some(name) => format!(
             "signInLogin asks for the login {}, which the instance's Type does not state",
             json!(name)
         ),
         None => "signInLogin must hold the name of one login the instance's Type states".into(),
     };
-    let names = names
-        .iter()
-        .map(|name| json!(name).to_string())
-        .collect::<Vec<_>>()
-        .join(", ");
     Some(rejection(
         "invalid",
         "PND-010",
         tool,
         instance,
-        &format!("{cause}; its stated logins are {names}."),
+        &format!("{cause}; its stated logins are {stated_logins}."),
     ))
 }
 
@@ -797,7 +832,7 @@ fn visible_sign_in_action<'a>(
     Ok(None)
 }
 
-fn rejection(
+pub(crate) fn rejection(
     reason: &'static str,
     rule: &'static str,
     tool: &str,
@@ -1030,6 +1065,69 @@ mod tests {
                 request_is_held(&state, &template, &model),
             ],
             [true, false, true, true, false, false]
+        );
+    }
+
+    #[test]
+    fn sign_in_login_refused_for_a_plain_hook() {
+        let (_, context) = crate::explain::tests::fixture();
+        let hook = context.qualified("sign-in-hook.v1");
+        let route = json!({"tool":"group.sign-in.v1"});
+        let names = ["browser".to_owned(), "device".to_owned()];
+        let check = |item, login: Option<Value>| {
+            let mut request = json!({
+                "identity":{"kind":"instance","id":"r"},
+                "tool":route["tool"],
+                "arguments":{"instance":{"kind":"Agent","name":"signed"}},
+                "clientCapabilities":{"elicitation":{"url":{}}}
+            });
+            if let Some(login) = login {
+                request["signInLogin"] = login;
+            }
+            let instance = json!({
+                "kind":"Agent","name":"signed",
+                "resolved_implementations":{&hook:{"item":item}}
+            });
+            request_member_refusal(
+                &route,
+                &instance,
+                &serde_json::from_value(request).unwrap(),
+                &names,
+                &context,
+            )
+            .map(|r| (r.reason, r.rule, r.diagnostics.unwrap()))
+        };
+        let plain = json!({"plain":true,"tools":{}});
+        for (name, text) in [
+            (
+                "browser",
+                r#"group.sign-in.v1 reports invalid under PND-010 for Agent/signed: signInLogin asks for the login "browser", but the instance's sign-in-hook.v1 is a plain hook, its implementation item marked plain and not listing sign-in-hook.v1 under keyed (PKG-020), which gets no login name (IFC-007); send the request again without signInLogin, and the hook chooses among the stated logins "browser", "device"."#,
+            ),
+            (
+                "phone",
+                r#"group.sign-in.v1 reports invalid under PND-010 for Agent/signed: signInLogin asks for the login "phone", which the instance's Type does not state; its stated logins are "browser", "device"."#,
+            ),
+        ] {
+            assert_eq!(
+                check(plain.clone(), Some(json!({"name":name}))),
+                Some((
+                    "invalid",
+                    "PND-010".to_owned(),
+                    json!([{"ruleId":"PND-010","level":"error","message":{"text":text}}])
+                ))
+            );
+        }
+        assert_eq!(check(plain, None), None);
+        assert_eq!(
+            check(
+                json!({"plain":true,"tools":{},"keyed":[hook]}),
+                Some(json!({"name":"browser"}))
+            ),
+            None
+        );
+        assert_eq!(
+            check(json!({"command":["x"]}), Some(json!({"name":"device"}))),
+            None
         );
     }
 

@@ -1248,6 +1248,21 @@ impl Inner {
 mod tests {
     use super::*;
 
+    #[test]
+    fn discover_call_parses_as_a_client_request() {
+        assert!(
+            serde_json::from_value::<ClientRequest>(
+                json!({"method":"server/discover","params":{"_meta":{
+                    "io.modelcontextprotocol/protocolVersion":"2026-07-28",
+                    "io.modelcontextprotocol/clientCapabilities":{"extensions":{
+                        "io.github.shrav-k.conduit/implementation-interface":{"revision":"v0"}
+                    }}
+                }}})
+            )
+            .is_ok()
+        );
+    }
+
     fn test_runner(parent: &Path) -> (Arc<Shell>, Runner) {
         let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
         let shell = Arc::new(

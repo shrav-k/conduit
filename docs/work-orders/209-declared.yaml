@@ -1,3 +1,4 @@
+# Checked at the merge of order 209, against main at 791fe1f2: the work's vector delta matches these shapes.
 # Order 209's vector changes, written with the order against main at 1d3c7301 (sources as at 39f4af61) and order 207's text, and refreshed against main at 0b5b1eba after order 207 merged; checked at its merge against the main it starts from.
 - name: requests-keyed-hook-dispatch
   kind: added

@@ -400,9 +400,11 @@ pub(crate) fn record_setup_sign_in(t: &mut Transition, i: usize) -> Result<()> {
 fn settle(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) -> Result<()> {
     let v = t.state.invocations[i].clone();
     let parts = v["setup"]["parts"].as_array().unwrap();
-    let all = parts
-        .iter()
-        .all(|p| p["optional"] == true || p["outcome"] == "succeeded");
+    let all = parts.iter().all(|p| {
+        p["optional"] == true
+            || p["outcome"] == "succeeded"
+            || (p["name"] == "account" && v["setup"]["accountCounted"].is_string())
+    });
     let effect = parts
         .iter()
         .any(|p| p["effect"] == true && (p["outcome"] == "succeeded" || p["outcome"] == "unknown"));
@@ -1266,6 +1268,38 @@ pub(crate) fn child_answered(
     Ok(())
 }
 
+fn raise_setup_sign_in(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    i: usize,
+    instance: &Value,
+    setup: &Value,
+    (pointer, account): (&str, &str),
+    trigger: &str,
+) -> Result<()> {
+    if let Some(action) = pending::raise_sign_in(
+        &mut t.state,
+        instance,
+        account,
+        pointer,
+        pending::SignInRequest::Setup {
+            invocation: setup,
+            trigger,
+        },
+        a,
+    )? {
+        t.state.invocations[i]["setup"]["raised"] = action["id"].clone();
+        t.decisions.push(decision(
+            "raise-sign-in-action",
+            &["PND-001", "PND-005", "PND-011", "PND-012", "TPL-012"],
+            &["DL19"],
+            json!({"action":action["id"],"instance":instance["id"]}),
+            vec![],
+        ));
+    }
+    Ok(())
+}
+
 fn sign_in_part_answered(
     t: &mut Transition,
     a: &mut Allocation<'_>,
@@ -1289,9 +1323,22 @@ fn sign_in_part_answered(
         .ok_or("setup object disappeared")?
         .clone();
     let retired = instance["state"] == "retired";
-    if outcome != "succeeded" {
-        // An unsuccessful account check has no account to act on. Call-level
-        // PND-005 and IFC-016 triggers are handled by requests::complete.
+    if account_check && matches!(outcome, "failed" | "unknown") && !retired {
+        if let sign_in::ExpectedAccount::Set { pointer, account } =
+            sign_in::expected_account(&instance, c)?
+        {
+            raise_setup_sign_in(
+                t,
+                a,
+                i,
+                &instance,
+                &setup,
+                (&pointer, account),
+                &format!("setup-check-{outcome}"),
+            )?;
+        }
+        t.state.invocations[i]["setup"]["accountCounted"] = json!(outcome);
+    } else if outcome != "succeeded" {
         if !account_check {
             report_sign_in_undone(t, &instance["id"], outcome, &child["id"], &a.evidence.time)?;
             t.state.invocations[i]["setup"]["signOut"] = json!(outcome);
@@ -1321,26 +1368,7 @@ fn sign_in_part_answered(
             } else {
                 "setup-no-account"
             };
-            if let Some(action) = pending::raise_sign_in(
-                &mut t.state,
-                &instance,
-                account,
-                pointer,
-                pending::SignInRequest::Setup {
-                    invocation: &setup,
-                    trigger,
-                },
-                a,
-            )? {
-                t.state.invocations[i]["setup"]["raised"] = action["id"].clone();
-                t.decisions.push(decision(
-                    "raise-sign-in-action",
-                    &["PND-001", "PND-005", "PND-011", "PND-012", "TPL-012"],
-                    &["DL19"],
-                    json!({"action":action["id"],"instance":instance["id"]}),
-                    vec![],
-                ));
-            }
+            raise_setup_sign_in(t, a, i, &instance, &setup, (pointer, account), trigger)?;
             if found.is_some() {
                 return dispatch_sign_in_part(t, a, c, i, &instance, false);
             }

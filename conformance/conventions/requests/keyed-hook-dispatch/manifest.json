@@ -1,0 +1,31 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "address": "example.org/sign-in-hold",
+  "implementations": {
+    "signed-server": {
+      "command": [
+        "/wo042/fixture"
+      ],
+      "implements": [
+        "#ping.v1",
+        "#work.v1",
+        "#set-limit.v1",
+        "github.com/shrav-k/conduit/core#sign-in-hook.v1",
+        "github.com/shrav-k/conduit/core#account-hook.v1",
+        "github.com/shrav-k/conduit/core#sign-out-hook.v1"
+      ],
+      "plain": true,
+      "tools": {
+        "#ping.v1": "ping",
+        "#work.v1": "work",
+        "#set-limit.v1": "set_limit",
+        "github.com/shrav-k/conduit/core#sign-in-hook.v1": "sign_in_hook",
+        "github.com/shrav-k/conduit/core#account-hook.v1": "account_hook",
+        "github.com/shrav-k/conduit/core#sign-out-hook.v1": "sign_out_hook"
+      },
+      "keyed": [
+        "github.com/shrav-k/conduit/core#account-hook.v1"
+      ]
+    }
+  }
+}

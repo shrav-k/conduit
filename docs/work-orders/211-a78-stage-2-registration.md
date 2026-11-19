@@ -70,6 +70,18 @@ to the owner's strike ([ruling 48](../proposals/ruling-48/README.md)):
 - five stop rules, each a pause that takes A78 off nothing
   ([D54](../proposals/full-review/decisions.md)).
 
+**Amended before dispatch.** On 2026-11-19, before this order was dispatched, the coordinator
+amended the end of decision 2's block, its reading of condition 4's guard of the reader's clone. The
+block said that no `__pycache__` is excepted because the harness sets `PYTHONDONTWRITEBYTECODE` for
+its Agents, so none is written. That overstated: the Agent packages pass their clients only six
+names of the environment (`HOME`, `LOGNAME`, `PATH`, `SHELL`, `TERM`, `USER`) and the client's own
+home variable, so `PYTHONDONTWRITEBYTECODE` does not reach Python that an Agent runs, which can
+still write one. The harness, as changed before stage 2's first turn, removes a new `__pycache__/`
+that holds only `.pyc` files after each turn, before the guard reads, and notes it. The guard now
+reads as the harness reads it, its exceptions stated once: a rewritten Cargo.lock, restored; a new
+`target/` or `packages/NAME/dist/`; and that `__pycache__/`; any other new ignored path breaks it.
+The amendment is the coordinator's, open to the owner's strike.
+
 ## What to read
 
 - [experiments/028-a78-dogfood/README.md](../../experiments/028-a78-dogfood/README.md): "What it
@@ -241,10 +253,12 @@ a turn is a turn on any Agent of stage 2; in condition 1, the plain turn beside 
 seconds run until each of root's turn tools on the store answers; in condition 3, a report of
 `reader-1` is valid against the reader's schema that the setup records; and in condition 4, the
 guards include D58's guards on the harness's own git directory and files, and the guard of the
-reader's clone, which holds when the turn left its HEAD and its branch unmoved and the harness's
-`git status` of the clone empty, an ignored `target/` and a rewritten Cargo.lock alone, restored
-and noted, excepted. No `__pycache__` is excepted: the harness sets `PYTHONDONTWRITEBYTECODE` for
-its Agents, so none is written.
+reader's clone, which holds when the turn left its HEAD and its branch unmoved, the harness's
+`git status` of the clone is empty and no ignored path is new since the turn's start, except
+these: a rewritten Cargo.lock, restored and noted; a new `target/` or a package's
+`packages/NAME/dist/`, noted; and a new `__pycache__/` that holds only `.pyc` files, which the
+harness removes after the turn, before the guard reads, and notes. Any other new ignored path
+breaks the guard.
 
 8. **No sign-in is asked again of an Agent the owner signed in.** No sign-in action is raised, for
    an Agent of stage 2 that the owner has signed in, from the order's first restart to its last

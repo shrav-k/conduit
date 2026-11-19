@@ -1,6 +1,6 @@
 # Ruling 80: the answers of 2026-11-16 on held orders, dispatch, local gates, sign-in and machines
 
-Status: in force (ruled by the owner on 2026-11-16). Holds now: [IN_FORCE.md](../../../IN_FORCE.md), topics 6, 7, 9, 10, 13, 14 and 15 (spec pending wherever `spec/` must change). This record says why.
+Status: in force; amended by 89 (point 7, as the coordinator read 89 point 3: the plain runner keeps the other orders only until milestone 1) (ruled by the owner on 2026-11-16). Holds now: [IN_FORCE.md](../../../IN_FORCE.md), topics 6, 7, 9, 10, 13, 14 and 15 (spec pending wherever `spec/` must change). This record says why.
 
 After [ruling 79](../ruling-79/README.md), the coordinator held some work orders for the owner's
 answers. On 2026-11-16 it put the questions held since 2026-11-15 to the owner, each with options

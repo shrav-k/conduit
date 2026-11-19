@@ -17,12 +17,18 @@ or any credential. Do not run `claude`, `codex` or any client, and sign in nowhe
 the coordinator's cut of 048a-5 into eight parts, each after the one before, since an order holds
 one behavior and stays small
 ([FR-264](../proposals/full-review/findings/P01-work-orders-lanes.md#fr-264)). This is the third:
-"048a-5c, PND-010's fixed-port refusal". Order 048a-5 builds `sign-in.v1`'s refusals before any
-part (the missing URL elicitation capability, a return on a first request and an unknown
-`signInLogin`); order 048a-5b dispatches `sign-in.v1`, its account check first, with C11's stub
-removed. Later orders build the rest: 048a-5d the `sign-in-hook.v1` part and IFC-049's URL match,
-048a-5e the relayed output, 048a-5f to 048a-5h polling and its endings. This order builds none of
-them.
+"048a-5c, PND-010's fixed-port refusal". Order 048a-5 builds `sign-in.v1`'s refusals before any part
+(the missing URL elicitation capability, a return on a first request and an unknown `signInLogin`);
+order 048a-5b binds who may ask at the access tier and dispatches `sign-in.v1`, its account check
+first, with C11's stub removed. Later orders build the rest: 048a-5d the `sign-in-hook.v1` part and
+IFC-049's URL match, 048a-5e the relayed output, 048a-5f to 048a-5h polling and its endings. This
+order builds none of them. Nor does it build ruling 86's points 3 (c) and (d), which order 209
+builds off the chain: the refusal before any part of a `signInLogin` aimed at a sign-in hook whose
+operation is not keyed, and a failed account check before the hook going on to it. Neither
+contradicts this order: (c), whatever reason order 207 gives it, refuses none of this order's case's
+logins: the case aims its named logins at an implementation item that is not marked `plain`, which
+carries Conduit's keys, so (c) refuses none of them; and the case completes no account check that
+fails.
 
 **What it builds.** One behavior: PND-010's refusal of a sign-in that may start a login on a fixed
 port that another sign-in in progress may also start. PND-010's `then`: "Before dispatching any
@@ -38,50 +44,72 @@ service login, state none. No promise changes: the texts state all of it, and th
 it.
 
 **Where it falls among the refusals.** The coordinator's plan for the chain fixes the order, for a
-first `sign-in.v1` request after the access decision: 048a-2's invalid (no `signIn`, or an account
-that is not a string); 048a-5's three invalids (the capability, the return, the login); 048a-2's
-conflict (the instance's own `sign-in.v1`, setup or retirement in progress); then this order's
-unavailable; then dispatch. So a second `sign-in.v1` of one instance reports conflict even where it
-also shares a fixed port, and this refusal reaches only a sign-in of another instance. A retry of
-`sign-in.v1` reaches the core only as the shell's `respond` input (order 048b-relay1), never as an
-`invoke`, so this refusal decides only a first request.
+first `sign-in.v1` request after the access decision, which since order 048a-5b's decision 0 lets
+through only root on its own behalf through the instance's owning Fleet or Pool, or an Interface
+on its own behalf through an Agent's owning Fleet in its scope: LIF-031's invalid for an instance
+named by a resolved `{kind, id}` (048a-5b's Record, R3); 048a-2's invalid (no `signIn`, or an
+account that is not a string); 048a-5's three invalids (the capability, the return, the login);
+048a-2's conflicts (a stale `expectedId` under LIF-037, which its Record's R3 adds, then the
+instance's own `sign-in.v1`, setup or retirement in progress); then this order's unavailable; then
+dispatch. So a second `sign-in.v1` of one instance reports conflict even where it also shares a
+fixed port, and this refusal reaches only a sign-in of another instance. A retry of `sign-in.v1`
+reaches the core only as the shell's `respond` input (order 048b-relay1), never as an `invoke`, so
+this refusal decides only a first request. A keyed request that the engine dispatches again
+(`redispatch` in `invoke_inner`) passes the same preflight and is decided alike; a keyed repeat
+that returns a kept outcome dispatches nothing and is not decided (OPS-012).
 
-**What orders 048a-2 to 048a-5b bring, which this order assumes.** Order 048a-5b is written (its
-file `048a5b-*.md` in this directory) and is this order's base; orders 048a-2 to 048a-5 come
-before it. This order starts from 048a-5b's merge on `main`, or from its verified branch where the
-dispatch note says so (below). It assumes, as their decisions state them:
+**What orders 048a-2 to 048a-5b bring, which this order assumes.** Orders 048a-2 (#364), 048a-3
+(#367), 048a-4 (#371), 048a-5 (#382) and 048a-5b (#387, its file
+`048a5b-build-sign-in-account-first.md`) have merged, each with its Record, and so has 048a-6
+(#386). This order starts from `main` at `95b9fc3b` or later. It assumes, as their decisions, and
+the amendments their Records accept, state them:
 
 - From 048a-2's decision 5: `engine/crates/core/src/sign_in.rs` and its function that gives an
   instance's expected account (no `signIn`, an account that is not a string, or the pointer and the
   string), called "the account function" below, which looks up no Type for an instance with no
-  `held`, a template, or an object that is not a Resource or Agent instance.
-- From 048a-2's decision 6: the preflight of `sign-in.v1` in `sign_in.rs`, called in
-  `invoke_inner` right after `records::preflight`'s block, giving its rejection through
-  `reject_diagnostics`; and its helper, called "the decision-6 helper" below, which decides
-  048a-2's invalid, then (048a-5) `request_member_refusal`'s three invalids, then 048a-2's
-  conflict, which reads an in-progress invocation's `object` and `operation`. In that conflict, the
-  rule that names the instance's sign-in action only where it has no answer at the step's time and
-  its view at the request's caller (047b's decision 2) is not none, called "the visible-action
-  rule" below. Its unit test is `sign_in_refusals_before_dispatch`.
+  `held`, a template, or an object that is not a Resource or Agent instance. It merged as
+  `expected_account(instance, context) -> Result<ExpectedAccount>`, giving `NoSignIn`,
+  `NotString { pointer }` or `Set { pointer, account }`, the last being "the pointer and a string".
+- From 048a-2's decision 6, as 048a-5 and 048a-5b leave it: the preflight of `sign-in.v1`,
+  `sign_in::preflight(state, route, request: &AccessRequest, time: &str, context) -> Result<Option<Rejection>>`,
+  called with `?` in `invoke_inner` right after `records::preflight`'s block, giving its rejection
+  through `reject_preflight` to `reject_diagnostics`; and its helper, called "the decision-6 helper"
+  below, `refusal(state, route, instance, time, expected, request, names, context)`, which takes
+  the account function's answer by value and decides 048a-2's invalid, then (048a-5)
+  `request_member_refusal`'s three invalids, then 048a-2's two conflicts: a stale `expectedId`
+  under LIF-037 (its Record's R3), and the conflict that reads an in-progress invocation's `object`
+  and `operation`. The preflight finds the stated login names, through `stated_login_names`, called
+  "the names function" below, only where the account function gives `Set`. Before the helper, it
+  fails with an error, never dispatching, for a caller or an instance that access does not permit
+  (048a-5b's decision 0, part 5, a second line behind the access tier), and rejects an instance
+  named by a resolved `{kind, id}` under LIF-031 (048a-5b's Record, R3). In the in-progress
+  conflict, the rule that names the instance's sign-in action only where it has no answer at the
+  step's time and its view at the request's caller (047b's decision 2) is not none, called "the
+  visible-action rule" below; 048a-2 wrote it inline in `refusal`, through
+  `pending::unanswered_sign_in` and `pending::raised_view`, which takes the `Context` and returns a
+  `Result`. Its unit test is `sign_in_refusals_before_dispatch`.
+- From 048a-5b's decision 14: every diagnostic of the preflight but LIF-037's is written by
+  `rejection(reason, rule, tool, instance, cause)` in `sign_in.rs`, as
+  `{tool} reports {reason} under {rule} for {kind}/{name}: {cause}`, naming the instance the
+  request named.
 - From 048a-2's decision 10: the case `requests-sign-in-lapse-and-conflict`, its
   `manifest.json`, `documents.json` and `fixture.json` (the Type `signed-agent.v1`, whose logins
   are `browser`, a redirect login stating the ports 8400 and 8401, and `device`; the Agent
   template `signed-template`, account `primary-account`; the Fleet `group`; the Agents `signed` and
-  `unset`), its definitions ROOT, `META/x`, "Root asks T with A", "a completion" and
-  REFUSED(R, RULE), and its
-  steps 1 to 3 and 7 to 9 as 048a-4's decision 9 leaves them: first start, registration, the setup
-  of `signed` (`$setup1`), its two run reports, the second dispatching the account check
+  `unset`; one implementation item, `signed-server`, not marked `plain`), its definitions ROOT,
+  `META/x`, "Root asks T with A", "a completion" and REFUSED(R, RULE), and its steps 1 to 3 and 7
+  to 9 (of 32) as 048a-4's decision 9 leaves them: first start, registration, the setup of
+  `signed` (`$setup1`), its two run reports, the second dispatching the account check
   (`$account0`), and that check's completion with the expected account, ending the setup
   succeeded.
 - From 048a-4's decision 8: the definition ACCOUNT(X), an `account-hook.v1` result reporting the
   account X.
-- From 048a-5's decisions 1, 2 and 5: `AccessRequest`'s member `sign_in_login`; the function in
-  `sign_in.rs` that gives an instance's stated login names through the account function's Type
-  lookup, called "the names function" below; and the definitions S, URL, LOGIN(X) and MISSING of
-  its case, MISSING being the -32021 refusal of IFC-049 with reason `invalid`.
+- From 048a-5's decisions 1 and 5: `AccessRequest`'s member `sign_in_login`; and the definitions
+  S, URL, LOGIN(X), MISSING and "Root asks T with A and M" of its case, MISSING being the -32021
+  refusal of IFC-049 with reason `invalid`.
 - From 048a-5b's decision 1: `invoke_inner` builds an accepted `sign-in.v1` request's invocation,
-  as it builds any operation's, and pushes it into `state.invocations`; then 048a-5b's
-  `begin(t, a, c, i)` in `sign_in.rs`, which is not given the request, sets `object` to the
+  as it builds any operation's, and pushes it into `state.invocations`; then
+  `crate::sign_in::begin(t, a, c, i)?`, which is not given the request, sets `object` to the
   instance's ID on the invocation already pushed. That invocation stays in state `in-progress`
   while its account check is pending, with `operation` the core's `sign-in.v1`, as 048a-2's
   conflict reads them, and the reply is `{"pending": true, ...}`, whose `hook` names the account
@@ -89,80 +117,93 @@ dispatch note says so (below). It assumes, as their decisions state them:
   completion of that check with ACCOUNT of the expected account ends the `sign-in.v1` succeeded
   (048a-5b's decision 3), so that it is no longer in progress.
 
-Where any of them merged otherwise than its order says, apply the nearest sound reading of each
-decision below to what merged, and say so. Where a Record names a function, use that name.
+Where any of them merged otherwise than this says, apply the nearest sound reading of each decision
+below to what merged, and say so. Where a Record names a function, use that name.
 
 **What the engine already does, so that you do not redo it.** Line numbers are those of `main` at
-`3c761dd9`, before orders 048a-2 to 048a-5b; find each place by the text quoted with it.
+`95b9fc3b`, after orders 048a-5b and 048a-6; find each place by the text quoted with it.
 
-- `invoke_inner` (`engine/crates/core/src/requests.rs:848`) runs `records::preflight`'s block
+- `invoke_inner` (`engine/crates/core/src/requests.rs:917`) runs `records::preflight`'s block
   under `previous.is_none() || redispatch` and gives a rejection through `reject_preflight`
   (`requests.rs:618`), which passes `Rejection`'s reason, rule and diagnostics to
-  `reject_diagnostics`.
+  `reject_diagnostics`; right after it, under the same test, it calls the sign-in preflight
+  (`requests.rs:1219`, `sign_in::preflight(&t.state, &route, request, &a.evidence.time, c)?`).
+  Before the key lookup it calls the same preflight once more, at `requests.rs:1117`, only for a
+  `sign-in.v1` whose instance is a resolved `{kind, id}` or that declares no URL elicitation (the
+  comment `// LIF-031 and IFC-049 apply to each sign-in request, including keyed repeats.`); an
+  invalid answers there before any conflict, so that call never reaches this order's check.
 - `crate::explain::Rejection` (`explain.rs:8`) holds `reason`, `rule` and `diagnostics`.
-- A request's invocation is a JSON value (`requests.rs:1382`, the line
+- A request's invocation is a JSON value (`requests.rs:1580`, the line
   `let mut invocation = json!({"id":id,"key":key,...`); `State`'s `invocations` keeps every
-  invocation, ended or not, in the order pushed.
+  invocation, ended or not, in the order pushed. The chain that hands it on calls
+  `crate::sign_in::begin(t, a, c, i)?;` for `sign-in.v1` (`requests.rs:1804`).
 
-**When this order starts.** Order 048a-5b's work must have merged to `main`, or the dispatch note
-names its verified branch, from which this order then starts. Before you change anything, check
-from the repository root that you find what it and the orders before it give, and stop, change
-nothing and report if any check prints otherwise:
+**When this order starts.** Order 048a-5b has merged to `main` (#387). Before you change anything,
+check from the repository root that you find what it and the orders before it give, and stop,
+change nothing and report if any check prints otherwise:
 
 ```bash
-ls docs/work-orders/048a5b-*.md | wc -l | tr -d ' '
+grep -c '^## Record' docs/work-orders/048a5b-build-sign-in-account-first.md
 grep -c '("sign-in.v1", "048a", "PND-010")' engine/crates/core/src/requests.rs
 grep -c 'fn request_member_refusal' engine/crates/core/src/sign_in.rs
 grep -c 'fn sign_in_refusals_before_dispatch' engine/crates/core/src/sign_in.rs
 grep -c 'rename = "signInLogin"' engine/crates/core/src/access.rs
-grep -rl '"dispatch-account-check"' engine/crates/core/src | wc -l | tr -d ' '
+grep -c 'pub(crate) fn begin(' engine/crates/core/src/sign_in.rs
+grep -c 'reports {reason} under {rule} for {kind}/{name}: {cause}' engine/crates/core/src/sign_in.rs
 test -f conformance/conventions/requests/sign-in-refusals-before-parts/case.yaml; echo "case $?"
 python3 -c "import json; d = json.load(open('conformance/conventions/requests/sign-in-lapse-and-conflict/documents.json')); t = [x for x in d if x['kind'] == 'Type' and x['metadata']['name'] == 'signed-agent.v1'][0]; print([[l['name'], l.get('redirect', {}).get('ports')] for l in t['spec']['signIn']['logins']], sorted(x['metadata']['name'] for x in d if x['kind'] == 'Agent' and 'from' in x))"
-python3 -c "import json; s = json.load(open('conformance/conventions/requests/sign-in-lapse-and-conflict/case.yaml'))['steps']; print(s[0]['input']['kind'], s[1]['input']['kind'], s[2]['input']['request']['tool'], s[6]['input']['kind'], s[7]['input']['kind'], s[8]['input']['kind'], json.dumps(s[7]['capture']))"
+python3 -c "import json; s = json.load(open('conformance/conventions/requests/sign-in-lapse-and-conflict/case.yaml'))['steps']; print(s[0]['input']['kind'], s[1]['input']['kind'], s[2]['input']['request']['tool'], s[6]['input']['kind'], s[7]['input']['kind'], s[8]['input']['kind'], json.dumps(s[7]['capture']), len(s))"
+python3 -c "import json; m = json.load(open('conformance/conventions/requests/sign-in-lapse-and-conflict/manifest.json')); print({k: v.get('plain') for k, v in m['implementations'].items()})"
 grep -rl '"asked_login"' engine/crates/core/src | wc -l | tr -d ' '
 grep -c -i 'fixed port' engine/crates/core/src/sign_in.rs
-tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -c 'After that invalid and before that conflict, order 048a-5 decides three more invalids'
-tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -o 'invalid or conflict where the checks of orders 048a-2 and 048a-5 apply, and otherwise' | wc -l | tr -d ' '
+tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -c 'After order 048a-2.s invalid and before its conflict, order 048a-5 decides three more invalids'
+tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -o 'where the checks of orders 048a-2 and 048a-5 apply, and otherwise' | wc -l | tr -d ' '
+tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -c '048a-5c'
 awk -F'|' '$2 == " PND-010 " || $2 == " OPS-023 " {print $2 $5}' engine/STANDING.md
 ```
 
-They print `1`, `0`, `1`, `1`, `1`, `1`, `case 0`,
+They print `1`, `0`, `1`, `1`, `1`, `1`, `1`, `case 0`,
 `[['browser', [8400, 8401]], ['device', None]] ['signed', 'unset']`,
-`first-start register-project group.set-up.v1 setup-report setup-report complete {"account0": "/reply/hook"}`,
-`0`, `0`, `1` and `3`, and the last prints two lines, each a promise ID and its number of
-cases: report both numbers. The first is 048a-5b's order file, the second its removal of the stub.
-The third and fifth are 048a-5's, the fourth 048a-2's, the sixth 048a-4's account check and the
-seventh 048a-5's case. The eighth and ninth are the fixture and the steps this order's case reuses.
-The tenth and eleventh say that nothing of this order is built yet, the twelfth is the sentence
-decision 6 adds after, and the thirteenth the three places decision 6 changes, as 048a-5b leaves
-them.
+`first-start register-project group.set-up.v1 setup-report setup-report complete {"account0": "/reply/hook"} 32`,
+`{'signed-server': None}`, `0`, `0`, `1`, `3` and `0`, and the last prints two lines, each a
+promise ID and its number of cases, on `95b9fc3b` `OPS-023  25` and `PND-010  3`: report both
+numbers. The first is 048a-5b's Record, the second its removal of the stub. The third and fifth
+are 048a-5's, the fourth 048a-2's, the sixth 048a-5b's `begin` and the seventh its diagnostics'
+form (decision 14); the eighth is 048a-5's case. The ninth and tenth are the fixture and the steps
+this order's case reuses, and the eleventh says that its one implementation item is not marked
+`plain`, so it carries Conduit's keys and ruling 86's point 3 (c) refuses none of its named
+logins. The twelfth and thirteenth say that nothing of this order is built yet, the fourteenth is
+the sentence decision 6 adds after, the fifteenth the three places decision 6 changes, as 048a-5b
+leaves them, and the sixteenth that the file names this order nowhere yet.
 
 After the start checks, from `engine/`, one at a time, run
 `cargo test --release -p conduit-core --lib -- sign_in` and
 `cargo run --release -p conduit-conformance -- .. requests-`, and keep each last line for Done
-when.
+when. On `95b9fc3b` they end `16 passed; 0 failed` (with `115 filtered out`) and
+`70 cases passed; 2 expected failures`.
 
-Orders that land beside this one (048a-6, 048b-relay2 and others): whichever lands
-second keeps both changes and writes `engine/STANDING.md` again with the tool.
+Orders that land beside this one (209, 050 and others): whichever lands second keeps both changes
+and writes `engine/STANDING.md` again with the tool.
 
 **Who decided what.** PND-010, PND-002 and OPS-023 decide that the refusal comes before any part,
 its reason, that its diagnostic names PND-010, the port and only a visible pending action, what a
-request may start, and its place after conflict. `sign-in-login.v1` and CTR-013 decide which
-logins state ports. Everything else here is the coordinator's, each open to the owner's strike
-([ruling 48](../proposals/ruling-48/README.md)): the cut that puts this behavior here (order
-048a5's "Where it sits"); the order of the refusals above, from the coordinator's plan for the
-chain; reading "a fixed port" as an integer in a redirect login's `redirect.ports` list, so that
-`ports: any` and the other returns state none; comparing every other instance's `sign-in.v1` in
-progress, whatever its Fleet or node, since PND-010 names neither; keeping the asked-for login's
-name on the invocation as `asked_login`, and reading a kept name that its Type no longer states
-as starting no login; naming the first such invocation in `state.invocations` that shares a port,
-and every port the two share, in ascending order; reading "the other invocation's pending action"
-as its instance's sign-in action under the visible-action rule, named in the diagnostic's text
-alone, with no `_meta` key `pendingAction`; deciding it in the preflight right after the
-decision-6 helper, with no Type lookup where no other `sign-in.v1` is in progress; the
-diagnostic's words; the function names; the unit test; the case, its documents, route, IDs and
-times; and the sentence in `engine/CONFORMANCE.md`. Apply them as written and report them under
-`decisions` as the coordinator's.
+request may start, and its place after conflict. `sign-in-login.v1` and CTR-013 decide which logins
+state ports. Everything else here is the coordinator's, each open to the owner's strike
+([ruling 48](../proposals/ruling-48/README.md)): the cut that puts this behavior here (order 048a5's
+"Where it sits"); the order of the refusals above, from the coordinator's plan for the chain;
+reading "a fixed port" as an integer in a redirect login's `redirect.ports` list, compared whatever
+the login's `redirect.host`, so that `ports: any` and the other returns state none; comparing every
+other instance's `sign-in.v1` in progress, whatever its Fleet or node, since PND-010 names neither;
+keeping the asked-for login's name on the invocation as `asked_login`, and reading a kept name that
+its Type no longer states as starting no login; naming the first such invocation in
+`state.invocations` that shares a port, and every port the two share, in ascending order; reading
+"the other invocation's pending action" as its instance's sign-in action under the visible-action
+rule, named in the diagnostic's text alone, with no `_meta` key `pendingAction`; deciding it in the
+preflight right after the decision-6 helper, with no Type lookup where no other `sign-in.v1` is in
+progress; the diagnostic's words, written through `rejection` so that it names the request's own
+instance as 048a-5b's decision 14 has every preflight diagnostic do; the function names; the unit
+test; the case, its documents, route, IDs and times; and the sentence in `engine/CONFORMANCE.md`.
+Apply them as written and report them under `decisions` as the coordinator's.
 
 **Read first:**
 
@@ -171,26 +212,28 @@ times; and the sentence in `engine/CONFORMANCE.md`. Apply them as written and re
    overlapping fixed ports; `sign-in-login.v1` (`spec/schemas/contracts.yaml`); `sign-in.v1`'s
    description (`spec/core/operations.yaml`).
 2. [Order 048a2](048a2-build-sign-in-lapse-and-conflict.md), its decisions 5, 6 and 10 and its
-   Record; [order 048a4](048a4-build-sign-in-setup-account.md), its decisions 8 and 9; order
-   048a-5 (its file `048a5-build-sign-in-refusals-before-parts.md`), whole; order 048a-5b, whole,
-   and its Record where it has one.
-3. The cases `requests-sign-in-lapse-and-conflict` and `requests-sign-in-refusals-before-parts`.
+   Record; [order 048a4](048a4-build-sign-in-setup-account.md), its decisions 8 and 9;
+   [order 048a5](048a5-build-sign-in-refusals-before-parts.md), whole, with its Record;
+   [order 048a5b](048a5b-build-sign-in-account-first.md), its decisions 0, 1, 8, 9, 10 and 14 and its
+   Record.
+3. The cases `requests-sign-in-lapse-and-conflict`, `requests-sign-in-refusals-before-parts` and
+   `requests-sign-in-account-first`.
 4. `conformance/README.md`, its sections "Assertions" and "Portable cases".
 
-**Size: S**: about 0.15 to 0.25k changed lines of Rust with one unit test, one new case of 24
+**Size: S**: about 0.2 to 0.3k changed lines of Rust with one unit test, one new case of 24
 steps with one documents file of its own, and one sentence and three phrases in
 `engine/CONFORMANCE.md`.
 
 ## The decisions it applies
 
-1. **The invocation keeps its asked-for login.** In `invoke_inner` (`requests.rs`), right after
-   the `let mut invocation = json!({...` line, where `op == c.qualified("sign-in.v1")` and
-   `request.sign_in_login` is an object whose `name` is a string, set `invocation["asked_login"]`
-   to that string; otherwise set no member. 048a-5b's `begin` does not change: neither its
-   signature in `sign_in.rs` nor its call in `requests.rs`. 048a-5's invalid has by then refused a name the Type does not state. Nothing copies the
-   member into a record, a decision, the reply or the inspection; decision 2 reads it, and order
-   048a-5d may read it to pass the name to the hook (IFC-006). Write `"asked_login"` nowhere else
-   but decision 2's read.
+1. **The invocation keeps its asked-for login.** In `invoke_inner` (`requests.rs`), right after the
+   `let mut invocation = json!({...` line, where `op == c.qualified("sign-in.v1")` and
+   `request.sign_in_login` is an object whose `name` is a string, set `invocation["asked_login"]` to
+   that string; otherwise set no member. 048a-5b's `begin` does not change: neither its signature in
+   `sign_in.rs` nor its call in `requests.rs`. 048a-5's invalid has by then refused a name the Type
+   does not state. Nothing copies the member into a record, a decision, the reply or the inspection;
+   decision 2 reads it, and order 048a-5d may read it to pass the name to the hook (IFC-006). Write
+   `"asked_login"` nowhere else but decision 2's read.
 
 2. **The fixed ports a sign-in may start.** In `sign_in.rs` add:
    - `pub(crate) fn may_start_fixed_ports(logins: &[Value], asked: Option<&str>) -> BTreeSet<u64>`:
@@ -199,8 +242,10 @@ steps with one documents file of its own, and one sentence and three phrases in
      of the integers in each such login's `redirect.ports` where `return` is `redirect` and
      `redirect.ports` is a list. A login with `ports: any`, and any other return, gives none.
    - A function giving an instance's stated logins, each item of its Type's `spec.signIn.logins`
-     whole and in order, through the account function's Type lookup. The names function then
-     gives the `name` of each item this function gives, so that no second lookup is written.
+     whole and in order, through the Type lookup the names function makes now
+     (`inventory::instance_type`). The names function then gives the `name` of each item this
+     function gives, taking those items in place of the instance, so that no second lookup is
+     written.
    - `pub(crate) fn other_sign_in_ports(state: &State, instance: &Value, c: &Context) -> Result<Vec<(Value, BTreeSet<u64>)>>`:
      for each invocation in `state.invocations`, in order, whose `state` is `in-progress`, whose
      `operation` is the core's `sign-in.v1` (`c.qualified("sign-in.v1")`) and whose `object` is
@@ -211,36 +256,43 @@ steps with one documents file of its own, and one sentence and three phrases in
      up no Type where no invocation passes the first three tests.
 
 3. **The refusal, in the preflight after the decision-6 helper.** In `sign_in.rs` add
-   `pub(crate) fn fixed_port_refusal(state: &State, route: &Value, own: &BTreeSet<u64>, others: &[(Value, BTreeSet<u64>)], time: T) -> Option<crate::explain::Rejection>`,
-   `T` being the type in which the decision-6 helper takes the step's time. Where `own` is empty
-   it gives none. Otherwise it takes the first item of `others` whose set shares a port with
-   `own`, and gives none where there is none. For that item it gives reason `unavailable`, rule
-   `PND-010` and one diagnostic `{"ruleId": "PND-010", "level": "error", "message": {"text": T}}`,
-   `T` being
+   `pub(crate) fn fixed_port_refusal(state: &State, route: &Value, instance: &Value, own: &BTreeSet<u64>, others: &[(Value, BTreeSet<u64>)], time: &str, context: &Context) -> Result<Option<crate::explain::Rejection>>`,
+   `instance` being the object the request's `arguments.instance` resolved to, as the decision-6
+   helper takes it, the time a `&str`, as that helper takes it, and the `Context` and the `Result`
+   those the visible-action rule needs, since `pending::raised_view` takes the one and returns the
+   other. Where `own` is empty it gives none. Otherwise it takes the first item of
+   `others` whose set shares a port with `own`, and gives none where there is none. For that item
+   it gives `rejection("unavailable", "PND-010", tool, instance, C)`, `tool` being the route's
+   `tool`, so reason `unavailable`, rule `PND-010` and one diagnostic
+   `{"ruleId": "PND-010", "level": "error", "message": {"text": T}}`, `T` being
 
    ```text
-   {tool} reports unavailable under PND-010: another sign-in.v1 in progress may start a login on the fixed {ports}, which a login this request may start also states, and one fixed port serves one login at a time; send sign-in.v1 again once that sign-in ends.
+   {tool} reports unavailable under PND-010 for {kind}/{name}: another sign-in.v1 in progress may start a login on the fixed {ports}, which a login this request may start also states, and one fixed port serves one login at a time; send sign-in.v1 again once that sign-in ends.
    ```
 
-   `{tool}` the route's `tool`, and `{ports}` `port P` where the two share one port and
+   `{kind}/{name}` as `rejection` writes them for the request's own instance, the cause `C` being
+   the text after `: `, and `{ports}` `port P` where the two share one port and
    `ports P1, P2, ...` where they share more, every shared port in ascending order, separated by
    `, `. Where the visible-action rule, applied to the item's instance, the route's `caller` and
    the step's time, gives an action, append ` The other instance's pending sign-in action is {ID}.`
-   with that action's ID. Where 048a-2 wrote that rule inline in its conflict, move it into one
-   function that both call, and write no second copy. No text names an instance, an invocation ID
-   or an account, and no `_meta` key is set.
+   with that action's ID. 048a-2 wrote that rule inline in its conflict, in `refusal`: move it
+   into one function that both call, and write no second copy. No text names the other instance,
+   an invocation ID or an account, and no `_meta` key is set.
 
-   In the preflight, right after the decision-6 helper gives none, and only where the account
-   function gave the pointer and a string: call `other_sign_in_ports` for the instance; where it
-   gives an empty list, give none, looking nothing else up; otherwise compute `own`,
-   `may_start_fixed_ports` of the instance's stated logins and the request's asked-for name (the
-   `name` of `sign_in_login` where it is an object whose `name` is a string, else `None`), and
-   give `fixed_port_refusal`'s rejection where it gives one, through the same path as the
-   helper's. Otherwise the request goes on to dispatch as 048a-5b leaves it. The decision-6
-   helper's signature and answers do not change, so 048a-2's unit test and its calls pass
-   unchanged. Where the preflight returns no `Result`, make it return one: at its call in
-   invoke_inner add `?`, and in the tests that call it add `.unwrap()`, changing no assertion; and
-   say so.
+   In the preflight, right after the decision-6 helper gives none, and so past the access tier's
+   decision and the preflight's second line and LIF-031's invalid before the helper (048a-5b's
+   decision 0 and its Record's R3), and only where the account function gave the pointer and a
+   string: call `other_sign_in_ports` for the instance; where it gives an empty list, give none,
+   looking nothing else up; otherwise compute `own`, `may_start_fixed_ports` of the instance's
+   stated logins and the request's asked-for name (the `name` of `sign_in_login` where it is an
+   object whose `name` is a string, else `None`), and give `fixed_port_refusal`'s rejection where it
+   gives one, through the same path as the helper's. The preflight finds the instance's stated
+   logins once, where it finds the names, and derives both the names and `own` from them. The helper
+   giving none already means `Set`, so no second account or Type lookup is written. Otherwise the
+   request goes on to dispatch as 048a-5b leaves it. The decision-6 helper's signature and answers
+   do not change, so 048a-2's unit test and its calls pass unchanged. The preflight already returns
+   a `Result`, called with `?` at both its calls in `invoke_inner` and with `.unwrap()` in the
+   tests, so neither its calls nor its tests change.
 
 4. **One unit test pins the rules.** In `sign_in.rs`'s tests, `sign_in_fixed_port_refusal`. Let
    B be `{"name": "browser", "return": "redirect", "redirect": {"host": "127.0.0.1", "ports": [8400, 8401], "path": "/callback"}}`,
@@ -252,18 +304,23 @@ steps with one documents file of its own, and one sentence and three phrases in
    - `may_start_fixed_ports`: L with `None` gives {8400, 8401, 8402}; with `browser` {8400, 8401};
      with `second` {8401, 8402}; with `device`, `any-port`, `pasted` and `phone` the empty set;
      the empty list with `None` the empty set.
-   - `fixed_port_refusal`, on a `State` built by hand as `sign_in_refusals_before_dispatch` builds
-     one (root `r`, the Interface `v` with an open Conduit to the Fleet `f`, the Interface `w`
-     with none), with an Agent `s2` of `f` holding a sign-in action with no answer, stored as that
-     test stores one, a route whose `tool` is `group.sign-in.v1`, and the step's time before the
-     action's expiry: `own` {8400, 8401} and `others` `[("s2", {8401, 8402})]`, for the caller `r`,
-     reason `unavailable`, rule `PND-010` and the whole text with `port 8401` and the appended
-     sentence naming the action's ID; the same for `v`, the same text; for `w`, the text without
-     the appended sentence; at the action's expiry, for `r`, without it; `own` {8400, 8401, 8402}
-     and `others` `[("s1", {}), ("s2", {8401, 8402})]`, for `w`, the text with `ports 8401, 8402`;
-     `own` {8400} with `others` `[("s2", {8401, 8402})]`, none; `own` empty with the same
-     `others`, none; `others` empty, none. Where the appended sentence is absent, also assert that
-     the serialized diagnostics hold no action ID.
+   - `fixed_port_refusal`, each call with `.unwrap()`, on a `State` built by hand as
+     `sign_in_refusals_before_dispatch` builds one (root `r`, the Interfaces `v`, with an open
+     Conduit to the Fleet `f` listing `inspect.v1`, and `w`, with none, the built-in `management`,
+     without which the visible-action rule fails with an error for `v`, the Fleet `f`, that test's
+     Agent `signed` of `f`, ID `s1`, and its Agent `s2` of `f`), with `s2` holding a sign-in action
+     with no answer, stored as that test stores one for `s1`, a route whose `tool` is
+     `group.sign-in.v1`, `signed` as the request's instance, and the step's time before the
+     action's expiry: `own` {8400, 8401} and `others` `[("s2", {8401, 8402})]`, for the caller
+     `r`, reason `unavailable`, rule `PND-010` and the whole text, beginning
+     `group.sign-in.v1 reports unavailable under PND-010 for Agent/signed: `, with `port 8401` and
+     the appended sentence naming the action's ID; the
+     same for `v`, the same text; for `w`, the text without the appended sentence; at the action's
+     expiry, for `r`, without it; `own` {8400, 8401, 8402} and `others`
+     `[("s1", {}), ("s2", {8401, 8402})]`, for `w`, the text with `ports 8401, 8402`; `own` {8400}
+     with `others` `[("s2", {8401, 8402})]`, none; `own` empty with the same `others`, none;
+     `others` empty, none. Where the appended sentence is absent, also assert that the serialized
+     diagnostics hold no action ID.
 
 5. **One portable case, with one documents file of its own.** Add the directory
    `conformance/conventions/requests/sign-in-fixed-port/` with two files.
@@ -282,7 +339,8 @@ steps with one documents file of its own, and one sentence and three phrases in
 
    Below, ROOT, `META/x`, "Root asks T with A", "a completion" and REFUSED(R, RULE) are as
    048a-2's decision 10 defines them, ACCOUNT(X) as 048a-4's decision 8 defines it, and URL,
-   LOGIN(X), MISSING and "Root asks T with A and M" as 048a-5's decision 5 defines them. A new step's evidence is its time, `2026-11-12T12:00:00Z`, and `ids` the 100 strings
+   LOGIN(X), MISSING and "Root asks T with A and M" as 048a-5's decision 5 defines them. A new
+   step's evidence is its time, `2026-11-12T12:00:00Z`, and `ids` the 100 strings
    `00000000-0000-4000-8000-` followed by the twelve-digit, zero-padded decimal of 130000 + 100n +
    k, for k = 0 to 99, `revisions` the 16 strings `port-` followed by the decimal of n, a `-` and
    the decimal of j, and `suffixes` the 16 strings `p` followed by the four-digit, zero-padded
@@ -325,9 +383,10 @@ steps with one documents file of its own, and one sentence and three phrases in
        `expect` PENDING: a login that states no fixed port; `capture` `{"check19": "/reply/hook"}`.
    20. Step 18's request. `expect` REFUSED(`conflict`, `PND-010`), with `"external_intents": []`:
        `third`'s own sign-in is in progress, and conflict comes before unavailable (OPS-023).
-   21. Root asks `group.sign-in.v1` with `A("third")` and no URL. `expect` MISSING: `third`'s own
-       sign-in and `paired`'s are still in progress, and the capability's invalid comes before both
-       conflict and unavailable (OPS-023).
+   21. Root asks `group.sign-in.v1` with `A("third")` and no URL. `expect` MISSING with
+       `"absent": ["/reply/inputRequired"]` right after `record_facts`, as 048a-5b's decision 9
+       writes the MISSING steps of 048a-5's case: `third`'s own sign-in and `paired`'s are still in
+       progress, and the capability's invalid comes before both conflict and unavailable (OPS-023).
    22. A completion for `$check19`, ACCOUNT(`"primary-account"`). `expect`
        `{"reply": {"isError": false, "_meta": {"META/outcome": "succeeded"}}}`: `third`'s own
        sign-in ends.
@@ -337,15 +396,17 @@ steps with one documents file of its own, and one sentence and three phrases in
    24. Step 18's request. `expect` PENDING: `paired`'s sign-in has ended, so it is no longer
        compared (decision 2), while `signed`'s, still in progress, may start `device` alone.
 
-   The route is new and has not been run, since orders 048a-2 to 048a-5b are not yet built. Before
-   running it, check that no ID repeats across the case's steps' `ids`, the copied steps'
+   The coordinator built the case and its documents from this text on a scratch copy of `95b9fc3b`,
+   outside the repository: its 2374 IDs are unique, its steps 1 to 16 pass on that engine, and step
+   17 fails, the refusal not being built; on a scratch build of decisions 1 to 3 every step passed.
+   Before running it, check that no ID repeats across the case's steps' `ids`, the copied steps'
    included. If 046a's runner check refuses the case, if the registration rejects the documents or
    runs out of IDs, if a setup asks for a report other than those its steps send, if a step copied
    from 048a-2's case gives a reply other than that case states, or if a step's reply differs from
-   what it states, stop and report the error: do not change the expectations to pass it, and do
-   not change the inputs beyond what this decision says. No expectation is generated from the
-   engine's output, and the case asserts no diagnostic's words, since IFC-050 leaves wording to the
-   engine: the unit test pins them. The coverage index entry holds `id`, `case`
+   what it states, stop and report the error: do not change the expectations to pass it, and do not
+   change the inputs beyond what this decision says. No expectation is generated from the engine's
+   output, and the case asserts no diagnostic's words, since IFC-050 leaves wording to the engine:
+   the unit test pins them. The coverage index entry holds `id`, `case`
    (`conventions/requests/sign-in-fixed-port/case.yaml`), `promises` and, where its neighbours in
    that piece hold it, `safety_rows: []`, in the members and order its neighbours use. Write it in a
    `cases` list in `conformance/manifest.yaml`, then, from `engine/`, run
@@ -355,26 +416,31 @@ steps with one documents file of its own, and one sentence and three phrases in
 
 6. **`engine/CONFORMANCE.md` and `engine/STANDING.md`.** Find the sentence by its text read across
    line breaks, as 048a-5b leaves it. In the section "Refusals and reasons (order 046a)", at the end
-   of the item that holds the sentence beginning "After that invalid and before that conflict,
-   order 048a-5 decides three more invalids", add, in the same item:
+   of the item that holds the sentence beginning "After order 048a-2's invalid and before its
+   conflict, order 048a-5 decides three more invalids", which ends "`signInReturn` to the core.",
+   add, in the same item:
 
    ```text
-   After that conflict and before any part, order 048a-5c decides PND-010's fixed-port refusal: where another instance's `sign-in.v1` is in progress and may start a login stating a fixed port that a login this request may start also states, the request reports unavailable, naming every shared port and, only where the caller may see it, that instance's sign-in action. A `sign-in.v1` may start its asked-for login, which the engine keeps on the invocation, or without one any of its Type's logins; a redirect login's `ports: any`, and a device, page or service login, state no fixed port. Every other instance's sign-in in progress is compared, whatever its Fleet or node, since PND-010 names neither.
+   After order 048a-2's conflicts and before any part, order 048a-5c decides PND-010's fixed-port refusal: where another instance's `sign-in.v1` is in progress and may start a login stating a fixed port that a login this request may start also states, the request reports unavailable, naming every shared port and, only where the caller may see it, that instance's sign-in action. A `sign-in.v1` may start its asked-for login, which the engine keeps on the invocation, or without one any of its Type's logins; a redirect login's `ports: any`, and a device, page or service login, state no fixed port. Every other instance's sign-in in progress is compared, whatever its Fleet or node, since PND-010 names neither.
    ```
 
-   In the three places that 048a-5b's decision 10 (its places 1 to 3) leaves reading "invalid or
-   conflict where the checks of orders 048a-2 and 048a-5 apply, and otherwise …" (DL18's row in
-   "Choices still required", the paragraph on public engine execution, and the list of what the
-   build does not claim), change those words, in each place, to read 'invalid or conflict where
-   the checks of orders 048a-2 and 048a-5 apply, unavailable where order 048a-5c's fixed-port
-   check applies, and otherwise …', keeping every word after "otherwise".
+   and rewrap the item at 100 columns, changing no word.
 
-   Where 048a-5b's text in the file says the fixed-port refusal is not built yet, or names order
-   048a-5c for it, remove those words, keep the rest of its sentence, and say so. Nothing else in
-   the file changes. After the other decisions, run `python3 tools/promise_standing.py --write`, as
-   AGENTS.md asks of a change to a case's `promises` and to a promise ID in the core's sources.
-   Report the rows of PND-010 and OPS-023 and the totals; each row's number of cases is one more
-   than the start check printed, and the totals change only by what those rows change.
+   In the three places that 048a-5b's decision 10 (its places 1 to 3) leaves holding the words
+   "where the checks of orders 048a-2 and 048a-5 apply, and otherwise" (DL18's row in "Choices
+   still required", the paragraph on public engine execution, and the list of what the build does
+   not claim), those words, in each place, become "where the checks of orders 048a-2 and 048a-5
+   apply, unavailable where order 048a-5c's fixed-port check applies, and otherwise", keeping every
+   word before "where" and after "otherwise".
+
+   The file names order 048a-5c nowhere on `95b9fc3b` (the start check), so nothing says the
+   fixed-port refusal is not built yet; where a later change added such words, remove them, keep the
+   rest of their sentence, and say so. Nothing else in the file changes but that rewrap. After the
+   other decisions, run `python3 tools/promise_standing.py --write`, as AGENTS.md asks of a change
+   to a case's `promises` and to a promise ID in the core's sources. Report the rows of PND-010 and
+   OPS-023 and the totals; each row's number of cases is one more than the start check printed,
+   `OPS-023  26` and `PND-010  4` from `95b9fc3b`, and no total changes, as on the coordinator's
+   scratch build.
 
 7. **The declaration.** `docs/work-orders/048a5c-declared.yaml` holds one shape, `added`, for
    `requests-sign-in-fixed-port`. The coordinator wrote it with this order; check that it matches
@@ -382,23 +448,32 @@ steps with one documents file of its own, and one sentence and three phrases in
 
 8. **What this order does not do.** No promise, schema, definition, `IN_FORCE.md` line or ruling's
    record changes. No fixture or other case changes. No shell code, CLI command, hook, relay or
-   package changes. The `sign-in-hook.v1` part and IFC-049's URL match (048a-5d), the relayed
-   output (048a-5e), the requestState (048b-relay1), polling and its endings (048a-5f to 048a-5h)
-   and the returns (048a-6 to 048a-8) are not built here. Report as findings, for the
-   coordinator: that PND-010 names no node, so two instances on different nodes whose logins
-   share a fixed port are refused one at a time, as written; that a login with `ports: any` may
-   bind a port another login states fixed, and PND-010 refuses only a shared fixed port; that a
-   sign-in in progress keeps "may start" every login its request allowed, even once its hook has
-   relayed one login, since the same invocation may answer another InputRequiredResult; that no
-   case shows the pending action withheld from a caller that may not see it (PND-002), so the
-   unit test alone pins it, as it pins 048a-2's conflict sentence; that the case asserts no
-   diagnostic's words; and any place where PND-010 left you a choice this order does not settle.
+   package changes. The `sign-in-hook.v1` part and IFC-049's URL match (048a-5d), the relayed output
+   (048a-5e), the requestState (048b-relay1), polling and its endings (048a-5f to 048a-5h) and the
+   returns (048a-7 and 048a-8; 048a-6 has merged) are not built here, nor ruling 86's points 3 (c)
+   and (d) (order 209). Report as findings, for the coordinator: that PND-010 names no node, so two
+   instances on different nodes whose logins share a fixed port are refused one at a time, as
+   written; that the refusal tells a caller other than root that some sign-in it cannot inspect is
+   in progress, though the text names no instance, while its refused requests stay at tier 1; that a
+   login with `ports: any` may bind a port another login states fixed, and PND-010 refuses only a
+   shared fixed port; that a sign-in in progress keeps "may start" every login its request allowed,
+   even once its hook has relayed one login, since the same invocation may answer another
+   InputRequiredResult; that no case shows the pending action withheld from a caller that may not
+   see it (PND-002), so the unit test alone pins it, as it pins 048a-2's conflict sentence; that the
+   case asserts no diagnostic's words; that a keyed repeat that returns a kept outcome is not
+   compared, while a keyed request dispatched again is (report whether any path dispatches a
+   `sign-in.v1` past this check otherwise); that once order 209 refuses every named login aimed at a
+   hook whose operation is not keyed, a kept `asked_login` is read only for an implementation item
+   that carries Conduit's keys, as this case's does; that ruling 86 point 3 (c)'s reason is order
+   207's to write, and where it falls against this order's unavailable under OPS-023 follows from
+   it; that ports are compared whatever the redirect's host, so a login on [::1] and one on
+   127.0.0.1 stating one port are refused one at a time, as written; and any place where PND-010
+   left you a choice this order does not settle.
 
 ## Scope
 
 Change only `engine/crates/core/src/sign_in.rs` (decisions 2, 3 and 4, and the names function's
-body), `engine/crates/core/src/requests.rs` (decision 1's member, and decision 3's `?` at the
-preflight's call where it applies),
+body and parameter), `engine/crates/core/src/requests.rs` (decision 1's member),
 `engine/CONFORMANCE.md` (one sentence, the three places decision 6 names, and decision 6's
 removal where it applies),
 `engine/STANDING.md`, written only by the tool, `conformance/conventions/requests/index.yaml` and
@@ -424,6 +499,7 @@ cargo run --release -p conduit-conformance --example pieces
 cargo run --release -p conduit-conformance -- .. requests-sign-in-fixed-port
 cargo run --release -p conduit-conformance -- .. requests-sign-in-refusals-before-parts
 cargo run --release -p conduit-conformance -- .. requests-sign-in-lapse-and-conflict
+cargo run --release -p conduit-conformance -- .. requests-sign-in-account-first
 cargo run --release -p conduit-conformance -- .. requests-
 cargo test --release -p conduit-shell first_start_presents_final_lists
 CONDUIT_VECTOR_THREADS=4 cargo test --release -p conduit-conformance --test vectors
@@ -431,9 +507,10 @@ CONDUIT_VECTOR_THREADS=4 cargo test --release
 ```
 
 The third reports one more test passed than on the commit you start from, 0 failed, the new one
-being `sign_in_fixed_port_refusal`; report both counts. The pieces tool prints `Nothing to move.`
-The next three runner commands each end `1 cases passed`, and `requests-` gives one more case than
-on the commit you start from, with the same expected failures, each still failing; report both
+being `sign_in_fixed_port_refusal` (17 against 16 from `95b9fc3b`); report both counts. The
+pieces tool prints `Nothing to move.` The next four runner commands each end `1 cases passed`, and
+`requests-` gives one more case than on the commit you start from, with the same expected
+failures, each still failing (`71 cases passed; 2 expected failures` from `95b9fc3b`); report both
 counts. The shell test passes. If any other case, or any shell, CLI or experiment test, fails
 because a `sign-in.v1` request now reports unavailable under PND-010, stop and report it: do not
 change it. The threads are 4 because at 24 the runner ran out of memory (order 071's Record).
@@ -446,16 +523,20 @@ cp crates/core/src/sign_in.rs target/sign_in.rs.fixed
 ```
 
 Then, by hand, in `crates/core/src/sign_in.rs`, in the preflight, replace the call of
-`fixed_port_refusal` with `None`, and nothing else. Then run:
+`fixed_port_refusal` with a value that gives none: `None` where the call is followed by `?`, and
+`Ok(None)` where it is not; nothing else. Then run:
 
 ```bash
 cargo run --release -p conduit-conformance -- .. requests-sign-in-fixed-port
 cp target/sign_in.rs.fixed crates/core/src/sign_in.rs
 ```
 
-The runner command must fail, printing `FAIL 0 cases passed; 1 failed`, with an error at step 17,
-whose reply is pending where unavailable is expected. Then, by hand, in `other_sign_in_ports`,
-pass `None` in place of the invocation's `asked_login`, and nothing else. Then, one at a time:
+The runner command must fail, printing `FAIL 0 cases passed; 1 failed`, with the error
+`missing ordered record {"data":{"reason":"unavailable","ruleId":"PND-010"},"type":"request-ended"}`:
+the runner checks a step's `record_facts` before its reply and names no step for them, and step 17
+is the first step that expects that record, its reply now pending. Then, by hand, in
+`other_sign_in_ports`, pass `None` in place of the invocation's `asked_login`, and nothing else.
+Then, one at a time:
 
 ```bash
 cargo run --release -p conduit-conformance -- .. requests-sign-in-fixed-port
@@ -463,8 +544,9 @@ cp target/sign_in.rs.fixed crates/core/src/sign_in.rs
 cargo run --release -p conduit-conformance -- .. requests-sign-in-fixed-port
 ```
 
-The first runner command must fail, printing `FAIL 0 cases passed; 1 failed`, with an error at
-step 13, whose reply is unavailable where pending is expected; after the restore the second ends
+The first runner command must fail, printing `FAIL 0 cases passed; 1 failed`, with the error
+`portable case: step 13 ends with reason unavailable but does not assert it and its deciding ruleId`:
+`signed`'s sign-in in progress is then read as starting `browser`; after the restore the second ends
 `1 cases passed`. Restore with `cp`, not `mv`: a moved file keeps its older modification time, so
 cargo would not rebuild the crate. Git ignores `target/`.
 
@@ -482,7 +564,7 @@ python3 -m unittest discover -s tools/tests
 python3 tools/check_private_paths.py
 python3 tools/promise_standing.py --check
 /usr/bin/python3 tools/vector_delta.py HEAD WORKTREE --declared docs/work-orders/048a5c-declared.yaml; echo "exit $?"
-git status --short -- spec IN_FORCE.md conformance/manifest.yaml conformance/case.schema.json conformance/case-schema conformance/internal-cases.yaml conformance/expected-failures.yaml conformance/conventions/requests/sign-in-lapse-and-conflict conformance/conventions/requests/sign-in-hold conformance/conventions/requests/sign-in-setup-account conformance/conventions/requests/sign-in-refusals-before-parts conformance/conventions/requests/sign-in-return-kept-nowhere conformance/conventions/inventory conformance/conventions/setup conformance/language engine/crates/shell tools packages experiments docs/implementation docs/proposals
+git status --short -- spec IN_FORCE.md conformance/manifest.yaml conformance/case.schema.json conformance/case-schema conformance/internal-cases.yaml conformance/expected-failures.yaml conformance/conventions/requests/sign-in-lapse-and-conflict conformance/conventions/requests/sign-in-hold conformance/conventions/requests/sign-in-setup-account conformance/conventions/requests/sign-in-refusals-before-parts conformance/conventions/requests/sign-in-account-first conformance/conventions/requests/sign-in-return-kept-nowhere conformance/conventions/requests/sign-in-return-not-taken conformance/conventions/inventory conformance/conventions/setup conformance/language engine/crates/shell tools packages experiments docs/implementation docs/proposals
 git diff --check
 ```
 
@@ -512,7 +594,7 @@ grep -c 'fn may_start_fixed_ports' engine/crates/core/src/sign_in.rs
 grep -c 'fn other_sign_in_ports' engine/crates/core/src/sign_in.rs
 grep -c 'fn fixed_port_refusal' engine/crates/core/src/sign_in.rs
 grep -c '"id": "requests-sign-in-fixed-port"' conformance/conventions/requests/index.yaml
-tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -c 'After that conflict and before any part, order 048a-5c decides PND-010.s fixed-port refusal'
+tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -c 'After order 048a-2.s conflicts and before any part, order 048a-5c decides PND-010.s fixed-port refusal'
 ```
 
 This prints `3`, decision 6's three places:
@@ -527,7 +609,8 @@ This prints `2`, the member's write (decision 1) and its read (decision 2):
 grep -rho '"asked_login"' engine/crates/core/src | wc -l | tr -d ' '
 ```
 
-This prints the two lines of the start check, each number of cases one more:
+This prints the two lines of the start check, each number of cases one more
+(`OPS-023  26` and `PND-010  4` from `95b9fc3b`):
 
 ```bash
 awk -F'|' '$2 == " PND-010 " || $2 == " OPS-023 " {print $2 $5}' engine/STANDING.md

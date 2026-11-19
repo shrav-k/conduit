@@ -634,7 +634,7 @@ pub(crate) fn routing<'a>(
                 && o["name"] == args["template"]["metadata"]["name"]
                 && o.get("spec").is_some()
         })?,
-        Some("set-up.v1" | "retire.v1" | "register-replacement.v1") => {
+        Some("set-up.v1" | "retire.v1" | "register-replacement.v1" | "sign-in.v1") => {
             view.object(&args["instance"])?
         }
         Some("open.v1" | "close.v1") => view.fixed(&args["conduit"], "Conduit")?,
@@ -656,7 +656,7 @@ pub(crate) fn routing<'a>(
             | "declare-lost.v1"
             | "purge.v1",
         ) => Some(mgmt),
-        Some("set-up.v1" | "retire.v1") => match named {
+        Some("set-up.v1" | "retire.v1" | "sign-in.v1") => match named {
             Some(o)
                 if (o["kind"] == "Resource" || o["kind"] == "Agent") && o.get("spec").is_none() =>
             {
@@ -888,8 +888,24 @@ fn evaluate_path(
     {
         return Ok(Verdict::reason("refused", "PND-009"));
     }
+    let sign_in = op == context.qualified("sign-in.v1");
+    // ACC-056 puts caller eligibility before ACC-033 routing.
+    if sign_in && (request.serving.is_some() || instance["kind"] != "Interface") {
+        return Ok(Verdict::reason("refused", "PND-010"));
+    }
     let (route, named) = routing(state, view, path, op, &request.arguments, context)?;
     if route.is_none_or(|r| r["id"] != path["target"]) {
+        return Ok(Verdict::reason("refused", "ACC-033"));
+    }
+    // ACC-033 row 16, PND-010: an Interface on its own behalf; a Resource is root's.
+    if sign_in
+        && instance["id"] != root["id"]
+        && (named.is_none_or(|o| o["kind"] != "Agent")
+            || !state.objects.iter().any(|conduit| {
+                id(&conduit["target"]) == &target["id"]
+                    && crate::inventory::is_scope_conduit(instance, conduit, state, context)
+            }))
+    {
         return Ok(Verdict::reason("refused", "ACC-033"));
     }
     if registration {

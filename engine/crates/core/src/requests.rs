@@ -662,9 +662,6 @@ fn reject_diagnostics(
         .or_else(|| route["operation"].as_str())
         .ok_or("rejection lacks subject")?;
     let specific = match rule {
-        "PND-010" => Some(format!(
-            "{subject} reports unavailable under {rule}: not built yet, order 048a."
-        )),
         "PKG-023" => Some("install fetch requires an absolute local file URL; https fetching and package-source providers are unfinished".into()),
         "LIF-037" => {
             let args = &route["arguments"];
@@ -780,6 +777,7 @@ fn named_reference(operation: &Value, arguments: &Value, c: &Context) -> Option<
         "inspect.v1" | "unregister.v1" => ("object", "Object"),
         "replace.v1" => ("template", "Object"),
         "set-up.v1" | "retire.v1" | "register-replacement.v1" => ("instance", "Object"),
+        "sign-in.v1" => ("instance", "Object"),
         "open.v1" | "close.v1" => ("conduit", "Conduit"),
         "declare-lost.v1" => ("node", "Resource"),
         "reconcile.v1" => ("invocation", "Invocation"),
@@ -1112,6 +1110,14 @@ fn invoke_inner(
     )?;
     let op = route["operation"].as_str().ok_or("missing operation")?;
     let (_, _, contract) = schemas::operation(&target, op, &c.core_package)?;
+    // LIF-031 and IFC-049 apply to each sign-in request, including keyed repeats.
+    if op == c.qualified("sign-in.v1")
+        && (route["arguments"]["instance"].get("id").is_some()
+            || !sign_in::declares_url_elicitation(request))
+        && let Some(rejection) = sign_in::preflight(&t.state, &route, request, &a.evidence.time, c)?
+    {
+        return reject_preflight(t, a, c, &route, rejection);
+    }
     // OPS-023: an unsupported answer is invalid even if the key conflicts.
     // Defer PND-003 conflict so a matching repeat can return its retained outcome.
     let answer = op == c.qualified("answer.v1");
@@ -1388,15 +1394,6 @@ fn invoke_inner(
         }
         return Ok(());
     }
-    // C11's temporary stubs: authority and arguments have already been checked.
-    // OPS-005: unavailable ends before dispatch; its message names the build order.
-    if let Some((_, _order, promise)) = [("sign-in.v1", "048a", "PND-010")]
-        .iter()
-        .find(|(name, _, _)| op == c.qualified(name))
-    {
-        reject(t, a, c, &route, "unavailable", promise, None, None)?;
-        return Ok(());
-    }
     if op == c.qualified("register-replacement.v1") {
         let parent = access::object(&t.state, &route["arguments"]["instance"])
             .ok_or("replacement parent absent")?
@@ -1575,6 +1572,7 @@ fn invoke_inner(
         && !crate::lifecycle::handles(op, c)
         && !crate::records::handles(op, c)
         && op != c.qualified("install.v1")
+        && op != c.qualified("sign-in.v1")
     {
         return Err("engine operation belongs to its lifecycle or records transition".into());
     }
@@ -1802,6 +1800,8 @@ fn invoke_inner(
         crate::records::execute(t, a, c, i)?;
     } else if crate::lifecycle::handles(op, c) {
         crate::lifecycle::execute(t, a, c, i)?;
+    } else if op == c.qualified("sign-in.v1") {
+        crate::sign_in::begin(t, a, c, i)?;
     } else {
         let call = intent(&invocation, &t.state, c)?;
         t.external_intents.push(call);
@@ -2454,6 +2454,7 @@ pub(crate) fn setup_sign_in_hook(
     parent: usize,
     object: &Value,
     name: &str,
+    promises: &[&str],
 ) -> Result<bool> {
     let op = c.qualified(name);
     let Some(implementation) = object["resolved_implementations"].get(&op) else {
@@ -2468,16 +2469,10 @@ pub(crate) fn setup_sign_in_hook(
         (op, implementation),
         HookKey::Fresh,
     )?;
-    let (decision_name, promises): (_, &[_]) = if name == "account-hook.v1" {
-        (
-            "dispatch-account-check",
-            &["TPL-012", "PND-011", "CTR-013", "ACC-018", "IMP-002"],
-        )
+    let decision_name = if name == "account-hook.v1" {
+        "dispatch-account-check"
     } else {
-        (
-            "dispatch-sign-out",
-            &["TPL-012", "PND-011", "ACC-018", "IMP-002"],
-        )
+        "dispatch-sign-out"
     };
     t.decisions.push(decision(
         decision_name,

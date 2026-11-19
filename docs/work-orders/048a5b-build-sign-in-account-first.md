@@ -1273,3 +1273,199 @@ point 10, has each merge wait on, `tools/gate.py`; CI runs on the pull request a
 for it. A fresh Codex verifier and a fresh read-only Opus reader read the result before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2). The admin writes this order's Record at
 the foot of this file when it merges.
+
+## Record
+
+Run on 2026-11-19, from about 05:24 to 06:32 UTC, on the Mac from `main` `c704275f` (this order's
+refresh, #385), in two rounds under ruling 85's one-round trial, since the first verifier found
+musts: the worker (1655 s) and a fresh Codex verifier (406 s), then the worker again (1555 s) and a
+second fresh Codex verifier (447 s). The change is the thirteen files of Scope. Access binds
+`sign-in.v1` to the instance's owning Fleet or Pool before preflight (decision 0). C11's stub is
+gone: `invoke_inner` hands `sign-in.v1` to `sign_in::begin`, which dispatches `account-hook.v1`
+first, and `child_answered` hands the part's answer to `sign_in::part_answered` (decisions 1 and 2).
+The expected account, compared ignoring ASCII case, signs the instance in with the reported
+spelling, answers an unanswered sign-in action and lifts the hold; no account or another account
+ends `sign-in.v1` failed until the relay is built, with `raise_sign_in`'s fourth form
+`SignInRequest::SignIn` (decisions 3 to 5); clearing `SignInUndone` names the operation (decision
+6). Decision 7's two unit tests, decision 8's case `requests-sign-in-account-first` (32 steps),
+decision 9's expectations in `sign-in-lapse-and-conflict` (step 12) and
+`sign-in-refusals-before-parts` (steps 3 to 10, 12 to 14 and 18), the seven places of
+`engine/CONFORMANCE.md`, `engine/STANDING.md` by its tool and the shell's comment complete it. The
+worker's own choices: the account-part helper's `false` return gives the missing-implementation
+ending; a local `link_action` helper serves the two endings; and the access test's fixture gained
+the Fleet and Pool Capability contracts after the first route mutation showed it lacked them.
+
+The first verifier found seven musts and two shoulds: a sign-in-only Conduit let a non-root
+Interface sign in an Agent of a Fleet outside its scope (V1); an onward request was refused under
+ACC-033 where ACC-056 puts PND-010 first (V2); a resolved `{kind, id}` instance on an own-behalf
+request dispatched, against LIF-031 (V3); a same-digest keyed repeat skipped the URL-elicitation
+check (V4); recovery and a positive `reconcile.v1` record a sign-in succeeded with no account
+result, action answer or hold lift (V5); the failed result omits the action it raises (V6);
+cancelling a sign-in leaves the account part running (V7); and two shoulds on the case,
+`external_intents: []` on the account completions (V8) and a null-account check with no unanswered
+action (V9). Round 2 fixed V1 to V4: a non-root Interface also needs an open Conduit to the owning
+Fleet listing `inspect.v1` (`inventory::is_scope_conduit`); an Agent caller or a request serving an
+invocation is refused under PND-010 before routing, with a new `REFUSAL_CAUSES` row; preflight
+rejects a resolved instance under LIF-031; and `invoke_inner` runs preflight before the key lookup
+for a resolved instance or a missing URL elicitation, with `declares_url_elicitation` shared by
+both. It left V5 to V9 to the coordinator, as decisions 8, 9 and 13 and the scope bind them. The
+second verifier found ten musts and three shoulds: V5, V6 and V7 again; a bare string that fits the
+name schema still resolves by ID (OBJ-006); a keyed repeat still bypasses the other sign-in
+invalids, an unknown login among them; the shell drops `signInReturn`, so a permitted public first
+request carrying it dispatches (order 048a-6's); a retained keyed success returns despite a stale
+`expectedId` (LIF-037); opening a Conduit listing `sign-in.v1` for a consumer that is not an
+Interface is not refused (decision 13); decision 0's blanket tier 1 withholds tier 2 from a non-root
+caller who may inspect both objects; and preflight diagnostics for a Pool-entry reference name the
+resolved object, not what the request named (IFC-050); and as shoulds, place 6 of
+`engine/CONFORMANCE.md` stale, V8 and V9.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2) on the branch at
+`488b6d16`. In a scratch copy it ran every command of "Done when": fmt and clippy (exit 0); the
+`sign_in` filter (15 passed, 115 filtered out, against 10 at the start); `pending::tests` (7) and
+`lifecycle` (9), as at the start; the pieces tool (`Nothing to move.`); the five single-case runners
+(`1 cases passed` each); `requests-sign-in-` (5 passed, 1 expected failure, against 4) and
+`requests-` (68 passed, 3 expected failures, against 67, the same failures); the shell test; the
+vectors (2 passed); the full engine suite (exit 0, core lib 130 passed); the S1 spike (9 passed);
+the three mutations (ASCII: step 26 failed, succeeded expected; the route arm and row 16's block:
+each failed at `explain.rs:1465`, at `v`'s request through `f2` and for `x` through `p`); the Python
+checks (Errors: 0 each; 129 unit tests, OK); `vector_delta.py c704275f HEAD` (6 shapes, 40 changes,
+0 flips, 0 undeclared, every change in the new case or decision 9's steps); the greps, the standing
+delta (`PND-003:1 PND-005:1 PND-010:1 PND-011:1`) and the four rows; `git diff --check`; the scoped
+status; and the commit identities. It found that every refusal stays at tier 1 with no target,
+Conduits or `exists`, that nothing the stub stopped is dispatched, and that round 2 departed from
+the order's text. It found four musts and two shoulds:
+
+- R1: the `sign_in` filter gives five more tests than the start, not three; the two more are
+  `explain::tests::sign_in_rejects_a_resolved_instance_after_access` and
+  `explain::tests::sign_in_keyed_repeats_require_url_elicitation`, which round 2 added for V3 and
+  V4.
+- R2: the standing totals move by LIF-031 as well as by the four PND rows: its row goes from `none`
+  to `core`, and "named in engine source" from 141, 165, 26, 332 to 141, 166, 26, 333.
+- R3: round 2's early preflight in `invoke_inner` (`requests.rs`) and its LIF-031 check in
+  `sign_in::preflight` depart from decision 1 ("Nothing else in `invoke_inner` changes") and from
+  decision 13, which kept order 048a-5's R4 open.
+- R4: decision 0 is not applied as written: an Agent caller or a request serving an invocation is
+  refused under PND-010 before routing, with a new `REFUSAL_CAUSES` row; row 16's block also
+  requires the scope Conduit; the test asserts PND-010 for those requests; and place 6 of
+  `engine/CONFORMANCE.md` no longer describes the build. The spec supports the code: ACC-056 puts
+  PND-010 at (3), before ACC-033 at (4), and PND-010 lets a caller other than root sign in only an
+  Agent of a Fleet in its scope.
+- R5 (should): the new PND-010 cause ends "other consumers may not open a Conduit listing sign-in",
+  a refusal this build does not make (decision 13).
+- R6 (should): recovery and a positive reconciliation can record a sign-in succeeded with no account
+  result, action answer or hold lift (V5), and decision 13's list omits it.
+
+The branch was rebased onto `main` `fde1c615` (order 048a-6, #386) without conflict, followed by
+the rewrite of `engine/STANDING.md` by its tool (see the reread below). The fixer settled R1 to R4
+by accepting round 2's departure, which ACC-056, PND-010, LIF-031 and OPS-023 ground, as amendments
+to this order:
+
+- R1 and R2: the third command of "Done when" reports five more tests than the start, decision 0's
+  test and decision 7's two with the two of R1; and the standing totals change by the four PND rows
+  and by LIF-031's row, `none` to `core`, which takes "named in engine source" from 141, 166, 26,
+  333 at `fde1c615` to 141, 167, 26, 334.
+- R3: decisions 1 and 13 are amended to take V3 and V4: after access and before the key lookup,
+  `invoke_inner` runs preflight for a request whose instance is a resolved `{kind, id}` or that
+  declares no URL elicitation, and preflight rejects a resolved instance under LIF-031. Order
+  048a-5's R4 is so partly closed: a missing URL elicitation and a resolved instance now report
+  invalid before a key's conflict, while an unknown login and `signInReturn` on a keyed repeat still
+  do not, for a later order of the chain.
+- R4: decision 0 parts 2, 4 and 6 are amended: an Agent caller, or a request serving an invocation,
+  is refused under PND-010 before routing, with the `REFUSAL_CAUSES` cause; a non-root Interface
+  also needs its scope, an open Conduit to the owning Fleet listing `inspect.v1`. Place 6 of
+  `engine/CONFORMANCE.md` now says so: "an Interface on its own behalf through an Agent's owning
+  Fleet in its scope (an open Conduit to that Fleet listing `inspect.v1`). An Agent caller, or a
+  request serving an invocation, reports refused under PND-010 before routing; any other request,
+  one naming no Agent or Resource included, reports refused under ACC-033 before these checks, at
+  tier 1 ...".
+- R5: skipped. The fixer made the change, and the full engine suite then failed at
+  `checks::tests::refusal_causes_match_spec_table_verbatim` (`conduit-conformance`, PND-010): each
+  cause of `REFUSAL_CAUSES` must match its row of the refusal-cause table in
+  `spec/conventions/access.yaml` verbatim, and that row ends with the sentence on opening. `spec/`
+  is outside this order's scope, so the fixer restored `explain.rs`. The sentence anticipates
+  PND-010's refusal of the open, which decision 13 leaves for a later order; until that order the
+  cause states a refusal not yet built.
+- R6: no code changes. It stays open for a later order of the chain, 048a-5f or its own: refuse an
+  `occurred: true` reconciliation of a `sign-in.v1` invocation, or require account evidence and run
+  `sign_in::signed_in`.
+
+The second verifier's other findings stay open as well, each for a later order: V6, V7, V8 and V9;
+the bare string resolved by ID (OBJ-006); the stale `expectedId` on a retained keyed success
+(LIF-037); the PND-010 refusal of the open; tier 2 for a non-root caller who may inspect both
+objects; and the Pool-entry diagnostics (IFC-050). Order 048a-6 (#386) closed the shell's
+`signInReturn`: on the rebased tree `server.rs` passes it to the core, and `sign_in::preflight`
+rejects it under PND-013.
+
+Before the rebase, the fixer ran every command of "Done when" on the branch based on `c704275f`,
+after R5's revert, with the first reader's results (15 tests in the `sign_in` filter;
+`requests-sign-in-` 5 passed with 1 expected failure; `requests-` 68 passed with 3; the full engine
+suite 369 passed and 4 ignored), and committed at `0357b2c0`.
+
+A second fresh read-only Opus reader then reread the branch at `0357b2c0`. In a scratch copy it ran
+every command of "Done when" again, with the first reader's results, the three mutations included,
+and found every fix sound: R1 to R4 accepted as amendments, place 6 describing the PND-010 refusal
+before routing and the `inspect.v1` scope, R5 rightly skipped, since
+`checks::refusal_causes_match_spec_table_verbatim` pins the cause, and R6 named as open. It found
+that `origin/main` had moved to `fde1c615` (order 048a-6, #386) before the fixer's commit. In a
+scratch clone it rebased the three commits onto it without conflict; `promise_standing.py --check`
+then gave `Errors: 1`, a stale total that `--write` corrects, and on the rebased trial every command
+passed. It found one must and one should:
+
+- R2-1: the branch is not rebased onto `fde1c615`, which this order must do as the second to land,
+  and the Record's counts, totals and open findings change with the rebase.
+- R2-2 (should): place 6 of `engine/CONFORMANCE.md` does not describe R3's half of the amendment:
+  preflight's LIF-031 rejection of a resolved `{kind, id}` instance, the keyed repeat's early
+  invalids and the gaps of order 048a-5's R4 that remain.
+
+The fixer then settled both:
+
+- R2-1: it fetched `main` and rebased the three commits onto `fde1c615` as the work-order identity,
+  without conflict. `promise_standing.py --check` then gave `Errors: 1` on the line "named in engine
+  source", 141, 166, 26, 333 against the generated 141, 167, 26, 334; `--write` changed that line
+  alone, and the check then gave `Errors: 0`. Against `fde1c615` the standing changes by the four
+  PND rows, LIF-031's row and that total. This Record now names the rebase, the amended totals,
+  order 048a-6's closing of `signInReturn` and the rebased counts below.
+- R2-2: after "So the checks apply to every request that access permits." place 6 now adds the
+  reader's three sentences verbatim, on the LIF-031 invalid, the keyed repeat's early invalid and
+  what is not yet decided (order 048a-5's R4), and the item is rewrapped. The greps of "Done when"
+  on `engine/CONFORMANCE.md` print as before.
+
+The fixer then ran, from the worktree with `RUST_TEST_THREADS=4` and `CONDUIT_VECTOR_THREADS=4`, on
+the rebased tree with the files of this commit before it was made, `fde1c615` being the start, every
+command of "Done when": fmt and clippy (exit 0); the `sign_in` filter (16 passed; 0 failed; 115
+filtered out, against 11 at `fde1c615`, which holds order 048a-6's
+`requests::tests::sign_in_return_not_taken_is_kept_nowhere`: five more, the three of decisions 0 and
+7 and the two of R1); `pending::tests` (7) and `lifecycle` (9); the pieces tool (`Nothing to
+move.`); the five single-case runners (`1 cases passed` each); `requests-sign-in-` (`7 cases
+passed`, no expected failure, against 6 cases at the start, since order 048a-6 removed
+`requests-sign-in-return-kept-nowhere` from the expected failures); `requests-` (`70 cases passed; 2
+expected failures`, against 71 cases at the start, the failures being OPS-012's
+`requests-repeat-failed-earlier-succeeded` and `requests-repeat-failed-earlier-unanswered`);
+`first_start_presents_final_lists` (1 passed); the vectors (2 passed); the full engine suite (exit
+0, 371 passed and 4 ignored over 28 test binaries); the three mutations, each restored with `cp`
+(ASCII: `FAIL 0 cases passed; 1 failed` at step 26, `failed` where `succeeded` is expected, then `1
+cases passed`; the route arm: failed at `explain.rs:1465`, `v`'s request through `f2` permitted
+where refused is expected; row 16's block: failed at the same line, `v`'s request for `x` through
+`p`, then `1 passed; 0 failed`); the S1 spike (`9 passed; 0 failed`); the greps of "Done when"
+(twenty-seven print 1, sixteen print 0, the last against `fde1c615`, `2`, `5`, `PND-003:1 PND-005:1
+PND-010:1 PND-011:1` against the standing of `fde1c615`, and `4`); the scoped `git status`
+(nothing); the Python checks (`check_schemas`, `set_names --check`, `check_rulings`, `check_docs`,
+`check_roadmap`, `check_model_account`, `check_private_paths` and `promise_standing --check`,
+Errors: 0 each; 129 unit tests, OK); `vector_delta.py fde1c615 WORKTREE` (6 shapes; 40 changes; 0
+flips; 0 undeclared; 0 errors; exit 0); and `git diff --check` (clean).
+
+A third fresh read-only Opus reader then reread the branch at `0f4e1fa2`. In a scratch copy it ran
+every command of "Done when" again, with the rebased results above, the three mutations included.
+It found both fixes sound and no must, and two shoulds: R3-1, that the sentences R2-2 inserted in
+`engine/CONFORMANCE.md` place 6 left "that invalid" and "that conflict" without their antecedents,
+and R3-2, that this Record did not yet state the third read. The coordinator applied both at the
+merge: the sentence now reads "After order 048a-2's invalid and before its conflict", the item
+rewrapped at 100 columns, and this paragraph. The coordinator accepts the departures recorded above
+(decision 0's parts 2, 4 and 6; decisions 1 and 13), each grounded in the specification and open to
+the owner's strike. For ruling 85's trial (point 3): Codex ran two rounds, since its first verifier
+found seven musts; the fresh readers found four musts, all from round 2's departures from the
+order's prescribed text, then one, then none.
+
+In all, the verifiers found seven musts and two shoulds, then ten musts and three shoulds; the
+readers four musts and two shoulds, then one must and one should, then two shoulds. The gate's run on this order's
+squash, which this merge waits on, is the coordinator's at the merge.

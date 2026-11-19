@@ -1,9 +1,10 @@
 //! PND-005 lapse signals and holds, PND-010 checks, and PND-011 sign-out conditions.
 use crate::{
-    Context, Result, State,
+    Allocation, Context, Result, State, Transition,
     access::{self, AccessRequest},
-    explain::Rejection,
-    inventory, pending,
+    decision,
+    explain::{self, Rejection},
+    inventory, pending, requests,
 };
 use serde_json::{Value, json};
 
@@ -60,7 +61,7 @@ pub(crate) fn set_sign_in_undone_false(
     write_undone_condition(object, undone_condition(object), condition, time);
 }
 
-pub(crate) fn clear_sign_in_undone(object: &mut Value, time: &str) -> bool {
+pub(crate) fn clear_sign_in_undone(object: &mut Value, time: &str, within: &str) -> bool {
     let Some(i) = undone_condition(object) else {
         return false;
     };
@@ -70,7 +71,7 @@ pub(crate) fn clear_sign_in_undone(object: &mut Value, time: &str) -> bool {
     }
     let condition = json!({
         "type":"SignInUndone","status":"True","reason":"AccountChecked",
-        "message":"An account check within setup found the expected account or none.",
+        "message":format!("An account check within {within} found the expected account or none."),
         "lastTransitionTime":time,"source":old["source"]
     });
     write_undone_condition(object, Some(i), condition, time);
@@ -122,6 +123,302 @@ pub(crate) fn expected_account<'a>(
             None => ExpectedAccount::NotString { pointer },
         },
     )
+}
+
+const ACCOUNT_NOT_STRING: &str = "The instance's expected account is not a string, so sign-in.v1 cannot check it and signs nothing in.";
+const RETIRED_DURING_CHECK: &str = "The instance was retired while its account check was in progress, so sign-in.v1 signs nothing in and answers no sign-in action.";
+
+pub(crate) fn begin(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+) -> Result<()> {
+    let reference = &t.state.invocations[i]["arguments"]["instance"];
+    let Some(instance) = access::object(&t.state, reference).cloned() else {
+        return end_failed(
+            t,
+            a,
+            c,
+            i,
+            "PND-010",
+            "The request's instance names no object, so sign-in.v1 has no account to check and signs nothing in.",
+        );
+    };
+    if !matches!(expected_account(&instance, c)?, ExpectedAccount::Set { .. }) {
+        return end_failed(t, a, c, i, "PND-010", ACCOUNT_NOT_STRING);
+    }
+    if instance["state"] == "retired" {
+        return end_failed(
+            t,
+            a,
+            c,
+            i,
+            "PND-003",
+            "The instance is retired, so sign-in.v1 signs nothing in and dispatches no part.",
+        );
+    }
+    let invocation = &mut t.state.invocations[i];
+    invocation["object"] = instance["id"].clone();
+    invocation["sign_in"] = json!({"phase":"account-pending","parts":[]});
+    if !requests::setup_sign_in_hook(
+        t,
+        a,
+        c,
+        i,
+        &instance,
+        "account-hook.v1",
+        &["PND-010", "PND-011", "CTR-013", "ACC-018", "IMP-002"],
+    )? {
+        return end_failed(
+            t,
+            a,
+            c,
+            i,
+            "PND-011",
+            "No implementation of account-hook.v1 is resolved for the instance, so its account cannot be checked and sign-in.v1 signs nothing in.",
+        );
+    }
+    Ok(())
+}
+
+#[derive(Debug, PartialEq)]
+pub(crate) enum FirstCheck {
+    Expected(String),
+    NoAccount,
+    Other,
+    NotChecked,
+}
+
+pub(crate) fn first_check(outcome: &str, outputs: &Value, expected: &str) -> FirstCheck {
+    if outcome != "succeeded" {
+        return FirstCheck::NotChecked;
+    }
+    match outputs.get("account") {
+        Some(Value::Null) => FirstCheck::NoAccount,
+        Some(Value::String(found)) if found.eq_ignore_ascii_case(expected) => {
+            FirstCheck::Expected(found.clone())
+        }
+        Some(Value::String(_)) => FirstCheck::Other,
+        _ => FirstCheck::NotChecked,
+    }
+}
+
+pub(crate) fn part_answered(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    part: &Value,
+    outcome: &str,
+) -> Result<()> {
+    let invocation = &mut t.state.invocations[i];
+    if invocation["sign_in"]["phase"] != "account-pending" {
+        return Ok(());
+    }
+    invocation["sign_in"]["parts"]
+        .as_array_mut()
+        .unwrap()
+        .push(json!({"name":"account","outcome":outcome,"invocation":part["id"]}));
+    let Some(object) = t
+        .state
+        .objects
+        .iter()
+        .position(|o| o["id"] == invocation["object"])
+    else {
+        return end_failed(t, a, c, i, "PND-003", RETIRED_DURING_CHECK);
+    };
+    let instance = t.state.objects[object].clone();
+    let ExpectedAccount::Set { pointer, account } = expected_account(&instance, c)? else {
+        return end_failed(t, a, c, i, "PND-010", ACCOUNT_NOT_STRING);
+    };
+    let check = first_check(outcome, &part["retained"]["outputs"], account);
+    if matches!(check, FirstCheck::Expected(_) | FirstCheck::NoAccount)
+        && clear_sign_in_undone(&mut t.state.objects[object], &a.evidence.time, "sign-in.v1")
+    {
+        t.decisions.push(decision(
+            "clear-sign-in-undone",
+            &["PND-011", "PND-010"],
+            &[],
+            json!({"instance":instance["id"]}),
+            vec![],
+        ));
+    }
+    if instance["state"] == "retired" {
+        return end_failed(t, a, c, i, "PND-003", RETIRED_DURING_CHECK);
+    }
+    let (found, cause) = match check {
+        FirstCheck::Expected(found) => return signed_in(t, a, c, i, &found),
+        FirstCheck::NotChecked => {
+            return end_failed(
+                t,
+                a,
+                c,
+                i,
+                "PND-011",
+                &format!(
+                    "The account check before sign-in-hook.v1 ended {outcome}, so the account is not known and sign-in.v1 completes nothing; send sign-in.v1 again."
+                ),
+            );
+        }
+        FirstCheck::NoAccount => (
+            "none",
+            "The account check before sign-in-hook.v1 found no account; sign-in.v1 would go on to start a login through sign-in-hook.v1 and relay it under IFC-049 (PND-010), which this build does not yet do (order 048a-5e), so it ends failed and nothing was signed in.",
+        ),
+        FirstCheck::Other => {
+            let retired_by = c.qualified("retire.v1");
+            let retiring = t.state.invocations.iter().any(|v| {
+                v["operation"] == retired_by
+                    && v["state"] == "in-progress"
+                    && v["object"] == instance["id"]
+            });
+            if !retiring {
+                let invocation = t.state.invocations[i].clone();
+                if let Some(action) = pending::raise_sign_in(
+                    &mut t.state,
+                    &instance,
+                    account,
+                    &pointer,
+                    pending::SignInRequest::SignIn {
+                        invocation: &invocation,
+                    },
+                    a,
+                )? {
+                    t.state.invocations[i]["sign_in"]["raised"] = action["id"].clone();
+                    t.decisions.push(decision(
+                        "raise-sign-in-action",
+                        &["PND-001", "PND-005", "PND-010", "PND-012"],
+                        &["DL19"],
+                        json!({"action":action["id"],"instance":instance["id"]}),
+                        vec![],
+                    ));
+                }
+            }
+            (
+                "other",
+                "The account check before sign-in-hook.v1 found an account other than the expected one; sign-in.v1 would go on to start a login through sign-in-hook.v1 and relay it under IFC-049 (PND-010), which this build does not yet do (order 048a-5e), so it ends failed, that account stays as it is, and nothing was signed in.",
+            )
+        }
+    };
+    t.decisions.push(decision(
+        "end-sign-in-before-relay",
+        &["PND-010", "PND-011"],
+        &[],
+        json!({"invocation":t.state.invocations[i]["id"],"found":found}),
+        vec![],
+    ));
+    end_failed(t, a, c, i, "PND-010", cause)
+}
+
+pub(crate) fn answer_and_lift(
+    state: &mut State,
+    instance: &str,
+    invocation: &Value,
+    time: &str,
+) -> (Option<Value>, bool) {
+    let action = pending::unanswered_sign_in(state, &json!({"id":instance}), time).cloned();
+    let answered = action.map(|action| {
+        pending::store_answer(
+            state,
+            action,
+            pending::invocation_answer("signed-in", invocation, time),
+        )
+    });
+    let lifted = state.sign_in_holds.remove(instance).is_some();
+    (answered, lifted)
+}
+
+pub(crate) fn signed_in(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    found: &str,
+) -> Result<()> {
+    let invocation = t.state.invocations[i].clone();
+    let instance = invocation["object"]
+        .as_str()
+        .ok_or("sign-in subject has no ID")?;
+    let (action, lifted) = answer_and_lift(&mut t.state, instance, &invocation, &a.evidence.time);
+    requests::finish(
+        t,
+        a,
+        c,
+        i,
+        "succeeded",
+        json!({"account":found}),
+        json!([]),
+        None,
+    )?;
+    t.state.invocations[i]["sign_in"]["phase"] = json!("ended");
+    if let Some(action) = action {
+        link_action(t, &invocation["id"], &action["id"])?;
+        pending::record_answer(t, a, c, &action)?;
+        t.decisions.push(decision(
+            "answer-sign-in-signed-in",
+            &["PND-003", "PND-010", "PND-011", "PND-012"],
+            &["DL19"],
+            json!({"action":action["id"]}),
+            vec![],
+        ));
+    }
+    if lifted {
+        t.decisions.push(decision(
+            "lift-sign-in-hold",
+            &["PND-005", "PND-010"],
+            &[],
+            json!({"instance":instance}),
+            vec![],
+        ));
+    }
+    Ok(())
+}
+
+fn end_failed(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    rule: &str,
+    cause: &str,
+) -> Result<()> {
+    let diagnostic = explain::outcome_diagnostic(&t.state.invocations[i], "failed", rule, cause)?;
+    requests::finish(
+        t,
+        a,
+        c,
+        i,
+        "failed",
+        json!({}),
+        json!([]),
+        Some(vec![diagnostic]),
+    )?;
+    let invocation = &mut t.state.invocations[i];
+    invocation["sign_in"]["phase"] = json!("ended");
+    if let Some(action) = invocation["sign_in"].get("raised") {
+        let (id, action) = (invocation["id"].clone(), action.clone());
+        link_action(t, &id, &action)?;
+    }
+    Ok(())
+}
+
+fn link_action(t: &mut Transition, invocation: &Value, action: &Value) -> Result<()> {
+    let ended = t
+        .records
+        .iter_mut()
+        .rev()
+        .find(|r| r["type"] == "invocation-ended" && r["data"]["invocation"] == *invocation)
+        .ok_or("sign-in invocation has no ending record")?;
+    ended["data"]["pendingAction"] = json!([action]);
+    let stored = t
+        .state
+        .records
+        .iter_mut()
+        .rev()
+        .find(|r| r["id"] == ended["id"])
+        .ok_or("sign-in invocation ending record absent from state")?;
+    *stored = ended.clone();
+    Ok(())
 }
 
 pub(crate) enum Trigger {
@@ -206,11 +503,12 @@ pub(crate) fn preflight(
     if route["operation"] != context.qualified("sign-in.v1") {
         return Ok(None);
     }
-    let Some(instance) = access::object(state, &route["arguments"]["instance"]) else {
-        return Ok(None);
+    let reference = &route["arguments"]["instance"];
+    let Some(instance) = access::object(state, reference) else {
+        return Err("sign-in.v1 reached its preflight from a caller or for an instance that access does not permit (ACC-033 row 16, PND-010)".into());
     };
-    // PND-010, OPS-023: only root, or an Interface on its own behalf through an Agent's
-    // owning Fleet, learns more than the stub's unavailable; a Resource stays root's.
+    // PND-010, ACC-033 row 16: access permits only root, or an Interface on its own behalf
+    // through an Agent's owning Fleet; should another request reach here, fail, never dispatch.
     let root = access::object_by_id(state, &route["caller"])
         .is_some_and(|c| c["from"] == context.qualified("root") && c.get("spec").is_none());
     let owner = instance["kind"] == "Agent"
@@ -218,7 +516,17 @@ pub(crate) fn preflight(
     if !root
         && !(owner && pending::own_interface(state, &route["caller"], &route["consumer"]).is_some())
     {
-        return Ok(None);
+        return Err("sign-in.v1 reached its preflight from a caller or for an instance that access does not permit (ACC-033 row 16, PND-010)".into());
+    }
+    if reference.get("id").is_some() {
+        let tool = route["tool"].as_str().ok_or("sign-in route has no tool")?;
+        return Ok(Some(rejection(
+            "invalid",
+            "LIF-031",
+            tool,
+            reference,
+            "an own-behalf request must name the instance by reference instead of supplying its resolved ID.",
+        )));
     }
     let expected = expected_account(instance, context)?;
     let names = if matches!(expected, ExpectedAccount::Set { .. }) {
@@ -243,20 +551,18 @@ fn stated_login_names(instance: &Value, context: &Context) -> Result<Vec<String>
 
 fn request_member_refusal(
     route: &Value,
+    instance: &Value,
     request: &AccessRequest,
     names: &[String],
     context: &Context,
 ) -> Option<Rejection> {
     let tool = route["tool"].as_str()?;
-    if !request
-        .client_capabilities
-        .as_ref()
-        .is_some_and(|capabilities| capabilities["elicitation"]["url"].is_object())
-    {
+    if !declares_url_elicitation(request) {
         return Some(rejection(
             "invalid",
             "IFC-049",
             tool,
+            instance,
             r#"the request does not declare URL elicitation in its client capabilities, and sign-in.v1 relays a login only by URL elicitation; send it again with {"elicitation": {"url": {}}} in io.modelcontextprotocol/clientCapabilities."#,
         ));
     }
@@ -266,6 +572,7 @@ fn request_member_refusal(
             "invalid",
             "PND-013",
             tool,
+            instance,
             &format!(
                 "the request carries {key} on a first sign-in.v1 request, which takes no return; a return travels only on a retry of sign-in.v1 in the invocation its requestState binds."
             ),
@@ -289,8 +596,16 @@ fn request_member_refusal(
         "invalid",
         "PND-010",
         tool,
+        instance,
         &format!("{cause}; its stated logins are {names}."),
     ))
+}
+
+pub(crate) fn declares_url_elicitation(request: &AccessRequest) -> bool {
+    request
+        .client_capabilities
+        .as_ref()
+        .is_some_and(|capabilities| capabilities["elicitation"]["url"].is_object())
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -316,9 +631,11 @@ fn refusal(
         ExpectedAccount::Set { .. } => None,
     };
     if let Some(invalid) = invalid {
-        return Ok(Some(rejection("invalid", "PND-010", tool, &invalid)));
+        return Ok(Some(rejection(
+            "invalid", "PND-010", tool, instance, &invalid,
+        )));
     }
-    if let Some(rejection) = request_member_refusal(route, request, names, context) {
+    if let Some(rejection) = request_member_refusal(route, instance, request, names, context) {
         return Ok(Some(rejection));
     }
     if route["arguments"]
@@ -355,14 +672,27 @@ fn refusal(
     {
         text.push_str(&format!(" Its pending sign-in action is {id}."));
     }
-    Ok(Some(rejection("conflict", "PND-010", tool, &text)))
+    Ok(Some(rejection(
+        "conflict", "PND-010", tool, instance, &text,
+    )))
 }
 
-fn rejection(reason: &'static str, rule: &'static str, tool: &str, cause: &str) -> Rejection {
+fn rejection(
+    reason: &'static str,
+    rule: &'static str,
+    tool: &str,
+    instance: &Value,
+    cause: &str,
+) -> Rejection {
+    let kind = instance["kind"].as_str().unwrap_or("Object");
+    let name = instance["name"]
+        .as_str()
+        .or_else(|| instance["id"].as_str())
+        .unwrap_or_default();
     let mut rejection = Rejection::new(reason, rule);
     rejection.diagnostics = Some(json!([{
         "ruleId":rule, "level":"error",
-        "message":{"text":format!("{tool} reports {reason} under {rule}: {cause}")}
+        "message":{"text":format!("{tool} reports {reason} under {rule} for {kind}/{name}: {cause}")}
     }]));
     rejection
 }
@@ -370,6 +700,115 @@ fn rejection(reason: &'static str, rule: &'static str, tool: &str, cause: &str) 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::Evidence;
+
+    #[test]
+    fn sign_in_first_check_ignores_ascii_case() {
+        use FirstCheck::{Expected, NoAccount, NotChecked, Other};
+        for (outcome, outputs, check) in [
+            (
+                "succeeded",
+                json!({"account":"PRIMARY-ACCOUNT"}),
+                Expected("PRIMARY-ACCOUNT".into()),
+            ),
+            (
+                "succeeded",
+                json!({"account":"primary-account"}),
+                Expected("primary-account".into()),
+            ),
+            ("succeeded", json!({"account":null}), NoAccount),
+            ("succeeded", json!({"account":"other-account"}), Other),
+            (
+                "succeeded",
+                json!({"account":"pr\u{0131}mary-account"}),
+                Other,
+            ),
+            ("succeeded", json!({}), NotChecked),
+            ("failed", json!({}), NotChecked),
+            ("unknown", json!({"account":"primary-account"}), NotChecked),
+        ] {
+            assert_eq!(first_check(outcome, &outputs, "primary-account"), check);
+        }
+    }
+
+    #[test]
+    fn sign_in_success_answers_and_lifts_the_hold() {
+        let (_, context) = crate::explain::tests::fixture();
+        let time = "2026-11-12T12:00:00Z";
+        let evidence = Evidence {
+            time: time.into(),
+            ids: vec!["first-action".into()],
+            revisions: vec![],
+            suffixes: vec![],
+        };
+        let mut allocation = Allocation {
+            evidence: &evidence,
+            cursor: 0,
+        };
+        let instance = json!({"id":"s1","name":"s1","kind":"Agent","owner":"f",
+            "config":{"account":"primary-account"}});
+        let mut state = State {
+            objects: vec![
+                json!({"id":"r","kind":"Interface","from":context.qualified("root")}),
+                instance.clone(),
+            ],
+            records: vec![json!({"type":"invocation-ended","data":{"invocation":"c1"}})],
+            ..State::default()
+        };
+        let action = pending::raise_sign_in(
+            &mut state,
+            &instance,
+            "primary-account",
+            "/account",
+            pending::SignInRequest::Invocation {
+                invocation: &json!({"id":"c1","operation":"example.org/sign-in-hold#work.v1"}),
+                trigger: "lapsed-login",
+            },
+            &mut allocation,
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(state.sign_in_holds["s1"], json!({"since":time}));
+        let invocation = json!({"id":"g1","caller":"r"});
+        let answered_at = "2026-11-12T12:00:01Z";
+        let mut answered_state = state.clone();
+        let mut expected = action.clone();
+        expected["answer"] =
+            json!({"value":"signed-in","actor":"r","invocation":"g1","at":answered_at});
+        assert_eq!(
+            answer_and_lift(&mut answered_state, "s1", &invocation, answered_at),
+            (Some(expected.clone()), true)
+        );
+        assert_eq!(
+            pending::unanswered_sign_in(&answered_state, &instance, answered_at),
+            None
+        );
+        assert!(!answered_state.sign_in_holds.contains_key("s1"));
+        let id = action["id"].as_str().unwrap();
+        assert_eq!(answered_state.pending_actions[id]["raisedBy"], "c1");
+        assert_eq!(answered_state.pending_actions[id]["action"], expected);
+        let before_repeat = serde_json::to_value(&answered_state).unwrap();
+        assert_eq!(
+            answer_and_lift(
+                &mut answered_state,
+                "s1",
+                &invocation,
+                "2026-11-12T12:00:02Z"
+            ),
+            (None, false)
+        );
+        assert_eq!(serde_json::to_value(answered_state).unwrap(), before_repeat);
+
+        let expiry = "2026-11-19T12:00:00Z";
+        assert_eq!(action["expiry"], expiry);
+        assert_eq!(
+            answer_and_lift(&mut state, "s1", &invocation, expiry),
+            (None, true)
+        );
+        let expired = pending::action_named(&state, id, Some(expiry), &context).unwrap();
+        assert_eq!(expired["answer"], json!({"value":"expired","at":expiry}));
+        assert!(!state.sign_in_holds.contains_key("s1"));
+    }
 
     #[test]
     fn sign_in_undone_condition_and_hold() {
@@ -407,7 +846,11 @@ mod tests {
         state.objects[3]["status"]["conditions"] = json!([unknown]);
         assert_eq!([held(&state, "x1"), held(&state, "t1")], [true, false]);
         assert_eq!(
-            [clear_sign_in_undone(&mut state.objects[0], checked)],
+            [clear_sign_in_undone(
+                &mut state.objects[0],
+                checked,
+                "setup"
+            )],
             [true]
         );
         assert_eq!(
@@ -424,8 +867,8 @@ mod tests {
         assert_eq!(
             [
                 held(&state, "s1"),
-                clear_sign_in_undone(&mut state.objects[0], "2026-11-12T12:00:03Z"),
-                clear_sign_in_undone(&mut state.objects[1], checked),
+                clear_sign_in_undone(&mut state.objects[0], "2026-11-12T12:00:03Z", "setup"),
+                clear_sign_in_undone(&mut state.objects[1], checked, "setup"),
             ],
             [false, false, false]
         );
@@ -507,19 +950,21 @@ mod tests {
             );
             diagnostics
         };
-        let missing_text = r#"group.sign-in.v1 reports invalid under IFC-049: the request does not declare URL elicitation in its client capabilities, and sign-in.v1 relays a login only by URL elicitation; send it again with {"elicitation": {"url": {}}} in io.modelcontextprotocol/clientCapabilities."#;
+        let missing_text = r#"group.sign-in.v1 reports invalid under IFC-049 for Agent/agent-template: the request does not declare URL elicitation in its client capabilities, and sign-in.v1 relays a login only by URL elicitation; send it again with {"elicitation": {"url": {}}} in io.modelcontextprotocol/clientCapabilities."#;
         let return_text = format!(
-            "group.sign-in.v1 reports invalid under PND-013: the request carries {}signInReturn on a first sign-in.v1 request, which takes no return; a return travels only on a retry of sign-in.v1 in the invocation its requestState binds.",
+            "group.sign-in.v1 reports invalid under PND-013 for Agent/agent-template: the request carries {}signInReturn on a first sign-in.v1 request, which takes no return; a return travels only on a retry of sign-in.v1 in the invocation its requestState binds.",
             context.meta_prefix
         );
         let unknown_login_text = |asked| {
             format!(
-                r#"group.sign-in.v1 reports invalid under PND-010: signInLogin asks for the login "{asked}", which the instance's Type does not state; its stated logins are "browser", "device"."#
+                r#"group.sign-in.v1 reports invalid under PND-010 for Agent/agent-template: signInLogin asks for the login "{asked}", which the instance's Type does not state; its stated logins are "browser", "device"."#
             )
         };
-        let malformed_login_text = r#"group.sign-in.v1 reports invalid under PND-010: signInLogin must hold the name of one login the instance's Type states; its stated logins are "browser", "device"."#;
-        let check =
-            |members: Value| request_member_refusal(&route, &request(members), &names, &context);
+        let malformed_login_text = r#"group.sign-in.v1 reports invalid under PND-010 for Agent/agent-template: signInLogin must hold the name of one login the instance's Type states; its stated logins are "browser", "device"."#;
+        let instance = &route["arguments"]["instance"];
+        let check = |members: Value| {
+            request_member_refusal(&route, instance, &request(members), &names, &context)
+        };
         for (members, rule, text) in [
             (json!({}), "IFC-049", missing_text),
             (
@@ -602,7 +1047,7 @@ mod tests {
         assert_diagnostic(
             actual,
             "PND-010",
-            "group.sign-in.v1 reports invalid under PND-010: the instance's Type states no signIn, so it has no expected account to sign in to.",
+            "group.sign-in.v1 reports invalid under PND-010 for Agent/agent-template: the instance's Type states no signIn, so it has no expected account to sign in to.",
         );
     }
 
@@ -645,7 +1090,7 @@ mod tests {
                 actual.diagnostics,
                 Some(json!([{
                     "ruleId":"PND-010","level":"error",
-                    "message":{"text":format!("group.sign-in.v1 reports {reason} under PND-010: {cause}")}
+                    "message":{"text":format!("group.sign-in.v1 reports {reason} under PND-010 for Agent/signed: {cause}")}
                 }]))
             );
         };
@@ -673,11 +1118,7 @@ mod tests {
             no_sign_in,
         );
         for (caller, target) in [("w", "f2"), ("v", "f2"), ("s2", "f")] {
-            assert!(
-                preflight(&state, &through(caller, target), &request, time, &context)
-                    .unwrap()
-                    .is_none()
-            );
+            assert!(preflight(&state, &through(caller, target), &request, time, &context).is_err());
         }
         state.objects.extend([
             json!({"id":"p","name":"p","kind":"Pool"}),
@@ -685,11 +1126,7 @@ mod tests {
         ]);
         let mut resource = through("v", "p");
         resource["arguments"]["instance"] = json!({"kind":"Resource","name":"x"});
-        assert!(
-            preflight(&state, &resource, &request, time, &context)
-                .unwrap()
-                .is_none()
-        );
+        assert!(preflight(&state, &resource, &request, time, &context).is_err());
         let check = |state: &State, caller, expected| {
             refusal(
                 state,

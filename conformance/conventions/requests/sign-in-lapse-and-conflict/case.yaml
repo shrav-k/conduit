@@ -2050,18 +2050,26 @@
       },
       "expect": {
         "reply": {
-          "isError": true,
-          "_meta": {
-            "io.github.shrav-k.conduit/reason": "unavailable"
-          },
-          "structuredContent": {
-            "diagnostics": [
-              {
-                "ruleId": "PND-010"
+          "pending": true
+        },
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "attempt": 1,
+            "call": {
+              "params": {
+                "_meta": {
+                  "io.github.shrav-k.conduit/operation": "@core#account-hook.v1",
+                  "io.github.shrav-k.conduit/caller": "00000000-0000-4000-8000-000000000005"
+                }
               }
-            ]
+            }
           }
-        }
+        ],
+        "absent": [
+          "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1conduit",
+          "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1idempotencyKey"
+        ]
       }
     },
     {

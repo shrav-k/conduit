@@ -96,6 +96,10 @@ pub const REFUSAL_CAUSES: &[(&str, &str)] = &[
         "Only an Interface acting on its own behalf may answer an action raised there, with the required Conduit; other consumers may not open a Conduit listing answer.",
     ),
     (
+        "PND-010",
+        "Only an Interface acting on its own behalf may sign in with the required Conduit; a scoped Interface signs in only Agents of its scoped Fleets, and Resources remain root's; other consumers may not open a Conduit listing sign-in.",
+    ),
+    (
         "SEC-007",
         "get-secret is never dispatched for an instance request; the engine alone reads it.",
     ),
@@ -409,8 +413,9 @@ pub(crate) fn tier(state: &State, route: &Value, c: &Context) -> Result<u8> {
     } else {
         return Ok(1);
     };
-    // ACC-033 rows 9 (enrollment) and 16 are missing from routing.
-    // The default Conduit target cannot establish disclosure for those operations.
+    // ACC-033 row 9 (enrollment) is missing from routing, so the default Conduit target cannot
+    // establish disclosure; row 16 (sign-in.v1) stays at tier 1 so that a refusal discloses
+    // nothing of the named instance (PND-010, OPS-023).
     if matches!(
         op.strip_prefix(&c.core_package)
             .and_then(|op| op.strip_prefix('#')),
@@ -639,6 +644,7 @@ fn acc033_target(state: &State, route: &Value, c: &Context) -> String {
         }
         Some("open.v1" | "close.v1" | "lift.v1") => "access".into(),
         Some("answer.v1") => "the target that authorizes inspection of the action's subject".into(),
+        Some("sign-in.v1") => "the named Agent's owning Fleet, from an Interface acting on its own behalf; a Resource only from root, through its owning Pool (PND-010)".into(),
         Some("set-up.v1" | "retire.v1" | "inspect.v1") => {
             let reference = args
                 .get("instance")
@@ -1317,12 +1323,9 @@ pub(crate) mod tests {
         expected_inspection(&s, &c, "v", "x", true);
         expected_inspection(&s, &c, "v", "p", false);
         expected_inspection(&s, &c, "v", "management", false);
-        for op in [
-            "sign-in.v1",
-            "enroll-machine.v1",
-            "admit-machine.v1",
-            "refuse-machine.v1",
-        ] {
+        // sign-in.v1's route is built (order 048a-5b); its tier 1 is pinned by
+        // sign_in_access_refuses_out_of_scope_callers_without_detail.
+        for op in ["enroll-machine.v1", "admit-machine.v1", "refuse-machine.v1"] {
             let operation = c.qualified(op);
             item_mut(&mut s, "v-x")["operations"] = json!([operation]);
             let route = access_route(
@@ -1335,6 +1338,276 @@ pub(crate) mod tests {
             assert_eq!(r["tier"], 1, "{op}");
             assert!(r.get("target").is_none());
         }
+    }
+
+    fn sign_in_fixture() -> (State, Context) {
+        let (mut state, mut c) = fixture();
+        let operation = c.qualified("sign-in.v1");
+        let contracts = &mut c.core_environment.scopes.get_mut("core").unwrap().contracts;
+        contracts.insert(
+            "sign-in.v1".into(),
+            json!({"kind":"Operation","metadata":{"name":"sign-in.v1"},
+                "spec":{"inputSchema":{"type":"object","required":["instance"],
+                    "properties":{"instance":{"type":"object"}}},
+                    "outputSchema":{"type":"object","required":["account"],
+                        "properties":{"account":{"type":"string"}}},"effect":"Sign in"}}),
+        );
+        for name in ["fleet-management.v1", "pool-management.v1"] {
+            contracts.insert(
+                name.into(),
+                json!({"kind":"Capability","metadata":{"name":name},
+                    "spec":{"operations":[operation]}}),
+            );
+        }
+        for (id, name, kind, owner) in [
+            ("f", "f", "Fleet", None),
+            ("f2", "f2", "Fleet", None),
+            ("p", "p", "Pool", None),
+            ("v", "v", "Interface", None),
+            ("w", "w", "Interface", None),
+            ("signed-instance-id", "signed", "Agent", Some("f")),
+            ("s2", "s2", "Agent", Some("f")),
+            ("x", "x", "Resource", Some("p")),
+        ] {
+            let mut object = json!({"id":id,"name":name,"kind":kind,"state":"ready",
+                "type":c.qualified("type.v1"),"config":{},"schema_environment":c.core_environment,
+                "contract_scope":"core"});
+            if let Some(owner) = owner {
+                object["owner"] = json!(owner);
+            }
+            state.objects.push(object);
+        }
+        for (id, consumer, target, capability) in [
+            ("r-f", "root", "f", "fleet-management.v1"),
+            ("r-p", "root", "p", "pool-management.v1"),
+            ("v-f", "v", "f", "fleet-management.v1"),
+            ("v-f2", "v", "f2", "fleet-management.v1"),
+            ("v-p", "v", "p", "pool-management.v1"),
+            ("s2-f", "s2", "f", "fleet-management.v1"),
+        ] {
+            state.objects.push(
+                json!({"kind":"Conduit","id":id,"name":id,"local_name":target,
+                "consumer":consumer,"target":target,"state":"ready","open":true,
+                "capability":c.qualified(capability),"operations":[operation]}),
+            );
+        }
+        state.objects.push(
+            json!({"kind":"Conduit","id":"w-v","name":"w-v","local_name":"v",
+            "consumer":"w","target":"v","state":"ready","open":true,"operations":[]}),
+        );
+        state
+            .invocations
+            .push(json!({"id":"call","target":"v","caller":"w",
+            "conduit":"w-v","state":"in-progress"}));
+        (state, c)
+    }
+
+    #[test]
+    fn sign_in_access_refuses_out_of_scope_callers_without_detail() {
+        let (mut state, c) = sign_in_fixture();
+        let unscoped = state.clone();
+        for target in ["f", "f2"] {
+            state
+                .objects
+                .push(json!({"kind":"Conduit","id":format!("v-inspect-{target}"),
+                "name":format!("v-inspect-{target}"),"local_name":format!("inspect-{target}"),
+                "consumer":"v","target":target,"open":true,"state":"ready",
+                "operations":[c.qualified("inspect.v1")]}));
+        }
+        let signed = json!({"kind":"Agent","name":"signed"});
+        let resource = json!({"kind":"Resource","name":"x"});
+        let evidence = evidence();
+        let view = access::PublicationView::new(&state, &c);
+        for (sender, tool, subject) in [
+            ("root", "f.sign-in.v1", &signed),
+            ("root", "p.sign-in.v1", &resource),
+            ("v", "f.sign-in.v1", &signed),
+        ] {
+            let request = request(sender, tool, json!({"instance":subject}));
+            let verdict = access::evaluate(&state, &view, &request, &c, false).unwrap();
+            assert_eq!(verdict.reason, None, "{sender} {tool}");
+            let mut route = verdict.route;
+            route["tool"] = json!(request.tool);
+            assert!(
+                crate::sign_in::preflight(&state, &route, &request, &evidence.time, &c).is_ok(),
+                "{sender} {tool}"
+            );
+        }
+
+        let missing = json!({"kind":"Agent","name":"nobody"});
+        for (state, sender, tool, subject, serving, rule) in [
+            (&state, "v", "f2.sign-in.v1", &signed, None, "ACC-033"),
+            (&state, "s2", "f.sign-in.v1", &signed, None, "PND-010"),
+            (&state, "v", "p.sign-in.v1", &resource, None, "ACC-033"),
+            (
+                &state,
+                "v",
+                "f.sign-in.v1",
+                &signed,
+                Some("call"),
+                "PND-010",
+            ),
+            (
+                &state,
+                "v",
+                "f2.sign-in.v1",
+                &missing,
+                Some("call"),
+                "PND-010",
+            ),
+            (&state, "v", "f.sign-in.v1", &missing, None, "ACC-033"),
+            (&unscoped, "v", "f.sign-in.v1", &signed, None, "ACC-033"),
+        ] {
+            let mut request = request(sender, tool, json!({"instance":subject}));
+            request.serving = serving.map(str::to_owned);
+            let mut t = transition(state.clone());
+            access::decide(&mut t, &evidence, &request, &c).unwrap();
+            assert_eq!(t.reply["reason"], "refused", "{sender} {tool}: {}", t.reply);
+            let diagnostics = t.reply["diagnostics"].as_array().unwrap();
+            assert_eq!(diagnostics.len(), 1);
+            let diagnostic = &diagnostics[0];
+            assert_eq!(diagnostic["ruleId"], rule, "{sender} {tool}: {}", t.reply);
+            let refusal = &diagnostic["properties"]["refusal"];
+            assert_eq!(refusal["tier"], 1);
+            for key in ["target", "conduits", "exists"] {
+                assert!(refusal.get(key).is_none(), "{sender} {tool}: {refusal}");
+            }
+            let cause = if rule == "PND-010" {
+                "Only an Interface acting on its own behalf may sign in with the required Conduit; a scoped Interface signs in only Agents of its scoped Fleets, and Resources remain root's; other consumers may not open a Conduit listing sign-in."
+            } else {
+                concat!(
+                    "the named Agent's owning Fleet, from an Interface acting on its own behalf; ",
+                    "a Resource only from root, through its owning Pool (PND-010)."
+                )
+            };
+            assert!(
+                diagnostic["message"]["text"]
+                    .as_str()
+                    .unwrap()
+                    .ends_with(cause)
+            );
+            let reply = t.reply.to_string();
+            for detail in [
+                "signed-instance-id",
+                "account",
+                "in progress",
+                "conflict",
+                "invalid",
+            ] {
+                assert!(!reply.contains(detail), "{sender} {tool}: {reply}");
+            }
+        }
+    }
+
+    #[test]
+    fn sign_in_rejects_a_resolved_instance_after_access() {
+        let (state, c) = sign_in_fixture();
+        let args = json!({"instance":{"kind":"Agent","id":"signed-instance-id"}});
+        let reason = format!("{}reason", c.meta_prefix);
+        for (sender, tool) in [("root", "f.sign-in.v1"), ("v", "f2.sign-in.v1")] {
+            let mut request = request(sender, tool, args.clone());
+            request.client_capabilities = Some(json!({"elicitation":{"url":{}}}));
+            let mut t = transition(state.clone());
+            crate::requests::invoke(&mut t, &evidence(), &request, None, &c).unwrap();
+            if sender == "root" {
+                assert_eq!(t.reply["_meta"][&reason], "invalid");
+                assert_cause(&t.reply, "LIF-031", "Agent/signed-instance-id");
+            } else {
+                assert_eq!(t.reply["_meta"][&reason], "refused");
+                assert_eq!(
+                    t.reply["structuredContent"]["diagnostics"][0]["ruleId"],
+                    "ACC-033"
+                );
+            }
+            assert!(t.external_intents.is_empty());
+            assert_eq!(t.state.invocations, state.invocations);
+        }
+    }
+
+    #[test]
+    fn sign_in_keyed_repeats_require_url_elicitation() {
+        let (mut state, c) = sign_in_fixture();
+        let operation = c.qualified("sign-in.v1");
+        let hook = c.qualified("account-hook.v1");
+        let outcome = format!("{}outcome", c.meta_prefix);
+        let reason = format!("{}reason", c.meta_prefix);
+        let fleet = item_mut(&mut state, "f");
+        fleet["resolved_implementations"][&operation] = json!({"source":"engine","item":{}});
+        let agent = item_mut(&mut state, "signed-instance-id");
+        let mut environment = c.core_environment.clone();
+        let contracts = &mut environment.scopes.get_mut("core").unwrap().contracts;
+        contracts.get_mut("type.v1").unwrap()["spec"]["signIn"] = json!({"account":"/account"});
+        contracts.insert(
+            "account-hook.v1".into(),
+            json!({"kind":"Operation",
+            "metadata":{"name":"account-hook.v1"},"spec":{"outputSchema":{"type":"object",
+                "required":["account"],"properties":{"account":{"type":["string","null"]}}}}}),
+        );
+        let indexes = json!({"core":contracts});
+        agent["held"] =
+            json!({"environment":environment,"indexes":indexes,"contexts":{},"scope":"core"});
+        agent["config"] = json!({"account":"primary-account"});
+        agent["resolved_implementations"][&hook] =
+            json!({"source":"project","item":{"command":["test"]}});
+
+        let args = json!({"instance":{"kind":"Agent","name":"signed"}});
+        let without_url = request("root", "f.sign-in.v1", args);
+        let mut with_url = without_url.clone();
+        with_url.client_capabilities = Some(json!({"elicitation":{"url":{}}}));
+        let invoke = |state: &State, request: &AccessRequest| {
+            let mut t = transition(state.clone());
+            let mut fresh = evidence();
+            fresh.ids.retain(|id| !state.allocated_ids.contains(id));
+            crate::requests::invoke(&mut t, &fresh, request, Some("same-key".into()), &c).unwrap();
+            t
+        };
+        let pending = invoke(&state, &with_url);
+        assert_eq!(pending.reply["pending"], true, "{}", pending.reply);
+        assert_eq!(pending.external_intents.len(), 1);
+        let mut fresh = evidence();
+        fresh
+            .ids
+            .retain(|id| !pending.state.allocated_ids.contains(id));
+        let ended = crate::step(
+            &pending.state,
+            crate::Input::Complete {
+                evidence: fresh,
+                invocation: pending.reply["hook"].as_str().unwrap().into(),
+                attempt: 1,
+                completion: crate::requests::Completion::Result {
+                    result: json!({"isError":false,
+                        "_meta":{&outcome:"succeeded"},
+                "structuredContent":{"account":"primary-account"}}),
+                },
+            },
+            &c,
+        )
+        .unwrap();
+        assert_eq!(
+            ended.reply["_meta"][&outcome], "succeeded",
+            "{}",
+            ended.reply
+        );
+
+        for state in [&pending.state, &ended.state] {
+            let rejected = invoke(state, &without_url);
+            let error = &rejected.reply["error"];
+            assert_eq!(error["code"], -32021, "{}", rejected.reply);
+            assert_eq!(error["data"][&reason], "invalid");
+            assert_eq!(
+                error["data"]["requiredCapabilities"],
+                json!({"elicitation":{"url":{}}})
+            );
+            assert_eq!(error["data"]["diagnostics"][0]["ruleId"], "IFC-049");
+            assert!(rejected.external_intents.is_empty());
+            assert_eq!(rejected.state.invocations, state.invocations);
+        }
+        let replayed = invoke(&ended.state, &with_url);
+        assert_eq!(
+            replayed.reply["structuredContent"],
+            json!({"account":"primary-account"})
+        );
+        assert!(replayed.external_intents.is_empty());
     }
 
     #[test]

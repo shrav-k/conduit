@@ -689,6 +689,17 @@
       ]
     },
     {
+      "id": "requests-sign-in-account-first",
+      "case": "conventions/requests/sign-in-account-first/case.yaml",
+      "promises": [
+        "PND-010",
+        "PND-011",
+        "PND-005",
+        "PND-003"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "requests-sign-in-hold",
       "case": "conventions/requests/sign-in-hold/case.yaml",
       "promises": [

@@ -887,12 +887,22 @@ fn dispatch_sign_in_part(
     object: &Value,
     account: bool,
 ) -> Result<()> {
-    let (operation, phase, name) = if account {
-        ("account-hook.v1", "account-pending", "account")
+    let (operation, phase, name, promises): (_, _, _, &[_]) = if account {
+        (
+            "account-hook.v1",
+            "account-pending",
+            "account",
+            &["TPL-012", "PND-011", "CTR-013", "ACC-018", "IMP-002"],
+        )
     } else {
-        ("sign-out-hook.v1", "undo-pending", "sign-out")
+        (
+            "sign-out-hook.v1",
+            "undo-pending",
+            "sign-out",
+            &["TPL-012", "PND-011", "ACC-018", "IMP-002"],
+        )
     };
-    if requests::setup_sign_in_hook(t, a, c, i, object, operation)? {
+    if requests::setup_sign_in_hook(t, a, c, i, object, operation, promises)? {
         t.state.invocations[i]["setup"]["phase"] = json!(phase);
         return Ok(());
     }
@@ -1207,6 +1217,9 @@ pub(crate) fn child_answered(
     if t.state.invocations[i]["state"] != "in-progress" {
         return Ok(());
     }
+    if t.state.invocations[i]["operation"] == c.qualified("sign-in.v1") {
+        return crate::sign_in::part_answered(t, a, c, i, v, outcome);
+    }
     if t.state.invocations[i].get("retirement").is_some() {
         if t.state.invocations[i]["retirement"]["phase"] == "hook" {
             return crate::retirement::hook_ended(t, a, c, i, outcome);
@@ -1340,7 +1353,7 @@ fn sign_in_part_answered(
                 .objects
                 .iter_mut()
                 .find(|o| o["id"] == instance["id"])
-            && sign_in::clear_sign_in_undone(object, &a.evidence.time)
+            && sign_in::clear_sign_in_undone(object, &a.evidence.time, "setup")
         {
             t.decisions.push(decision(
                 "clear-sign-in-undone",

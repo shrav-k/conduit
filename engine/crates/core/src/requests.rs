@@ -810,16 +810,18 @@ fn intent(v: &Value, state: &State, c: &Context) -> Result<Value> {
 }
 
 fn dispatch_intent(v: &Value, url_elicitation: bool, c: &Context) -> Value {
+    const CAPABILITIES: &str = "io.modelcontextprotocol/clientCapabilities";
     let implementation = &v["implementation"];
+    let item = &implementation["item"];
     let operation = v["operation"].as_str().unwrap_or("");
     let local = operation
         .rsplit_once('#')
         .map(|(_, n)| n)
         .unwrap_or(operation);
-    let tool = if v["plain"] == true {
-        implementation["item"]["tools"]
+    let tool = if v["plain"] == true || item["plain"] == true {
+        item["tools"]
             .get(operation)
-            .or_else(|| implementation["item"]["tools"].get(format!("#{local}")))
+            .or_else(|| item["tools"].get(format!("#{local}")))
             .cloned()
             .unwrap_or(json!(local))
     } else {
@@ -845,12 +847,15 @@ fn dispatch_intent(v: &Value, url_elicitation: bool, c: &Context) -> Value {
         if !v["key"].is_null() {
             meta[mark(c, "idempotencyKey")] = v["key"].clone();
         }
+        if item["plain"] == true {
+            meta[CAPABILITIES]["extensions"][mark(c, "implementation-interface")] =
+                json!({"revision":"v0"});
+        }
         call["params"]["_meta"] = meta;
     }
     // IFC-045: URL elicitation is declared only toward an instance whose Type states signIn.
     if url_elicitation {
-        call["params"]["_meta"]["io.modelcontextprotocol/clientCapabilities"] =
-            json!({"elicitation": {"url": {}}});
+        call["params"]["_meta"][CAPABILITIES]["elicitation"] = json!({"url": {}});
     }
     json!({"kind":"dispatch","invocation":v["id"],"attempt":v["attempt"],"target":v["target"],"implementation":implementation,"call":call})
 }
@@ -1950,6 +1955,13 @@ pub(crate) fn complete(
         .position(|v| v["id"] == id)
         .ok_or("completion names no invocation")?;
     let v = t.state.invocations[i].clone();
+    if v["discovery"] == "pending" && v["attempt"] == attempt && v["state"] == "in-progress" {
+        let mut a = Allocation {
+            evidence,
+            cursor: 0,
+        };
+        return complete_hook_discovery(t, &mut a, c, i, &v, completion);
+    }
     // IFC-046's first response ends no call: its resend remains in flight.
     let resending = matches!(completion, Completion::ProtocolError { code: -32020, .. })
         && v["wire_retried"] != true
@@ -2071,26 +2083,7 @@ pub(crate) fn complete(
                     if restriction
                         .is_some_and(|r| v["filters"].as_array().is_some_and(|f| f.contains(r)))
                     {
-                        if let Some(previous) = v.get("previous") {
-                            t.state.invocations[i]["state"] = previous["state"].clone();
-                            if let Some(retained) = previous.get("retained") {
-                                t.state.invocations[i]["retained"] = retained.clone();
-                            }
-                            if let Some(cause) = previous.get("cause") {
-                                t.state.invocations[i]["cause"] = cause.clone();
-                            } else {
-                                t.state.invocations[i]
-                                    .as_object_mut()
-                                    .unwrap()
-                                    .remove("cause");
-                            }
-                            t.state.invocations[i]
-                                .as_object_mut()
-                                .unwrap()
-                                .remove("previous");
-                        } else {
-                            t.state.invocations.remove(i);
-                        }
+                        restore_or_remove_invocation(&mut t.state, i, &v);
                         reject(
                             t,
                             &mut a,
@@ -2164,6 +2157,117 @@ pub(crate) fn complete(
         finish(t, &mut a, c, i, outcome, outputs, content, cause)?;
     }
     crate::lifecycle::child_ended(t, &mut a, c, i)
+}
+
+fn restore_or_remove_invocation(state: &mut State, i: usize, v: &Value) {
+    if let Some(previous) = v.get("previous") {
+        let invocation = &mut state.invocations[i];
+        invocation["state"] = previous["state"].clone();
+        if let Some(retained) = previous.get("retained") {
+            invocation["retained"] = retained.clone();
+        }
+        let fields = invocation.as_object_mut().unwrap();
+        if let Some(cause) = previous.get("cause") {
+            fields.insert("cause".into(), cause.clone());
+        } else {
+            fields.remove("cause");
+        }
+        fields.remove("previous");
+    } else {
+        state.invocations.remove(i);
+    }
+}
+
+fn complete_hook_discovery(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    v: &Value,
+    completion: Completion,
+) -> Result<()> {
+    let extension = mark(c, "implementation-interface");
+    let attempt = v["attempt"].as_u64().unwrap_or(0);
+    if matches!(completion, Completion::Result { result }
+        if result["capabilities"]["extensions"][&extension]["revision"] == "v0")
+    {
+        if t.state
+            .invocations
+            .iter()
+            .any(|p| p["id"] == v["setup_parent"] && p["state"] != "in-progress")
+        {
+            let cause = explain::outcome_cause(v, "unknown", "OPS-027")?;
+            t.decisions.push(decision(
+                "drop-hook-of-ended-parent",
+                &["OPS-027", "IFC-037"],
+                &[],
+                json!({"invocation":v["id"]}),
+                vec![],
+            ));
+            fence_attempt(&mut t.state.invocations[i], attempt);
+            return finish(
+                t,
+                a,
+                c,
+                i,
+                "unknown",
+                json!({}),
+                json!([]),
+                Some(vec![cause]),
+            );
+        }
+        t.state.invocations[i]["discovery"] = json!("read");
+        record_hook_dispatch(t, a, c, v)?;
+        t.decisions.push(decision(
+            "read-implementation-discovery",
+            &["IFC-037", "PKG-020"],
+            &[],
+            json!({"invocation":v["id"]}),
+            vec![],
+        ));
+        t.external_intents
+            .push(intent(&t.state.invocations[i], &t.state, c)?);
+        t.reply = json!({"pending":true,"invocation":v["id"],"attempt":v["attempt"]});
+        return Ok(());
+    }
+
+    t.decisions.push(decision(
+        "hook-without-extension",
+        &["IFC-037", "PKG-020"],
+        &[],
+        json!({"invocation":v["id"],"extension":extension,"revision":"v0"}),
+        vec![],
+    ));
+    let operation = v["operation"].as_str().ok_or("hook has no operation")?;
+    let rejection = sign_in::rejection(
+        "unavailable",
+        "IFC-037",
+        operation,
+        &v["held_target"],
+        &format!(
+            "the implementation's result of server/discover does not list Conduit's extension {extension} at revision v0, so this hook, which its item lists under keyed, was not sent; the item's other calls are sent as before."
+        ),
+    );
+    // The hook's call is never sent here, so no copy of it is in flight (OPS-014).
+    fence_attempt(&mut t.state.invocations[i], attempt);
+    restore_or_remove_invocation(&mut t.state, i, v);
+    reject_diagnostics(
+        t,
+        a,
+        c,
+        &json!({"target":v["target"],"caller":v["caller"],"consumer":v["sender"],"conduit":v["conduit"],"operation":operation,"arguments":v["arguments"],"missingExtension":extension,"extensionRevision":"v0"}),
+        rejection.reason,
+        &rejection.rule,
+        None,
+        None,
+        rejection.diagnostics,
+    )?;
+    t.request_replies.push(crate::RequestReply {
+        invocation: v["id"].as_str().ok_or("hook has no ID")?.into(),
+        attempt: v["attempt"].as_u64().ok_or("hook has no attempt")?,
+        reply: t.reply.clone(),
+    });
+    crate::lifecycle::child_answered(t, a, c, v, "unavailable")
 }
 
 fn finish_login_lapse(
@@ -2497,6 +2601,13 @@ enum HookKey {
     Fresh,
 }
 
+pub(crate) fn keyed_hook(item: &Value, operation: &str) -> bool {
+    item["plain"] == true
+        && item["keyed"]
+            .as_array()
+            .is_some_and(|hooks| hooks.iter().any(|hook| hook.as_str() == Some(operation)))
+}
+
 fn dispatch_hook(
     t: &mut Transition,
     a: &mut Allocation<'_>,
@@ -2525,26 +2636,49 @@ fn dispatch_hook(
         .and_then(|i| t.state.invocations[i]["attempt"].as_u64())
         .unwrap_or(0)
         + 1;
-    let mut v = json!({"id":id,"key":key,"hook":true,"setup_parent":p["id"],"serving":p["id"],"sender":p["sender"],"caller":p["caller"],"target":object["id"],"operation":op,"arguments":{},"filters":p["filters"],"state":"in-progress","plain":implementation["item"]["plain"] == true,"contract":contract,"held_target":target,"implementation":implementation,"needs_result":false,"attempt":attempt,"config":object["config"],"revision":object["revision"]});
+    let item = &implementation["item"];
+    let keyed = keyed_hook(item, &op);
+    let mut v = json!({"id":id,"key":key,"hook":true,"setup_parent":p["id"],"serving":p["id"],"sender":p["sender"],"caller":p["caller"],"target":object["id"],"operation":op,"arguments":{},"filters":p["filters"],"state":"in-progress","plain":item["plain"] == true && !keyed,"contract":contract,"held_target":target,"implementation":implementation,"needs_result":false,"attempt":attempt,"config":object["config"],"revision":object["revision"]});
     start_attempt(&mut v, previous.map(|i| &t.state.invocations[i]));
     if let Some(id) = p.get("retirement_of") {
         v["retirement_of"] = id.clone();
+    }
+    if keyed {
+        v["discovery"] = json!("pending");
+        if let Some(i) = previous {
+            v["previous"] = t.state.invocations[i].clone();
+        }
     }
     if let Some(i) = previous {
         t.state.invocations[i] = v.clone();
     } else {
         t.state.invocations.push(v.clone());
     }
+    if keyed {
+        // rmcp 3.9.0 refuses server/discover without these two keys; it exists only in 2026-07-28.
+        let meta = json!({"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{"extensions":{mark(c, "implementation-interface"):{"revision":"v0"}}}});
+        t.external_intents.push(json!({"kind":"dispatch","invocation":id,"attempt":attempt,"target":object["id"],"implementation":implementation,"call":{"method":"server/discover","params":{"_meta":meta}}}));
+    } else {
+        record_hook_dispatch(t, a, c, &v)?;
+        t.external_intents.push(intent(&v, &t.state, c)?);
+    }
+    t.reply = json!({"pending":true,"invocation":p["id"],"hook":id});
+    Ok(id)
+}
+
+fn record_hook_dispatch(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    v: &Value,
+) -> Result<()> {
     record(
         t,
         a,
         c,
         "invocation-dispatched",
-        json!({"target":object["id"],"invocation":id,"caller":p["caller"],"consumer":p["sender"],"serving":p["id"],"operation":op,"attempt":attempt}),
-    )?;
-    t.external_intents.push(intent(&v, &t.state, c)?);
-    t.reply = json!({"pending":true,"invocation":p["id"],"hook":id});
-    Ok(id)
+        json!({"target":v["target"],"invocation":v["id"],"caller":v["caller"],"consumer":v["sender"],"serving":v["serving"],"operation":v["operation"],"attempt":v["attempt"]}),
+    )
 }
 
 #[cfg(test)]
@@ -2557,6 +2691,62 @@ mod tests {
         step,
     };
     use std::collections::BTreeMap;
+
+    #[test]
+    fn keyed_hooks_read_plain_per_call() {
+        const CAPABILITIES: &str = "io.modelcontextprotocol/clientCapabilities";
+        let (t, c) = call_fixture(false, json!({}));
+        let setup = c.qualified("setup-hook.v1");
+        let sign_out = c.qualified("sign-out-hook.v1");
+        let extension = mark(&c, "implementation-interface");
+        let item = json!({
+            "plain":true,
+            "tools":{&setup:"setup_hook",&sign_out:"sign_out_hook"},
+            "keyed":[setup]
+        });
+        assert!(keyed_hook(&item, &setup));
+        assert!(!keyed_hook(&item, &sign_out));
+        assert!(!keyed_hook(&json!({"keyed":[setup]}), &setup));
+        assert!(!keyed_hook(&json!({"plain":true}), &setup));
+
+        let key = format!("s1:{setup}");
+        let mut v = t.state.invocations[0].clone();
+        v["hook"] = json!(true);
+        v["operation"] = json!(setup);
+        v["key"] = json!(key);
+        v["target"] = json!("s1");
+        v["implementation"] = json!({"item":item});
+        let call = dispatch_intent(&v, false, &c);
+        let params = &call["call"]["params"];
+        let meta = &params["_meta"];
+        assert_eq!(params["name"], "setup_hook");
+        assert_eq!(meta[mark(&c, "operation")], setup);
+        assert_eq!(meta[mark(&c, "idempotencyKey")], key);
+        assert_eq!(meta.get(mark(&c, "conduit")), None);
+        assert_eq!(
+            meta[CAPABILITIES],
+            json!({"extensions":{&extension:{"revision":"v0"}}})
+        );
+        assert_eq!(
+            dispatch_intent(&v, true, &c)["call"]["params"]["_meta"][CAPABILITIES],
+            json!({"extensions":{&extension:{"revision":"v0"}},"elicitation":{"url":{}}})
+        );
+
+        let mut plain = v.clone();
+        plain["operation"] = json!(sign_out);
+        plain["plain"] = json!(true);
+        plain["key"] = Value::Null;
+        let call = dispatch_intent(&plain, false, &c);
+        assert_eq!(call["call"]["params"]["name"], "sign_out_hook");
+        assert_eq!(call["call"]["params"].get("_meta"), None);
+
+        v["implementation"] = json!({"item":{"command":["x"]}});
+        let call = dispatch_intent(&v, false, &c);
+        assert_eq!(call["call"]["params"]["name"], "setup-hook.v1");
+        let meta = &call["call"]["params"]["_meta"];
+        assert_eq!(meta[mark(&c, "operation")], setup);
+        assert_eq!(meta.get(CAPABILITIES), None);
+    }
 
     #[test]
     fn intent_declares_url_elicitation_only_toward_sign_in_types() {

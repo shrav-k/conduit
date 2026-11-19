@@ -999,6 +999,24 @@ fn check_items(
                         diagnostics.push(diag("PKG-020",format!("{scope}#{name}: plain implementation has no tool mapping for {op}, or implements a provider operation")));
                     }
                 }
+                for selection in strings(item, "keyed") {
+                    if !strings(item, "implements").any(|op| op == selection)
+                        || item["tools"].get(selection).is_none()
+                    {
+                        diagnostics.push(diag("PKG-020", format!("{scope}#{name}: keyed lists {selection}, which is not a selection in implements and a key of tools")));
+                    } else if ![
+                        "setup-hook.v1",
+                        "retire-hook.v1",
+                        "sign-in-hook.v1",
+                        "account-hook.v1",
+                        "sign-out-hook.v1",
+                    ]
+                    .iter()
+                    .any(|hook| selection == format!("{core}#{hook}"))
+                    {
+                        diagnostics.push(diag("PKG-020", format!("{scope}#{name}: keyed lists {selection}, which is not one of the core hooks setup-hook.v1, retire-hook.v1, sign-in-hook.v1, account-hook.v1 and sign-out-hook.v1; keyed lists only hooks whose calls carry Conduit's keys")));
+                    }
+                }
             }
             if item.get("remote").is_some()
                 && strings(item, "implements").any(|op| provider_ops.contains(op))

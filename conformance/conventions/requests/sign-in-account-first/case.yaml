@@ -4313,7 +4313,7 @@
           "structuredContent": {
             "diagnostics": [
               {
-                "ruleId": "PND-011",
+                "ruleId": "PND-010",
                 "level": "error"
               }
             ]

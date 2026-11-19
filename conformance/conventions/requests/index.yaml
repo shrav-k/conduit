@@ -194,6 +194,22 @@
       ]
     },
     {
+      "id": "requests-keyed-hook-dispatch",
+      "case": "conventions/requests/keyed-hook-dispatch/case.yaml",
+      "promises": [
+        "IFC-037",
+        "PKG-020",
+        "IFC-001",
+        "IFC-006",
+        "IFC-007",
+        "IFC-009",
+        "IFC-010",
+        "PND-010",
+        "PND-011"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "requests-keyed-hook-manifest",
       "case": "conventions/requests/keyed-hook-manifest/case.yaml",
       "promises": [
@@ -205,6 +221,14 @@
     {
       "id": "requests-keyed-not-a-hook",
       "case": "conventions/requests/keyed-not-a-hook/case.yaml",
+      "promises": [
+        "PKG-020"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "requests-keyed-not-in-implements",
+      "case": "conventions/requests/keyed-not-in-implements/case.yaml",
       "promises": [
         "PKG-020"
       ],
@@ -801,6 +825,19 @@
         "PND-011",
         "PND-005",
         "TPL-012",
+        "OPS-022"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "requests-sign-in-setup-check-failed-hook",
+      "case": "conventions/requests/sign-in-setup-check-failed-hook/case.yaml",
+      "promises": [
+        "PND-011",
+        "PND-005",
+        "PND-010",
+        "TPL-012",
+        "TPL-017",
         "OPS-022"
       ],
       "safety_rows": []

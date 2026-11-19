@@ -900,7 +900,11 @@ pub(crate) fn settle_cause(
     }
     let part = parts
         .iter()
-        .find(|p| p["optional"] != true && p["outcome"] != "succeeded")
+        .find(|p| {
+            p["optional"] != true
+                && p["outcome"] != "succeeded"
+                && !(p["name"] == "account" && invocation["setup"]["accountCounted"].is_string())
+        })
         .ok_or("unsucceeded invocation lacks an unsucceeded required part")?;
     let name = part["name"].as_str().ok_or("part lacks name")?;
     let status = part["outcome"].as_str().ok_or("part lacks outcome")?;
@@ -957,6 +961,27 @@ pub(crate) mod tests {
         access::{AccessRequest, Identity},
     };
     use std::collections::BTreeMap;
+
+    #[test]
+    fn settle_cause_skips_a_counted_account_check() {
+        let setup = json!({
+            "operation":"set-up.v1",
+            "setup":{"accountCounted":"failed"}
+        });
+        let parts = json!([
+            {"name":"account","outcome":"failed"},
+            {"name":"hook","outcome":"failed"}
+        ]);
+        let cause = settle_cause(&setup, "unknown", parts.as_array().unwrap())
+            .unwrap()
+            .unwrap();
+        assert!(
+            cause[0]["message"]["text"]
+                .as_str()
+                .unwrap()
+                .ends_with("Required part hook ended failed.")
+        );
+    }
 
     #[test]
     fn outcome_causes_are_sentences_and_unknown_rules_are_errors() {

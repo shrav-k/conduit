@@ -788,7 +788,20 @@ fn named_reference(operation: &Value, arguments: &Value, c: &Context) -> Option<
     }
     Some(label)
 }
-fn intent(v: &Value, c: &Context) -> Value {
+/// The call for a request's or a hook's dispatch. IFC-045: it declares URL elicitation only toward
+/// an instance whose Type states signIn, whatever its account holds.
+fn intent(v: &Value, state: &State, c: &Context) -> Result<Value> {
+    let url_elicitation = match access::object_by_id(state, &v["target"]) {
+        Some(object) => !matches!(
+            sign_in::expected_account(object, c)?,
+            sign_in::ExpectedAccount::NoSignIn
+        ),
+        None => false,
+    };
+    Ok(dispatch_intent(v, url_elicitation, c))
+}
+
+fn dispatch_intent(v: &Value, url_elicitation: bool, c: &Context) -> Value {
     let implementation = &v["implementation"];
     let operation = v["operation"].as_str().unwrap_or("");
     let local = operation
@@ -826,7 +839,30 @@ fn intent(v: &Value, c: &Context) -> Value {
         }
         call["params"]["_meta"] = meta;
     }
+    // IFC-045: URL elicitation is declared only toward an instance whose Type states signIn.
+    if url_elicitation {
+        call["params"]["_meta"]["io.modelcontextprotocol/clientCapabilities"] =
+            json!({"elicitation": {"url": {}}});
+    }
     json!({"kind":"dispatch","invocation":v["id"],"attempt":v["attempt"],"target":v["target"],"implementation":implementation,"call":call})
+}
+
+/// The retry of a part whose implementation answered with its own InputRequiredResult
+/// (MCP 2026-07-28): the part's first call as the core wrote it, unchanged but for
+/// `params.requestState`, that implementation's state, echoed exactly, and
+/// `params.inputResponses`, keyed as its input requests were. The runner sends it as written.
+/// The core keeps that state with the part and never relays, records or shows it.
+/// IFC-049: the requestState the shell relays to an Interface is another value.
+#[allow(dead_code)] // Orders 048a-5d and 048a-7 call it.
+pub(crate) fn retry_intent(
+    first: &Value,
+    request_state: &str,
+    responses: &serde_json::Map<String, Value>,
+) -> Value {
+    let mut retry = first.clone();
+    retry["call"]["params"]["requestState"] = json!(request_state);
+    retry["call"]["params"]["inputResponses"] = Value::Object(responses.clone());
+    retry
 }
 
 pub(crate) fn invoke(
@@ -1729,7 +1765,8 @@ fn invoke_inner(
     } else if crate::lifecycle::handles(op, c) {
         crate::lifecycle::execute(t, a, c, i)?;
     } else {
-        t.external_intents.push(intent(&invocation, c));
+        let call = intent(&invocation, &t.state, c)?;
+        t.external_intents.push(call);
         t.reply = json!({"pending":true,"invocation":id,"attempt":invocation["attempt"]});
     }
     let v = &mut t.state.invocations[i];
@@ -1913,7 +1950,7 @@ pub(crate) fn complete(
     match completion {
         Completion::ProtocolError { code: -32020, .. } if v["wire_retried"] != true && readonly => {
             t.state.invocations[i]["wire_retried"] = json!(true);
-            let mut call = intent(&v, c);
+            let mut call = intent(&v, &t.state, c)?;
             call["kind"] = json!("refresh-tools-and-call");
             t.external_intents.push(call);
             t.decisions.push(decision(
@@ -1929,8 +1966,8 @@ pub(crate) fn complete(
         Completion::ProtocolError { code: -32021, data }
             if !plain && capability_error(&data, c).is_some() =>
         {
-            // IFC-045 declares only Conduit's extension: every other named capability
-            // is undeclared. Both IFC-008 and IFC-047 promise that nothing was performed.
+            // IFC-045 has a call declare Conduit's extension, and URL elicitation only toward a Type
+            // that states signIn. Both IFC-008 and IFC-047 promise that nothing was performed.
             let extension = capability_error(&data, c).unwrap();
             t.state.invocations[i]["requiredCapabilities"] = data["requiredCapabilities"].clone();
             if extension {
@@ -2464,7 +2501,7 @@ fn dispatch_hook(
         "invocation-dispatched",
         json!({"target":object["id"],"invocation":id,"caller":p["caller"],"consumer":p["sender"],"serving":p["id"],"operation":op,"attempt":attempt}),
     )?;
-    t.external_intents.push(intent(&v, c));
+    t.external_intents.push(intent(&v, &t.state, c)?);
     t.reply = json!({"pending":true,"invocation":p["id"],"hook":id});
     Ok(id)
 }
@@ -2479,6 +2516,72 @@ mod tests {
         step,
     };
     use std::collections::BTreeMap;
+
+    #[test]
+    fn intent_declares_url_elicitation_only_toward_sign_in_types() {
+        const CAP: &str = "io.modelcontextprotocol/clientCapabilities";
+        let (_, c) = fixture();
+        let v = json!({
+            "id": "v1",
+            "attempt": 1,
+            "target": "s1",
+            "operation": "example.org/p#ping.v1",
+            "arguments": {"x": 1},
+            "implementation": {"item": {}},
+            "caller": "r",
+            "conduit": "k",
+            "filters": [],
+            "config": {},
+            "revision": "1",
+            "key": null
+        });
+        let without_url = dispatch_intent(&v, false, &c);
+        let meta = without_url["call"]["params"]["_meta"].as_object().unwrap();
+        assert_eq!(meta.len(), 8);
+        assert_eq!(meta.get(CAP), None);
+
+        let first = dispatch_intent(&v, true, &c);
+        let mut with_url = first.clone();
+        let meta = with_url["call"]["params"]["_meta"].as_object_mut().unwrap();
+        assert_eq!(meta.len(), 9);
+        assert_eq!(meta.remove(CAP), Some(json!({"elicitation":{"url":{}}})));
+        assert_eq!(with_url, without_url);
+
+        let mut p = v.clone();
+        p["plain"] = json!(true);
+        p["implementation"] = json!({"item":{"tools":{"example.org/p#ping.v1":"ping_tool"}}});
+        assert_eq!(
+            dispatch_intent(&p, false, &c)["call"]["params"],
+            json!({"name":"ping_tool","arguments":{"x":1}})
+        );
+        assert_eq!(
+            dispatch_intent(&p, true, &c)["call"]["params"],
+            json!({
+                "name": "ping_tool",
+                "arguments": {"x": 1},
+                "_meta": {CAP: {"elicitation": {"url": {}}}}
+            })
+        );
+
+        for object in [
+            json!({"id":"s1","kind":"Agent","name":"signed"}),
+            json!({"id":"s1","kind":"Agent","name":"signed","spec":{"type":"x"},"held":{}}),
+            json!({"id":"other","kind":"Agent"}),
+        ] {
+            let state = State {
+                objects: vec![object],
+                ..State::default()
+            };
+            assert_eq!(intent(&v, &state, &c).unwrap(), without_url);
+        }
+
+        let responses = json!({"sign-in":{"action":"accept"}});
+        let mut retry = retry_intent(&first, "impl-state-1", responses.as_object().unwrap());
+        let params = retry["call"]["params"].as_object_mut().unwrap();
+        assert_eq!(params.remove("requestState"), Some(json!("impl-state-1")));
+        assert_eq!(params.remove("inputResponses"), Some(responses));
+        assert_eq!(retry, first);
+    }
 
     #[test]
     fn respond_is_refused_until_input_requests_are_built() {

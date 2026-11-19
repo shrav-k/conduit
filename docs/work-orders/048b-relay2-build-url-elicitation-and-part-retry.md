@@ -565,3 +565,136 @@ Record at the foot of this file when it merges, naming
 `intent_declares_url_elicitation_only_toward_sign_in_types` in the crate `conduit-core` as the
 test for URL elicitation declared toward signIn Types, which order 048b-join's start runs (its
 A5).
+
+## Record
+
+Run on 2026-11-18, from about 20:25 to 21:27 UTC, on the second machine (the owner's Windows
+computer, Linux under WSL2), by the coordinator's stacked dispatch (approved by the owner that
+day): it started from order 048b-relay1's verified branch at `4a1865e5`, before 048b-relay1
+merged, in two rounds: the worker (1764 s) and a fresh Codex verifier (305 s), then the worker
+again (1374 s) and a second fresh Codex verifier (271 s). Round 1 made the
+change the order sets out, in the five files of Scope: `intent` takes the state, returns a
+`Result`, and declares URL elicitation where the target's Type states signIn, whether its account
+is a string or `null`; `dispatch_intent` holds `intent`'s former body and adds
+`io.modelcontextprotocol/clientCapabilities` with URL elicitation, to a keyed call's metadata or as
+a plain call's only `_meta`; `retry_intent` copies the first intent and writes `requestState` and
+`inputResponses`; the comment at `-32021`; the three calls of `intent` the base held
+(`invoke_inner`, `complete`'s resend and `hook`); IFC-045 in the case and its index entry, with one
+dispatch each asserted at root's first `to-signed.ping.v1` and `to-unset.ping.v1` (steps 14 and 19
+on the base); `scripted_server`'s branch and the runner test; the core unit test; and IFC-045's row
+`| IFC-045 | interface | must | 1 | 0 | reason | core | case passes |`. The test for URL
+elicitation declared toward signIn Types, which order 048b-join's start runs (its A5), is
+`intent_declares_url_elicitation_only_toward_sign_in_types` in the crate `conduit-core`. The
+negative control failed at step 14 and passed once restored, and the S1 spike passed 9. The
+worker's own choices: one loop for setup's two success assertions and a table for the three inputs
+that skip the Type lookup. Its findings: the core's `clientCapabilities` omit Conduit's extension
+and the tasks extension, and `engine/CONFORMANCE.md` states neither and describes plain calls as
+before this order; on a session before 2026-07-28, rmcp 3.9.0's default client handler declines a
+server's `elicitation/create` before the core sees it; rmcp's 2026-07-28 validation requires
+`protocolVersion` and `clientCapabilities` in each request's `_meta`, and calls toward a Type
+without signIn carry neither; `conformance/manifest.yaml` still gives IFC-045 its increment-2
+reason; one run each of the vectors took 267.76 s on the base and 288.60 s after, which leaves the
+cause open; and `retry_intent` is unused outside its test.
+
+The first verifier found one must: a strict MCP 2026-07-28 peer can reject these calls, since the
+runner restores the core's params wholesale (`runner.rs`, `value["params"] = params.clone()`), the
+core adds `clientCapabilities` alone and no `protocolVersion`, and the fixture only echoes the
+version `initialize` offered. Its should: the runner test would still pass if the runner dropped
+the implementation's `requestState`. Round 2 changed no file, since both lie outside Scope
+(`engine/crates/shell/src/` is forbidden, and the scoped test has no observer at the completion);
+it reran the checks and timed the `requests-` slice at 45.34 s before the order and 41.40 s after.
+The second verifier found two musts, both in `runner.rs`: the runner starts with the legacy
+`initialize` handshake, which a peer that supports only the required baseline can refuse, and its
+wire adapter overwrites the per-request metadata. Its shoulds: the `requestState` gap again; the
+caller-reply assertions do not check that the fixture's elicitation message is absent; and
+`engine/CONFORMANCE.md`'s DL16 row says plain calls omit metadata, which calls toward a signIn Type
+no longer do.
+
+After 048b-relay1 merged (#373), the coordinator rebased this order's one commit with
+`git rebase --onto origin/main 4a1865e5` onto `8e205447`, with the work-order identity. The case,
+its index and the runner test merged cleanly. Two conflicts were resolved: in `requests.rs`,
+`dispatch_hook` keeps order 048a-4's shape, with the Conduit key omitted inside `dispatch_intent`
+under `v["hook"] != true` and no strip after it, and takes this order's signature, so the three
+calls of `intent` `main` held all pass the state (`invoke_inner`, `complete`'s `-32020` resend and
+`dispatch_hook`), and setup's `account-hook.v1` dispatch toward a signIn Agent declares URL
+elicitation; and `engine/STANDING.md` was regenerated with `promise_standing.py --write`. On
+`main`, decision 5's steps are 15 and 20. The merged totals are case passes
+`| 129 | 152 | 26 | 307 |`, expected failure 2, reason with no case 73, no case and no reason
+`| 40 | 77 | 21 | 138 |`, and `| named in engine source | 141 | 164 | 26 | 331 |` of 520; the
+worker's report gives 306, 139 and 330, from before the rebase onto #373, and IFC-045's row is the
+same in both.
+
+A fresh read-only Opus reader then read the rebased branch on the Mac, at `bdba1739` on
+`origin/main` `8e205447` (ruling 79, point 2). It ran, from `engine/` with 4 threads, `cargo fmt
+--check` and clippy (exit 0), the three named tests (1 passed each; the retry test printed
+`initialize protocolVersion: "2026-07-28"`), the case (`1 cases passed`), `requests-` (66 passed and
+3 expected failures, 69 cases on both `origin/main` and `HEAD`), the vectors (2 passed) and the full
+release suite (exit 0; 362 passed, 4 ignored, 0 failed); the negative control (step 15,
+`clientCapabilities: missing required field`, then `1 cases passed` once restored); a trace of
+`intent`'s flag over the case in a scratch copy (six `ping.v1` dispatches to held Agents and one
+`account-hook.v1` hook dispatch, each with URL elicitation); the Python checks (Errors: 0 each; unit
+tests Ran 129, OK); `vector_delta.py` from `HEAD` to `WORKTREE` (0 changes) and from `origin/main`
+to `HEAD` (5 changes; 0 flips; 0 undeclared; 0 errors, all in `requests-sign-in-lapse-and-conflict`:
+`/promises/4` and steps 15 and 20); the order's `git status` (empty) and greps (ten 1s, one 2, three
+0s); `git diff --check origin/main...HEAD` (clean); the S1 spike (9 passed); and a privacy grep of
+the added lines and the authors and committers (clean). It found that nothing reads or writes
+`server/relay.rs` and that `retry_intent` is reached only from its test, as decision 9 leaves it. It
+found no must and three shoulds:
+
+- R1: decision 6's test supplies the retry's `requestState` as the literal `impl-state-1`, and the
+  IFC-016 diagnostic is chosen from `resultType`, `inputRequests`, the method and the mode, so the
+  test would still pass if the runner dropped or rewrote the implementation's `requestState`
+  before the completion, which 048a-5d's keeping of that state depends on. The test is as decision
+  6 words it: a gap in the order, not in the build.
+- R2: calls the core writes carry no per-request `protocolVersion`, only calls toward signIn Types
+  carry `clientCapabilities`, and the runner replaces params wholesale and starts with the legacy
+  `initialize` handshake, so a peer that serves only MCP 2026-07-28 can reject them with `-32602`.
+  This predates the order, which made no call lose a key, and lies in the forbidden `runner.rs`.
+- R3: the worker's report gives totals from before the rebase onto #373, which would contradict
+  the merged `engine/STANDING.md` if copied here.
+
+The fixer found `origin/main` still at `8e205447`, so no rebase was needed, and changed no code;
+each finding is answered in this Record:
+
+- R1: this order stays as it is. The gap is named above; the coordinator adds to 048a-5d's Done
+  when an assertion that the `requestState` the core keeps with the part equals the
+  implementation's scripted value byte for byte, and has 048a-7 build its retry from that kept
+  value, not from a literal. This answers both verifiers' should on the inbound `requestState`.
+- R2: no change in this order. At the merge the coordinator files a follow-up order for
+  `runner.rs`: per-request `_meta` `protocolVersion` and `clientCapabilities` on every call, while
+  keeping the core's per-call capabilities, and a startup test against a peer that speaks only
+  2026-07-28. It answers the first verifier's must and both of the second's, and stands with
+  decision 9's findings above (the extensions, the legacy `elicitation/create`, the manifest's
+  reason and the unused `retry_intent`).
+- R3: the totals above are the merged `engine/STANDING.md`'s.
+
+The second verifier's two other shoulds, an assertion that the caller's reply omits the fixture's
+elicitation message and the correction of `engine/CONFORMANCE.md`'s DL16 row, stay findings for
+the coordinator: decision 6 lists the test's assertions, and the coordinator weighs the extra one
+at the merge; `engine/CONFORMANCE.md` lies outside Scope.
+
+A finding for the coordinator at the merge: the answers to R1 and R2 above are promises of later
+work, and neither the follow-up order for `runner.rs` nor 048a-5d's file exists on `main` yet.
+In the closing paragraph, name the follow-up order's number or file for R2, and where 048a-5d's
+assertion for R1 is held (for example a ROADMAP or tracker row), so that both are traceable from
+`main`.
+
+The fixer reran, from `engine/` with `RUST_TEST_THREADS=4 CONDUIT_VECTOR_THREADS=4`: `cargo fmt
+--check` and `cargo clippy --all-targets -- -D warnings` (clean); the three named tests (1 passed
+each; the retry test printed `initialize protocolVersion: "2026-07-28"`); the case (`1 cases
+passed`); `requests-` (`66 cases passed; 3 expected failures`, as on `origin/main`); the vectors (2
+passed); the full release suite (exit 0; 28 suites, 362 passed, 4 ignored, 0 failed); and the
+negative control, `intent`'s last line set to `Ok(dispatch_intent(v, false, c))`, which printed
+`FAIL 0 cases passed; 1 failed` at step 15,
+`/external_intents/0/call/params/_meta/io.modelcontextprotocol/clientCapabilities: missing required
+field`, and `1 cases passed` once restored with `cp`. From the repository root, on the files of this
+commit before it was made: `check_schemas`, `set_names --check`, `check_rulings`, `check_docs`,
+`check_roadmap`, `check_model_account`, `check_private_paths` and `promise_standing --check`
+(Errors: 0 each); `/usr/bin/python3 -m unittest discover -s tools/tests` (Ran 129 tests, OK);
+`vector_delta.py` from `HEAD` to `WORKTREE` (0 changes) and from `origin/main` to `HEAD` (5 changes;
+0 flips; 0 undeclared; 0 errors, exit 0, all in `requests-sign-in-lapse-and-conflict` under the
+order's two declarations); the order's `git status` (empty); its greps (ten print 1, one prints 2,
+the three that must print 0 print 0, with `origin/main` for `HEAD`); and `git diff --check
+origin/main...HEAD` and `git diff --check` (clean). The S1 spike's `tests/spike.rs` gave `test
+result: ok. 9 passed; 0 failed`. The gate's run on this order's squash is the coordinator's at the
+merge.

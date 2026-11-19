@@ -314,7 +314,24 @@ fn scripted_server() {
                     std::io::stdout().flush().unwrap();
                     continue;
                 }
-                json!({"content":[{"type":"text","text":"test result"}],"isError":false})
+                if mode == "input-required" && calls == 1 {
+                    json!({
+                        "resultType": "input_required",
+                        "inputRequests": {
+                            "sign-in": {
+                                "method": "elicitation/create",
+                                "params": {
+                                    "mode": "url",
+                                    "message": "Sign in to continue.",
+                                    "url": "https://example.org/authorize"
+                                }
+                            }
+                        },
+                        "requestState": "impl-state-1"
+                    })
+                } else {
+                    json!({"content":[{"type":"text","text":"test result"}],"isError":false})
+                }
             }
             "notifications/cancelled" if mode == "cancel" => {
                 println!(
@@ -904,6 +921,84 @@ fn dispatch_deadline_reports_a_cancellation_that_could_not_be_sent() {
         )]
     );
     assert_eq!(call_count(parent.path()), 1);
+}
+
+#[test]
+fn implementation_input_request_reaches_the_core_and_its_retry_is_sent_as_written() {
+    let parent = tempfile::tempdir().unwrap();
+    let shell = open(parent.path(), Config::default());
+    register(&shell, parent.path(), false, "input-required");
+    let runner = new_runner(&shell);
+    for name in ["workspace", "shared"] {
+        let reply = setup(&shell, &runner, name);
+        assert_eq!(outcome(&shell, &reply), "succeeded", "{name}: {reply}");
+    }
+    setup(&shell, &runner, "agent-b");
+
+    let ticket = shell
+        .begin(
+            input(
+                &shell,
+                "agent-b",
+                "project.file.read.v1",
+                json!({"path":"x"}),
+            ),
+            &runner,
+        )
+        .unwrap();
+    let invocation = ticket.invocation().unwrap().to_owned();
+    let reply = ticket.wait().unwrap();
+    assert_eq!(outcome(&shell, &reply), "unknown", "{reply}");
+    assert!(
+        reply["structuredContent"]["diagnostics"]
+            .as_array()
+            .is_some_and(|diagnostics| diagnostics.iter().any(|diagnostic| {
+                diagnostic["ruleId"] == "IFC-016"
+                    && diagnostic["message"]["text"]
+                        .as_str()
+                        .is_some_and(|text| text.contains("the instance's Type states no signIn"))
+            })),
+        "{reply}"
+    );
+    let reply_text = reply.to_string();
+    assert!(!reply_text.contains("impl-state-1"));
+    assert!(!reply_text.contains("example.org/authorize"));
+
+    let wire_path = parent.path().join("shared/wire.jsonl");
+    let wire = lines(&wire_path);
+    let first = wire.iter().find(|v| v["method"] == "tools/call").unwrap();
+    assert_eq!(
+        first["params"],
+        json!({"name":"read_text_file","arguments":{"path":"x"}})
+    );
+    let protocol_version = wire
+        .iter()
+        .find(|v| v["method"] == "initialize")
+        .map_or(&Value::Null, |v| &v["params"]["protocolVersion"]);
+    eprintln!("initialize protocolVersion: {protocol_version}");
+
+    let mut params = first["params"].clone();
+    params["requestState"] = json!("impl-state-1");
+    params["inputResponses"] = json!({"sign-in":{"action":"accept"}});
+    let retry = json!({
+        "kind": "dispatch",
+        "invocation": invocation,
+        "attempt": 1,
+        "target": id(&shell, "shared"),
+        "call": {"method":"tools/call","params":params}
+    });
+    assert!(matches!(
+        runner.dispatch(&retry).unwrap(),
+        Execution::Deferred
+    ));
+    until(|| call_count(parent.path()) == 2);
+    let wire = lines(&wire_path);
+    let second = wire
+        .iter()
+        .filter(|v| v["method"] == "tools/call")
+        .nth(1)
+        .unwrap();
+    assert_eq!(second["params"], params);
 }
 
 #[test]

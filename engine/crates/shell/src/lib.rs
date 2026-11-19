@@ -4,6 +4,7 @@ pub mod boundary;
 mod identity;
 pub mod runner;
 pub mod server;
+pub mod sign_in;
 mod store;
 use chrono::{DateTime, SecondsFormat, Utc};
 use conduit_core::{Context, Input, State, Transition};

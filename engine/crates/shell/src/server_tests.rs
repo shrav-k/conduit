@@ -8,7 +8,7 @@ use rmcp::{
         StreamableHttpClientTransport, streamable_http_client::StreamableHttpClientTransportConfig,
     },
 };
-use std::sync::atomic::AtomicBool;
+use std::{collections::VecDeque, sync::atomic::AtomicBool};
 use tokio_util::sync::CancellationToken;
 
 #[tokio::test]
@@ -1467,6 +1467,322 @@ async fn sign_in_plain_hook_through_the_interface_signs_in() {
     stop.cancel();
     task.await.unwrap().unwrap();
     script.report_cancellations(&shell);
+}
+
+const CONSENT_PROMPT: &str = "Open this URL in your browser? Type y to open it, or n to decline: ";
+const ENTER_PROMPT: &str = "Press Enter once you have signed in, or type n to stop: ";
+const RETURN_NOTICE: &str = "conduit sign-in: the engine reports that this login takes a return";
+
+#[derive(Default)]
+struct Scripted {
+    answers: VecDeque<Option<String>>,
+    prompts: Vec<String>,
+    told: Vec<String>,
+    opened: Vec<String>,
+    events: Vec<String>,
+}
+
+impl Scripted {
+    fn new(answers: &[Option<&str>]) -> Self {
+        Self {
+            answers: answers
+                .iter()
+                .map(|answer| answer.map(str::to_owned))
+                .collect(),
+            ..Self::default()
+        }
+    }
+}
+
+impl crate::sign_in::Person for Scripted {
+    fn ask(&mut self, prompt: &str) -> Result<Option<String>> {
+        self.prompts.push(prompt.into());
+        self.events.push(prompt.into());
+        Ok(self.answers.pop_front().flatten())
+    }
+
+    fn tell(&mut self, line: &str) {
+        self.told.push(line.into());
+    }
+
+    fn open(&mut self, url: &str) -> Result<()> {
+        self.opened.push(url.into());
+        self.events.push(format!("open:{url}"));
+        Ok(())
+    }
+}
+
+struct PollScript {
+    plain: bool,
+    prefix: String,
+    accounts: Mutex<VecDeque<Value>>,
+    dispatches: Mutex<Vec<Value>>,
+    cancellations: Mutex<Vec<Value>>,
+}
+
+impl PollScript {
+    async fn serve(
+        shell: &Arc<Shell>,
+        stop: &CancellationToken,
+        plain: bool,
+        accounts: impl IntoIterator<Item = Value>,
+    ) -> (Arc<Self>, tokio::task::JoinHandle<Result<()>>) {
+        shell.issue_client_token(&actor(shell, "root")).unwrap();
+        let script = Arc::new(Self {
+            plain,
+            prefix: shell.context.meta_prefix.clone(),
+            accounts: Mutex::new(accounts.into_iter().collect()),
+            dispatches: Mutex::default(),
+            cancellations: Mutex::default(),
+        });
+        let executor = Arc::new(ServingExecutor::new(script.clone()));
+        let task = tokio::spawn(server::serve(shell.clone(), executor, stop.clone()));
+        ready(&shell.config.engine_url).await;
+        (script, task)
+    }
+
+    fn expect_dispatches(&self, names: &[&str]) {
+        let dispatches = self.dispatches.lock().unwrap();
+        let actual: Vec<_> = dispatches
+            .iter()
+            .map(|intent| intent["call"]["params"]["name"].as_str().unwrap())
+            .collect();
+        assert_eq!(actual, names);
+    }
+}
+
+impl Executor for PollScript {
+    fn dispatch(&self, intent: &Value) -> Result<Execution> {
+        self.dispatches.lock().unwrap().push(intent.clone());
+        let (account_hook, sign_in_hook) = if self.plain {
+            ("account_hook", "sign_in_hook")
+        } else {
+            ("account-hook.v1", "sign-in-hook.v1")
+        };
+        let name = intent["call"]["params"]["name"].as_str().unwrap();
+        let mut result = if name == sign_in_hook {
+            json!({
+                "resultType": "input_required",
+                "inputRequests": {"login": {"method": "elicitation/create", "params": {
+                    "mode": "url", "message": HOOK_MESSAGE, "url": SIGN_IN_URL
+                }}},
+                "requestState": HOOK_STATE
+            })
+        } else {
+            let mut result = json!({"content": []});
+            if name == account_hook {
+                let account = self
+                    .accounts
+                    .lock()
+                    .unwrap()
+                    .pop_front()
+                    .unwrap_or(Value::Null);
+                result["structuredContent"] = json!({"account": account});
+            }
+            result
+        };
+        if name != sign_in_hook && !self.plain {
+            result["_meta"] = json!({format!("{}outcome", self.prefix): "succeeded"});
+        }
+        Ok(Execution::Complete(
+            json!({"kind": "result", "result": result}),
+        ))
+    }
+
+    fn cancel(&self, intent: &Value) -> Result<Execution> {
+        self.cancellations.lock().unwrap().push(intent.clone());
+        Ok(Execution::Done)
+    }
+}
+
+fn assert_invalid_sign_in_login(result: &Value, prefix: &str, text: &str) {
+    assert!(result["isError"] == true);
+    assert!(result["_meta"][format!("{prefix}reason")] == "invalid");
+    let diagnostics = result["structuredContent"]["diagnostics"]
+        .as_array()
+        .unwrap();
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0]["ruleId"] == "PND-010");
+    assert!(
+        diagnostics[0]["message"]["text"]
+            .as_str()
+            .unwrap()
+            .contains(text)
+    );
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn sign_in_command_opens_the_url_and_polls_to_signed_in() {
+    let temp = temporary();
+    let case = repository().join("conformance/conventions/requests/sign-in-hold");
+    let shell = Arc::new(fixed_case_shell(temp.path(), &case, 9));
+    let prefix = &shell.context.meta_prefix;
+    let signed = actor(&shell, "signed");
+    let stop = CancellationToken::new();
+    let (script, task) = PollScript::serve(
+        &shell,
+        &stop,
+        false,
+        [Value::Null, Value::Null, json!("primary-account")],
+    )
+    .await;
+    let object = json!({"kind": "Agent", "name": "signed"});
+    let mut person = Scripted::new(&[Some("y"), Some(""), Some("")]);
+    assert_eq!(
+        crate::author::route(temp.path(), &object, "sign-in.v1").unwrap(),
+        "group.sign-in.v1"
+    );
+    let result = crate::sign_in::sign_in(temp.path(), &object, None, prefix, &mut person)
+        .await
+        .unwrap();
+    assert!(result["isError"] != true);
+    assert!(result["structuredContent"]["account"] == "primary-account");
+    assert!(result["_meta"][format!("{prefix}outcome")] == "succeeded");
+    assert_eq!(person.opened, [SIGN_IN_URL]);
+    assert_eq!(person.prompts, [CONSENT_PROMPT, ENTER_PROMPT, ENTER_PROMPT]);
+    assert_eq!(
+        person.events[..3],
+        [
+            CONSENT_PROMPT.to_string(),
+            format!("open:{SIGN_IN_URL}"),
+            ENTER_PROMPT.to_string()
+        ]
+    );
+    assert_eq!(person.told.len(), 10);
+    assert_eq!(
+        person.told[0],
+        "conduit sign-in: the engine asks you to open a URL to sign in Agent/signed."
+    );
+    assert_eq!(
+        person.told[5],
+        "conduit sign-in: the engine has not yet found the expected account signed in on Agent/signed; the URL below is the one already opened."
+    );
+    for lines in person.told.chunks_exact(5) {
+        assert!(lines[1].starts_with("Message: ") && lines[1].contains("example.org"));
+        assert_eq!(lines[2], format!("URL: {SIGN_IN_URL}"));
+        assert_eq!(lines[3], "Login: browser");
+        assert!(lines[4].starts_with(RETURN_NOTICE));
+        assert!(
+            lines[4].contains("this command carries none (order 051b-3, with the keyed release)")
+        );
+    }
+    script.expect_dispatches(&[
+        "account-hook.v1",
+        "sign-in-hook.v1",
+        "account-hook.v1",
+        "account-hook.v1",
+    ]);
+    assert!(!shell.state().unwrap().sign_in_holds.contains_key(&signed));
+    stop.cancel();
+    task.await.unwrap().unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn sign_in_command_declines_cancels_and_asks_for_a_login() {
+    let temp = temporary();
+    let case = repository().join("conformance/conventions/requests/sign-in-hold");
+    let shell = Arc::new(fixed_case_shell(temp.path(), &case, 9));
+    let prefix = &shell.context.meta_prefix;
+    let signed = actor(&shell, "signed");
+    let stop = CancellationToken::new();
+    let (script, task) = PollScript::serve(&shell, &stop, false, []).await;
+    let object = json!({"kind": "Agent", "name": "signed"});
+
+    let mut person = Scripted::new(&[Some("maybe"), Some("n")]);
+    let declined = crate::sign_in::sign_in(temp.path(), &object, None, prefix, &mut person)
+        .await
+        .unwrap();
+    assert!(declined["isError"] == true);
+    assert!(declined["_meta"][format!("{prefix}outcome")] == "failed");
+    assert!(
+        declined["structuredContent"]["diagnostics"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|diagnostic| diagnostic["message"]["text"]
+                .as_str()
+                .is_some_and(|text| text.contains("declined")))
+    );
+    assert_eq!(person.prompts, [CONSENT_PROMPT, CONSENT_PROMPT]);
+    assert!(person.opened.is_empty());
+
+    let mut person = Scripted::default();
+    let invalid = crate::sign_in::sign_in(temp.path(), &object, Some("phone"), prefix, &mut person)
+        .await
+        .unwrap();
+    assert_invalid_sign_in_login(&invalid, prefix, "browser");
+    assert!(person.prompts.is_empty() && person.told.is_empty() && person.opened.is_empty());
+
+    let mut person = Scripted::default();
+    let error = crate::sign_in::run(
+        temp.path(),
+        &["Agent/signed".into()],
+        None,
+        &repository(),
+        &mut person,
+    )
+    .await
+    .unwrap_err();
+    assert!(error.contains("did not succeed"));
+    assert_eq!(person.prompts, [CONSENT_PROMPT]);
+    assert!(person.opened.is_empty());
+    script.expect_dispatches(&[
+        "account-hook.v1",
+        "sign-in-hook.v1",
+        "account-hook.v1",
+        "sign-in-hook.v1",
+    ]);
+    assert!(shell.state().unwrap().sign_in_holds.contains_key(&signed));
+    stop.cancel();
+    task.await.unwrap().unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn sign_in_command_signs_in_through_a_plain_hook() {
+    let temp = temporary();
+    let case = repository().join("conformance/conventions/requests/sign-in-plain-hook-part");
+    let shell = Arc::new(fixed_case_shell(temp.path(), &case, 2));
+    let prefix = &shell.context.meta_prefix;
+    let stop = CancellationToken::new();
+    let (script, task) =
+        PollScript::serve(&shell, &stop, true, [Value::Null, json!("primary-account")]).await;
+    let object = json!({"kind": "Agent", "name": "signed"});
+
+    let mut person = Scripted::default();
+    let invalid =
+        crate::sign_in::sign_in(temp.path(), &object, Some("browser"), prefix, &mut person)
+            .await
+            .unwrap();
+    assert_invalid_sign_in_login(&invalid, prefix, "is a plain hook");
+    assert!(person.prompts.is_empty() && person.told.is_empty() && person.opened.is_empty());
+    script.expect_dispatches(&[]);
+
+    let mut person = Scripted::new(&[Some("y"), Some("")]);
+    let result = crate::sign_in::sign_in(temp.path(), &object, None, prefix, &mut person)
+        .await
+        .unwrap();
+    assert!(result["isError"] != true);
+    assert!(result["structuredContent"]["account"] == "primary-account");
+    assert!(result["_meta"][format!("{prefix}outcome")] == "succeeded");
+    assert_eq!(person.opened, [SIGN_IN_URL]);
+    assert_eq!(person.prompts, [CONSENT_PROMPT, ENTER_PROMPT]);
+    assert_eq!(
+        person
+            .told
+            .iter()
+            .filter(|line| line.as_str() == "Login: browser")
+            .count(),
+        1
+    );
+    assert!(
+        !person
+            .told
+            .iter()
+            .any(|line| line.starts_with(RETURN_NOTICE))
+    );
+    script.expect_dispatches(&["account_hook", "sign_in_hook", "account_hook"]);
+    stop.cancel();
+    task.await.unwrap().unwrap();
 }
 
 async fn raw_session(url: &str, token: &str, revision: &str) -> Option<String> {

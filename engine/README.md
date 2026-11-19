@@ -745,7 +745,18 @@ subject (PND-009): a setup action takes `dismissed`. It answers only an action i
 raised at root, and only of the setup kind in this build; for any other it sends nothing
 and says so. After any other command whose last result through `serve` counts unanswered
 actions at root, the command line says how many on standard error and names
-`conduit pending`. The sign-in command is not built yet (order 051b-2).
+`conduit pending`. `conduit sign-in --store DIR KIND/NAME [--login NAME]` signs an Agent or a Resource in
+through `serve` and root's Conduit to its owner, declaring URL elicitation and, with
+`--login`, asking for one of its Type's stated logins, which the engine refuses before any
+part where the instance's sign-in hook is plain, as in the 0.2.0 Agent packages; without it,
+the hook chooses among the Type's stated logins (in the 0.2.0 Agent packages, its
+client's default login). It shows the engine's message and the full URL on
+standard error, opens the browser only after you type `y`, and retries each time you press
+Enter, until the engine answers: signed in, failed where you type `n` or input ends, or
+ended once the URL action's wait ends (DL18). It prints the result as one JSON line and
+exits 0 only where the sign-in succeeded. It carries no return from another machine (order
+051b-3, with the keyed release). Interrupting it leaves the sign-in waiting until that wait
+ends.
 
 ```sh
 engine/target/release/conduit install --store /tmp/conduit-live-store \

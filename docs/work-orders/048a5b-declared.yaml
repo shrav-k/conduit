@@ -17,3 +17,7 @@
   kind: expectation
   cases: [requests-sign-in-refusals-before-parts]
   paths: ['/steps/17/*']
+- name: the refused steps of 048a-5's case also assert no dispatch intent, no input-required reply and no qualified signInReturn key in record data (048a-5's R3)
+  kind: expectation
+  cases: [requests-sign-in-refusals-before-parts]
+  paths: ['/steps/[2-9]/*', '/steps/1[123]/*']

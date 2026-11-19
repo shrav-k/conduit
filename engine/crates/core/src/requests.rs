@@ -1578,6 +1578,14 @@ fn invoke_inner(
     }
     let plain = implementation["item"]["plain"] == true;
     let mut invocation = json!({"id":id,"key":key,"sender":route["consumer"],"caller":route["caller"],"target":route["target"],"conduit":route["conduit"],"operation":op,"arguments":route["arguments"],"digest":digest,"filters":route["filters"],"state":"in-progress","plain":plain,"contract":contract,"held_target":target,"implementation":implementation,"needs_result":plain || contract["spec"].get("outputSchema").is_some(),"attempt":previous.as_ref().and_then(|v|v["attempt"].as_u64()).unwrap_or(0)+1,"wire_retried":false,"config":target["config"],"revision":target["revision"]});
+    if op == c.qualified("sign-in.v1")
+        && let Some(login) = request
+            .sign_in_login
+            .as_ref()
+            .and_then(|v| v["name"].as_str())
+    {
+        invocation["asked_login"] = json!(login);
+    }
     // Keep the caller's spelling for outcome diagnostics. A cascade names its container
     // through the tool. Resolved target metadata and arguments stay private.
     let tool = &request.tool;

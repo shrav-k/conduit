@@ -644,3 +644,106 @@ point 10, has each merge wait on, `tools/gate.py`; CI runs on the pull request a
 for it. A fresh Codex verifier and a fresh read-only Opus reader read the result before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2). The admin writes this order's Record at
 the foot of this file when it merges.
+
+## Record
+
+Run on 2026-11-19, from about 09:24 to 09:58 UTC, on the Windows node, as the first line of its log
+says, from `main` `b941dece` (this order's refresh, #393), in one round under ruling 85's one-round
+trial, since the verifier found no must: the worker (1699 s) and a fresh Codex verifier (357 s). The
+change is the seven files of Scope. `invoke_inner` keeps a core `sign-in.v1`'s asked-for login on
+the invocation as `asked_login` (decision 1). `sign_in.rs` gains `may_start_fixed_ports`,
+`stated_logins`, from whose items the names function now reads, and `other_sign_in_ports` (decision
+2), and `fixed_port_refusal`, called in the preflight right after the decision-6 helper gives none,
+with the visible-action rule moved out of order 048a-2's conflict into `visible_sign_in_action`,
+which both call (decision 3). Decision 4's unit test `sign_in_fixed_port_refusal`, decision 5's case
+`requests-sign-in-fixed-port` (24 steps, 2374 unique IDs) with its documents and its coverage entry,
+moved by the pieces tool into `conformance/conventions/requests/index.yaml`, decision 6's sentence
+and three places in `engine/CONFORMANCE.md`, and `engine/STANDING.md` by its tool (OPS-023 at 26
+cases, PND-010 at 4, no total changed) complete it. The worker's own choices: the helpers' names
+`stated_logins` and `visible_sign_in_action`; a whole-valued decimal such as `8400.0` read as the
+port `8400`, as CTR-013's overlap check in `packages.rs` reads it, with an assertion for it added to
+decision 4's test; and the three checks that give no refusal written `assert!(...is_none())`, since
+`Rejection` derives neither `PartialEq` nor `Debug`. It reported decision 8's findings for the
+coordinator as 048a5c-F01 to F10: PND-010 names no node or Fleet; a caller other than root learns
+that some sign-in is in progress; a login with `ports: any` against a fixed port; a sign-in in
+progress keeps every login it may start; the withheld action and the diagnostic's words pinned by
+the unit test alone; keyed repeats; order 209's point 3 (c) and order 207's reason; and ports
+compared whatever the host.
+
+The verifier found no must, two shoulds and a nit: first, that no test tells the first overlapping
+item of `others` from the last (the reader's R1 below); second, that no test shows a visible pending
+action's ID kept out of the refusal's `_meta`, since the case's two `absent` checks of
+`pendingAction` fall where no action is raised for `paired`, and the unit test reads
+`fixed_port_refusal`'s diagnostics, not the assembled reply; and the nit, that the three checks that
+give no refusal use `assert!` where decision 4 says `assert_eq!`. Its rerun of the Python tool tests
+met 121 temporary-directory errors in its read-only sandbox.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2) on the branch at
+`fc1b1b39`, before its rebase. In a scratch mirror of the worktree, with `RUST_TEST_THREADS=4` and
+`CONDUIT_VECTOR_THREADS=4`, it ran every command of "Done when": fmt and clippy (exit 0); the
+`sign_in` filter (17 passed, against 16 at `b941dece`, rebuilt); the pieces tool (`Nothing to
+move.`); the four single-case runners (`1 cases passed` each); `requests-` (`71 cases passed; 2
+expected failures`, against 70 and 2 at `b941dece`); the shell test (1 passed); the vectors (2
+passed); the full engine suite (372 passed, 0 failed, 28 suites); the S1 spike (9 passed); both
+mutations, each printing `FAIL 0 cases passed; 1 failed` with the prescribed error, then `1 cases
+passed` after the `cp` restore; the Python checks (Errors: 0 each; 129 unit tests, OK, the one that
+runs `git ls-files` in the worktree); `vector_delta.py` against `origin/main`, since the work is
+committed as a checkpoint (1 shapes; 1 changes; 0 flips; 0 undeclared; 0 errors; exit 0); the scoped
+status (nothing) and `git diff --check` (clean); the greps (1 six times, then `3` and `2`); the
+standing rows (`OPS-023  26`, `PND-010  4`); the documents check (`['browser', 'device', 'paired',
+'signed', 'third', 'unset'] 24`); and the last two checks (0 and 0). It found that the diagnostic
+names only the request's own instance, the shared ports and, under the visible-action rule, the
+other instance's action ID, and sets no `_meta` key; that the prescribed texts are verbatim; that
+`asked_login` is written once and read once; and, by script, that the case meets decision 5. It
+noted that the log's first line names the Windows node, not the Linux node the brief named, for the
+coordinator to check. It found no must and two shoulds:
+
+- R1: no test pins decision 3's rule that the refusal names the first item of `others` sharing a
+  port with `own`: an implementation that picks the last overlapping item, or merges ports across
+  items, passes the unit test and the case. Codex's verifier raised the same point.
+- R2: the worker report gives decision 2 as written, yet `may_start_fixed_ports` widens "the
+  integers in `redirect.ports`" to whole-valued JSON floats such as `8400.0`, capped at 65535, and
+  decision 4's test gains an assertion for it; both appear only among the worker's own choices. The
+  reading matches CTR-013's overlap check (`packages.rs`), so the behavior is sound.
+
+The fixer rebased the branch onto `origin/main` at `1d3c7301` (orders 208 and 207 and a correction
+to order 050m, none touching `spec/`, `engine/` or `conformance/`) with the work-order identity,
+without conflict; `engine/STANDING.md` needed no rewrite. It applied each finding:
+
+- R1: after the `ports 8401, 8402` call, `sign_in_fixed_port_refusal` gains the reader's assertion,
+  `check("w", time, &browser, &[(json!("s1"), BTreeSet::from([8400])), (json!("s2"),
+  second.clone())])` giving `port 8400` without the appended sentence, with `second` cloned at its
+  earlier use, laid out by `cargo fmt`. It is one assertion more than decision 4 prescribes, for the
+  coordinator to accept as an amendment. With `others.iter().find` changed to
+  `others.iter().rev().find` on a kept copy, then restored with `cp`, the test failed (`0 passed; 1
+  failed`), the new assertion being its only call in which two items overlap.
+- R2: this Record lists, among the worker's own choices under decision 2, the reading of a
+  whole-valued decimal as a port and its extra assertion in decision 4's test, for the coordinator
+  to accept or strike; the code is unchanged.
+
+The verifier's second should and its nit, which the reader did not take up, are left to the
+coordinator: the withheld action pinned by the unit test alone is the worker's finding 048a5c-F05,
+and the `assert!` form is recorded above among the worker's own choices.
+
+The fixer then ran, from the worktree with `RUST_TEST_THREADS=4` and `CONDUIT_VECTOR_THREADS=4`, on
+the rebased tree with the files of this commit before it was made, every command of "Done when": fmt
+and clippy (exit 0); the `sign_in` filter (`17 passed; 0 failed; 115 filtered out`); the pieces tool
+(`Nothing to move.`); the four single-case runners (`1 cases passed` each); `requests-` (`71 cases
+passed; 2 expected failures`); the shell test (1 passed); the vectors (2 passed); the full engine
+suite (372 passed, 0 failed and 4 ignored over 28 test binaries); the S1 spike (`9 passed; 0
+failed`); the two mutations, each restored with `cp` (`FAIL 0 cases passed; 1 failed`, first with
+`missing ordered record
+{"data":{"reason":"unavailable","ruleId":"PND-010"},"type":"request-ended"}`, then with `portable
+case: step 13 ends with reason unavailable but does not assert it and its deciding ruleId`; then `1
+cases passed`, the file identical to the kept copy); the Python checks (`check_schemas`, `set_names
+--check`, `check_rulings`, `check_docs`, `check_roadmap`, `check_model_account`,
+`check_private_paths` and `promise_standing --check`, Errors: 0 each; 129 unit tests, OK);
+`vector_delta.py origin/main WORKTREE` (1 shapes; 1 changes; 0 flips; 0 undeclared; 0 errors; exit
+0); the greps (1 six times, then `3` and `2`); the standing rows (`OPS-023  26`, `PND-010  4`); the
+documents check (`['browser', 'device', 'paired', 'signed', 'third', 'unset'] 24`); the last two
+checks (0 and 0); the scoped status (nothing); and `git diff --check` (clean).
+
+For ruling 85's trial (point 3): Codex ran one round, since its verifier found no must, and the
+fresh reader found no must either. In all, the verifier found two shoulds and a nit, and the reader
+two shoulds. The gate's run on this order's squash, which this merge waits on, is the coordinator's
+at the merge.

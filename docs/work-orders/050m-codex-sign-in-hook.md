@@ -83,8 +83,8 @@ results); `1` (order 195's source read of the browser login); `1` (order 197's m
 (050l's README sentence on a failed account hook, which decision 9 changes); and `0` for each of
 the two files (no refresh override yet); then `1` (order 208's dated result; if 0, stop). Before
 decision 1, check that the result's line
-`Outcome: no write under the variable; every control run wrote.` is there, the line that records
-no write to the home's login file; if it is not, stop and report.
+`Outcome: no write under the variable, in the issuer form; every control run wrote.` is there,
+the line that records no write to the home's login file; if it is not, stop and report.
 Order 050l's Record says how it built what these lines check, and where the built form departs from
 its text: its scoped stop takes a third argument, `seen`, and reads the group once before the exit
 wait (its R1), and its README's sign-out sentence differs from its decision 8 (its R3).

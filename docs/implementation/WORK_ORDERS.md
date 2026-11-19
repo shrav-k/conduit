@@ -11,7 +11,7 @@ of merged orders. Who decides and who merges, lanes included (ruling 71), is in
 | Who | Does | Does not |
 | --- | --- | --- |
 | The owner | Rules on behavior, on what Conduit is for and on the order of the work. Can strike any decision of the coordinator | |
-| The admin session, the coordinator (Claude Code) | Plans the work and writes each order: what it applies, its scope, its done-when, its report. Makes the decisions an order applies, under rulings 37, 38 and 46, point 4, each logged and strikeable. Reviews what comes back, runs the checks, commits, and opens the pull request. Merges it where the order's fresh read found a must; an order whose fresh read found none merges on the local gate's pass without waiting, and the coordinator reviews that merge after it ([ruling 85](../proposals/ruling-85/README.md), point 1). By the coordinator's reading of that point, an order whose first read found a must is its to merge even after a clean reread, and an order whose clean read leaves shoulds merges once their diff-only reread finds no must. Puts to the owner what is the owner's | Spend its own session on work that an order can state |
+| The admin session, the coordinator (Claude Code) | Plans the work and writes each order: what it applies, its scope, its done-when, its report. Makes the decisions an order applies, under rulings 37, 38 and 46, point 4, each logged and strikeable. Reviews what comes back, runs the checks, commits, and opens the pull request. Merges it where the order's fresh read found a must, or where its last Codex verifier reported one ([ruling 87](../proposals/ruling-87/README.md), point 2, as the coordinator reads it); an order whose fresh read found none, and whose last verifier reported none, merges on the local gate's pass without waiting, and the coordinator reviews that merge after it ([ruling 85](../proposals/ruling-85/README.md), point 1). By the coordinator's reading of that point, an order whose first read found a must is its to merge even after a clean reread, and an order whose clean read leaves shoulds merges once their diff-only reread finds no must. Puts to the owner what is the owner's | Spend its own session on work that an order can state |
 | A Codex worker | Carries out one order in a working tree of its own: a build increment, an experiment, a sweep of the promises, a verification of another order's result, or a fresh read | Commit, push or open a pull request. Decide what the order leaves to the admin: it reports instead |
 
 Codex gets work whose result the admin can check: a done-when that the checks show, counts that
@@ -44,10 +44,14 @@ an experiment. It holds:
 
 ## Dispatch and checking
 
-How an order is dispatched, checked by a fresh Codex verifier in each round, read by a fresh
-Opus reader before it merges ([ruling 79](../proposals/ruling-79/README.md)) and merged, with
-each command and the fault each part of the dispatch answers, is in
-[the method as run](METHOD_AS_RUN.md).
+How an order is dispatched, run in one Codex round, a worker and a fresh Codex verifier
+([ruling 87](../proposals/ruling-87/README.md), point 1; A77's paired orders keep a second, point
+3), read by a fresh Opus reader before it merges ([ruling 79](../proposals/ruling-79/README.md)),
+which confirms or refutes each finding of a verifier that reported a must (ruling 87, point 2),
+and merged, with each command and the fault each part of the dispatch answers, is in
+[the method as run](METHOD_AS_RUN.md). Until a later order brings that page to ruling 87, it
+still describes up to two Codex rounds, and
+[IN_FORCE.md, section 15](../../IN_FORCE.md#15-how-the-work-is-governed) holds where they differ.
 
 ## Fresh reads
 
@@ -350,6 +354,16 @@ orders as amended, so the spend between the registration and this amendment coun
 the rule narrows what claim 2 can show: the paired orders come only from orders off the chain,
 such as the 0.2.0 halves, MC9a's follow-ups and the command line's orders, so the result speaks
 for those and says that the chain's orders had no paired read.
+
+### Note of 2026-11-19: one Codex round
+
+Noted on 2026-11-19 by the coordinator, on [ruling 87](../proposals/ruling-87/README.md). From
+ruling 87's merge, A77's orders that are not paired run one Codex round, a worker and a fresh
+verifier (point 1), and a paired order keeps the round 2 that the paired read prescribes (point 3).
+The baseline's orders ran up to two Codex rounds; the result gives the rounds of each of A77's
+orders, as registered, and does not count the baseline's. This note changes none of the claims,
+the orders, the paired read, the records or the verdicts. It is the coordinator's, open to the
+owner's strike.
 
 ## The record
 

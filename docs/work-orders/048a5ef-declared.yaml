@@ -1,0 +1,18 @@
+- name: requests-sign-in-url-relayed
+  kind: added
+  cases: [requests-sign-in-url-relayed]
+- name: requests-sign-in-polling
+  kind: added
+  cases: [requests-sign-in-polling]
+- name: a URL that passes is relayed, so a declining retry is inserted after its step where a later step needs that sign-in ended, the later steps moved one place
+  kind: input
+  cases: ['requests-sign-in-*', requests-keyed-hook-dispatch]
+  paths: ['/steps/*']
+- name: a URL that passes is relayed, so its step expects a pending reply, no intent and one input request, and the moved steps' expectations
+  kind: expectation
+  cases: ['requests-sign-in-*', requests-keyed-hook-dispatch]
+  paths: ['/steps/*']
+- name: a URL that passes no longer ends sign-in.v1 failed, so its step states no outcome, and the moved steps' outcomes and reasons
+  kind: flip
+  cases: ['requests-sign-in-*', requests-keyed-hook-dispatch]
+  paths: ['/steps/*']

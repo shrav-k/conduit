@@ -109,16 +109,23 @@ Not all of this is in the tree. Check what you can against it, and report any di
        048a-3, the hold (PND-005's `then`); 048a-4, setup's account check (PND-011's setup half),
        the wrong-account undo and SignInUndone; 048a-5, `sign-in.v1` dispatched, with IFC-049's
        relay and polling; and 048a-6, the returns (PND-013, PND-014). The coordinator cuts 048a-5
-       into eight, each after the one before (FR-264; the coordinator's, open to the owner's
+       into seven, each after the one before (FR-264; the coordinator's, open to the owner's
        strike): 048a-5, order 048a5, the refusals before any part, with the shell forwarding
        `clientCapabilities` and `signInLogin`; 048a-5b, the account check first, the signed-in
-       answer and the stub removed; 048a-5c, the fixed-port refusal; 048a-5d, the `sign-in-hook.v1`
-       part and IFC-049's URL match, after 048b-relay2 too; 048a-5e, the engine's message and the
-       input-required output that 048b-relay1 relays; 048a-5f, polling on the retry; 048a-5g,
-       another account undone during polling; and 048a-5h, DL18's end. It cuts 048a-6 into three:
-       048a-6, order 048a6, a return where none is taken, with the shell forwarding `signInReturn`,
-       after 048a-5 alone; 048a-7, an accepted return passed on, after 048a-5h and 048a-6; and
-       048a-8, a redirect return checked and rebuilt, after 048a-7. The shell issues, keeps and
+       answer and the stub removed; 048a-5c, the fixed-port refusal; 048a-5d, order 048a5d, the
+       `sign-in-hook.v1` part and its answer's form, after 048b-relay2 too and, since ruling 86,
+       after orders 207 and 209; 048a-5d2, order 048a5d2, IFC-049's URL match, cut from 048a-5d
+       when its order was refreshed; 048a-5ef, order 048a5ef, the engine's message and the
+       input-required output that 048b-relay1 relays, and polling on the retry; and 048a-5gh,
+       order 048a5gh, another account undone during polling, and DL18's end. The last two were
+       four parts, 048a-5e, 048a-5f, 048a-5g and 048a-5h, until the owner joined them in pairs on
+       2026-11-19, waiving FR-264's one behavior per order for them (ruling 88). It cuts 048a-6
+       into three: 048a-6, order 048a6, a return where none is taken, with the shell forwarding
+       `signInReturn`, after 048a-5 alone; 048a-7, an accepted return passed on, after 048a-5gh
+       and 048a-6; and 048a-8, a redirect return checked and rebuilt, after 048a-7. Ruling 88
+       moves 048a-7 and 048a-8 off 0.2.0's path and the dogfood path, to after the dogfood,
+       beside the keyed release: nothing is keyed in 0.2.0 (ruling 86), so PND-013's first check
+       fails for every 0.2.0 package. The shell issues, keeps and
        checks a sign-in's requestState (order 048b-relay1), and a retry reaches the core only as its
        `respond` input. MC9a's pre-registration is order 201, which merges before 048a-2 is
        dispatched.
@@ -128,15 +135,19 @@ Not all of this is in the tree. Check what you can against it, and report any di
        input declared, and the server relaying the output with a requestState the shell issues,
        keeps in memory and checks, after nothing; and 048b-relay2, the runner declaring URL
        elicitation toward signIn Types (IFC-045) and sending a part again with its implementation's
-       requestState, after 048a-2 merged and 048b-relay1. 048b-join: S-M. After 048a-8, the last
-       part of 048a-2's entry, and 048b-relay2. 051a: shell commands (`list`, `fleet`,
+       requestState, after 048a-2 merged and 048b-relay1. 048b-join: S-M. After 048a-5gh, the
+       last part of 048a-2's entry on the dogfood path, and 048b-relay2; it joins the URL relay
+       and polling only, its return leg moving after the dogfood with 048a-7 and 048a-8 (ruling
+       88). 051a: shell commands (`list`, `fleet`,
        `retire --with-resources`). M. After 042 and S0c. 051b: the pending-action commands
        `pending`, `sign-in` and `answer`. M. After 047 and 048b-join. The coordinator cuts 051b into
        three (FR-264; the coordinator's, open to the owner's strike): 051b (order 051b),
        `conduit pending`, `conduit answer` and the unanswered hint, after 047c alone; 051b-2
        (order 051b2), `conduit sign-in` with URL elicitation, the client A5's live check uses,
        after 048b-join; and 051b-3 (order 051b3), the carried return from the command line (D53),
-       after 051b-2. A slot's sign-in under ruling 82, point 3, follows 051b-3.
+       after 051b-2 and 048a-8, and so after the dogfood, beside the keyed release (ruling 88). A
+       dogfood slot on the Mac signs in after 051b-2 (ruling 85, point 5); a slot's sign-in that
+       needs a carried return follows 051b-3.
      - 050: the Agent packages 0.2.0, with each Agent's home, the login flows and the sign-in hooks,
        built on orders 050a and 076 (the `.v2` Types and their clients' own tools), whose work is on
        their branches, not yet on `main`. M plus a run. After 048b-join in the merging (ruling 82,
@@ -174,7 +185,7 @@ Not all of this is in the tree. Check what you can against it, and report any di
          merged, the live check (A5 stage 1, step 1) run and its results merged with A5's row,
          050b merged, and 050k and, on a pass, 050m.
        - 050o, the managed connection for a Claude sign-in, built in the Interface. After 051b-3
-         merged (and so 048b-join and 048a-8), and 050b merged.
+         merged (and so 048b-join and 048a-8, after the dogfood under ruling 88), and 050b merged.
        - 203, the full review's order 62: `new-conversation.v1` in each Agent package, not marked as
          model work, released as 0.2.1. After 050n merged, or from its verified branch by a dispatch
          note; no part of 0.2.0 (the coordinator's placement, open to the owner's strike).
@@ -193,7 +204,7 @@ Not all of this is in the tree. Check what you can against it, and report any di
        check's time, which the owner picks, told first; on a fail of it, Codex's route, with FR-118
        (ruling 82, point 1; ruling 83 leaves no API-key route in 0.2.0); order 197's route only if
        the coordinator does not read it as confirming; and each dogfood slot's one sign-in after
-       0.2.0 and 051b-3.
+       0.2.0 and 051b-2, or 051b-3 where it needs a carried return (ruling 85, point 5).
      - 052a-1 and 052a-2: plan and apply. L each. After 069 (K3), 043b, 042 and 051a. The
        plan-and-apply golden cases and README keep agents-0.2.0's old digest (`479ef470...`)
        until 052a-1, or whichever of the two first builds plan against those cases, re-pins it,

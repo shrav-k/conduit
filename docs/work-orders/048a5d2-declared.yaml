@@ -1,0 +1,6 @@
+- name: requests-sign-in-url-match
+  kind: added
+  cases: [requests-sign-in-url-match]
+- name: requests-sign-in-plain-url-match
+  kind: added
+  cases: [requests-sign-in-plain-url-match]

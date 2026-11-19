@@ -1,0 +1,12 @@
+[package]
+name = "refresh-probe"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+doctest = false
+
+[dependencies]
+serde_json = "=1.0.154"
+libc = "=0.2.191"

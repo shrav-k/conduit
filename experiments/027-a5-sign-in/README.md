@@ -10,6 +10,8 @@ Stage 0b pre-registered on 2026-11-16 by work order 195, [below](#stage-0b): par
 
 Stage 1's first step pre-registered on 2026-11-17 by work order 197, [below](#stage-1-step-1-the-account-check): the live account check of ruling 82, point 1, not yet run; before it, a read of Codex's public source for `account/read`, done on 2026-11-17, [results](results-2026-11-17-account-read-source.md). The same order replaced, in the stages below, Codex's ID-token route and A5's "gates nothing" with ruling 82's route and gate.
 
+The refresh-blocked probe pre-registered on 2026-11-19 by work order 208, [below](#stage-1-before-step-1-the-refresh-blocked-probe), before order 050m relies on its route: whether Codex 0.167.1's `account/read`, with refresh blocked for the check's process alone, ever writes the home's auth.json; run under the same order, on the Linux node, with a fabricated login, [results](results-2026-11-19-refresh-probe.md).
+
 ## Four stages
 
 - **0:** Before order 050 is written: two facts about the real clients, primary accounts only, no engine, nothing signed in; no owner time unless a window opens. The coordinator tells the owner first.
@@ -668,3 +670,238 @@ coordinator stages it and reruns the private-path check, which must pass.
   the one the step records.
 - The logins' literal origins, paths, client IDs and ports. Order 050 reads those from the
   clients.
+
+## Stage 1, before step 1: the refresh-blocked probe
+
+Pre-registered on 2026-11-19 by work order 208, before the probe was written and before any of it
+ran, under ruling 86 of 2026-11-18. Order 050l's account hook asks `codex app-server` for
+`account/read` with `refreshToken` false, in the Agent's own home. That asks for no refresh, but
+the app-server can still refresh a ChatGPT login and rewrite the home's auth.json
+([R4](results-2026-11-17-account-read-source.md#r4-what-answering-reads-writes-refreshes-or-calls)),
+while `account-hook.v1` declares no effect (CTR-002). The owner, asked on 2026-11-18 how to treat
+that, answered "Find a different route". Asked then "Codex account check: block refresh for the
+check (a probe confirms no write first). When an expired access token makes the check fail, what
+then?", the owner answered "(b) Proceed to sign-in (Recommended)". The coordinator reads that
+answer as accepting the route the question named, a reading open to the owner's strike: the
+check's app-server alone gets Codex's variable `CODEX_REFRESH_TOKEN_URL_OVERRIDE`, set to an
+address under the reserved `.invalid` domain (RFC 6761, section 6.4), and every other child of
+the package has it stripped. This probe is the "probe confirms no write first". Order 050m relies
+on the route only once the probe's results are recorded here.
+
+### Why a write is possible, and why the variable should stop it
+
+In the coordinator's reading of Codex's source at the tag `rust-v0.167.1` (commit
+`0a94398fa60c`), paths under `codex-rs/`:
+
+- **T1, proactive refresh.** `auth()` refreshes a ChatGPT login whose access token expires within
+  five minutes (`login/src/auth/manager.rs:222`, `:2599-2615`, `:3528-3546`). The app-server
+  reaches `auth()` while it starts and answers, through its configuration's cloud bundle
+  (`cloud-config/src/chatgpt.rs:33-46`), whatever the request asks.
+- **T2, recovery after a 401.** `account/read` runs workspace discovery for a ChatGPT login with
+  an account ID, and a 401 from it starts unauthorized recovery, which refreshes
+  (`app-server/src/request_processors/account_processor/workspace_routing.rs:381-450`).
+- **The write.** Either refresh saves the new tokens only after the token endpoint answers with
+  success (`login/src/auth/manager.rs:3612-3685`), under the lock file `auth.lock` in the home
+  (`login/src/auth/storage.rs:195-212`, taken at `login/src/auth/manager.rs:1734`), then a lock
+  file beside the home's auth.json (`login/src/auth/storage_commit.rs:29-66`), and through an
+  atomic rename (`login/src/auth/storage.rs:274-296`).
+- **The variable.** Where it is set, the token endpoint is its value, ahead of the login's own
+  issuer (`login/src/auth/manager.rs:1872-1878`); it is read when the login is loaded (`:452`),
+  and again at each refresh (`:3618`). It is undocumented. Outside that file,
+  `login/src/auth/revoke.rs:139` derives the logout's revoke endpoint from it, and
+  `login/src/auth_env_telemetry.rs:41` records only whether it is set; Codex's tests also use
+  it. An address under `.invalid` never resolves, so no refresh can complete and nothing is
+  saved. That is a reading of the source; this probe observes the binary.
+
+### The question
+
+- **Q.** Codex 0.167.1's `codex app-server`, asked `account/read` with `refreshToken` false as
+  order 050l's hook asks it, in a home whose login is due a refresh by T1, by T2 or by both, and
+  with `CODEX_REFRESH_TOKEN_URL_OVERRIDE` set to `https://refresh.invalid/oauth/token` on its
+  process alone: does it write the home's auth.json, or begin to save it? And what answer does
+  the hook get?
+
+### Predictions
+
+The coordinator's, from the source, written before the run. They are not results:
+
+- No run with the variable changes the home's auth.json or creates a lock file, and the stub's
+  token endpoint gets no request in such a run.
+- Every control run changes the home's auth.json.
+- With the variable, case P1 answers with the fabricated account, and cases P2 and P3 answer with
+  an error whose message is "workspace routing discovery unauthorized (401)".
+
+### The machine and the client
+
+- **The Linux node** (WSL Ubuntu 24.04, x86_64), as
+  [the second-machine guide](../../docs/guides/second-machine.md) describes it, never the Mac,
+  which holds the owner's logins; [experiment 032](../032-gateway-probe/README.md) runs there for
+  the same reason. The node's own Codex is signed in in its user's real home
+  ([the second-machine guide](../../docs/guides/second-machine.md), step 5). So every run
+  happens in a mount namespace in which an empty `tmpfs` covers the real home, `/run`, `/tmp`,
+  `/var/tmp`, `/dev/shm`, `/mnt` and `/etc/codex` where it exists, as
+  [experiment 032](../032-gateway-probe/README.md) masks them, and only `refresh-probe/` is
+  bound back under the home's mask. Nothing under the real home but `refresh-probe/` is
+  reachable inside.
+- **Codex 0.167.1**, the version [stage 0](results-2026-11-16.md) recorded and order 197 read,
+  installed as experiment 032 installs its clients: with npm, into `refresh-probe/target/codex/`,
+  which Git ignores, as the package `codex` of the npm scope `openai` at 0.167.1, under `env -i`,
+  with `--ignore-scripts`, and with `HOME` and npm's cache under `refresh-probe/target/`. If the
+  binary then gives no version, it is installed once more with its script, and the results say
+  so. The probe runs the native binary that the package carries, not npm's launcher, and only if
+  its `--version` names 0.167.1. Installing reaches the network, as do the clone of the tag that
+  the worker reads and any crate cargo lacks; all three come before the probe runs.
+
+### The probe
+
+A Rust crate, [refresh-probe/](refresh-probe/), with its tests. Its one command,
+`refresh-probe run --codex PATH --out PATH`, with `--form variable` for a second sitting, reads
+no environment variable but `HOME`, which it uses only for the masks above and the self-test's
+check, and refuses an output file that exists. Its first process, outside the namespace, writes
+that file. It resolves `--codex` and `--out` to absolute paths before any mask, changes its
+working directory to `refresh-probe/` once the masks are applied, and starts each app-server
+with the run's directory as its working directory.
+
+- **The namespace.** The probe runs itself again under
+  `unshare --user --map-root-user --net --mount --pid --fork --mount-proc`, applies the masks
+  above, then brings loopback up there with `ip link set lo up`, then runs itself once more
+  through `unshare --user` with `--map-user` and `--map-group` set to the user's own IDs, so
+  that Codex runs with no capability. Every run happens inside: no interface but loopback, and
+  no process in `/proc` but the namespace's own, since another process's root, working
+  directory or environment there would reach past the masks.
+- **The self-test**, inside, before any run; nothing runs unless all of it holds: the namespace
+  lists `lo` alone; a TCP connection to `192.0.2.1:443` fails within 2 s; a lookup of
+  `refresh.invalid` fails; a TCP listener on `127.0.0.1` accepts a connection; the process runs
+  with the user's own user and group IDs; the scratch root is not under `/mnt`; the real home's
+  `.codex` directory and `/etc/codex` are absent inside, each checked with `stat` alone; `/mnt`
+  and `/run` hold nothing; the working directory is `refresh-probe/`; `/proc` lists no process
+  but the namespace's own; and a search of `/run`, `/tmp`, `/var/tmp` and `/dev/shm` inside
+  finds no socket, each count printed alone.
+- **The stubs.** For each run, one plain-http server on `127.0.0.1`, on a port the system picks,
+  as Codex's own tests serve these endpoints at the tag
+  (`app-server/tests/common/auth_fixtures.rs`,
+  `app-server/tests/suite/v2/account_enterprise_tests.rs`). Workspace discovery, the accounts
+  check under `/backend-api`, answers each case's way below, with the fabricated account in the
+  shape the tag's fixture gives, but with the backend origin `https://backend.invalid` and the
+  routing override `NO_CONSTRAINT`: Codex takes only an https origin there
+  (`app-server/src/request_processors/account_processor/workspace_routing.rs:606-617`), and one
+  under `.invalid` puts no real host into an answer. The token endpoint, `POST /oauth/token`,
+  answers 200 with fabricated tokens in every run, so a run whose refresh reached it would write.
+  Any other request answers 404. Each request is logged by its method, its path, the status
+  served and which fabricated access token it bore, as `original`, `issued`, `other` or `none`;
+  never by a header's or a body's value.
+- **The fabricated login.** For each run, a new home of mode 0700, in a scratch root under
+  `refresh-probe/target/scratch/`, holding only the home's auth.json, of mode 0600, which the
+  probe writes in the shape that Codex's `AuthDotJson` takes at the tag: a ChatGPT login; an ID
+  token and an access token, each an unsigned JWT the probe builds; a refresh token; the account
+  ID `probe-208-account`; the last refresh, now; and, as the login's own issuer, the stub's
+  origin. The ID token's claims are the email `work-orders@conduit.invalid`, the plan `plus`, the
+  user ID `probe-208-user` and the account ID `probe-208-account`. Nothing in it comes from a real
+  login.
+- **The client's start.** `CODEX app-server --stdio -c cli_auth_credentials_store="file" -c
+  chatgpt_base_url="http://127.0.0.1:PORT/backend-api"`: the package's arguments, and the stub's
+  base URL. Its environment is cleared, as `env -i` clears it, then set to exactly `HOME`, a
+  directory of its own beside the home, `CODEX_HOME`, the home, and `PATH`, `/usr/bin:/bin`; and,
+  in a blocked run, the variable. It starts in a process group of its own, with its standard error
+  kept under `refresh-probe/target/runs/` and never committed.
+- **The exchange,** as order 050l's hook sends it
+  ([its order](../../docs/work-orders/050l-codex-account-hook.md); the hook's code is on a lane
+  branch that is not on the remote), within 30 s: `initialize`, with `clientInfo` `agent-codex`
+  0.2.0 and `experimentalApi` false; the `initialized` notification; then `account/read` with
+  `refreshToken` false. Notifications and the server's requests are skipped,
+  and their methods recorded. After the answer the probe keeps the app-server running for 10 s,
+  longer than the hook does, so that a refresh begun at its start has time to finish; then it
+  sends TERM to the app-server's group, and KILL after 5 s.
+
+### The cases
+
+| Case | Trigger | The access token expires | Discovery answers |
+| --- | --- | --- | --- |
+| P1 | T1 | 180 s after the login is written | 200 to every request |
+| P2 | T2 | one day after | 401 to the original access token, 200 to any other |
+| P3 | T1 and T2 | 600 s before | 401 to the original access token, 200 to any other |
+
+Each case runs in two arms, each in a new home with new stubs:
+
+- **blocked**: the variable set to `https://refresh.invalid/oauth/token`;
+- **control**: no variable, so a refresh goes to the login's own issuer, the stub, which answers
+  200.
+
+One sitting is eighteen runs, in this order three times over: P1 blocked, P1 control, P2 blocked,
+P2 control, P3 blocked, P3 control. If the tag's source refuses a loopback `http` issuer, or a
+control run of the sitting sends its stub no token request, a second sitting runs all eighteen in
+the second form: no issuer in the login, and each control run's variable set to the stub's token
+endpoint. It is recorded beside the first. In that form a blocked run that ignored the variable
+would send its refresh to Codex's default endpoint, which the namespace keeps out of reach, and
+would write nothing either: its blocked runs do not show that the variable was honored, and the
+results say so.
+
+### What each run records
+
+- The case, the arm, the repetition and the form; the answer's kind (`result`, `error`, `eof` or
+  `timeout`), the answer's line as Codex wrote it, and an error's message; the methods of the
+  notifications and requests skipped; and how the app-server ended.
+- The home's auth.json, before the start and after the stop: whether it is there; whether its
+  bytes, its modification time and its inode are each unchanged; and its size. Whether its lock
+  files, `auth.lock` and `auth.json.lock`, appeared. The home's files and directories before and
+  after, by their paths relative to the home, with what was added and what was removed.
+- Each request the stub logged, as above, and the count of the standard error's lines.
+- A run **wrote** where the home's auth.json changed in its bytes, its modification time or its
+  inode, or went away. A run **began a save** where either lock file appeared.
+
+### What is never recorded
+
+A token, fabricated or not, or any claim but those named above; the stub's port; an absolute
+path, which is replaced by `<run>` for the run's directory wherever Codex's answer holds one;
+the standard error's text; a user, machine or host name; and any environment variable's value but
+the variable's fixed value above. The probe writes `results-DATE-refresh-probe.json`, and a
+second sitting `results-DATE-refresh-probe-2.json`; the dated Markdown result,
+`results-DATE-refresh-probe.md`, is written from them.
+
+### What the outcomes mean
+
+- **No write under the variable.** In one sitting, every control run wrote, in all three
+  repetitions of each case, and no blocked run wrote, began a save or sent its stub a token
+  request. Order 050m may then rely on the route, with the variable on the account check's child
+  alone, and re-read at every bump of Codex's pin.
+- **A write under the variable.** A blocked run, in any sitting, wrote, began a save or sent its
+  stub a token request. This goes to the owner, as it stands, and is not worked around; order
+  050m does not rely on the route, and the choice of the check's route returns to the owner, as
+  ruling 86, point 5, states.
+- **Not settled.** No blocked run wrote, but some case's control runs did not all write, in
+  either sitting, or a run of that case was a fault: that case shows nothing about a write under
+  the variable, and the result names the case and the runs. The coordinator reads the source
+  again, and either amends this section, dated, before a rerun, or brings it to the owner.
+- The answers are recorded, and alone change no outcome. They go to order 050m, which reads them
+  against PND-010 as ruling 86 amends it, and against the hook's diagnostic.
+
+### Stop rules
+
+1. A check of [the machine](#the-machine-and-the-client) fails, the binary does not name 0.167.1,
+   or the self-test fails: no run happens. The result records which, and nothing else.
+2. The probe faults in a run, or a run ends by `timeout` before `initialize` answers: the run is
+   recorded as a fault, not a result, and the probe goes on with the next. A third fault in one
+   sitting ends it.
+3. After every sitting, completed or not, `pgrep -f 'codex[ ]app-server'` must list no process
+   that it did not list before the sitting, and the scratch root must hold nothing. Otherwise the
+   sitting is recorded as a fault.
+
+### Not shown by the refresh-blocked probe
+
+- Agents kept apart: the probe runs under one operating-system user.
+- The Mac, its binary of Codex, and its system proxy, which Codex's HTTP client tries first on
+  macOS; and Codex on Windows outside WSL. Stage 1's first step runs on the Mac.
+- Any version of Codex but 0.167.1. The variable is undocumented: a bump of the pin needs the
+  source read again and this probe run again.
+- OpenAI's service: how long a real access token lives, whether a real refresh token is
+  single-use, what real discovery answers, and how often a real idle home's check meets T2.
+- A lookup of `refresh.invalid` outside the namespace: what a machine's own resolver or proxy
+  does with it.
+- Whether a real check's telemetry tells OpenAI that the variable is set
+  (`login/src/auth_env_telemetry.rs:41`): the namespace lets nothing out.
+- A write by another process in the same home, such as a turn that runs while the check does, and
+  any write after the hold.
+- The keyring stores: the probe uses the file store alone, as the package does.
+- Whether order 050m sets the variable on the check's child alone and strips it elsewhere: 050m's
+  tests show that.
+- What the engine does with the answers: PND-010 as ruling 86 amends it, and IFC-010.

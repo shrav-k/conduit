@@ -1,0 +1,19 @@
+- name: requests-sign-in-other-account-undone
+  kind: added
+  cases: [requests-sign-in-other-account-undone]
+- name: another account found while polling is undone, so a completion of the sign-out part is inserted after the poll that finds it, the later steps moved one place
+  kind: input
+  cases: [requests-sign-in-polling]
+  paths: ['/steps/*']
+- name: another account found while polling is undone, so its poll's step expects the sign-out part's dispatch, the inserted step the ending it expected, and the moved steps' expectations
+  kind: expectation
+  cases: [requests-sign-in-polling]
+  paths: ['/steps/*']
+- name: another account found while polling no longer ends sign-in.v1 at once, so its poll's step states no outcome, and the moved steps' outcomes and reasons
+  kind: flip
+  cases: [requests-sign-in-polling]
+  paths: ['/steps/*']
+- name: the polling case's title says another account is undone
+  kind: metadata
+  cases: [requests-sign-in-polling]
+  paths: ['/title']

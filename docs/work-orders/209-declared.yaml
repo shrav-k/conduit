@@ -1,0 +1,17 @@
+# Order 209's vector changes, written with the order against main at 1d3c7301 (sources as at 39f4af61) and order 207's text, and refreshed against main at 0b5b1eba after order 207 merged; checked at its merge against the main it starts from.
+- name: requests-keyed-hook-dispatch
+  kind: added
+  cases: [requests-keyed-hook-dispatch]
+- name: requests-keyed-not-in-implements
+  kind: added
+  cases: [requests-keyed-not-in-implements]
+- name: requests-sign-in-setup-check-failed-hook
+  kind: added
+  cases: [requests-sign-in-setup-check-failed-hook]
+- name: a failed account check before sign-in-hook.v1 counts as no account (ruling 86, point 3 (d)), so step 24 ends sign-in.v1 under 048a-5b's interim ending, naming PND-010 rather than PND-011
+  kind: expectation
+  cases: [requests-sign-in-account-first]
+  paths: ['/steps/23/expect/reply/structuredContent/diagnostics/0/ruleId']
+  operation: replace
+  before: PND-011
+  after: PND-010

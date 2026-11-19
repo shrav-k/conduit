@@ -27,9 +27,10 @@ coordinator's, open to the owner's strike, and this order's refresh records it i
 and in [the index of work orders](README.md), which list both:
 
 - **048a-5d, this order:** after an account check that finds no account or another, or that ends
-  failed or unknown and so counts as no account (ruling 86, point 3 (d)), a `sign-in-hook.v1` part,
-  with the asked-for login's name in a keyed call (IFC-006); its answer received, plain or keyed
-  alike, by `sign-in.v1` and never read as IFC-016's lapse trigger (IFC-010, ruling 86, point 3
+  failed or unknown and so counts as no account (ruling 86, point 3 (d), for a failed check;
+  PND-010 as order 207 writes it, for an unknown one), a `sign-in-hook.v1` part, with the asked-for
+  login's name in a keyed call (IFC-006); its answer received, plain or keyed alike, by
+  `sign-in.v1` and never read as IFC-016's lapse trigger (IFC-010, ruling 86, point 3
   (b)); an answer that is not one URL elicitation ending `sign-in.v1` failed under IFC-049, naming
   the check and the field; and the implementation's own requestState kept with the part, never
   relayed, recorded or shown. A URL elicitation is not yet relayed: it ends `sign-in.v1` with the
@@ -55,10 +56,12 @@ refreshed it on 2026-11-19 against `main` at `c097ec81`, where orders 048a-5b (#
 coordinator's, open to the owner's strike ([ruling 48](../proposals/ruling-48/README.md)):
 
 - the cut into 048a-5d and 048a-5d2 is settled and recorded in order 117's entry and the index;
-- this order dispatches only after orders 207 and 209 have merged, and its start check stops where
-  either merged otherwise than its text says;
+- this order dispatches only after order 207 has merged and order 209's work is on its base, and
+  its start check stops where either was merged or built otherwise than its text says (the
+  dispatch refresh below lets that base be 209's round-1 branch);
 - the hook part also follows a check that ended failed or unknown, replacing order 209's interim
-  ending for it as well as 048a-5b's (ruling 86, point 3 (d));
+  ending for it as well as 048a-5b's (ruling 86, point 3 (d), for a failed check; PND-010 as order
+  207 writes it, for an unknown one);
 - the hook's answer is taken by `sign-in.v1` under IFC-010's sentence that order 207 adds (ruling
   86, point 3 (b)), even where its `sign-in.v1` has already ended, so that no URL answer of a
   sign-in hook is ever read as IFC-016's lapse trigger, and a new case shows a plain hook's URL
@@ -80,6 +83,37 @@ coordinator's, open to the owner's strike ([ruling 48](../proposals/ruling-48/RE
 - the comment on `retry_intent`, which names this order among its callers, is corrected;
 - every cited line, test count, case step, expected failure, STANDING row and grep is rechecked
   against `c097ec81`, and those that orders 207 and 209 change are named in the start check.
+
+**Its dispatch refresh.** The coordinator refreshed it again on 2026-11-19, for its dispatch,
+against `main` at `d4343f71`, where order 209's text has merged (#407) and 209's build has not.
+Every change below is the coordinator's, open to the owner's strike
+([ruling 48](../proposals/ruling-48/README.md)):
+
+- it was checked against order 209's text as merged, whole: the four points that 209's refresh
+  asks of this order already stand here (the start check's line for `requests-keyed-hook-dispatch`
+  at 24 steps; decision 10's arithmetic, that case having 26 steps after this order, its old
+  step 24 now 25 and going on to the plain hook; step 15 of
+  `requests-sign-in-setup-check-failed-hook`; and the section's last sentence as 209 words it,
+  "from the `sign-in-hook.v1` part, plain or keyed"), and no decision changes for them;
+- decision 10's third case captures its hook as `signhook1`, since its step 6 already binds
+  `hook1`, and decision 8 adds a check that no capture name is bound twice (the dispatch review);
+- under the owner's choice on 2026-11-19 of the lever "Pipeline the chain", as the coordinator
+  applies it: on the predecessor's round-1 branch (the coordinator's notes (private); not yet in a
+  ruling), this order may start from order 209's round-1 branch, before 209 merges: the start
+  check accepts either base and says how to tell them apart, and the admin paragraph at the foot
+  lists what the coordinator rebases when 209 merges;
+- under the owner's choice on 2026-11-19 of the lever "Less prescriptive orders", as the coordinator
+  applies it (the coordinator's notes (private); not yet in a ruling), the start check keeps only
+  what the work needs: the checks of predecessors' Records and of this order's cut in order 117 are
+  dropped, so is the grep that pinned the line on which order 209 writes `dispatch_hook`'s literal,
+  which 209's cases, passing in the start's runner runs, replace, and so are the lengths of cases
+  that no decision reads; the lengths of 209's two cases stay, since decision 10 names their last
+  steps;
+- in "Done when", the lengths of the three changed cases are given against the start, the
+  vectors run is folded into the whole engine suite, which runs once, last, after the mutations
+  (a readiness finding in the coordinator's notes (private)), the spike's test count is no longer
+  pinned, and the greps of function and test names that compilation and the test count already
+  guarantee are dropped (the dispatch review).
 
 **What it builds.** One behavior, the hook part and its answer. The quotes below write the `_meta`
 prefix that `spec/names.yaml` sets as `META/`, and give PND-010, IFC-006, IFC-009 and IFC-010 as
@@ -127,8 +161,9 @@ order pins the call of `keep_hook_input` in `hook_input`, since `finish` removes
 same step: a build that never makes that call passes every unit test, case and mutation here.
 
 **What the orders before it bring, which this order assumes.** Orders 048a-2 to 048a-5c, 048a-6,
-048b-relay1 and 048b-relay2 have merged, each with its Record; orders 207 and 209 must have merged
-before this order starts. It assumes, as their decisions and the amendments their Records accept
+048b-relay1 and 048b-relay2 have merged, each with its Record; order 207 must have merged, and
+order 209's work must be on the base this order starts from, merged to `main` or on 209's
+round-1 branch ("When this order starts"). It assumes, as their decisions and the amendments their Records accept
 state them; where a Record names a function or member otherwise, use that name:
 
 - **(a) From 048a-2:** `engine/crates/core/src/sign_in.rs`, its `expected_account` (giving
@@ -187,8 +222,8 @@ state them; where a Record names a function or member otherwise, use that name:
   `signed-server`, marked `plain: true`, given `tools` (the core's `sign-in-hook.v1` named
   `sign_in_hook`, `account-hook.v1` `account_hook`) and listing nothing under `keyed`, and whose
   steps 1 and 2 are first start and registration.
-- **(i) From order 209 (D's engine half, (c) and (d)), as its text states it:** `keyed_hook(item,
-  operation) -> bool` in `requests.rs`; `dispatch_hook` setting the invocation's `plain` per call,
+- **(i) From order 209 (D's engine half, (c) and (d)), as its text states it and as built on your
+  base:** `keyed_hook(item, operation) -> bool` in `requests.rs`; `dispatch_hook` setting the invocation's `plain` per call,
   `false` for a hook that a plain item lists under `keyed`; `dispatch_intent` naming the tool from
   `tools` where the call or its item is plain; for a keyed hook of a plain item, a `server/discover`
   intent first, the `invocation-dispatched` record and the hook's own `tools/call` intent written
@@ -224,9 +259,9 @@ state them; where a Record names a function or member otherwise, use that name:
   here: this build runs no `sign-in-hook.v1` part; orders 048a-5d and 048a-5e build the hook part
   and the relay, whose cases show it."
 
-Where one of them merged otherwise than this says, apply the nearest sound reading of each decision
-below to what merged, and say so; but where the start check below prints otherwise for order 207's
-or 209's work, stop.
+Where one of them merged, or order 209 was built on your base, otherwise than this says, apply the
+nearest sound reading of each decision below to what you find, and say so; but where the start
+check below prints otherwise for order 207's or 209's work, stop.
 
 **What the engine already does, so that you do not redo it.** Line numbers are those of `main` at
 `c097ec81`, before orders 207 and 209; order 209 moves several. Find each place by the text quoted
@@ -270,14 +305,20 @@ with it.
   under IFC-010; `account-hook.v1` states neither `effect` nor `startsModelWork`, so a plain account
   check's error is failed (`spec/core/operations.yaml`).
 
-**When this order starts.** Orders 207 and 209 must have merged to `main`, after orders 048a-5c and
-048a-6. Before you change anything, check from the repository root that you find what they give,
-and stop, change nothing and report if any check prints otherwise:
+**When this order starts.** Order 207 must have merged to `main`, after orders 048a-5c and 048a-6.
+Order 209's work must be on your base, the commit your working tree starts from (`HEAD`), in one of
+two ways, either of which serves: 209 has merged to `main`; or the coordinator dispatched this
+order stacked on 209's round-1 branch, whose tip holds 209's build, committed, before 209's read
+and merge. You tell them apart by 209's Record: the admin writes it at the merge, so on 209's
+round-1 branch its file still ends "Not yet run." (the first check's second line). On either base,
+209's three cases are present and pass (the second check, and the start's runner runs below).
+Report which base you started from and `HEAD`'s commit. Nothing below reads which it is. Before you
+change anything, check from the repository root that you find what they give, and stop, change
+nothing and report if any check prints otherwise:
 
 ```bash
-grep -c '048a-5d2' docs/work-orders/117-plan-s2-s3.md
-grep -c '^## Record' docs/work-orders/048a5c-build-sign-in-fixed-port.md docs/work-orders/048a5b-build-sign-in-account-first.md docs/work-orders/048b-relay2-build-url-elicitation-and-part-retry.md docs/work-orders/048b-relay1-build-input-required-relay.md docs/work-orders/048a5-build-sign-in-refusals-before-parts.md
 grep -c '^Not yet run\.$' docs/work-orders/207-keyed-hooks-and-sign-in-spec-fixes.md docs/work-orders/209-build-keyed-hooks-and-sign-in-fixes.md
+ls -d conformance/conventions/requests/keyed-hook-dispatch conformance/conventions/requests/keyed-not-in-implements conformance/conventions/requests/sign-in-setup-check-failed-hook 2>/dev/null | wc -l | tr -d ' '
 grep -c '^    keyed:$' spec/schemas/manifest.yaml
 tr -s ' \n' '  ' < spec/interface/implementation.yaml | grep -c 'From the sign-in-hook.v1 part, it relays the request under PND-010 and keeps the part and sign-in.v1 in progress when the request passes IFC-049.s checks.'
 tr -s ' \n' '  ' < spec/interface/implementation.yaml | grep -c 'A request from that part that fails a check of IFC-049 ends sign-in.v1 failed under IFC-049.'
@@ -290,7 +331,6 @@ tr -s ' \n' '  ' < spec/interface/implementation.yaml | grep -c 'This rule also 
 tr -s ' \n' '  ' < spec/conventions/operations.yaml | grep -o 'IFC-010 governs a URL-mode .input_required. result from a part of sign-in.v1 in place of this rule.' | wc -l | tr -d ' '
 grep -c 'requests-keyed-not-a-hook\|requests-sign-in-login-plain-hook\|requests-sign-in-setup-check-failed' conformance/expected-failures.yaml
 grep -c 'pub(crate) fn keyed_hook(item: &Value, operation: &str) -> bool' engine/crates/core/src/requests.rs
-grep '"setup_parent":p\["id"\]' engine/crates/core/src/requests.rs | grep -c 'keyed_hook('
 grep -rl 'server/discover' engine/crates/core/src | wc -l | tr -d ' '
 grep -c 'which counts as no account (PND-010, PND-011); sign-in.v1 would go on' engine/crates/core/src/sign_in.rs
 grep -c 'sign-in.v1 would go on to start a login' engine/crates/core/src/sign_in.rs
@@ -305,15 +345,14 @@ grep -rho '"asked_login"' engine/crates/core/src | wc -l | tr -d ' '
 tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -c 'No .sign-in-hook.v1. part runs, so no URL action waits and no wait is chosen. Until order 048a-5e builds the relay, a check that finds no account or another, or that ends failed or unknown and so counts as no account, clearing no condition (order 209), ends .sign-in.v1. failed'
 grep -c '^## Keys per hook and the sign-in fixes: ruling 86 (orders 207 and 209)$' engine/CONFORMANCE.md
 tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -c 'has no case here: this build runs no .sign-in-hook.v1. part; orders 048a-5d and 048a-5e build the hook part and the relay, whose cases show it.'
-python3 -c 'import json; s = json.load(open("conformance/conventions/requests/sign-in-account-first/case.yaml"))["steps"]; print([s[k]["input"]["invocation"] for k in (17, 21, 23, 29)], [[d["ruleId"] for d in s[k]["expect"]["reply"]["structuredContent"]["diagnostics"]] for k in (17, 21, 23, 29)], len(s))'
+python3 -c 'import json; s = json.load(open("conformance/conventions/requests/sign-in-account-first/case.yaml"))["steps"]; print([s[k]["input"]["invocation"] for k in (17, 21, 23, 29)], [[d["ruleId"] for d in s[k]["expect"]["reply"]["structuredContent"]["diagnostics"]] for k in (17, 21, 23, 29)])'
 python3 -c 'import json; s = json.load(open("conformance/conventions/requests/keyed-hook-dispatch/case.yaml"))["steps"]; e = s[12]["expect"]; print(s[12]["input"]["invocation"], [v for k, v in e["reply"]["_meta"].items() if k.endswith("/outcome")], [d["ruleId"] for d in e["reply"]["structuredContent"]["diagnostics"]], e["external_intents"], s[13]["input"]["request"]["tool"], len(s))'
 python3 -c 'import json; s = json.load(open("conformance/conventions/requests/keyed-hook-dispatch/case.yaml"))["steps"]; e = s[23]["expect"]; print(s[23]["input"]["invocation"], s[23]["input"]["completion"]["result"]["resultType"], [d["ruleId"] for d in e["reply"]["structuredContent"]["diagnostics"]], e["external_intents"], [r["data"] for r in e["record_facts"]])'
 python3 -c 'import json; i = json.load(open("conformance/conventions/requests/keyed-hook-dispatch/manifest.json"))["implementations"]["signed-server"]; print(i["plain"], [k.split("#")[1] for k in i["keyed"]], [v for k, v in i["tools"].items() if k.endswith("#sign-in-hook.v1")])'
 python3 -c 'import json; s = json.load(open("conformance/conventions/requests/sign-in-setup-check-failed-hook/case.yaml"))["steps"]; e = s[14]["expect"]; print(s[13]["input"]["request"]["tool"], s[14]["input"]["invocation"], [d["ruleId"] for d in e["reply"]["structuredContent"]["diagnostics"]], e["external_intents"], s[15]["input"]["request"]["tool"], len(s))'
 python3 -c 'import json; i = json.load(open("conformance/conventions/requests/sign-in-login-plain-hook/manifest.json"))["implementations"]["signed-server"]; print(i["plain"], "keyed" in i, [v for k, v in sorted(i["tools"].items()) if k.endswith("-hook.v1")])'
-python3 -c 'import json; s = json.load(open("conformance/conventions/requests/sign-in-login-plain-hook/case.yaml"))["steps"]; print(s[0]["input"]["kind"], s[1]["input"]["kind"], len(s))'
+python3 -c 'import json; s = json.load(open("conformance/conventions/requests/sign-in-login-plain-hook/case.yaml"))["steps"]; print(s[0]["input"]["kind"], s[1]["input"]["kind"])'
 python3 -c "import json; print(*[{k: v.get('plain') for k, v in json.load(open('conformance/conventions/requests/%s/manifest.json' % d))['implementations'].items()} for d in ('sign-in-lapse-and-conflict', 'sign-in-hold', 'sign-in-setup-check-failed-hook')])"
-python3 -c 'import json; print(len(json.load(open("conformance/conventions/requests/sign-in-fixed-port/case.yaml"))["steps"]))'
 grep -rl '"dispatch-sign-in-hook"' engine/crates/core/src | wc -l | tr -d ' '
 grep -c 'mark(c, "signInLogin")' engine/crates/core/src/requests.rs
 grep -rl 'hook_input' engine/crates/core/src | wc -l | tr -d ' '
@@ -322,48 +361,47 @@ ls -d conformance/conventions/requests/sign-in-hook-part conformance/conventions
 
 They print, in order:
 
-1. a number other than `0`: the cut into 048a-5d and 048a-5d2 recorded in order 117's entry;
-2. five lines, each ending `:1`: the Records of 048a-5c, 048a-5b, 048b-relay2, 048b-relay1 and
-   048a-5;
-3. two lines, each ending `:0`: orders 207 and 209 have Records (their files hold no "Not yet
-   run."); if `209-build-keyed-hooks-and-sign-in-fixes.md` is missing, 209 has not merged: stop;
-4. `2`: order 207's `keyed` in `manifest.v1`;
-5. to 10. `1` six times: order 207's texts that this order builds on, IFC-010's relay from the
+1. two lines: `207-keyed-hooks-and-sign-in-spec-fixes.md:0`, order 207's Record; and
+   `209-build-keyed-hooks-and-sign-in-fixes.md:0` where 209 has merged, or `:1` on 209's round-1
+   branch; report which;
+2. `3`: order 209's three cases, on your base either way;
+3. `2`: order 207's `keyed` in `manifest.v1`;
+4. to 9. `1` six times: order 207's texts that this order builds on, IFC-010's relay from the
    `sign-in-hook.v1` part and its IFC-049 failure, IFC-009's deferral to IFC-010 for a URL-mode
    result of a part of `sign-in.v1`, keyed or plain, IFC-006's call for a keyed hook, PND-010's
-   failed or unknown check going on to the hook, and its refusal of a login aimed at a plain hook.
-   Order 207's build may still change how IFC-009 and IFC-010 treat a keyed hook's URL request;
+   failed or unknown check going on to the hook, and its refusal of a login aimed at a plain hook;
    where any of these prints `0`, stop: decision 3 relies on them;
-11. to 13. `1`, `1` and `2`: order 207's texts that decision 3's "plain or keyed alike" relies on,
+10. to 12. `1`, `1` and `2`: order 207's texts that decision 3's "plain or keyed alike" relies on,
     IFC-010's rule "for a plain call and for a call that carries Conduit's keys", IFC-010's `when`
     sentence for a call that carries Conduit's keys for a part of `sign-in.v1`, and the deferral to
     IFC-010 in the `when` of OPS-006 and OPS-007; where any prints otherwise, stop;
-14. `0`: order 209 removed order 207's three expected failures;
-15. `1`, `1` and a number other than `0`: order 209's `keyed_hook`, `plain` per call
-    (`dispatch_hook`'s literal reads `keyed_hook`), and discovery;
-16. `1` and `3`: order 209's interim cause, and the three interim causes, 048a-5b's two and 209's,
+13. `0`: order 209 removed order 207's three expected failures;
+14. `1` and a number other than `0`: order 209's `keyed_hook` and discovery; that `dispatch_hook`
+    reads `plain` per call is shown by 209's cases passing in the start's runner runs below;
+15. `1` and `3`: order 209's interim cause, and the three interim causes, 048a-5b's two and 209's,
     that hold "sign-in.v1 would go on to start a login";
-17. `1`: the file that writes `end-sign-in-before-relay`;
-18. `1`, `1`, `1`, `1`, `1` and `1`: 048a-5b's `part_answered` and `end_failed`, the part
+16. `1`: the file that writes `end-sign-in-before-relay`;
+17. `1`, `1`, `1`, `1`, `1` and `1`: 048a-5b's `part_answered` and `end_failed`, the part
     function, 048b-relay2's `retry_intent`, 048b-relay1's `InputRequired` and 048a-2's URL arm;
-19. `2`: 048a-5c's `asked_login`, written once and read once;
-20. `1`, `1` and `1`: DL18's sentence, the section and its last sentence as order 209 leaves
+18. `2`: 048a-5c's `asked_login`, written once and read once;
+19. `1`, `1` and `1`: DL18's sentence, the section and its last sentence as order 209 leaves
     them;
-21. `['$check1', '$check2', '$check3', '$check5'] [['PND-010'], ['PND-010'], ['PND-010'], ['PND-010']] 32`:
+20. `['$check1', '$check2', '$check3', '$check5'] [['PND-010'], ['PND-010'], ['PND-010'], ['PND-010']]`:
     the four steps of 048a-5b's case that decision 9 changes, the third as order 209 left it;
-22. `$check1 ['failed'] ['PND-010'] [] group.sign-in.v1 24`,
+21. `$check1 ['failed'] ['PND-010'] [] group.sign-in.v1 24`,
     `$check4 input_required ['PND-010'] [] [{'invocation': '$check4', 'outcome': 'unknown'}]` and
     `True ['account-hook.v1'] ['sign_in_hook']`: the two steps of order 209's first case that
-    decision 10 changes, the step after the first, and that case's item, whose sign-in hook is
-    plain; then `group.sign-in.v1 $check1 ['PND-010'] [] group.inspect.v1 16`: the step of order
-    209's third case that decision 10 changes, the request before it and the inspection after it;
-23. `True False ['account_hook', 'sign_in_hook', 'sign_out_hook']` and
-    `first-start register-project 5`: order 207's plain manifest and the two steps decision 8 copies;
-24. `{'signed-server': None} {'signed-server': None} {'signed-server': None}`: the items of
+    decision 10 changes, the step after the first, that case's length, whose last step is the
+    second, and that case's item, whose sign-in hook is plain; then
+    `group.sign-in.v1 $check1 ['PND-010'] [] group.inspect.v1 16`: the step of order 209's third
+    case that decision 10 changes, the request before it, the inspection after it and that case's
+    length, whose last step is the inspection;
+22. `True False ['account_hook', 'sign_in_hook', 'sign_out_hook']` and
+    `first-start register-project`: order 207's plain manifest and the two steps decision 8 copies;
+23. `{'signed-server': None} {'signed-server': None} {'signed-server': None}`: the items of
     048a-2's and 048a-3's fixtures and of order 209's third case are not marked `plain`, so their
     calls carry Conduit's keys and need no discovery;
-25. `24`: 048a-5c's case;
-26. `0`, `0`, `0` and `0`: none of this order's work.
+24. `0`, `0`, `0` and `0`: none of this order's work.
 
 Then name in your report the part function, `dispatch_hook`, `part_answered`, the end and the URL
 arm, with their files and lines as you find them. Still before any change, keep the rows this order
@@ -381,6 +419,10 @@ cargo run --release -p conduit-conformance -- .. requests-sign-in-
 cargo run --release -p conduit-conformance -- .. requests-
 ```
 
+Each passes. `requests-` runs order 209's three cases among the others, and each must pass and
+none be an expected failure; where one fails, stop and report it, since on 209's round-1 branch a
+failing case of 209's is 209's to fix, not this order's.
+
 Orders that land beside this one (050, 051b and others): whichever lands second keeps both changes
 and writes `engine/STANDING.md` again with the tool.
 
@@ -394,7 +436,7 @@ ends `sign-in.v1` failed with a diagnostic naming IFC-049, the check and the fie
 text of the hook is relayed. The coordinator's plan for the chain decides that the core keeps the
 implementation's requestState with the part. Everything else here is the coordinator's, each open
 to the owner's strike ([ruling 48](../proposals/ruling-48/README.md)): the cut of 048a-5d into this
-order and 048a-5d2; the refresh's changes listed above; moving the interim ending of orders 048a-5b
+order and 048a-5d2; the two refreshes' changes listed above; moving the interim ending of orders 048a-5b
 and 209 from the account check to a URL elicitation the hook gives, with one cause in place of
 their three, under the new decision name `end-sign-in-unrelayed`; the part function's new
 parameter; ending `sign-in.v1` failed under `PND-003`, dispatching no hook, where a `retire.v1` of
@@ -785,7 +827,8 @@ Below, `Q(x)` is `c.qualified(x)`, the core's qualified reference to the operati
 
    The routes of decisions 7 and 8 are new and have not been run, since orders 207 and 209 are not
    yet built. Before running either, check that no ID repeats across its steps' `ids`, the copied
-   steps' included. If 046a's runner check refuses a case, if a step copied from another case
+   steps' included. Before running a changed or new case, check that no capture name is bound
+   twice. If 046a's runner check refuses a case, if a step copied from another case
    gives a reply other than that case states, or if a step's reply differs from what it states,
    stop and report the error: do not change the expectations to pass it, and do not change the
    inputs beyond what these decisions say. No expectation is generated from the engine's output.
@@ -851,18 +894,20 @@ Below, `Q(x)` is `c.qualified(x)`, the core's qualified reference to the operati
     `input` and evidence; its `expect` becomes `{"reply": {"pending": true}}` with HOOK(M) as
     decision 7 defines it and `"absent": [K(conduit), K(idempotencyKey), K(signInLogin)]`, since
     that case's `signed-server` is not marked `plain` and its request asks for no login; and it
-    gains `capture` `{"hook1": "/reply/hook"}`. A new step 16 follows it: a completion for
-    `$hook1`, decision 7's URLACTION, whose `expect` is step 15's earlier `expect`, whole
-    (`$sign1` ended failed under `PND-010`, with `META/unanswered` 2), and whose evidence is as
-    step 14's of the first case, with 185000 in place of 180000, `hook-check-failed-` in place of
-    `hook-keyed-` and `x` in place of `z`, `m` being 16. Its last step, the inspection that shows
-    `SignInUndone` still `False`, moves to 17, unchanged; the case then has 17 steps. Nothing else
-    in the case or its directory changes.
+    gains `capture` `{"signhook1": "/reply/hook"}`, a name the case does not use, since its step 6
+    already binds `hook1` and the runner refuses a rebound symbol. A new step 16 follows it: a
+    completion for `$signhook1`, decision 7's URLACTION, whose `expect` is step 15's earlier
+    `expect`, whole (`$sign1` ended failed under `PND-010`, with `META/unanswered` 2), and whose
+    evidence is as step 14's of the first case, with 185000 in place of 180000,
+    `hook-check-failed-` in place of `hook-keyed-` and `x` in place of `z`, `m` being 16. Its last
+    step, the inspection that shows `SignInUndone` still `False`, moves to 17, unchanged; the case
+    then has 17 steps. Nothing else in the case or its directory changes.
 
     Each case must then pass; if a later step gives another reply than the case states, stop and
     report it. No other case completes an account check of `sign-in.v1` with no account, another, or
-    a failed or unknown result (the start check's last lines): 048a-5c's two complete it with the
-    expected account. Where you find one, stop and report it.
+    a failed or unknown result (the start check's items 20 and 21 name the steps that do; decisions 9
+    and 10 change them): 048a-5c's two complete it with the expected account. Where you find one,
+    stop and report it.
 
 11. **`engine/CONFORMANCE.md` and `engine/STANDING.md`.** Find each place by its text read across
     line breaks, as orders 048a-5b, 048a-5c and 209 leave it.
@@ -977,8 +1022,6 @@ cargo run --release -p conduit-conformance -- .. requests-sign-in-setup-check-fa
 cargo run --release -p conduit-conformance -- .. requests-sign-in-
 cargo run --release -p conduit-conformance -- .. requests-
 RUST_TEST_THREADS=4 cargo test --release -p conduit-shell first_start_presents_final_lists
-RUST_TEST_THREADS=4 CONDUIT_VECTOR_THREADS=4 cargo test --release -p conduit-conformance --test vectors
-RUST_TEST_THREADS=4 CONDUIT_VECTOR_THREADS=4 cargo test --release
 ```
 
 The third reports four more tests passed than the start's run, 0 failed, the new ones being
@@ -1009,6 +1052,13 @@ moved file keeps its older modification time, so cargo would not rebuild the cra
 | In `requests.rs`'s `complete`, delete decision 3's arm, the one that returns `crate::sign_in::hook_input(...)`, and nothing else | `requests-sign-in-hook-part`, then `requests-sign-in-plain-hook-part` | step 10, then step 5: the URL arm ends the hook unknown under IFC-016 and raises the sign-in action, so `sign-in.v1` ends unknown where failed is expected |
 | In `sign_in.rs`'s `part_answered`, send a `NotChecked` check whose outcome is `failed` or `unknown` to the `PND-011` ending in place of the hook | `requests-sign-in-plain-hook-part` | step 7, an error reply where the hook's dispatch is expected |
 | In `requests.rs`'s `dispatch_intent`, delete decision 2's statement that writes `signInLogin` | `requests-sign-in-hook-part` | step 12, the dispatch without `META/signInLogin` |
+
+Last, with every file restored, run the whole engine suite once, from `engine/`, and report its
+last lines; it passes, the vectors among it:
+
+```bash
+RUST_TEST_THREADS=4 CONDUIT_VECTOR_THREADS=4 cargo test --release
+```
 
 From the repository root, each passes. `/usr/bin/python3` is the Mac's interpreter with PyYAML;
 where `python3` has PyYAML, it serves as well.
@@ -1045,20 +1095,12 @@ the local gate runs it for this change, as spec batch 1's Gate G asks. From
 RUST_TEST_THREADS=4 cargo test --release
 ```
 
-Its `tests/spike.rs` run reports `test result: ok. 9 passed; 0 failed`.
+Its `tests/spike.rs` run passes with 0 failed; report its count.
 
 Each of these prints 1, and each printed 0 at the start. The `tr` checks read the file with its
 line breaks as spaces, so a rewrap hides nothing:
 
 ```bash
-grep -c 'fn sign_in_hook_answer_form' engine/crates/core/src/sign_in.rs
-grep -c 'fn sign_in_hook_input_kept_nowhere' engine/crates/core/src/sign_in.rs
-grep -c 'fn sign_in_hook_not_dispatched_while_retiring' engine/crates/core/src/sign_in.rs
-grep -c 'fn sign_in_hook_call_carries_asked_login' engine/crates/core/src/requests.rs
-grep -c 'pub(crate) fn hook_url_action' engine/crates/core/src/sign_in.rs
-grep -c 'pub(crate) fn sign_in_hook_part(' engine/crates/core/src/sign_in.rs
-grep -c 'fn keep_hook_input' engine/crates/core/src/sign_in.rs
-grep -c '^fn end_sign_in($' engine/crates/core/src/sign_in.rs
 grep -rl '"dispatch-sign-in-hook"' engine/crates/core/src | wc -l | tr -d ' '
 grep -rl '"end-sign-in-unrelayed"' engine/crates/core/src | wc -l | tr -d ' '
 grep -rl '"refuse-sign-in-hook-answer"' engine/crates/core/src | wc -l | tr -d ' '
@@ -1094,10 +1136,11 @@ against the start's, and printed all zeros at the start:
 python3 -c 'import re; rows = lambda p: {l.split("|")[1].strip(): int(l.split("|")[4]) for l in open(p) if re.match(r"^\| (PND-010|IFC-00[67]|IFC-010|IFC-049) \|", l)}; b = rows("engine/target/standing-048a5d-before.txt"); a = rows("engine/STANDING.md"); print(" ".join(k + ":" + str(a[k] - b[k]) for k in sorted(b)))'
 ```
 
-These print `['$check1', '$hook1', '$check2', '$hook2', '$check3', '$hook3', '$check5', '$hook5'] 36`,
-`['$check1', '$hook1', '$check4', '$hook2'] group.sign-in.v1 26` and
-`['$check1', '$hook1'] group.inspect.v1 17`, the steps decisions 9 and 10 change and insert, and
-the cases' lengths; and `25 8`, the new cases' lengths:
+These print `['$check1', '$hook1', '$check2', '$hook2', '$check3', '$hook3', '$check5', '$hook5'] L1`,
+`['$check1', '$hook1', '$check4', '$hook2'] group.sign-in.v1 L2` and
+`['$check1', '$signhook1'] group.inspect.v1 L3`, the steps decisions 9 and 10 change and insert, and
+the cases' lengths, each its length at the start plus the steps inserted: `L1` four more (36 from
+32), `L2` two more (26 from 24) and `L3` one more (17 from 16); and `25 8`, the new cases' lengths:
 
 ```bash
 python3 -c 'import json; s = json.load(open("conformance/conventions/requests/sign-in-account-first/case.yaml"))["steps"]; print([s[k]["input"]["invocation"] for k in (17, 18, 22, 23, 25, 26, 32, 33)], len(s))'
@@ -1144,3 +1187,28 @@ point 10, has each merge wait on, `tools/gate.py`; CI runs on the pull request a
 for it. A fresh Codex verifier and a fresh read-only Opus reader read the result before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2). The admin writes this order's Record at
 the foot of this file when it merges.
+
+Where the coordinator dispatched this order stacked on order 209's round-1 branch, the result is
+read there, with `tools/gate.py --base` set to that branch's tip, since `origin/main` lacks 209's
+work; it merges only after 209 has merged, and then only once the coordinator has done the
+following (the coordinator's, under that lever):
+
+- rebase this order's branch onto `main` with `git rebase --onto origin/main` from 209's round-1
+  tip, so that only this order's commits are replayed onto 209's squash, committing and rebasing
+  under the work orders' identity;
+- resolve any conflict where 209's verifier or fixer changed what this order changes after 209's
+  round 1: `requests.rs`, `sign_in.rs` and `lifecycle.rs` under `engine/crates/core/src/`,
+  `engine/CONFORMANCE.md`, the cases `requests-keyed-hook-dispatch`,
+  `requests-sign-in-setup-check-failed-hook` and `requests-sign-in-account-first`, and
+  `conformance/conventions/requests/index.yaml`, keeping 209's merged text and applying this
+  order's decisions to it; write `engine/STANDING.md` again with
+  `python3 tools/promise_standing.py --write` rather than by hand, and run the pieces tool again
+  where the index conflicts;
+- run this order's start check in a clean worktree of `main` after 209's merge, and where 209's
+  merge changed anything that a decision reads (a step of 209's cases, a sentence of
+  `engine/CONFORMANCE.md`, a cause, a name), amend this order's text and the build to it, saying
+  so in the Record;
+- run again the five single-case runner commands, `requests-sign-in-` and `requests-`, the
+  `vector_delta.py` check with this order's declaration, and `tools/gate.py` against `origin/main`;
+- have the reader read the rebase's resolutions and any amendment as new content (ruling 79,
+  point 2), and write this order's Record.

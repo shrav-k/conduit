@@ -1,6 +1,6 @@
 # Ruling 58: how the repository is condensed, and the form of ruling records
 
-Status: in force; amended by 67 (point 2); directive (A80: the condensation plan's remaining steps); amended by 78 (point 1: finding 4-07's settlement reversed by F39) (ruled by the owner on 2026-11-10). Holds now: [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed). This record says why.
+Status: in force; amended by 67 (point 2); directive (A80: the condensation plan's remaining steps); amended by 78 (point 1: finding 4-07's settlement reversed by F39); amended by 90 (point 4: a merged work order's file, moved whole with its Record into the archive, is its record, and the record page links each archived Record instead of a row per order) (ruled by the owner on 2026-11-10). Holds now: [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed). This record says why.
 
 This is the record of a
 ruling. Where it and the specification differ, the specification governs.

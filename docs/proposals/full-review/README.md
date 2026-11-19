@@ -161,7 +161,7 @@ Twenty of them are unsafe:
 - **A6:** one fact left: does a client resend after a lost response? Twelve runs on a new small stub; S4's replay stays as ruled. Coordinator.
 - **A7 (030):** three regimes and a fixed list of attempts; the coordinator drafts the claim. Closing D5 (the tracker's question on v0's authorization scope, not decision D5) and A20 on it, and the G8 scope, are yours ([FR-482](findings/G3-native-probes.md#fr-482)).
 - **A10:** closed as done; the paths to wake move to A7.
-- **A22:** the keychain in the dedicated user's sessions, run when that user is created. Coordinator, with your approval.
+- **A22:** the keychain in the dedicated user's sessions, run when that user is created. Coordinator, with your approval. Ruled on 2026-11-18: [ruling 84](../ruling-84/README.md), point 1. No dedicated user is planned; by the coordinator's reading, A22 is narrowed to your own session and a launchd daemon session with no graphical login, both optional, and gates no Agent's becoming a dogfood slot, nor batch 2.
 - **A73 (025):** desk check now; a run only if a 1Password store is ordered. Your S10 answer stands. Coordinator.
 - **A74:** observational, with hypotheses aimed at the kit's gate and at units under a cut; S3's stage 0. Coordinator.
 - **A77:** a pass condition over 20 orders, plus blind paired reads of one diff. Coordinator; you are told.

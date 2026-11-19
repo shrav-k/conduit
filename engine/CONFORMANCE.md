@@ -545,16 +545,19 @@ operating-system user, it is not shown that the process cannot do any of the fol
   list pending actions and fill `signInReturn` (DL13; specification limits, "Pending actions,
   sign-in and the network"; FR-422).
 
-These limits hold before and after ruling 75 B3's dedicated macOS user: before it, the engine runs
-as the owner's own user and the owner's everyday client logins are within reach too; after it they
-are not, while every point above still holds among the engine, root and the Agents (ruling 75, B3;
-FR-422 and its verifier). On the second machine they hold among all runs of the one run user, whose
-own home also holds a client login (statement 7; FR-422). Nothing is claimed about a malicious
-package or a model-driven console (statements 6 and 14; specification limits, "Pending actions,
-sign-in and the network"). Under D60, every result obtained under one operating-system user is
-to open by saying what it cannot show, A5's results, A7's rows and S3's local profile among them.
-Such a result shows the same-user route with a planted marker, never by reading a real login
-(review decisions, D60).
+These limits hold while the engine runs as the owner's own user, as it does now, and the owner's
+everyday client logins are within reach too (FR-422 and its verifier). No dedicated macOS user is
+planned: [ruling 84][r84], point 1, amends ruling 75, B3, and isolation between Agents, and between
+Agents and the owner's own files, is to come later from a sandbox method, Docker first, which by
+the coordinator's reading is a runtime provider that confines its consumer. Until one confines
+each Agent, every point above holds among the engine, root and the Agents; whether a run inside a
+sandbox method shows them kept apart is that design's to state (ruling 84, point 1). On the
+second machine they hold among all runs of the one run user, whose own home also holds a client
+login (statement 7; FR-422). Nothing is claimed about a malicious package or a model-driven
+console (statements 6 and 14; specification limits, "Pending actions, sign-in and the network").
+Under D60, every result obtained under one operating-system user is to open by saying what it
+cannot show, A5's results, A7's rows and S3's local profile among them. Such a result shows the
+same-user route with a planted marker, never by reading a real login (review decisions, D60).
 
 ### Routes around the engine found so far
 
@@ -663,6 +666,7 @@ index](../docs/archive/README.md#removed-from-the-tree); [FR-482][fr482]; ruling
 [r47]: ../docs/proposals/ruling-47/README.md
 [r70]: ../docs/proposals/ruling-70/README.md
 [r75]: ../docs/proposals/ruling-75/README.md
+[r84]: ../docs/proposals/ruling-84/README.md
 [fr480]: ../docs/proposals/full-review/findings/G3-native-probes.md#fr-480
 [fr482]: ../docs/proposals/full-review/findings/G3-native-probes.md#fr-482
 [fr422]: ../docs/proposals/full-review/findings/E04-signin-isolation.md#fr-422

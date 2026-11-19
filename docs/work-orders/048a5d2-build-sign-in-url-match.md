@@ -820,4 +820,122 @@ coordinator's, under that lever):
 
 ## Record
 
-Not yet run.
+Run on 2026-11-19, from about 18:15 to 18:48 UTC, on the Mac, stacked on order 048a-5d's round 1
+checkpoint `1a067eff`, itself on order 209's round 1 checkpoint `08e706fa`, in one round: the
+worker (1633 s), then a fresh Codex verifier (322 s). The change is the six files of Scope.
+`sign_in.rs` gains `url_match`, decision 1's 14 rows in their order with decision 2's redirect URI,
+and `url_match_cause`; `hook_input` matches the URL after the form and retirement checks and before
+`keep_hook_input`, and a mismatch ends `sign-in.v1` failed under IFC-049 with the hook part unknown
+under IFC-010, where a match adds the login's name to the interim ending under PND-010. The unit
+tests `sign_in_url_match` and `sign_in_url_mismatch_kept_nowhere` share `hook_part_fixture`, which
+builds h1's contract and held target through `publication_object`. The cases
+`requests-sign-in-url-match` (24 steps) and `requests-sign-in-plain-url-match` (8 steps) copy the
+predecessors' steps with their evidence; DL18 and the ruling 86 section change as decision 7 says,
+and STANDING moves by `IFC-010:1 IFC-049:2 PND-010:2`. The worker's own choices: failures ranked
+by explicit row numbers over a map of decoded parameters, a login with a non-string name never a
+candidate; `HookAnswerFault` extending the shared refusal helper, with an active-subject lookup
+shared by both hook endings; the fixture's held sign-in hook Operation and published target
+snapshot; a whole-valued decimal port test; and a type annotation for the all-`Err` mutation. It
+reported 24 sign_in tests (22 at the start), 15 and 82 cases with the 2 expected failures (13 and
+80 at the start), the three mutations failing at the steps named, 382 engine tests passed, the
+spike's 9 tests passed, and `Vector delta: 2 changes; 0 flips; 0 undeclared; 0 errors.` It noted
+five findings: an extra parameter's value gets no content check (F01), the latest failing row on
+ties (F02), `url` crate normalization of origin and path (F03), no admitted Type reaching row 14 or
+an unknown return kind (F04), and diagnostic wording pinned by unit tests alone (F05).
+
+Codex's verifier found no must and six shoulds, each a test-coverage gap: no test of decision 1's
+"that login alone"; the mismatch test's surfaced values omitting `t.input_required`; the check that
+h1 holds no `hook_input` after a mismatch running only after `requests::finish` removes it; no user
+information input with an empty username and a password; no tie between candidates failing the same
+row; and no page comparison that a normalizing comparison would pass.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2, as ruling 87 amends it)
+at `59ddb296`. Warm, in the worktree, it ran fmt and clippy (exit 0), the sign_in tests (24
+passed), the pieces tool (`Nothing to move.`), the six single-case runs and
+`requests-sign-in-setup-check-failed-hook` (1 cases passed each), `requests-sign-in-` (15) and
+`requests-` (82 and the same 2 expected failures), the shell test (1 passed), the three mutations
+(each failing at its step and error, each passing after the `cp` restore), the Python checks
+(Errors: 0 each), the tool tests (OK), `vector_delta.py 1a067eff HEAD` (2 changes, 0 flips, 0
+undeclared), the order's greps, the standing delta, the cases' lengths and hook steps, and the
+commit identity. It checked that the copied steps are byte-equal to order 048a-5d's and that no
+evidence ID repeats (2374 and 774), and that putting the fixture's held target back to the bare
+instance fails both transition tests. It found one must and six shoulds, the shoulds confirming the
+verifier's six:
+
+- R1: `grep -c 'does not match exactly one login of the instance'` on `sign_in.rs` printed 1 where
+  the order asks 2, since `url_match_cause` spliced the login into one `format!`.
+- R2 to R7: the verifier's six, in its order. Deleting the asked-for filter (R2), removing the
+  password check (R5) or writing `>=` for the tie's `>` (R6) left every test passing; R3 named the
+  omitted `t.input_required`, R4 the assertion that `requests::finish` makes vacuous, and R7 a page
+  mismatch that a normalizing comparison would also reject.
+
+The fixer kept the branch on `1a067eff`, without a rebase, and applied each finding:
+
+- R1: `url_match_cause` writes decision 3's two whole texts, one `format!` each; the grep prints 2.
+- R2: `sign_in_url_match` rejects the service URL with `code-page` asked for, at the client ID,
+  naming `code-page`.
+- R3: the mismatch test's shared ending assertion checks `t.input_required` is empty.
+- R4: the cheaper choice the reader offered: that a mismatch ends without calling
+  `keep_hook_input` is checked by reading `hook_input` (the call stands under `matched.is_ok()`),
+  not by a test, since `requests::finish` removes `hook_input` from every ending invocation.
+- R5: the user-information loop adds a URL on the device endpoint with an empty username and a
+  password, rejected at `no user information`.
+- R6: the page URL without its client ID, where `code-page` and `service` both fail row 8, names
+  `code-page`, the first in the Type's order.
+- R7: the page URL whose stated page has its host capitalized names `code-page` at the redirect
+  URI, `service` failing the earlier row 8.
+
+On the worktree, each of R2, R5, R6 and R7's mutations (the asked-for filter deleted, the password
+check removed, `>=` for `>`, and the page compared lowercased) failed `sign_in_url_match` at its new
+assertion, and the file was restored with `cp` and compared equal. The fixer then ran, warm, from
+`engine/`: `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` (exit 0), the sign_in
+tests (`24 passed; 0 failed`), the pieces tool (`Nothing to move.`), the six single-case runs (`1
+cases passed` each), `requests-sign-in-` (`15 cases passed`), `requests-` (`82 cases passed; 2
+expected failures`), the shell test (1 passed), and the order's three mutations, which failed at
+step 12 then step 8, step 5 then step 10, and step 15, each with the error the order names, and
+passed again after the `cp` restore; and from the root, `python3 tools/check_docs.py` and
+`python3 tools/check_private_paths.py` (Errors: 0 each) and `git diff --check` (clean). The vectors,
+the full engine suite and the spike were not rerun: the fix changes only `url_match_cause`'s form,
+whose texts are unchanged, and tests. The gate's run on this order's squash, which the merge waits
+on, is the coordinator's at the merge.
+
+After order 048a-5d merged (#414, `148258e6`), on 2026-11-19, the branch was rebased onto `main` at
+`593707c3` with `git rebase --onto origin/main 1a067eff`, after a check that `1a067eff`, 048a-5d's
+round-1 checkpoint this order started from, was an ancestor of its tip and that 048a-5d's squash was
+on `main`, so that only this order's two commits were replayed, under the work orders' identity.
+Nothing conflicted: both commits applied as they were, the Record's commit included, since `main`
+still held `Not yet run.` at this file's foot. Between `1a067eff` and 048a-5d's squash, its fixes
+and its rebase onto 209's squash changed `requests.rs` (209's `_meta` on `server/discover` and its
+fence of the hook's attempt in both arms of `complete_hook_discovery`), a test in `runner.rs`, the
+five `server/discover` intents of `requests-keyed-hook-dispatch`, step 7 of
+`requests-sign-in-plain-hook-part` (the reader's R2: its `invocation-ended` fact for `$check2`
+ending failed) and 048a-5d's text, which gained only its Record since this order's dispatch refresh
+(#410). They left alone `sign_in.rs`, `sign_in_hook_input_kept_nowhere` among its tests,
+`engine/CONFORMANCE.md`, `conformance/conventions/requests/index.yaml` and
+`requests-sign-in-hook-part`, so none of the places this order changes or reads moved.
+`promise_standing.py --write` left `engine/STANDING.md` unchanged, and the pieces tool was not run
+again, since the index did not conflict. Following 048a-5d's fixes needed no change in this order's
+work or text: the steps that decisions 5 and 6 copy, steps 1 to 8 of `requests-sign-in-hook-part`
+and 1 to 4 of `requests-sign-in-plain-hook-part`, are equal, read as JSON, to those on `main`, with
+the same `files`; R2's step 7 is not copied, and this order's own step 7 completes `$check2` with no
+account, so a failed check's fact does not belong in it; and no step of the two new cases expects a
+`server/discover` intent. This order's start check, run on a clean copy of `main`'s tree at
+`593707c3` (by `git archive`), printed what the order gives at every item: `:0` for both 207 and 209
+(209 merged), `1` (048a-5d merged), `1` (048a-5ef not merged), `1` six times, `3` for `asked_login`,
+`2`, the captures and invocations of item 12, `../sign-in-login-plain-hook/manifest.json True`, the
+two stated logins three times, `1` and `1` for the two sentences of `engine/CONFORMANCE.md`, and `0`
+and `0`; `hook_input` at `sign_in.rs` line 394, `stated_logins` at 790, `HOOK_UNRELAYED_CAUSE` at
+132 and `sign_in_hook_input_kept_nowhere` at 1219; and its runs gave the `sign_in` filter 22 passed,
+`requests-sign-in-` 13 cases passed and `requests-` 80 cases passed with the 2 expected failures
+(`requests-repeat-failed-earlier-succeeded` and `requests-repeat-failed-earlier-unanswered`). So
+048a-5d's merge changed nothing a decision reads, and the order's text needed no amendment. The
+rebase changed no file but this Record. Warm in the worktree, from `engine/` with 4 test and vector
+threads: `cargo fmt --check` (exit 0), clippy with `-D warnings` (exit 0), the `sign_in` tests (24
+passed, 2 more than on `main`) and `lifecycle` (9 passed), the seven single-case runs (each `1 cases
+passed`), `requests-sign-in-` (15 cases passed) and `requests-` (82 cases passed; the same 2
+expected failures) and the shell test `first_start_presents_final_lists` (1 passed); from the root,
+`promise_standing.py --check` (Errors: 0; PND-010 at 12, IFC-010 at 25 and IFC-049 at 5, from 10, 24
+and 3 on `main`), `vector_delta.py origin/main WORKTREE` with the order's declaration (2 changes, 0
+flips, 0 undeclared, 0 errors, exit 0), `check_docs.py` (Errors: 0) and `git diff --check` (clean).
+The whole engine suite, `tools/gate.py` against `origin/main` and the reader's read of this rebase
+remain the coordinator's before the merge.

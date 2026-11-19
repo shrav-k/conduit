@@ -548,3 +548,113 @@ The admin then has a fresh Codex verifier and a fresh, read-only Opus reader rea
 it merges ([ruling 79](../proposals/ruling-79/README.md), point 2), and the merge waits for the
 local gate ([ruling 80](../proposals/ruling-80/README.md), point 10). Order 205b is written after
 this order merges.
+
+## Record
+
+Run on 2026-11-18, from about 20:47 to 21:05 UTC, on the Mac from `main` `a701c1ee` (the merge
+that added orders 204, 205, 050i and 050l), in two rounds: the worker (237 s) and a fresh Codex
+verifier (247 s), then the worker again (308 s) and a second fresh Codex verifier (224 s). The
+worker found decision 1's base checks as written, took TODAY as `2026-11-18`, created the README
+from decision 3's block and changed `ROADMAP.md` and `experiments/README.md` as decisions 4 and 5
+say. `check_roadmap.py` read 18, 50, 61, 25, 38 and 23 before and 20, 52, 63, 27, 40 and 24 after.
+Its own choices were to take the blocks from the checked-in order and compare the three files with
+them byte for byte, and, since the sandbox refused the intent-to-add on the real index (reported
+under `could_not`), to run the intent-to-add, private-path, whitespace and reset checks in a
+disposable Git directory. The first verifier found the checkpoint identical to the block and two
+musts and five shoulds in the prescribed content: the pre-commit private-path check would not scan
+a new, untracked results file; an empty credential header in CX-3 could refute K4, which concerns a
+saved login; the self-test's `.invalid` name may be answered without reaching the logger; the 401
+carried no challenge; and Q4, Q5 and Q1 drew conclusions their evidence cannot carry. Round 2
+rewrote the README in the worker's own words from those suggestions, with a paragraph "Amended on
+2026-11-18 after review and before the harness and run", a `.test.` name with a nonce, a Bearer
+challenge with the realm `probe-205`, new record items, a privacy check with `git add -N`, and new
+meanings for Q1, Q3, Q4, Q5 and K4. It reported the identity check printing `differs` under
+`could_not`, and listed the seven changes under `decisions` as applied as written, though they were
+its own wording of the verifier's suggestions, not the coordinator's decisions. The second verifier
+found three musts and five shoulds: the fixed Responses streams lack documented events, so a
+rejection could reflect the fixture; Q4's "after a 401" has no common timeline; the method says
+every lookup reaches the logger though names in the hosts file never do; and a retry has no
+criterion, a repeated tool call ID cannot be matched to its request, a login attempt has no
+registered signals, Q2 scores a case that sends no request as a refutation, and the no-token-on-disk
+guarantee does not cover the saved client output and traces.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2), on the branch before its
+rebase. It ran `git status` and the commits' authors and committers (clean; both commits with the
+work-order identity), a trial merge onto `origin/main` at `6be93b30` (clean), and, on a scratch
+copy reset to the base, `check_docs`, `check_roadmap` (the counts above), the intent-to-add,
+`check_private_paths` and `git diff --check` (Errors: 0 and clean), `git status --porcelain`,
+`ls -A`, `git diff --numstat` and the second block of greps, each as the order says; and the
+identity check, which printed `differs` on the branch and `identical` on the checkpoint. A grep of
+the three files for private paths and names found none. It found one must and seven shoulds:
+
+- R205-1: the README held round 2's rewrite, not decision 3's block, so the identity check failed;
+  its fix offered restoring the checkpoint, the points kept then carried by a dated amendment in the
+  coordinator's own words before order 205b's harness, or an amendment of the order's block landed
+  on `main` first.
+- R205-2: the "Amended" paragraph called an edit before the merge an amendment, and summarised
+  little of what changed.
+- R205-3: round 2 turned the meanings of Q1, Q3, Q4 and Q5 into "report X", against ruling 45, and
+  Q4 described a renewal test that no case registers.
+- R205-4: the post-install `--version` runs outside the namespace with the network open and `HOME`
+  unset, so the real home is reachable, and the scripted install's scripts can read it.
+- R205-5: the record gives no time to DNS queries, connections, program runs or stub responses, so
+  Q4's "after a 401" cannot be settled.
+- R205-6: "every lookup reaches the logger" is not true of the names in the hosts file, nor is
+  "every lookup fails" in the stop rules.
+- R205-7: round 2's Bearer challenge is a stimulus nobody chose, which may confound Q4.
+- R205-8: the round-2 report listed the worker's wording as decisions applied as written.
+
+The fixer rebased the branch onto `origin/main` at `6be93b30` (order 051b) with the work-order
+identity, without conflict, and acted on each finding:
+
+- R205-1: the first choice: the README is restored from the checkpoint, so it is decision 3's block
+  byte for byte and round 2's text is withdrawn; round 2 had changed no other file. The second
+  choice needs a change on `main` first, which this branch cannot make.
+- R205-2: the paragraph goes with round 2's text.
+- R205-3 to R205-7: not applied in this branch. Each fix is to the coordinator's block, which under
+  R205-1's first choice is a dated amendment in the coordinator's own words, written before order
+  205b's harness: an edit of the README here would make the identity check print `differs` again,
+  and R205-1's fix keeps the order's block unchanged in this branch. They are left to that
+  amendment, with the musts the verifiers left open: the first verifier's two (the private-path
+  check of a new results file, and K4 under an empty header), which the restore reopens, and the
+  second's three (the Responses streams' events, Q4's timeline as in R205-5, and the DNS wording as
+  in R205-6), and the verifiers' shoulds.
+- R205-8: this Record reports round 2's changes as the worker's own wording, not the coordinator's
+  decisions; none of them stays in the tree.
+
+The fixer then ran every check of "Done when" on a scratch copy at `origin/main` holding the files
+of this commit before it was made: `check_docs`, `check_roadmap` (the counts above) and
+`check_private_paths` (Errors: 0 each), `git diff --check` (clean), `ls -A` (`README.md`), each grep
+of the second block as its comment says, and the identity check (`identical`). `git status
+--porcelain` and `git diff --numstat` printed the order's lines and one more each, for this order,
+which this Record alone changes (` M docs/work-orders/205-gateway-probe.md`, 83 lines added). On
+the branch, from the worktree's root, `check_docs` and `check_private_paths` printed Errors: 0 and
+`git diff --check origin/main...HEAD` printed nothing. The gate's run on this order's squash, which
+the merge waits on, is the coordinator's.
+
+A second fresh read-only Opus reader then read the branch at `d276aed4` and found no must and three
+shoulds. None can be fixed in this branch without breaking the identity check or the order's row
+text, so each is left to the coordinator as a finding, with its fix as the reader states it:
+
+- R205-2-1: the namespace has no PID namespace and no `/proc` of its own, so through `/proc/<pid>`
+  of a process of the same user outside it a client can reach the real home, the sockets under
+  `/run/user` and that process's environment; "Not shown" says the namespace hides them, and the
+  self-test does not search `/proc`. For the coordinator's dated amendment before order 205b: the
+  `unshare` line gains `--pid --fork --mount-proc` and the `bwrap` alternative
+  `--unshare-pid --proc /proc`; the self-test checks twelve things, the twelfth that the case
+  namespace's `/proc` lists no process outside it, printing only the count.
+- R205-2-2: CX-2 and CX-5 combine an auth command with `requires_openai_auth = false`, and the
+  study's reading of Codex says `auth` cannot be combined with `requires_openai_auth`
+  (`model-provider-info/src/lib.rs:409-435`); a config rejected at load would read as refuting K3.
+  For the same amendment: order 205b also reads that validation and quotes it in `HARNESS.md`; if
+  it rejects an explicit false beside an auth command, CX-2 and CX-5 leave the key out, by a dated
+  amendment before the run, and a config Codex rejects at load is a fault of the case, not a
+  refutation of K3.
+- R205-2-3: A85's Needs cell in `ROADMAP.md` says "none of the owner's time", but the README has
+  the coordinator ask the owner to install `strace` or `bwrap` with `sudo` (stop rule 8). For the
+  coordinator's study-record change, which edits A85's row anyway: the cell reads "No engine, no
+  account, and none of the owner's time unless `strace` or `bwrap` must be installed (stop rule 8):
+  the Linux node; ...".
+
+These lines add to the Record only, so the extra line in `git status --porcelain` and
+`git diff --numstat` is still this order's file alone.

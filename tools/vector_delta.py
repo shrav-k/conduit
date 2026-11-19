@@ -233,8 +233,10 @@ def differences(before, after, parts=()):
                                        right[i] if i < len(right) else MISSING, parts + (i,))
             return
     # Container/scalar replacements still expose sensitive descendants as flips.
+    # Only a non-empty dict can hold a flip; an empty one paired with a missing member would
+    # otherwise come back here with the same arguments and never end.
     if parts[:1] == ("steps",) and 2 <= len(parts) <= 4 and (
-            isinstance(before, dict) or isinstance(after, dict)):
+            (isinstance(before, dict) and before) or (isinstance(after, dict) and after)):
         for p, b, a in differences(before if isinstance(before, dict) else MISSING,
                                    after if isinstance(after, dict) else MISSING, parts):
             if p[2:] in FLIPS:

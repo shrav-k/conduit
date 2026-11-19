@@ -127,6 +127,15 @@ class VectorDeltaTests(unittest.TestCase):
         self.assertEqual(sum(c["kind"] == "flip" for c in changes), 4)
         self.assertTrue(any(c["path"] == "/steps/0/expect/reply" for c in changes))
 
+    def test_empty_map_against_missing_member_under_a_step(self):
+        # An added empty map under a step, such as a respond step's "meta": {}, met by a step
+        # with no such member: one change, and the comparison ends.
+        for before, after in (({}, delta.MISSING), (delta.MISSING, {})):
+            found = list(delta.differences(before, after, ("steps", 3, "input", "meta")))
+            self.assertEqual(found, [(("steps", 3, "input", "meta"), before, after)])
+        nested = list(delta.differences({"input": {"meta": {}}}, {"input": {}}, ("steps", 2)))
+        self.assertEqual(nested, [(("steps", 2, "input", "meta"), {}, delta.MISSING)])
+
     def test_declared_and_undeclared_exact_shapes(self):
         case = copy.deepcopy(self.case)
         case["steps"][0]["expect"]["records"] = [{"owner": "fleet"}]

@@ -96,11 +96,13 @@ The raw export leaves at the next condensation; the results then link its last v
 
 ## What it cannot show
 
-Every result here is obtained with every Agent under one operating-system user: the owner's now,
-and the dedicated macOS user of [ruling 75 B3](../../docs/proposals/ruling-75/README.md) later.
-Under one user, an Agent that runs code can read, use or replace another Agent's login and act as
-root's Interface, so no result here shows Agents kept apart
-([the full review's D60](../../docs/proposals/full-review/decisions.md)). A guard that held is
+Every result here is obtained with every Agent under one operating-system user, the owner's
+([ruling 84](../../docs/proposals/ruling-84/README.md), point 2). No dedicated macOS user is
+planned: ruling 84, point 1, amends [ruling 75 B3](../../docs/proposals/ruling-75/README.md), and
+isolation is to come later from a sandbox method, whose design states whether a result obtained
+inside one shows Agents kept apart. Under one user, an Agent that runs code can read, use or
+replace another Agent's login and act as root's Interface, so no result here shows Agents kept
+apart ([the full review's D60](../../docs/proposals/full-review/decisions.md)). A guard that held is
 not proof either: the guards read a slot that the Agents they check can write
 ([finding 4-22](../../docs/proposals/first-build/log-increment-4.md)).
 
@@ -121,6 +123,15 @@ before the first order it changes runs. Its choices, and the D-numbers it cites 
 [the full review's decisions](../../docs/proposals/full-review/decisions.md), are the
 coordinator's, each open to the owner's strike
 ([ruling 48](../../docs/proposals/ruling-48/README.md)).
+
+Amended on 2026-11-19, before order 2 runs through Conduit, by the coordinator's change for
+[ruling 84](../../docs/proposals/ruling-84/README.md), point 1. Under "The Claude verifier slot",
+the slot was to be added "only after D58's guards and A22's open case have run (D61)"; it is now
+added once D58's guards are in place, since A22 no longer runs before any Claude Agent becomes a
+dogfood slot. Above this registration, "What it cannot show" no longer names the dedicated macOS
+user of ruling 75 B3 as what comes later. No step, measure or pass condition changes. Ruling 84
+assigns this correction to an order; the coordinator made it directly, since it changes no step,
+measure or pass condition, and the same holds for experiment 027's amendment of the same date.
 
 ### Claim
 
@@ -302,10 +313,10 @@ Claude Opus, the coordinator's model under
 [ruling 79](../../docs/proposals/ruling-79/README.md), is added beside `verifier-1`, which stays
 for A77's paired reads
 ([FR-499](../../docs/proposals/full-review/findings/G4-who-verifies.md#fr-499), as its verifier
-corrected it). It is added only after D58's guards and A22's open case have run (D61), and its
-reach over the worker's tree waits for the owner's answer on what orders 4 and 5 test (D59). Its
-turns draw on the owner's primary Claude allowance. They are measured as a verifier turn is
-above; the registration of the first order it reads, made before that order runs, says how they
+corrected it). It is added only once D58's guards are in place (D61, as ruling 84, point 1,
+amends it), and its reach over the worker's tree waits for the owner's answer on what orders 4
+and 5 test (D59). Its turns draw on the owner's primary Claude allowance. They are measured as a
+verifier turn is above; the registration of the first order it reads, made before that order runs, says how they
 are judged, and each result says which verifier read each pass.
 
 ### Not registered here

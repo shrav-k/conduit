@@ -130,7 +130,7 @@ The other unsafe fixes land after the pin, but before the build reaches their te
 **Held by a step of yours, not a question.**
 - A81's stage 0 ([FR-429](findings/E04-signin-isolation.md#fr-429)): about 10 minutes and one primary-account login, in a scratch home.
 - A7's runs ([FR-481](findings/G3-native-probes.md#fr-481)): your leave for sentinels in your own Claude configuration, which the coordinator places and removes.
-- A22's sessions ([FR-486](findings/G3-native-probes.md#fr-486)): your sudo at B3's setup.
+- A22's sessions ([FR-486](findings/G3-native-probes.md#fr-486)): your sudo at B3's setup. Ruled on 2026-11-18: [ruling 84](../ruling-84/README.md), point 1. No dedicated user is planned; A22's remaining sessions are optional and hold no step of yours behind B3.
 - #37's settings line: the required checks and secret scanning you turn on after #3.
 - Whether the keys printed on 2026-11-11 were replaced ([FR-530](findings/G6-outside-the-tree.md#fr-530)): not asked if these are the keys of ruling 75's note, which you accepted leaving as they are once no commit was found to hold them.
 

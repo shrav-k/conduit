@@ -14,6 +14,8 @@ The refresh-blocked probe pre-registered on 2026-11-19 by work order 208, [below
 
 Amended on 2026-11-19 by the coordinator's change for [ruling 84](../../docs/proposals/ruling-84/README.md), point 1: the opening's last clause on isolation, which read "before or after the owner's dedicated macOS user (ruling 75 B3)", now says that no dedicated user is planned and that a sandbox method comes later. No step, record, pass condition or outcome changes, and each dated result keeps its opening as written.
 
+Amended on 2026-11-19, before stage 1's first step ran, by the coordinator's change for [ruling 89](../../docs/proposals/ruling-89/README.md), [below](#amendment-of-2026-11-19-the-live-check-as-it-runs): by the coordinator's application of the readiness review's findings (ruling 89, point 1), open to the owner's strike, the check's Type keeps the name `codex.v2`, its client is `conduit sign-in`, a second browser tab is expected, and the engine runs with a call timeout of 1200 seconds; and, for ruling 89, point 5, a Claude scratch-home sign-in follows in the same sitting (through `conduit sign-in` and outside A5's gate by the coordinator's reading in ruling 89, open to the owner's strike).
+
 ## Four stages
 
 - **0:** Before order 050 is written: two facts about the real clients, primary accounts only, no engine, nothing signed in; no owner time unless a window opens. The coordinator tells the owner first.
@@ -672,6 +674,109 @@ coordinator stages it and reruns the private-path check, which must pass.
   the one the step records.
 - The logins' literal origins, paths, client IDs and ports. Order 050 reads those from the
   clients.
+
+### Amendment of 2026-11-19: the live check as it runs
+
+Amended on 2026-11-19, before any of this step ran, by the coordinator's change for
+[ruling 89](../../docs/proposals/ruling-89/README.md), as ruling 45 asks: each run pre-registered
+before it runs. Items 1 to 5 are the coordinator's application of the readiness review's findings
+(ruling 89, point 1), each open to the owner's strike; item 6 is for ruling 89, point 5, and its
+client, its place outside the gate and its steps are the coordinator's, open to the owner's
+strike. Its grounds are the readiness review on Claude Fable that the owner
+asked for, whose reports are the coordinator's notes (private): its B3 (the Type's name), B2 (the
+engine's session), D1-08 (the client and a second tab) and M1 (Claude's sign-in never run live).
+The route, the gate's aim, what the step records and never records, and the Codex step's pass,
+fail and fault conditions do not change, except where this says.
+
+1. **The Type keeps the name `codex.v2`.** The package built for the check keeps its Type's name,
+   `codex.v2`, and differs from the Codex lane's `packages/agent-codex` only in its address,
+   `example.org/conduit/a5-stage-1-check`. The name `codex-account-check.v1`, in "The Type" and
+   "What the step records" above, is not used: the Codex sign-in hook finds its stated logins in
+   the contract whose Type is named exactly `codex.v2`, so under another name it fails at its
+   start, before any login, and the step would end a fault. The gate's "No archive whose
+   `codex.v2` states `signIn` is installed anywhere before this step's outcome is recorded here",
+   and "The Type"'s "No archive whose `codex.v2` states `signIn` is installed for this step", are
+   narrowed to the scratch store: no such archive is installed anywhere but the check's package, at
+   its scratch address, in the scratch state directory, and it is removed with that directory. The
+   step records the Type as `codex.v2`, with the package's address. Both changes amend the
+   coordinator's reading of ruling 82, point 1, that answer 5 keeps Q3 option a's two terms, as
+   ruling 89 records, open to the owner's strike.
+2. **The client is `conduit sign-in`** (order 051b-2). The step runs after order 051b-2 merges as
+   well as 048b-join, and the engine is built from `main` at a commit that holds both. Step 5
+   reads: the owner, as root's Interface, runs `conduit sign-in --store <the scratch state
+   directory> Agent/<the instance>` in a terminal of the owner's own on the Mac, outside any
+   client's session, from a line the coordinator prepares with every path filled in. Its standard
+   output, which holds the result and its `account`, goes to a file in the scratch root; the
+   engine's message, the URL and the prompts go to the owner's screen alone. The owner reads the
+   message, types `y` to open the URL, signs in, and presses Enter for each retry until
+   `sign-in.v1` ends. The coordinator never runs that line, so that the URL never reaches its
+   session, and step 6 reads the file through its filter. That file is a third thing that passes,
+   beside the two that "What the step never records" names, and only in the scratch root: only
+   step 6's filter reads it, it is never copied or printed, and step 9 removes it with the scratch
+   root. The owner writes the expected account into the template, in the scratch state directory,
+   by a line that does not echo it.
+3. **A second tab is expected.** Codex's own login opens the default browser past any shim, and
+   `conduit sign-in` opens the relayed URL once the owner types `y`, so two tabs of one login may
+   open. A tab that opens before the owner types `y` is Codex's own: the owner closes it without
+   signing in there, as stage 0's browser guard has it, and signs in only in the tab opened after
+   `y`. The owner's answer that another window appeared is expected, and alone changes no outcome,
+   as above.
+4. **The engine's call timeout.** `conduit serve` for the scratch state directory runs with
+   `--call-timeout-seconds 1200`. The serving engine's session idle limit is the call timeout plus
+   60 seconds, 180 seconds by default, and a running call does not reset it
+   ([engine/CONFORMANCE.md](../../engine/CONFORMANCE.md), DL10), while `conduit sign-in` holds one
+   session through the owner's login; under the default the session could end while the owner
+   signs in, and the step end on a cause that is not the account hook's. `serve`'s standard output
+   and standard error go to a file in the scratch root that no one reads.
+5. **Codex's warning.** A release Codex may refuse its helper aliases for a home under the system's
+   temporary directory and print a warning on standard error, then go on (order 197's read, R4;
+   order 050c). That warning is expected and, as client output, not recorded.
+6. **A Claude scratch-home sign-in follows** ([ruling 89](../../docs/proposals/ruling-89/README.md),
+   point 5). After step 8, in the same sitting, unless the step stopped because the everyday status
+   changed, the owner signs a scratch Claude home in once through `conduit sign-in`. By the
+   coordinator's reading in ruling 89, it is not part of this step's gate or of A5's: it decides
+   nothing for `codex.v2`, for `claude-code.v2` or for order 050n's join. It runs in a new state
+   directory inside the same scratch root:
+   - C1, version: `claude --version`, recorded.
+   - C2, everyday status: `claude auth status`, with `CLAUDE_CONFIG_DIR` unset, through a filter
+     that prints only `login` and `account_named` under stage 0's status rules.
+   - C3, registration and setup: one Agent template of a check package built from the Claude
+     lane's `packages/agent-claude-code`, differing from it only in its address,
+     `example.org/conduit/a5-stage-1-claude-check`, its Type keeping the name `claude-code.v2`. Its
+     `account` is the owner's primary Claude account, written as item 2 has it. Setup's account
+     check finds no account and raises the instance's sign-in action.
+   - C4, empty-home status: C2's command with `CLAUDE_CONFIG_DIR` set to the instance's home. It
+     must report no login; otherwise the sign-in stops here and is recorded as a fault.
+   - C5, the sign-in: as item 2 has it, for this instance, its standard output's file passing
+     only as item 2 says, with `serve` run as item 4 has it.
+   - C6, the outcome: as step 6, with the owner's two answers and a third, whether a macOS
+     Keychain dialog appeared, each **yes** or **no**.
+   - C7, sign-out: the coordinator stops the engine and runs `claude auth logout` with
+     `CLAUDE_CONFIG_DIR` set to the instance's home, and in no other home, since item 8's read
+     passed for it ([results](results-2026-11-17-logout-source.md#the-outcome-under-item-8)); then
+     C4's status again, which must report no login.
+   - C8, everyday status again: C2's command.
+
+   Step 9 then runs once, for both. Stage 0's guards hold as for the Codex step: the default
+   browser holds no claude.ai session; no file or Keychain item of either home is opened, listed,
+   read or copied; and C2 and C8 must both report a login, a change between them going to the
+   owner at once. It records what the Codex step records, with the Type `claude-code.v2`, the
+   package's address and the third answer, and never records what the Codex step never records.
+   **Pass**: `sign-in.v1` succeeded and the action answered signed-in, so PND-011 found the
+   account that `claude-code.v2`'s account hook reported equal to the expected one, ignoring ASCII
+   case; the owner answered **yes**, signed in with the expected account; and every guard held.
+   **Fail** and **fault** as for the Codex step, naming the failing step among C1 to C8; by the
+   coordinator's reading in ruling 89, either goes to the owner before any Claude dogfood slot
+   signs in. Its result goes in the same `results-DATE-1-step-1.md`, under a heading of its own.
+
+Before the sitting is booked, the coordinator runs a dry run of the Codex step with the same
+builds and the Codex package's fixture client in place of Codex, pausing past 180 seconds before
+a retry; it is preparation, signs nothing in, and records nothing here.
+
+Not shown by the Claude sign-in, beside what the step does not show: Claude Code's other logins,
+Claude Code on another machine, and any version of Claude Code but the one recorded. The line of
+"Not shown in stage 1's first step" on Claude Code still holds for the Codex step; the Claude
+sign-in is pre-registered here, apart from it.
 
 ## Stage 1, before step 1: the refresh-blocked probe
 

@@ -306,6 +306,51 @@ merges made before ruling 80 waited for CI, and A77's wait only for the local ga
 stopped before such a merge would be, in A77, a red after the merge, which claim 1 counts, and also
 an escape.
 
+### Amendment of 2026-11-19: the window restarted
+
+Amended on 2026-11-19 by the coordinator, on the owner's choice quoted below. The section's rule,
+that it changes only by a dated amendment merged before the first order it changes is dispatched,
+holds for the orders dispatched after this amendment merges. It could not hold for the orders
+already dispatched under the registration, whose standing this amendment changes. The
+coordinator did not run the paired reads after this section merged on 2026-11-16 (order 179, #326):
+the work orders dispatched since were run with two Codex rounds and no paired read. The lapse is
+the coordinator's. On 2026-11-19 the owner was asked: "A77's registered paired reads (Opus reader
+vs Codex verifier on the same round-1 diff, up to 10) were never run on the ~25 orders since
+Nov 16 — my lapse. How should I recover?" The options were "Restart, off the chain (Recommended)",
+"Restart, in dispatch order" and "Defer to after 0.2.0". The owner chose "Restart, off the chain
+(Recommended)", whose text reads: "A dated amendment restarts A77's 20-order window at the next
+dispatch and pairs eligible orders that are not on the sign-in chain's critical path (the 0.2.0
+halves, MC9a follow-ups, CLI orders), so the chain isn't slowed. Same blind-merge method as
+registered."
+
+- *A77's orders* are the next 20 work orders dispatched after this amendment merges, merged or
+  not, in place of the next 20 after this section merged.
+- *Paired orders* are taken, in dispatch order, only from A77's orders that are off the sign-in
+  chain's critical path. The chain is orders 048a-5b to 048a-8 and 048b-join, as
+  [order 117's entry](../work-orders/117-plan-s2-s3.md) and
+  [the work orders' index](../work-orders/README.md) give them: 048a-5b to 048a-5h, 048a-6 to
+  048a-8, and 048b-join. By the coordinator's reading, a part later cut from one of these orders
+  is on the chain too. The coordinator names in each order's record whether the order is on the
+  chain; an order on the chain is not paired, and its record says so. Each record gains
+  `chain: <on or off>`, after `group`; a record without it is not complete. An order off the
+  chain is paired as the section above has it.
+- Everything else stands as registered: the two groups, code and text; five paired orders per
+  group; at most ten Opus reads; the blind merged list; the key, opened only once every finding
+  is judged; the coordinator's judging; the allowance rule; and the baseline as defined above. By
+  the coordinator's reading, the baseline keeps its definition against this section's merge of
+  2026-11-16: the 20 dispatched work orders whose change merged last before that merge.
+- The orders dispatched between this section's merge and this amendment's merge are neither
+  A77's orders nor its baseline, and the result says so, and says that the window was moved after
+  those orders' outcomes could be seen. By the coordinator's reading, that includes such an order
+  merged after this amendment merges, as the section above has it for an order dispatched before
+  the section merged and merged after it.
+
+By the coordinator's reading, the coordinator's spend runs from the first dispatch of A77's
+orders as amended, so the spend between the registration and this amendment counts nowhere. And
+the rule narrows what claim 2 can show: the paired orders come only from orders off the chain,
+such as the 0.2.0 halves, MC9a's follow-ups and the command line's orders, so the result speaks
+for those and says that the chain's orders had no paired read.
+
 ## The record
 
 One row per merged order, 001 to 036k and 060 to 066, as the condensation plan's E30 set under

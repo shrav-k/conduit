@@ -812,6 +812,17 @@
       "safety_rows": []
     },
     {
+      "id": "requests-sign-in-polling",
+      "case": "conventions/requests/sign-in-polling/case.yaml",
+      "promises": [
+        "PND-010",
+        "PND-011",
+        "PND-013",
+        "IFC-049"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "requests-sign-in-refusals-before-parts",
       "case": "conventions/requests/sign-in-refusals-before-parts/case.yaml",
       "promises": [
@@ -880,6 +891,16 @@
       "promises": [
         "PND-010",
         "IFC-049"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "requests-sign-in-url-relayed",
+      "case": "conventions/requests/sign-in-url-relayed/case.yaml",
+      "promises": [
+        "IFC-049",
+        "IFC-010",
+        "PND-010"
       ],
       "safety_rows": []
     },

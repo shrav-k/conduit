@@ -2875,22 +2875,22 @@
       },
       "expect": {
         "reply": {
-          "isError": true,
-          "_meta": {
-            "io.github.shrav-k.conduit/outcome": "failed",
-            "io.github.shrav-k.conduit/invocation": "$sign1",
-            "io.github.shrav-k.conduit/unanswered": 2
-          },
-          "structuredContent": {
-            "diagnostics": [
-              {
-                "ruleId": "PND-010",
-                "level": "error"
-              }
-            ]
-          }
+          "pending": true,
+          "invocation": "$sign1"
         },
-        "external_intents": []
+        "external_intents": [],
+        "input_required": [
+          {
+            "invocation": "$sign1",
+            "attempt": 1,
+            "request": {
+              "method": "elicitation/create",
+              "params": {
+                "mode": "url"
+              }
+            }
+          }
+        ]
       }
     },
     {

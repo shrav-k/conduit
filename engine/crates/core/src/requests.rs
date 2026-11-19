@@ -747,9 +747,36 @@ fn reject_diagnostics(
     end(t, a, c, &ending, None, Some(reason), id)
 }
 
-pub(crate) fn respond(t: &mut Transition, invocation: &str, attempt: u64, c: &Context) {
+pub(crate) fn respond(
+    t: &mut Transition,
+    evidence: &Evidence,
+    invocation: &str,
+    attempt: u64,
+    identity: &access::Identity,
+    responses: &Value,
+    c: &Context,
+) -> Result<()> {
+    let mut a = Allocation {
+        evidence,
+        cursor: 0,
+    };
+    let consumer = access::established(&t.state, identity)
+        .ok()
+        .map(|o| &o["id"]);
+    let operation = c.qualified("sign-in.v1");
+    if let Some(i) = t.state.invocations.iter().position(|v| {
+        v["id"] == invocation
+            && v["state"] == "in-progress"
+            && v["operation"] == operation
+            && v["attempt"] == attempt
+            && crate::sign_in::waiting_for_retry(v, attempt)
+            && consumer == Some(&v["sender"])
+    }) {
+        return crate::sign_in::retried(t, &mut a, c, i, responses);
+    }
+    let route = json!({"consumer":consumer,"ruleId":"IFC-049"});
     let message = format!(
-        "invocation {invocation} has no input request outstanding, so the retry was not passed on; no request in this build asks for input yet (order 048a-5e)"
+        "invocation {invocation} is not a sign-in.v1 waiting at attempt {attempt} for a retry from this Interface, so the retry was not passed on"
     );
     t.decisions.push(decision(
         "refuse-input-response",
@@ -768,6 +795,15 @@ pub(crate) fn respond(t: &mut Transition, invocation: &str, attempt: u64, c: &Co
             }
         }
     });
+    end(
+        t,
+        &mut a,
+        c,
+        &route,
+        None,
+        Some("invalid"),
+        Some(&json!(invocation)),
+    )
 }
 
 fn named_reference(operation: &Value, arguments: &Value, c: &Context) -> Option<String> {
@@ -1303,6 +1339,9 @@ fn invoke_inner(
     {
         let outcome = old["state"].as_str().ok_or("invalid invocation state")?;
         t.reply = ended_reply(c, old, &contract, outcome);
+        if old["sign_in_wait"]["meta"].is_object() {
+            t.reply["_meta"][mark(c, "signInLogin")] = old["sign_in_wait"]["meta"].clone();
+        }
         t.decisions.push(decision(
             "answer-repeat",
             &[
@@ -1886,6 +1925,9 @@ pub(crate) fn finish(
     }
     v.as_object_mut().unwrap().remove("previous");
     v.as_object_mut().unwrap().remove("hook_input");
+    if let Some(w) = v.get_mut("sign_in_wait").and_then(Value::as_object_mut) {
+        w.remove("url");
+    }
     if let Some(cause) = &cause {
         v["cause"] = json!(cause);
     } else {
@@ -1911,6 +1953,9 @@ pub(crate) fn finish(
     );
     if v["notices"].as_array().is_some_and(|ids| !ids.is_empty()) {
         t.reply["_meta"][mark(c, "pendingAction")] = v["notices"].clone();
+    }
+    if v["sign_in_wait"]["meta"].is_object() {
+        t.reply["_meta"][mark(c, "signInLogin")] = v["sign_in_wait"]["meta"].clone();
     }
     t.request_replies.push(crate::RequestReply {
         invocation: v["id"].as_str().ok_or("invocation has no ID")?.into(),
@@ -2834,7 +2879,7 @@ mod tests {
     }
 
     #[test]
-    fn respond_is_refused_until_input_requests_are_built() {
+    fn respond_without_a_waiting_sign_in_is_refused_and_recorded() {
         let (state, c) = fixture();
         let ids: Vec<_> = (1..50)
             .map(|n| format!("00000000-0000-4000-8046-a0000000{n:04}"))
@@ -2851,14 +2896,22 @@ mod tests {
         .unwrap();
         let t = step(&state, input, &c).unwrap();
         assert_eq!(t.reply["error"]["code"], -32602);
+        let message = "invocation absent-invocation is not a sign-in.v1 waiting at attempt 1 for a retry from this Interface, so the retry was not passed on";
+        assert_eq!(t.reply["error"]["message"], message);
         let data = &t.reply["error"]["data"];
         assert_eq!(data[mark(&c, "reason")], "invalid");
         let diagnostics = data["diagnostics"].as_array().unwrap();
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0]["ruleId"], "IFC-049");
-        assert!(t.records.is_empty());
+        assert_eq!(diagnostics[0]["message"]["text"], message);
+        assert_eq!(t.records.len(), 1);
+        assert_eq!(t.records[0]["type"], "request-ended");
+        assert_eq!(t.records[0]["data"]["reason"], "invalid");
+        assert_eq!(t.records[0]["data"]["ruleId"], "IFC-049");
+        assert_eq!(t.records[0]["data"]["invocation"], "absent-invocation");
         assert!(t.input_required.is_empty());
-        assert_eq!(t.state, state);
+        assert!(t.external_intents.is_empty());
+        assert_eq!(t.state.invocations, state.invocations);
         assert_eq!(t.decisions.len(), 1);
         assert_eq!(t.decisions[0].action, "refuse-input-response");
     }
@@ -3532,6 +3585,31 @@ mod tests {
             .unwrap()
             .remove("cause");
         assert_eq!(invoke_repeat(&legacy, &c, &request).reply, stated.reply);
+    }
+
+    #[test]
+    fn succeeded_repeat_keeps_sign_in_login() {
+        let (state, c, request) = repeat_fixture(false);
+        let pending = invoke_repeat(&state, &c, &request);
+        let mut ended = answer(
+            &pending,
+            &c,
+            Completion::Result {
+                result: json!({"_meta":{"test/outcome":"succeeded"},"isError":false}),
+            },
+        );
+        assert_eq!(ended.state.invocations[0]["state"], "succeeded");
+        let key = mark(&c, "signInLogin");
+        assert!(
+            invoke_repeat(&ended.state, &c, &request).reply["_meta"]
+                .get(&key)
+                .is_none()
+        );
+        let meta = json!({"name":"browser","return":"redirect","node":{"kind":"Resource","name":"local","id":"n1"},"acceptsReturn":true});
+        ended.state.invocations[0]["sign_in_wait"] = json!({"login":"browser","meta":meta});
+        let repeated = invoke_repeat(&ended.state, &c, &request);
+        assert_eq!(repeated.reply["_meta"][&key], meta);
+        assert!(repeated.external_intents.is_empty());
     }
 
     #[test]

@@ -114,7 +114,7 @@ coordinator's.
      test -e experiments/027-a5-sign-in/refresh-probe; echo "dir $?"   # dir 1
      grep -c '^## Stage 1, step 1: the account check$' experiments/027-a5-sign-in/README.md   # 1
      grep -c 'refresh-blocked probe' experiments/027-a5-sign-in/README.md   # 0
-     command -v unshare ip npm node cargo git | wc -l             # 6
+     for c in unshare ip npm node cargo git; do command -v "$c"; done | wc -l   # 6
      env -i PATH=/usr/bin:/bin GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_TERMINAL_PROMPT=0 git -c credential.helper= ls-remote https://github.com/openai/codex 'refs/tags/rust-v0.167.1^{}' | grep -c '^0a94398fa60c4fac0e7659e4213a0a36e613dd46'   # 1: the tag's commit
      grep -c '^| 86 | 2026-11-18 |' docs/proposals/ruling-log.md   # 1
      rustup component list --toolchain 1.97.1 --installed | grep -c -E '^(rustfmt|clippy)'   # 2

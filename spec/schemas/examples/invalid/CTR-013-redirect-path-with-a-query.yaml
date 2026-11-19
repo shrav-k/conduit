@@ -1,0 +1,29 @@
+# Example. Invalid: a redirect login's `path` holds `?`, which no redirect_uri's path can
+# hold (CTR-013, IFC-049).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: signed-resource.v1
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      account: {type: [string, 'null']}
+    required: [account]
+  requires:
+  - github.com/shrav-k/conduit/core#sign-in-hook.v1
+  - github.com/shrav-k/conduit/core#account-hook.v1
+  - github.com/shrav-k/conduit/core#sign-out-hook.v1
+  signIn:
+    account: /account
+    logins:
+    - name: browser
+      return: redirect
+      authorization: 'https://example.org/authorize'
+      clientId: placeholder-resource-browser
+      redirect: {host: 127.0.0.1, ports: [8400], path: '/callback?flow=browser'}
+      carried: true

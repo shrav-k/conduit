@@ -291,7 +291,8 @@
     sign-in-login.v1. Every login value is literal, never a configuration pointer. A login
     states name, return, authorization and clientId. Names differ within the Type. Return is
     device, redirect, page or service: device states the verification page, redirect the
-    loopback host, ports and path, and page and service the HTTPS page used as redirect_uri.
+    loopback host, ports and a path that holds neither ? nor #, and page and service the HTTPS
+    page used as redirect_uri, which holds no user information.
     Only redirect and page state carried, required for both; only redirect may state issuer.
     No other member is allowed. The account place and every member on its path are required,
     and the place is confined to string or null by MAN-017's test. The Type lists no control

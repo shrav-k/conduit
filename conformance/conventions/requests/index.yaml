@@ -194,6 +194,23 @@
       ]
     },
     {
+      "id": "requests-keyed-hook-manifest",
+      "case": "conventions/requests/keyed-hook-manifest/case.yaml",
+      "promises": [
+        "PKG-020",
+        "PND-010"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "requests-keyed-not-a-hook",
+      "case": "conventions/requests/keyed-not-a-hook/case.yaml",
+      "promises": [
+        "PKG-020"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "requests-metadata-failed-reason-array",
       "case": "conventions/requests/metadata-failed-reason-array/case.yaml",
       "promises": [
@@ -730,6 +747,15 @@
       "safety_rows": []
     },
     {
+      "id": "requests-sign-in-login-plain-hook",
+      "case": "conventions/requests/sign-in-login-plain-hook/case.yaml",
+      "promises": [
+        "PND-010",
+        "IFC-007"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "requests-sign-in-refusals-before-parts",
       "case": "conventions/requests/sign-in-refusals-before-parts/case.yaml",
       "promises": [
@@ -765,6 +791,17 @@
         "PND-005",
         "TPL-012",
         "PND-001"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "requests-sign-in-setup-check-failed",
+      "case": "conventions/requests/sign-in-setup-check-failed/case.yaml",
+      "promises": [
+        "PND-011",
+        "PND-005",
+        "TPL-012",
+        "OPS-022"
       ],
       "safety_rows": []
     },

@@ -24,7 +24,8 @@
   then: >-
     The implementation is a Model Context Protocol server and the engine is its client. The
     operation is one tool, called with `tools/call`. The tool's `name` is the operation's export
-    name or, for an implementation marked `plain`, the name its `tools` map gives under PKG-020.
+    name or, for an implementation marked `plain`, the name its `tools` map gives under PKG-020,
+    on every call, one for a hook that its item's `keyed` lists among them.
     Its `arguments` are the operation's inputs, and the result's `structuredContent` is the
     operation's outputs, keyed by name. The engine and the implementation each keep every
     requirement of the protocol at the revision in use, and this specification repeats none of
@@ -34,7 +35,8 @@
     `arguments`. Operations of two packages may share an export name. An implementation that
     implements two such operations has one tool of that name, and tells the two apart by
     `io.github.shrav-k.conduit/operation`, which IFC-006 sends with every request. A plain
-    implementation is sent no such key, and its `tools` map names a tool for each operation. The
+    implementation is sent no such key, except on a call for a hook that its item's `keyed`
+    lists (PKG-020), and its `tools` map names a tool for each operation. The
     interface is the protocol with Conduit's keys added. What the protocol requires of a client
     and of a server, such as the keys it requires in the `_meta` of every request, what a server
     must implement beside its tools, and what a tool list must carry, binds the engine and an
@@ -96,14 +98,15 @@
     extensions it supports in its result of `server/discover`, a client declares an extension on
     each request in `io.modelcontextprotocol/clientCapabilities` with `revision` in the
     extension's settings object, and a server answers with the error -32021 a request that does
-    not declare a capability it requires. For a call to an implementation marked `plain`, it is
+    not declare a capability it requires. For a call to an implementation marked `plain`, other
+    than one for a hook that its item's `keyed` lists (PKG-020), it is
     `tools/call` with a `name` and `arguments`, `isError`, and `structuredContent` where the
     operation declares outputs.
   observable: >-
     A revision that lacks any of what a call relies on is not used for that call, whatever both
-    sides support. A plain implementation is declared no extension, under IFC-007, so a revision
-    that has no negotiation of extensions, such as 2025-11-25 and those before it, may serve a
-    call to one where both sides support it, under IFC-003 and DL12; a result whose `resultType`
+    sides support. A call that IFC-007 governs is declared no extension, so a revision
+    that has no negotiation of extensions, such as 2025-11-25 and those before it, may serve
+    such a call where both sides support it, under IFC-003 and DL12; a result whose `resultType`
     is absent, under IFC-010, is a result at such a revision.
   vectors: []
 
@@ -125,7 +128,8 @@
   level: must
   when: >-
     An engine sends a call for a request or a hook to an implementation that carries Conduit's
-    keys.
+    keys, or a call for a hook that the `keyed` of an implementation marked `plain` lists
+    (PKG-020).
   then: >-
     The call declares Conduit's extension, under IFC-037, and its `_meta` holds
     `io.github.shrav-k.conduit/instance`, `io.github.shrav-k.conduit/operation`,
@@ -170,7 +174,8 @@
   layer: interface
   level: must not
   when: >-
-    An engine sends a call for a request or a hook to an implementation marked `plain`.
+    An engine sends a call for a request or a hook to an implementation marked `plain`, other
+    than a call for a hook that its item's `keyed` lists (PKG-020).
   then: >-
     The call carries Conduit's keys.
   observable: >-
@@ -205,7 +210,10 @@
   layer: interface
   level: must
   when: >-
-    An implementation that carries Conduit's keys returns a result.
+    An implementation that carries Conduit's keys returns a result, or an implementation marked
+    `plain` returns one for a call for a hook that its item's `keyed` lists (PKG-020).
+    IFC-010 governs a URL-mode `input_required` result from a part of sign-in.v1 in place of
+    this rule.
   then: >-
     The result's `_meta` holds `io.github.shrav-k.conduit/outcome`, with the value succeeded,
     failed or unknown, unless it holds `io.github.shrav-k.conduit/reason` in place of an outcome
@@ -230,14 +238,26 @@
   layer: interface
   level: must
   when: >-
-    An implementation marked `plain` answers a `tools/call` request.
+    An implementation marked `plain` answers a `tools/call` request, other than one for a hook
+    that its item's `keyed` lists (PKG-020).
+    This rule also applies when a call that carries Conduit's keys for a part of sign-in.v1
+    returns an `input_required` result holding a URL-mode input request.
   then: >-
-    A complete result that is not an error is the outcome succeeded. An error on an operation whose
-    contract states no `effect`, that is not a control and whose contract is not marked
-    `startsModelWork: true`, as IFC-033 tests for `readOnlyHint`, is failed, including a JSON-RPC
-    error for invalid parameters. A result whose `resultType` is `input_required` or is a value the
-    engine does not recognize, any other error but one after which the engine sends the call once
-    more under IFC-046, and no result at all, is unknown.
+    For an `input_required` result holding a URL-mode input request from a part of sign-in.v1,
+    the engine follows this rule in place of the terminal outcome and output checks of IFC-009,
+    OPS-006 and OPS-007, for a plain call and for a call that carries Conduit's keys. From the
+    sign-in-hook.v1 part, it relays the request under PND-010 and keeps the part and sign-in.v1
+    in progress when the request passes IFC-049's checks. This is IFC-016's relay of URL-mode
+    elicitation arising as a part of sign-in.v1. A request from that part that fails a check of
+    IFC-049 ends sign-in.v1 failed under IFC-049. From any other part of sign-in.v1, a URL-mode
+    input request ends that part unknown. An account check that so ends follows PND-010 and
+    PND-011.
+    For every other answer to a plain call, a complete result that is not an error is the outcome
+    succeeded. An error on an operation whose contract states no `effect`, that is not a control
+    and whose contract is not marked `startsModelWork: true`, as IFC-033 tests for `readOnlyHint`,
+    is failed, including a JSON-RPC error for invalid parameters. A result whose `resultType` is
+    `input_required` or is a value the engine does not recognize, any other error but one after
+    which the engine sends the call once more under IFC-046, and no result at all, is unknown.
   observable: >-
     A result is complete when its `resultType` is `complete` or absent, and is an error when its
     `isError` is true. A protocol error is a JSON-RPC error. The protocol's code for invalid
@@ -1031,8 +1051,10 @@
     The engine is to send a call that carries Conduit's keys to an implementation, for a request
     or a hook, or to make a provider call under PRV-005 to a provider's implementation item.
   then: >-
-    Before its first call to each run of the implementation, and to an item reached by `remote`
-    at each connection that a setup or a retirement makes to it under IFC-041, the engine reads
+    Before its first such call to each run of the implementation, which for an implementation
+    marked `plain` is its first call for a hook that its item's `keyed` lists (PKG-020), and to
+    an item reached by `remote` at each connection that a setup or a retirement makes to it
+    under IFC-041, the engine reads
     the implementation's result of `server/discover`, and it may read it again at any time. It
     declares Conduit's extension, `io.github.shrav-k.conduit/implementation-interface`, with
     `revision` at `v0` in its settings object, on each call, in
@@ -1042,9 +1064,12 @@
     without Conduit's keys.
   observable: >-
     The revision `v0` is that of this version of the specification. The engine never falls back
-    to sending such a call as it would to a plain implementation: only an implementation
-    marked `plain` is sent none of Conduit's keys, under IFC-007, and the engine declares no
-    extension of Conduit's to it. What else a call declares beside the extension is IFC-045's.
+    to sending such a call as it would to a plain implementation: only a call that IFC-007
+    governs, to an implementation marked `plain` for no hook that its item's `keyed` lists, is
+    sent none of Conduit's keys, and the engine declares no extension of Conduit's on it. Where
+    the discovery result of an implementation marked `plain` whose item states `keyed` does not
+    list the extension, only the hooks that `keyed` lists are not dispatched, and its other
+    calls are sent as before. What else a call declares beside the extension is IFC-045's.
     No plain implementation implements an operation of
     `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1`, under PKG-020, so every
     provider call declares the extension. A provider whose discovery result lacks the extension
@@ -1264,8 +1289,9 @@
     whose Type states signIn. It declares no form-mode elicitation and no elicitation for
     provider calls.
   observable: >-
-    A call to an implementation marked `plain` declares no extension of Conduit's, under
-    IFC-007 and IFC-037, so it declares only tasks where allowed and URL elicitation where
+    A call to an implementation marked `plain`, other than one for a hook that its item's
+    `keyed` lists (PKG-020), declares no extension of Conduit's, under IFC-007 and IFC-037, so
+    it declares only tasks where allowed and URL elicitation where
     that Type states signIn. A plain OAuth server whose Type states no signIn therefore sees
     the same capability declaration as before. IFC-016 and IFC-049 limit the relay. The
     protocol has a server rely on no capability that a request does not declare, and answer
@@ -1317,8 +1343,9 @@
   layer: interface
   level: must
   when: >-
-    An implementation that carries Conduit's keys answers a call that the engine sent it
-    with the protocol's error -32021, because processing the call needs a client capability
+    An implementation that carries Conduit's keys answers a call that the engine sent it, or one
+    marked `plain` answers a call for a hook that its item's `keyed` lists (PKG-020), with the
+    protocol's error -32021, because processing the call needs a client capability
     that the call does not declare.
   then: >-
     It answers so only where it has performed nothing for the call: it does not begin to

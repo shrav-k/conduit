@@ -500,7 +500,10 @@ Their package or submission digest pins them. Client IDs shared with Types held 
 address require root's confirmation at install; registration and replacement report conflict
 without confirmation. Installation shows each Type's logins, and inspection shows its object's
 Type's logins. REC-002 records the confirmed client IDs and no other install input.
-The person may ask for a login with signInLogin; fixed-port logins are serialized (PND-010).
+The person may ask for a login with signInLogin, except where the instance's sign-in-hook is
+a plain hook, one whose implementation is marked `plain` and whose item does not list it under
+`keyed`: it gets no name, and the request reports invalid before any part. Fixed-port logins are
+serialized (PND-010).
 The URL matches that stated login, and the engine writes the message (IFC-049). Only the
 receiving Interface's bound tools/call retry carries signInReturn to the initiating hook,
 under PND-013. The return is checked, passed at most once and never kept; polling and the

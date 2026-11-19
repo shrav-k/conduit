@@ -215,18 +215,24 @@
     checking the account with account-hook.v1 and undoing any different account with
     sign-out-hook.v1, under PND-005 and PND-011; then dispatching its setup hook, under TPL-017.
     A part is begun only once
-    every part that comes before it in that order, and is not marked optional, has succeeded. No
-    part is begun once the instance is retired, or once the setup is cancelled under OPS-027.
+    every part that comes before it in that order, and is not marked optional, has succeeded; an
+    account check that failed or ended unknown counts here as one that succeeded with no
+    account (PND-011). No part is begun once the instance is retired, or once the setup is
+    cancelled under OPS-027.
     Nothing else is dispatched, apart from the reads of secrets that the run or a connection
     needs, under SEC-010 and SEC-013.
   observable: >-
     No record shows a part begun before every earlier part that is not marked optional has
     succeeded: one that failed, ended unknown, was cancelled or was not dispatched leaves every
-    later part not begun, and the setup's outcome is as OPS-022 gives it. The run and the
+    later part not begun, an account check that failed or ended unknown apart, which counts as
+    one that succeeded with no account, and the setup's outcome is as OPS-022 gives it. The run
+    and the
     connections stand at one position in the order: none of them waits for another. The account
     check waits for all of them, any undo waits for the check, and the setup hook waits for
-    those parts. No account or a different account raises the sign-in action under PND-005;
-    setup does not wait for the person to sign in. A run is asked for only once the declared
+    those parts. No account, a different account, or an account check that failed or ended
+    unknown raises the sign-in action under PND-005; setup does not wait for the person to
+    sign in, and OPS-022 counts such a check as succeeded. A run is asked for only once the
+    declared
     Conduits are open, so the
     reads it needs go through Conduits that are open. Among the Resources of a Pool's entries,
     POOL-013 gives the order. Where the instance is retired during its setup, under PLC-017 or

@@ -803,3 +803,41 @@ reads the value, so no result, record, diagnostic, decision or state holds it (P
 retry's return is not yet read: PND-013's checks and the `sign-in-hook.v1` retry that passes a
 value on are later orders' of the cut. The core has no task requests, so a `tasks/update`
 carrying the key is not decided.
+
+## Ahead of the engine: ruling 86 (order 207)
+
+Order 207 wrote into `spec/` what this build does not do yet; order 209 builds it. Until it
+does, each change is recorded as follows.
+
+- **Keys per operation** (ruling 86, point 2): an implementation item marked `plain` and reached by
+  `command` or `package` may list hooks under `keyed`, whose calls carry Conduit's keys while every
+  other call to it stays plain (PKG-020, IFC-006, IFC-007, IFC-009, IFC-010, IFC-037, PND-013). The
+  loader takes `manifest.v1` from `spec/`, so it accepts such an item
+  (`requests-keyed-hook-manifest`) and rejects `keyed` on an item that is not plain
+  (`PKG-020-manifest-keyed-not-plain.yaml`). The core checks nothing else of `keyed`: it registers
+  one that lists an operation that is not a hook (`requests-keyed-not-a-hook`), and it reads `plain`
+  per item, so it sends a hook that `keyed` lists as a plain call, with no discovery before it.
+  Those calls have no case here: their steps need the discovery that order 209 builds. Order 209
+  also needs a registration case for a core hook listed in both `keyed` and `tools` but missing from
+  `implements`. PKG-020 requires that each selection appear in `implements`, be a key of `tools` and
+  name one of the five core hooks.
+- PND-010 refuses as invalid, before any part, a `signInLogin` that names a stated login where
+  the instance's `sign-in-hook.v1` is a plain hook. The core refuses only a name that no login
+  states (`requests-sign-in-login-plain-hook`). The `access-decision` record reports whether
+  access was permitted. After access is permitted, the login validation records its reason and
+  deciding rule in `request-ended`.
+- PND-010, PND-011 and TPL-012 count an account check that failed or ended unknown as no
+  account: before `sign-in-hook.v1` it goes on to that hook, while polling it counts as no
+  account yet, and in setup it raises the sign-in action and lets the setup go on, clearing no
+  condition in any of them. The bare failed check in `requests-sign-in-setup-check-failed`
+  stops setup and raises no sign-in action. The core lacks the setup-specific action trigger
+  for a failed or unknown check. A qualifying lapse diagnostic on such a result can already
+  raise the action under PND-005. This case selects no setup hook. Order 209 needs a case with
+  a selected setup hook that asserts its dispatch after a failed or unknown check. In
+  `sign-in.v1`, the core ends the invocation failed at the initial failed check. Step 24 of
+  `requests-sign-in-account-first` has asserted that ending since order 048a-5b, and order 209
+  flips it.
+
+IFC-010's relay of a URL request from the `sign-in-hook.v1` part, plain or keyed, has no case
+here: this build runs no `sign-in-hook.v1` part; orders 048a-5d and 048a-5e build the hook part
+and the relay, whose cases show it.

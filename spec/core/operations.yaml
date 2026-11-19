@@ -1372,13 +1372,16 @@ metadata:
     Sign in an instance for the configured expected account (PND-010, PND-011, IFC-049).
     Only an Interface on its own behalf, through the owning Fleet for an Agent or owning Pool for
     a Resource; Resources are root-only, and other Interfaces sign in Agents of scoped Fleets only.
-    account-hook runs first; the expected account succeeds; no account or another account proceeds
-    to sign-in-hook, which relays a URL action. Retries poll for the account; a wrong account found
-    then is undone and the invocation fails with the action still pending. Failed undo holds model
+    account-hook runs first; the expected account succeeds; no account, another account or a
+    failed or unknown check proceeds to sign-in-hook, which relays a URL action. Retries poll for
+    the account, a failed or unknown poll counting as none yet; a wrong account found then is
+    undone and the invocation fails with the action still pending. Failed undo holds model
     work. Missing URL capability returns
     -32021. No held request resumes and no later hook runs after DL18.
     The optional request _meta signInLogin asks for one stated login; an unknown name reports
-    invalid before any part, with the stated names. Without one the hook chooses. Before any
+    invalid before any part, with the stated names, and so does any name where the instance's
+    sign-in-hook is plain, its item not listing it under keyed, since a plain hook gets no
+    name. Without one the hook chooses. Before any
     part, a fixed port shared with a login an in-progress sign-in may start reports
     unavailable, naming the port and only a visible pending action (PND-010). Before any part,
     a sign-in.v1 for an instance whose earlier sign-in.v1, setup or retirement has been

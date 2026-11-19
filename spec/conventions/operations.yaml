@@ -94,7 +94,8 @@
   layer: convention
   level: must
   when: >-
-    An implementation that carries Conduit's keys returns a result.
+    An implementation that carries Conduit's keys returns a result. IFC-010 governs a URL-mode
+    `input_required` result from a part of sign-in.v1 in place of this rule.
   then: >-
     The result states its outcome, or a reason in place of one where IFC-026 has it give one.
   observable: >-
@@ -117,7 +118,8 @@
     one; a result from an implementation that carries Conduit's keys states neither an outcome
     nor a reason under IFC-026, or states both; such a result states an outcome with which its
     `isError` disagrees; or a declared output fails validation in a result that would otherwise
-    have the outcome succeeded, whether or not the implementation is marked `plain`.
+    have the outcome succeeded, whether or not the implementation is marked `plain`. IFC-010
+    governs a URL-mode `input_required` result from a part of sign-in.v1 in place of this rule.
   then: >-
     The invocation's outcome is unknown.
   observable: >-
@@ -480,8 +482,9 @@
   when: >-
     An invocation of `set-up.v1` or of `retire.v1` has ended.
   then: >-
-    Its outcome is succeeded only if every part not marked optional succeeded, failed only if no
-    part had an effect, and otherwise unknown. In a further setup or retirement, a part that is
+    Its outcome is succeeded only if every part not marked optional succeeded, an account check
+    that failed or ended unknown counting as succeeded under TPL-012, failed only if no part had
+    an effect, and otherwise unknown. In a further setup or retirement, a part that is
     not dispatched counts with the outcome it has from before or from its reconciliation.
   observable: >-
     The parts of a setup are those of TPL-012, and those of a retirement those of TPL-009 and
@@ -499,7 +502,9 @@
     succeeded before, that CON-004 or POOL-013 counts as succeeded because what it does is done
     already, or that was reconciled as having occurred counts as succeeded, so a further setup
     or retirement can succeed without dispatching it again, and one that failed and is not
-    dispatched again counts as failed.
+    dispatched again counts as failed. An account check that failed or ended unknown counts as
+    succeeded only in the setup that dispatched it; a further setup checks the account again
+    under TPL-012.
   vectors: []
 
 - id: OPS-023

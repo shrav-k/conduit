@@ -150,10 +150,13 @@ metadata:
     fixed `value`, and `headers`, for a `remote` item, the name of a header the Remote declares,
     each to a JSON Pointer into the instance's configuration that supplies the value; no key
     binds the Package's `runtimeArguments`. An existing server that knows nothing of this
-    specification is marked `plain: true`, gives `tools` and states no `supports`; an item that
-    is not plain gives no `tools`, and, where it is reached by `remote`, stands at an `https`
-    URL, since the engine connects to no other, and names no `Authorization`, in any case of
-    its letters, in `headers`, since the engine presents its own proof in that header.
+    specification is marked `plain: true`, gives `tools` and states no `supports`, and, where it
+    is reached by `command` or `package`, may list in `keyed` the hooks whose calls carry
+    Conduit's keys; that each selection in `keyed` is in `implements`, is a key of `tools` and is
+    one of the core hooks is PKG-020's rule, and not in this schema. An item that is not plain gives
+    no `tools` and no `keyed`, and, where it is reached by `remote`, stands at an `https` URL, since
+    the engine connects to no other, and names no `Authorization`, in any case of its letters, in
+    `headers`, since the engine presents its own proof in that header.
     `supports` and `nodeSelector`, a label selector, may each be left out. A template is
     rejected where an item selected for it binds in `environment` a variable that `identity`
     carries in `run.v1`, or where a `remote` item selected for it carries a secret, in a header
@@ -171,6 +174,11 @@ spec:
     package: {$ref: github.com/shrav-k/conduit/core#server-package.v1}
     remote: {$ref: github.com/shrav-k/conduit/core#server-remote.v1}
     plain: {type: boolean}
+    keyed:
+      type: array
+      items: {$ref: github.com/shrav-k/conduit/core#selection.v1}
+      minItems: 1
+      uniqueItems: true
     supports: {$ref: '#/$defs/references'}
     tools:
       type: object
@@ -191,6 +199,8 @@ spec:
     headers: [remote]
   dependentSchemas:
     environment:
+      not: {required: [remote]}
+    keyed:
       not: {required: [remote]}
     package:
       properties:
@@ -214,6 +224,7 @@ spec:
   else:
     not: {required: [tools]}
     properties:
+      keyed: false
       remote:
         properties:
           url: {pattern: '^https://'}

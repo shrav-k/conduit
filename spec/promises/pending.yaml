@@ -139,7 +139,8 @@
   level: must
   when: >-
     An instance whose Type states signIn has a string at its account pointer, and setup's
-    account-hook reports no account or a different account; or the account-hook.v1 part that
+    account-hook reports no account or a different account, or fails or ends unknown; or the
+    account-hook.v1 part that
     sign-in.v1 dispatches before sign-in-hook.v1 reports a different account; or its
     implementation sends URL-mode elicitation outside sign-in.v1; or its contract reports a
     missing or lapsed login.
@@ -179,8 +180,13 @@
     otherwise the permitted request reports invalid. A Conduit whose consumer is not an
     Interface cannot be opened listing sign-in.v1; the open reports refused.
     Before dispatching any part, a signInLogin naming no login the Type states reports invalid,
-    with a diagnostic naming PND-010 and the stated login names. Before dispatching any part,
-    the request reports unavailable where an in-progress sign-in.v1 invocation may start a
+    with a diagnostic naming PND-010 and the stated login names; one naming a stated login
+    reports invalid where the instance's sign-in-hook.v1 is a plain hook, its implementation
+    marked `plain` and its item's `keyed` not listing sign-in-hook.v1 (PKG-020), with a
+    diagnostic naming PND-010 and the login, and saying that a plain hook gets no login name
+    (IFC-007) and that the request may be sent without signInLogin. Before dispatching any
+    part, the request reports unavailable where an in-progress sign-in.v1 invocation may
+    start a
     login stating a fixed port that a login this request may start also states. The diagnostic
     names PND-010 and the port, and names the other invocation's pending action only where
     the caller may see it (PND-002). A sign-in.v1 for an instance whose earlier sign-in.v1,
@@ -192,13 +198,18 @@
     The engine first dispatches account-hook.v1 as a part, before sign-in-hook.v1. If that
     check succeeds with the expected account, compared ignoring ASCII case, sign-in.v1
     succeeds with output account and answers any sign-in action signed-in. If that check
-    succeeds with no account or another account, the engine invokes sign-in-hook.v1 as a
-    part and relays its URL elicitation under IFC-049; that initial mismatch does not undo
-    the account or end sign-in.v1. Another account found there raises the instance's sign-in
-    action under PND-005, unless one is unanswered, and counts as no account yet while
-    sign-in.v1 polls (PND-011). Each retry polls account-hook.v1 to check the account
-    after the person's sign-in, under PND-011, until an account appears or DL18 ends; no
-    account yet is not failed. The same invocation may answer another InputRequiredResult or
+    succeeds with no account or another account, or fails or ends unknown, the engine invokes
+    sign-in-hook.v1 as a part and relays its URL elicitation under IFC-049; that initial
+    mismatch or failure does not undo the account or end sign-in.v1. A check there that
+    failed or ended unknown counts as no account: it raises nothing that PND-005 does not
+    raise for a contract that reports a missing or lapsed login, and clears no condition.
+    Another account found there raises the instance's sign-in action under PND-005, unless
+    one is unanswered, and counts as no account yet while sign-in.v1 polls (PND-011). Each
+    retry polls account-hook.v1 to check the account after the person's sign-in, under
+    PND-011, until an account appears or DL18 ends; no account yet is not failed, and a poll
+    that failed or ended unknown counts as no account yet, so that only a later check that
+    reports the expected account completes sign-in.v1. The same invocation may answer another
+    InputRequiredResult or
     block. Decline or cancel received on a retry ends failed. DL18 ending without completion
     ends unknown and no hook runs later. The operation starts no model work and resumes no
     held request. A request that does not declare URL elicitation is decided after the access
@@ -206,10 +217,14 @@
     requiredCapabilities, not the JSON-RPC error for invalid parameters, and reports invalid
     under IFC-049.
     The engine passes the asked-for name to sign-in-hook.v1 (IFC-006), which starts that login
-    or fails with a diagnostic naming PND-010 and why it could not. Without a name the hook
-    chooses among the Type's logins. A plain hook gets no Conduit keys (IFC-007), hence no
-    name; its URL for another login fails IFC-049's match. This includes asking for a device
-    code where the account permits it. The return goes only through the Interface that
+    or fails with a diagnostic naming PND-010 and why it could not. This includes asking for a
+    device code where the account permits it. Without a name the hook chooses among the Type's
+    logins. A plain hook, one whose implementation is marked `plain` and whose item's `keyed`
+    does not list sign-in-hook.v1, gets no Conduit keys (IFC-007), hence no name, so a request
+    that asks it for a login reports invalid before any part, and no login starts that the
+    person did not ask for; without a name its URL still matches one stated login under
+    IFC-049. A sign-in-hook.v1 that its item's `keyed` lists gets them, its item's other calls
+    staying plain (PKG-020). The return goes only through the Interface that
     received the sign-in: only its retry in the invocation bound by requestState
     (IFC-049) carries a return under PND-013. Polling continues under PND-011, and the account
     check alone decides completion.
@@ -223,14 +238,16 @@
     sign-in.v1, or while polling after that hook's URL elicitation.
   then: >-
     Only the expected account, compared ignoring ASCII case, completes sign-in. The check
-    before sign-in-hook.v1 follows PND-010: no account or another account proceeds to that
-    hook. During polling after its URL elicitation, the expected account succeeds with output
+    before sign-in-hook.v1 follows PND-010: no account, another account, or a check that
+    failed or ended unknown proceeds to that hook. During polling after its URL elicitation,
+    the expected account succeeds with output
     account and answers the action signed-in; the account that the check before sign-in-hook.v1
     found counts as no account yet; any other account is undone by a sign-out-hook.v1 part,
     sign-in.v1 ends failed naming both accounts, and the action stays
     pending with the attempt as evidence. A failed or unknown
-    account hook does not complete sign-in, and its uncertainty is explained; no account yet
-    during polling follows PND-010.
+    account hook completes no sign-in and clears no condition, and its uncertainty is
+    explained. It counts as no account before sign-in-hook.v1 and in setup, and as no account
+    yet during polling; no account yet during polling follows PND-010.
   observable: >-
     If sign-out does not succeed, the engine reports SignInUndone=False with its cause and,
     until that condition clears, dispatches to that instance no request other than the parts
@@ -242,7 +259,9 @@
     and filters, through no Conduit, never on an implementation notification. Setup checks
     the account after its run and connections and before its setup hook, in TPL-012's order;
     no account or a different account raises the action under PND-005, and a different
-    account is undone by a sign-out-hook.v1 part before setup proceeds.
+    account is undone by a sign-out-hook.v1 part before setup proceeds. A setup check that
+    failed or ended unknown raises the action under PND-005 as no account does, undoes
+    nothing, and lets setup proceed to its setup hook (TPL-012).
   vectors: []
 
 - id: PND-013
@@ -255,7 +274,8 @@
     A retry that declines or cancels ends failed under PND-010 and passes on no value.
     Otherwise the engine checks these in order, refusing the return with the named reason:
     first, the relayed login's return is redirect or page, it states carried: true, and its
-    sign-in-hook.v1 implementation carries Conduit's keys (IFC-007), else not-accepted;
+    sign-in-hook.v1 carries Conduit's keys, its implementation not marked `plain` or its item's
+    `keyed` listing sign-in-hook.v1 (IFC-007, PKG-020), else not-accepted;
     second, no return has been passed on for this invocation, else already-returned;
     third, value is at most 8192 bytes and all printable ASCII, else malformed;
     fourth, for redirect, value parses once as an absolute URL with no user information,

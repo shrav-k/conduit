@@ -8,7 +8,8 @@
     "PND-005",
     "PND-010",
     "IFC-016",
-    "PND-001"
+    "PND-001",
+    "IFC-045"
   ],
   "title": "Refuse a second sign-in of one instance as conflict, and raise its sign-in action when its implementation reports a lapsed login",
   "profile": "first-build",
@@ -2531,7 +2532,23 @@
       "expect": {
         "reply": {
           "pending": true
-        }
+        },
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "call": {
+              "params": {
+                "_meta": {
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "elicitation": {
+                      "url": {}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
       },
       "capture": {
         "call1": "/reply/invocation"
@@ -3413,7 +3430,23 @@
       "expect": {
         "reply": {
           "pending": true
-        }
+        },
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "call": {
+              "params": {
+                "_meta": {
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "elicitation": {
+                      "url": {}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
       },
       "capture": {
         "call3": "/reply/invocation"

@@ -1,3 +1,4 @@
+# Checked at the merge of order 048b-relay2, against main at 10ad9931: the work's vector delta matches these shapes.
 - name: IFC-045 cited by the sign-in lapse and conflict case
   kind: metadata
   cases: [requests-sign-in-lapse-and-conflict]

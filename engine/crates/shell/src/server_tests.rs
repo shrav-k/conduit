@@ -1714,6 +1714,80 @@ async fn shell_rejection_carries_diagnostic() {
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn sign_in_return_not_taken_reports_invalid_over_mcp() {
+    let temp = temporary();
+    let shell = Arc::new(fixed_shell(temp.path()));
+    server::preflight(&shell).unwrap();
+    let root = actor(&shell, "root");
+    shell.issue_client_token(&root).unwrap();
+    let token = token(&shell, "root");
+    let executor = Arc::new(ServingExecutor::new(Arc::new(crate::MissingExecutor)));
+    let stop = CancellationToken::new();
+    let task = tokio::spawn(server::serve(shell.clone(), executor, stop.clone()));
+    ready(&shell.config.engine_url).await;
+    let session = raw_session(&shell.config.engine_url, &token, "2025-06-18")
+        .await
+        .unwrap();
+    let prefix = &shell.context.meta_prefix;
+    let key = format!("{prefix}signInReturn");
+    let value = "http://127.0.0.1:49152/callback?code=not-a-code&state=not-a-state";
+    let response = reqwest::Client::new()
+        .post(&shell.config.engine_url)
+        .bearer_auth(&token)
+        .header("accept", "application/json, text/event-stream")
+        .header("mcp-session-id", session)
+        .header("mcp-protocol-version", "2025-06-18")
+        .json(&json!({
+            "jsonrpc":"2.0","id":2,"method":"tools/call",
+            "params":{
+                "name":"management.inspect.v1",
+                "arguments":{"object":{"kind":"Interface","name":"root"}},
+                "_meta":{
+                    "io.modelcontextprotocol/clientCapabilities":{"extensions":{format!("{prefix}implementation-interface"):{"revision":"v0"}}},
+                    &key:{"value":value,"via":"paste"}
+                }
+            }
+        }))
+        .send()
+        .await
+        .unwrap();
+    let text = response.text().await.unwrap();
+    let reply: Value = text
+        .lines()
+        .filter_map(|line| line.strip_prefix("data:"))
+        .filter_map(|body| serde_json::from_str::<Value>(body.trim()).ok())
+        .find(|value| value["id"] == 2)
+        .or_else(|| serde_json::from_str(&text).ok())
+        .expect("tool call must contain a JSON reply");
+    let result = &reply["result"];
+    assert_eq!(result["isError"], true);
+    assert_eq!(result["_meta"][format!("{prefix}reason")], "invalid");
+    let diagnostics = result["structuredContent"]["diagnostics"]
+        .as_array()
+        .unwrap();
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0]["ruleId"], "PND-013");
+    assert!(
+        diagnostics[0]["message"]["text"]
+            .as_str()
+            .unwrap()
+            .contains(&key)
+    );
+    let state = shell.writer.lock().unwrap().store.read().unwrap().state;
+    let records = serde_json::to_string(&state.records).unwrap();
+    for withheld in [value, "not-a-code", "not-a-state"] {
+        assert!(!text.contains(withheld));
+        assert!(!records.contains(withheld));
+    }
+    stop.cancel();
+    tokio::time::timeout(Duration::from_secs(60), task)
+        .await
+        .unwrap()
+        .unwrap()
+        .unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn forged_retry_state_is_refused_and_recorded() {
     let temp = temporary();
     let shell = Arc::new(fixed_shell(temp.path()));

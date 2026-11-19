@@ -41,12 +41,12 @@ Each number counts promises. The last row counts those whose Engine source is no
 
 | Promises | language | convention | interface | all |
 | --- | ---: | ---: | ---: | ---: |
-| case passes | 129 | 153 | 27 | 309 |
-| expected failure | 0 | 1 | 0 | 1 |
+| case passes | 129 | 154 | 27 | 310 |
+| expected failure | 0 | 0 | 0 | 0 |
 | reason, no case | 57 | 15 | 1 | 73 |
 | no case, no reason | 40 | 77 | 20 | 137 |
 | all | 226 | 246 | 48 | 520 |
-| named in engine source | 141 | 165 | 26 | 332 |
+| named in engine source | 141 | 166 | 26 | 333 |
 
 ## The promises
 
@@ -420,8 +420,8 @@ Each number counts promises. The last row counts those whose Engine source is no
 | PND-010 | convention | must | 2 | 0 | outside | core, shell | case passes |
 | PND-011 | convention | must | 1 | 0 | outside | core | case passes |
 | PND-012 | convention | must | 1 | 0 | outside | core | case passes |
-| PND-013 | convention | must | 2 | 1 | outside | core | case passes |
-| PND-014 | convention | must not | 1 | 1 | outside | none | expected failure |
+| PND-013 | convention | must | 3 | 0 | outside | core, shell | case passes |
+| PND-014 | convention | must not | 2 | 0 | outside | core | case passes |
 | POOL-001 | language | must | 7 | 0 | cases | core | case passes |
 | POOL-002 | language | must | 2 | 0 | outside | core | case passes |
 | POOL-003 | convention | must | 0 | 0 | outside | core | no case, no reason |

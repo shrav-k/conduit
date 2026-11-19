@@ -1078,6 +1078,34 @@ fn invoke_inner(
         };
         return reject(t, a, c, &route, reason, rule, None, v.restriction.as_ref());
     }
+    if request.sign_in_return.is_some() && route["operation"] != c.qualified("sign-in.v1") {
+        let target = access::object(&t.state, &route["target"]).ok_or("missing target")?;
+        let kind = target["kind"].as_str().ok_or("target has no kind")?;
+        let name = target["name"].as_str().ok_or("target has no name")?;
+        let tool = route["tool"].as_str().ok_or("route has no tool")?;
+        let key = mark(c, "signInReturn");
+        let text = format!(
+            "{tool} reports invalid under PND-013 for {kind}/{name}: {key} is a return only on a retry of sign-in.v1 whose requestState IFC-049 accepts, so this request carries none; its value was not read, kept or passed on."
+        );
+        t.decisions.push(decision(
+            "refuse-sign-in-return",
+            &["PND-013", "PND-014", "OPS-023"],
+            &[],
+            json!({}),
+            vec![],
+        ));
+        return reject_diagnostics(
+            t,
+            a,
+            c,
+            &route,
+            "invalid",
+            "PND-013",
+            None,
+            None,
+            Some(json!([{"ruleId":"PND-013","level":"error","message":{"text":text}}])),
+        );
+    }
     let target = crate::registration::publication_object(
         access::object(&t.state, &route["target"]).ok_or("missing target")?,
         c,
@@ -3162,6 +3190,71 @@ mod tests {
             c,
         )
         .unwrap()
+    }
+
+    #[test]
+    fn sign_in_return_not_taken_is_kept_nowhere() {
+        let (state, c, request) = repeat_fixture(false);
+        let pending = invoke_repeat(&state, &c, &request);
+        assert_eq!(pending.reply["pending"], true);
+        let value = "http://127.0.0.1:49152/callback?code=not-a-code&state=not-a-state";
+        let mut input = json!({
+            "identity":{"kind":"instance","id":"root"},
+            "tool":"management.reserved.v1",
+            "arguments":{},
+            "signInReturn":{"value":value,"via":"paste"}
+        });
+        let repeat = serde_json::from_value::<AccessRequest>(input.clone()).unwrap();
+        let invalid = invoke_repeat(&pending.state, &c, &repeat);
+        assert_eq!(invalid.reply["_meta"][mark(&c, "reason")], "invalid");
+        let diagnostics = invalid.reply["structuredContent"]["diagnostics"]
+            .as_array()
+            .unwrap();
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0]["ruleId"], "PND-013");
+        let message = diagnostics[0]["message"]["text"].as_str().unwrap();
+        assert!(message.contains(&mark(&c, "signInReturn")));
+        let target =
+            access::object(&pending.state, &pending.state.invocations[0]["target"]).unwrap();
+        let kind = target["kind"].as_str().unwrap();
+        let name = target["name"].as_str().unwrap();
+        assert!(message.contains(&format!(" under PND-013 for {kind}/{name}: ")));
+        assert!(invalid.external_intents.is_empty());
+        assert_eq!(
+            invalid.state.invocations.len(),
+            pending.state.invocations.len()
+        );
+        assert_eq!(
+            invalid
+                .decisions
+                .iter()
+                .filter(|d| d.action == "refuse-sign-in-return")
+                .count(),
+            1
+        );
+
+        input["tool"] = json!("nope.list.v1");
+        let unpresented = serde_json::from_value::<AccessRequest>(input.clone()).unwrap();
+        let refused = invoke_repeat(&pending.state, &c, &unpresented);
+        assert_eq!(
+            refused.reply["error"]["data"][mark(&c, "reason")],
+            "refused"
+        );
+        for (transition, request) in [(&invalid, &repeat), (&refused, &unpresented)] {
+            for rendered in [
+                serde_json::to_string(transition).unwrap(),
+                format!("{transition:?}"),
+                format!("{request:?}"),
+            ] {
+                for withheld in [value, "not-a-code", "not-a-state"] {
+                    assert!(!rendered.contains(withheld));
+                }
+            }
+        }
+
+        input["signInReturn"] = Value::Null;
+        let null_return = serde_json::from_value::<AccessRequest>(input).unwrap();
+        assert!(null_return.sign_in_return.is_none());
     }
 
     #[test]

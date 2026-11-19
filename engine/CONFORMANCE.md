@@ -718,9 +718,8 @@ Still unfinished:
   reports invalid under PND-013, since a retry reaches the core only as the shell's `respond` input
   (order 048b-relay1), never as such a request; and one whose `signInLogin` names no login its Type
   states reports invalid under PND-010, naming the stated logins. The shell passes
-  `clientCapabilities` and `signInLogin` to the core, and not yet `signInReturn` (order 048a-6),
-  so through the shell a return on a first request is not seen, and the request is answered as one
-  without it.
+  `clientCapabilities`, `signInLogin` and, in a request it does not reject, `signInReturn` to the
+  core.
 
 ## Outcomes the engine decides (order 046c)
 
@@ -769,3 +768,17 @@ handle. A restart forgets every handle; the engine's recovery ends the invocatio
 unknown (DL6), so a retry after it is refused as not issued. rmcp 3.9.0 writes every URL
 elicitation with `elicitationId` empty: the engine correlates nothing by it and sends no
 completion notification, which is how this build reads IFC-049's "There is no elicitationId".
+
+## A sign-in return where none is taken (order 048a-6)
+
+The core's request has a member for `signInReturn`, the `_meta` key of PND-013 and PND-014, whose
+`Debug` form withholds its value. A request that carries it and whose operation is not
+`sign-in.v1` is decided right after the access decision: where the access decision permits it,
+it reports invalid under PND-013, with a diagnostic naming the key and holding no part of the
+value, before any other invalid, any conflict and any hold of PND-005 or PND-011, and it is not
+dispatched; where it does not, it keeps that reason (OPS-023). A `sign-in.v1` request that
+carries it is decided as order 048a-5 decides it, among that operation's invalids. Nothing else
+reads the value, so no result, record, diagnostic, decision or state holds it (PND-014). A
+retry's return is not yet read: PND-013's checks and the `sign-in-hook.v1` retry that passes a
+value on are later orders' of the cut. The core has no task requests, so a `tasks/update`
+carrying the key is not decided.

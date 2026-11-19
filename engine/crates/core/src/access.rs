@@ -12,6 +12,19 @@ pub enum Identity {
     Instance { id: String },
     Unreadable,
 }
+
+/// PND-013 and PND-014: the value of an Interface's `signInReturn`. Only PND-013's
+/// checks read it, and its `Debug` form withholds it.
+#[derive(Clone, Deserialize)]
+#[serde(transparent)]
+pub struct SignInReturn(pub Value);
+
+impl std::fmt::Debug for SignInReturn {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("SignInReturn(withheld)")
+    }
+}
+
 #[derive(Clone, Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct AccessRequest {
@@ -29,7 +42,7 @@ pub struct AccessRequest {
     #[serde(default, rename = "signInLogin")]
     pub sign_in_login: Option<Value>,
     #[serde(default, rename = "signInReturn")]
-    pub sign_in_return: Option<Value>,
+    pub sign_in_return: Option<SignInReturn>,
 }
 fn yes() -> bool {
     true

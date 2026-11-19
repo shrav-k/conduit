@@ -1,3 +1,4 @@
+# Checked at the merge of order 048a-6, against main at c704275f: the work's vector delta matches these shapes.
 - name: requests-sign-in-return-not-taken
   kind: added
   cases: [requests-sign-in-return-not-taken]

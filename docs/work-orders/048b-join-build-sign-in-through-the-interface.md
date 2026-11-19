@@ -20,8 +20,8 @@ client, sign in nowhere, and open no URL: the URLs below are test values that no
 048b-join: S-M." Each side was cut again (the coordinator's cuts, each open to the owner's strike):
 the shell's side into 048b-relay1 and 048b-relay2, both merged; the engine's side, in the core,
 into the parts of 048a-5 and 048a-6, each after the one before. On 2026-11-19 the owner answered two
-questions on the path to the Mac dogfood, which ruling 88 records with the owner's words (until its
-record merges, the coordinator's notes (private) hold them):
+questions on the path to the Mac dogfood, which [ruling 88](../proposals/ruling-88/README.md)
+records with the owner's words:
 
 - "Defer 7 and 8 (Recommended)", whose option read: "048b-join comes right after 048a-5h and joins
   the URL relay and polling only; 048a-7, 048a-8 and 051b-3 (the return through Conduit, used by
@@ -41,8 +41,11 @@ So the path to the Mac dogfood is order 209 (ruling 86's engine half), 048a-5d, 
 the Agent packages 0.2.0 joined to `main`, follows this order and A5's live check. This order
 follows 048a-5gh directly. Its return leg, the Interface's retry carrying `signInReturn` on to the
 hook that started the login, moves with 048a-7 and 048a-8 after the dogfood, and is not built or
-tested here. It is on the sign-in chain, so A77's amendment of 2026-11-19 does not pair it
-([work orders](../implementation/WORK_ORDERS.md)).
+tested here. It is on the sign-in chain, so A77's amendment of 2026-11-19 does not pair it, and
+[ruling 89](../proposals/ruling-89/README.md), point 6, pauses pairing until 050n merges
+([work orders](../implementation/WORK_ORDERS.md)); under [ruling 87](../proposals/ruling-87/README.md)
+it runs one Codex round, a worker and a fresh Codex verifier, whose musts go to the fresh Opus
+reader.
 
 [The targeted review's section 6](../proposals/review-signin-2026-11-16/README.md#048b-join) puts
 nothing on 048b-join. The owner's [ruling 82](../proposals/ruling-82/README.md#the-decisions),
@@ -58,8 +61,7 @@ the texts of orders 209 and 048a-5d (refreshed, not yet merged) and of 048a-5d2,
 strike ([ruling 48](../proposals/ruling-48/README.md)), and follows the owner's two answers above:
 
 - the order follows 048a-5gh directly, after 209, 048a-5d, 048a-5d2 and 048a-5ef, and no longer
-  after 048a-7, 048a-8 or 048b-relay2's planned successor; its start check stops where any of them
-  has not merged;
+  after 048a-7, 048a-8 or 048b-relay2's planned successor;
 - the path it pins ends in polling: the Interface's retry carries the person's acceptance and no
   return, `account-hook.v1` is polled, and the expected account signs the instance in; the earlier
   text's retry of `sign-in-hook.v1` carrying a return, `signInLogin`'s `returned` and the rebuilt
@@ -73,6 +75,47 @@ strike ([ruling 48](../proposals/ruling-48/README.md)), and follows the owner's 
 - the negative control removes the forwarding of `clientCapabilities` and `signInLogin`, the seam
   the dogfood path needs, in place of the forwarding of `signInReturn`;
 - the run is one Codex round, under ruling 87 (below, "Done when").
+
+**Its dispatch refresh.** The coordinator refreshed it again on 2026-11-19, for its stacked
+dispatch, against `main` at `92632057`, where order 209 has merged (#412, its `server/discover`
+carrying `_meta`) and the texts of 048a-5d, 048a-5d2 and 048a-5ef have merged refreshed (#408,
+#410, #411), and against 048a-5gh's text refreshed beside it; none of 048a-5d to 048a-5gh is
+merged as built. Every change below is the coordinator's, open to the owner's strike
+([ruling 48](../proposals/ruling-48/README.md)):
+
+- under the owner's choice on 2026-11-19 of the lever "Pipeline the chain", as the coordinator
+  applies it ([ruling 89](../proposals/ruling-89/README.md), point 2, open to the owner's strike),
+  this order may start from 048a-5gh's round-1 branch, before 048a-5gh merges, with orders
+  048a-5d, 048a-5d2 and 048a-5ef each merged or on its own round-1 branch below it: the start check
+  accepts any of these bases, says how to tell them apart and that the texts on `main` govern
+  where the base holds older copies, and the admin paragraph at the foot lists what the coordinator
+  rebases and rereads when 048a-5gh merges (the readiness review's M8, in the coordinator's notes
+  (private): the texts written ahead refused the stacked dispatch);
+- under the owner's choice of the lever "Less prescriptive orders", as the coordinator applies it
+  (ruling 89, point 2), the start check keeps only what the work needs: the Records now only tell
+  the bases apart; the greps that pinned a predecessor's removed names or sentences
+  (`end-sign-in-unrelayed`, "Until order 048a-5e builds the relay"), 048a-6's lifted expected
+  failure and its sentence in `engine/CONFORMANCE.md` are dropped, since no decision reads them
+  and a predecessor's fixer who rewords them would stop nothing that matters; where a function, a
+  member or a sentence that a decision reads is on the base under another name or in other words,
+  the worker uses what it finds and reports it, and stops only where it is missing; and the line
+  numbers of "What the engine already does" are dropped for the text quoted;
+- the start runs 048a-5gh's shell test of DL18's timer beside 048b-relay2's test, as the evidence
+  for decision 5, in place of only naming its function;
+- in "Done when", the greps of the three tests' names, which their filtered runs already show,
+  are dropped, the greps of the helpers that order 051b-2 calls by name stay, and the whole engine
+  suite runs once, last, after the negative control;
+- the first test's step 5 sends its retry over a second connection, opened after the first is
+  closed, with the same token: it shows that a retry needs only the Interface's token and the
+  shell's requestState, which every request shares (`States` in `serve`'s one `Handler`); by the
+  coordinator's reading of rmcp 3.9.0 (the readiness review's B2), a client on revision
+  `2026-07-28` is served without an MCP session, so DL10's idle limit does not reach
+  `conduit sign-in`, and order 051b-2 reconnects nothing; decision 8 asks the worker to report what
+  that leaves for order 051b-2;
+- "What the coordinator rechecks at dispatch" reads each predecessor's Record where it has merged,
+  or else its round-1 build and the verifier's and reader's findings on it so far, and the items it
+  listed that are now settled (ruling 87's and ruling 88's records, order 117's entry and the
+  index row) are gone.
 
 **What it builds.** One behavior: `sign-in.v1` through the shell, out to the person and back by
 polling. IFC-049: "With that capability tools/call may return InputRequiredResult with resultType
@@ -94,13 +137,22 @@ InputRequiredResult or block. Decline or cancel received on a retry ends failed.
 retry that declines or cancels ends failed under PND-010 and passes on no value." IFC-045: the engine declares "elicitation URL mode {"url": {}} only for requests and
 hooks to instances whose Type states signIn". PND-014: the value is kept nowhere. No promise
 changes: the texts state all of it, and the orders before this one build each half. What is left
-is the proof that the halves meet over the engine's real MCP server (decision 6).
+is the proof that the halves meet over the engine's real MCP server (decision 6). The tests stand a
+script in for the runner, so no real hook process and no `runner.rs` call is on their path, and
+none waits past DL10's session idle limit, which reaches only a client on a revision before
+`2026-07-28`: the live check's dry run and its sitting are the first to
+meet both (the readiness review's M4 and B2, in the coordinator's notes (private)).
 
 **What the orders before it bring, which this order assumes.** Below, `META/x` is the key `x` under
-the prefix that `spec/names.yaml` sets (in the tests, `shell.context.meta_prefix`). Where you find
-at the start that one merged otherwise, apply the nearest sound reading of each decision below to
-what merged, and say so; where an order's Record names a function, a member or a case, use that
-name; but where the start check prints otherwise, stop.
+the prefix that `spec/names.yaml` sets (in the tests, `shell.context.meta_prefix`). Order 209 has
+merged to `main`, though a stacked base may hold its round-1 build and file, which item 1 then
+shows as `:1`; the orders before 048a-5d have merged; the work of 048a-5d, 048a-5d2, 048a-5ef
+and 048a-5gh must be on the base this order starts from, each merged to `main` or on its round-1 branch ("When this
+order starts"). Where you find at the start that one merged, or was built on your base, otherwise,
+apply the nearest sound reading of each decision below to what you find, and say so; where an
+order's Record, or the build on your base, names a function, a member or a case, use that name;
+but where the start check prints otherwise and does not say that a difference may be used and
+reported, stop.
 
 - **A1, from 048a-5 and 048a-6 (merged).** `AccessRequest` (`engine/crates/core/src/access.rs`)
   has the members `client_capabilities`, `sign_in_login` and `sign_in_return`. In `server.rs`'s
@@ -123,7 +175,9 @@ name; but where the start check prints otherwise, stop.
   a check that finds no account or another or that ends failed or unknown, a `sign-in-hook.v1`
   part, each by a `dispatch` intent; a call that carries Conduit's keys is named by the hook's local
   name and holds the asked-for login in `META/signInLogin` (IFC-006), and a call to a plain item is
-  named from its `tools` and holds none of Conduit's keys. The hook's `InputRequiredResult`, received
+  named from its `tools` and holds none of Conduit's keys; order 209's `server/discover`, sent only
+  before a keyed hook of a plain item, is not on this order's path, since neither item below lists
+  a hook under `keyed`. The hook's `InputRequiredResult`, received
   as `{"kind": "result", "result": R}`, is taken by `sign-in.v1` (IFC-010), its form checked
   (048a-5d) and its URL matched to exactly one stated login (048a-5d2); the implementation's
   requestState is kept with the part and never relayed, recorded or shown.
@@ -139,7 +193,10 @@ name; but where the start check prints otherwise, stop.
   result holds `signInLogin`.
 - **A5, from 048a-5gh.** Another account found while polling is undone by a sign-out part; and at
   the expiry of each output it relays, an input naming the invocation and attempt ends that
-  `sign-in.v1` unknown if it still waits on that attempt, with no hook run later (DL18).
+  `sign-in.v1` unknown if it still waits on that attempt, with no hook run later (DL18). Its text
+  names the input `sign-in-wait-ended`, the function that submits it `end_sign_in_wait_at`, in
+  `server.rs`, called from `call_tool`'s relay branch once per relayed output, and its shell test
+  `sign_in_wait_end_is_submitted_at_expiry`.
 - **A6, from 048b-relay2 (merged).** Each call to an instance whose Type states `signIn` holds
   `{"elicitation": {"url": {}}}` in `call.params._meta`'s
   `io.modelcontextprotocol/clientCapabilities` (IFC-045), written by the core in `dispatch_intent`,
@@ -160,18 +217,20 @@ name; but where the start check prints otherwise, stop.
 - **A8, requestState.** The shell issues, keeps and checks a sign-in's requestState (048b-relay1);
   the core holds none, and a retry reaches it only as `respond`.
 
-**What the engine already does, so that you do not redo it.** Line numbers are those of `main` at
-`c097ec81`; the orders above move some. Find each place by the text quoted.
+**What the engine already does, so that you do not redo it.** Find each place by the text quoted;
+the orders above move several.
 
-- `server.rs`'s `call_tool` (`async fn call_tool(`, line 398) takes a retry first (`let retry =
+- `server.rs`'s `call_tool` (`async fn call_tool(`) takes a retry first (`let retry =
   match (request.request_state.as_deref(), request.input_responses) {`), then builds the `invoke`
-  input and extends it with `sign_in_members` (line 476), relays an `inputRequired` reply (line
-  520), and otherwise returns the core's result. `sign_in_members` is at line 572 and
-  `record_rejection` at line 588. Order 048a-5gh adds to the relay branch, before the input-required
-  result is returned, a call of `end_sign_in_wait_at` (server.rs), which starts one task per relayed
-  output; that task submits `sign-in-wait-ended` at the output's expiry, or returns at shutdown.
-  Decision 6's tests cancel `stop` at their end, as `forged_retry_state_is_refused_and_recorded`
-  does.
+  input and extends it with `sign_in_members`, relays an `inputRequired` reply, and otherwise
+  returns the core's result; `sign_in_members` and `record_rejection` follow it. Order 048a-5gh
+  adds to the relay branch, before the input-required result is returned, a call of
+  `end_sign_in_wait_at` (server.rs), which starts one task per relayed output; that task submits
+  `sign-in-wait-ended` at the output's expiry, or returns at shutdown. Decision 6's tests cancel
+  `stop` at their end, as `forged_retry_state_is_refused_and_recorded` does.
+- `serve` builds one `Handler`, whose `relay` states every session shares, and a retry's
+  requestState is taken against the authenticated Interface and the tool alone (`States::take` in
+  `server/relay.rs`), not against the MCP session.
 - rmcp 3.9.0 gives the client `call_tool_once`, which returns `CallToolResponse` without driving
   the rounds; `CallToolRequestParams` has `meta`, `request_state` and `input_responses`; and an
   `InputRequiredResult` reaches only a peer on revision `2026-07-28` or later. In
@@ -186,79 +245,102 @@ name; but where the start check prints otherwise, stop.
   elicitation handler, so it cannot answer an `input_required` result; order 051b-2 builds the
   client that can.
 
-**When this order starts.** Orders 209, 048a-5d, 048a-5d2, 048a-5ef and 048a-5gh, and every order
-before each, must have merged to `main`. Before you change anything, check from the repository root
-that you find what they give, and stop, change nothing and report if any check prints otherwise:
+**When this order starts.** Order 048b-relay2, and every order of the sign-in chain before order
+209, must have merged to `main`. The work of orders 209, 048a-5d, 048a-5d2, 048a-5ef and 048a-5gh
+must be on your base, the commit your working tree starts from (`HEAD`), in one of two ways, either
+of which serves: each has merged to `main`; or the coordinator dispatched this order stacked on 048a-5gh's round-1 branch,
+whose tip holds 048a-5gh's build, committed, before its read and merge, on top of the builds of
+048a-5ef, 048a-5d2, 048a-5d and 209, each merged or on its own round-1 branch below it. You tell
+them apart by the Records, which the admin writes at each merge: until then the files of orders
+209, 048a-5d2, 048a-5ef and 048a-5gh end "Not yet run.", and 048a-5d's has no `## Record` heading
+(the first check's two lines). On any base, the predecessors' cases are present and pass (the
+start's runner run below). Report which of the five have merged on your base, and `HEAD`'s commit.
+Nothing below reads which it is. On a round-1 branch, the copies of this order's file and of its
+predecessors' files in your tree may be older than the texts that merged to `main`; where they
+differ, the texts on `main` govern: read them with `git show origin/main:docs/work-orders/FILE`,
+`FILE` being the file's name. Before you change anything, check from the repository root that you
+find what they give, and stop, change nothing and report if any check prints otherwise, except
+where its item below says that you use what you find and report it:
 
 ```bash
-grep -c '^## Record' docs/work-orders/209-build-keyed-hooks-and-sign-in-fixes.md docs/work-orders/048a5d-build-sign-in-hook-part.md docs/work-orders/048a5d2-*.md docs/work-orders/048a5ef-*.md docs/work-orders/048a5gh-*.md
-grep -c '^Not yet run\.$' docs/work-orders/209-build-keyed-hooks-and-sign-in-fixes.md docs/work-orders/048a5d-build-sign-in-hook-part.md docs/work-orders/048a5d2-*.md docs/work-orders/048a5ef-*.md docs/work-orders/048a5gh-*.md
+grep -c '^Not yet run\.$' docs/work-orders/209-build-keyed-hooks-and-sign-in-fixes.md docs/work-orders/048a5d2-build-sign-in-url-match.md docs/work-orders/048a5ef-build-sign-in-relay-and-polling.md docs/work-orders/048a5gh-build-sign-in-undo-and-expiry.md
+grep -c '^## Record' docs/work-orders/048a5d-build-sign-in-hook-part.md
 grep -c 'pub input_required: Vec<InputRequired>' engine/crates/core/src/lib.rs
 grep -c 'pub sign_in_holds: BTreeMap<String, Value>' engine/crates/core/src/lib.rs
 grep -c 'request_state' engine/crates/core/src/access.rs
 grep -c 'fn request_states_bind_interface_tool_and_single_use' engine/crates/shell/src/server/relay.rs
 grep -c 'pub(crate) fn sign_in_members(' engine/crates/shell/src/server.rs
 grep -c '\.extend(sign_in_members(&meta, prefix));' engine/crates/shell/src/server.rs
+grep -c 'fn end_sign_in_wait_at(' engine/crates/shell/src/server.rs
 grep -rl 'hook_input' engine/crates/core/src | wc -l | tr -d ' '
-grep -rl '"end-sign-in-unrelayed"' engine/crates/core/src | wc -l | tr -d ' '
-tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -c 'Until order 048a-5e builds the relay'
-grep -c 'requests-sign-in-return-kept-nowhere' conformance/expected-failures.yaml
 ls -d conformance/conventions/requests/sign-in-hold conformance/conventions/requests/sign-in-plain-hook-part conformance/conventions/requests/sign-in-login-plain-hook 2>/dev/null | wc -l | tr -d ' '
 python3 -c 'import json; i = json.load(open("conformance/conventions/requests/sign-in-login-plain-hook/manifest.json"))["implementations"]["signed-server"]; print(i["plain"], "keyed" in i, [v for k, v in sorted(i["tools"].items()) if k.endswith("-hook.v1")])'
 python3 -c 'import json; c = json.load(open("conformance/conventions/requests/sign-in-plain-hook-part/case.yaml")); s = c["steps"]; print(c["files"]["manifest"], s[0]["input"]["kind"], s[1]["input"]["kind"], s[2]["input"]["request"]["tool"])'
-tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -c 'The shell passes .clientCapabilities., .signInLogin. and, in a request it does not reject, .signInReturn. to the core\.'
+python3 -c 'import json; s = json.load(open("conformance/conventions/requests/sign-in-hold/case.yaml"))["steps"]; print([x["input"].get("request", {}).get("tool", x["input"]["kind"]) for x in s[:9]])'
 grep -rlE 'sign_in_(relays|decline|plain_hook)_through_the_interface|fn established_case|struct SignInScript|fn url_client' engine/crates/shell/src | wc -l | tr -d ' '
 ```
 
 They print, in order:
 
-1. five lines, each ending `:1`, and 2. five lines, each ending `:0`: the five orders have Records
-   and none of them still reads "Not yet run."; where a file is missing, grep says so: its order
-   has not merged, so stop;
-3. `1`, `1` and `0`: relay1's output (A2), 048a-3's holds (A7), and no `requestState` in the core's
+1. four lines and a number: `209-build-keyed-hooks-and-sign-in-fixes.md`,
+   `048a5d2-build-sign-in-url-match.md`, `048a5ef-build-sign-in-relay-and-polling.md` and
+   `048a5gh-build-sign-in-undo-and-expiry.md`, each ending `:0` where that order has merged or
+   `:1` on its round-1 branch; and `1` where 048a-5d has merged, or `0` on its round-1 branch;
+   report which; where a file is missing, or an order shows as merged while one before it does
+   not, stop;
+2. `1`, `1` and `0`: relay1's output (A2), 048a-3's holds (A7), and no `requestState` in the core's
    request (A8);
-4. `1`, `1` and `1`: relay1's states (A2), and 048a-5's `sign_in_members` and its call in
-   `call_tool`, the line the negative control removes (A1);
+3. `1`, `1` and `1`: relay1's states (A2), and 048a-5's `sign_in_members` and its call in
+   `call_tool`, the statement the negative control removes (A1). Where the call's line prints `0`
+   because a predecessor rewrapped or renamed it, find the one statement that extends the `invoke`
+   input's `request` with the first request's sign-in members, use it in the negative control and
+   report it; stop only where none is found;
+4. `1`: 048a-5gh's timer (A5); where it prints `0` because the build on your base names it
+   otherwise, find the function its decision 8 describes, use that name and report it; stop only
+   where none is found;
 5. a number other than `0`: 048a-5d's kept requestState (A3);
-6. `0` and `0`: the interim ending's decision and its DL18 sentence are gone (A4);
-7. `0`: 048a-6 lifted the expected failure;
-8. `3`: the two cases and order 207's plain manifest (A7);
-9. `True False ['account_hook', 'sign_in_hook', 'sign_out_hook']`: the plain item (A7);
-10. `../sign-in-login-plain-hook/manifest.json first-start register-project group.sign-in.v1`:
-    048a-5d's plain case (A7);
-11. `1`: 048a-6's sentence;
-12. `0`: none of this order's work.
+6. `3`: the two cases and order 207's plain manifest (A7);
+7. `True False ['account_hook', 'sign_in_hook', 'sign_out_hook']`: the plain item (A7);
+8. `../sign-in-login-plain-hook/manifest.json first-start register-project group.sign-in.v1`:
+   048a-5d's plain case (A7);
+9. `['first-start', 'register-project', 'group.set-up.v1', 'setup-report', 'setup-report', 'complete', 'access.open.v1', 'to-signed.work.v1', 'complete']`:
+   the keyed case's first nine steps, which the first two tests commit (A7);
+10. `0`: none of this order's work.
 
-Then, from `engine/`, run 048b-relay2's test for IFC-045 (A6); it must report 1 passed and 0
-failed, or stop and report it:
+Then, from `engine/`, one at a time, run 048b-relay2's test for IFC-045 (A6) and 048a-5gh's shell
+test for DL18's timer (A5, decision 5), by the names their Records or the build on your base give;
+each must report, in the library's run, 1 passed and 0 failed, or stop and report it:
 
 ```bash
 cargo test --release -p conduit-core intent_declares_url_elicitation_only_toward_sign_in_types
+RUST_TEST_THREADS=4 cargo test --release -p conduit-shell sign_in_wait_end_is_submitted_at_expiry
 ```
 
-Then take from the Records of 048a-5ef and 048a-5gh, and report, as names only and not as a reason
-to stop: the decision name an accepted retry takes when it polls `account-hook.v1`; the one it takes
-when the poll finds no account yet and asks again; the function or decision that ends a hook part
-whose `sign-in.v1` has ended, if any; and the function that submits DL18's input at an output's
-expiry, with its file. Still before any change, from `engine/`, one at a time, run these and keep
-each last line, which "Done when" compares with:
+Then take from the Records of 048a-5ef and 048a-5gh, or, where one has not merged, from its build
+on your base, and report, as names only and not as a reason to stop: the decision name an accepted
+retry takes when it polls `account-hook.v1`; the one it takes when the poll finds no account yet
+and asks again; the function or decision that ends a hook part whose `sign-in.v1` has ended, if
+any; and the function that submits DL18's input at an output's expiry, with its file. Still before
+any change, from `engine/`, one at a time, run these and keep each last line, which "Done when"
+compares with:
 
 ```bash
 RUST_TEST_THREADS=4 cargo test --release -p conduit-shell
 cargo run --release -p conduit-conformance -- .. requests-
 ```
 
-Orders that land beside this one (050 and others): whichever lands second keeps both
+Each passes, its expected failures aside; where a test or a case fails, stop and report it, since
+on a round-1 branch a failing test or case of a predecessor's is that order's to fix, not this
+order's.
+
+Orders that land beside this one (050n, 051b-2 and others): whichever lands second keeps both
 changes and writes `engine/STANDING.md` again with the tool.
 
-**What the coordinator rechecks at dispatch.** This text is written ahead, beside the texts of
-048a-5d2, 048a-5ef and 048a-5gh, which it follows. Before dispatch the coordinator reads their
-Records and amends this order where any differs from those texts, in particular:
+**What the coordinator rechecks at dispatch.** This text is refreshed beside 048a-5gh's, which it
+follows, and before 048a-5d to 048a-5gh have merged. Before dispatch the coordinator reads, for each
+of them, its Record where it has merged, or else its round-1 build and the verifier's and reader's
+findings on it so far, and amends this order where any differs from these texts, in particular:
 
-- the files' names in the start check, and ruling 88's record, which holds the owner's two answers
-  of 2026-11-19, and ruling 87's (merged as #400), each cited with its link;
-- order 117's entry for 048b-join and the index row in [the index of work orders](README.md), which
-  must read "after 048a-5gh", with the return leg after the dogfood;
 - 048a-5ef's message (decision 6 asserts only that it contains `example.org` and
   `primary-account` and no text of the hook), the members of `signInLogin` it writes, and that it
   gives `acceptsReturn` `true` for the keyed `browser` login and `false` for a plain item, as its
@@ -267,12 +349,14 @@ Records and amends this order where any differs from those texts, in particular:
   `requestState` on the same tool (decision 6's step 4), and the attempt it names;
 - that a hook part does not outlive the end of its `sign-in.v1` through a decline or a signed-in
   answer: 048a-5ef's text ends it with `end_hook_wait`, which removes `hook_input`, so the file
-  half of decision 6's step 9 stands; where its Record says otherwise, that half is dropped before
-  dispatch (a cancel or a restart leaves the part, and no test here cancels or restarts);
+  half of decision 6's step 9 stands; where its Record or build says otherwise, that half is
+  dropped before dispatch (a cancel or a restart leaves the part, and no test here cancels or
+  restarts);
 - whether 048a-5ef or 048a-5gh changed, beyond 048a-5gh's timer call in the relay branch,
-  `call_tool`, `sign_in_members` or `server_tests.rs`'s helpers, or the section of
-  `engine/CONFORMANCE.md`, "IFC-049's relay (order 048b-relay1)", that decision 7 follows;
-- each line number, count and expected output above, against `main` at dispatch.
+  `call_tool`, `sign_in_members`, the relay's states or `server_tests.rs`'s helpers, or the section
+  of `engine/CONFORMANCE.md`, "IFC-049's relay (order 048b-relay1)", that decision 7 follows;
+- 048a-5gh's timer, its shell test's name and the input it submits (A5, decision 5), as its
+  refreshed text and its build give them.
 
 **Who decided what.** IFC-045, IFC-049, PND-010, PND-011, PND-013, PND-014 and DL18 decide what
 crosses the shell, in which form, and what is kept nowhere. The owner decided on 2026-11-19, as
@@ -280,13 +364,14 @@ ruling 88 records, that this order follows 048a-5gh directly and joins the URL r
 only, its return leg moving with 048a-7 and 048a-8 after the dogfood, and that the chain before it
 is batched in two orders. Everything else here is the coordinator's, each open to the owner's strike
 ([ruling 48](../proposals/ruling-48/README.md)): the split of 048b into 048b-relay and this order
-(order 117); the refresh's changes listed above; reading A8 as the plan settles it; the five seams
-of decision 1 and the rule that this order joins none of them, a seam that does not meet being a
-reason to stop; keeping this order to tests and one sentence; taking 048b-relay2's own test as the
-start's evidence for A6; checking DL18's end by its Record (decision 5); the three tests, their
-fixtures, their script, the URL, the value and every other value in them; asking again once in the
-first test; the plain test; the negative control; the sentence of decision 7; and the findings of
-decision 8. Apply them as written and report them under `decisions` as the coordinator's.
+(order 117); the two refreshes' changes listed above; reading A8 as the plan settles it; the five
+seams of decision 1 and the rule that this order joins none of them, a seam that does not meet
+being a reason to stop; keeping this order to tests and one sentence; taking 048b-relay2's and
+048a-5gh's own tests as the start's evidence for A6 and A5; checking DL18's end by its Record or
+build (decision 5); the three tests, their fixtures, their script, the URL, the value and every
+other value in them; asking again once in the first test; the first test's second connection; the
+plain test; the negative control; the sentence of decision 7; the findings of decision 8; and the
+stacked start and the rebase at the foot. Apply them as written and report them under `decisions` as the coordinator's.
 
 **Read first:**
 
@@ -294,8 +379,8 @@ decision 8. Apply them as written and report them under `decisions` as the coord
    PND-005, PND-010, PND-011, PND-013 and PND-014 (`spec/promises/pending.yaml`); DL18
    (`spec/implementation-defined.yaml`); `sign-in.v1`, `sign-in-hook.v1` and `account-hook.v1` in
    `spec/core/operations.yaml`.
-2. Orders 048a-5d, 048a-5d2, 048a-5ef and 048a-5gh, whole, with their Records; the Records of
-   orders 209, [048b-relay1](048b-relay1-build-input-required-relay.md) and
+2. Orders 048a-5d, 048a-5d2, 048a-5ef and 048a-5gh, whole, as merged to `main`, with their
+   Records where they have merged; the Records of orders 209, [048b-relay1](048b-relay1-build-input-required-relay.md) and
    [048b-relay2](048b-relay2-build-url-elicitation-and-part-retry.md); order
    [048a3](048a3-build-sign-in-hold.md) (decisions 1 and 6).
 3. The cases `requests-sign-in-hold` and `requests-sign-in-plain-hook-part`, their `case.yaml` and
@@ -340,9 +425,11 @@ helpers and the script, `established_case`'s rebuilding of the runner's project 
    names, as an observation.
 
 5. **DL18's end: a check.** This order builds no timer and its tests do not wait for an expiry.
-   Report the function that 048a-5gh's Record gives for the input that ends a `sign-in.v1` with no
-   retry unknown at its output's expiry (A5), and that it is reached from the shell. Only where it
-   is not, report it as a finding for the coordinator; it is not this order's to fix.
+   Report the function that 048a-5gh's Record, or its build on your base, gives for the input that
+   ends a `sign-in.v1` with no retry unknown at its output's expiry (A5), that it is reached from
+   `call_tool`'s relay branch, and the result of 048a-5gh's shell test that the start runs. Only
+   where it is not reached, report it as a finding for the coordinator; it is not this order's to
+   fix.
 
 6. **Three shell tests pin the path.** In `engine/crates/shell/src/server_tests.rs`. `META/x` is
    written in the tests as `format!("{}x", shell.context.meta_prefix)`.
@@ -438,11 +525,16 @@ helpers and the script, `established_case`'s rebuilding of the runner's project 
       `U`, and a `requestState` `S2` of 43 characters, not `S1`; the script holds three `dispatch`
       intents, the third an `account-hook.v1` call; and `sign_in_holds` still has the entry: no
       account yet is not failed (PND-010).
-   5. The test sets the script's `account` to `"primary-account"`. Root's `call_tool_once` of `T`
-      with `G`, `request_state` `S2` and `input_responses` `{"url": {"action": "accept"}}` gives
-      `CallToolResponse::Complete` `F`: `F.is_error` is not `Some(true)`, its `structuredContent`'s
-      `account` is `primary-account`, its `_meta` `META/outcome` is `succeeded`, and its `_meta`
-      `META/signInLogin` has `name` `browser` and no `returned` member.
+   5. The test sets the script's `account` to `"primary-account"`, closes root's first connection
+      (rmcp's `cancel` on the running client, awaited), and connects a second with `url_client`,
+      the same URL, token and prefix; this step's request and step 8's go over it. Root's
+      `call_tool_once` of `T` with `G`, `request_state` `S2` and `input_responses`
+      `{"url": {"action": "accept"}}` gives `CallToolResponse::Complete` `F`: `F.is_error` is not
+      `Some(true)`, its `structuredContent`'s `account` is `primary-account`, its `_meta`
+      `META/outcome` is `succeeded`, and its `_meta` `META/signInLogin` has `name` `browser` and no
+      `returned` member. A retry needs the Interface the state was issued to, not the client
+      connection that got the input request (A2: the state is bound to the authenticated Interface, the tool,
+      the invocation and the attempt).
    6. The script holds four `dispatch` intents, the fourth an `account-hook.v1` call; none of the
       four holds `requestState` or `inputResponses` in `call.params`: with no return, the hook that
       started the login is not called again (PND-013 retries it only to pass a return on).
@@ -516,8 +608,15 @@ helpers and the script, `established_case`'s rebuilding of the runner's project 
    051b-2's `conduit sign-in` as its client; that `acceptsReturn` is `true` for the keyed fixture's
    `browser` login while no return is yet passed on, where 048a-5ef's Record does not already say
    so; decision 5's DL18 ending, only where 048a-5gh's input does not end the invocation; each seam
-   with the order that joined it; the `cancel` intents of decision 4; and any place where IFC-049,
-   PND-010 or PND-013 left you a choice this order does not settle.
+   with the order that joined it; the `cancel` intents of decision 4; whether closing the first
+   connection in the first test's step 5 sent anything to the core (a `cancel` or other input in the
+   store's state or the script), whether, by rmcp 3.9.0's source (`tower.rs`'s
+   `legacy_session_mode`, and the client's handling of `mcp-session-id`), either connection would
+   hold an MCP session on `2026-07-28` (none expected), adding nothing outside Scope to observe it,
+   and what that means for order 051b-2's choice to reconnect and resend nothing, the session idle
+   limit of DL10 (`engine/CONFORMANCE.md`, "DL10: MCP session idle limit") not reaching a
+   `2026-07-28` client; and any place where IFC-049, PND-010 or PND-013 left you a choice this order
+   does not settle.
 
 ## Scope
 
@@ -541,7 +640,6 @@ RUST_TEST_THREADS=4 cargo test --release -p conduit-shell sign_in_decline_throug
 RUST_TEST_THREADS=4 cargo test --release -p conduit-shell sign_in_plain_hook_through_the_interface
 RUST_TEST_THREADS=4 cargo test --release -p conduit-shell
 cargo run --release -p conduit-conformance -- .. requests-
-RUST_TEST_THREADS=4 CONDUIT_VECTOR_THREADS=4 cargo test --release
 ```
 
 The third, the fourth and the fifth each report, in the library's run, 1 passed and 0 failed; at
@@ -560,7 +658,8 @@ cp crates/shell/src/server.rs target/server.rs.joined
 
 Then, in `crates/shell/src/server.rs`'s `call_tool`, remove by hand the one statement that
 extends the `invoke` input's `request` with `sign_in_members(&meta, prefix)`, from
-`input["request"]` to `.extend(sign_in_members(&meta, prefix));`, and nothing else, and run:
+`input["request"]` to `.extend(sign_in_members(&meta, prefix));` (or the statement that the start
+check's item 3 found in its place), and nothing else, and run:
 
 ```bash
 RUST_TEST_THREADS=4 cargo test --release -p conduit-shell sign_in_relays_through_the_interface
@@ -574,6 +673,13 @@ report its step and the error's code. After the restore the second run reports 1
 with `cp`, not `mv`: a moved file keeps its older modification time, so cargo would not rebuild
 the crate. Git ignores `target/`. From `engine/`, `git diff -- crates/shell/src/server.rs` then
 prints nothing.
+
+Last, with the file restored, run the whole engine suite once, from `engine/`, and report its last
+lines; it passes, the vectors among it:
+
+```bash
+RUST_TEST_THREADS=4 CONDUIT_VECTOR_THREADS=4 cargo test --release
+```
 
 From the repository root, each passes. `/usr/bin/python3` is the Mac's interpreter with PyYAML;
 where `python3` has PyYAML, it serves as well.
@@ -601,12 +707,10 @@ then `Vector delta: 0 changes; 0 flips; 0 undeclared; 0 errors.` and `exit 0`.
 The S1 short-form spike depends on the core, which this order does not change, so the local gate
 does not run it for this change.
 
-Each of these prints 1, and printed 0 at the start:
+Each of these prints 1, and printed 0 at the start: the helpers that order 051b-2 calls by name,
+and decision 7's sentence:
 
 ```bash
-grep -c 'fn sign_in_relays_through_the_interface_and_polls_to_signed_in' engine/crates/shell/src/server_tests.rs
-grep -c 'fn sign_in_decline_through_the_interface_ends_failed' engine/crates/shell/src/server_tests.rs
-grep -c 'fn sign_in_plain_hook_through_the_interface_signs_in' engine/crates/shell/src/server_tests.rs
 grep -c 'fn established_case' engine/crates/shell/src/server_tests.rs
 grep -c 'fn fixed_case_shell' engine/crates/shell/src/server_tests.rs
 grep -c 'fn url_client' engine/crates/shell/src/server_tests.rs
@@ -637,3 +741,33 @@ fresh read-only Opus reader reads the result, and the verifier's report where it
 before it merges ([ruling 79](../proposals/ruling-79/README.md), point 2, as ruling 87 amends it);
 where the verifier reported a must, the coordinator merges it. The admin writes this order's Record
 at the foot of this file when it merges.
+
+Where the coordinator dispatched this order stacked on 048a-5gh's round-1 branch, the result is
+read there, with `tools/gate.py --base` set to the commit this order started from, that branch's
+tip, since `origin/main` lacks the predecessors' work; it merges only after 048a-5gh has merged, and
+with it orders 209, 048a-5d, 048a-5d2 and 048a-5ef before it, and then only once the coordinator
+has done the following (the coordinator's, under the lever "Pipeline the chain", ruling 89,
+point 2):
+
+- rebase this order's branch onto `main` with `git rebase --onto origin/main` from 048a-5gh's
+  round-1 tip, the commit this order started from, so that only this order's commits are replayed
+  onto 048a-5gh's squash, committing and rebasing under the work orders' identity. Where
+  048a-5gh's branch was itself rebased, onto 048a-5ef's squash or an earlier one, after this order
+  started, the commit this order started from is still the one to rebase from;
+- resolve any conflict where a predecessor's verifier or fixer changed, after its round 1, what
+  this order changes or reads: `engine/crates/shell/src/server_tests.rs` (048a-5gh adds its timer's
+  test there, and a fixer may touch the helpers this order's tests call), the section of
+  `engine/CONFORMANCE.md` that decision 7 adds to, and `call_tool`'s relay branch or
+  `sign_in_members`, which the negative control reads; keep the predecessors' merged text and
+  apply this order's decisions to it, and write `engine/STANDING.md` again with
+  `python3 tools/promise_standing.py --write` rather than by hand;
+- run this order's start check in a clean worktree of `main` after 048a-5gh's merge, and where a
+  predecessor's merge changed anything that a decision reads (the message's words that decision 6
+  asserts, `signInLogin`'s members, the poll's answer, the hook part's ending, the timer's name,
+  or the sentence that decision 7 follows), amend this order's text and the build to it, saying so
+  in the Record;
+- run again the three tests, the negative control, the shell suite, `requests-`, the whole engine
+  suite, the `vector_delta.py` check with this order's declaration, and `tools/gate.py` against
+  `origin/main`;
+- have the reader read the rebase's resolutions and any amendment as new content (ruling 79,
+  point 2), and write this order's Record.

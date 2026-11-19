@@ -1,3 +1,4 @@
+# Checked at the merge of order 048a-5d, against main at 92632057: the work's vector delta matches these shapes.
 # Order 048a-5d's vector changes, written with the order against main at c097ec81 and order 209's text; at its dispatch refresh the coordinator noted that vector_delta.py compares the worktree with HEAD, which holds order 209's work whether 209 has merged or this order starts from 209's round-1 branch, so the shapes are this order's alone.
 - name: requests-sign-in-hook-part
   kind: added

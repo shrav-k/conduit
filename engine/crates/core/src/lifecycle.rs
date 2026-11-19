@@ -904,7 +904,7 @@ fn dispatch_sign_in_part(
             &["TPL-012", "PND-011", "ACC-018", "IMP-002"],
         )
     };
-    if requests::setup_sign_in_hook(t, a, c, i, object, operation, promises)? {
+    if requests::setup_sign_in_hook(t, a, c, i, object, operation, promises, None)? {
         t.state.invocations[i]["setup"]["phase"] = json!(phase);
         return Ok(());
     }

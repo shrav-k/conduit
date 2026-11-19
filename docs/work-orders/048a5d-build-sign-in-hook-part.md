@@ -1212,3 +1212,130 @@ following (the coordinator's, under that lever):
   `vector_delta.py` check with this order's declaration, and `tools/gate.py` against `origin/main`;
 - have the reader read the rebase's resolutions and any amendment as new content (ruling 79,
   point 2), and write this order's Record.
+
+## Record
+
+Run on 2026-11-19, from about 17:43 to 18:14 UTC, on the Mac, from order 209's round-1 branch at
+`08e706fa` (the base its dispatch refresh allows), in one round: the worker (1504 s) and a fresh
+Codex verifier (387 s). The worker read the dispatch refresh, the text now on `main`, which the copy
+on `08e706fa` predates. The change is the eleven files of Scope. `sign_in.rs` sends an account check
+that finds no account or another, or that ends failed or unknown, to a `sign-in-hook.v1` part
+(decision 1), with `sign_in_hook_part`, `hook_url_action`, `hook_answer_cause`, `keep_hook_input`
+and `hook_input` (decisions 3 and 4), the interim ending `HOOK_UNRELAYED_CAUSE`, and the four unit
+tests of decision 6 (the `sign_in` filter from 18 to 22 passed; `lifecycle` 9, as at the start).
+`requests.rs` passes the asked-for login to `setup_sign_in_hook` and `dispatch_hook`, writes
+`signInLogin` on a keyed call (decision 2), routes a sign-in hook's completion through decision 3's
+arm in `complete` before the URL lapse arm, and removes `hook_input` in `finish`. The cases
+`requests-sign-in-hook-part` (25 steps) and `requests-sign-in-plain-hook-part` (8) are new;
+`requests-sign-in-account-first` grew from 32 to 36 steps, `requests-keyed-hook-dispatch` from 24
+to 26 and `requests-sign-in-setup-check-failed-hook` from 16 to 17, its hook captured as
+`signhook1`. CONFORMANCE.md takes decision 11's texts and STANDING.md its rows: IFC-006 gains the
+core among its sources, and the delta is `IFC-006:1 IFC-007:1 IFC-010:2 IFC-049:2 PND-010:2`. The
+worker reported the full engine suite passing, 380 tests with 4 ignored, each mutation failing at
+its named step and passing after restore, the spike's 9 tests, and `vector_delta` at 11 shapes, 5098
+changes, 0 flips, 0 undeclared, 0 errors. Its own choices: the part bookkeeping, the
+retired-subject check and the IFC-049 refusal shared between the URL and ordinary hook paths, and a
+shared unit-test fixture. It reported eleven findings, among them that a URL elicitation passes the
+form checks with its URL unchecked until 048a-5d2 (F01), that an account check's URL answer still
+takes order 209's IFC-016 arm (F06), and that the interim ending and a cancellation can end
+`sign-in.v1` while the login still holds a fixed port (F11).
+
+The Codex verifier found three musts and one should: that an ordinary plain hook's text reached a
+completion reply and was retained (decision 5); that an account check ending failed or unknown with
+no diagnostic now has its uncertainty explained nowhere, against PND-011 (decision 1); that the
+keyed hook call carries Conduit's keys to an implementation not marked plain without declaring the
+extension, against IFC-037 (decision 2); and that step 7 of the plain case would pass were the check
+to end unknown (decision 8).
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2), on the branch before its
+rebase, warm in the worktree. It ran `cargo fmt --check` and clippy with `-D warnings` (clean), the
+`sign_in` tests (22 passed) and `lifecycle` (9), the pieces tool (`Nothing to move.`), the five
+single-case runs (each `1 cases passed`), `requests-sign-in-` (13 passed, 11 at the start) and
+`requests-` (80 passed with 2 expected failures, 78 and 2 at the start), the shell test, the spike
+(9 passed), the three mutations in place (each failing at its named step with its named error and
+passing after a restore with `cp`, checked with `cmp`), the Python checks (Errors: 0 each), the
+tool tests (129, OK), `vector_delta` from `08e706fa` (11 shapes, 5098 changes, 0 flips, 0
+undeclared, 0 errors), the order's greps, the STANDING delta and the case lengths (all as stated),
+and `git diff --check` (clean). It refuted the verifier's first must, since the plain hook's reply
+has no waiter, the caller's reply is the engine's own `sign-in.v1` end, and a sign-in hook is never
+keyed, so its retained content is never read again; and the third, as order 209's documented
+IFC-037 gap, outside this order's scope. It found no must and two shoulds:
+
+- R1: the verifier's second must, confirmed as a gap and downgraded to a should: an account check
+  that ends failed or unknown without diagnostics has its uncertainty explained nowhere, against
+  PND-011's "its uncertainty is explained", since decision 1 removes the base's interim cause
+  ("...ended {outcome}, which counts as no account (PND-010, PND-011)...") and the account part
+  gets no cause of its own. Decision 1 directs this, so the remedy is the coordinator's.
+- R2: the verifier's should, confirmed: step 7 of `requests-sign-in-plain-hook-part` asserts only
+  the hook's dispatch, so it cannot show the IFC-010 "failed" that decision 8 attributes to it.
+
+The fixer left the branch on `08e706fa`, without a rebase, and took each finding:
+
+- R1: no build change, as the reader directs. It stands here as a finding against PND-011 for the
+  coordinator, who settles where the explanation lives, in 048a-5ef or an amendment: the reader's
+  options are to keep `sign_in.check = {"outcome": O}` on the parent in `part_answered`'s
+  `NotChecked` failed or unknown path, and have every later `sign-in.v1` end or relay add a
+  sentence such as "its account check ended {O}, which counts as no account (PND-011)", or to give
+  the ended account part an engine-written PND-011 diagnostic where it has none.
+- R2: step 7's expect gains
+  `"record_facts": [{"type": "invocation-ended", "data": {"invocation": "$check2", "outcome":
+  "failed"}}]`. No declaration was needed: from `08e706fa` the case is new, and `vector_delta`
+  still reports 0 undeclared. With the expected outcome changed to `unknown` the case failed with
+  `missing ordered record` for `$check2`'s ID ending unknown, and passed again after a restore
+  checked with `cmp`.
+
+The fixer then ran, warm in the worktree, from `engine/` with 4 test and vector threads:
+`cargo fmt --check` (exit 0), clippy with `-D warnings` (exit 0, no warnings), the `sign_in` tests
+(22 passed) and `lifecycle` (9 passed), the pieces tool (`Nothing to move.`), the five single-case
+runs (each `1 cases passed`; 25, 8, 36, 26 and 17 steps), `requests-sign-in-` (13 cases passed),
+`requests-` (80 cases passed; 2 expected failures), the shell test
+`first_start_presents_final_lists` (1 passed), and the second mutation, which failed at step 7 with
+`/external_intents: expected 1 items, found 0` and passed after a restore checked with `cmp`; and
+from the spike's directory its tests (9 passed). From the root: `check_schemas.py`,
+`set_names.py --check`, `check_rulings.py`, `check_docs.py`, `check_roadmap.py`,
+`check_model_account.py`, `check_private_paths.py` and `promise_standing.py --check` (Errors: 0
+each), the tool tests (129, OK), `vector_delta.py 08e706fa WORKTREE` with the order's declaration
+(11 shapes, 5098 changes, 0 flips, 0 undeclared, 0 errors, exit 0), the new cases' lengths (`25 8`)
+and `git diff --check` (clean). The full engine suite and every vector are the gate's; the gate's
+run on this order's squash, and the rebase onto `main` once order 209 merges, are the coordinator's
+at the merge.
+
+After order 209 merged, on 2026-11-19 at about 18:40 UTC, the branch was rebased onto `main` at
+`92632057` with `git rebase --onto origin/main 08e706fa`, after a check that `08e706fa` was an
+ancestor of its tip, so that only this order's two commits were replayed, under the work orders'
+identity. The worker's commit applied without conflict: `requests.rs` merged by itself, 209's fixes
+(the `_meta` that `server/discover` now carries, with `io.modelcontextprotocol/protocolVersion`
+`2026-07-28` and `clientCapabilities` declaring Conduit's extension at `v0`, and the fence of the
+hook's attempt in the Not listed arm whatever the discovery's completion) standing beside this
+order's `signInLogin`, `hook_input` and `sign_in_hook_part` changes, and
+`requests-keyed-hook-dispatch` merged by itself, its five `server/discover` intents keeping 209's
+`_meta` and its two new steps on top; `sign_in.rs`, `lifecycle.rs`, `engine/CONFORMANCE.md`, the
+cases `requests-sign-in-setup-check-failed-hook` and `requests-sign-in-account-first` and
+`conformance/conventions/requests/index.yaml` did not conflict, since 209's fixes after its round 1
+left them alone. The one conflict was this file, in the Record's commit: `main` added the admin
+paragraph on the stacked dispatch at the foot, where the branch added the Record; both were kept,
+the admin paragraph first and the Record after it. `promise_standing.py --write` left
+`engine/STANDING.md` unchanged, and the pieces tool was not run again, since the index did not
+conflict. Following 209's fixes needed no change in this order's work: no step that this order adds
+or changes expects a `server/discover` intent, since no case this order adds or changes lists
+`sign-in-hook.v1` under an item's `keyed` (`requests-keyed-hook-dispatch` keys only
+`account-hook.v1`, and the other fixtures are not plain, so each `sign-in-hook.v1` dispatch in
+them, the one in `requests-sign-in-setup-check-failed-hook`'s added step included, is a direct
+`tools/call`), and the keyed case's five `server/discover` expectations already carry 209's
+`_meta`. This order's start check, run on `main` at `92632057` after 209's merge, printed what the
+order gives at every item, so 209's merge changed nothing a decision reads and the order's text
+needed no amendment. So the rebase changed no file but this Record. Warm in the worktree, from `engine/` with 4
+test and vector threads: `cargo fmt --check` (exit 0), clippy with `-D warnings` (exit 0), the
+`sign_in` tests (22 passed) and `lifecycle` (9 passed), the five single-case runs (each
+`1 cases passed`), `requests-sign-in-` (13 cases passed), `requests-` (80 cases passed; 2 expected
+failures) and the shell test `first_start_presents_final_lists` (1 passed); from the root,
+`promise_standing.py --check` (Errors: 0), `vector_delta.py origin/main WORKTREE` with the order's
+declaration (11 shapes, 5103 changes, 0 flips, 0 undeclared, 0 errors, exit 0; the same tree
+against `08e706fa` now counts 5104, where the round counted 5098, and every change is declared
+either way), `check_docs.py` (Errors: 0) and `git diff --check` (clean). `tools/gate.py` against `origin/main`
+and the reader's read of these resolutions remain the coordinator's before the merge.
+
+The reader's R1 stands: an account check that ends failed or unknown without diagnostics has its
+uncertainty explained nowhere, against PND-011's "its uncertainty is explained". This order does
+not change the build for it; the coordinator carries it to order 048a-5ef, which decides where the
+explanation lives.

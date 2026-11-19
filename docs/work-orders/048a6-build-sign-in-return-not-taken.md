@@ -71,13 +71,17 @@ failure, and adds a case for a call to an Agent, a held request and a refused on
 yet pass `signInReturn` to the core, so this order also forwards it in the shell's invoke input,
 and nowhere else, with one server test.
 
-**What orders 048a-2 to 048a-5 bring, which this order assumes.** Orders 048a-2 and 048a-3 are
-written on `main`, 048a-4 is written beside 048a-3, and 048a-5 is written beside this order; none
-is built. This order starts once 048a-5 has merged, or from 048a-5's verified branch where the
-coordinator's dispatch note says so (below). It assumes, as their orders state them:
+**What orders 048a-2 to 048a-5 bring, which this order assumes.** Orders 048a-2 (#364), 048a-3
+(#367) and 048a-4 (#371) have merged, each with the amendments its Record states, and so has order
+048b-relay1 (#373); 048a-5 is written beside this order and not yet built. This order starts once
+048a-5 has merged, or from 048a-5's verified branch where the coordinator's dispatch note says so
+(below). It assumes, as their orders and Records state them:
 
 - From 048a-2: `engine/crates/core/src/sign_in.rs`; its preflight of `sign-in.v1`'s invalid and
-  conflict, called in `invoke_inner` after `lifecycle::preflight` and `records::preflight`; and
+  conflict, and, by its Record's amendment R3, the conflict under LIF-037 for a stale `expectedId`,
+  called in `invoke_inner` after `lifecycle::preflight` and `records::preflight`, which by its
+  Record's R1 applies only for root or for an Interface on its own behalf through an Agent's owning
+  Fleet, any other caller getting the stub's unavailable; and
   the fixture of `requests-sign-in-lapse-and-conflict`, with the keyed `signed-server`, the Type
   `signed-agent.v1`, the Fleet `group` and the Agent `signed` with the account `primary-account`.
 - From 048a-3: the block in `invoke_inner`, after the block that answers a kept repeat from its
@@ -86,12 +90,14 @@ coordinator's dispatch note says so (below). It assumes, as their orders state t
   (the Operations `ping.v1` and `work.v1`, the second stating `startsModelWork: true`, and root's
   Conduit `to-signed` listing both), and its definitions ROOT, `META/x`, `U`, `I`, `P`, "Root asks
   T with A", "a completion" and LAPSE, as 048a-2's decision 10 and 048a-3's decision 6 give them.
-- From 048a-4: setup's account check (decision `dispatch-account-check`), which inserts one step in
-  `requests-sign-in-hold`, so that its first nine steps are: first start; registration; root's
-  `group.set-up.v1` of `signed`, captured as `$setup1`; two run reports, the second dispatching the
-  account check, captured as `$account0`; the account check's completion, which ends the setup
-  succeeded; root's `access.open.v1` of `to-signed`; root's `to-signed.work.v1`, captured as
-  `$call1`; and its completion LAPSE, which raises the sign-in action and begins the hold.
+- From 048a-4: setup's account check (decision `dispatch-account-check`); PND-011's hold
+  (`request_is_held_for_sign_in_undone`), decided in `invoke_inner` beside 048a-3's; and the one
+  step its account check inserts in `requests-sign-in-hold`, so that the first nine of its 17
+  steps are: first start; registration; root's `group.set-up.v1` of `signed`, captured as
+  `$setup1`; two run reports, the second dispatching the account check, captured as `$account0`;
+  the account check's completion, which ends the setup succeeded; root's `access.open.v1` of
+  `to-signed`; root's `to-signed.work.v1`, captured as `$call1`; and its completion LAPSE, which
+  raises the sign-in action and begins the hold.
 - From 048a-5 (its file `048a5-build-sign-in-refusals-before-parts.md`, the first of its eight
   parts):
   - (a) The member: `AccessRequest` has, after `authority_readable`, the members
@@ -101,16 +107,21 @@ coordinator's dispatch note says so (below). It assumes, as their orders state t
     the three to `None`. Nothing copies `sign_in_return` into the route, a record, a decision, the
     reply or the state, and nothing reads it but whether it is carried.
   - (b) The refusal: `request_member_refusal` in `engine/crates/core/src/sign_in.rs`, which the
-    decision-6 helper calls for `sign-in.v1` right after 048a-2's invalid and before its conflict,
+    decision-6 helper calls for `sign-in.v1` right after 048a-2's invalid and before its conflicts,
     decides in order the missing capability (IFC-049, the error -32021), a return on a first
-    request (PND-013: every `sign-in.v1` request that carries `signInReturn`) and an unknown login
-    (PND-010). Its unit test `sign_in_request_member_refusals` builds requests by hand, some
-    carrying a `signInReturn` value. A retry reaches the core only as order 048b-relay1's `respond`
-    input, so 048a-5's refusal stays the refusal of every `sign-in.v1` request that carries
-    `signInReturn`; this order relies on nothing else of the retry.
+    request (PND-013: every `sign-in.v1` request that 048a-2's checks reach (its Record's R1) and
+    that carries `signInReturn`; any other caller gets the stub's unavailable, as 048a-5 leaves it)
+    and an unknown login (PND-010). Its unit test `sign_in_request_member_refusals` builds requests
+    by hand, some carrying a `signInReturn` value. A retry reaches the core only as order
+    048b-relay1's `respond` input, so 048a-5's refusal stays the refusal of every `sign-in.v1`
+    request that 048a-2's checks reach (its Record's R1) and that carries `signInReturn`; any other
+    caller gets the stub's unavailable, as 048a-5 leaves it. This order relies on nothing else of
+    the retry.
   - (c) The case `requests-sign-in-refusals-before-parts`, with
     `promises: [IFC-049, PND-013, PND-010]`, on 048a-2's fixture, and the capability added to
-    steps 4 and 12 of `requests-sign-in-lapse-and-conflict`.
+    steps 4, 12 and 29 of `requests-sign-in-lapse-and-conflict`, now of 32 steps, as 048a-5's
+    decision 6 gives them (step 29 is the stale `expectedId` of 048a-2's Record, R2). This order
+    reads none of that case.
   - (d) The stub: C11's entry `("sign-in.v1", "048a", "PND-010")` stays; 048a-5b removes it. This
     order reads no dispatch of `sign-in.v1`.
   - (e) The expected failure: `requests-sign-in-return-kept-nowhere` keeps its entry, with the
@@ -138,14 +149,16 @@ Where an order merged otherwise than this says, apply the nearest sound reading 
 below to what merged, and say so. Where a Record names a function or a member, use that name.
 
 **What the engine already does, so that you do not redo it.** Line numbers are those of `main` at
-`e4ceb4c8`, before orders 048a-2 to 048a-5; find each place by the text quoted with it.
+`8e205447`, after orders 048a-2 to 048a-4, 048b-relay1 and 051b and before 048a-5; find each place
+by the text quoted with it.
 
 - `AccessRequest` (`engine/crates/core/src/access.rs:17`) derives `Clone`, `Debug` and
   `Deserialize`, with `#[serde(deny_unknown_fields)]`; on `main` its members are `identity`,
   `tool`, `arguments`, `serving`, `readable` and `authority_readable`, and 048a-5 adds three
   (assumption (a)). `Input::Invoke` and `Input::Access`
-  (`lib.rs`) hold one, and `Input` derives `Debug`. It does not derive `Serialize`.
-- `invoke_inner` (`requests.rs:848`) writes the access decision's record with
+  (`lib.rs`) hold one, and `Input` derives `Debug`. It does not derive `Serialize`. Order
+  048b-relay1's `Input::Respond` holds none; it holds a retry's whole `_meta` as `meta`.
+- `invoke_inner` (`requests.rs:873`) writes the access decision's record with
   `record(t, a, c, "access-decision", access_data)?;`, pushes the decision `request-access`, and
   then ends a request the access decision did not permit in the block
   `if let Some(reason) = v.reason {` ... `return reject(t, a, c, &route, reason, rule, None, v.restriction.as_ref());`.
@@ -159,13 +172,16 @@ below to what merged, and say so. Where a Record names a function or a member, u
   `data` is the route with `ruleId`, less `filters`. `explain`'s text block (`explain.rs:917`)
   copies each error diagnostic's message into the reply's first `content` entry.
 - `mark(c, key)` (`requests.rs:24`) gives a `_meta` key under the prefix that `spec/names.yaml`
-  sets. `Transition` (`lib.rs:252`) derives `Debug` and `Serialize`.
+  sets. `Transition` (`lib.rs:281`) derives `Debug` and `Serialize`.
 - After 048a-5 the shell passes `clientCapabilities` and `signInLogin` through `sign_in_members`,
-  and not `signInReturn`, which this order forwards. `call_tool` (`server.rs:396`) reads the
-  request's `_meta` into `meta`, checks `serving` and `idempotencyKey`, and builds the core's
-  input in the line that begins `let input = json!({"kind":"invoke","request":{`. `record_rejection`
-  (`server.rs:488`) builds its own input from chosen members of the body's `_meta`, never the whole
-  of it. `Input::Access` evaluates access only and dispatches nothing.
+  and not `signInReturn`, which this order forwards. `call_tool` (`server.rs:398`) reads the
+  request's `_meta` into `meta`, checks `serving` and `idempotencyKey`, and, as order 048b-relay1
+  rewrote it, builds the core's input in `let input = match retry {`: a retry's `respond` input in
+  the arm `Ok(Some(input)) => input`, and otherwise the invoke input in the arm `Ok(None) =>`,
+  whose line begins `json!({"kind":"invoke","request":{`. `record_rejection` (`server.rs:561`)
+  builds its own input, in the line that begins `let input = json!({"kind":"invoke","request":{`,
+  from chosen members of the body's `_meta`, never the whole of it. `Input::Access` evaluates
+  access only and dispatches nothing.
 
 **When this order starts.** Order 048a-5 must be merged to `main` first, or, where the
 coordinator's dispatch note says so, your tree is 048a-5's verified branch, and the note relaxes
@@ -209,11 +225,11 @@ assumption (f) and PND-013's row, and in place of the done-when rows that check 
 and PND-013's row. Then, still before any change, run from `engine/`, one at a time,
 `cargo run --release -p conduit-conformance -- .. requests-sign-in-` and
 `cargo run --release -p conduit-conformance -- .. requests-`, and keep each last line: "Done
-when" compares with them. Orders that land beside this one (046b, 048b-relay1, 049a-1, 050 and
-others): whichever lands second keeps both changes and writes `engine/STANDING.md` again with the
-tool. Order 048b-relay1 is dispatchable now and rewrites `call_tool`, `Input` and `Transition`;
-where it merged first, decision 8 says where the forwarding goes, and the start checks stand as
-written.
+when" compares with them. Orders that land beside this one (049a-1, 050 and others): whichever lands
+second keeps both changes and writes `engine/STANDING.md` again with the tool. Order 048b-relay1 has
+merged (#373) and rewrote `call_tool`, `Input` and `Transition`; decision 8 says where the
+forwarding goes, and the start checks stand as written, since relay1 writes no `signInReturn` and no
+`sign_in_members` in `server.rs` (each count prints `0` at `8e205447`).
 
 **Who decided what.** PND-013, PND-014, IFC-049, REC-002 and OPS-023 decide that a return is taken
 only on a retry of `sign-in.v1` that IFC-049 binds, that any other request carrying `signInReturn`
@@ -226,15 +242,17 @@ this order and the two proposed after it (FR-264), with this order after 048a-5,
 forwarding of `signInReturn` in `call_tool`'s invoke input alone, outside `sign_in_members`, so that
 no rejection record's input holds it, and its server test; reading "any other operation's request"
 as every request whose operation is not `sign-in.v1`, an Agent's onward request included; leaving
-every `sign-in.v1` request that carries `signInReturn` to 048a-5's `request_member_refusal`, which a
-retry never reaches, since the shell issues, keeps and checks a sign-in's `requestState` (order
-048b-relay1) and passes a retry to the core only as its `respond` input, so that this order reads no
-`requestState`; deciding this invalid, for a request whose operation is not `sign-in.v1`, first
-among the invalids after the access decision, before `answer.v1`'s invalids, every conflict, a kept
-repeat's answer and the holds of PND-005 and PND-011, and after a schema failure, which the access
-decision reports; the diagnostic's words; the decision's name; the unit test; the case, its reuse of
-048a-3's files, route, IDs and times; and the new section of `engine/CONFORMANCE.md`. Apply them as
-written and report them under `decisions` as the coordinator's.
+every `sign-in.v1` request that 048a-2's checks reach (its Record's R1) and that carries
+`signInReturn` to 048a-5's `request_member_refusal` (any other caller gets the stub's unavailable,
+as 048a-5 leaves it), which a retry never reaches, since the shell issues, keeps and checks a
+sign-in's `requestState` (order 048b-relay1) and passes a retry to the core only as its `respond`
+input, so that this order reads no `requestState`; deciding this invalid, for a request whose
+operation is not `sign-in.v1`, first among the invalids after the access decision, before
+`answer.v1`'s invalids, every conflict, a kept repeat's answer and the holds of PND-005 and PND-011,
+and after a schema failure, which the access decision reports; the diagnostic's words; the
+decision's name; the unit test; the case, its reuse of 048a-3's files, route, IDs and times; and the
+new section of `engine/CONFORMANCE.md`. Apply them as written and report them under `decisions` as
+the coordinator's.
 
 **Read first:**
 
@@ -248,7 +266,8 @@ written and report them under `decisions` as the coordinator's.
 3. The cases `requests-sign-in-return-kept-nowhere` and `requests-sign-in-hold`, and
    `conformance/conventions/explain/refusal-tiers/case.yaml`, its step 3.
 4. `conformance/README.md`, its sections "Assertions", "Portable cases" and "Expected failures".
-5. `engine/crates/shell/src/server.rs`, `call_tool` and `record_rejection`, and
+5. `engine/crates/shell/src/server.rs`, `call_tool`, as order 048b-relay1 rewrote it, and
+   `record_rejection`, and
    `engine/crates/shell/src/server_tests.rs`, `shell_rejection_carries_diagnostic`.
 
 **Size: S**: about 80 to 140 changed lines of Rust with one unit test and one server test, one new
@@ -308,11 +327,13 @@ case of 14 steps that reuses 048a-3's fixture, one expected failure removed, one
    So a request the access decision did not permit, a schema failure among them, keeps its reason
    (OPS-023), and every other request carrying `signInReturn` whose operation is not `sign-in.v1`
    reports this invalid, whatever else applies to it: a repeat with a key, a request to a held
-   instance, an Agent's onward request. Every `sign-in.v1` request carrying `signInReturn` is
-   decided by 048a-5's `request_member_refusal`, after 048a-2's invalid and the missing
-   capability, as 048a-5 orders them; a retry never reaches it, since the shell passes a retry to
-   the core only as order 048b-relay1's `respond` input. This order reads no `requestState`, and a
-   retry's return is not read, checked or passed on in this order (048a-7 and 048a-8).
+   instance, an Agent's onward request. Every `sign-in.v1` request that 048a-2's checks reach (its
+   Record's R1) and that carries `signInReturn` is decided by 048a-5's `request_member_refusal`,
+   after 048a-2's invalid and the missing capability, as 048a-5 orders them; any other caller gets
+   the stub's unavailable, as 048a-5 leaves it. A retry never reaches it, since the shell passes a
+   retry to the core only as order 048b-relay1's `respond` input. This order reads no
+   `requestState`, and a retry's return is not read, checked or passed on in this order (048a-7 and
+   048a-8).
 
 3. **One unit test pins the rule.** In `requests.rs`'s tests, add
    `sign_in_return_not_taken_is_kept_nowhere`. Let `R` be the value at
@@ -454,10 +475,10 @@ case of 14 steps that reuses 048a-3's fixture, one expected failure removed, one
    check that it matches and change it only to make it so.
 
 8. **The shell forwards the return to the core, and nowhere else.** In
-   `engine/crates/shell/src/server.rs`'s `call_tool`, right after the line that begins
-   `let input = json!({"kind":"invoke","request":{`, where `meta` holds the key
-   `{prefix}signInReturn` with a value that is not JSON null, set the member `signInReturn` of the
-   input's `request` to that value as sent. Write it outside 048a-5's
+   `engine/crates/shell/src/server.rs`'s `call_tool`, in the invoke input, the arm `Ok(None) =>` of
+   `let input = match retry {`, whose line begins `json!({"kind":"invoke","request":{`, where
+   `meta` holds the key `{prefix}signInReturn` with a value that is not JSON null, set the member
+   `signInReturn` of that input's `request` to that value as sent. Write it outside 048a-5's
    `sign_in_members`, so that `record_rejection`'s input never holds it, and do not change
    `sign_in_members` or `record_rejection`. The shell writes the value nowhere else: no log line,
    error text, diagnostic or store. In `engine/crates/shell/src/server_tests.rs`, add one test,
@@ -476,11 +497,12 @@ case of 14 steps that reuses 048a-3's fixture, one expected failure removed, one
    `tools/promise_standing.py` counts every file under `engine/crates/shell/src`, tests included,
    and PND-014's row names the core alone.
 
-   If order 048b-relay1 has merged before this order starts, `call_tool` builds either this invoke
-   input or relay1's `respond` input in its place. Put the forwarding into the invoke input alone,
-   never into the `respond` input, whose `signInReturn` order 048a-7 reads; the start checks of
-   assumption (h) stand as written, since relay1 writes no `signInReturn` and no `sign_in_members`
-   in `server.rs`.
+   Order 048b-relay1 has merged, so `call_tool` builds either this invoke input or relay1's
+   `respond` input in its place. Put the forwarding into the invoke input alone, never into the
+   `respond` input, whose `meta` already holds a retry's whole `_meta` and whose `signInReturn`
+   order 048a-7 reads, and not into `record_rejection`'s line, which also begins
+   `let input = json!({"kind":"invoke","request":{`; the start checks of assumption (h) stand as
+   written, since relay1 writes no `signInReturn` and no `sign_in_members` in `server.rs`.
 
 9. **What this order does not do.** No promise, schema, definition, `IN_FORCE.md` line or ruling's
    record changes, and no fixture. Nothing reads a retry's return: PND-013's four checks, its
@@ -495,9 +517,12 @@ case of 14 steps that reuses 048a-3's fixture, one expected failure removed, one
    IFC-016's error for a `tasks/update` carrying the key is not built, since the core reads no task
    request; that neither PND-013 nor IFC-049 says whether a `null` `signInReturn` is carried; as a
    coordinator choice no check of this order tests, a return on an Agent's onward request (one sent
-   with `serving` set), so that a build that decided it otherwise passes every check here; and any
-   place where PND-013, PND-014 or IFC-049 left you a choice this
-   order does not settle.
+   with `serving` set), so that a build that decided it otherwise passes every check here; that a
+   `sign-in.v1` request carrying `signInReturn` from a caller that 048a-2's Record (R1) leaves at
+   the stub is answered with the stub's unavailable, not PND-013's invalid, and neither 048a-5 nor
+   this order refuses it, so PND-013's observable (invalid after access, before dispatch) is not
+   met for that caller, and no check of either order tests it; and any place where PND-013, PND-014
+   or IFC-049 left you a choice this order does not settle.
 
 ## Scope
 

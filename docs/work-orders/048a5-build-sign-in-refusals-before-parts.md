@@ -82,26 +82,32 @@ state all of it, and this order builds it. The other halves of PND-013's sentenc
 on another operation's request or on a `tasks/update`, are 048a-6's, with the expected failure
 `requests-sign-in-return-kept-nowhere`.
 
-**What order 048a-4 brings, and the orders before it, which this order assumes.** Order 048a-4 is
-written (its file `048a4-build-sign-in-setup-account.md`) and not yet built; orders 048a-2 and
-048a-3 are written on `main` and not yet built. This order starts from 048a-4's verified work
-(below). It assumes, as their decisions state them:
+**What order 048a-4 brings, and the orders before it, which this order assumes.** Orders 048a-2
+(#364), 048a-3 (#367) and 048a-4 (#371, its file `048a4-build-sign-in-setup-account.md`) have
+merged, and orders 051b (#372) and 048b-relay1 (#373) after them; `main` is at `8e205447`. This
+order starts from that `main` (below). It assumes, as their decisions and Records state them:
 
 - From 048a-2's decision 5: `engine/crates/core/src/sign_in.rs`, with `mod sign_in;` in `lib.rs`,
-  and in it the function that gives an instance's expected account (no `signIn`, an account that is
-  not a string, or the pointer and the string), called "the account function" below, which finds
-  the instance's Type as `inventory.rs`'s `own_tools` does, and gives no `signIn` without a lookup
-  for an instance with no `held`, a template, or an object that is not a Resource or Agent
-  instance.
-- From 048a-2's decision 6: the preflight of `sign-in.v1` in `sign_in.rs`, called in
-  `invoke_inner` right after `records::preflight`'s block under `previous.is_none() || redispatch`,
-  giving its rejection through `reject_diagnostics`; and its helper, called "the decision-6 helper"
-  below, which decides in OPS-023's order (1) the invalid under PND-010 for a Type that states no
-  `signIn` or an account that is not a string, then (2) the conflict under PND-010 while the
-  instance's earlier `sign-in.v1`, setup or retirement is in progress; then the stub,
+  and in it `expected_account`, the function that gives an instance's expected account
+  (`ExpectedAccount::NoSignIn`, `NotString` with the pointer, or `Set` with the pointer and the
+  string), called "the account function" below, which finds the instance's Type through
+  `inventory::instance_type`, the lookup `inventory.rs`'s `own_tools` calls, and gives `NoSignIn`
+  without a lookup for an instance with no `held`, a template, or an object that is not a Resource
+  or Agent instance.
+- From 048a-2's decision 6, with its Record's R1 and R3: `preflight`, the preflight of
+  `sign-in.v1` in `sign_in.rs`, called in `invoke_inner` right after `records::preflight`'s block
+  under `previous.is_none() || redispatch`, giving its rejection through `reject_preflight` and so
+  `reject_diagnostics`, and giving none, so leaving the stub's unavailable, unless the caller is
+  root, or the instance is an Agent whose owning Fleet is the route's target and the caller is an
+  Interface on its own behalf (R1); and its helper `refusal`, called "the decision-6 helper" below,
+  which already takes the `Context` and decides in OPS-023's order (1) the invalid under PND-010
+  for a Type that states no `signIn` or an account that is not a string, then the conflict under
+  LIF-037 for a stale `expectedId` (R3), then (2) the conflict under PND-010 while the instance's
+  earlier `sign-in.v1`, setup or retirement is in progress; then the stub,
   `("sign-in.v1", "048a", "PND-010")`, unchanged. Its unit test is
-  `sign_in_refusals_before_dispatch`.
-- From 048a-2's decision 10, as 048a-4's decision 9 leaves it: the case
+  `sign_in_refusals_before_dispatch`, which builds its routes as JSON and calls `preflight` and
+  `refusal` directly.
+- From 048a-2's decision 10, as its Record's R2 and 048a-4's decision 9 leave it: the case
   `requests-sign-in-lapse-and-conflict` in `conformance/conventions/requests/sign-in-lapse-and-conflict/`,
   with its `manifest.json`, `documents.json` and `fixture.json` (the Type `signed-agent.v1`, whose
   account pointer is `/account` and whose logins are `browser` and `device`; the Fleet `group`; the
@@ -109,48 +115,59 @@ written (its file `048a4-build-sign-in-setup-account.md`) and not yet built; ord
   `META/x`, "Root asks T with A", "a run report", "a completion" and REFUSED(R, RULE); its steps 1
   to 3; its step 4, root's `group.sign-in.v1` for `signed` while its setup is in progress,
   expecting conflict; its steps 7 to 9, the setup's two run reports and 048a-4's inserted
-  completion of the account check, `$account0`, with the expected account; and its step 12, step
-  4's request once nothing is in progress, expecting the stub's unavailable.
-- From 048a-2's decision 11: in `engine/CONFORMANCE.md`, the words "invalid or conflict under
-  PND-010 where order 048a-2's checks apply" in three places, and in the section "Refusals and
-  reasons (order 046a)" the sentence "IFC-049's missing capability, an unknown `signInLogin` and
-  PND-013's return on a first request, each invalid, are not yet checked, so such a request reports
-  conflict or unavailable instead."
+  completion of the account check, `$account0`, with the expected account; its step 12, step
+  4's request once nothing is in progress, expecting the stub's unavailable; and its step 29, of
+  the steps 28 to 31 that 048a-2's Record (R2) added, root's `group.sign-in.v1` for `signed` with
+  a stale `expectedId`, expecting conflict under LIF-037. It has 32 steps.
+- From 048a-2's decision 11, as its Record's R3 leaves it: in `engine/CONFORMANCE.md`, the words
+  "invalid or conflict under PND-010" and, after them, "where order 048a-2's checks apply" in three
+  places (DL18's row, the shell's paragraph and the item of the unbuilt list; in the last two R3
+  put "or conflict under LIF-037 for a stale expectedId," between them), and in the section
+  "Refusals and reasons (order 046a)" the sentence "IFC-049's missing capability, an unknown
+  `signInLogin` and PND-013's return on a first request, each invalid, are not yet checked, so such
+  a request reports conflict or unavailable instead."
 - From 048a-3 and 048a-4: nothing this order reads, but their holds and the account check, which
   the copied steps pass through. `sign-in.v1` targets the instance's Fleet, not the instance, so no
   hold reaches it.
+- From 048b-relay1: `call_tool` in `server.rs` builds either the `invoke` input or, for a retry
+  that echoes a requestState, its `respond` input in place of it, and a refused retry calls
+  `record_rejection`. From 051b: nothing this order reads.
 
 Where 048a-2, 048a-3 or 048a-4 merged otherwise than its order says, apply the nearest sound
 reading of each decision below to what merged, and say so. Where a Record names a function, use
 that name.
 
 **What the engine already does, so that you do not redo it.** Line numbers are those of `main` at
-`e4ceb4c8`, before orders 048a-2 to 048a-4; find each place by the text quoted with it.
+`8e205447`, after orders 048a-2 to 048a-4, 051b and 048b-relay1; find each place by the text quoted
+with it.
 
 - `AccessRequest` (`engine/crates/core/src/access.rs:17`) has the members `identity`, `tool`,
   `arguments`, `serving`, `readable` and `authority_readable`, under
-  `#[serde(deny_unknown_fields)]`. Nothing of a request's `_meta` reaches the core but what the
-  shell maps to `serving` and the input's `key`: the shell (`crates/shell/src/server.rs`, the line
-  `let input = json!({"kind":"invoke","request":{...`) reads only the `_meta` keys `serving` and
-  `idempotencyKey` under the prefix that `spec/names.yaml` sets. A case's `invoke` step writes the
+  `#[serde(deny_unknown_fields)]`. Of a request's `_meta`, only what the shell maps to `serving`
+  and the input's `key` reaches the core's invoke input: `call_tool`'s invoke arm
+  (`crates/shell/src/server.rs`, the line `json!({"kind":"invoke","request":{...`,
+  `server.rs:472`, in the arm `Ok(None) =>` of `match retry`) reads only the `_meta` keys
+  `serving` and `idempotencyKey` under the prefix that `spec/names.yaml` sets. 048b-relay1's
+  `respond` input carries the whole `_meta` as `meta`, which this order neither reads nor
+  changes. A case's `invoke` step writes the
   request as the core reads it, so order 171b's case `requests-sign-in-return-kept-nowhere` writes
   `signInReturn` as a member of the request, beside `identity`, `tool` and `arguments`, as the
   runner writes `serving`; it fails today on that unknown member.
-- Struct literals of `AccessRequest` stand in `engine/crates/core/src/explain.rs:1067` (a test),
-  `inventory.rs:284`, `lifecycle.rs:418` and `:1419`, `records.rs:776`, `requests.rs:2250`,
-  `:2337` and `:2665`, and `engine/crates/conformance/src/lib.rs:776`.
+- Struct literals of `AccessRequest` stand in `engine/crates/core/src/explain.rs:1068` (a test),
+  `inventory.rs:284`, `lifecycle.rs:475` and `:1629`, `records.rs:822`, `requests.rs:2580`,
+  `:2667` and `:3020`, and `engine/crates/conformance/src/lib.rs:776`.
 - `reject_diagnostics` (`requests.rs:639`) writes a reason's reply, and for the rules `ACC-001` and
   `TPL-013` replaces it with the JSON-RPC error -32602, its `data` holding the `_meta` key
-  `reason` and the diagnostics (the block `if rule == "ACC-001" || rule == "TPL-013"`); it then
-  pushes `end-with-reason` and calls `end`, which writes the `request-ended` record. The shell
+  `reason` and the diagnostics (the block `if rule == "ACC-001" || rule == "TPL-013"`), and for
+  `LIF-037` writes the expected and resolved IDs (the block `if rule == "LIF-037"`, from 048a-2);
+  it then pushes `end-with-reason` and calls `end`, which writes the `request-ended` record. The shell
   answers a core reply that holds `error` as that protocol error. The shell's own IFC-036 error is
   `{"code": -32021, "message": "Missing required client capability", "data": {"requiredCapabilities": ..., <reason key>: "invalid", "diagnostics": [...]}}`.
-- `mark_unanswered` (`lib.rs:432`) leaves a reply without `isError`, such as a protocol error, as
+- `mark_unanswered` (`lib.rs:463`) leaves a reply without `isError`, such as a protocol error, as
   it is.
 
-**When this order starts.** Order 048a-4 must have merged to `main`, and with it 048a-2 and 048a-3,
-or, where the coordinator's dispatch note says so, your tree is 048a-4's verified branch, and the
-note relaxes only the first check below, 048a-4's Record. Before you change anything, check from
+**When this order starts.** Order 048a-4 has merged to `main` (#371), and with it 048a-2 and
+048a-3; no order before this one in the chain is unmerged. Before you change anything, check from
 the repository root that you find what they give, and stop, change nothing and report if any check
 prints otherwise:
 
@@ -162,26 +179,28 @@ grep -c '("sign-in.v1", "048a", "PND-010")' engine/crates/core/src/requests.rs
 grep -rl '"hold-for-sign-in"' engine/crates/core/src | wc -l
 grep -rl '"dispatch-account-check"' engine/crates/core/src | wc -l
 grep -c '"account0"' conformance/conventions/requests/sign-in-lapse-and-conflict/case.yaml
-python3 -c "import json; s = json.load(open('conformance/conventions/requests/sign-in-lapse-and-conflict/case.yaml'))['steps']; print(s[3]['input']['request']['tool'], s[11]['input']['request']['tool'], len(s))"
+python3 -c "import json; s = json.load(open('conformance/conventions/requests/sign-in-lapse-and-conflict/case.yaml'))['steps']; print(s[3]['input']['request']['tool'], s[11]['input']['request']['tool'], s[28]['input']['request']['tool'], len(s))"
 grep -c -E 'signInReturn|signInLogin|clientCapabilities' engine/crates/core/src/access.rs
-tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -o 'invalid or conflict under PND-010 where order 048a-2.s checks apply' | wc -l
+tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -o 'invalid or conflict under PND-010' | wc -l
+tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -o "where order 048a-2's checks apply" | wc -l
 tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -c 'are not yet checked, so such a request reports conflict or unavailable instead'
 grep -c '"id": "requests-sign-in-return-kept-nowhere"' conformance/expected-failures.yaml
 ```
 
 They print `1`, `1`, `1`, `1`, `1`, `1`, a number other than `0`, `group.sign-in.v1
-group.sign-in.v1 28`, `0`, `3`, `1` and `1`. The first is 048a-4's merge. The second to fourth
-are 048a-2's: its merge, the decision-6 helper's test and the stub. The fifth is 048a-3's hold, the
-sixth 048a-4's account check. The seventh and eighth are 048a-4's decision 9 in 048a-2's case: its
-inserted step, so that the steps this order changes are at indexes 3 and 11 of 28. The ninth says
-the core's request has none of this order's members yet, and the last three are the texts this
-order replaces. Orders that land beside this one (046b, 048b-relay1, 049a-1, 050 and others):
-whichever lands second keeps both changes and writes `engine/STANDING.md` again with the tool.
-Order 048b-relay1 is dispatchable now and may merge first. It rewrites `call_tool` to build either
-the `invoke` input or, for a retry that echoes a requestState, its `respond` input in place of it;
-`sign_in_members` goes into the `invoke` input and into `record_rejection` alone, never into the
-`respond` input. It names IFC-049 in the shell's sources, so where it merged first IFC-049's row
-of `engine/STANDING.md` reads `core, shell` after this order (Done when).
+group.sign-in.v1 group.sign-in.v1 32`, `0`, `3`, `3`, `1` and `1`. The first is 048a-4's merge.
+The second to fourth are 048a-2's: its merge, the decision-6 helper's test and the stub. The fifth
+is 048a-3's hold, the sixth 048a-4's account check. The seventh and eighth are 048a-4's decision 9
+and 048a-2's Record (R2) in 048a-2's case: 048a-4's inserted step and R2's steps 28 to 31, so that
+the steps this order changes are at indexes 3, 11 and 28 of 32. The ninth says the core's request
+has none of this order's members yet, and the last four are the texts this order replaces. Orders
+that land beside this one (049a-1, 050 and others): whichever lands second keeps both changes and
+writes `engine/STANDING.md` again with the tool. Order 048b-relay1 merged first (#373). It
+rewrote `call_tool` to build either the `invoke` input or, for a retry that echoes a requestState,
+its `respond` input in place of it; `sign_in_members` goes into the `invoke` input and into
+`record_rejection` alone, never into the `respond` input. It names IFC-049 in the shell's sources,
+so IFC-049's row of `engine/STANDING.md`, now `0 | 0 | outside | core, shell | no case, no reason`,
+reads `core, shell` after this order (Done when).
 
 **Who decided what.** PND-010, PND-013, IFC-049, IFC-036 and OPS-023 decide which requests are
 refused before any part, with which reason and rule, that the missing capability is the protocol's
@@ -205,7 +224,7 @@ retry on only as order 048b-relay1's `respond` input, after its own requestState
 core reads only whether `signInReturn` is carried, never its value; the error's message and `data`,
 mirroring the shell's IFC-036 error; the shell forwarding `clientCapabilities` and `signInLogin`,
 and leaving `signInReturn` to 048a-6; the diagnostics' words; the function names; the unit test and
-the shell's test; the case, its route, IDs and times; the two steps changed in 048a-2's case; the
+the shell's test; the case, its route, IDs and times; the three steps changed in 048a-2's case; the
 new reason of the expected failure; and the documentation edits. Apply them as written and report
 them under `decisions` as the coordinator's.
 
@@ -226,7 +245,7 @@ them under `decisions` as the coordinator's.
 
 **Size: S-M**: about 0.2 to 0.3k changed lines of Rust with one unit test in the core and one in
 the shell, one new case of 18
-steps on 048a-2's fixture, one member added to two steps of 048a-2's case, four places in
+steps on 048a-2's fixture, one member added to three steps of 048a-2's case, four places in
 `engine/CONFORMANCE.md` and one reason in `conformance/expected-failures.yaml`.
 
 ## The decisions it applies
@@ -259,15 +278,15 @@ steps on 048a-2's fixture, one member added to two steps of 048a-2's case, four 
    `_meta`'s key `io.modelcontextprotocol/clientCapabilities`, and `signInLogin`, the value of the
    key `signInLogin` under the prefix, each only where `_meta` holds the key with a value other than
    JSON null. `call_tool` calls `sign_in_members` and adds them to the `request` of its invoke input
-   (the line `let input = json!({"kind":"invoke","request":{...`, `server.rs:450` at `e4ceb4c8`),
-   and `record_rejection` calls it and adds them to the `request` of its rejection record's input
-   (`server.rs:503`), from the `_meta` of the body's `params`. Neither forwards `signInReturn`,
+   (the line `json!({"kind":"invoke","request":{...`, `server.rs:472` at `8e205447`, in the arm
+   `Ok(None) =>` of `match retry`), and `record_rejection` calls it and adds them to the `request`
+   of its rejection record's input (`server.rs:576`), from the `_meta` of the body's `params`. Neither forwards `signInReturn`,
    which 048a-6 forwards; nothing else in the shell changes. Name `signInReturn` nowhere in
    `server.rs`, not even in a comment. The shell's IFC-036 check stands as it is: a request that
    carries `signInLogin` under the prefix declares the implementation-interface extension, or the
    shell answers its own -32021 first. Write no promise ID in the shell's new code or its test, so
    that this order adds no shell source to any row of `engine/STANDING.md`; order 048b-relay1
-   names IFC-049 in the shell. Where 048b-relay1 merged first, `call_tool` builds either the
+   names IFC-049 in the shell. Since 048b-relay1 merged first, `call_tool` builds either the
    `invoke` input or its `respond` input: add the members to the `invoke` input alone, never to
    the `respond` input.
 
@@ -298,18 +317,20 @@ steps on 048a-2's fixture, one member added to two steps of 048a-2's case, four 
    `{"ruleId": R, "level": "error", "message": {"text": T}}`. No text holds the account or any part
    of the return's value. Add a function in `sign_in.rs` that gives an instance's stated login
    names, the `name` of each item of its Type's `spec.signIn.logins` in order, found through the
-   same Type lookup as the account function; where 048a-2 wrote that lookup inline, move it into one
-   function that both call, and write no second copy. The decision-6 helper gains two parameters,
-   the request and the stated names, and also the `Context` where it does not already take it, and
-   calls `request_member_refusal` right after its invalid (1) and before its conflict (2), giving
-   its rejection where it gives one. The preflight finds the names only where the account function
+   same Type lookup as the account function, `inventory::instance_type`; write no second copy of
+   it. The decision-6 helper gains two parameters, the request and the stated names, and also the
+   `Context` where it does not already take it, and calls `request_member_refusal` right after its
+   invalid (1) and before its conflicts, the LIF-037 conflict for a stale `expectedId` and (2),
+   since OPS-023 puts invalid before conflict, giving its rejection where it gives one. The preflight finds the names only where the account function
    gives the pointer and a string, and otherwise passes none, since the invalid (1) answers first:
    so the names function, like the account function, never looks up the Type of an instance with no
    `held`, a template, or an object that is not a Resource or Agent instance, whose lookup would end
    in an engine error. The preflight passes the names with `request`; `invoke_inner` passes
-   `request` to the preflight. 048a-2's test `sign_in_refusals_before_dispatch` passes a request
-   whose only member of the three is `clientCapabilities` `{"elicitation": {"url": {}}}`, and any
-   stated names; its assertions do not change.
+   `request` to the preflight. As before, the preflight gives none, leaving the stub's unavailable,
+   to a caller that 048a-2's Record (R1) leaves at the stub, so none of the three is decided for it.
+   048a-2's test `sign_in_refusals_before_dispatch` passes, to each call of `preflight` and of
+   `refusal`, a request whose only member of the three is `clientCapabilities`
+   `{"elicitation": {"url": {}}}`, and any stated names; its assertions do not change.
 
 3. **The missing capability is the protocol's error -32021.** In `reject_diagnostics`, right after
    the block for `ACC-001` and `TPL-013`, where the rule is `IFC-049`, replace `t.reply` with
@@ -335,7 +356,8 @@ steps on 048a-2's fixture, one member added to two steps of 048a-2's case, four 
    `{"name": "browser"}` and with `{"name": "device"}`, none; no capability with that return and
    `{"name": "phone"}`, IFC-049; the capability with both, PND-013. Last, it calls decision 6's
    preflight, on a `State` built by hand as 048a-2's test builds one with an Agent template of `f`
-   added, stored as `registration.rs` stores a template, with a request whose `arguments.instance`
+   added, stored as `registration.rs` stores a template, with a route from root (`r`), since
+   048a-2's Record (R1) gives none to most other callers, and a request whose `arguments.instance`
    names that template and that carries URL elicitation and `signInLogin` `{"name": "phone"}`,
    and asserts 048a-2's first invalid, the text for a Type that states no `signIn`: the names are
    not looked up for a template. Where `access::object` resolves no template, assert instead that
@@ -414,7 +436,7 @@ steps on 048a-2's fixture, one member added to two steps of 048a-2's case, four 
    18. Root asks `group.sign-in.v1` with S and URL and LOGIN(`{"name": "device"}`). `expect`
        REFUSED(`unavailable`, `PND-010`): nothing is in progress, and the stub answers.
 
-   The route is new and has not been run, since orders 048a-2 to 048a-4 are not yet built. Before
+   The route is new and has not been run, since this order's checks are not yet built. Before
    running it, check that no ID repeats across the case's steps' `ids`, the copied steps'
    included. If 046a's runner check refuses the case, if a step copied from 048a-2's case gives a
    reply other than that case states, or if a step's reply differs from what it states, stop and
@@ -429,9 +451,10 @@ steps on 048a-2's fixture, one member added to two steps of 048a-2's case, four 
 
 6. **048a-2's case declares the capability.** In
    `conformance/conventions/requests/sign-in-lapse-and-conflict/case.yaml`, the requests of its
-   steps 4 and 12 (indexes 3 and 11), root's `group.sign-in.v1` for `signed`, each gain the member
-   URL after `arguments`, so that decision 2's capability does not answer them before the conflict
-   and the stub they show. Nothing else in the case changes: not their expectations, not another
+   steps 4, 12 and 29 (indexes 3, 11 and 28), root's `group.sign-in.v1` for `signed`, each gain
+   the member URL after `arguments`, so that decision 2's capability does not answer them before
+   the conflict, the stub and the LIF-037 conflict for a stale `expectedId` (048a-2's Record, R2
+   and R3) they show. Nothing else in the case changes: not their expectations, not another
    step, not the directory's other files. Its step 6, the `unset` Agent's invalid, keeps no
    capability: 048a-2's invalid still answers it first. The case must pass as before.
 
@@ -447,9 +470,11 @@ steps on 048a-2's fixture, one member added to two steps of 048a-2's case, four 
 
 8. **`engine/CONFORMANCE.md` and `engine/STANDING.md`.** Find each sentence by its text read across
    line breaks, as 048a-2 leaves it. Four places change:
-   - In each of the three places, the words "invalid or conflict under PND-010 where order
-     048a-2's checks apply" become "invalid or conflict where the checks of orders 048a-2 and
-     048a-5 apply"; the rest of each sentence stays.
+   - In each of the three places, the words "invalid or conflict under PND-010" become "invalid or
+     conflict", and the words "where order 048a-2's checks apply" become "where the checks of
+     orders 048a-2 and 048a-5 apply"; the rest of each sentence stays, in the shell's paragraph
+     and the unbuilt list the words "or conflict under LIF-037 for a stale expectedId," between
+     them included.
    - In the section "Refusals and reasons (order 046a)", the sentence "IFC-049's missing
      capability, an unknown `signInLogin` and PND-013's return on a first request, each invalid,
      are not yet checked, so such a request reports conflict or unavailable instead." becomes:
@@ -462,13 +487,13 @@ steps on 048a-2's fixture, one member added to two steps of 048a-2's case, four 
    `python3 tools/promise_standing.py --write`, as AGENTS.md asks of a change to a case's
    `promises`, to the expected failures and to a promise ID in the core's sources. Report the rows
    of IFC-049, PND-010 and PND-013 and the totals; the totals change only by what those rows change.
-   IFC-049's row reads `1 | 0 | outside | core | case passes`, or
-   `1 | 0 | outside | core, shell | case passes` where order 048b-relay1 merged first; say which.
+   IFC-049's row reads `1 | 0 | outside | core, shell | case passes`, since order 048b-relay1
+   merged first.
    PND-013's row must read `2 | 1 | outside | core | case passes`, since order 048a-6 starts from
    it (Done when).
 
 9. **The declaration.** `docs/work-orders/048a5-declared.yaml` holds two shapes: one `added` for
-   `requests-sign-in-refusals-before-parts`, and one `input` for decision 6's two steps of
+   `requests-sign-in-refusals-before-parts`, and one `input` for decision 6's three steps of
    `requests-sign-in-lapse-and-conflict`. The coordinator wrote it with this order; check that it
    matches and change it only to make it so.
 
@@ -480,9 +505,19 @@ steps on 048a-2's fixture, one member added to two steps of 048a-2's case, four 
     (048b-relay1), polling and its endings (048a-5f to 048a-5h), and `signInReturn` on another
     operation's request or a `tasks/update`, PND-014 and the returns (048a-6) are not built. No
     shell code but decision 1's forwarding, and no CLI command (051b), relay (048b-relay, 048b-join)
-    or package (050), changes. Report as findings, for the coordinator: that the shell does not yet
+    or package (050), changes. This order builds neither the access-tier binding of `sign-in.v1`
+    and its refusal, which [order 048a2](048a2-build-sign-in-lapse-and-conflict.md)'s R1 left to
+    048a-5, nor the follow-up case that
+    [order 048a4](048a4-build-sign-in-setup-account.md)'s R2 left to 048a-5 or 048a-6, an account
+    check that ends failed with a PND-005 diagnostic; the coordinator assigns each, for example to
+    048a-5b or an order of its own, and records the move in order 117's entry with this order's
+    pull request. Report as findings, for the coordinator: that the shell does not yet
     forward `signInReturn`, so that through the shell a return on a first request is not refused
-    under PND-013 until 048a-6 forwards it; that no promise orders the invalids of PND-010, PND-013
+    under PND-013 until 048a-6 forwards it; that, until the access tier binds `sign-in.v1`
+    (048a-2's R1), a caller that R1's gate leaves at the stub gets unavailable without the
+    capability check, where IFC-049 and OPS-023 read -32021 and invalid, the placement standing as
+    written since moving the capability check ahead of R1's gate is the coordinator's decision;
+    that no promise orders the invalids of PND-010, PND-013
     and IFC-049 among themselves, so this order's order is the coordinator's; that the case asserts
     no diagnostic's words, since IFC-050 leaves wording to the engine, so the unit test alone pins
     them; and any place where PND-010, PND-013 or IFC-049 left you a choice this order does not
@@ -529,12 +564,12 @@ CONDUIT_VECTOR_THREADS=4 cargo test --release -p conduit-conformance --test vect
 CONDUIT_VECTOR_THREADS=4 cargo test --release
 ```
 
-The third reports one more test passed than on the commit you start from (048a-4's merge on main,
-or its verified branch where the dispatch note says so), 0 failed, the new one being
+The third reports one more test passed than on the commit you start from (`main` at `8e205447`,
+048b-relay1's merge, or the `main` you start from where it has moved), 0 failed, the new one being
 `sign_in_request_member_refusals`; report both counts. The pieces tool prints `Nothing to move.`
 The next two runner commands each end `1 cases passed`, and `requests-` gives one more case than
-on the commit you start from (048a-4's merge on main, or its verified branch where the dispatch
-note says so), with the same three expected failures (requests-repeat-failed-earlier-succeeded,
+on the commit you start from (`main` at `8e205447`, 048b-relay1's merge, or the `main` you start
+from where it has moved), with the same three expected failures (requests-repeat-failed-earlier-succeeded,
 requests-repeat-failed-earlier-unanswered and requests-sign-in-return-kept-nowhere), each still
 failing; report both counts. The first shell test passes: its `system.sign-in.v1` for the
 Resource `management`, whose Type states no `signIn`, still reports 048a-2's invalid. The second
@@ -581,8 +616,8 @@ git diff --check
 ```
 
 `vector_delta.py` prints `Declarations read from docs/work-orders/048a5-declared.yaml: 2 shapes.`,
-then `Vector delta: 3 changes; 0 flips; 0 undeclared; 0 errors.` and `exit 0`: the added case
-and one input change in each of decision 6's two steps. `promise_standing.py --check`,
+then `Vector delta: 4 changes; 0 flips; 0 undeclared; 0 errors.` and `exit 0`: the added case
+and one input change in each of decision 6's three steps. `promise_standing.py --check`,
 `check_model_account.py` and `check_roadmap.py` each end `Errors: 0`. No promise's text changes,
 so no row of the model-checking account goes stale; where `check_model_account.py` reports one
 stale, stop and report it. The unit tests, run with the interpreter that has PyYAML, end `OK`;
@@ -599,8 +634,7 @@ cargo test --release
 Its `tests/spike.rs` run reports `test result: ok. 9 passed; 0 failed`.
 
 Each of these prints 1. The `tr` checks read the file with its line breaks as spaces, so a rewrap
-hides nothing. The IFC-049 check accepts `core, shell` exactly where order 048b-relay1 merged
-first, and `core` otherwise; say which you find:
+hides nothing. The IFC-049 check reads `core, shell`, since order 048b-relay1 merged first:
 
 ```bash
 grep -c 'fn sign_in_request_member_refusals' engine/crates/core/src/sign_in.rs
@@ -611,7 +645,7 @@ grep -c '"id": "requests-sign-in-refusals-before-parts"' conformance/conventions
 grep -c '("sign-in.v1", "048a", "PND-010")' engine/crates/core/src/requests.rs
 grep -c 'reads it only on sign-in.v1 (order 048a-5)' conformance/expected-failures.yaml
 tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -c 'After that invalid and before that conflict, order 048a-5 decides three more invalids'
-grep -c -E '^\| IFC-049 \| interface \| must \| 1 \| 0 \| outside \| (core|core, shell) \| case passes \|$' engine/STANDING.md
+grep -c '^| IFC-049 | interface | must | 1 | 0 | outside | core, shell | case passes |$' engine/STANDING.md
 grep -c '^| PND-013 | convention | must | 2 | 1 | outside | core | case passes |$' engine/STANDING.md
 grep -c 'fn sign_in_members_reach_the_core' engine/crates/shell/src/server_tests.rs
 ```
@@ -620,20 +654,21 @@ Each of these prints 3, the second for `sign_in_members`'s definition, `call_too
 `record_rejection`'s call:
 
 ```bash
-tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -o 'invalid or conflict where the checks of orders 048a-2 and 048a-5 apply' | wc -l
+tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -o 'where the checks of orders 048a-2 and 048a-5 apply' | wc -l
 grep -o 'sign_in_members(' engine/crates/shell/src/server.rs | wc -l | tr -d ' '
 ```
 
-This prints `group.sign-in.v1 {"elicitation": {"url": {}}} {"elicitation": {"url": {}}} None 28`:
+This prints `group.sign-in.v1 {"elicitation": {"url": {}}} {"elicitation": {"url": {}}} {"elicitation": {"url": {}}} None 32`:
 
 ```bash
-python3 -c "import json; s = json.load(open('conformance/conventions/requests/sign-in-lapse-and-conflict/case.yaml'))['steps']; r = [s[i]['input']['request'] for i in (3, 11, 5)]; print(r[0]['tool'], json.dumps(r[0]['clientCapabilities']), json.dumps(r[1]['clientCapabilities']), r[2].get('clientCapabilities'), len(s))"
+python3 -c "import json; s = json.load(open('conformance/conventions/requests/sign-in-lapse-and-conflict/case.yaml'))['steps']; r = [s[i]['input']['request'] for i in (3, 11, 28, 5)]; print(r[0]['tool'], json.dumps(r[0]['clientCapabilities']), json.dumps(r[1]['clientCapabilities']), json.dumps(r[2]['clientCapabilities']), r[3].get('clientCapabilities'), len(s))"
 ```
 
 Each of these prints 0:
 
 ```bash
-tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -c 'invalid or conflict under PND-010 where order 048a-2.s checks apply'
+tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -c 'invalid or conflict under PND-010'
+tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -c 'where order 048a-2.s checks apply'
 tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -c 'are not yet checked, so such a request reports conflict or unavailable instead'
 grep -c 'signInReturn' engine/crates/shell/src/server.rs
 git diff HEAD --stat -- spec IN_FORCE.md | wc -l

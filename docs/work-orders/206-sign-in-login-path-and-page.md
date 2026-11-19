@@ -529,3 +529,92 @@ that [ruling 80](../proposals/ruling-80/README.md), point 10, has each merge wai
 `206-declared.yaml` through `--declared-changed`. A fresh Codex verifier and a fresh read-only
 Opus reader read the result before it merges ([ruling 79](../proposals/ruling-79/README.md),
 point 2).
+
+## Record
+
+Run on 2026-11-18, from about 20:39 to 21:35 UTC, on the Mac from `main` `ad58ae75` (this order's
+text), in two rounds: the worker (1567 s) and a fresh Codex verifier (244 s), then the worker again
+(1178 s) and a second fresh Codex verifier (331 s). The change is the eleven paths of Scope, written
+by the order's script: decision 1's two patterns of `sign-in-login.v1`, `page`'s losing only its
+user-information group and the redirect `path`'s becoming `'^/[^?#]*$'`; decision 2's two lines in
+CTR-013's `then`; decision 3's paragraph and `77 files` in the schemas README; and decision 4's
+three examples, three lines of `invalid-verdicts.txt`, and three fixtures and steps 28 to 30 of
+`contracts-sign-in-logins`. `206-declared.yaml` matched as it came. All eight hashes matched, the
+case passed its 30 steps, the full engine suite reported 351 passed, 0 failed and 4 ignored, and
+the S1 spike 9 passed; with `HEAD`'s schema the case failed with `expected diagnostic absent` and
+`check_schemas.py` printed three `accepted, and it must be rejected` lines and `Errors: 3`. The
+worker's own choices: cargo offline on the pinned toolchain; a first extraction of the script that
+dropped a blank line of the examples' header, so that three hashes missed, which it undid from
+`HEAD` and reran with the blank lines kept; and an exit trap that restored the fixed schema in the
+check without decision 1. Its two findings, 048a-1's redirect path and FR-138's item 5, report the
+two gaps this order closes. Both verifiers found no must and the same two shoulds: `spec/README.md`
+still counted 74 invalid examples where the schemas README now counts 77; and the new rejection's
+SUB-005 message, the loader's pattern failure and `check_schemas.py`'s alike, quotes the rejected
+`page` URL with its user information, a password included, which RFC 3986, section 3.2.1, advises
+against rendering. Round 2 changed no file: both lie outside Scope, and the worker recorded them
+for the coordinator.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2), on a scratch copy of
+`origin/main` `6be93b30` (order 051b) with the branch's change applied; `main` had touched none of
+the order's eleven paths since `ad58ae75`. It ran every check of "Done when": the eight hashes (OK),
+the pattern probe (`[True, True, False, False] [True, True, False, False]`), the four counts (1
+each), the numstat (the four lines), `check_schemas.py` (3 rejections of `CTR-013-`, step 4's 77,
+Errors: 0), `set_names.py --check`, `check_rulings.py`, `check_docs.py`, `check_roadmap.py` and
+`check_model_account.py` (Errors: 0 each), `promise_standing.py --check` (520 promise rows, Errors:
+0), the tool tests (129, OK), the vector delta (three flips, each declared by
+`each added step is rejected`, 4 shapes, `42 changes; 3 flips; 0 undeclared; 0 errors.`, exit 0),
+the loader's examples (8 passed), the case (`PASS contracts-sign-in-logins (30 steps; CTR-013,
+SUB-005)`), the six `contracts-` cases, the vectors (2 passed), the full engine suite (356 passed,
+0 failed, 4 ignored), the check without decision 1 (the case failed, `Errors: 3`, and both passed
+again after the restore), and the S1 spike (9 passed). With the new files added as intent-to-add,
+`check_private_paths.py` printed Errors: 0 and `git diff --check` nothing; author and committer
+were the work-order identity, and the only at signs added are the patterns' character classes and
+the intended user-information URL at `example.org`, which decision 4 requires. It found no must and
+three shoulds:
+
+- R1: nothing logged the page tightening of CTR-013's `then`, or the redirect-path one beside it,
+  for the owner's strike, as ruling 71, point 4, and this order's "Who decided what" require; the
+  owner's review list ended at row 47.
+- R2: `spec/README.md` still counted 74 invalid examples, where `spec/schemas/README.md` counts 77;
+  Scope did not name it, and both Codex verifiers raised it.
+- R3: the new rejection quotes the rejected `page` URL, user information included, in its SUB-005
+  message, from the loader and from `check_schemas.py` alike; it is existing behavior, as for
+  `authorization`, and outside Scope, but no Record carried it.
+
+The fixer rebased the branch onto `origin/main` at `6be93b30` (order 051b) with the work-order
+identity, without conflict, and applied each finding:
+
+- R1: the table "From the targeted review of the sign-in surface" of
+  `docs/proposals/first-build/to-review-with-the-owner.md` gains row 48, in the reader's words: a
+  page or service login's `page` holds no user information, and a redirect login's `path` holds
+  neither `?` nor `#`, the coordinator's tightening of CTR-013, open to the owner's strike under
+  ruling 71, point 4. The tightening is row 48 of the owner's review list.
+- R2: `spec/README.md`'s row for `schemas/examples/invalid` says `Draft; 77 files`. This widens
+  Scope by that one line, and R1's row widens it under `docs/proposals/`, which decision 6 left
+  unchanged; both are the coordinator's at the merge.
+- R3: the code is unchanged. It is a finding for a follow-up loader or schema-checker order: a
+  pattern failure for `sign-in-login.v1`'s `page`, `authorization` and `issuer` should leave out
+  the instance value and keep the schema name, the instance pointer and the keyword location, with
+  a step whose fixture holds a synthetic password and whose expectation checks that the password is
+  absent from the message.
+
+The fixer then ran on the rebased branch, with the files of this commit before it was made, every
+check of "Done when", with `origin/main` in place of `HEAD` where the change is now committed: the
+eight hashes (`: OK` each, exit 0), the pattern probe
+(`[True, True, False, False] [True, True, False, False]`), the four counts (1 each), the numstat
+against `origin/main` (the four lines), `check_schemas.py` (3 rejections of `CTR-013-`, step 4's
+`77 invalid documents in 77 files`, Errors: 0), `set_names.py --check`, `check_rulings.py`,
+`check_docs.py` and `check_roadmap.py` (Errors: 0 each), `promise_standing.py --check`
+(`engine/STANDING.md is current; promise rows: 520.`, Errors: 0), the tool tests (129, OK), the
+vector delta from `origin/main` (three flips, each declared by `each added step is rejected`,
+4 shapes, `42 changes; 3 flips; 0 undeclared; 0 errors.`, exit 0), the loader's examples
+(8 passed; 0 failed), the case (`PASS contracts-sign-in-logins (30 steps; CTR-013, SUB-005)`,
+`1 cases passed`), `contracts-` (`6 cases passed`), the vectors (2 passed; 0 failed), the full
+engine suite with 4 test threads and 4 vector threads (exit 0; 356 passed, 0 failed, 4 ignored),
+the check without decision 1 on `origin/main`'s schema (`FAIL 0 cases passed; 1 failed`,
+`expected diagnostic absent`, three `accepted, and it must be rejected` lines and `Errors: 3`;
+after the restore `1 cases passed`, Errors: 0 and the numstat `2 2` again), and the S1 spike
+(`tests/spike.rs` 9 passed; 0 failed). `python3 tools/check_docs.py` and
+`python3 tools/check_private_paths.py` printed Errors: 0, and `git diff --check origin/main...HEAD`
+and `git diff --check` printed nothing. The gate's run on this order's squash, which the merge
+waits on, is the coordinator's at the merge.

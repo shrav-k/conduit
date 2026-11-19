@@ -39,7 +39,10 @@
     "service-port-only.json": "service-port-only.json",
     "page-fragment.json": "page-fragment.json",
     "service-fragment.json": "service-fragment.json",
-    "hosted-page-queries.json": "hosted-page-queries.json"
+    "hosted-page-queries.json": "hosted-page-queries.json",
+    "redirect-path-query.json": "redirect-path-query.json",
+    "redirect-path-fragment.json": "redirect-path-fragment.json",
+    "page-user-information.json": "page-user-information.json"
   },
   "steps": [
     {
@@ -802,6 +805,96 @@
         "diagnostics": [],
         "document_count": 1,
         "manifest": false
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "redirect-path-query.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "pattern",
+            "contract": "sign-in-login.v1",
+            "pointer": "/properties/redirect/properties/path/pattern",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "redirect-path-fragment.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "pattern",
+            "contract": "sign-in-login.v1",
+            "pointer": "/properties/redirect/properties/path/pattern",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "page-user-information.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "pattern",
+            "contract": "sign-in-login.v1",
+            "pointer": "/properties/page/pattern",
+            "root_schema": "contract.v1"
+          }
+        ]
       }
     }
   ]

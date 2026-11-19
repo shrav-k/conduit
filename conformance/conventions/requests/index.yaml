@@ -729,6 +729,15 @@
       "safety_rows": []
     },
     {
+      "id": "requests-sign-in-return-not-taken",
+      "case": "conventions/requests/sign-in-return-not-taken/case.yaml",
+      "promises": [
+        "PND-013",
+        "PND-014"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "requests-sign-in-setup-account",
       "case": "conventions/requests/sign-in-setup-account/case.yaml",
       "promises": [

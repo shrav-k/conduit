@@ -474,6 +474,12 @@ impl ServerHandler for Handler {
                     .as_object_mut()
                     .unwrap()
                     .extend(sign_in_members(&meta, prefix));
+                if let Some(value) = meta
+                    .get(format!("{prefix}signInReturn"))
+                    .filter(|v| !v.is_null())
+                {
+                    input["request"]["signInReturn"] = value.clone();
+                }
                 input
             }
             Err(text) => {

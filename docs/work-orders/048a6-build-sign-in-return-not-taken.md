@@ -742,3 +742,115 @@ point 10, has each merge wait on, `tools/gate.py`; CI runs on the pull request a
 for it. A fresh Codex verifier and a fresh read-only Opus reader read the result before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2). The admin writes this order's Record at
 the foot of this file when it merges.
+
+## Record
+
+Run on 2026-11-19, from about 04:46 to 05:49 UTC, on the Linux node from `main` `6ce1f97b` (this
+order's refresh after 048a-5 merged), in two rounds: the worker (1568 s) and a fresh Codex verifier
+(289 s), then the worker again (1575 s) and a second fresh Codex verifier (354 s), 3786 s in all. It
+was the first order of [ruling 85](../proposals/ruling-85/README.md)'s one-round trial (point 3);
+since the first verifier found musts, Codex ran its second round as that point allows.
+
+Round 1 changed the nine files of Scope. In the core, `access.rs` gains `SignInReturn`, whose
+`Debug` form prints `SignInReturn(withheld)`, and `AccessRequest`'s `sign_in_return` takes it
+(decision 1); `invoke_inner` gains decision 2's block, which records `refuse-sign-in-return` and
+reports invalid under PND-013 after access and before dispatch for every operation but `sign-in.v1`;
+and `requests.rs` gains decision 3's test, `sign_in_return_not_taken_is_kept_nowhere`. The portable
+case `requests-sign-in-return-not-taken` runs on 048a-3's fixture (decision 4), the expected failure
+of `requests-sign-in-return-kept-nowhere` is lifted (decision 5), and `engine/CONFORMANCE.md` and
+`engine/STANDING.md` take decision 6's text and rows. In the shell, `call_tool` sets the invoke
+input's `signInReturn` in the arm `Ok(None) =>`, after `sign_in_members`, and `server_tests.rs` adds
+`sign_in_return_not_taken_reports_invalid_over_mcp` (decision 8). The worker's own choices: the
+core's existing object lookup gives the diagnostic's kind and name, the Rust diff ran to 188 lines
+against the order's estimate of 80 to 140, and cargo ran offline.
+
+The first verifier found four musts, two shoulds and a nit. Three musts were in the shell: rmcp
+3.9.0 logs the whole request, `_meta` with it, at debug level before the shell reads it; the parsed
+body stays in the response stream after the final reply frame; and a published operation marked
+unfinished returns its internal error ahead of access, so a return on it never reaches decision 2.
+The fourth was the order's: decision 2's diagnostic names the route's target
+(`Resource/management`), not what the request named (`Interface/root`), which IFC-050 asks for. The
+shoulds were the order's too: the case's three access-decision facts match by type alone, so a
+denied access followed by PND-013's ending would pass; and its withholding checks read named
+pointers only. The nit was the worker's starting source column for PND-014, `none`, not `core`.
+Round 2 changed the two shell files alone, taking `server.rs`'s diff from 6 added lines to 123 added
+and 23 removed: the return moved into a single-use request extension cleared by a drop guard, every
+body in `authenticate` was stripped of the key and serialized again, the unfinished-operation check
+was skipped when a return is present, `record_rejection`'s input became a projection, the return was
+also written into the `respond` input, and the MCP test grew a signed Agent and a nonlocal node. The
+second verifier found three musts and three shoulds: serializing the body again through
+`serde_json::Value` collapses duplicate members, so a malformed `tools/call` could become a readable
+call against IFC-036; a return claimed by a blocking job outlives a dropped response; and decision
+2's diagnostic again. Its shoulds repeated the case's two and added that the logging regression
+supplied no failing comparison.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2) at `fe6da951`, before the
+rebase. It ran every check of "Done when": fmt and clippy (exit 0), the two core tests (1 passed
+each), the pieces tool (`Nothing to move.`), the runner on `requests-sign-in-return-` (`2 cases
+passed`), `requests-sign-in-` (`4 cases passed; 1 expected failures` before, `6 cases passed` after)
+and `requests-` (`67 cases passed; 3 expected failures` before, `69 cases passed; 2 expected
+failures` after), the two shell tests, the vectors (2 passed), the full engine suite (core 126,
+shell's library 63, every binary ok, 4 ignored), the spike (9 passed), each Python check (Errors:
+0), the unit tests (129, OK), `vector_delta.py` from the base (1 change, 0 flips, 0 undeclared, 0
+errors), the expected failures (4 to 3) and every grep (as required). With the guard disabled on a
+scratch copy the runner printed `FAIL 0 cases passed; 2 failed`, the kept-nowhere case on its
+unexpected `outcome` and the new case on the missing PND-013 `request-ended`; restored, it printed
+`2 cases passed`. It checked the case against decision 4 (its 9 copied steps byte-equal, its
+evidence as the formula gives it, its 1374 IDs unique), and on a scratch copy it ran round 1's shell
+files on the tree's other files: 63 shell library tests passed, clippy and fmt clean, `signInReturn`
+counted 2 and `sign_in_members(` 3. A search of `engine/crates` and the manifests for
+`tracing-subscriber`, `EnvFilter` and `RUST_LOG` found none: the engine installs no tracing
+subscriber, so rmcp's debug event is never emitted. It found one must and three shoulds:
+
+- R1 (must): round 2 grew the shell well past decision 8, which decision 9 forbids, wrote the return
+  into the `respond` input, which decision 8 forbids, and brought the untested duplicate members
+  regression that the second verifier found; round 1's form meets decision 8 exactly.
+- R2 (should): the sentence decision 6 replaced left `engine/CONFORMANCE.md`'s line 721 at 103
+  columns, where decision 6 asks for the file's 100.
+- R3 (should, the order's): decision 2's diagnostic names the route's target, not what the request
+  named, as both verifiers found.
+- R4 (should, the order's): steps 4, 9 and 12 of the case match the access-decision record by type
+  alone, so they do not show that the refusal comes after a permitted access.
+
+The fixer rebased the branch onto `origin/main` at `c704275f` (048a-5b's refresh, #385) with the
+work-order identity, without conflict, since `main` had changed documents alone, and applied each
+finding:
+
+- R1: `engine/crates/shell/src/server.rs` and `server_tests.rs` are round 1's again, from
+  `46eead9f`: the six lines of decision 8's forwarding in the arm `Ok(None) =>` and the
+  inspection-only test. The round-1 verifier's three shell points, rmcp's debug log of `_meta` in an
+  embedding that installs a subscriber, the parsed body held until the response stream ends, and the
+  unfinished-operation shortcut ahead of access, are the coordinator's, for a follow-up order.
+- R2: the line is split after `to the`, and `core.` begins the next; the `tr` check still prints 1.
+- R3: no change in this build, since decision 2's text is prescribed; the coordinator amends the
+  diagnostic's subject in 048a-7 or a small follow-up, where an operation names an object the caller
+  may see.
+- R4: no change in this build, since decision 4's expectations are prescribed word for word; the
+  coordinator adds `"data": {"permitted": true}` to the three access-decision facts in a later
+  order's amendment of the case.
+
+The fixer then ran, on the rebased tree with these changes, every check of "Done when" from
+`engine/`, one at a time, with `RUST_TEST_THREADS=4` and `CONDUIT_VECTOR_THREADS=4`: fmt and clippy
+(exit 0), the two core tests (1 passed each), the pieces tool (`Nothing to move.`), the runner on
+`requests-sign-in-return-` (`2 cases passed`), `requests-sign-in-` (`6 cases passed`) and
+`requests-` (`69 cases passed; 2 expected failures`), the two shell tests (1 passed each), the
+vectors (2 passed), the full engine suite (exit 0; 366 passed, 0 failed, 4 ignored, core 126 and the
+shell's library 63) and the spike (9 passed). With decision 2's first line changed to `false` the
+runner printed `FAIL 0 cases passed; 2 failed`, the kept-nowhere case on its unexpected `outcome`
+field and the new case on the missing PND-013 `request-ended`; restored with `cp`, it printed `2
+cases passed`. From the root, with `/usr/bin/python3`: `check_schemas`, `set_names --check`,
+`check_rulings`, `check_docs`, `check_roadmap`, `check_model_account`, `check_private_paths` and
+`promise_standing --check` (Errors: 0 each), the unit tests (129, OK), `vector_delta.py c704275f
+WORKTREE` (1 shapes; 1 changes, 0 flips, 0 undeclared, 0 errors; exit 0), the expected failures (3),
+every grep of "Done when" (1 thirteen times, `signInReturn` 2 and `sign_in_members(` 3 in
+`server.rs`, 0 four times), the scope's `git status` (empty; the shell's two files alone under
+`engine/crates/shell`) and `git diff --check` (clean). The gate's run on this order's squash, which
+this merge waits on, is the coordinator's at the merge.
+
+A second fresh Opus reader then read the fixed branch at `80df0011` in full (ruling 79), checked
+each fix (the two shell files byte-identical to `46eead9f`) and reran the checks, and found no must
+and two shoulds on this Record: name the Linux node as ruling 85 does, and state this reread and the
+trial's count. Both are applied here. For the trial (ruling 85, point 3): Codex ran two rounds, since
+its first verifier found four musts; the fresh readers found one must, which round 2's own growth of
+the shell caused, and none on the reread. Because the first read found a must, the coordinator
+merges this order, not ruling 85's automatic merge.

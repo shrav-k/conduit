@@ -21,22 +21,28 @@ real login. The engine is run only to initialize a store and register projects.
 ## What and why
 
 **Where this order starts.** Your tree is the Codex lane's branch, which the coordinator cuts from
-`wo/050-agents-0.2.0` at B1, the checkpoint after orders 050f and 050h, and names as `BASE`. It
-holds orders 050a, 076 and 078, 050a's Record, orders 050c, 050d and 050e, each with its Record,
-and orders 050f and 050h, verified, rebased onto `main`; it holds none of the Claude lane (orders
-050i to 050k). `BASE`'s tip holds this order file, committed: the coordinator rebases the branch
-onto `main` after this order's text merges, and sets `BASE` to the branch's tip. Orders 050f and
-050h were not built when this order was written, so each fact of theirs that this order relies on
-is named in the check below. Before you change anything, check from the repository root that you
-find there what that gives, and stop, change nothing and report if any check prints otherwise. The
-Python lines need a Python with PyYAML, as `tools/check_schemas.py` does (AGENTS.md, "Checks").
+`wo/050-agents-0.2.0` at B1, the checkpoint after orders 050f and 050h, that is at order 050h's tip
+`f817139e`, the cut point before the rebase. `BASE` names the branch the coordinator gives, not
+`main`, and not `f817139e`: it is the rebased tip the coordinator gives, whose hash differs from
+`f817139e`, of which `f817139e` is not an ancestor, and which holds this order file. It holds orders
+050a, 076 and 078, 050a's Record, and orders 050c, 050d, 050e, 050f and 050h, each with its
+Record, rebased onto `main`; it holds none of the Claude lane (orders 050i to 050k). Both lanes
+are cut at that same tip, each on a branch of its own: order 050i, the Claude lane's first, on the
+Claude lane's branch, and this order, the Codex lane's first, on this one. Each lane is rebased
+onto `main` on its own, so the two share 050h's content, not a commit, and do not share `BASE`.
+`BASE`'s tip holds this order file, committed: the coordinator rebases the branch onto `main` after
+this order's text merges, and gives that rebased tip as `BASE`. Each fact of orders
+050f and 050h that this order relies on is named in the check below. Before you change anything,
+check from the repository root that you find there what that gives, and stop, change nothing and
+report if any check prints otherwise. The Python lines need a Python with PyYAML, as
+`tools/check_schemas.py` does (AGENTS.md, "Checks").
 
 ```bash
 git merge-base --is-ancestor d891543f "$BASE"; echo "main $?"
 test "$(git rev-parse HEAD)" = "$(git rev-parse "$BASE")"; echo "head $?"
 git ls-files --error-unmatch docs/work-orders/050l-codex-account-hook.md >/dev/null; echo "order $?"
 git status --short | wc -l
-grep -c '^## Record' docs/work-orders/050a-agents-v2-own-tools.md docs/work-orders/050c-agents-v2-client-home.md docs/work-orders/050d-agents-v2-process-tree.md docs/work-orders/050e-agents-v2-failed-turn-fields.md
+grep -c '^## Record' docs/work-orders/050a-agents-v2-own-tools.md docs/work-orders/050c-agents-v2-client-home.md docs/work-orders/050d-agents-v2-process-tree.md docs/work-orders/050e-agents-v2-failed-turn-fields.md docs/work-orders/050f-agents-v2-inputs.md docs/work-orders/050h-agents-v2-retire-hook.md
 python3 -c "import yaml; s=[d for d in yaml.safe_load_all(open('packages/agent-codex/contracts.yaml')) if d['metadata']['name']=='codex.v2'][0]['spec']; print(s['requires'], s['implementation'], 'signIn' in s, s['schema']['properties']['account'])"
 python3 -c "import yaml; m=yaml.safe_load(open('packages/agent-codex/conduit.yaml'))['implementations']; print([(n, m[n]['implements'], m[n]['tools'], m[n]['plain']) for n in ('wrapper-v2', 'wrapper-v2-path')])"
 grep -c 'pub const LOGOUT_DEADLINE: Duration = Duration::from_secs(60);' packages/agent-codex/src/lib.rs
@@ -55,7 +61,7 @@ grep -o 'results-2026-11-17-account-read-source.md' packages/agent-codex/README.
 ```
 
 They print `main 0` (`d891543f` is `main` after the texts of orders 050f and 050h merged, #366),
-`head 0`, `order 0` and `0`; then `1` for each order file (the four Records); then, from what orders
+`head 0`, `order 0` and `0`; then `1` for each order file (the six Records); then, from what orders
 050f and 050h bring,
 
 ```text
@@ -74,9 +80,12 @@ the seven files (no account or sign-out hook, no `signIn` and no app-server yet,
 are one file); `1` (order 050g's Codex outcome line, a pass); `1` (order 197's method line); and
 `3` (the README's links to order 197's results that the 050c to 050e checkpoints wrote: two in the
 credential-store and non-Unicode `CODEX_HOME` paragraphs, and one to R4).
-These greps and Python lines, and not a Record, are what check orders 050f and 050h: their Records
-are written only after their readers, so this order may start from 050h's verified branch before
-either Record, and no line above asks for one.
+These greps and Python lines check what orders 050f and 050h built; their Records, which the
+Record line above counts, say how, and where the built form departs from those orders' texts. Two
+such departures bear on this order: order 050h's logout falls back to another working directory
+where the client directory is gone (its Record, R1), and its registration probe refused Codex's
+negative control under MAN-017, not TPL-005 (R3), and gave P1's TPL-019 error without naming
+either item (R4); decision 9 below expects both.
 
 **What it builds.** Two hooks in `packages/agent-codex`, and nothing in `packages/agent-claude-code`:
 
@@ -170,9 +179,12 @@ and `src/main.rs`:
   `ANTHROPIC_API_KEY` and `OPENAI_API_KEY` removed, the client directory as its working directory,
   and `kill_on_drop`.
 - `logout(c, home, tree, deadline)` (order 050h) runs `logout_arguments()`, that is
-  `codex logout -c cli_auth_credentials_store="file"`, with its output discarded, records its group
-  in the tree, and answers `Ok(())` on status 0 and fails with `client logout did not start`,
-  `client logout failed: client exit: ...` or `client logout failed: no exit within N seconds`.
+  `codex logout -c cli_auth_credentials_store="file"`, with its output discarded, in the client
+  directory or, where that directory is gone, in the wrapper's working directory or else the home
+  (order 050h's Record, R1), records its group in the tree, and answers `Ok(())` on status 0 and
+  fails with `client logout did not start`, `client logout failed: client exit: ...` or
+  `client logout failed: no exit within N seconds`. `retire_within` checks the home again after
+  the logout, before it empties it (R8).
 - `ClientTree::stop(false)` stops every group the tree recorded, TERM then KILL, and returns a
   `StopReport` whose `note()` names survivors or an unconfirmed stop (orders 050d and 050e);
   `exit_cause` gives `client exit: status N`, `client exit: signal N` or
@@ -191,7 +203,8 @@ and `src/main.rs`:
   `logout-exit` and `logout-hang` in its working directory, removes `fixture-login` from the home
   and exits 0, all before it writes `client-started`. `tests/wrapper.rs` has `LOGIN_TOKEN`
   (`synthetic-login-token-canary`), `LOGIN_CLAIM` (`synthetic-claim-canary`), order 050h's helper
-  that writes `fixture-login` holding both into a directory, `plant_default_home`, `entry_names`,
+  `plant_login(home)` that writes `fixture-login` holding both into a directory, its
+  `assert_no_login_canary(text)` and `recorded_logouts(work)`, `plant_default_home`, `entry_names`,
   `assert_default_home`, `assert_client_environment`, `DOTENV_REFUSAL` and `AGENT_DOTENV`.
 
 ## The decisions it applies
@@ -319,8 +332,12 @@ and `src/main.rs`:
      the experimental `workspaceRouting`.
    - **`async fn read_account(c: &Config, home: &Path, tree: &ClientTree, deadline: Duration) -> Result<AccountReport>`**,
      which, with `until = Instant::now() + deadline` and the text
-     `account hook (start): client did not start` for every failure to start:
-     1. takes the tree's state lock, fails with that text where the tree is closed, spawns
+     `account hook (start): client did not start` for every other failure to start:
+     1. fails with `account hook (start): client did not start: the client directory is gone` where
+        `!c.client_directory().is_dir()`, before it takes the lock or spawns anything: unlike order
+        050h's logout (its Record, R1), the read takes no other working directory and fails closed,
+        the coordinator's choice; then takes the tree's state lock, fails with that text where the
+        tree is closed, spawns
         `client_command(c, Some(home), &account_arguments())` with stdin and stdout piped and
         stderr `Stdio::null()` (the app-server's log lines and warnings are never read), fails with
         that text where the spawn, its PID, its stdin or its stdout fails, records its group's leader
@@ -409,6 +426,7 @@ and `src/main.rs`:
    | `account` null | `Ok`, no account, text `account hook (account/read): no account: Codex answered with none` |
    | `account` of a `type` other than `chatgpt` | `Ok`, no account, text `account hook (account/read): no account: the login is not a ChatGPT login` |
    | `chatgpt`, `email` null or empty | `Ok`, no account, text `account hook (account/read): no account: the ChatGPT login names no email` |
+   | the client directory is gone | `account hook (start): client did not start: the client directory is gone` |
    | the app-server does not start | `account hook (start): client did not start` |
    | no answer by the deadline | `account hook (STEP): no answer within N seconds` |
    | the output ends | `account hook (STEP): client exit: status N`, `... signal N`, `... status unknown`, or `account hook (STEP): EOF before answer` |
@@ -470,8 +488,9 @@ and `src/main.rs`:
    The account hook does not stop the conversation: no Codex client runs between turns, and the hook
    holds the session, so no turn runs during it. The sign-out hook stops the client's tree first, as
    the retire hook does, signs out with the logout of order 050h, and keeps every entry of the home
-   that the logout leaves; a failed logout leaves the login in place for the next attempt. Neither
-   hook sets `failed` or `retired`, so the next turn goes on in the same conversation.
+   that the logout leaves; a failed logout leaves the login in place; the error leaves the hook's
+   outcome unknown (IFC-010), so the engine holds the instance under PND-011 until an account check
+   reports the expected account or none. Neither hook sets `failed` or `retired`, so the next turn goes on in the same conversation.
 
 5. **The tools, in `src/main.rs`**, which imports nothing new.
    - `list_tools` lists, where the second field is true, after `retire`, in this order:
@@ -605,6 +624,7 @@ and `src/main.rs`:
      | Case | Set up | Answer | Reads |
      | --- | --- | --- | --- |
      | `no-client` | `c.program` a missing file under the temporary directory | `account hook (start): client did not start` | 0 |
+     | `no-client-directory` | `c.directory` a missing directory under the temporary directory | `account hook (start): client did not start: the client directory is gone` | 0 |
      | `initialize-exit` | `"initialize":"exit:3"` | `account hook (initialize): client exit: status 3` | 1 |
      | `initialize-error` | `"initialize":"error"` | `account hook (initialize): error answer, code -32600` | 1 |
      | `initialize-hang` | `"initialize":"hang"` | `account hook (initialize): no answer within 3 seconds` | 1 |
@@ -781,7 +801,7 @@ and `src/main.rs`:
      as `engine/crates/shell/tests/agents.rs` writes one, and one template file, `kind: Agent`,
      `spec.type` `example.org/conduit/agent-codex#codex.v2`, `config: {account: example-account}`:
      - R: the template `v2-hooks`, with no `implementation`.
-     - N, the negative control: the template `v2-account-v1-item`, with
+     - N, the `.v1`-item probe: the template `v2-account-v1-item`, with
        `implementation: {github.com/shrav-k/conduit/core#account-hook.v1: example.org/conduit/agent-codex#wrapper}`.
      - P1: the template `v2-path-turn-and-retire`, with
        `implementation: {example.org/conduit/agent-codex#turn.v1: example.org/conduit/agent-codex#wrapper-v2-path, github.com/shrav-k/conduit/core#retire-hook.v1: example.org/conduit/agent-codex#wrapper-v2-path}`.
@@ -792,9 +812,16 @@ and `src/main.rs`:
      project holds an instance, so none starts a wrapper or a client. Report each reply's
      `accepted` and its diagnostics.
    - Expected: R and P2 are accepted with no diagnostic; N is not accepted, with an error citing
-     TPL-005 (`wrapper` does not implement the hook); and P1 is not accepted, with an error citing
-     TPL-019 (two items that are run). If a reply differs, change nothing to make it pass: report
-     it, since this order changes no engine source, and the coordinator decides.
+     MAN-017, as order 050h's N was (its Record, R3): the `.v1` item's binding
+     `AGENT_PEER_MESSAGING -> /peerMessaging` is not a required scalar place of `codex.v2`, which
+     the engine checks before TPL-005, the error `wrapper` not implementing the hook would give. So
+     N passes whether or not the engine checks that an item implements `account-hook.v1`: TPL-005
+     for `account-hook.v1` stays unshown on this lane, for order 050n's loader vector or a later
+     engine test to show. And P1 is not
+     accepted, with an error citing TPL-019 (two items that are run) whose text, as at order 050h,
+     names neither item, `v2-path-turn-and-retire: invalid number of run items` (R4, an engine gap
+     outside this order). If a reply differs, change nothing to make it pass: report it, since this
+     order changes no engine source, and the coordinator decides.
    - Registration into the throwaway store under T, with no instance, which is removed after the
      check, is not an installation in the sense of the rule that no archive built from the Codex
      lane is installed as `codex.v2` anywhere, as with order 050h's decision 9 and order 050a's step
@@ -847,10 +874,11 @@ credential store, stated as a README limit; that the app-server keeps running af
 coordinator's understanding and not order 197's reading; the message framing, one JSON message a
 line with no `jsonrpc` member, an assumption of the coordinator's that order 197 did not read and
 A5's stage 1, step 1 tests; requests and notifications from the server skipped, and an answer for
-another ID read as invalid; both hooks refused once the retire hook has begun; the sign-out hook
+another ID read as invalid; a gone client directory failing the read closed with its own start
+text, where order 050h's logout takes another working directory; both hooks refused once the retire hook has begun; the sign-out hook
 keeping the home; `codex.v2` requiring the two hooks on this lane before order 050m gives it
 `signIn`; the tool names and descriptions, the texts, the README's words, the scripted app-server
-and its script, and the registration probe with its negative control. Apply them as written and
+and its script, and the registration probe with its `.v1`-item probe. Apply them as written and
 report them under `decisions` as the coordinator's.
 
 ## Scope

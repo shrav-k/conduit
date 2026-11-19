@@ -9,7 +9,7 @@ have left the tree; their results, decisions and observations are in
 ## Orders still in the directory
 
 One row for each order file in this directory, in file-name order. Orders 048a5d to 048a5h, 048a7,
-048a8, 050k and 050m to 050o, which the coordinator's cuts of 048a-2, 048a-5, 048a-6 and 050
+048a8, 050k, 050n and 050o, which the coordinator's cuts of 048a-2, 048a-5, 048a-6 and 050
 plan (order 117), are not yet written; they have rows without links where their names sort, each
 saying what it comes after.
 
@@ -64,7 +64,7 @@ saying what it comes after.
 | [050j](050j-claude-sign-in-redirect-login.md) | claude-code.v2 states signIn: its account place `/account`, its redirect login `browser` with `carried: false` and literals read from Claude Code 2.1.318, and the four hooks required, each served by the `.v2` item; the `sign-in` hook runs the client's own login with the wrapper as its browser and relays the URL handed over, and nothing the client prints; with order 050i's last two shoulds; the second order of the Claude lane, after 050i, and 048a-1 merged (the coordinator's split, open to the owner's strike) |
 | 050k | claude-code.v2's code-page login, stated beside the browser login and not choosable in 0.2.0 (ruling 86, point 1); after 050j (planned; the coordinator's split, open to the owner's strike) |
 | [050l](050l-codex-account-hook.md) | codex.v2's account hook asks Codex itself through account/read, with refreshToken false and a deadline, never opening the login file and failing closed, and its sign-out hook; the first order of the Codex lane, after 050h, the coordinator's reading that order 197 confirms the route, and 048a-4 written (the coordinator's split, open to the owner's strike) |
-| 050m | codex.v2 states signIn: its browser login, its device login refused, and its sign-in hook, plain in 0.2.0 (ruling 86, point 1); after 050l, and 048a-1 merged (planned; the coordinator's split, open to the owner's strike) |
+| [050m](050m-codex-sign-in-hook.md) | codex.v2 states signIn on the Codex lane: its browser login, its device login stated and refused with a diagnostic, and its sign-in hook, plain in 0.2.0 (ruling 86, point 1), with 050l's two last shoulds and the account check's refresh blocked by an override under `.invalid` on the check's child alone (ruling 86, point 5); 050n joins it only if the live check passes; the second order of the Codex lane, after 050l, 048a-1 merged, and order 208's probe reporting no write (the coordinator's split, open to the owner's strike) |
 | 050n | the Agent packages 0.2.0, joined and merged, the last 050 order; after 048b-join merged, the live check's results merged, 050b merged, and 050k and, on a pass, 050m (planned; the coordinator's split, open to the owner's strike) |
 | 050o | the managed connection for a Claude sign-in, built in the Interface; after 051b-3 merged and 050b merged (planned; the coordinator's split, open to the owner's strike) |
 | [051b](051b-cli-pending-and-answer.md) | `conduit pending` and `conduit answer`: root's pending actions listed and answered from the command line, with the unanswered hint; after 047c alone, the first of 051b's three parts (the coordinator's split, open to the owner's strike) |

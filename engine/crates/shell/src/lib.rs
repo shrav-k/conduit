@@ -381,6 +381,7 @@ impl Shell {
                 | "invoke"
                 | "complete"
                 | "respond"
+                | "sign-in-wait-ended"
                 | "cancel"
                 | "setup-report"
                 | "recover"

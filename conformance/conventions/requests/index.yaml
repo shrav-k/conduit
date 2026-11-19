@@ -791,6 +791,15 @@
       "safety_rows": []
     },
     {
+      "id": "requests-sign-in-other-account-undone",
+      "case": "conventions/requests/sign-in-other-account-undone/case.yaml",
+      "promises": [
+        "PND-011",
+        "PND-005"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "requests-sign-in-plain-hook-part",
       "case": "conventions/requests/sign-in-plain-hook-part/case.yaml",
       "promises": [

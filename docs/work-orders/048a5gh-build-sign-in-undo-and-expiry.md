@@ -528,6 +528,17 @@ Below, `Q(x)` is `c.qualified(x)`, the core's qualified reference to the operati
    - Return. S stays in progress, no output is given, nothing is raised, the waiting hook part
      stays as it is, and the Interface's retry keeps waiting.
 
+   Amended after round 1 (the reader's R3): where the step's time is at or after SI's
+   `sign_in_wait.expires`, the branch dispatches no sign-out and ends S as decision 7 does: through
+   the end, `unknown`, under `PND-010`, with decision 7's cause, then the decision
+   `sign-in-wait-ended` with the facts `{"invocation": S, "attempt": N, "ended": true}`, `N` being
+   `sign_in_wait.attempt`. DL18 says no later hook runs once the wait has ended. The account
+   found stays signed in, and `SignInUndone` is not set, since no sign-out ran. Decision 9's
+   test `sign_in_wait_ends_unknown_at_its_expiry` gains a last step: `w2`'s poll `a2` answers
+   with the account `third-account` at `2026-11-18T12:10:00Z`; no external intent and no part are
+   added, `w2` is `unknown` under `PND-010`, and the last decision is `sign-in-wait-ended` with
+   `"ended": true`.
+
    Where the part function gives `false` (no implementation of `sign-out-hook.v1` is resolved,
    which CTR-013's checks are expected to leave no way to reach), end S through the end, `failed`,
    under `PND-011`, with the cause
@@ -827,7 +838,12 @@ Below, `Q(x)` is `c.qualified(x)`, the core's qualified reference to the operati
     the step is a completion of an account check, its result is ACCOUNT of the account given here.
     SIGNIN(N) is `$signin1_N`, the `sign-in.v1` invocation that step N captures from F-START, and
     CHECK(N) `$check1_N`; POLL(N) is `$poll1_N`, the poll that step N, from F-RETRY, captures. EV is
-    the action's evidence before step 11 as four items `{}`, one for each item of 048a-2's raise.
+    the action's evidence before step 11, the four items of 048a-2's raise, written whole
+    (amended after round 1, the reader's R1, since the runner reads `{}` as an exact empty map):
+    `{"kind": "fact", "value": "primary-account", "where": "config/account", "proves": "the account this instance is configured for"}`,
+    `{"kind": "fact", "value": "$call1", "where": "records", "proves": "the request whose call reported a missing or lapsed login"}`,
+    `{"kind": "fact", "value": "example.org/sign-in-hold#work.v1", "where": "records", "proves": "the operation of that request"}`,
+    `{"kind": "fact", "value": "lapsed-login", "where": "records", "proves": "how the implementation reported it"}`.
     ITEMS(V, R) is the two items
     `{"kind": "fact", "value": V, "where": "records", "proves": "a sign-in.v1 attempt whose account check, while polling, found an account other than the expected one"}`,
     `{"kind": "fact", "value": R, "where": "records", "proves": "what the sign-out hook did with that account"}`.
@@ -854,6 +870,11 @@ Below, `Q(x)` is `c.qualified(x)`, the core's qualified reference to the operati
     13. From F-HOOK.
     14. From F-RETRY: the person's retry polls.
     15. UNDO(14).
+    FAILED's diagnostic also holds a `message` (amended after round 1, the reader's R8):
+    `{"text": "github.com/shrav-k/conduit/core#sign-in.v1 for Agent/signed via tool group.sign-in.v1 ended failed under PND-011: " + C}`,
+    `C` being decision 3's cause, with `{X}` `"third-account"` and `{E}` `"primary-account"`: its
+    succeeded text at step 16, and at step 26 its other text with `{O}` `failed`.
+
     16. A completion for `$signout15`, SUCCESS. `expect` FAILED(SIGNIN(11)): the sign-in ends failed
         naming both accounts, and answers nothing.
     17. INSPECT. `expect` SEEN(`[{"type": "Running"}]`, EV followed by ITEMS(SIGNIN(11),
@@ -890,8 +911,9 @@ Below, `Q(x)` is `c.qualified(x)`, the core's qualified reference to the operati
         `"sign-out-unknown"`)): the cancelled undo may not have run.
     37. to 41. As steps 30 to 34, each step's numbers 7 higher: UNDO(40) captures `$signout41`.
     42. `{"kind": "restore-state", "evidence": E}`, `E` this step's evidence. `expect`
-        `{"reply": {"restored": true}, "external_intents": []}`: a restart while the undo is in
-        flight (K11, part (d)).
+        `{"reply": {"restored": true}, "external_intents": [], "record_facts": [{"type": "invocation-ended", "data": {"invocation": SIGNIN(37), "outcome": "unknown"}}]}`:
+        a restart while the undo is in flight (K11, part (d)), which ends the sign-in unknown
+        (IMP-007; `record_facts` added after round 1, the reader's R9).
     43. INSPECT. `expect` SEEN(UNDONE(`"SignOutUnknown"`), step 36's list followed by
         ITEMS(SIGNIN(37), `"sign-out-unknown"`)).
     44. From F-START: the fifth sign-in.
@@ -943,7 +965,7 @@ Below, `Q(x)` is `c.qualified(x)`, the core's qualified reference to the operati
       instance reports conflict meanwhile." becomes, in the same line:
 
       ```text
-      Another account found while polling is undone by a `sign-out-hook.v1` part before `sign-in.v1` ends failed (row DL19). A `sign-in.v1` that no retry completes by its output's expiry ends unknown under PND-010 (order 048a-5gh): at each relayed output's expiry the shell submits one input naming the invocation and attempt, and where the invocation still waits on that attempt for the person, the core ends its waiting `sign-in-hook.v1` part and then the invocation unknown, sends nothing and runs no hook for it later; its sign-in action and hold stay, and a retry after it is refused by the shell. A poll or an undo in flight at that instant is left to finish, and an output that a poll gives after it expires at once. A restart ends a waiting sign-in unknown by the engine's recovery (DL6, IMP-007), and the shell's timers end with the engine.
+      Another account found while polling is undone by a `sign-out-hook.v1` part before `sign-in.v1` ends failed (row DL19). A `sign-in.v1` that no retry completes by its output's expiry ends unknown under PND-010 (order 048a-5gh): at each relayed output's expiry the shell submits one input naming the invocation and attempt, and where the invocation still waits on that attempt for the person, the core ends its waiting `sign-in-hook.v1` part and then the invocation unknown, sends nothing and runs no hook for it later; its sign-in action and hold stay, and a retry after it is refused by the shell. A poll or an undo in flight at that instant is left to finish, and an output that a poll gives after it expires at once; a poll that finds another account after it ends `sign-in.v1` unknown as that input does, and no `sign-out-hook.v1` part runs. A restart ends a waiting sign-in unknown by the engine's recovery (DL6, IMP-007), and the shell's timers end with the engine.
       ```
 
     - In DL19's row in "Choices still required", right before the sentence "No other kind is held,
@@ -1113,14 +1135,17 @@ python3 tools/check_model_account.py
 python3 -m unittest discover -s tools/tests
 python3 tools/check_private_paths.py
 python3 tools/promise_standing.py --check
-/usr/bin/python3 tools/vector_delta.py HEAD WORKTREE --declared docs/work-orders/048a5gh-declared.yaml; echo "exit $?"
+/usr/bin/python3 tools/vector_delta.py origin/main WORKTREE --declared docs/work-orders/048a5gh-declared.yaml; echo "exit $?"
 git status --short -- spec IN_FORCE.md conformance/manifest.yaml conformance/case.schema.json conformance/case-schema conformance/internal-cases.yaml conformance/expected-failures.yaml conformance/fixtures conformance/conventions/requests/sign-in-hold conformance/conventions/requests/sign-in-setup-account conformance/conventions/requests/sign-in-lapse-and-conflict conformance/conventions/requests/sign-in-account-first conformance/conventions/requests/sign-in-hook-part conformance/conventions/requests/sign-in-plain-hook-part conformance/conventions/requests/sign-in-url-relayed conformance/conventions/inventory conformance/conventions/setup conformance/language engine/README.md engine/crates/shell/src/runner.rs engine/crates/shell/src/server/relay.rs engine/crates/loader engine/crates/conformance tools packages experiments docs/implementation docs/proposals
 git diff --check
 ```
 
 `vector_delta.py` prints `Declarations read from docs/work-orders/048a5gh-declared.yaml: 5 shapes.`,
 then `Vector delta: C changes; F flips; 0 undeclared; 0 errors.` and `exit 0`; report `C` and `F`,
-and that every change but the added case lies in `requests-sign-in-polling`.
+and that every change but the added case lies in `requests-sign-in-polling`. On a branch whose
+work is committed, `HEAD` is the working tree, so a comparison with `HEAD` reads nothing: this
+command and the last of the four that print 0 below compare with `origin/main`, the base the squash
+lands on (amended at the rebase, the coordinator's, after the second read's S3).
 `promise_standing.py --check`, `check_model_account.py` and `check_roadmap.py` each end
 `Errors: 0`. No promise's text changes, so no row of the model-checking account goes stale; where
 `check_model_account.py` reports one stale, stop and report it. The unit tests end `OK`; report the
@@ -1170,7 +1195,7 @@ Each of these prints 0:
 grep -rn '048a-5g\|048a-5h' engine/crates/core/src engine/crates/shell/src | wc -l | tr -d ' '
 tr -s ' \n' '  ' < engine/CONFORMANCE.md | grep -c 'Until order 048a-5gh'
 grep -c 'external_intents.push' <(sed -n '/fn sign_in_wait_ended(/,/^}/p' engine/crates/core/src/sign_in.rs)
-git diff HEAD --stat -- spec IN_FORCE.md conformance/expected-failures.yaml | wc -l | tr -d ' '
+git diff origin/main --stat -- spec IN_FORCE.md conformance/expected-failures.yaml | wc -l | tr -d ' '
 ```
 
 `git status --short` lists only the files in scope. Do not stage anything. In your report, mark
@@ -1225,4 +1250,180 @@ done the following (the coordinator's, under that lever):
 
 ## Record
 
-Not yet run.
+Run on 2026-11-19, from about 19:25 to 19:44 UTC, on the Linux node from `1b22f371` (order
+048a-5ef's round 1, stacked, not yet merged), in one round: the worker (790 s) and a fresh Codex
+verifier (305 s). The worker built decisions 1 to 9 and 11 to 13 in the files of Scope:
+`sign_in.rs` dispatches the undo from the poll arm (`Poll::Other`), takes the sign-out part's end
+in its own arm, adds `undo_ended`, `waits_on_person` (calling 048a-5ef's `waiting_for_retry`) and
+`sign_in_wait_ended`, and gains decision 9's three tests; `pending.rs` adds `keep_sign_in_attempt`
+and its test; the undone helper takes `polling` in `lifecycle.rs`; `recover` and `cancel` in
+`requests.rs` take decision 4's paths; `lib.rs` adds `Input::SignInWaitEnded`; `server.rs` adds
+`end_sign_in_wait_at` and starts it in `call_tool`, with the shell test in `server_tests.rs`; F
+gains its undo step (37 steps); the new case has 47 steps; and `engine/CONFORMANCE.md` and
+`engine/STANDING.md` follow. The worker's own choices: an `undo_part_answered` helper, the instance
+re-read by ID only in the dispatch branch, and shutdown first in the timer's `select!`.
+It stopped, as decision 10 says, where the new case failed at step 17: decision 10's EV was four
+`{}` items, and the runner reads `{}` as an exact empty map. It reported 15 findings, the two
+blocking ones being that failure and `tools/vector_delta.py` recursing without end on the moved
+steps' `input.meta` `{}`. The verifier reproduced both and found seven musts (V1 to V7) and three
+shoulds (V8 to V10): V3, a poll in flight at DL18 that finds another account still dispatches a
+sign-out; V4, a cancel of `sign-in.v1` during its undo forwards no cancel to the sign-out part;
+V5, a URL-mode input request from the sign-out part can raise an action; V6, a keyed sign-out's
+discovery that ends after retirement still dispatches; V7, the cancel and restart endings do not
+link the action the first check raised; V8, FAILED projects no message; V9, the restart step does
+not check the sign-in's outcome; and V10, the shell test does not reach `call_tool`'s timer.
+
+A fresh read-only Opus reader then read the round, on the Mac (cold build) and the Linux node
+(warm). It ran fmt, clippy, the targeted unit tests (`sign_in` 30, `pending::tests` 8,
+`lifecycle` 9, the shell expiry test 1, `relay::tests` 2), `pieces` (`Nothing to move.`), the
+runner on the new case (failing at step 17), on polling, setup-account and hold (1 case each) and
+on `requests-sign-in-` (17 passed, 1 failed), mutations 1 and 4 (failing at step 15 and at the
+test's step 5, and restored with `cmp` and a clean status), `vector_delta.py` against
+`1b22f371` (recursion, exit 2), the Python checks (Errors: 0 each), the tool tests (129, OK), the
+standing delta (`IFC-049:0 PND-005:1 PND-010:0 PND-011:1`), the order's count checks (47, 37
+[...], 2, 0, 0, 0, 0), and the scope, privacy and whitespace checks (clean). Mutations 2 and 3
+could not be checked past step 17. It confirmed V1, V2 and V3 as musts, V3 narrowed to a poll
+that finds another account at or after DL18 (an undo in flight is neither polling nor waiting on
+the person), downgraded V4 to V7 to shoulds, since each comes from decision 4 or from shared code
+of 048a-5b, 048a-5ef or 048a-4, and confirmed V8 to V10:
+
+- R1 (must): decision 10's EV placeholders fail the case at step 17.
+- R2 (must): `vector_delta.py` recurses on a missing member against `{}`.
+- R3 (must): a poll that finds another account after DL18 dispatches a sign-out hook, against
+  DL18 and `sign-in.v1`'s "no later hook runs after DL18".
+- R4 to R7 (should): V4 to V7, each left for a follow-up order, this order unchanged.
+- R8 (should): FAILED does not check that the diagnostic names both accounts.
+- R9 (should): step 42 does not check the interrupted sign-in's outcome.
+- R10 (should): no test or mutation reaches the timer's call in `call_tool`.
+
+The fixer left the branch on `1b22f371` and applied each finding:
+
+- R1: decision 10 now writes EV whole, the four items of 048a-2's raise as the inspection gives
+  them (`primary-account` at `config/account`, `$call1`, `example.org/sign-in-hold#work.v1` and
+  `lapsed-login`), and steps 17, 27, 36 and 43 of the case hold them.
+- R2: the fixer guarded the sensitive-descendant recursion in `tools/vector_delta.py` so that it
+  runs only for a nonempty map side, with a test of its own. The same guard had already landed on
+  `main` apart, as its own change (#420), with its own test, so at the rebase below the branch's
+  copy of both files gave way to `main`'s: this order changes nothing under `tools/`.
+- R3: of the reader's two ways, the one that needs no ruling: decision 1 is amended so that where
+  the step's time is at or after SI's `sign_in_wait.expires`, the `Poll::Other` arm dispatches no
+  sign-out and ends S as decision 7 does (`unknown` under `PND-010`, decision 7's cause, now the
+  constant `WAIT_ENDED`, then `sign-in-wait-ended` with `"ended": true`). The account found stays
+  signed in and `SignInUndone` is not set, since no sign-out ran; whether the instance should be
+  held then is left to the coordinator and the owner. `sign_in_wait_ends_unknown_at_its_expiry`
+  gains a last step, `w2`'s poll answering `third-account` at `2026-11-18T12:10:00Z`; with the
+  time test made false it fails (`failed` where `unknown` is expected). DL18's row in
+  `engine/CONFORMANCE.md` and decision 12's text gain the clause "a poll that finds another account
+  after it ends `sign-in.v1` unknown as that input does, and no `sign-out-hook.v1` part runs."
+- R4 to R7: not changed here, as the reader's fixes say; each is left for one sign-in follow-up
+  order after the dogfood, which the coordinator writes (see the rebase below):
+  forward a cancel of `sign-in.v1` to each part in progress under OPS-027 (R4); end a URL-mode
+  input request from a non-relay part of `sign-in.v1` unknown with no raise under IFC-010 (R5);
+  recheck a keyed hook's target for retirement before its dispatch after discovery (R6); and link
+  the raised action in the cancel and restart endings under PND-012 (R7), each with a case.
+- R8: FAILED's diagnostic holds the whole `message`, decision 3's succeeded text at step 16 and its
+  failed text at step 26, both accounts written as JSON strings; decision 10 says so.
+- R9: step 42 holds `record_facts` with an `invocation-ended` of SIGNIN(37), outcome `unknown`;
+  decision 10 says so.
+- R10: not changed here: a handler-level test needs a sign-in relayed through `call_tool`, which no
+  test reaches yet, so it is not cheap; it is left for the same follow-up order, with a mutation
+  row for the timer's call in `call_tool`.
+
+The fixer then ran, in the worktree on the Mac, warm, with `RUST_TEST_THREADS=4` and
+`CONDUIT_VECTOR_THREADS=4`: `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings`
+(exit 0 each); `sign_in` 30 passed, `pending::tests` 8, `lifecycle` 9, the shell expiry test 1,
+`relay::tests` 2, `first_start_presents_final_lists` 1; `pieces` printed `Nothing to move.`; the
+runner passed the new case (47 steps), polling (37), setup-account and hold (1 case each),
+`requests-sign-in-` (18 cases passed, one more than the start's 17) and `requests-` (85 cases
+passed; 2 expected failures, the start's 84 and the two OPS-012 ones). The four mutations, each
+restored with `cp` and checked with `cmp`, failed where the order says: 1 at step 15
+(`/external_intents: expected 1 items, found 0`), 2 at step 36 (`SignOutUnknown` expected,
+`SignOutFailed` found), 3 at step 43 (`expected 12 items, found 10`) and 4 at the test's step 5
+(`in-progress` where `unknown` is expected), each passing again after its restore.
+`/usr/bin/python3 tools/vector_delta.py 1b22f371 WORKTREE --declared
+docs/work-orders/048a5gh-declared.yaml` read 5 shapes and printed `Vector delta: 814 changes; 0
+flips; 0 undeclared; 0 errors.`, exit 0, every change but the added case in
+`requests-sign-in-polling`; `HEAD WORKTREE`, as "Done when" writes it, compares nothing on the
+checkpointed branch, so the base is named. `check_docs.py`, `check_private_paths.py`,
+`set_names.py --check`, `promise_standing.py --check`, `check_rulings.py` and `check_schemas.py`
+each ended `Errors: 0`, the tool tests ran 130, OK, and `git diff --check` was clean. The
+vectors test, the full engine suite and the S1 spike were not run here; the gate runs them. The
+gate's run on this order's squash is the coordinator's at the merge.
+
+After order 048a-5ef merged (#421, `c9459379`), on 2026-11-19, the branch was rebased onto `main` at
+`c9459379` with `git rebase --onto origin/main 1b22f371`, after a check, in the same command, that
+`1b22f371`, 048a-5ef's round-1 checkpoint this order started from, was an ancestor of the tip
+(`a0d253e5`) and that 048a-5ef's squash was on `main`, so that only this order's two commits were
+replayed, under the work orders' identity. At the worker's commit two files conflicted. In
+`engine/CONFORMANCE.md`'s DL18 row, 048a-5ef's fix had changed the sentence on the waiting hook part
+to "Whenever `sign-in.v1` ends, but by a cancel of its request, its waiting hook part ends unknown;
+a cancelled sign-in leaves it in progress until a restart ends it (DL6), and its final result holds
+`signInLogin`.", while this order replaces the row's "Until order 048a-5gh" sentence: the row was
+resolved as this order's, with `main`'s sentence written into it, and DL19's row, which `main` had
+not changed, as this order's. In `sign_in.rs`, `main` had added `unexplained_check` after
+`poll_answered`, where this order adds `undo_part_answered` and `undo_ended`: both were kept,
+`main`'s function first. At the fix's commit, DL18's row conflicted again, over R3's clause, and was
+resolved the same way; `tools/tests/test_vector_delta.py` conflicted and `tools/vector_delta.py`
+merged, and both were checked out from `origin/main`, as the second read's S1 asks, so the squash
+changes no `tools/` file and `git diff origin/main --stat -- tools/` prints nothing. Everything else
+merged without a conflict: `requests.rs` took 048a-5ef's repeat that keeps `signInLogin`, with its
+test, and 209's `fence_attempt` calls and `server/discover` `_meta`; this order's text took its
+round-1 amendments and this Record onto the text refreshed on `main`, with offsets only; the polling
+case and `index.yaml` did not conflict, and the pieces tool prints `Nothing to move.`;
+`engine/STANDING.md` did not conflict and `promise_standing.py --check` found it current, so it was
+not written again. Following 048a-5ef's fixes needed no change in this order's build: SI's `check`,
+which `part_answered` and the poll arm's `NoneYet` branch now set and `relay_output` reads for the
+relay message's sentence and the decision's facts, is neither read nor written by the undo or the
+expiry, each of which ends `sign-in.v1` without a relay, and F, with this order's inserted step,
+passes; a `sign-in.v1` that the undo ends failed, or DL18 unknown, keeps `sign_in_wait`'s `meta`, so
+a repeat of it answers with `signInLogin`, as decision 3's final result does; and DL18's changed
+sentence is not the one decision 12 replaces, which `main` left as the start quotes it, so decision
+12 is unchanged. The `sign_in` count of "Done when" holds as worded, three more than the start's 28
+on `main`, whose count already holds 048a-5ef's `succeeded_repeat_keeps_sign_in_login`. The one text
+amendment, the coordinator's, is the second read's S3: the `vector_delta.py` line and the `git diff`
+line of "Done when" compare with `origin/main`, since on a committed branch `HEAD` is the working
+tree, and a sentence there says so. Of the second read's other shoulds, S5 is fixed in the bullets
+above: the R2 bullet says the branch's `tools/` copy gave way to #420's, and they no longer say the
+follow-ups are queued, since no order holds them yet. V4 (a cancel during the undo not passed to the
+sign-out part), V5 (a URL request from the sign-out part), V6 (a keyed hook dispatched after
+retirement), V7 (the action the first check raised not linked in the cancel and restart endings),
+R10 (the shell timer's start in `call_tool` untested) and S2 (a late poll's other account left
+signed in, with no `SignInUndone` and, where no action was raised, no hold) go to one sign-in
+follow-up order after the dogfood, which the coordinator writes, beside 048a-5ef's second read's R3.
+S4, a mutation row for R3's guard, which this Record's mutation above already ran, is not added to
+the table.
+
+This order's start check, run on a clean copy of `main`'s tree at `c9459379` (by `git archive`),
+printed what the order gives at every item: `:0` for 207, 209, 048a-5d2 and 048a-5ef and `1` for
+048a-5d (all merged); `2`; `1` four times; item 7's `17 access.open.v1 to-signed.work.v1
+group.inspect.v1` with its two captures; item 8's `36`, F's three files under `sign-in-hold/`, its
+roles at steps 10 to 16 and 31 to 33 as written, `['PND-011']` and the three captures as written;
+`Errors: 0`; and `0` and `0`. On `main`, `Poll` is at `sign_in.rs` line 233, `poll_check` at 242,
+`part_answered` at 259 (its poll arm chosen at 270), `poll_answered` at 392 with its `Poll::Other`
+branch at 424, `waiting_for_retry` at 464, `end_hook_wait` at 1170, called at 1213 in `signed_in`
+and at 1262 in `end_sign_in`; `respond` at `requests.rs` line 750, calling `waiting_for_retry` at
+772, `finish` at 1904, `cancel` at 2391 and `recover` at 2492; and `reply_context` at `lib.rs` line
+428. 048a-5ef's fixes left `relay_output`'s attempt and first instant as the start reads them. Its
+runs gave the `sign_in` filter 28 passed, `pending::tests` 7, `lifecycle` 9, `relay::tests` 2, F `1
+cases passed`, `requests-sign-in-` 17 cases passed and `requests-` 84 with the 2 expected failures,
+and the four rows stand at IFC-049 7, PND-005 6, PND-010 14 and PND-011 6. So 048a-5ef's merge
+changed nothing a decision reads. Warm in the worktree, from `engine/` with 4 test and vector
+threads: `cargo fmt --check` and clippy with `-D warnings` (exit 0 each); `sign_in` 31 passed (three
+more than on `main`), `pending::tests` 8 (one more), `lifecycle` 9, the shell's
+`sign_in_wait_end_is_submitted_at_expiry` 1, `relay::tests` 2 and `first_start_presents_final_lists`
+1; the pieces tool (`Nothing to move.`); the four single-case runs (`1 cases passed` each, at 47,
+37, 30 and 17 steps); `requests-sign-in-` (18 cases passed, one more) and `requests-` (85 cases
+passed, one more; the same 2 expected failures). From the root: `check_schemas.py`, `set_names.py
+--check`, `check_rulings.py`, `check_docs.py`, `check_roadmap.py`, `check_model_account.py`,
+`check_private_paths.py` and `promise_standing.py --check` (Errors: 0 each); the tools' unit tests
+(130, OK); the standing delta against `main`'s rows (`IFC-049:0 PND-005:1 PND-010:0 PND-011:1`);
+`/usr/bin/python3 tools/vector_delta.py origin/main WORKTREE --declared
+docs/work-orders/048a5gh-declared.yaml` (5 shapes, `Vector delta: 814 changes; 0 flips; 0
+undeclared; 0 errors.`, exit 0: 813 in `requests-sign-in-polling` and one, the added case, as
+against `1b22f371`); the counts of "Done when" (`1`, `1`, `47`, `37 ['$poll5', '$signout5',
+'group.sign-in.v1'] {"signout5": "/reply/hook"} ['PND-011']`, and `0` four times); the protected
+paths, run as `git diff origin/main --stat --` over the paths of the "Done when" status line, since
+on a committed branch that status line compares nothing (no file), and the scope as `git diff
+origin/main --stat`; and `git diff --check` (clean). The four mutations, the whole engine suite, the
+S1 spike, `tools/gate.py` against `origin/main` and the reader's read of this rebase remain the
+coordinator's before the merge.

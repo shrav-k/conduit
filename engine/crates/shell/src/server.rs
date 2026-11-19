@@ -8,7 +8,7 @@ use axum::{
     middleware::{self, Next},
     response::{IntoResponse, Response},
 };
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use conduit_core::access::Identity;
 use futures_util::StreamExt;
 use rmcp::{
@@ -274,6 +274,31 @@ impl Drop for Pending {
         }
     }
 }
+pub(crate) fn end_sign_in_wait_at(
+    shell: Arc<Shell>,
+    executor: Arc<ServingExecutor>,
+    shutdown: CancellationToken,
+    invocation: String,
+    attempt: u64,
+    expires: DateTime<Utc>,
+) -> tokio::task::JoinHandle<()> {
+    tokio::spawn(async move {
+        let wait = (expires - Utc::now()).to_std().unwrap_or_default();
+        tokio::select! {
+            biased;
+            _ = shutdown.cancelled() => return,
+            _ = tokio::time::sleep(wait) => {}
+        }
+        let _ = tokio::task::spawn_blocking(move || {
+            shell.submit(
+                json!({"kind":"sign-in-wait-ended","invocation":invocation,"attempt":attempt}),
+                executor.as_ref(),
+            )
+        })
+        .await;
+    })
+}
+
 impl ServerHandler for Handler {
     fn supported_protocol_versions(&self) -> Cow<'static, [ProtocolVersion]> {
         Cow::Owned(
@@ -525,7 +550,26 @@ impl ServerHandler for Handler {
                         Err(_) => Err("relay lock poisoned".into()),
                     };
                     return match result {
-                        Ok(result) => Ok(CallToolResponse::InputRequired(result)),
+                        Ok(result) => {
+                            let (Some(invocation), Some(attempt), Some(expires)) = (
+                                value["invocation"].as_str(),
+                                value["attempt"].as_u64(),
+                                value["expires"]
+                                    .as_str()
+                                    .and_then(|expires| DateTime::parse_from_rfc3339(expires).ok()),
+                            ) else {
+                                return Err(internal("invalid core input request"));
+                            };
+                            drop(end_sign_in_wait_at(
+                                self.shell.clone(),
+                                self.executor.clone(),
+                                self.shutdown.clone(),
+                                invocation.to_owned(),
+                                attempt,
+                                expires.with_timezone(&Utc),
+                            ));
+                            Ok(CallToolResponse::InputRequired(result))
+                        }
                         Err(mut text) => {
                             if let Some(invocation) = pending.ticket.invocation() {
                                 let shell = self.shell.clone();

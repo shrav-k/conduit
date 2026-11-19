@@ -11,6 +11,75 @@ use rmcp::{
 use std::sync::atomic::AtomicBool;
 use tokio_util::sync::CancellationToken;
 
+#[tokio::test]
+async fn sign_in_wait_end_is_submitted_at_expiry() {
+    let temp = temporary();
+    let shell = Arc::new(established(temp.path()));
+    *shell.trace.lock().unwrap() = Some(Vec::new());
+    let executor = Arc::new(ServingExecutor::new(Arc::new(crate::MissingExecutor)));
+    let is_expiry = |decision: &conduit_core::Decision| decision.action == "sign-in-wait-ended";
+    let count = || {
+        shell
+            .trace
+            .lock()
+            .unwrap()
+            .as_ref()
+            .unwrap()
+            .iter()
+            .filter(|t| t.decisions.iter().any(is_expiry))
+            .count()
+    };
+    let shutdown = CancellationToken::new();
+    let started = Instant::now();
+    let task = server::end_sign_in_wait_at(
+        shell.clone(),
+        executor.clone(),
+        shutdown,
+        "absent-invocation".into(),
+        1,
+        Utc::now() + chrono::TimeDelta::milliseconds(300),
+    );
+    assert_eq!(count(), 0);
+    tokio::time::timeout(Duration::from_secs(10), task)
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(started.elapsed() >= Duration::from_millis(250));
+    assert_eq!(count(), 1);
+    {
+        let trace = shell.trace.lock().unwrap();
+        let expired = trace
+            .as_ref()
+            .unwrap()
+            .iter()
+            .find(|t| t.decisions.iter().any(is_expiry))
+            .unwrap();
+        let decision = expired.decisions.iter().find(|d| is_expiry(d)).unwrap();
+        assert_eq!(
+            decision.facts,
+            json!({"invocation":"absent-invocation","attempt":1,"ended":false})
+        );
+        assert_eq!(expired.records, Vec::<Value>::new());
+        assert_eq!(expired.external_intents, Vec::<Value>::new());
+    }
+
+    let shutdown = CancellationToken::new();
+    let task = server::end_sign_in_wait_at(
+        shell.clone(),
+        executor,
+        shutdown.clone(),
+        "absent-invocation".into(),
+        1,
+        Utc::now() + chrono::TimeDelta::seconds(10),
+    );
+    shutdown.cancel();
+    tokio::time::timeout(Duration::from_secs(5), task)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(count(), 1);
+}
+
 #[test]
 fn sign_in_members_reach_the_core() {
     let prefix = context().meta_prefix;

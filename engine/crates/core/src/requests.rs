@@ -2458,7 +2458,33 @@ pub(crate) fn cancel(
         json!({}),
         json!([]),
         cause,
-    )
+    )?;
+    let invocation = &t.state.invocations[i];
+    if invocation["operation"] == c.qualified("sign-in.v1")
+        && invocation["sign_in"]["phase"] == "undo-pending"
+    {
+        let instance = invocation["object"].clone();
+        let id = invocation["id"].clone();
+        let hook = invocation["sign_in"]["undo"]["hook"].clone();
+        sign_in::undo_ended(t, &instance, &id, &hook, "unknown", &evidence.time)?;
+        let sign_in = &mut t.state.invocations[i]["sign_in"];
+        sign_in["phase"] = json!("ended");
+        sign_in.as_object_mut().unwrap().remove("undo");
+    } else if invocation["operation"] == c.qualified("sign-out-hook.v1")
+        && let Some(parent) = invocation.get("setup_parent")
+        && t.state.invocations.iter().any(|v| {
+            v["id"] == *parent
+                && v["operation"] == c.qualified("sign-in.v1")
+                && v["state"] == "in-progress"
+                && v["sign_in"]["phase"] == "undo-pending"
+                && v["sign_in"]["undo"]["hook"] == invocation["id"]
+        })
+    {
+        let reply = std::mem::take(&mut t.reply);
+        crate::lifecycle::child_ended(t, &mut a, c, i)?;
+        t.reply = reply;
+    }
+    Ok(())
 }
 pub(crate) fn expire(t: &mut Transition, id: &str) -> Result<()> {
     let v = t
@@ -2516,17 +2542,29 @@ pub(crate) fn recover(t: &mut Transition, evidence: &Evidence, c: &Context) -> R
             if v["hook"] == true
                 && v["operation"] == c.qualified("sign-out-hook.v1")
                 && let Some(parent) = v.get("setup_parent")
-                && let Some(setup) = t.state.invocations.iter().find(|s| s["id"] == *parent)
-                && setup["setup"]["phase"] == "undo-pending"
+                && let Some(parent) = t.state.invocations.iter().find(|s| s["id"] == *parent)
             {
-                let (instance, hook) = (setup["object"].clone(), v["id"].clone());
-                crate::lifecycle::report_sign_in_undone(
-                    t,
-                    &instance,
-                    "unknown",
-                    &hook,
-                    &evidence.time,
-                )?;
+                if parent["operation"] == c.qualified("sign-in.v1")
+                    && parent["sign_in"]["phase"] == "undo-pending"
+                    && parent["sign_in"]["undo"]["hook"] == v["id"]
+                {
+                    let (instance, id, hook) = (
+                        parent["object"].clone(),
+                        parent["id"].clone(),
+                        v["id"].clone(),
+                    );
+                    sign_in::undo_ended(t, &instance, &id, &hook, "unknown", &evidence.time)?;
+                } else if parent["setup"]["phase"] == "undo-pending" {
+                    let (instance, hook) = (parent["object"].clone(), v["id"].clone());
+                    crate::lifecycle::report_sign_in_undone(
+                        t,
+                        &instance,
+                        "unknown",
+                        &hook,
+                        &evidence.time,
+                        false,
+                    )?;
+                }
             }
             crate::lifecycle::record_setup_sign_in(t, i)?;
         }

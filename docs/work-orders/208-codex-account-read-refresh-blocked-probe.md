@@ -770,3 +770,139 @@ The coordinator then does the following:
    050m does not rely on the route. **Not settled**: the coordinator reads the source again, and
    either amends the pre-registration, dated, before a rerun, or brings it to the owner.
 5. Stage 1's first step, on the Mac, later observes the route as 050m builds it.
+
+## Record
+
+Run on 2026-11-19, from about 08:45 to 09:30 UTC, on the Linux node (WSL) from `main` `a504f9ac`
+(order 208's fix of its command check under `sh`), in two rounds: the worker (1424 s) and a fresh
+Codex verifier (308 s), then the worker again (586 s) and a second fresh Codex verifier (351 s). An
+earlier dispatch the same morning stopped at decision 1's check of the six commands, which printed 1
+under `sh` where 6 was required, and changed no file; `a504f9ac` fixed that check. The change is the
+eleven files of Scope. `experiments/027-a5-sign-in/README.md` gains decision 2's two additions as
+written (237 lines added, none removed), dated 2026-11-19 before the source was read or the probe
+written. `refresh-probe/` is decision 4's eight files: the probe, its fake app-server and its tests,
+with the namespace checks, the loopback stubs, the three cases and two arms, and the detection of a
+write and of the lock files. The worker read CX1, Codex's source at `rust-v0.167.1` (`0a94398f`),
+installed Codex 0.167.1 with `--ignore-scripts`, and ran one issuer-form sitting of eighteen runs,
+with no fault and no stop. Its `Outcome:` line is "no write under the variable, in the issuer form;
+every control run wrote": no run with the override wrote the home's auth.json, began a save or
+reached the stub's token endpoint, and every control wrote. With the override, P1 answered with the
+fabricated account and P2 and P3 with "workspace routing discovery timed out", not the predicted 401
+error. The worker's own choices: non-empty dummy segments in the fabricated access tokens, to tell
+the original from the issued; inotify, to catch a lock file that appears and goes between snapshots;
+fixed names of system directories in the namespace checks' labels; and a separate index for the
+intent-add of "Done when".
+
+The first verifier found five musts and two shoulds: the self-test labels named system directories,
+an absolute path, in both results files; the answer filter let through a bracketed absolute path;
+the version gate took the first all-digit token, not the first version-shaped one; a failed process
+baseline was reported under stop rule 3, not rule 1; a fault in the account read could leave the
+initialize reply in the run's answer; Not shown left out that P3's controls never met a discovery
+401; and the process-group test would pass if the probe killed the group's leader alone. Round 2
+fixed all seven: path-free labels in the probe, the JSON and the Markdown, with their booleans kept;
+each decoded string checked for an absolute path, with tests of bracketed and escaped paths; the
+registered version grammar, tested with a suffixed build before the pin; stop rule 1 for any failed
+machine check; the initialize reply kept to the handshake; the P3 limit in Not shown; and a
+TERM-ignoring descendant in the fake's group, whose test failed when the probe signalled the leader
+alone. The sitting was not run again. The second verifier found six musts and two shoulds, the first
+five musts on inputs this sitting did not produce: stop rule 3's cleanup checks are skipped where
+the namespace report fails to decode; a symlinked scratch root passes; any result object that passes
+the string filter is recorded; a run path written with JSON escapes faults; an ANSI-coloured version
+token can be skipped; and the worker's report gave summaries for some dispatch checks, not their
+last lines (musts); the mask over the system client directory conflicts with the check of its
+absence, failing closed; and the JSON was called raw after its labels changed (shoulds).
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2), on the branch before its
+rebase. It checked the diff (the eleven files of Scope, a clean tree) and both commits' identity;
+the README's additions against decision 2's text (237 and 0, the section's diff empty, the note line
+matched once, no `TODAY` left); the JSON's order, version and run count (208, 0.167.1, 18); the
+Markdown's sections, Outcome line and source rows (7, 1, 2); every privacy grep of "Done when" on
+the results files, and the same greps on the out reports and the run log; `check_private_paths`,
+`check_docs` and `check_roadmap` (Errors: 0 each) and `git diff --check origin/main...HEAD` (clean).
+With scratch scripts it compared the Markdown's run table with the JSON (18 rows, 0 mismatches) and
+summed the runs (blocked: no write, no save and no token request in 9 of 9; control: a write, both
+lock files and one token request in 9 of 9). On a scratch copy on the Mac it ran `cargo fmt --check`
+(clean), clippy with `-D warnings` (no warning), `cargo test --offline --release` (16 and 1 passed)
+and the mutation of `wrote` to `false`, which failed `detects_rename_with_same_bytes` and passed
+again after the restore, `cmp` clean. It read round 2's diff of the results (eight `self_test` keys
+renamed, the runs unchanged). Gitleaks was absent, as on the node. It found two musts and three
+shoulds:
+
+- R208-1 (must): the result called the JSON "the raw report", though round 2 renamed eight of its
+  `self_test` labels and amended the probe's source after the sitting, without a rerun, and neither
+  file said so.
+- R208-2 (must): under D78, A5's State in `ROADMAP.md` still said order 208's probe was not yet
+  written, and 027's Current evidence cell in `experiments/README.md` did not mention it.
+- R208-3 (should): the Markdown left out the stub's other requests, GETs to plugin paths under
+  `/backend-api` answered 404, and Not shown did not say that a 401 from them was never served.
+- R208-4 (should): the outcome's reasons were listed run by run, never by case, and nine bullets
+  read "1 token endpoint requests".
+- R208-5 (should): the probe-hardening musts of the second verifier remained open; none touches this
+  sitting, and each fails closed.
+
+The fixer rebased the branch onto `origin/main` at `b941dece` (order 048a-5c refreshed) with the
+work-order identity, without conflict, and applied each finding:
+
+- R208-1: the results' line on the report now reads, as the reader gave it, that the report is the
+  issuer sitting as the probe wrote it on 2026-11-19, except that after the sitting eight of its
+  `self_test` labels, which named system directories, were renamed; their booleans and every run
+  record are as the probe wrote them. The probe's source was amended after the sitting (answer
+  validation, the version gate, the stop rules' order and the fake's process-group test) and the
+  sitting was not run again; it had no fault and no stop.
+- R208-2: the coordinator's D78 addition, outside the order's scope, in the reader's words: A5's
+  State in `ROADMAP.md` (still "in progress") says that order 208's probe ran on 2026-11-19 on the
+  Linux node with a fabricated login, before stage 1's first step, with a link to its results, and
+  gives the outcome and the answers; 027's Current evidence cell in `experiments/README.md` gains a
+  sentence on the probe and its results.
+- R208-3: applied with its count corrected. The JSON shows six plugin GETs in each of fifteen runs
+  and none in the three blocked P1 runs, not five to seven in each run, so the added sentence says
+  "Each run but the three blocked P1 runs (I1, I7 and I13) also sent six GET requests" and ends "the
+  blocked P1 runs sent none"; the rest, and Not shown's new item, are the reader's words. The bearer
+  of each was checked to be the access token then in use.
+- R208-4: the paragraph by case is added after the run bullets as the reader gave it, each claim
+  checked against the JSON's request order, and the nine control bullets read "1 token endpoint
+  request".
+- R208-5: not fixed in this order, as the reader advised. These are known limits of the probe, to be
+  fixed in the order that next runs it, such as the next bump of Codex's pin, which decision 2 says
+  needs this probe run again: stop rule 3's cleanup checks are skipped where the namespace report
+  fails to decode (`main.rs`, about lines 290 to 305); a symlinked scratch root passes (about 233 to
+  245); any result object that passes the string filter is recorded (`lib.rs`, about 769); a run
+  path written with JSON escapes faults (about 674); an ANSI-coloured version token can be skipped
+  (`main.rs`, about 586); and the mask over the system client directory conflicts with the check of
+  its absence (about 393 to 395 and 502 to 504). This sitting decoded its report and passed both
+  cleanup checks, its answers held no host or user field, its version line was plain, and the system
+  client directory was absent on the node. The second verifier's sixth must, on the worker's report,
+  changes no file: the report stands as written, and the readers reran every check of "Done when"
+  that runs off the node; the dispatch's checks ran on the node before any file changed.
+
+The fixer then ran, on the Mac in the worktree on the files of this commit before it was made, with
+`RUST_TEST_THREADS=4`: in the crate, `cargo fmt --check` (clean),
+`cargo clippy --offline --all-targets -- -D warnings` (no warning), `cargo test --offline --release`
+(environment 1 passed, probe 16 passed, 0 failed) and `cargo build --offline --release` (builds);
+gitleaks was absent. With `wrote` returning `false`, `detects_rename_with_same_bytes` failed; after
+the restore it passed and `cmp` printed nothing. The install and the sitting are the node's and were
+not run again. From the root: `check_docs.py`, `check_roadmap.py` and `check_private_paths.py`
+(Errors: 0 each), `git diff --check` and `git diff --check origin/main...HEAD` (clean); against
+`origin/main` the README counts 237 added and 0 removed, the heading and note line 1 each, the
+section's diff empty, the note line matched once, `TODAY` 0 in the README and the Markdown, the JSON
+208 0.167.1 18, the sections 7, the Outcome line 1 and the source rows 2; every privacy grep of
+"Done when" printed nothing or 0. The gate's run on this order's squash, which this merge waits on,
+is the coordinator's at the merge.
+
+A second fresh read-only Opus reader then reread the branch after the fixes (ruling 79, point 2). It
+checked each fix against the JSON: six plugin requests in each of fifteen runs and none in I1, I7
+and I13, each bearing the access token then in use; the order of requests behind the paragraph by
+case; eight `self_test` labels renamed after the sitting, their booleans and every run record
+unchanged; and the two D78 edits. It compared the run table with the JSON again (18 rows, 0
+mismatches). It reran every check of "Done when" that runs off the node, each as before, and
+`check_docs`, `check_roadmap` and `check_private_paths` (Errors: 0 each). On a scratch copy on the
+Mac it ran fmt, clippy with `-D warnings`, the tests (16 and 1 passed) and the mutation of `wrote`
+(failed, then passed after the restore). It read the times of the files in the worker's tree on the
+node, running nothing there: the README last changed at 08:46:10 UTC, before the clone of CX1
+(08:46:17), the crate (08:49), the install (08:58), the runs (08:58:57 to 09:04:12) and the report
+(09:04:17). By trigger, with the override: T1 (P1), no write in 3 of 3; T2 (P2), no write in 3 of 3;
+T1 and T2 (P3), no write in 3 of 3; every control wrote in 3 of 3 of each case, P3's through T1
+alone. It found no must and three shoulds, which the coordinator applied: R208-6, a bullet in Not
+shown that the probe cannot tell a blocked run that never tried to refresh from one whose refresh
+failed at the lookup; R208-7, what became of the second verifier's sixth must; and R208-8, this
+paragraph.

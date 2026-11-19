@@ -1072,6 +1072,9 @@ pub(crate) mod tests {
             serving: None,
             readable: true,
             authority_readable: true,
+            client_capabilities: None,
+            sign_in_login: None,
+            sign_in_return: None,
         }
     }
 

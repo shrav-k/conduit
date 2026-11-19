@@ -704,6 +704,11 @@
               "kind": "Agent",
               "name": "signed"
             }
+          },
+          "clientCapabilities": {
+            "elicitation": {
+              "url": {}
+            }
           }
         }
       },
@@ -2034,6 +2039,11 @@
             "instance": {
               "kind": "Agent",
               "name": "signed"
+            }
+          },
+          "clientCapabilities": {
+            "elicitation": {
+              "url": {}
             }
           }
         }
@@ -5017,6 +5027,11 @@
               "name": "signed"
             },
             "expectedId": "00000000-0000-4000-8000-000000000005"
+          },
+          "clientCapabilities": {
+            "elicitation": {
+              "url": {}
+            }
           }
         }
       },

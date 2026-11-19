@@ -1,3 +1,4 @@
+# Checked at the merge of order 048a5, against main at 7eed5a4d: the work's vector delta matches these shapes.
 - name: requests-sign-in-refusals-before-parts
   kind: added
   cases: [requests-sign-in-refusals-before-parts]

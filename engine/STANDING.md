@@ -41,12 +41,12 @@ Each number counts promises. The last row counts those whose Engine source is no
 
 | Promises | language | convention | interface | all |
 | --- | ---: | ---: | ---: | ---: |
-| case passes | 129 | 152 | 26 | 307 |
-| expected failure | 0 | 2 | 0 | 2 |
+| case passes | 129 | 153 | 27 | 309 |
+| expected failure | 0 | 1 | 0 | 1 |
 | reason, no case | 57 | 15 | 1 | 73 |
-| no case, no reason | 40 | 77 | 21 | 138 |
+| no case, no reason | 40 | 77 | 20 | 137 |
 | all | 226 | 246 | 48 | 520 |
-| named in engine source | 141 | 164 | 26 | 331 |
+| named in engine source | 141 | 165 | 26 | 332 |
 
 ## The promises
 
@@ -189,7 +189,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | IFC-045 | interface | must | 1 | 0 | reason | core | case passes |
 | IFC-046 | interface | must | 21 | 0 | cases | core | case passes |
 | IFC-047 | interface | must | 2 | 0 | outside | core | case passes |
-| IFC-049 | interface | must | 0 | 0 | outside | core, shell | no case, no reason |
+| IFC-049 | interface | must | 1 | 0 | outside | core, shell | case passes |
 | IFC-050 | interface | must | 4 | 0 | outside | core | case passes |
 | IMP-001 | convention | must | 0 | 0 | reason | none | reason, no case |
 | IMP-002 | convention | must not | 5 | 0 | cases | core | case passes |
@@ -417,10 +417,10 @@ Each number counts promises. The last row counts those whose Engine source is no
 | PND-007 | convention | must | 1 | 0 | outside | core | case passes |
 | PND-008 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | PND-009 | convention | must | 2 | 0 | outside | core, shell | case passes |
-| PND-010 | convention | must | 1 | 0 | outside | core, shell | case passes |
+| PND-010 | convention | must | 2 | 0 | outside | core, shell | case passes |
 | PND-011 | convention | must | 1 | 0 | outside | core | case passes |
 | PND-012 | convention | must | 1 | 0 | outside | core | case passes |
-| PND-013 | convention | must | 1 | 1 | outside | none | expected failure |
+| PND-013 | convention | must | 2 | 1 | outside | core | case passes |
 | PND-014 | convention | must not | 1 | 1 | outside | none | expected failure |
 | POOL-001 | language | must | 7 | 0 | cases | core | case passes |
 | POOL-002 | language | must | 2 | 0 | outside | core | case passes |

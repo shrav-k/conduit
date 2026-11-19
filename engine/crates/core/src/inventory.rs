@@ -293,6 +293,9 @@ pub(crate) fn provenance(s: &State, v: &Value, c: &Context) -> Result<Value> {
                 serving: parent["serving"].as_str().map(str::to_owned),
                 readable: true,
                 authority_readable: true,
+                client_capabilities: None,
+                sign_in_login: None,
+                sign_in_return: None,
             };
             // IFC-033: the call-local publication view, as every other access decision reads.
             let view = access::PublicationView::new(s, c);

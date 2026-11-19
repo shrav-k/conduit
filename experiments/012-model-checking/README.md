@@ -7613,3 +7613,26 @@ call, `signInLogin`, fixed ports and the device
 login, a Resource's sign-in, peer delivery, notices (PND-007), enrollment's answers, reconciliation,
 `inspect.v1`'s `status.pending`, and DL18's and DL19's durations are outside it. An expiry is a
 local choice of E's clock, not elapsed time.
+
+### MC9a amendment — 2026-11-19, before any run
+
+Amended 2026-11-19 by the coordinator, before any MC9a code and before any MC9a run, under the
+rule above (D29). One text MC9a reads changed after `f72c2bc3`, the commit at which it reads
+`spec/`: the full review's [experiments.md](../../docs/proposals/full-review/experiments.md),
+whose step for experiment 012 the registration cites and quotes. Commit `b1cc554e`
+([ruling 84](../../docs/proposals/ruling-84/README.md), #370) added a note to the last cell of
+that file's row A22, the keychain unattended, among its register rows. The note names ruling 84,
+point 1, ruled on 2026-11-18, and goes on: “No dedicated user is planned; by the
+coordinator's reading, A22 is narrowed: the dedicated user over SSH, and the case of where a
+Claude login lands, are withdrawn; the launchd session keeps its daemon case, with no graphical
+login, without the dedicated user; your own session's case stays; both are optional, and A22
+gates no Agent's becoming a dogfood slot, nor batch 2”. No other line of the file changed.
+
+MC9a reads nothing from that row. From experiments.md it reads only the section
+[Experiment 012: the runs, each registered before it runs](../../docs/proposals/full-review/experiments.md#experiment-012-the-runs-each-registered-before-it-runs):
+its rule that no property reads a value the model copied from its own expectation, which the
+ledger rule of the nodes and scripts above applies, and its mutant run “with every fault switched
+off”, which is Base and the test of "one step" above. That section reads as it did at
+`f72c2bc3`. No script, bound, configuration, property, reach predicate, mutant, expected
+verdict, finding or limit above reads row A22, and none changes. The registration otherwise
+stands as written.

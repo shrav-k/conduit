@@ -11,7 +11,7 @@ schema the orders share; leave `vectors` empty, since this order adds and change
 no network access and needs none: the crate's toolchain and its one direct dependency must already
 be in the node's caches (decision 1), and if they are not, stop and report it. Run one cargo
 command at a time. Never print a whole large file or log: `experiments/012-model-checking/README.md`
-has 7,615 lines, so read it with `grep -n`, `sed -n`, `head`, `tail` or a count. Never run `env`,
+has 7,638 lines, so read it with `grep -n`, `sed -n`, `head`, `tail` or a count. Never run `env`,
 `printenv`, `set` or `export -p`, never print an environment variable's value, and never read or
 print a key, a token or any credential. Do not run `claude`, `codex` or any client, and sign in
 nowhere.
@@ -40,11 +40,11 @@ run reports what the model shows for both (decision 11), and settles neither: th
 
 **Who decided what.** Every decision below is the coordinator's, each open to the owner's strike
 ([ruling 48](../proposals/ruling-48/README.md)): that MC9a runs as registered, by the
-registration's own rule, without a new registration (decision 2); the module's names, tests and
-output lines; the Linux node's bounds; the policy on differences, corrections and a truncated run;
-the form of the README's record; and leaving the model-checking account, `G5.md` and `ROADMAP.md`
-to the coordinator at the merge (decision 12). Apply them as written and report them under
-`decisions` as the coordinator's.
+registration's own rule, with its dated amendment of 2026-11-19 (decision 2); the module's names,
+tests and output lines; the Linux node's bounds; the policy on differences, corrections and a
+truncated run; the form of the README's record; and leaving the model-checking account, `G5.md`
+and `ROADMAP.md` to the coordinator at the merge (decision 12). Apply them as written and report
+them under `decisions` as the coordinator's.
 
 **Its size, said in the open (FR-264).** This order is large for one Codex run and one
 verifier: two protocols, 42 reach predicates, 23 mutants and 42 full runs, with their first
@@ -59,7 +59,7 @@ MC7b had (orders 114 and 115).
 
 **Read first:** `AGENTS.md`; this order; in `experiments/012-model-checking/README.md`, lines 1 to
 60 (the harness and its rules), the MC9a section whole (from the line that begins `## MC9a` to
-the end, about 640 lines, read in parts of at most 200), and MC7b's dated results (`grep -n '^###
+the end, about 660 lines, read in parts of at most 200), and MC7b's dated results (`grep -n '^###
 MC7b dated results'`, then about 90 lines) for the form of a record; `src/harness.rs`;
 `src/records.rs`, lines 1 to 80 and 1861 to 2081, for a module's form and its tests; and the
 Records of orders [113](113-mc7b-records-and-packages.md#record) and
@@ -78,7 +78,7 @@ it reads, and decision 2 checks the quotations against the present text.
    ```sh
    git status --porcelain | grep -c .                                       # 0
    git merge-base --is-ancestor 1e38ff92 HEAD; echo $?                      # 0
-   git diff --quiet 75944df4 HEAD -- experiments/012-model-checking/README.md experiments/012-model-checking/src experiments/012-model-checking/Cargo.toml experiments/012-model-checking/Cargo.lock; echo $?   # 0
+   git diff --quiet 75944df4 HEAD -- experiments/012-model-checking/src experiments/012-model-checking/Cargo.toml experiments/012-model-checking/Cargo.lock; echo $?   # 0
    grep -c '^## MC9a' experiments/012-model-checking/README.md              # 1
    grep -c '^### MC9a dated results' experiments/012-model-checking/README.md   # 0
    uname -m                                                                 # x86_64
@@ -86,8 +86,23 @@ it reads, and decision 2 checks the quotations against the present text.
    ```
 
    `1e38ff92` is order 048a-2's merge; `75944df4` is order 201's, after which nothing in the
-   experiment's README, `src/` or its Cargo files has changed. Then, from
-   `experiments/012-model-checking/`:
+   experiment's `src/` or its Cargo files has changed, and its README only by the MC9a section's
+   amendment of 2026-11-19 (decision 2), appended after its last line. This prints what its
+   comment says:
+
+   ```sh
+   /usr/bin/python3 -I - <<'EOF'
+   import hashlib, subprocess
+   path = "experiments/012-model-checking/README.md"
+   old = subprocess.run(["git", "show", f"75944df4:{path}"], capture_output=True, text=True,
+                        check=True).stdout
+   now = open(path, encoding="utf-8").read()
+   print(now.startswith(old), hashlib.sha256(now[len(old):].encode()).hexdigest()[:16])
+   EOF
+   # prints: True 6a5f922dce80315f
+   ```
+
+   Then, from `experiments/012-model-checking/`:
 
    ```sh
    rustup toolchain list | grep -c '^1\.97\.1-x86_64-unknown-linux-gnu'    # 1
@@ -97,12 +112,12 @@ it reads, and decision 2 checks the quotations against the present text.
 
    Write `git rev-parse --short=8 HEAD` down as BASE; decision 11 records it.
 
-2. **MC9a runs as registered: no new registration.** The registration's rule is: "A promise whose
-   text changes after these commits makes its row 'text changed, not rerun' until MC9a is
-   registered again against the new text (D29)." It reads `spec/` at `f72c2bc3`, orders 047, 047b
-   and 047c as written at `f72c2bc3`, and order 048a-2 at `f414e438`, "as PND-010 and PND-005
-   will read once it merges". These texts it reads changed after those commits, each named here
-   with the coordinator's judgement:
+2. **MC9a runs as registered, with its amendment of 2026-11-19.** The registration's rule is: "A
+   promise whose text changes after these commits makes its row 'text changed, not rerun' until
+   MC9a is registered again against the new text (D29)." It reads `spec/` at `f72c2bc3`, orders
+   047, 047b and 047c as written at `f72c2bc3`, and order 048a-2 at `f414e438`, "as PND-010 and
+   PND-005 will read once it merges". These texts it reads changed after those commits, each
+   named here with the coordinator's judgement:
 
    - `1e38ff92`, order 048a-2's merge: PND-005's `observable` and PND-010's `then` in
      `spec/promises/pending.yaml`, by its decisions 1 and 2, and `sign-in.v1`'s description in
@@ -122,17 +137,30 @@ it reads, and decision 2 checks the quotations against the present text.
      promise text, and MC9a's actions script never removes B or reuses its name.
    - `280a7fcc` and `3c761dd9`: order 047d written and built. MC9a's PND-007 row calls it "not
      yet written"; PND-007 is not modelled, and its text did not change.
-   - No other file under `spec/` changed since `f72c2bc3`, nor the full review's
-     `experiments.md` (check (b)), so no other text MC9a reads changed, among them those whose
-     promises the registration uses (REV-014, REC-004, IMP-007, CON-024 and `scope` in
-     `spec/definitions.md`); and every quotation in the registration is still found in the
-     present text (check (d)).
+   - `b1cc554e`, [ruling 84](../proposals/ruling-84/README.md): the full review's
+     `experiments.md` gained a note in the last cell of row A22, the keychain unattended. MC9a
+     reads nothing from that row: from that file it reads only the section "Experiment 012: the
+     runs, each registered before it runs", which did not change. By the registration's rule the
+     MC9a section was amended for it on 2026-11-19, before any code or run, in its last section,
+     "MC9a amendment — 2026-11-19, before any run", which quotes the note and says that the
+     registration otherwise stands as written. Check (b) shows the file is `f72c2bc3`'s with
+     that note added and nothing else.
+   - `553450aa`, order 206's merge: CTR-013's `then` in `spec/promises/contracts.yaml`, the
+     sign-in login's schema in `spec/schemas/contracts.yaml`, three invalid examples, and the
+     counts and prose of `spec/README.md` and `spec/schemas/README.md`: a redirect path holds
+     neither `?` nor `#`, and a page holds no user information. MC9a reads none of these files,
+     and the URL and IFC-049's checks are outside it, as its limits say.
+   - No other file under `spec/` changed since `f72c2bc3`, nor anything else in the full
+     review's `experiments.md` (check (b)), so no other text MC9a reads changed, among them
+     those whose promises the registration uses (REV-014, REC-004, IMP-007, CON-024 and `scope`
+     in `spec/definitions.md`); and every quotation in the registration and its amendment is
+     still found in the present text (check (d)).
 
    So no promise MC9a reads has text other than the text it registered against, and MC9a runs as
-   registered, with no dated amendment. The registration's descriptive words "written and not
-   yet built" and "not yet written" stay as they are, since its tables are immutable; the results
-   say what the base holds (decision 11). From the repository root, each prints what its comment
-   says:
+   registered, with the dated amendment of 2026-11-19 and no other. The registration's
+   descriptive words "written and not yet built" and "not yet written" stay as they are, since
+   its tables are immutable; the results say what the base holds (decision 11). From the
+   repository root, each prints what its comment says:
 
    ```sh
    # (a) PND-005, PND-010 and sign-in.v1's description are f72c2bc3's with 048a-2's decisions 1-3
@@ -157,11 +185,29 @@ it reads, and decision 2 checks the quotations against the present text.
    EOF
    # prints: spec/promises/pending.yaml as registered
    #         spec/core/operations.yaml as registered
-   # (b) every other file under spec/, and experiments.md, unchanged since f72c2bc3
-   git diff --quiet f72c2bc3 HEAD -- spec ':!spec/promises/pending.yaml' ':!spec/core/operations.yaml' docs/proposals/full-review/experiments.md; echo $?   # 0
+   # (b) every other file under spec/ unchanged since f72c2bc3, but order 206's, since 553450aa
+   git diff --quiet f72c2bc3 HEAD -- spec ':!spec/promises/pending.yaml' ':!spec/core/operations.yaml' ':!spec/README.md' ':!spec/promises/contracts.yaml' ':!spec/schemas' && git diff --quiet 553450aa HEAD -- spec/README.md spec/promises/contracts.yaml spec/schemas; echo $?   # 0
+   #     and experiments.md is f72c2bc3's with ruling 84's note in row A22 and nothing else
+   /usr/bin/python3 -I - <<'EOF'
+   import subprocess
+   path = "docs/proposals/full-review/experiments.md"
+   def show(rev):
+       return subprocess.run(["git", "show", f"{rev}:{path}"], capture_output=True, text=True,
+                             check=True).stdout
+   note = (". Ruled on 2026-11-18: [ruling 84](../ruling-84/README.md), point 1. No dedicated"
+           " user is planned; by the coordinator's reading, A22 is narrowed: the dedicated user"
+           " over SSH, and the case of where a Claude login lands, are withdrawn; the launchd"
+           " session keeps its daemon case, with no graphical login, without the dedicated user;"
+           " your own session's case stays; both are optional, and A22 gates no Agent's becoming"
+           " a dogfood slot, nor batch 2")
+   now = show("HEAD")
+   same = now.count(note) == 1 and now.replace(note, "") == show("f72c2bc3")
+   print(path, "as registered, with ruling 84's note" if same else "changed")
+   EOF
+   # prints: docs/proposals/full-review/experiments.md as registered, with ruling 84's note
    # (c) order 048a-2's file lost no line since f414e438
    git diff f414e438 HEAD -- docs/work-orders/048a2-build-sign-in-lapse-and-conflict.md | grep -c '^-[^-]'   # 0
-   # (d) every quotation of the registration is in the present text: 34 quotations, none missing
+   # (d) each quotation in the registration and its amendment is found: 36, none missing
    /usr/bin/python3 -I - <<'EOF'
    import re
    paths = ["spec/promises/pending.yaml", "spec/conventions/operations.yaml",
@@ -173,7 +219,7 @@ it reads, and decision 2 checks the quotations against the present text.
    quotes = re.findall("“([^”]*)”", text[text.index("## MC9a "):])
    print(len(quotes), len([q for q in quotes if norm(q) not in corpus]))
    EOF
-   # prints: 34 0
+   # prints: 36 0
    ```
 
    If any of them prints otherwise, a text MC9a reads has changed since the coordinator wrote this
@@ -404,14 +450,16 @@ it reads, and decision 2 checks the quotations against the present text.
     - On line 3, replace the last words `MC9a registered 2026-11-18 under work order 201, not run.`
       with `MC9a registered 2026-11-18 under work order 201 and run DATE under work order 204.`,
       DATE being `date -u +%F` on the day of the recorded runs.
-    - After the file's last line, "local choice of E's clock, not elapsed time.", one blank line
+    - After the file's last line, "stands as written.", the end of the amendment, one blank line
       and these six sections, in this order, each line of prose at most 100 characters and each
       link whole on one line. The registration above them does not change.
       1. `### MC9a dated results — DATE`. A first paragraph: "Run DATE under work order 204 on
          the Linux node (WSL Ubuntu 24.04, x86_64, 24 CPUs), from `main` `BASE`." Then: "At
          `BASE` the texts MC9a reads are those registered: PND-005 and PND-010 as order 048a-2's
-         decisions 1 and 2 wrote them at `1e38ff92`, the other files unchanged since `f72c2bc3`,
-         and the 34 quotations found; orders 047b, 047c, 047d and 048a-2 are built." Then the
+         decisions 1 and 2 wrote them at `1e38ff92`, experiments.md with ruling 84's note under
+         the amendment of 2026-11-19, order 206's files as at `553450aa`, the other files
+         unchanged since `f72c2bc3`, and the 36 quotations found; orders 047b, 047c, 047d and
+         048a-2 are built." Then the
          totals from the two runs: the `test result` lines' counts of the plain log, each run's
          wall seconds and peak MiB as its log's last line holds them, written `<w> s wall` and
          `peak <p> MiB`, and "two checker threads for a full

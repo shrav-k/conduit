@@ -38,8 +38,8 @@ use tokio_util::sync::CancellationToken;
 
 pub const REVISIONS: [&str; 3] = ["2025-06-18", "2025-11-25", "2026-07-28"];
 // The list names the core package's operations that the shell passes to the core.
-// It includes temporary stubs that answer unavailable and name the order that
-// builds each operation (OPS-005).
+// None is a temporary stub since order 048a-5b; an operation not yet built would
+// answer unavailable and name the order that builds it (OPS-005).
 pub(crate) const EXECUTABLE_ENGINE_OPERATIONS: [&str; 18] = [
     "install.v1",
     "retire-with-resources.v1",

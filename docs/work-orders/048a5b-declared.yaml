@@ -1,3 +1,4 @@
+# Checked at the merge of order 048a-5b, against main at fde1c615: the work's vector delta matches these shapes.
 - name: requests-sign-in-account-first
   kind: added
   cases: [requests-sign-in-account-first]

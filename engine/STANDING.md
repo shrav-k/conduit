@@ -46,7 +46,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | reason, no case | 57 | 15 | 1 | 73 |
 | no case, no reason | 40 | 77 | 20 | 137 |
 | all | 226 | 246 | 48 | 520 |
-| named in engine source | 141 | 166 | 26 | 333 |
+| named in engine source | 141 | 167 | 26 | 334 |
 
 ## The promises
 
@@ -248,7 +248,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | LIF-027 | convention | must not | 8 | 0 | cases | core | case passes |
 | LIF-028 | convention | must | 4 | 1 | outside | core | case passes |
 | LIF-029 | convention | must | 1 | 0 | cases | core | case passes |
-| LIF-031 | convention | must | 1 | 0 | cases | none | case passes |
+| LIF-031 | convention | must | 1 | 0 | cases | core | case passes |
 | LIF-032 | convention | must | 1 | 0 | reason | core | case passes |
 | LIF-033 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | LIF-034 | convention | must | 7 | 0 | cases | core | case passes |
@@ -410,15 +410,15 @@ Each number counts promises. The last row counts those whose Engine source is no
 | PLC-028 | language | must | 0 | 0 | outside | none | no case, no reason |
 | PND-001 | convention | must | 4 | 0 | outside | core | case passes |
 | PND-002 | convention | must | 3 | 0 | outside | core | case passes |
-| PND-003 | convention | must | 4 | 0 | outside | core | case passes |
+| PND-003 | convention | must | 5 | 0 | outside | core | case passes |
 | PND-004 | interface | must | 0 | 0 | outside | core | no case, no reason |
-| PND-005 | convention | must | 3 | 0 | outside | core | case passes |
+| PND-005 | convention | must | 4 | 0 | outside | core | case passes |
 | PND-006 | convention | must | 3 | 0 | outside | core | case passes |
 | PND-007 | convention | must | 1 | 0 | outside | core | case passes |
 | PND-008 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | PND-009 | convention | must | 2 | 0 | outside | core, shell | case passes |
-| PND-010 | convention | must | 2 | 0 | outside | core, shell | case passes |
-| PND-011 | convention | must | 1 | 0 | outside | core | case passes |
+| PND-010 | convention | must | 3 | 0 | outside | core, shell | case passes |
+| PND-011 | convention | must | 2 | 0 | outside | core | case passes |
 | PND-012 | convention | must | 1 | 0 | outside | core | case passes |
 | PND-013 | convention | must | 3 | 0 | outside | core, shell | case passes |
 | PND-014 | convention | must not | 2 | 0 | outside | core | case passes |

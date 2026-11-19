@@ -295,6 +295,9 @@ pub(crate) enum SignInRequest<'a> {
         invocation: &'a Value,
         trigger: &'a str,
     },
+    SignIn {
+        invocation: &'a Value,
+    },
 }
 
 pub(crate) fn raise_sign_in(
@@ -347,6 +350,14 @@ pub(crate) fn raise_sign_in(
             trigger,
             "the setup whose account check found the instance not signed in to its expected account",
             "what the setup's account check reported",
+        ),
+        SignInRequest::SignIn { invocation } => (
+            invocation["id"].clone(),
+            invocation["id"].clone(),
+            invocation["operation"].clone(),
+            "sign-in-other-account",
+            "the sign-in.v1 whose account check found an account other than the expected one",
+            "what the account check before sign-in-hook.v1 reported",
         ),
     };
     let action = json!({

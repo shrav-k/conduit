@@ -570,6 +570,9 @@
               "ruleId": "IFC-049"
             }
           }
+        ],
+        "absent": [
+          "/reply/inputRequired"
         ]
       }
     },
@@ -766,6 +769,9 @@
               "ruleId": "IFC-049"
             }
           }
+        ],
+        "absent": [
+          "/reply/inputRequired"
         ]
       }
     },
@@ -940,7 +946,8 @@
               }
             ]
           }
-        }
+        },
+        "external_intents": []
       }
     },
     {
@@ -1124,11 +1131,14 @@
             ]
           }
         },
+        "external_intents": [],
         "absent": [
           "/reply/_meta/io.github.shrav-k.conduit~1signInReturn",
           "/reply/structuredContent/signInReturn",
           "/records/0/data/signInReturn",
-          "/records/1/data/signInReturn"
+          "/records/1/data/signInReturn",
+          "/records/0/data/io.github.shrav-k.conduit~1signInReturn",
+          "/records/1/data/io.github.shrav-k.conduit~1signInReturn"
         ]
       }
     },
@@ -1311,7 +1321,8 @@
               }
             ]
           }
-        }
+        },
+        "external_intents": []
       }
     },
     {
@@ -1491,7 +1502,8 @@
               }
             ]
           }
-        }
+        },
+        "external_intents": []
       }
     },
     {
@@ -1691,6 +1703,9 @@
               "ruleId": "IFC-049"
             }
           }
+        ],
+        "absent": [
+          "/reply/inputRequired"
         ]
       }
     },
@@ -1878,9 +1893,12 @@
             ]
           }
         },
+        "external_intents": [],
         "absent": [
           "/records/0/data/signInReturn",
           "/records/1/data/signInReturn",
+          "/records/0/data/io.github.shrav-k.conduit~1signInReturn",
+          "/records/1/data/io.github.shrav-k.conduit~1signInReturn",
           "/records/0/data/clientCapabilities",
           "/records/1/data/clientCapabilities",
           "/records/0/data/signInLogin",
@@ -2234,7 +2252,8 @@
               }
             ]
           }
-        }
+        },
+        "external_intents": []
       }
     },
     {
@@ -2427,6 +2446,9 @@
               "ruleId": "IFC-049"
             }
           }
+        ],
+        "absent": [
+          "/reply/inputRequired"
         ]
       }
     },
@@ -2609,7 +2631,8 @@
               }
             ]
           }
-        }
+        },
+        "external_intents": []
       }
     },
     {
@@ -3281,18 +3304,26 @@
       },
       "expect": {
         "reply": {
-          "isError": true,
-          "_meta": {
-            "io.github.shrav-k.conduit/reason": "unavailable"
-          },
-          "structuredContent": {
-            "diagnostics": [
-              {
-                "ruleId": "PND-010"
+          "pending": true
+        },
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "attempt": 1,
+            "call": {
+              "params": {
+                "_meta": {
+                  "io.github.shrav-k.conduit/operation": "@core#account-hook.v1",
+                  "io.github.shrav-k.conduit/caller": "00000000-0000-4000-8000-000000000005"
+                }
               }
-            ]
+            }
           }
-        }
+        ],
+        "absent": [
+          "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1conduit",
+          "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1idempotencyKey"
+        ]
       }
     }
   ]

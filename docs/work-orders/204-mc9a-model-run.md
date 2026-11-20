@@ -21,7 +21,7 @@ nowhere.
 The full review of 2026-11-14 puts a sign-in model ahead of the sign-in build: order 24 of
 [its orders](../proposals/full-review/orders.md), row 2 of
 [FR-446](../proposals/full-review/findings/G1a-model-checking-register.md#fr-446) as its verifier
-corrected it. [Order 201](201-mc9a-pending-actions-sign-in-registered.md) registered that model,
+corrected it. [Order 201](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/201-mc9a-pending-actions-sign-in-registered.md) registered that model,
 MC9a, in [experiment 012's README](../../experiments/012-model-checking/README.md), section
 "MC9a — pending actions and sign-in as written: pre-registration": its texts and their commits,
 two parts (sign-in, and actions), their scripts, bounds, configurations, eleven properties, 42
@@ -32,9 +32,9 @@ the registered configurations and bounds, and records each result beside the reg
 prediction, never in its place.
 
 Two orders built since take a stand that waits on this run:
-[048a-3](048a3-build-sign-in-hold.md) builds MC9a-003's reading, that a successful `sign-in.v1`
+[048a-3](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/048a3-build-sign-in-hold.md) builds MC9a-003's reading, that a successful `sign-in.v1`
 lifts the hold whatever its action's state, and says "MC9a-003 stays reported, not settled, until
-MC9a runs"; [048a-5b](048a5b-build-sign-in-account-first.md) follows MC9a-002's reading, that
+MC9a runs"; [048a-5b](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/048a5b-build-sign-in-account-first.md) follows MC9a-002's reading, that
 another account found after the instance's retirement has been dispatched raises no action. This
 run reports what the model shows for both (decision 11), and settles neither: the owner does.
 

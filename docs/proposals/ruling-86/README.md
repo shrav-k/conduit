@@ -9,7 +9,7 @@ one run item, shared by the turn and every hook it runs (`spec/promises/template
 Agent packages' `.v2` items are one run item marked `plain`. So keying the sign-in hook keys the
 turn. Order 050e had kept the turn plain, because IFC-025 passes a failed or unknown result's
 `content` to the caller only from an implementation marked `plain`. And
-[order 050l](../../work-orders/050l-codex-account-hook.md)'s Record, on the Codex lane, left R4
+[order 050l](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/050l-codex-account-hook.md)'s Record, on the Codex lane, left R4
 open: Codex's `account/read`, the route ruling 82, point 1, chose for `codex.v2`'s account check,
 may refresh the login and rewrite the home's login file as its own upkeep, even with
 `refreshToken` false, while `account-hook.v1` declares no effect, so that under CTR-002 it changes
@@ -211,7 +211,7 @@ summary of it, read from `origin/main` and the two 050 lanes, with Codex's sourc
      and the written answer to NAM-024's rationale, when a `.v2` package later lists its sign-in
      operation as keyed, is left for the owner. The coordinator's reading, open to the owner's
      strike, read from NAM-024 and
-     [order 199](../../work-orders/199-nam-024-which-additions-count.md) on `main`: keying meets
+     [order 199](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/199-nam-024-which-additions-count.md) on `main`: keying meets
      order 199's test as NAM-024's observable words it. Order 199 wrote the test, an addition that
      changes what an unchanged request may do, into NAM-024's observable only as the reason for the
      two classes that its `then` names, a login added to a Type and a member added to a login, and

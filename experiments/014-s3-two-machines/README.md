@@ -196,7 +196,7 @@ transport/gate settings, topology and fault barriers before timing.
 Each run uses one second Claude subscription account for A and one second ChatGPT subscription account for B, provided by
 the owner; no API-key Agent ([ruling 72.2](../../docs/proposals/ruling-72/README.md#the-decisions)). Independently sign in
 each new home through Conduit; never copy a Codex login between Agents or machines
-([A8](../010-subscription-terms/results-2026-11-10.md#what-this-establishes)). T1 exercises declared expected account,
+([A8](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/experiments/010-subscription-terms/results-2026-11-10.md#what-this-establishes)). T1 exercises declared expected account,
 missing login, root's URL consent/panel evidence, Claude's browser sign-in on its own machine, M1, never carried between machines (ruling 75 C3); Codex's browser
 login on M2, its redirect carried back through the person's Interface or an SSH forward, with the device code an option
 where the account has it on, after the probe C5 names confirms that a carried redirect completes the login;

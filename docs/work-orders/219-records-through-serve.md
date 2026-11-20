@@ -45,7 +45,7 @@ holder. Two routes are not taken (the coordinator's, open to the owner's strike)
   management Type changes `spec/`, which is the owner's.
 
 **When it runs.** An order of A78's stage 2, sent through Conduit under
-[order 211's registration](211-a78-stage-2-registration.md) ("Stage 2's orders"): one Codex
+[order 211's registration](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/211-a78-stage-2-registration.md) ("Stage 2's orders"): one Codex
 worker turn and one verifier turn, each by `conduit call`, on the Mac. It changes nothing under
 `experiments/028-a78-dogfood/` and not the harness; the dogfood's plan stops serve to export
 until this merges, and the coordinator changes that step afterwards, not here.

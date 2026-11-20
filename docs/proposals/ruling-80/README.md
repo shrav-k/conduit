@@ -10,12 +10,12 @@ and a recommendation:
   ([its orders](../full-review/orders.md)), written as orders 171a, 171b, 172a and 172b;
 - order 178, the store's growth, one line of measures per commit (the review's order 28), and
   order 179, A77's registration;
-- the desk checks of [order 190](../../work-orders/190-desk-checks-terms-1password.md): how the
+- the desk checks of [order 190](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/190-desk-checks-terms-1password.md): how the
   coordinator runs the Codex workers, the second accounts, ruling 75 C3 and S10's secret store;
-- orders [182](../../work-orders/182-stale-state-lines.md) and
-  [184](../../work-orders/184-second-machine-docs-ruling-77.md): ruling 72's decision 3, and
+- orders [182](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/182-stale-state-lines.md) and
+  [184](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/184-second-machine-docs-ruling-77.md): ruling 72's decision 3, and
   Docker Desktop on the Windows computer;
-- [order 191](../../work-orders/191-log-marks-closed-settings-written.md)'s GitHub settings: the
+- [order 191](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/191-log-marks-closed-settings-written.md)'s GitHub settings: the
   review's D11 and `CONDUIT_PRIVATE_NAMES` in CI;
 - the old commits whose identity carries the Mac's user and host.
 
@@ -133,7 +133,7 @@ coordinator's.
 7. **Dispatch builds toward a Fleet that runs in parallel** (answer 7). Order 190's desk check
    quoted OpenAI's documentation on ChatGPT-managed sign-in for automation: "Do not use this
    workflow for public or open-source repositories"
-   ([its results](../../../experiments/010-subscription-terms/results-2026-11-16.md)). The
+   ([its results](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/experiments/010-subscription-terms/results-2026-11-16.md)). The
    coordinator runs the Codex workers on the owner's saved ChatGPT login on the Mac, not in CI,
    against this public repository; it had kept that method under rulings 48 and 70, and asked the
    owner how to run them.
@@ -324,7 +324,7 @@ to the owner's strike.
   lines would conflict.
   [CONTRIBUTING.md](../../../CONTRIBUTING.md#settings-this-repository-relies-on)'s "Settings this
   repository relies on" and [the tracker](../../AUDIT.md)'s D11 row are carried by
-  [order 191](../../work-orders/191-log-marks-closed-settings-written.md), already written and
+  [order 191](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/191-log-marks-closed-settings-written.md), already written and
   read, which merges right after this ruling and cites it.
   [METHOD_AS_RUN.md](../../implementation/METHOD_AS_RUN.md)'s merge step is carried by order 193,
   which builds `tools/gate.py` and switches the merge step to it.
@@ -372,7 +372,7 @@ chose "Gate derives them (Recommended)".
 
 It settles where the private names are held, which the facts above left open: nowhere.
 The gate derives them from the machine it runs on, at each run, and keeps them in memory
-alone ([order 200](../../work-orders/200-gate-derived-private-names.md)). The owner makes
+alone ([order 200](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/200-gate-derived-private-names.md)). The owner makes
 no file of names, and `--private-names-file` stays for a name that no source gives. That
 the facts' investigation of a secret store for the names ends with it is the coordinator's
 reading, open to the owner's strike. Point 10's choice that CI checks no private name

@@ -31,7 +31,7 @@ store's own application and referenced by the configuration, as the
 - `claude auth status` reports the login in use; `/status` shows its organization and email.
 - `claude setup-token` prints a one-year token for `CLAUDE_CODE_OAUTH_TOKEN`; the engine would
   then hold a credential, which its terms forbid it to intermediate
-  ([experiment 010](../../../experiments/010-subscription-terms/results-2026-11-10.md)). Not
+  ([experiment 010](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/experiments/010-subscription-terms/results-2026-11-10.md)). Not
   used.
 
 **Codex** ([authentication](https://learn.chatgpt.com/docs/auth)):

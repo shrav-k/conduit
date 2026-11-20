@@ -15,7 +15,7 @@ or any credential. Do not run `claude`, `codex` or any client, and sign in nowhe
 
 **Where it sits.** [Order 117](117-plan-s2-s3.md)'s split of batch 1 gives 048a-2 "sign-in as a
 kind of pending action, PND-005, SignInUndone. L. After 047, 047b, 047c and 048a-1", and
-[order 048a1](048a1-build-sign-in-type-checks.md) (merged as #352) moved IFC-016's detection here,
+[order 048a1](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/048a1-build-sign-in-type-checks.md) (merged as #352) moved IFC-016's detection here,
 "which raises PND-005, its other half" (its decision 9 and Record). The targeted review of the
 sign-in surface puts two must-state items on 048a-2
 ([its section 6, 048a-2](../proposals/review-signin-2026-11-16/README.md#048a-2)), which the owner
@@ -205,9 +205,9 @@ under `decisions` as the coordinator's.
    `answer.v1` and `inspect.v1` (`spec/core/operations.yaml`); `pending-action.v1`,
    `evidence-item.v1` and `diagnostic.v1` (`spec/core/results.yaml`); the rows pending action and
    raised at of `spec/definitions.md`.
-2. Orders [047](047-build-setup-action.md), [047b](047b-build-actions-raised-by-scope.md) and
-   [047c](047c-build-stored-answers.md), whole, and their Records; [order
-   048a1](048a1-build-sign-in-type-checks.md), its decisions 5 and 9 and its Record.
+2. Orders [047](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/047-build-setup-action.md), [047b](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/047b-build-actions-raised-by-scope.md) and
+   [047c](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/047c-build-stored-answers.md), whole, and their Records; [order
+   048a1](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/048a1-build-sign-in-type-checks.md), its decisions 5 and 9 and its Record.
 3. The review's [section 6](../proposals/review-signin-2026-11-16/README.md#6-must-state-lists),
    048a-2's items, and V21 and V28 in [its findings](../proposals/review-signin-2026-11-16/findings.md).
 4. The cases `setup-action-answers`, `e4-reconcile-setup-action-open`, `explain-outcome-causes`

@@ -240,7 +240,7 @@ The decisions. Apply them, and do not reopen them:
    `server_tests.rs:599-626` sends raw requests. No test needs DNS, TLS, a second node or
    anything beyond loopback; an Agent placed on `local` serves every case below. Add each test as
    a new function, and leave existing test functions as they are (Scope); the shell-level and
-   server tests may go in a new test module. [Order 068](068-test-gate-and-ci.md), in flight on
+   server tests may go in a new test module. [Order 068](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/068-test-gate-and-ci.md), in flight on
    `main`, edits the shell's test files, `src/tests.rs`, `tests/serve.rs` and `tests/cli.rs`
    among them, and adds nextest groups for the crash and timing-sensitive tests (its step 1).
    Separate functions let the admin place yours in those groups at the rebase.

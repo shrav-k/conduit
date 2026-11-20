@@ -102,7 +102,7 @@ coordinator's estimates, not measures this tree holds.
 
    [FR-264](../full-review/findings/P01-work-orders-lanes.md#fr-264)'s one behavior per
    order is waived for these two, as it was for
-   [048a-5b](../../work-orders/048a5b-build-sign-in-account-first.md). The fresh read and the fixer
+   [048a-5b](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/048a5b-build-sign-in-account-first.md). The fresh read and the fixer
    stay for each, as the option said. By the coordinator's reading:
    - only the one-behavior rule is waived, and each pair's text keeps the full review's other
      guides on an order's size (its D6) as 048a-5b's did, saying where it exceeds one;

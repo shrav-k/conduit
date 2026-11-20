@@ -160,8 +160,8 @@ findings and the branch. The Record names one of three outcomes (D5):
 
 There is no fixed stop at a fourth pass. Applied shoulds also get another fresh Opus reader, as the
 Records of [153](../work-orders/153-model-account-checked.md#record),
-[156](../work-orders/156-runner-stopped-after-end.md#record) and
-[168](../work-orders/168-tidy-after-153-155.md#record) show.
+[156](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/156-runner-stopped-after-end.md#record) and
+[168](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/168-tidy-after-153-155.md#record) show.
 
 For an order of A77's sample whose round 1 is a Codex worker's and whose group still lacks five
 paired orders, while the Claude allowance allows, a fresh Claude Opus reader also reads round 1's
@@ -212,7 +212,7 @@ ssh -F "<KEYS_DIR>/ssh_config" <WIN_HOST> "cd ~/<REMOTE_DIR> && git -C repo conf
 `EXTRA=$HOME/<REMOTE_DIR>/extra-NNN.md` (the home expands remotely). Omit `net` remotely when
 omitted locally. Copy or SSH failure exits 1. The remote worker's command and rustup directory
 allowance are not recorded in the runner supplied here; [075's
-Record](../work-orders/075-spec-own-tools-reach.md#record) says the runner now permits writes to
+Record](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/075-spec-own-tools-reach.md#record) says the runner now permits writes to
 rustup's directory. Every 30 seconds the wrapper reads the log, prints only new lines, and stops on
 `done rounds` or `failed`. After 20 failed contacts in a row (ten minutes) it exits 1 and fetches
 nothing. Its header promises a Mac copy of the remote `out-NNN.log`; no command writes one.
@@ -232,8 +232,8 @@ merge. Since order 193b the gate of [section 7](#7-merge-and-the-record) runs th
 for each Rust directory the branch reaches and the engine; CI's macOS jobs (187) run after. 131
 failed to compile on macOS (rustix's `mknodat`) and expected Linux's error message; 137 and 140 used
 `chmod --` and `find -printf` (fixed in #241). Windows' sandbox could not use the pinned toolchain
-for 075's spec suites ([075's Record](../work-orders/075-spec-own-tools-reach.md#record)) and timed
-out 072's S1 HTTP test ([072's Record](../work-orders/072-shell-list-operation.md#record)). See [The
+for 075's spec suites ([075's Record](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/075-spec-own-tools-reach.md#record)) and timed
+out 072's S1 HTTP test ([072's Record](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/072-shell-list-operation.md#record)). See [The
 second machine](HANDOVER.md#the-second-machine) for the owner's pause and resume.
 
 ## 6. The Opus reader and fixes by hand
@@ -351,8 +351,8 @@ branch setting. The admin decides what to fix, reorder or put to the owner.
 The Record goes at the order's foot. Begin: "Run on DATE on the Mac from `main` COMMIT: the worker
 (N s) and a fresh Codex verifier (N s), ...". Give rounds, findings, each Opus reader and what it
 found, coordinator changes and own decisions, and findings left for later. [081's
-Record](../work-orders/081-spec-one-run-per-instance.md#record) was the model; the fixer's brief now
-uses [156's Record](../work-orders/156-runner-stopped-after-end.md#record). Orders 037 to 045,
+Record](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/081-spec-one-run-per-instance.md#record) was the model; the fixer's brief now
+uses [156's Record](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/156-runner-stopped-after-end.md#record). Orders 037 to 045,
 049a1, 050a and 067 onward still await condensation into [the record](WORK_ORDERS.md#the-record)
 (A80); 067 moved 001 to 036k and 060 to 066 there.
 
@@ -374,9 +374,9 @@ is the one-minute load. Under load, rerun timing-sensitive shell tests with `RUS
 - Two orders started at once raced for Git's configuration; the runner now uses `--no-track`
   ([FR-525](../proposals/full-review/findings/G6-outside-the-tree.md#fr-525)).
 - The Windows checkpoint lacked a git identity ([069b's
-  Record](../work-orders/069b-spec-plan-apply-ruling-76.md#record)); the wrapper now sets it.
+  Record](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/069b-spec-plan-apply-ruling-76.md#record)); the wrapper now sets it.
 - Rustup could not write its Windows sandbox directory ([075's
-  Record](../work-orders/075-spec-own-tools-reach.md#record), which says the runner allows it now);
+  Record](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/075-spec-own-tools-reach.md#record), which says the runner allows it now);
   the allowance is not recorded in the runner supplied.
 - The Windows script exited 127 after Codex finished; the admin committed and verified on the Mac
   ([079's Record](../work-orders/079-shell-https-address.md#record), which does not name the missing
@@ -385,9 +385,9 @@ is the one-minute load. Under load, rerun timing-sensitive shell tests with `RUS
   ([FR-532](../proposals/full-review/findings/G6-outside-the-tree.md#fr-532)). A schema precheck is
   not recorded in the runner; a leftover branch still fails the worktree add and stops dispatch.
 - The read-only Codex verifier reruns no build or test
-  ([156](../work-orders/156-runner-stopped-after-end.md#record),
-  [167](../work-orders/167-a5-probe-signals-tested.md#record)); an automatic remedy is not recorded
-  in the runner. The Opus readers of 156, [161](../work-orders/161-a78-stage-1-evidence.md#record)
+  ([156](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/156-runner-stopped-after-end.md#record),
+  [167](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/167-a5-probe-signals-tested.md#record)); an automatic remedy is not recorded
+  in the runner. The Opus readers of 156, [161](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/161-a78-stage-1-evidence.md#record)
   and 167 reran checks (section 6).
 - A failed verifier or unreadable report can count as no findings, as section 3 says ([harness
   account](../../experiments/028-a78-dogfood/inputs/harness.md)); schema validation and an automatic

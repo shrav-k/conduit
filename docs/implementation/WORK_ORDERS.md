@@ -515,7 +515,7 @@ original record, as it had no Record of its own:
 - **What the admin changed**: Amended the pre-registration before any run: tools named as IFC-012 names them, and the matrix cut to 68 runs. Sent the worker back to use the owner's login rather than a fresh configuration and an API key. Added Codex's approval of the stub's server, which the second round missed. Ran one real run per client before the matrix
 - **State**: done on 2026-11-09
 
-Decisions, the method of [experiment 008](../../experiments/008-real-client/README.md): (1) **one
+Decisions, the method of [experiment 008](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/experiments/008-real-client/README.md): (1) **one
 Cargo project in experiments/008-real-client/**, on the official Rust SDK (`rmcp`); (2) **the
 stub** names tools as IFC-012 does, takes every `_meta` key from `spec/names.yaml`, and accepts
 protocol revisions 2025-06-18, 2025-11-25 and 2026-07-28, logging each session's; (3) **the
@@ -581,7 +581,7 @@ the order, on 2026-11-09:
 - **Admin**: checked the classification of C5 against the raw records of two runs, and
   recorded that review in the results, which the worker had left as pending. No second round.
 
-Decisions, now the method of [its results](../../experiments/008-real-client/results-2026-11-09.md):
+Decisions, now the method of [its results](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/experiments/008-real-client/results-2026-11-09.md):
 (1) **wire, client and model apart** (E17), never inferring what the model saw from the wire;
 (2) **the next action** by the pre-registration's categories only, each citing its event; (3)
 **the questions the pre-registration asks**, per client and case, with runs; (4) **runs that did
@@ -696,7 +696,7 @@ Record, written by the admin when it merged the order, on 2026-11-09:
   change and fix the two tests. The worker's sandbox, run without network access, refused the
   tests that bind a loopback port, so the admin ran them: all pass.
 
-Decisions, now the method of [experiment 009's harness](../../experiments/009-native-launch/HARNESS.md):
+Decisions, now the method of [experiment 009's harness](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/experiments/009-native-launch/HARNESS.md):
 (1) **one Cargo project in experiments/009-native-launch/**, reusing experiment 008's stub; (2)
 **two wrappers**, each an MCP server over stdio whose one tool runs one turn of its client, with
 experiment 008's isolation, Claude Code's `SendMessage`, `ListAgents` and `RemoteTrigger` denied

@@ -116,7 +116,7 @@ fixtures; the harness expires the receipt for OPS-034. Fault controls and barrie
 ## Measures
 
 **M0 — proposed, for the owner's acceptance**, lane coordinator's
-[decision 4](../../docs/work-orders/102-pre-b-s4-s5-s6-s9.md#the-decisions-it-applies): carry over
+[decision 4](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/102-pre-b-s4-s5-s6-s9.md#the-decisions-it-applies): carry over
 by reference the first build's [measure table](../../docs/implementation/FIRST_BUILD.md#measures)
 and three [counting rules](../../docs/implementation/FIRST_BUILD.md#counting-rules-added-after-the-baseline-ran):
 “Provider work apart”, “A client's concepts count” and “Requests and time without access”.

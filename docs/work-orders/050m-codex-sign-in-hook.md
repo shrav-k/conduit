@@ -155,7 +155,7 @@ After 050l, and 048a-1 merged with the lane rebased onto it"):
 - Order 038c's handoff, as
   [experiment 027's records rule](../../experiments/027-a5-sign-in/README.md#what-stage-0b-records)
   quotes it: "Order 050, not this stage, reads those literals from the clients". Orders
-  [195](195-a5-stage-0b-codex-browser.md) and [197](197-a5-stage-1-step-1-codex-account-read.md)
+  [195](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/195-a5-stage-0b-codex-browser.md) and [197](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/197-a5-stage-1-step-1-codex-account-read.md)
   read Codex's source at the tag `rust-v0.167.1` and named, by identifier and never by value, where
   the browser login's literals are; [stage 0b's results](../../experiments/027-a5-sign-in/results-2026-11-16-0b-source.md#q1-how-the-browser-login-opens-a-browser)
   show the dispatch to `run_login_with_browser`, the login server's options (`issuer:

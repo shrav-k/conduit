@@ -41,7 +41,7 @@ can differ from its tag's source, and a page can change after it was read. A sen
 | EV2 | doc | Envoy, credential injector and API key auth filters | <https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/credential_injector_filter> | pages for 1.41.0-dev, read 2026-11-18 |
 | AT1 | doc | Anthropic Commercial Terms of Service, in part | <https://www.anthropic.com/legal/commercial-terms> | effective 2025-06-17, read 2026-11-18 |
 | OA5 | doc | OpenAI API, "Production best practices", in part | <https://developers.openai.com/api/docs/guides/production-best-practices> | read 2026-11-18 |
-| E010 | record | [Experiment 010's second reading](../../experiments/010-subscription-terms/results-2026-11-16.md), cited by its IDs AN1, AN2, OA3 | this repository | 2026-11-16 |
+| E010 | record | [Experiment 010's second reading](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/experiments/010-subscription-terms/results-2026-11-16.md), cited by its IDs AN1, AN2, OA3 | this repository | 2026-11-16 |
 
 Claude Code's source is not public, so every claim about it is documentation, which is at or before
 2.1.318 in each version it names; CC8 is its only versioned record. 2.1.318 is the baseline of the
@@ -76,7 +76,7 @@ page on API key safety answered HTTP 403 and were not read.
   `Authorization`). With no gateway credential and a saved claude.ai login, "Requests still route
   through the gateway, but a saved claude.ai login remains the active credential", and
   `Authorization` carries the login's token. This is the claim that
-  [order 205](../work-orders/205-gateway-probe.md) states as K2 for experiment 032.
+  [order 205](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/205-gateway-probe.md) states as K2 for experiment 032.
   **Inference:** a route Agent's home must hold no claude.ai login, or a missing route credential
   would send the login's token to the gateway with no error.
 - **A failing helper is a failure** (doc CC4, "Credential management"): a helper that exits with an
@@ -227,7 +227,7 @@ responsibility.
 
 ## What the probe is to settle
 
-[Work order 205](../work-orders/205-gateway-probe.md) registered
+[Work order 205](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/205-gateway-probe.md) registered
 [experiment 032](../../experiments/032-gateway-probe/README.md) (A85) on 2026-11-18, with its
 harness and its run in orders 205b and 205c: the two pinned clients, fake tokens, a stub gateway in
 Rust and a network namespace that holds loopback alone. As order 205 words them, it states the

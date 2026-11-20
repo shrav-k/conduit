@@ -117,8 +117,8 @@ removed documents are in the [archive index](archive/README.md).
 | Location | What to find |
 | --- | --- |
 | [implementation/FIRST_BUILD.md](implementation/FIRST_BUILD.md) | First-build increments, tasks and measurements. |
-| [implementation/plan-and-apply/](implementation/plan-and-apply/README.md) | The CLI reference for `conduit plan` and `conduit apply`, with golden cases that do not bind (spec batch 1, K3). Being written by work order 069. |
-| [implementation/SAFETY_CATALOGUE.md](implementation/SAFETY_CATALOGUE.md) | The safety promises of `spec/`, and the safety promises each of S1's safety traces tests, for the safety vectors and model checking (A40, G5). Being written by work order 100. |
+| [implementation/plan-and-apply/](implementation/plan-and-apply/README.md) | The CLI reference for `conduit plan` and `conduit apply`, with golden cases that do not bind (spec batch 1, K3). |
+| [implementation/SAFETY_CATALOGUE.md](implementation/SAFETY_CATALOGUE.md) | The safety promises of `spec/`, and the safety promises each of S1's safety traces tests, for the safety vectors and model checking (A40, G5). |
 | [implementation/PROVIDERS.md](implementation/PROVIDERS.md) | The first and second provider of each provider contract, their contract vectors and the engine work they need (A63; work order 120). |
 | [engine/](../engine/README.md) | The first build, runnable, and its [conformance choices](../engine/CONFORMANCE.md). |
 | [conformance/](../conformance/README.md) | Portable vectors, fixtures, coverage and gaps. |
@@ -133,7 +133,7 @@ removed documents are in the [archive index](archive/README.md).
 | --- | --- |
 | [experiments/](../experiments/README.md) | Methods, dated results and counted artifacts, registered in the roadmap. |
 | [research/](research/README.md) | Sources and comparisons behind the decisions. |
-| [archive/](archive/README.md) | Removed-file index, attribution, dissent and the plan audit's history. |
+| [archive/](archive/README.md) | Removed-file index and the plan audit's history. |
 
 ## Repository boundaries
 

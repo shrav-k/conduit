@@ -295,5 +295,5 @@ runner still carries an order that the dogfood itself needs before its turns can
 fix of the engine or the harness that they wait on, an order that no Agent of milestone 1 can run
 or that A78's registration keeps out of Conduit, and any order while that registration pauses the
 turns through Conduit. The milestones' terms above, which set no gate and no deadline that binds,
-are unchanged. [Order 211](../../work-orders/211-a78-stage-2-registration.md), which
+are unchanged. [Order 211](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/211-a78-stage-2-registration.md), which
 registers stage 2 as milestone 1's run, waits for this change before it starts.

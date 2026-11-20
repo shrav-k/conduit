@@ -89,7 +89,7 @@ stderr, nothing keeps that line. The coordinator puts that reading on
 Record.
 
 **What 172b changed, and why the client gets a group of its own.** Order
-[172b](172b-so-b-reconcile-records-stop-ends.md) (its Record; Phase 0's flag F2 of the targeted
+[172b](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/172b-so-b-reconcile-records-stop-ends.md) (its Record; Phase 0's flag F2 of the targeted
 review says it bears on order 16) narrowed what a stop must end. PRV-030
 (`spec/promises/providers.yaml:987-1013`): "A run's processes are every process that the provider
 started for the ID and every process that those started. The provider stops a run by a unit that

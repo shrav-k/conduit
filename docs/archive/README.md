@@ -56,19 +56,23 @@ except the earlier removal of Experiment 001 (`de6566a`).
 | `docs/research/OBSERVABILITY.md` | Observation, capture and telemetry comparisons. | Observation provider, especially section 3. | [f1cb473](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/OBSERVABILITY.md) |
 | `docs/research/AUTHORIZATION.md` | Authorization and cloud authority precedents. | A66: caller rights, required restrictions, revocation consistency and grant administration; [live source summary](../AUDIT.md#p1--prove-the-language-can-be-rebuilt-and-its-promises-kept). | [f1cb473](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/AUTHORIZATION.md) |
 | `docs/research/CLOUD_AUTHORITY.md` | Authorization and cloud authority precedents. | A66: caller rights, required restrictions, revocation consistency and grant administration; [live source summary](../AUDIT.md#p1--prove-the-language-can-be-rebuilt-and-its-promises-kept). | [f1cb473](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/CLOUD_AUTHORITY.md) |
-| `docs/research/ECOSYSTEM_ORGANIZATION.md` | Repository, distribution and documentation comparisons. | Five conclusions preserved [below](#repository-and-ecosystem-source-material); organization/publication record [ruling 47](../proposals/ruling-47/README.md). | [f1cb473](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/ECOSYSTEM_ORGANIZATION.md) |
-| `docs/research/CONFIGURATION.md` | Configuration composition and update semantics. | [Prior art still applied](#prior-art-still-applied). | [f1cb473](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/CONFIGURATION.md) |
-| `docs/research/CONSTRUCTION.md` | Template, implementation and runtime boundaries. | [Prior art still applied](#prior-art-still-applied). | [f1cb473](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/CONSTRUCTION.md) |
-| `docs/research/RUNTIME_ESTABLISHMENT.md` | Setup readiness, progress and recovery. | [Prior art still applied](#prior-art-still-applied). | [f1cb473](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/RUNTIME_ESTABLISHMENT.md) |
+| `docs/research/ECOSYSTEM_ORGANIZATION.md` | Repository, distribution and documentation comparisons. | Five conclusions preserved in [this index at `b49e8629`](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/archive/README.md#repository-and-ecosystem-source-material); organization/publication record [ruling 47](../proposals/ruling-47/README.md). | [f1cb473](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/ECOSYSTEM_ORGANIZATION.md) |
+| `docs/research/CONFIGURATION.md` | Configuration composition and update semantics. | [Prior art still applied](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/archive/README.md#prior-art-still-applied). | [f1cb473](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/CONFIGURATION.md) |
+| `docs/research/CONSTRUCTION.md` | Template, implementation and runtime boundaries. | [Prior art still applied](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/archive/README.md#prior-art-still-applied). | [f1cb473](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/CONSTRUCTION.md) |
+| `docs/research/RUNTIME_ESTABLISHMENT.md` | Setup readiness, progress and recovery. | [Prior art still applied](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/archive/README.md#prior-art-still-applied). | [f1cb473](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/RUNTIME_ESTABLISHMENT.md) |
 | `docs/research/DISTRIBUTED_RUNTIME.md` | Early runtime comparisons and proposed proof layouts. | Historical design research; later layers and provider boundaries supersede its runtime proposals. No new extraction. | [f1cb473](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/DISTRIBUTED_RUNTIME.md) |
 | `docs/research/RUST_RUNTIME.md` | Early runtime comparisons and proposed proof layouts. | Historical design research; later layers and provider boundaries supersede its runtime proposals. No new extraction. | [f1cb473](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/RUST_RUNTIME.md) |
-| `docs/research/language-protocol-foundations/` | Six format, walkthrough, source and probe records. | [Format choice](#format-choice); behavior/structure decisions in the ledger and specification. | [f1cb473](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/language-protocol-foundations) |
-| `docs/research/vocabulary/{README.md, PRECEDENTS.md, SOURCES.md}` | README.md, PRECEDENTS.md and SOURCES.md: vocabulary evidence kept by ruling 36, then removable under rulings 57 and 58. | Vocabulary decisions; [the reviewer’s simplification pass](../research/vocabulary/SIMPLIFICATION.md) stays as written. The JSON source pins and retrieval records also remain. | [f1cb473](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/vocabulary) |
-| `docs/archive/collaborator-proposals/` | Four submitted-proposal and comparison records from allocmemory. | [Unadopted alternatives and why](#not-adopted-from-the-collaborators-proposals-and-why); [attribution](#attribution); accepted review rulings in the ledger. | [f1cb473](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/archive/collaborator-proposals) |
+| `docs/research/language-protocol-foundations/` | Six format, walkthrough, source and probe records. | [Format choice](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/archive/README.md#format-choice); behavior/structure decisions in the ledger and specification. | [f1cb473](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/language-protocol-foundations) |
+| `docs/research/vocabulary/{README.md, PRECEDENTS.md, SOURCES.md}` | README.md, PRECEDENTS.md and SOURCES.md: vocabulary evidence kept by ruling 36, then removable under rulings 57 and 58. | Vocabulary decisions; the rest of `vocabulary/` left with order 222. | [f1cb473](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/vocabulary) |
+| `docs/archive/collaborator-proposals/` | Four submitted-proposal and comparison records from allocmemory. | [Unadopted alternatives and why](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/archive/README.md#not-adopted-from-the-collaborators-proposals-and-why); [attribution](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/archive/README.md#attribution); accepted review rulings in the ledger. | [f1cb473](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/archive/collaborator-proposals) |
 | `docs/archive/migrations/` | Three framing/vocabulary migration records, including the machine-readable preservation manifest. | Historical migration accounting; the specification and current checks govern new work. | [f1cb473](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/archive/migrations) |
 | `tools/check_doc_migration.py` | Fixed-Git-object checker of the historical framing migration. | Reproduction of that migration only; removed with its records and CONTRIBUTING instructions. | [f1cb473](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/tools/check_doc_migration.py) |
-| `docs/archive/reviews/` | Four completed authoring, conceptual, implementation and repository reviews. | [Rulings before the plan audit](../proposals/ruling-log.md#history-rulings-before-the-plan-audit); [repository release/website source material](#repository-and-ecosystem-source-material). | [f1cb473](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/archive/reviews) |
+| `docs/archive/reviews/` | Four completed authoring, conceptual, implementation and repository reviews. | [Rulings before the plan audit](../proposals/ruling-log.md#history-rulings-before-the-plan-audit); [repository release/website source material](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/archive/README.md#repository-and-ecosystem-source-material). | [f1cb473](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/archive/reviews) |
 | `experiments/001-shared-access` | Shared-access paper scenario and static fixtures, removed before C0. | Later worked schemas and acceptance scenarios; historical evidence, not an engine run. | [f1cb473](https://github.com/shrav-k/conduit/tree/de6566ad8a2ea408876a66ab04930734c7b334de/experiments/001-shared-access) |
+| `docs/work-orders/`: order 222's leave list | Finished orders and declarations. | [Live orders](../work-orders/README.md). | [b49e8629](https://github.com/shrav-k/conduit/tree/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders) |
+| `experiments/{004, 008, 009, 010, 023}` | Five finished experiments. | [The register](../../ROADMAP.md#experiments-and-probes). | [b49e8629](https://github.com/shrav-k/conduit/tree/b49e8629b087a32f903214ffb517810ab84c471c/experiments) |
+| `docs/research/{SECRETS.md, MULTI_MACHINE.md, naming/, vocabulary/}` | Precedents of settled decisions. | The proposals they fed, and `spec/`. | [b49e8629](https://github.com/shrav-k/conduit/tree/b49e8629b087a32f903214ffb517810ab84c471c/docs/research) |
+| `docs/archive/README.md`, its sections after this one | Format choice, the collaborator comparison and its adaptations, the roadmap candidates, prior art, the repository material and its conclusions to test, the release and website proposals, attribution. | [Two roadmap rows](../../ROADMAP.md#done-removed-dropped-or-not-adopted). | [b49e8629](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/archive/README.md) |
 
 Under rulings 57 and 58, work order 066 removed the raw experiment records and superseded
 harness code below after checking every removed file against C0: none had changed. The
@@ -81,153 +85,8 @@ Cargo manifests, so the automatically discovered CI matrix no longer includes ei
 | `experiments/001-shared-access/` | Experiment 001: exercised all five families on paper, with static fixtures. Removed on 2026-11-05 because its fixtures used only shapes the rulings replaced; spec/schemas/examples/ supplies the current worked examples. | [de6566a](https://github.com/shrav-k/conduit/tree/de6566ad8a2ea408876a66ab04930734c7b334de/experiments/001-shared-access) |
 | `experiments/005-macos-keychain/{results.json, results-rerun.json, results.txt, results-rerun.txt}` | Four raw ACL and timing records, tabulated in the README's dated observations. The probe code and safety method stay; A22's daemon case is open. | [f1cb473](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/005-macos-keychain) |
 | `experiments/007-s1-baseline/evidence-2026-11-09/ (except prompts.txt)` | 32 raw run records. The dated results, exact prompts and counted setup/ files stay. | [f1cb473](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/007-s1-baseline/evidence-2026-11-09) |
-| `experiments/008-real-client/{src/, tests/, Cargo.toml, Cargo.lock, rust-toolchain.toml, .gitignore}` | Ten superseded harness files. README, HARNESS.md and both dated result files stay; the engine and Agent packages carry the replacement code. | [f1cb473](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client) |
-| `experiments/008-real-client/evidence-2026-11-09/ (except README.md)` | 818 raw matrix records. The evidence README keeps the trimming and sanitization method. | [f1cb473](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/evidence-2026-11-09) |
-| `experiments/008-real-client/evidence-2026-11-09-later-turn/ (except README.md)` | 36 raw later-turn records. The evidence README and dated follow-up results stay; the metrics proposal cites its two source turns at C0. | [f1cb473](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/evidence-2026-11-09-later-turn) |
-| `experiments/009-native-launch/{src/, tests/, Cargo.toml, Cargo.lock, rust-toolchain.toml, .gitignore}` | Thirteen superseded harness files, removed with the 008 crate on which they depended. README, HARNESS.md and dated results stay. | [f1cb473](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch) |
-| `experiments/009-native-launch/evidence-2026-11-09/ (except README.md)` | 29 raw attribution and harness records. The evidence README keeps the trimming and sanitization method; the Claude Code fixture cites its source at C0. | [f1cb473](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch/evidence-2026-11-09) |
-
-## Format choice
-
-YAML 1.2, JSON and JSON Schema 2020-12 were chosen because MCP and OpenAPI 3.2 build on 2020-12. JSON alone was the runner-up. CUE was the strongest alternative, to reconsider only if authoring exposes constraint or generation behavior the model cannot represent. Dhall needs another evaluator; Smithy and WIT need a mapping; a new notation carries the largest burden. [Source at C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/language-protocol-foundations/FORMATS.md#L25-L70)
-
-## Not adopted from the collaborator's proposals, and why
-
-Historical comparison, copied verbatim from the reviewed C0 source. Its terminology and
-then-current contracts describe that review; the specification governs today.
-
-## What needs adaptation
-
-| Proposal | Current contract / recommended treatment |
-| --- | --- |
-| Carry setup/runtime as opaque implementation-defined fields in the first protocol | Conflicts with portable plugin/template authoring. Keep public graph, operation, control and lifecycle meanings. A limited consumer may decline an unsupported execution surface; a template executor cannot claim portability by ignoring its semantics. |
-| Exclude plugin ABI with all graph behavior | Separate physical ABI/process plumbing from public invocation and execution semantics. Native ABI details need not be standardized; MCP/profile contracts and declared behavior do. |
-| Derive the protocol directly from what Experiment 001 needs | Use 001 as a scenario and 002 for composition/failure coverage. Draft fixture fields are not rulings, and neither fixture alone defines every required semantic boundary. |
-| Start with a parallel fixed JSON-RPC method catalog and local socket wire | MCP is already the accepted public plugin/capability base. First map supported standard mechanisms and the necessary Conduit profile; evaluate any additional transport/method surface in the later authoring PR. No new wire is adopted here. |
-| Use one short family lifecycle and a closed error list | Shared evidence is useful, but setup, runtime readiness, uncertain effects and domain outcomes cannot all be collapsed into one state. C3 requires confirmation of declared shutdown duties before unregistration while preserving outstanding-effect evidence and shared dependencies; exact results stay extensible and typed. |
-| Every request names its actor | A supplied name is attribution data until authenticated by the appropriate binding. Same-OS-user execution does not grant an Agent root management rights. C2 preserves authenticated caller context and applicable restrictions while Resources use their own dependency grants. |
-| Require two independent full implementations for the first release | C1 selects independently authored client/plugin conformance first and defers a second complete runtime. The initial proof does not establish runtime-to-runtime portability. |
-| No skills | Already no Conduit-owned skills framework. Preserve BYO native skills and explicit Agent activation through permitted Resources. |
-
-The proposals' `v1`/`v2` labels, identifiers, paths and message names are suggestions, not accepted
-release targets. Preserve the public behavior first; choose serialization together later.
-
-## Additional roadmap candidates
-
-**Sealmesh:** PR #1 proposes it as a messaging backend and describes its room/identity/retention
-behavior. Those claims have not been independently revalidated in this pass. Evaluate the actual
-implementation before choosing an adapter. It could fit as a Pool-owned communication Resource
-if its declared guarantees match the selected retained-history capability. Adopting it must not
-make rooms, GitHub organizations, tickets, Tailscale or remote deployment mandatory core concepts.
-Conduit's accepted retain-until-explicit-purge contract is not superseded by a backend default;
-capability/retention gaps must remain visible.
-
-**Local root Agent:** this is distinct from the accepted root Interface and its deterministic
-setup/recovery operations. A host-administration Agent could be an optional Agent with explicit
-Resource access and delegated controls. It need not replace the Interface, own policy, or become a
-mandatory model dependency for startup/repair. Model choice and local-model guarantees are later
-questions only if that optional use case is selected.
-
-**VM per environment:** a possible isolated-execution implementation, subject to actual host,
-credential, filesystem and network tests. Making it the default would reopen the accepted native
-default and compatibility tradeoff. Do not adopt that change merely by choosing a sandbox driver.
-Remote scheduling and one-VM-per-account/process are not consequences of the five-family model.
-
-## Prior art still applied
-
-- No generic deep-merge of permission lists. [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/CONFIGURATION.md#L126-L126)
-- Labels and selectors as general metadata for choosing sets of objects, such as a Pool's entries, were not adopted; placement's node selectors are (PLC-007). [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/CONFIGURATION.md#L121-L121). Whole-object revision checks avoid implicit overlay/field ownership. [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/CONFIGURATION.md#L220-L238)
-- Terraform’s “Removing a declaration is not permission to delete the external object” comes from CONFIGURATION, not CONSTRUCTION. [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/CONFIGURATION.md#L128-L128). CONSTRUCTION retains the corresponding recovery cases. [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/CONSTRUCTION.md#L82-L95)
-- Avoid a hidden readiness cycle: startup/output guarantees must let migrations run before stronger readiness checks. [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/RUNTIME_ESTABLISHMENT.md#L169-L186)
-- Retain progress without claiming readiness, managed effects after migration failure, revalidation of expired handles, explicit retries of valid progress, input snapshots, evidence after frontend disconnects and withholding protected work when authorization cannot be verified. [Failure cases at C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/RUNTIME_ESTABLISHMENT.md#L266-L283)
-
-## Repository and ecosystem source material
-
-Historical proposals, not new decisions. The organization/publication decisions now live in
-[ruling 47](../proposals/ruling-47/README.md); remaining work is A75 and A76.
-
-## Conclusions to test, not rules already adopted
-
-1. One source repository can produce several public artifacts. Repository, crate, package,
-   executable, process and object-instance boundaries answer different questions.
-2. Public protocol independence needs accessible contracts, explicit capability claims and tests
-   against external clients/plugins. Merely moving the spec to another repository does not supply it.
-3. A standard distribution can bundle a convenient working selection without making its contents
-   mandatory for every compatible implementation.
-4. Plugin runtime communication and package delivery are distinct protocols. MCP does not decide
-   package identity, dependency resolution, releases or executable retention.
-5. Website navigation should follow user and author tasks; the repository should follow authority,
-   ownership and build/release boundaries. They need not have identical trees.
-
-## 5. Release and delivery proposal
-
-Use one coordinated reference-distribution release initially. It records exactly which protocol
-capabilities, package artifacts and platforms were tested together. Core Rust crates can follow that
-release without promising stable public APIs for each crate.
-
-Keep logical version domains separate: protocol/contract version, package implementation release and
-artifact identity, reference application release, and internal storage-format compatibility. An app
-patch should not require changing every capability contract's version. Conversely, two releases claiming
-the same shape do not establish identical semantics. Exact version syntax still belongs in the authoring pass.
-
-First distribution: prepared archives for validated macOS targets with a readable inventory and integrity
-metadata, plus source build instructions. A Homebrew entry can wrap the same tested artifacts later.
-Do not claim Linux/Windows validation from portable Rust code alone. No npm/Python runtime should be
-required for the base Rust distribution merely because some extensions use those languages; each such
-extension declares its actual prerequisites.
-
-Keep v0's accepted explicit local package installation. A user can download a package release and install
-it locally without a hosted Conduit marketplace. Future OCI, Git or other delivery mechanisms can carry
-the same package contract. Neither a registry nor automatic cross-language dependency resolution is
-needed to prove authoring. External MCP services keep separately reported compatibility; pinning the
-Conduit adapter cannot freeze a remote service implementation.
-
-Installing a release must preserve artifacts bound to retained instances. Package installation still
-does not instantiate templates, authenticate services or grant access. Test built release artifacts
-outside the source workspace so workspace paths cannot hide missing schemas, executables or dependencies.
-
-## 6. Website and documentation experience
-
-Lead with the protocol and original authoring. The earlier product-first navigation was too centered
-on installing templates and composing existing integrations. The proposed replacement is:
-
-| Route | First useful experience |
-| --- | --- |
-| Learn the protocol | Understand the five families, language, contracts and how their relationships express a system. |
-| Author with the protocol | Define capabilities, operations and requirements; implement a small plugin; construct templates and package contributions. |
-| Protocol reference and conformance | Find exact semantics, representations, MCP mappings, compatibility and observable guarantees. |
-| Reference implementation | Execute and inspect the contracts using the Rust runtime and clients; distinguish those mechanisms from protocol requirements. |
-| Project and ecosystem | Find source responsibilities, experiments, proposals, research, archived alternatives and supported ancillary packages. |
-
-An introductory example should define a small new capability, supply its implementation, use it in
-a Resource template, establish it through a Pool and connect an Agent/Interface through a Conduit.
-Inspection and a failure case should demonstrate its guarantees. Reusing existing integrations is a
-later application of this language. Defining an extension must not require reading executor SQL or
-modifying core dispatch. These are documentation priorities, not a new requirement to implement every
-capability before the first authoring example can be reviewed.
-
-Separate tutorials/task guides from exhaustive reference and architecture explanation. Keep research
-and dissent reachable under contribution/design context without presenting them as supported features.
-Until implementation exists, the site should say protocol design/development and link reviewable examples;
-it should not display an installation quickstart that cannot run.
-
-Keep site configuration in the main repo initially; a separate deployment does not require a separate
-content repository. Choose a static-site framework after the content paths and version strategy are clear.
-Development docs and later released docs must be distinguishable. Package docs should identify the exact
-release/contract they describe. Conformance status, platform support and experimental features should be
-visible alongside the relevant instructions.
-
-## Attribution
-
-The collaborator `allocmemory` submitted [PR #1](https://github.com/shrav-k/conduit/pull/1)
-at `2111b0d` and [PR #2](https://github.com/shrav-k/conduit/pull/2) at `c480e96`, merged as
-[`71d6348`](https://github.com/shrav-k/conduit/commit/71d634879be68399c080450f0c2e8fa401d5b8e8) and
-[`4b3db58`](https://github.com/shrav-k/conduit/commit/4b3db583fdfbcd5c95c36aefa85bad4d73748b12).
-The vocabulary research and simplification pass came through
-[PR #5](https://github.com/shrav-k/conduit/pull/5) at `2890ef7`. Original authorship, dissent
-and applicable third-party terms remain; Apache-2.0 adoption asserts no additional grant
-for reproduced submissions. See [license and attribution](../../CONTRIBUTING.md#license-and-attribution).
-
-Pi reference pins `0441483` and `04025a6` remain in the
-[reference-repository record](plan-audit-history.md#reference-repositories), pending A27’s
-reconciliation; no new claim of upstream availability is made.
+| `experiments/008-real-client/{src/, tests/, Cargo.toml, Cargo.lock, rust-toolchain.toml, .gitignore}` | Ten superseded harness files. README, HARNESS.md and both dated result files stay; the engine and Agent packages carry the replacement code. Order 222 removed the rest; see the first table. | [f1cb473](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client) |
+| `experiments/008-real-client/evidence-2026-11-09/ (except README.md)` | 818 raw matrix records. The evidence README keeps the trimming and sanitization method. Order 222 removed the rest; see the first table. | [f1cb473](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/evidence-2026-11-09) |
+| `experiments/008-real-client/evidence-2026-11-09-later-turn/ (except README.md)` | 36 raw later-turn records. The evidence README and dated follow-up results stay; the metrics proposal cites its two source turns at C0. Order 222 removed the rest; see the first table. | [f1cb473](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/evidence-2026-11-09-later-turn) |
+| `experiments/009-native-launch/{src/, tests/, Cargo.toml, Cargo.lock, rust-toolchain.toml, .gitignore}` | Thirteen superseded harness files, removed with the 008 crate on which they depended. README, HARNESS.md and dated results stay. Order 222 removed the rest; see the first table. | [f1cb473](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch) |
+| `experiments/009-native-launch/evidence-2026-11-09/ (except README.md)` | 29 raw attribution and harness records. The evidence README keeps the trimming and sanitization method; the Claude Code fixture cites its source at C0. Order 222 removed the rest; see the first table. | [f1cb473](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch/evidence-2026-11-09) |

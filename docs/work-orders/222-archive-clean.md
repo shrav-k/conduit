@@ -270,4 +270,21 @@ check's last line.
 
 ## Record
 
-Not yet run.
+Run on 2026-11-20 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+Worker-2's first turn stopped at the start check, correctly: root's clone of main had a stale
+`origin/main`, so `pushed` printed 1. Root re-cloned it. The second turn (13:14 to 13:24) did the
+order at BASE `b49e8629`. It removed 260 files (191 under `docs/`, 69 under `experiments/`) and
+pinned the links into them (87 paths, all present at BASE). `docs/` fell from 15.68 to 10.69 MB
+and `experiments/` from 3.97 to 3.60 MB.
+
+`turn-verifier-2.turn.v1` (13:24 to 13:29) found ten links whose labels span two lines still
+pointing at removed files, because `tools/check_docs.py`'s inline-link pattern skips such labels.
+Root pinned them to BASE, and order 223 takes the checker's blind spot.
+
+`turn-reader-1.turn.v1` (13:33 to 13:44), the Claude reader, accepted it with three shoulds:
+- the archive index's "preserved below" now names the pinned index;
+- the 008 and 009 rows of its second table now say order 222 removed the rest;
+- its third, unstaged deletions, was only the state of the reader's copy, since the merged
+  branch commits every deletion.
+
+The gate's run on the squash is the coordinator's, at the merge.

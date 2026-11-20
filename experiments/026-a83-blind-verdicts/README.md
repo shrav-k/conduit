@@ -11,7 +11,7 @@ pre-registered here before it runs; this first registration covers only Part E's
 
 ## Part E's engine run
 
-[Work order 165](../../docs/work-orders/165-by-rule-examples-public-routes.md) pre-registers
+[Work order 165](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/165-by-rule-examples-public-routes.md) pre-registers
 this run. The [test](../../engine/crates/shell/tests/by_rule.rs) sends the examples and compares
 its observations with the [table](../../engine/crates/shell/tests/expected/by-rule-outcomes.txt).
 The dated result is [results-2026-11-15.md](results-2026-11-15.md).

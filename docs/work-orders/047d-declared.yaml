@@ -1,4 +1,0 @@
-# Checked at the merge of order 047d, against main at 578835bd: the work's vector delta matches these shapes.
-- name: setup-retirement-notice
-  kind: added
-  cases: [setup-retirement-notice]

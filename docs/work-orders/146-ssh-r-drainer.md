@@ -144,8 +144,8 @@ Run on 2026-11-12 on the Windows computer (WSL), from base e03ca3e: the worker (
 verifier (174 s), then a second worker round (289 s) and a fresh verifier (199 s). Both verifiers
 found a race in how drainers handed over: round one's, an older waiting drainer superseding the
 newest; round two's, a drainer's place set when it registered, which can come later than its
-launch. [Order 149](149-ssh-r-drainer-finish.md) tried launch generations and found two more such
-races, and [order 150](150-ssh-r-one-drainer.md) replaced the whole handoff (see its Record). The
+launch. [Order 149](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/149-ssh-r-drainer-finish.md) tried launch generations and found two more such
+races, and [order 150](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/150-ssh-r-one-drainer.md) replaced the whole handoff (see its Record). The
 drainer itself stands as this order built it: started with the provider, waiting on the owner
 lock, draining owed stops with a backoff to its bound, yielding to a starting provider, and
 deleting the key and `known_hosts` once the instance is retired and nothing is owed.

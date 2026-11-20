@@ -113,7 +113,7 @@ are measurements of this vector, not a capacity projection or a proposed compact
 
 - **Token helper after a 401 (PRV-022).** Experiment 008’s answer replaces the earlier question:
   Claude does not re-run the helper; Codex re-runs it but fails initialization with “Auth required”.
-  See [experiment 008](../../../experiments/008-real-client/README.md).
+  See [experiment 008](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/experiments/008-real-client/README.md).
 - **Missing plain tool.** The plan named IFC-002, which fixes the baseline revision; the current missing-tool rule is IFC-001: an absent server tool makes
   the call unavailable. The old failed-versus-unavailable question is closed and dropped from
   future work; this note records its disposition.

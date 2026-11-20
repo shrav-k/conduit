@@ -1,7 +1,0 @@
-# Checked at the merge of order 048a-5d2, against main at 45026c21: the work's vector delta matches these shapes.
-- name: requests-sign-in-url-match
-  kind: added
-  cases: [requests-sign-in-url-match]
-- name: requests-sign-in-plain-url-match
-  kind: added
-  cases: [requests-sign-in-plain-url-match]

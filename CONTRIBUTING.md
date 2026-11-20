@@ -342,8 +342,8 @@ repository, its `branches/main/protection`, its `rulesets`, its `actions/variabl
   memory, gives them to the checker alone and prints none. No file of names is kept, and
   `--private-names-file` adds names that no source gives.
 - **CI was paused once.** On 2026-11-11 CI was paused (the Records of orders
-  [104](docs/work-orders/104-mc1-model-checking-harness.md#record) and
-  [105](docs/work-orders/105-mc2-operation-identity.md#record) say so; how is not recorded). The
+  [104](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/104-mc1-model-checking-harness.md#record) and
+  [105](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/105-mc2-operation-identity.md#record) say so; how is not recorded). The
   runs of the six commits that reached `main` from `a7c176d8` (#139) to `147f0582` (#144) were
   cancelled or never started, and none of the 54 from `3bc816c5` (#145) to `defee9ba` (#198,
   order 068) has a run. No run was created after `147f0582`'s, at 20:28 UTC, until order 121's

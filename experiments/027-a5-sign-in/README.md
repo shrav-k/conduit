@@ -912,7 +912,7 @@ with the run's directory as its working directory.
   in a blocked run, the variable. It starts in a process group of its own, with its standard error
   kept under `refresh-probe/target/runs/` and never committed.
 - **The exchange,** as order 050l's hook sends it
-  ([its order](../../docs/work-orders/050l-codex-account-hook.md); the hook's code is on a lane
+  ([its order](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/050l-codex-account-hook.md); the hook's code is on a lane
   branch that is not on the remote), within 30 s: `initialize`, with `clientInfo` `agent-codex`
   0.2.0 and `experimentalApi` false; the `initialized` notification; then `account/read` with
   `refreshToken` false. Notifications and the server's requests are skipped,

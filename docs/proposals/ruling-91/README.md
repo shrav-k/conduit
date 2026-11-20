@@ -2,14 +2,14 @@
 
 Status: in force; done (A88: both decisions written into spec/ and the engine by order 216) (ruled by the owner on 2026-11-19, as the coordinator's notes date the answers, at about 16:45 PST). Holds now: [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach) (points 1 and 2, in spec/ by order 216), and the row of A88 in [the tracker's action items](../../AUDIT.md#p1--prove-the-language-can-be-rebuilt-and-its-promises-kept). This record says why.
 
-On 2026-11-19, while writing [order 215](../../work-orders/215-build-sign-in-follow-up.md), the
+On 2026-11-19, while writing [order 215](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/215-build-sign-in-follow-up.md), the
 sign-in chain's follow-up and the first order that A78's stage 2 sends through Conduit
 ([ruling 89](../ruling-89/README.md), point 3), the coordinator found two of the chain's findings
 that `spec/` does not settle or that are `spec/`'s own words, and so the owner's. Order 215 leaves
 both out and says that the coordinator puts them to the owner:
 
 - **S2**, the second read's finding in
-  [order 048a-5gh's Record](../../work-orders/048a5gh-build-sign-in-undo-and-expiry.md#record): a
+  [order 048a-5gh's Record](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/048a5gh-build-sign-in-undo-and-expiry.md#record): a
   late poll's other account left signed in, with no `SignInUndone` condition and, where no action
   was raised, no hold. DL18 says that no hook runs after the wait ends, and nothing says whether
   the instance is then held.
@@ -105,7 +105,7 @@ The notes hold the options not chosen by their labels alone.
      than the one the first check found, reported by a check that answers after DL18, holds every
      request to the instance but the parts of sign-in.v1, of a setup and of its retirement
      (PND-011).", which also takes up the amendment of that sentence
-     in [order 171b's Record](../../work-orders/171b-sign-in-return-and-holds.md#record), which
+     in [order 171b's Record](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/171b-sign-in-return-and-holds.md#record), which
      found that the sentence "contradicts PND-011 and understates F80's hold". One conformance case shows it: a poll in
      flight as the wait ends answers another account, and the instance's next request is held
      under PND-011 until a later check finds the expected account. The session also rechecks the

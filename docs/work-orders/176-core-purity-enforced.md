@@ -25,7 +25,7 @@ the methods the core may not call.
 
 This order adds that list. The list also names the types and macros that reach the same places.
 The order makes any exception to the list an error, and it forbids unsafe code.
-[Order 152](152-ci-engine-shards-stand-alone.md) gave the engine a CI job of its own, and that
+[Order 152](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/152-ci-engine-shards-stand-alone.md) gave the engine a CI job of its own, and that
 job's `cargo clippy --all-targets -- -D warnings` (`.github/workflows/checks.yml:278-280`) will
 apply the list to every pull request. No behavior changes: no function of the core changes, and
 the list refuses only what the core does not do today. Line numbers are those of `main` at

@@ -199,11 +199,11 @@ differs from what it says:
   [Portable cases](../../conformance/README.md#portable-cases), for the form of decision 6's
   cases.
 - The Records of orders [050j](050j-claude-sign-in-redirect-login.md),
-  [050k](050k-claude-code-page-login.md), [050l](050l-codex-account-hook.md) and
+  [050k](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/050k-claude-code-page-login.md), [050l](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/050l-codex-account-hook.md) and
   [050m](050m-codex-sign-in-hook.md), at the foot of each file in your tree, for what each lane
   built and carried here; and in orders [050e](050e-agents-v2-failed-turn-fields.md),
-  [050f](050f-agents-v2-inputs.md), [050h](050h-agents-v2-retire-hook.md),
-  [050j](050j-claude-sign-in-redirect-login.md), [050l](050l-codex-account-hook.md) and
+  [050f](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/050f-agents-v2-inputs.md), [050h](050h-agents-v2-retire-hook.md),
+  [050j](050j-claude-sign-in-redirect-login.md), [050l](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/050l-codex-account-hook.md) and
   [050m](050m-codex-sign-in-hook.md), each "What this order does not do", for what each left to
   this order (`grep -n '050n'` finds each place).
 - [The targeted review's section 6](../proposals/review-signin-2026-11-16/README.md#6-must-state-lists),

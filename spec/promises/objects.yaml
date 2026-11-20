@@ -338,8 +338,8 @@
     `default` inside its `inputSchema`, so a key inside a `default` that is a map is the
     author's. Inside a schema only the names and the patterns are the author's: its keywords
     are closed by the profile, and one outside it is rejected by `schema.v1`, under SUB-005,
-    as SCH-002 requires. Section maps, `templates` family maps, `consumes` and the maps under
-    `manages` have author-named members (SCT-001, SCT-005 to SCT-007, SCT-012, SCT-013). Their
+    as SCH-002 requires. Section maps, `templates` family maps and `consumes` have author-named members
+    (SCT-001, SCT-005 to SCT-007, SCT-013). Their
     member bodies remain closed.
   vectors: []
 
@@ -395,7 +395,7 @@
   when: >-
     A document declares named members: the `inputs`, `conduits`, `entries` or `requirements`
     of a template, or the `inputs` of a Requirement contract, or section members, members
-    under `templates` families, `consumes` keys or `manages` members in a sectioned document.
+    under `templates` families or `consumes` keys in a sectioned document.
   then: >-
     Each is a map keyed by a name the document chooses. Such a name is made only of lowercase
     letters, digits and hyphens, starts with a letter and is no longer than 63 characters, the

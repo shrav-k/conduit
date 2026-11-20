@@ -285,9 +285,8 @@
           "tool": "root-workspace.reconcile.v1",
           "arguments": {
             "invocation": "$i",
-            "occurred": true,
-            "checked": "Checked storage.",
-            "revision": "r1"
+            "occurred": "yes",
+            "checked": "Checked storage."
           }
         }
       }

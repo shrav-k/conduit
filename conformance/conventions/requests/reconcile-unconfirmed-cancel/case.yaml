@@ -28,10 +28,9 @@
   "id": "requests-reconcile-unconfirmed-cancel",
   "promises": [
     "OPS-014",
-    "OPS-030",
     "OPS-027"
   ],
-  "title": "S1-reconcile: unconfirmed cancellation fences nothing",
+  "title": "S1-reconcile: false after unconfirmed cancellation leaves the write unknown",
   "steps": [
     {
       "input": {
@@ -1626,30 +1625,25 @@
         },
         "external_intents": [],
         "reply": {
-          "_meta": {
-            "io.github.shrav-k.conduit/reason": "conflict"
-          },
           "isError": true,
-          "content": [
-            {
-              "type": "text",
-              "text": "conflict: reconcile.v1 cannot record invocation 00000000-0000-4000-8000-000000010001 as failed: it is not yet fenced (OPS-030). Every attempt needs an answer ending its call, an observed end of its run, or the implementation's confirmation that it can no longer act (OPS-014). Missing responses, unconfirmed cancellation and recovery establish no fence. Recording that the effect occurred needs no fence."
-            }
-          ],
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "invalid"
+          },
           "structuredContent": {
             "diagnostics": [
               {
-                "ruleId": "OPS-030",
+                "ruleId": "OPS-014",
                 "level": "error",
                 "message": {
-                  "text": "reconcile.v1 cannot record invocation 00000000-0000-4000-8000-000000010001 as failed: it is not yet fenced (OPS-030). Every attempt needs an answer ending its call, an observed end of its run, or the implementation's confirmation that it can no longer act (OPS-014). Missing responses, unconfirmed cancellation and recovery establish no fence. Recording that the effect occurred needs no fence."
+                  "text": "root-workspace.reconcile.v1 reports invalid under OPS-014: Only occurred: true is accepted when reconciling an invocation."
                 }
               }
             ]
           }
         },
         "required_promises": [
-          "OPS-030"
+          "OPS-023",
+          "OPS-014"
         ],
         "records": [
           {
@@ -1669,13 +1663,14 @@
             "type": "request-ended",
             "time": "2026-11-09T12:31:00Z",
             "data": {
-              "target": "00000000-0000-4000-8000-000000000117",
-              "reason": "conflict"
+              "reason": "invalid",
+              "target": "00000000-0000-4000-8000-000000000117"
             }
           }
         ],
         "absent": [
-          "/reply/_meta/io.github.shrav-k.conduit~1outcome"
+          "/reply/_meta/io.github.shrav-k.conduit~1outcome",
+          "/reply/_meta/io.github.shrav-k.conduit~1invocation"
         ]
       }
     }

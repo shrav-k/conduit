@@ -23,13 +23,13 @@ everything the promises say it exports, and everything first start needs.
 | [types.yaml](types.yaml) | The 6 Type contracts: the basic Interface, Pool and Fleet types, and the types of a node, of `management` and of `access` |
 | [requirements.yaml](requirements.yaml) | The 2 Requirement contracts: the bound of a right to open, and the shared-host requirement |
 | [references.yaml](references.yaml) | The 13 reference schemas: the Schema contracts that make a value a reference (OBJ-021), a secret reference among them (SEC-001). Each also accepts the resolved form `{kind, id}`, which only the engine writes |
-| [results.yaml](results.yaml) | 12 Schema contracts: an object as a result names it, a diagnostic, a handle, a condition, a record, an inventory, a tombstone, opening provenance and a trust domain |
+| [results.yaml](results.yaml) | 11 Schema contracts: an object as a result names it, a diagnostic, a condition, a record, an inventory, a tombstone, opening provenance and a trust domain |
 | [templates.yaml](templates.yaml) | The 17 templates: first-start objects and Conduits, defaults, scoped administration and explicit cascades |
 
-The package also exports the 52 Schema contracts under [spec/schemas](../schemas/README.md),
+The package also exports the 51 Schema contracts under [spec/schemas](../schemas/README.md),
 which are the schemas of documents themselves. They are part of this package because a `$ref`
 from one schema to another names a Schema contract (SCH-015), and because `register.v1` states
-its inputs with them. In all the package exports 147 documents, 77 of them Schema contracts,
+its inputs with them. In all the package exports 145 documents, 75 of them Schema contracts,
 and has one implementation, which is also an export (PKG-019).
 
 A document of the core package refers to another by its full address, as
@@ -119,7 +119,7 @@ set up by `open.v1` and retired by `close.v1`.
 | `inspect.v1` | `object-management.v1`, `pool-management.v1`, `fleet-management.v1` | — | — | — | LIF-013, LIF-037 |
 | `set-up.v1` | `object-management.v1`, `pool-management.v1`, `fleet-management.v1` | — | no | — | LIF-003, TPL-012, LIF-037 |
 | `retire.v1` | `object-management.v1`, `pool-management.v1`, `fleet-management.v1` | — | no | — | LIF-005, TPL-009, LIF-037 |
-| `reconcile.v1` | `object-management.v1`, `pool-management.v1`, `fleet-management.v1`, `access-control.v1` | for a control that took effect | yes | — | OPS-014, ACC-033, LIF-028, REV-010, OPS-031 |
+| `reconcile.v1` | `object-management.v1`, `pool-management.v1`, `fleet-management.v1`, `access-control.v1` | — | yes | — | OPS-014, ACC-033, LIF-028, REV-010 |
 | `register-replacement.v1` | `object-management.v1`, `pool-management.v1` | — | yes | — | LIF-009, POOL-003 |
 | `install.v1` | `object-management.v1` | — | yes | — | ACC-033, OPS-019, PRV-017 |
 | `declare-lost.v1` | `object-management.v1` | — | yes | yes | PLC-017, ACC-032 |
@@ -201,16 +201,12 @@ ENR-008).
   and stores nothing (ACC-033). Recording that an unknown setup or open occurred records the
   outcome alone: a further setup makes the instance ready, and `open.v1` sent again opens the
   Conduit. Recording that a retirement or a close occurred confirms the shutdown, and the
-  instance is removed (LIF-028, LIF-035). Recording that the effect did not occur gives the
-  outcome failed only once the invocation is fenced (OPS-014), and changes nothing else. An
-  actor tells whether a run is running from the instance's condition `Running` (PRV-009): no
-  handle is held, and `reconcile.v1` takes none.
-  For a control that took effect, on an instance that exists and is not retired, the request
-  names `revision`, and the values the control was sent are stored (REV-010). A
-  reconciliation that stores nothing names no `revision`, and one that does reports invalid
-  (OPS-031). A request that names an invocation whose outcome is not unknown, or records that
-  the effect did not occur before the invocation is fenced, reports conflict (OPS-030). A
-  consumer learns the ID that names the invocation from the
+  instance is removed (LIF-028, LIF-035). An actor tells whether a run is running from
+  the instance's condition `Running` (PRV-009). A control's stored configuration and
+  revision are unchanged, and its settings stay reported unknown (REV-009, REV-010).
+  A request with `occurred: false` reports invalid (OPS-014). A request with
+  `occurred: true` that names an invocation whose outcome is not unknown reports conflict
+  (OPS-030). A consumer learns the ID that names the invocation from the
   `io.github.shrav-k.conduit/invocation` of its result, or of a repeat of its request (IFC-025,
   OPS-032, OPS-034), and finds each invocation whose outcome is unknown and that concerns an
   instance in `unreconciled` in its status, which no purge shortens (LIF-013).
@@ -569,7 +565,7 @@ its binding and labels are fixed when made (PLC-008, ENR-010).
 | `inspect.v1` | Operation | LIF-013, ACC-033, LIF-037; Agent own tools and one-hop target reach, CTR-014 |
 | `set-up.v1` | Operation | OPS-019, ACC-033, LIF-003, TPL-012, LIF-037 |
 | `retire.v1` | Operation | OPS-019, ACC-033, LIF-005, TPL-009, LIF-037 |
-| `reconcile.v1` | Operation | OPS-014, REV-010, OPS-031 |
+| `reconcile.v1` | Operation | OPS-014, REV-010 |
 | `register-replacement.v1` | Operation | LIF-009, POOL-003 |
 | `install.v1` | Operation | OPS-019, ACC-033 |
 | `declare-lost.v1` | Operation | PLC-017, ACC-032 |
@@ -610,7 +606,6 @@ its binding and labels are fixed when made (PLC-008, ENR-010).
 | `evidence-item.v1` | Schema | PND-004, ENR-005: kind, value, where and proves; fingerprint has 6 to 8 characters |
 | `refusal.v1` | Schema | ACC-056: the two disclosure tiers |
 | `diagnostic.v1` | Schema | IFC-025, OBJ-008, PKG-006: SARIF 2.1.0's `result`, reduced |
-| `handle.v1` | Schema | CTR-002, IFC-011 |
 | `condition.v1` | Schema | LIF-011, OBS-002, PRV-009 |
 | `record.v1` | Schema | REC-002, LIF-013 |
 | `name.v1` | Schema of a document's part | OBJ-001, OBJ-022 |
@@ -664,7 +659,6 @@ its binding and labels are fixed when made (PLC-008, ENR-010).
 | `sectioned-conduit.v1` | Schema, sectioned documents | SCT-001, SCT-003 |
 | `consumes-item.v1` | Schema, sectioned documents | SCT-001, SCT-003 |
 | `sectioned-operator.v1` | Schema, sectioned documents | SCT-001, SCT-003 |
-| `manages.v1` | Schema, sectioned documents | SCT-001, SCT-003 |
 | `fleet-management.v1` | Capability | FLEET-001, FLEET-004, ACC-033, OPS-019 |
 | `provenance.v1` | Schema | ACC-044, REC-004 |
 | `tombstone.v1` | Schema | LIF-040, LIF-041, ACC-053, PLC-024 |

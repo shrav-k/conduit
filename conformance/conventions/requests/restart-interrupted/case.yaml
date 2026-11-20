@@ -30,10 +30,9 @@
     "IMP-007",
     "OPS-012",
     "OPS-013",
-    "OPS-014",
-    "OPS-030"
+    "OPS-014"
   ],
-  "title": "Interrupted dispatch becomes unknown on restart and can only be reconciled",
+  "title": "Interrupted dispatch stays unknown after restart, a late answer and invalid reconciliation",
   "steps": [
     {
       "input": {
@@ -1634,7 +1633,10 @@
               "state": "unknown"
             }
           ]
-        }
+        },
+        "required_promises": [
+          "OPS-013"
+        ]
       }
     },
     {
@@ -1645,20 +1647,40 @@
       },
       "expect": {
         "state": {
-          "started": true
+          "started": true,
+          "invocations": [
+            {
+              "id": "487a93d0-1fdb-5ba9-a79e-e0a9087f6e74",
+              "state": "succeeded",
+              "operation": "@core#register.v1"
+            },
+            {
+              "id": "$i",
+              "state": "unknown"
+            }
+          ]
         },
         "external_intents": [],
         "reply": {
+          "isError": true,
           "_meta": {
-            "io.github.shrav-k.conduit/outcome": "succeeded",
-            "io.github.shrav-k.conduit/invocation": "00000000-0000-4000-8000-000000010041"
+            "io.github.shrav-k.conduit/reason": "invalid"
           },
-          "isError": false,
-          "content": []
+          "structuredContent": {
+            "diagnostics": [
+              {
+                "ruleId": "OPS-014",
+                "level": "error",
+                "message": {
+                  "text": "root-workspace.reconcile.v1 reports invalid under OPS-014: Only occurred: true is accepted when reconciling an invocation."
+                }
+              }
+            ]
+          }
         },
         "required_promises": [
-          "OPS-014",
-          "ACC-033"
+          "OPS-023",
+          "OPS-014"
         ],
         "records": [
           {
@@ -1672,56 +1694,21 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000010042",
-            "specversion": "1.0",
-            "source": "urn:conduit:first-build",
-            "type": "invocation-dispatched",
-            "time": "2026-11-09T12:30:00Z",
-            "data": {
-              "target": "00000000-0000-4000-8000-000000000117"
-            }
-          },
-          {
-            "id": "00000000-0000-4000-8000-000000010043",
-            "specversion": "1.0",
-            "source": "urn:conduit:first-build",
-            "type": "invocation-ended",
-            "time": "2026-11-09T12:30:00Z",
-            "data": {
-              "target": "00000000-0000-4000-8000-000000000119",
-              "invocation": "$i",
-              "outcome": "failed",
-              "actor": "00000000-0000-4000-8000-000000000005",
-              "checked": "Inspected the target file."
-            }
-          },
-          {
-            "id": "00000000-0000-4000-8000-000000010044",
-            "specversion": "1.0",
-            "source": "urn:conduit:first-build",
-            "type": "invocation-ended",
-            "time": "2026-11-09T12:30:00Z",
-            "data": {
-              "target": "00000000-0000-4000-8000-000000000117"
-            }
-          },
-          {
-            "id": "00000000-0000-4000-8000-000000010045",
+            "id": "00000000-0000-4000-8000-000000010041",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "request-ended",
             "time": "2026-11-09T12:30:00Z",
             "data": {
+              "reason": "invalid",
               "target": "00000000-0000-4000-8000-000000000117"
             }
           }
         ],
         "absent": [
-          "/reply/structuredContent"
+          "/reply/_meta/io.github.shrav-k.conduit~1outcome",
+          "/reply/_meta/io.github.shrav-k.conduit~1invocation"
         ]
-      },
-      "capture": {
-        "reconciler": "/reply/_meta/io.github.shrav-k.conduit~1invocation"
       }
     },
     {
@@ -1739,11 +1726,7 @@
             },
             {
               "id": "$i",
-              "state": "failed"
-            },
-            {
-              "id": "$reconciler",
-              "state": "succeeded"
+              "state": "unknown"
             }
           ]
         }

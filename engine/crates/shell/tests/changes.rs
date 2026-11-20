@@ -907,7 +907,7 @@ fn missing_object_diagnostics_name_the_reference_and_explain_removal() {
         ),
         (
             "management.reconcile.v1",
-            json!({"invocation":"00000000-0000-4000-8000-000000009999","occurred":false,"checked":"No invocation with this ID"}),
+            json!({"invocation":"00000000-0000-4000-8000-000000009999","occurred":true,"checked":"No invocation with this ID"}),
             "Invocation/00000000-0000-4000-8000-000000009999",
         ),
     ] {

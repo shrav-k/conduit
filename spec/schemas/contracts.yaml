@@ -17,7 +17,7 @@
 #   capability-spec.v1      CTR-003
 #   operation-spec.v1       CTR-002 (`inputSchema` and `outputSchema`, whose properties are
 #                           the inputs and the outputs, a property name being any non-empty
-#                           string; a handle states no `default`; no property of
+#                           string; no property of
 #                           `outputSchema` states one; `idempotentHint`, `destructiveHint` and
 #                           `openWorldHint`), CTR-012 (the root of each holds `type: object`;
 #                           that of a control, whose `spec` holds `changes`, may hold besides
@@ -261,8 +261,7 @@ metadata:
     of an input to the pointer that input sets, and the root of each of its schemas may hold
     `properties`, `required` and `additionalProperties` beside `type`, and nothing else. A
     property of `inputSchema` may state a `default`, which the engine fills in where the input
-    is not supplied; no property of `outputSchema` states one, and nor does a handle, a
-    property whose schema is the core package's `handle.v1`. An operation reserved to the root
+    is not supplied. No property of `outputSchema` states a default. An operation reserved to the root
     Interface is marked `reservedToRoot: true`, which only an Operation contract of the core
     package may be. An Operation contract states no default implementation: a template's
     selection or its type's default chooses what runs, and the engine implements the
@@ -317,7 +316,6 @@ spec:
         properties:
           type: object
           propertyNames: {minLength: 1}
-          additionalProperties: {$ref: '#/$defs/member'}
       required: [type]
     control-root:
       type: object
@@ -327,14 +325,6 @@ spec:
         required: {}
         additionalProperties: {}
       additionalProperties: false
-    member:
-      if:
-        type: object
-        properties:
-          $ref: {const: github.com/shrav-k/conduit/core#handle.v1}
-        required: [$ref]
-      then:
-        not: {required: [default]}
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

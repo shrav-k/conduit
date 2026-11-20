@@ -1855,8 +1855,7 @@
     {
       "promise": "REV-002",
       "vectors": [
-        "records-replace",
-        "fleets-reconcile-control"
+        "records-replace"
       ]
     },
     {
@@ -1879,14 +1878,12 @@
     },
     {
       "promise": "REV-011",
-      "vectors": [
-        "fleets-reconcile-control"
-      ]
+      "vectors": [],
+      "reason": "Public control dispatch remains unfinished and reconciliation no longer checks a revision."
     },
     {
       "promise": "REV-014",
       "vectors": [
-        "fleets-reconcile-control",
         "fleets-retire-dependencies",
         "fleets-retire-overlap",
         "fleets-retire-with-agents-partial"
@@ -2309,7 +2306,6 @@
         "requests-key-scope",
         "requests-defaults",
         "requests-reconcile-true",
-        "requests-reconcile-false",
         "requests-declared-outputs",
         "requests-records-key",
         "requests-records-inputs",
@@ -2356,7 +2352,9 @@
         "requests-effectful-plain-headers",
         "requests-aware-headers-no-repair",
         "records-purge",
-        "records-purge-succeeded"
+        "records-purge-succeeded",
+        "requests-reconcile-false",
+        "requests-reconcile-fenced"
       ]
     },
     {
@@ -2365,7 +2363,8 @@
         "requests-unknown-write",
         "requests-cancellation",
         "requests-restart-interrupted",
-        "requests-reconcile-fenced"
+        "requests-reconcile-fenced",
+        "fleets-reconcile-control"
       ]
     },
     {
@@ -2376,7 +2375,8 @@
         "requests-restart-interrupted",
         "requests-reconcile-fenced",
         "requests-reconcile-unconfirmed-cancel",
-        "requests-reconcile-unfenced-restart"
+        "requests-reconcile-unfenced-restart",
+        "fleets-reconcile-control"
       ]
     },
     {
@@ -2439,35 +2439,31 @@
         "access-s1-pool-authority",
         "access-routing",
         "requests-reason-order",
-        "requests-reconcile-revision-in-progress",
-        "requests-reconcile-revision-succeeded",
         "requests-records-inputs-invalid",
         "records-expected-id",
         "records-authority",
         "records-keyed-refused",
         "records-keyed-invalid",
-        "records-keyed-conflict"
+        "records-keyed-conflict",
+        "requests-reconcile-false"
       ]
     },
     {
       "promise": "OPS-024",
       "vectors": [
         "requests-reconcile-true",
-        "requests-reconcile-false",
         "requests-aware-failed",
         "requests-aware-unknown",
         "requests-aware-malformed",
         "requests-failed-read-repeat",
         "requests-aware-capability-extension",
-        "requests-aware-capability-undeclared",
-        "requests-reconcile-fenced"
+        "requests-aware-capability-undeclared"
       ]
     },
     {
       "promise": "OPS-025",
       "vectors": [
-        "requests-reason-reconsidered",
-        "requests-reconcile-fenced"
+        "requests-reason-reconsidered"
       ]
     },
     {
@@ -2501,7 +2497,6 @@
       "vectors": [
         "access-routing",
         "requests-reconcile-true",
-        "requests-reconcile-false",
         "requests-reconcile-invalid",
         "setup-close",
         "records-expected-id"
@@ -2511,14 +2506,8 @@
       "promise": "OPS-030",
       "vectors": [
         "requests-reconcile-true",
-        "requests-reconcile-false",
-        "requests-reconcile-invalid",
-        "requests-restart-interrupted",
         "requests-reconcile-revision-in-progress",
-        "requests-reconcile-revision-succeeded",
-        "requests-reconcile-fenced",
-        "requests-reconcile-unconfirmed-cancel",
-        "requests-reconcile-unfenced-restart"
+        "requests-reconcile-revision-succeeded"
       ]
     },
     {
@@ -2533,7 +2522,8 @@
       "vectors": [
         "requests-defaults",
         "requests-reason-order",
-        "requests-reason-reconsidered"
+        "requests-reason-reconsidered",
+        "requests-reconcile-invalid"
       ]
     },
     {

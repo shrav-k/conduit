@@ -25,47 +25,9 @@ fn mark(c: &Context, key: &str) -> String {
     format!("{}{key}", c.meta_prefix)
 }
 fn read_only(spec: &Value) -> bool {
-    spec.get("effect").is_none() && spec.get("changes").is_none() && spec["startsModelWork"] != true
-}
-
-// Missing marks, including attempts saved by an older engine, prove no fence.
-fn fenced(v: &Value) -> bool {
-    v["attempt"].as_u64().is_some_and(|last| {
-        last > 0
-            && (1..=last).all(|attempt| v["attempt_fences"][attempt.to_string()]["fenced"] == true)
-    })
-}
-
-fn start_attempt(v: &mut Value, previous: Option<&Value>) {
-    v["attempt_fences"] = previous
-        .and_then(|old| old.get("attempt_fences"))
-        .cloned()
-        .unwrap_or(json!({}));
-    let attempt = v["attempt"].as_u64().unwrap().to_string();
-    let item = &v["implementation"]["item"];
-    let builtin = v["implementation"]["source"] != "engine"
-        && (item.get("command").is_some() || item.get("package").is_some())
-        && v["held_target"].get("runtime").is_none();
-    v["attempt_fences"][attempt] = json!({"fenced":false,"builtin_run":builtin});
-}
-
-fn fence_attempt(v: &mut Value, attempt: u64) {
-    let key = attempt.to_string();
-    if !v["attempt_fences"].is_object() {
-        v["attempt_fences"] = json!({});
-    }
-    if !v["attempt_fences"][&key].is_object() {
-        v["attempt_fences"][&key] = json!({});
-    }
-    v["attempt_fences"][key]["fenced"] = json!(true);
-}
-
-fn answering(completion: &Completion) -> bool {
-    match completion {
-        Completion::Missing => false,
-        Completion::ProtocolError { .. } => true,
-        Completion::Result { result } => response_ends_call(result),
-    }
+    spec.get("effect").is_none()
+        && !crate::revisions::is_control(spec)
+        && spec["startsModelWork"] != true
 }
 
 fn response_ends_call(result: &Value) -> bool {
@@ -74,27 +36,6 @@ fn response_ends_call(result: &Value) -> bool {
         .is_none_or(|kind| kind == "complete")
 }
 
-pub(crate) fn builtin_run_stopped(t: &mut Transition, object: &str) {
-    for v in &mut t.state.invocations {
-        if v["target"] != object {
-            continue;
-        }
-        if let Some(attempts) = v["attempt_fences"].as_object_mut() {
-            for mark in attempts.values_mut() {
-                if mark["builtin_run"] == true {
-                    mark["fenced"] = json!(true);
-                }
-            }
-        }
-    }
-    t.decisions.push(decision(
-        "fence-stopped-builtin-run",
-        &["OPS-014"],
-        &[],
-        json!({"object":object}),
-        vec![],
-    ));
-}
 // Required extensions are nested under the protocol's `extensions` capability map.
 // An unidentified error does not establish that nothing was performed, even for an aware server.
 fn capability_error(data: &Value, c: &Context) -> Option<bool> {
@@ -1180,6 +1121,10 @@ fn invoke_inner(
     } else {
         None
     };
+    let reconcile = op == c.qualified("reconcile.v1");
+    if reconcile && route["arguments"]["occurred"] == false {
+        return reject(t, a, c, &route, "invalid", "OPS-014", None, None);
+    }
     let digest = packages::bytes_digest(
         &serde_json_canonicalizer::to_vec(&json!({"operation":op,"arguments":route["arguments"]}))
             .map_err(|e| e.to_string())?,
@@ -1271,7 +1216,6 @@ fn invoke_inner(
     }
     // OPS-023: after authority/schema, decide reconciliation's invalid/conflict
     // before ordinary unavailability. A kept repeat performs no new reconciliation.
-    let reconcile = op == c.qualified("reconcile.v1");
     let reconciled = if reconcile && (previous.is_none() || redispatch) {
         let i = t
             .state
@@ -1281,31 +1225,8 @@ fn invoke_inner(
         let Some(i) = i else {
             return reject(t, a, c, &route, "invalid", "OPS-029", None, None);
         };
-        // REV-010/OPS-031 validate whether this reconciliation stores anything.
-        if let Some((reason, rule)) =
-            crate::revisions::preflight(&t.state, &t.state.invocations[i], &route["arguments"], c)?
-        {
-            return reject(t, a, c, &route, reason, rule, None, None);
-        }
         if t.state.invocations[i]["state"] != "unknown" {
             return reject(t, a, c, &route, "conflict", "OPS-030", None, None);
-        }
-        if route["arguments"]["occurred"] == false && !fenced(&t.state.invocations[i]) {
-            reject(t, a, c, &route, "conflict", "OPS-030", None, None)?;
-            let message = format!(
-                concat!(
-                    "reconcile.v1 cannot record invocation {} as failed: it is not yet fenced ",
-                    "(OPS-030). Every attempt needs an answer ending its call, an observed end ",
-                    "of its run, or the implementation's confirmation that it can no longer ",
-                    "act (OPS-014). Missing responses, unconfirmed cancellation and recovery ",
-                    "establish no fence. Recording that the effect occurred needs no fence."
-                ),
-                route["arguments"]["invocation"]
-                    .as_str()
-                    .ok_or("invocation ID is not a string")?
-            );
-            t.reply["structuredContent"]["diagnostics"][0]["message"]["text"] = json!(&message);
-            return Ok(());
         }
         let old = &t.state.invocations[i];
         if ["set-up.v1", "retire.v1", "open.v1", "close.v1"]
@@ -1650,7 +1571,6 @@ fn invoke_inner(
             format!("tool {tool}")
         };
     invocation["named_subject"] = json!(subject);
-    start_attempt(&mut invocation, previous.as_ref());
     if ["open.v1", "close.v1"]
         .iter()
         .any(|name| *op == c.qualified(name))
@@ -1748,19 +1668,8 @@ fn invoke_inner(
         vec![],
     ));
     if let Some(reconciled) = reconciled {
-        if t.state.invocations[reconciled]["contract"]["spec"]
-            .get("changes")
-            .is_some()
-        {
-            crate::revisions::reconcile(t, a, c, i, reconciled)?;
-        }
         let args = &route["arguments"];
-        let outcome = if args["occurred"] == true {
-            "succeeded"
-        } else {
-            "failed"
-        };
-        t.state.invocations[reconciled]["state"] = json!(outcome);
+        t.state.invocations[reconciled]["state"] = json!("succeeded");
         let previous_end = t.state.invocations[reconciled].as_object_mut().unwrap();
         previous_end.remove("retained");
         if let Some(cause) = previous_end.remove("cause")
@@ -1774,18 +1683,20 @@ fn invoke_inner(
             a,
             c,
             "invocation-ended",
-            json!({"target":t.state.invocations[reconciled]["target"],"invocation":args["invocation"],"outcome":outcome,"actor":route["consumer"],"checked":args["checked"],"reconciled":true}),
+            json!({"target":t.state.invocations[reconciled]["target"],"invocation":args["invocation"],"outcome":"succeeded","actor":route["consumer"],"checked":args["checked"],"reconciled":true}),
         )?;
+        let mut rules = vec!["OPS-014", "OPS-030", "ACC-033"];
+        if crate::revisions::is_control(&t.state.invocations[reconciled]["contract"]["spec"]) {
+            rules.push("REV-010");
+        }
         t.decisions.push(decision(
             "reconcile-checked-effect",
-            &["OPS-014", "OPS-030", "ACC-033"],
+            &rules,
             &[],
             json!({"checked":args["checked"]}),
             vec![],
         ));
-        if args["occurred"] == true
-            && t.state.invocations[reconciled]["operation"] == c.qualified("open.v1")
-        {
+        if t.state.invocations[reconciled]["operation"] == c.qualified("open.v1") {
             let original = t.state.invocations[reconciled].clone();
             let provenance = match original.get("opening_provenance") {
                 Some(p) => p.clone(),
@@ -1816,9 +1727,7 @@ fn invoke_inner(
                 vec![],
             ));
         }
-        if args["occurred"] == true
-            && t.state.invocations[reconciled]["operation"] == c.qualified("retire.v1")
-        {
+        if t.state.invocations[reconciled]["operation"] == c.qualified("retire.v1") {
             let object = t.state.invocations[reconciled]["object"].clone();
             if access::object(&t.state, &object).is_some() {
                 crate::retirement::remove(t, a, c, i, &object)?;
@@ -1866,28 +1775,6 @@ fn invoke_inner(
         let call = intent(&invocation, &t.state, c)?;
         t.external_intents.push(call);
         t.reply = json!({"pending":true,"invocation":id,"attempt":invocation["attempt"]});
-    }
-    let v = &mut t.state.invocations[i];
-    // Only actual execution observes the end of engine work: recover, missing
-    // completions and unconfirmed cancellation establish no fence.
-    // Composite engine work needs evidence for every dispatched part. Until the
-    // core has that evidence, ending its outer invocation proves no fence.
-    if v["state"] != "in-progress"
-        && v["implementation"]["source"] == "engine"
-        && !["set-up.v1", "retire.v1", "open.v1", "close.v1"]
-            .iter()
-            .any(|op| v["operation"] == c.qualified(op))
-        && v.get("cascade").is_none()
-    {
-        let attempt = v["attempt"].as_u64().ok_or("invocation has no attempt")?;
-        fence_attempt(v, attempt);
-        t.decisions.push(decision(
-            "fence-ended-engine-invocation",
-            &["OPS-014"],
-            &[],
-            json!({"invocation":v["id"],"attempt":attempt}),
-            vec![],
-        ));
     }
     Ok(())
 }
@@ -2016,31 +1903,11 @@ pub(crate) fn complete(
         };
         return complete_hook_discovery(t, &mut a, c, i, &v, completion);
     }
-    // IFC-046's first response ends no call: its resend remains in flight.
-    let resending = matches!(completion, Completion::ProtocolError { code: -32020, .. })
-        && v["wire_retried"] != true
-        && read_only(&v["contract"]["spec"])
-        && v["attempt"] == attempt
-        && v["state"] == "in-progress";
-    if answering(&completion)
-        && !resending
-        && attempt > 0
-        && v["attempt"].as_u64().is_some_and(|last| attempt <= last)
-    {
-        fence_attempt(&mut t.state.invocations[i], attempt);
-        t.decisions.push(decision(
-            "fence-answered-attempt",
-            &["OPS-014"],
-            &[],
-            json!({"invocation":id,"attempt":attempt}),
-            vec![],
-        ));
-    }
     if v["attempt"] != attempt || v["state"] != "in-progress" {
         // Late or duplicate completions never change a settled or cancelled outcome.
         t.decisions.push(decision(
             "ignore-late-completion",
-            &["OPS-013", "OPS-014", "OPS-018", "IMP-007"],
+            &["OPS-013", "OPS-018", "IMP-007"],
             &[],
             json!({"invocation":id}),
             vec![],
@@ -2258,7 +2125,6 @@ fn complete_hook_discovery(
     completion: Completion,
 ) -> Result<()> {
     let extension = mark(c, "implementation-interface");
-    let attempt = v["attempt"].as_u64().unwrap_or(0);
     let has_extension = matches!(completion, Completion::Result { result }
         if result["capabilities"]["extensions"][&extension]["revision"] == "v0");
     let retired = sign_in::is_part(&t.state, v, c)
@@ -2277,7 +2143,6 @@ fn complete_hook_discovery(
             json!({"invocation":v["id"]}),
             vec![],
         ));
-        fence_attempt(&mut t.state.invocations[i], attempt);
         return finish(
             t,
             a,
@@ -2340,8 +2205,6 @@ fn complete_hook_discovery(
         &v["held_target"],
         &cause,
     );
-    // The hook's call is never sent here, so no copy of it is in flight (OPS-014).
-    fence_attempt(&mut t.state.invocations[i], attempt);
     restore_or_remove_invocation(&mut t.state, i, v);
     reject_diagnostics(
         t,
@@ -2466,17 +2329,6 @@ pub(crate) fn cancel(
                 && r["_meta"][mark(c, "outcome")] == "failed"
                 && r["_meta"].get(mark(c, "reason")).is_none()
         });
-    if failed {
-        let attempt = t.state.invocations[i]["attempt"].as_u64().unwrap();
-        fence_attempt(&mut t.state.invocations[i], attempt);
-        t.decisions.push(decision(
-            "fence-confirmed-cancellation",
-            &["OPS-014"],
-            &[],
-            json!({"invocation":id,"attempt":attempt}),
-            vec![],
-        ));
-    }
     let cause = if failed {
         None
     } else {
@@ -2788,7 +2640,6 @@ fn dispatch_hook(
     if let Some(login) = login {
         v["sign_in_login"] = json!(login);
     }
-    start_attempt(&mut v, previous.map(|i| &t.state.invocations[i]));
     if let Some(id) = p.get("retirement_of") {
         v["retirement_of"] = id.clone();
     }
@@ -3851,15 +3702,10 @@ mod tests {
         assert_eq!(delegated.request_replies[0].reply, delegated.reply);
     }
 
-    fn fence_fixture() -> (Transition, Context, Evidence) {
+    fn late_completion_fixture() -> (Transition, Context, Evidence) {
         let (mut t, c) = recording_fixture("write.v1", json!({"type":"object"}), json!({}));
         t.state.invocations[0] = json!({
-            "id":"invocation-id", "target":"resource-id", "state":"unknown", "attempt":2,
-            "implementation":{"source":"project","item":{"command":"server"}},
-            "held_target":{}, "attempt_fences":{
-                "1":{"fenced":false,"builtin_run":true},
-                "2":{"fenced":false,"builtin_run":true}
-            }
+            "id":"invocation-id", "target":"resource-id", "state":"unknown", "attempt":2
         });
         let evidence = Evidence {
             time: "2026-11-11T12:00:00Z".into(),
@@ -3871,8 +3717,8 @@ mod tests {
     }
 
     #[test]
-    fn fence_requires_every_attempt_and_late_answers_never_settle_unknown() {
-        let (mut t, c, evidence) = fence_fixture();
+    fn late_answers_never_settle_unknown() {
+        let (mut t, c, evidence) = late_completion_fixture();
         for attempt in [2, 1] {
             complete(
                 &mut t,
@@ -3887,7 +3733,6 @@ mod tests {
             .unwrap();
             assert_eq!(t.reply, json!({"ignored":true}));
             assert_eq!(t.state.invocations[0]["state"], "unknown");
-            assert_eq!(fenced(&t.state.invocations[0]), attempt == 1);
             assert!(t.records.is_empty());
             assert!(t.external_intents.is_empty());
         }
@@ -3895,58 +3740,12 @@ mod tests {
             t.decisions
                 .iter()
                 .filter(|d| d.action == "ignore-late-completion")
-                .all(|d| d.promises.iter().any(|id| id == "OPS-014"))
+                .all(|d| d.promises.iter().any(|id| id == "OPS-013"))
         );
     }
 
     #[test]
-    fn missing_task_creation_and_input_required_fence_nothing() {
-        for completion in [
-            Completion::Missing,
-            Completion::Result {
-                result: json!({"resultType":"task","task":{"taskId":"pending"}}),
-            },
-            Completion::Result {
-                result: json!({"resultType":"input_required"}),
-            },
-            Completion::Result {
-                result: json!({"resultType":"unrecognized"}),
-            },
-        ] {
-            let (mut t, c, evidence) = fence_fixture();
-            complete(&mut t, &evidence, "invocation-id", 2, completion, &c).unwrap();
-            assert_eq!(
-                t.state.invocations[0]["attempt_fences"]["2"]["fenced"],
-                false
-            );
-            assert!(!fenced(&t.state.invocations[0]));
-        }
-    }
-
-    #[test]
-    fn legacy_attempts_are_unfenced_and_new_dispatch_keeps_earlier_marks() {
-        let (t, _, _) = fence_fixture();
-        let mut old = t.state.invocations[0].clone();
-        old.as_object_mut().unwrap().remove("attempt_fences");
-        assert!(!fenced(&old));
-        let mut next = old.clone();
-        next["attempt"] = json!(3);
-        start_attempt(&mut next, Some(&old));
-        fence_attempt(&mut next, 3);
-        assert!(!fenced(&next));
-        fence_attempt(&mut next, 1);
-        assert!(!fenced(&next));
-        fence_attempt(&mut next, 2);
-        assert!(fenced(&next));
-        let mut another = next.clone();
-        another["attempt"] = json!(4);
-        start_attempt(&mut another, Some(&next));
-        assert_eq!(another["attempt_fences"]["1"]["fenced"], true);
-        assert!(!fenced(&another));
-    }
-
-    #[test]
-    fn recovery_missing_and_unconfirmed_cancel_never_fence_engine_work() {
+    fn recovery_missing_and_unconfirmed_cancel_leave_engine_work_unknown() {
         for ending in ["recover", "missing", "cancel"] {
             let (mut t, c) = recording_fixture("write.v1", json!({"type":"object"}), json!({}));
             let v = &mut t.state.invocations[0];
@@ -3956,7 +3755,6 @@ mod tests {
             v["plain"] = json!(false);
             v["contract"] = json!({"spec":{}});
             v["implementation"] = json!({"source":"engine"});
-            v["attempt_fences"] = json!({"1":{"fenced":false,"builtin_run":false}});
             let evidence = Evidence {
                 time: "2026-11-11T12:00:00Z".into(),
                 ids: vec![
@@ -3979,14 +3777,12 @@ mod tests {
                 .unwrap(),
                 _ => cancel(&mut t, &evidence, "invocation-id", None, &c).unwrap(),
             }
-            assert_eq!(t.state.invocations[0]["state"], "unknown");
-            assert!(!fenced(&t.state.invocations[0]), "{ending}");
-            assert!(!t.decisions.iter().any(|d| d.action.starts_with("fence-")));
+            assert_eq!(t.state.invocations[0]["state"], "unknown", "{ending}");
         }
     }
 
     #[test]
-    fn parameter_repair_fences_only_when_the_resent_call_is_answered() {
+    fn parameter_repair_waits_for_completion_of_the_resent_call() {
         for answered in [false, true] {
             let (mut t, c) = recording_fixture("read.v1", json!({"type":"object"}), json!({}));
             let v = &mut t.state.invocations[0];
@@ -3996,7 +3792,6 @@ mod tests {
             v["plain"] = json!(true);
             v["contract"] = json!({"spec":{}});
             v["implementation"] = json!({"source":"project","item":{"command":"server"}});
-            start_attempt(v, None);
             let evidence = Evidence {
                 time: "2026-11-12T12:00:00Z".into(),
                 ids: vec![
@@ -4019,7 +3814,6 @@ mod tests {
             )
             .unwrap();
             assert_eq!(t.state.invocations[0]["state"], "in-progress");
-            assert!(!fenced(&t.state.invocations[0]));
             assert_eq!(t.external_intents[0]["kind"], "refresh-tools-and-call");
             t.external_intents.clear();
             let completion = if answered {
@@ -4031,50 +3825,12 @@ mod tests {
                 Completion::Missing
             };
             complete(&mut t, &evidence, "invocation-id", 1, completion, &c).unwrap();
-            assert_eq!(fenced(&t.state.invocations[0]), answered);
             assert_eq!(
                 t.state.invocations[0]["state"],
                 if answered { "failed" } else { "unknown" }
             );
             assert!(t.external_intents.is_empty());
         }
-    }
-
-    #[test]
-    fn builtin_stop_fences_only_dispatches_already_sent_to_that_builtin_run() {
-        let (mut t, c, evidence) = fence_fixture();
-        let mut remote = t.state.invocations[0].clone();
-        remote["id"] = json!("remote-id");
-        remote["implementation"]["item"] = json!({"remote":{"url":"https://example.invalid"}});
-        remote["attempt"] = json!(1);
-        start_attempt(&mut remote, None);
-        let mut provider = t.state.invocations[0].clone();
-        provider["id"] = json!("provider-id");
-        provider["held_target"]["runtime"] = json!({"id":"provider"});
-        start_attempt(&mut provider, None);
-        let mut other = t.state.invocations[0].clone();
-        other["target"] = json!("other-run");
-        t.state.invocations.extend([remote, other, provider]);
-        let stopped = crate::step(
-            &t.state,
-            crate::Input::BuiltinRunStopped {
-                evidence,
-                object: "resource-id".into(),
-            },
-            &c,
-        )
-        .unwrap();
-        assert!(fenced(&stopped.state.invocations[0]));
-        assert!(!fenced(&stopped.state.invocations[1]));
-        assert!(!fenced(&stopped.state.invocations[2]));
-        assert!(!fenced(&stopped.state.invocations[3]));
-        assert_eq!(stopped.state.invocations[0]["state"], "unknown");
-        assert!(stopped.records.is_empty());
-        assert!(stopped.external_intents.is_empty());
-        let mut next = stopped.state.invocations[0].clone();
-        next["attempt"] = json!(3);
-        start_attempt(&mut next, Some(&stopped.state.invocations[0]));
-        assert!(!fenced(&next));
     }
 
     fn recording_fixture(

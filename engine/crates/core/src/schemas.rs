@@ -1050,7 +1050,7 @@ pub(crate) fn publish_normalized(
             .into(),
     );
     let spec = &doc["spec"];
-    let control = spec.get("changes").is_some();
+    let control = crate::revisions::is_control(spec);
     let mut input = spec
         .get("inputSchema")
         .cloned()
@@ -1144,7 +1144,7 @@ pub(crate) fn publish_normalized(
         json!({"tool":tool}),
         decision(
             "publish-standalone-tool",
-            &["IFC-033", "IFC-011", "NAM-023", "SCH-015", "TPL-011"],
+            &["IFC-033", "NAM-023", "SCH-015", "TPL-011"],
             &["DL12"],
             json!({"operation":operation,"scope":contract.0}),
             vec![],

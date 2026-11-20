@@ -1,2 +1,0 @@
-interfaces:
-  console: {from: console-template, manages: {fleets: {team: admin}}}

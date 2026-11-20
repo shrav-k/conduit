@@ -1,6 +1,8 @@
 # Sectioned documents: translation into canonical framed documents.
 # Standing: draft specification; see spec/README.md for status and coverage.
 # Reserved, unused: SCT-010.
+# Removed IDs (not reused):
+# SCT-012: nothing replaces it (ruling 78).
 # Canonical documents remain the kernel, wire and stored form.
 # These numbered rules define the short form by translation.
 # Plan and apply remain tooling made of existing requests.
@@ -48,7 +50,7 @@
     installation.
   then: >-
     It means exactly the project or package in which each sectioned document is replaced by
-    its translation under SCT-005 to SCT-009, SCT-011, SCT-012 and SCT-016. The translated
+    its translation under SCT-005 to SCT-009, SCT-011 and SCT-016. The translated
     documents, the framed documents read beside them and the manifest are handed over together
     as one set.
   observable: >-
@@ -110,8 +112,8 @@
     nor `arguments`. Referenced definitions accept none of the inline template fields. OBJ-013
     governs standard arguments: a Resource requires its Pool `owner`; an Agent requires its
     Fleet `owner` unless SCT-011 supplies it; each may state `placement` and `runtime`. An
-    Interface or Pool accepts none of these. `consumes`, `operator` and `manages` make only
-    what their separate SCT rules state. Every instance still comes from a template, including
+    Interface or Pool accepts none of these. `consumes` and `operator` make only what
+    SCT-007 and SCT-009 state. Every instance still comes from a template, including
     one made in the same submission.
   vectors: []
 
@@ -193,30 +195,6 @@
     is translated: FLEET-005 makes the default. A package accepts no `fleet` (MAN-011).
   vectors: []
 
-- id: SCT-012
-  layer: language
-  level: must
-  when: >-
-    An Interface or Agent definition N holds `manages: {fleets: {T: role}, pools: {T: role}}`,
-    with either map optional and each role `manage` or `view`.
-  then: >-
-    Each member T makes Conduit `N--manages--T`, with consumer `{kind: F, name: N}`, target
-    `{kind: Fleet, name: T}` or `{kind: Pool, name: T}`, and `as: T`. For an Interface, role
-    `manage` uses the core template `fleet-manage` or `pool-manage`; role `view` uses
-    `fleet-view` or `pool-view`. For an Agent, only `fleets` is accepted, with exactly one
-    member, its own Fleet as supplied by `owner` or SCT-011; `manage` uses `fleet-manage-own`
-    and `view` uses `fleet-view`.
-  observable: >-
-    The maps never name `system`, `management` or `access`, and accept no wildcard. A
-    Resource, Pool or Fleet cannot hold `manages` in this version. Manage for an Interface
-    lists `list.v1`, `inspect.v1`, `set-up.v1`, `reconcile.v1` and `answer.v1`, and for a
-    Fleet also `sign-in.v1`; an Agent's own-Fleet manage lists only `list.v1`, `inspect.v1`,
-    `set-up.v1` and `reconcile.v1`. View lists only `list.v1` and `inspect.v1`. Every
-    operation is selected at the core address. No scope template lists register, retire,
-    cascade or access operations. Translation stores no scope: inspection computes it from
-    open Conduits, whatever templates made them (LIF-013). Root opens these Conduits through
-    explicit requests at apply; translation and registration open none.
-  vectors: []
 
 - id: SCT-013
   layer: language
@@ -226,13 +204,12 @@
   then: >-
     Definition names, template names, `conduits` members and `fleet` values follow OBJ-001,
     contain no `--`, and are none of `system`, `local`, `management`, `access` and `root`. The
-    keys of `consumes` follow OBJ-022, contain no `--`, and are none of `t`, `operator` and
-    `manages`. The names under `manages` follow the same authored-name rule. Every generated
+    keys of `consumes` follow OBJ-022, contain no `--`, and are neither `t` nor `operator`. Every generated
     name is at most 63 characters.
   observable: >-
     The no-`--` pattern is `^[a-z]([a-z0-9]|-[a-z0-9])*-?$`. Violations are rejected at the
     authored key or value. The generated names are exactly `N--t`, `N--L`, `N--L--t`,
-    `N--operator`, `N--operator--t` and `N--manages--T`, as the relevant translation rule
+    `N--operator` and `N--operator--t`, as the relevant translation rule
     requires, not DL15 choices. NAM-027 counts all translated documents and framed documents
     together; a collision names both authored places. Ordinary canonical nested member names
     retain OBJ-022's rule.
@@ -253,7 +230,7 @@
     A generated template's `spec.X` maps to the inline definition's X; a template-section body
     maps to `templates.<family>.N`; an instance's standard arguments and `arguments` map to
     those authored keys. `N--L--t` maps under `/F/N/consumes/L` (F is the authored section key), and `N--L`'s target maps
-    there to `to`. Operator, manages and the standalone Conduit section map analogously. A
+    there to `to`. Operator and the standalone Conduit section map analogously. A
     supplied Fleet owner maps to `/fleet`; an explicitly written owner maps to its authored
     owner. A Fleet shared by several files names their supplying places. A syntax rejection
     with no emitted document has no translation property. Schema rejections cite SUB-005 and

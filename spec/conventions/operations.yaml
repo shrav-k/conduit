@@ -5,6 +5,7 @@
 # Standing: draft specification; see spec/README.md for status and coverage.
 #
 # Removed IDs (not reused):
+# OPS-031: nothing replaces it (ruling 78).
 # Removed: ACC-020 → REC-001 and OPS-005 (ruling 32).
 # Removed: ACC-021 → REC-001 and OPS-005 (ruling 32).
 # OPS-015: nothing replaces it (ruling 38).
@@ -327,15 +328,10 @@
   level: must
   when: >-
     An actor records, with what it checked, that the effect of an invocation whose outcome is
-    unknown occurred or that it did not. The actor is the consumer of an open Conduit that lists
+    unknown occurred. The actor is the consumer of an open Conduit that lists
     `reconcile.v1`, to the target that ACC-033 names for reconciling that invocation.
   then: >-
-    Recording that the effect occurred makes the invocation's outcome succeeded. Recording
-    that it did not occur makes the outcome failed only once the invocation is fenced;
-    before then OPS-030 reports conflict and nothing is dispatched. An attempt is fenced
-    once no copy of its dispatch remains in flight, or the implementation confirms that the
-    attempt can no longer act. An invocation is fenced only when every attempt is fenced.
-    This applies also to a deduplicating implementation.
+    The invocation's outcome becomes succeeded.
   observable: >-
     A record states the new outcome, the actor that reconciled it and what the actor checked.
     The earlier record that the outcome was unknown is kept. An actor with no such Conduit
@@ -351,9 +347,10 @@
     for other families or a retired owner, as ACC-033 states. Where the instance that the
     invocation was dispatched to, or that an invocation of a management verb named, no longer
     exists, the target is `management`, and the reconciliation records the outcome and stores
-    nothing, as ACC-033 states. A request that names an invocation whose outcome is not
-    unknown, or records that the effect did not occur before the invocation is fenced,
-    reports conflict under OPS-030. One that names an ID which the engine gave to no invocation
+    nothing, as ACC-033 states. A request with `occurred: false` reports invalid with an
+    OPS-014 diagnostic that says only `occurred: true` is accepted. A request with
+    `occurred: true` that names an invocation whose outcome is not unknown reports conflict
+    under OPS-030. One that names an ID which the engine gave to no invocation
     reports invalid, under OPS-029. What the reconciliation of a setup, an open, a retirement or
     a close changes beside the outcome is LIF-028, and what that of a control changes is
     REV-010. Where a setup or a retirement of unknown outcome asked for a run or for its stop,
@@ -364,41 +361,9 @@
     OPS-022, and so does every further setup while a setup hook is unknown. What an actor checks
     of an invocation dispatched to an instance on a machine that is cut off may be out of date
     until the machine is back and the run is inspected, under PRV-009: the work may still run to
-    its end there, under OPS-027, and a gate closes a server's stream only where the server
-    answers with one, under PRV-025, so the fence prevents recording failed meanwhile. An
-    implementation that has answered or whose process has ended may still have its own
-    request on its way to another service, whose effect can land after failed is recorded
-    and be applied again by the repeat that OPS-024 dispatches; the fence covers Conduit's
-    own dispatch, and each hop handles its own idempotency. An answer that ends an
-    attempt's call at the implementation fences it: a result, an error or a JSON-RPC error,
-    including one that arrives after the outcome became unknown, which changes no outcome
-    under OPS-013. A response that leaves work running fences nothing: creating a task under
-    IFC-016 is not its answer, which is what the task ended with under IFC-010, and an
-    `input_required` result is no fence. An error after which the call is sent once more
-    under IFC-046 fences nothing until that call is answered. Stopping waiting under
-    OPS-007, DL3 or DL10, a dropped connection or cancellation with no confirmation under
-    OPS-027, and recovery of an in-progress invocation under IMP-007 fence nothing; another
-    event described here must fence the attempt. An attempt sent to a run is fenced once the
-    engine's own runner has seen its process end, or the runtime provider reports it
-    `stopped` under PRV-009 in a report made after dispatch. A report about a machine that
-    is cut off fences nothing until the machine is back and the run is inspected, under
-    PRV-025 and OPS-027. Declaring a node lost fences nothing: a run left on a machine that
-    comes back may still run, under PLC-017. A server reached by `remote` has no run. The
-    implementation's result confirming failed under OPS-027 is confirmation that nothing was
-    done, under OPS-003; no other form of confirmation that the attempt can no longer act is
-    defined here. A task reported cancelled under IFC-016 is no result under IFC-010, and
-    alone confirms no fence. An invocation or part whose implementation is `engine` is
-    fenced once it has ended; a setup, retirement, open or close is fenced only once every
-    part it dispatched is fenced, under LIF-028 and OPS-022. A hook is reconciled as an
-    invocation of its own, under OPS-021. An attempt that none of these events fences, such
-    as one sent to a plain server reached by `remote` that never answered, is never fenced:
-    its invocation can be recorded as having occurred, or stays unknown under OPS-013,
-    and the Agent's way on is a new request.
-    Becoming fenced records no outcome, wakes nothing and reconciles nothing: an actor still
-    reconciles the invocation. OPS-031 says which input of `reconcile.v1` makes a request
-    invalid where it does not belong. ACC-055 further limits reconciliation through bounded
-    access and through
-    Pools or Fleets for holders other than root.
+    its end there, under OPS-027. A hook that did not run has its work done by hand and recorded,
+    or its instance is replaced. ACC-055 further limits reconciliation through bounded access
+    and through Pools or Fleets for holders other than root.
   vectors: []
 
 - id: OPS-018
@@ -412,9 +377,7 @@
     The effect is applied more than once.
   observable: >-
     Inspecting what the effect changes shows it applied at most once for that idempotency key,
-    in every ordering of those events. Across a reconciliation and a repeat, the fence of
-    OPS-014 keeps a new attempt from meeting an earlier dispatch still in flight. The limit
-    for an implementation's own request to another service is the one OPS-014 states.
+    in every ordering of those events.
   vectors: []
 
 
@@ -467,9 +430,11 @@
     That hook is not dispatched again, except as a new attempt of the same invocation where
     OPS-012 dispatches one, with the idempotency key that OPS-028 gave it.
   observable: >-
-    A hook whose outcome is unknown receives no further call however often the instance is set
-    up or retired, until it is reconciled under OPS-014: neither `setup-hook.v1` nor
-    `retire-hook.v1` declares `deduplicates: true`, so OPS-012 dispatches no new attempt of it.
+    Neither `setup-hook.v1` nor `retire-hook.v1` declares `deduplicates: true`. Under OPS-012,
+    a hook whose outcome is unknown receives no further call however often the instance is set
+    up or retired, and once reconciled under OPS-014 its outcome is succeeded, so it is not
+    dispatched again either; its work is done by hand and recorded, or its instance is replaced
+    (OPS-014).
     A hook that succeeded is not dispatched again, and one that failed is dispatched as a new
     attempt under OPS-024, as OPS-028 states. The other parts of a further setup leave what is
     done already as it is: an open Conduit, a ready Resource and a running run are left as they
@@ -547,10 +512,7 @@
     answer or was answered succeeded, the invocation's outcome is unknown, not failed, under
     OPS-012.
   observable: >-
-    A failed outcome recorded by a reconciliation was recorded only once every attempt was
-    fenced, under OPS-014, so the new attempt cannot meet an earlier dispatch still on its
-    way. The implementation receives a further call. The invocation's state is then in
-    progress, and
+    The implementation receives a further call. The invocation's state is then in progress, and
     afterwards the outcome of the new attempt, or unknown where it is answered failed while an
     earlier attempt has no answer or was answered succeeded. The records of the earlier attempt
     are kept. Like
@@ -694,9 +656,11 @@
     and OPS-024, by `io.github.shrav-k.conduit/invocation`, which every attempt of the hook's
     invocation carries under IFC-006, as CTR-002 has a deduplicating implementation recognize an
     invocation. Neither hook's contract declares `deduplicates: true`, so a hook whose
-    outcome is unknown is not dispatched again until it is reconciled, under OPS-021. The setup
-    hook and the retire hook of one instance have different idempotency keys, because their
-    operations differ. A further setup that another actor sends finds the hook's earlier
+    outcome is unknown is not dispatched again under OPS-021, and once reconciled under OPS-014
+    its outcome is succeeded, so it is not dispatched again either; its work is done by hand and
+    recorded, or its instance is replaced (OPS-014). The setup hook and the retire hook of one
+    instance have different idempotency keys, because their operations differ. A further setup
+    that another actor sends finds the hook's earlier
     invocation all the same, and does not run a hook that succeeded a second time. An
     implementation marked `plain` receives no idempotency key, under IFC-007, and is never sent
     a new attempt, under OPS-012. The record of each attempt names its own caller, under
@@ -758,53 +722,20 @@
   level: must
   when: >-
     An actor asks to reconcile an invocation whose outcome is not unknown: it is in progress, or
-    it has ended with the outcome succeeded or failed; or asks to record that the effect did
-    not occur for an invocation whose outcome is unknown and that is not fenced under
-    OPS-014.
+    it has ended with the outcome succeeded or failed.
   then: >-
     The request is not dispatched, and reports conflict.
   observable: >-
     The invocation's state is as it was, and no record of a reconciliation is added. The
-    error diagnostic has `ruleId` OPS-030 under IFC-050. For an invocation that is not yet
-    fenced its message says so, explains what would fence its attempts under OPS-014, and
-    says that recording that the effect occurred needs no fence. A request made again later
-    is decided afresh under OPS-025. Where no event can fence an attempt, as for a remote
-    server that never answers under OPS-014, the invocation stays unknown unless recorded
-    as having occurred; the Agent's way on is a new request. A second
-    reconciliation of one invocation reports conflict in this way, whichever way the first
-    recorded the effect, unless a new attempt dispatched since, under OPS-024, has ended
-    unknown: a reconciliation settles the outcome of the invocation's latest attempt, and a
-    later attempt whose outcome is unknown is reconciled in its turn, under OPS-014. One that
-    names an ID which the engine gave to no invocation reports invalid, under OPS-029. Where the
-    actor is not permitted under OPS-014 or ACC-055, OPS-023 gives refused first; invalid
-    under OPS-029 or OPS-031 also precedes this conflict.
+    error diagnostic has `ruleId` OPS-030 under IFC-050. A request made again later is decided
+    afresh under OPS-025. A second reconciliation of one invocation reports conflict unless
+    a new attempt dispatched since, under OPS-024, has ended unknown. A reconciliation settles
+    the outcome of the invocation's latest attempt, and a later attempt whose outcome is
+    unknown is reconciled in its turn, under OPS-014. One that names an ID which the engine
+    gave to no invocation reports invalid, under OPS-029. Where the actor is not permitted
+    under OPS-014 or ACC-055, OPS-023 gives refused first. Invalid under OPS-014 or OPS-029
+    also precedes this conflict.
   vectors: []
-
-- id: OPS-031
-  layer: convention
-  level: must
-  when: >-
-    An actor asks to reconcile an invocation, and the request states `revision` where it does
-    not belong: where the invocation is not of a control, where the instance of the control is
-    retired or no longer exists, or where the request records the control as not having taken
-    effect.
-  then: >-
-    The request is not dispatched, and reports invalid.
-  observable: >-
-    The invocation's outcome is still unknown, and nothing is stored. `revision` belongs to the
-    reconciliation that records a control as having taken effect on an instance that exists and
-    is not retired, and so stores the values the control was sent, under REV-010: stated for a
-    setup, a retirement, a hook or any other invocation that is not of a control, it makes the
-    request invalid. A reconciliation that stores nothing states no revision: one that records
-    that the effect did not occur, one of a control whose instance is retired, which records the
-    outcome alone under REV-010, and one of an invocation whose instance no longer exists, which
-    records the outcome alone under ACC-033. What a reconciliation that records a control
-    as having taken effect reports where it names no revision is REV-011, where the revision it
-    names is not current REV-002, and where the values the control was sent would make the
-    configuration fail the type's schema REV-013. Where the actor is not permitted, OPS-023
-    gives refused first.
-  vectors: []
-
 
 
 - id: OPS-032

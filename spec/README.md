@@ -206,7 +206,7 @@ lists each S1 promise's vectors, or the reason it has none.
 | [promises/templates.yaml](promises/templates.yaml) | What the `spec` of a template holds: the type, implementations, hooks, retirement and controls | Draft; 14 promises; vectors test slices of 10 promises |
 | [promises/contracts.yaml](promises/contracts.yaml) | The five kinds of contract and what each holds | Draft; 12 promises; vectors test slices of 4 promises |
 | [promises/naming.yaml](promises/naming.yaml) | How packages, their exports and contracts are named, where versions live, and which version of a contract governs | Draft; 28 promises; vectors test slices of 17 promises |
-| [promises/sections.yaml](promises/sections.yaml) | Sectioned documents, their translation into canonical documents, per-file Fleet ownership, consumes, operator, manages and authored diagnostics | Draft; 15 promises; no vectors yet |
+| [promises/sections.yaml](promises/sections.yaml) | Sectioned documents, their translation into canonical documents, per-file Fleet ownership, consumes, operator and authored diagnostics | Draft; 14 promises; no vectors yet |
 | [promises/packages.yaml](promises/packages.yaml) | Versions, digests, the archive, what a package's manifest states, and what a request to install reports | Draft; 24 promises; vectors test slices of 20 promises |
 | [promises/manifest.yaml](promises/manifest.yaml) | The manifest's format: the file `conduit.yaml`, `conduit.yml` or `conduit.json`, its keys, implementation items, which variables of a run they may not bind, which files of a project are its documents, and the layout of a package's archive | Draft; 17 promises; vectors test slices of 10 promises |
 | [promises/submissions.yaml](promises/submissions.yaml) | Handing over several documents at once, the contracts of a submitted project and the address that names them, how a template is replaced, that every engine takes a directory, and documents, files, submissions or archives beyond a limit that the engine states | Draft; 11 promises; vectors test slices of 10 promises |
@@ -219,18 +219,18 @@ lists each S1 promise's vectors, or the reason it has none.
 | [promises/enrollment.yaml](promises/enrollment.yaml) | Managed machine enrollment, provider evidence, root admission and refusal, expiry, fixed labels and removal questions (rulings 50, 51, 52, 56 and 68); six contracts live, capability and engine bindings staged for 049a and 049b | Draft; 12 promises; no vectors yet |
 | [promises/pending.yaml](promises/pending.yaml) | Pending actions, scope delivery, evidence, answers, sign-in, setup, notices and enrollment | Draft; 14 promises; no vectors yet |
 | [promises/secrets.yaml](promises/secrets.yaml) | Secrets: how a document marks one, which Resources hold one and what else their type may offer, who may have one read, how the engine reads one before a run or a connection, and again once it has lost a connection's values, and where the value may go, a header that carries one among it | Draft; 24 promises; vectors test slices of 2 promises |
-| [core/](core/README.md) | The core package, written out as documents: what it exports, and the promise that needs each export | Draft; 147 documents exported and 1 implementation, which is also an export |
+| [core/](core/README.md) | The core package, written out as documents: what it exports, and the promise that needs each export | Draft; 145 documents exported and 1 implementation, which is also an export |
 | [core/conduit.yaml](core/conduit.yaml) | The core package's manifest: its address, its version, its exports and its one implementation, the engine itself | Draft |
 | [core/operations.yaml](core/operations.yaml) | The Operation contracts: every management verb, the setup, retire and sign-in hooks, the operations of the three provider capabilities that the engine invokes by provider calls, and `get-secret.v1` | Draft; 37 contracts |
 | [core/capabilities.yaml](core/capabilities.yaml) | The Capability contracts: what `management`, `access`, Pools and Fleets offer, and the four provider capabilities | Draft; 8 contracts |
 | [core/types.yaml](core/types.yaml) | The Type contracts: the basic Interface, Pool and Fleet types, and the types of a node, of `management` and of `access` | Draft; 6 contracts |
 | [core/requirements.yaml](core/requirements.yaml) | The Requirement contracts `bound.v1` and `shared-host.v1`, which the engine applies itself | Draft; 2 contracts |
 | [core/references.yaml](core/references.yaml) | The reference schemas: the Schema contracts that make a value a reference, `secret-reference.v1` among them | Draft; 13 contracts |
-| [core/results.yaml](core/results.yaml) | Also pending-action.v1, evidence-item.v1 and refusal.v1; the Schema contracts `object.v1`, `diagnostic.v1`, `handle.v1`, `condition.v1`, `record.v1`, `inventory.v1`, `tombstone.v1`, `provenance.v1` and `trust-domain.v1`: an object as a result names it, a diagnostic, a handle, a condition, a record, an inventory, a tombstone, opening provenance and a trust domain | Draft; 12 contracts |
+| [core/results.yaml](core/results.yaml) | Also pending-action.v1, evidence-item.v1 and refusal.v1; the Schema contracts `object.v1`, `diagnostic.v1`, `condition.v1`, `record.v1`, `inventory.v1`, `tombstone.v1`, `provenance.v1` and `trust-domain.v1`: an object as a result names it, a diagnostic, a condition, a record, an inventory, a tombstone, opening provenance and a trust domain | Draft; 11 contracts |
 | [core/templates.yaml](core/templates.yaml) | The core templates, including those of the five first-start objects and root's declared Conduits | Draft; 17 templates |
-| [schemas/](schemas/README.md) | The JSON Schemas of every document and of the manifest, each a Schema contract of the core package; which schema to use; and what a schema cannot express | Draft; 52 contracts in 9 files |
+| [schemas/](schemas/README.md) | The JSON Schemas of every document and of the manifest, each a Schema contract of the core package; which schema to use; and what a schema cannot express | Draft; 51 contracts in 9 files |
 | [schemas/document.yaml](schemas/document.yaml) | `document.v1`: any template, instance or contract document | Draft; 1 contract |
-| [schemas/sectioned.yaml](schemas/sectioned.yaml) | `sectioned.v1` and the parts of the short form | Draft; 10 contracts |
+| [schemas/sectioned.yaml](schemas/sectioned.yaml) | `sectioned.v1` and the parts of the short form | Draft; 9 contracts |
 | [schemas/envelope.yaml](schemas/envelope.yaml) | `apiVersion`, what every document carries, and `metadata` | Draft; 5 contracts |
 | [schemas/templates.yaml](schemas/templates.yaml) | A template document and the parts of its `spec` | Draft; 7 contracts |
 | [schemas/instances.yaml](schemas/instances.yaml) | An instance document of each family, the value of `from`, and the two nested instantiations | Draft; 4 contracts |
@@ -239,20 +239,20 @@ lists each S1 promise's vectors, or the reason it has none.
 | [schemas/manifest.yaml](schemas/manifest.yaml) | `manifest.v1` and `implementation-item.v1`: the manifest and one implementation item; and `server-package.v1` and `server-remote.v1`: a Package and a Remote of server.json | Draft; 4 contracts |
 | [schemas/values.yaml](schemas/values.yaml) | The small values the others share: names, addresses, the forms of a reference to an export, pointers, versions, digests, IDs, revisions and label selectors | Draft; 13 contracts |
 | [schemas/examples/valid](schemas/examples/valid) | Documents that the schemas accept: submitted projects, a package, and the instance documents of the first-start objects | Draft; 14 files in 6 directories, and one file whose name begins with a dot, which is not read |
-| [schemas/examples/invalid](schemas/examples/invalid) | Documents that a schema rejects, or that are rejected when the file is read, one to a file, each file named for the promise it breaks | Draft; 77 files |
+| [schemas/examples/invalid](schemas/examples/invalid) | Documents that a schema rejects, or that are rejected when the file is read, one to a file, each file named for the promise it breaks | Draft; 75 files |
 | [schemas/examples/invalid-by-rule](schemas/examples/invalid-by-rule) | Sets of documents that are valid against the schemas and are rejected by a rule no schema can express, each file named for the promise the set breaks | Draft; 41 files |
 | [conventions/lifecycle.yaml](conventions/lifecycle.yaml) | The convention on ownership and lifecycle: the one lifecycle every instance has, what inspecting returns, retirement, removal and unregistration, and what reconciling a setup or a retirement changes, and the expected ID that a lifecycle action may carry | Draft; 38 promises; vectors test slices of 18 promises |
 | [conventions/access.yaml](conventions/access.yaml) | The access convention: every permission is an open Conduit, decided anew for each request | Draft; 35 promises; vectors test slices of 23 promises |
-| [conventions/operations.yaml](conventions/operations.yaml) | The convention on idempotency keys and outcomes | Draft; 32 promises; vectors test slices of 30 promises |
-| [conventions/revisions.yaml](conventions/revisions.yaml) | The convention on revision-checked change | Draft; 14 promises; vectors test slices of 4 promises |
+| [conventions/operations.yaml](conventions/operations.yaml) | The convention on idempotency keys and outcomes | Draft; 31 promises; vectors test slices of 30 promises |
+| [conventions/revisions.yaml](conventions/revisions.yaml) | The convention on revision-checked change | Draft; 13 promises; vectors test slices of 4 promises |
 | [conventions/observation.yaml](conventions/observation.yaml) | The convention on declared against observed state | Draft; 5 promises; vectors test slices of 2 promises |
 | [conventions/records.yaml](conventions/records.yaml) | The convention on records | Draft; 6 promises; vectors test slices of 6 promises |
 | [conventions/implicit.yaml](conventions/implicit.yaml) | The convention that nothing starts model work or repeats an effect implicitly | Draft; 5 promises; vectors test slices of 2 promises |
-| [interface/implementation.yaml](interface/implementation.yaml) | The implementation interface: the Model Context Protocol as the wire between an engine, its implementations and its consumers, with Conduit's keys as an extension of the protocol, and the proof of who is who in both directions | Draft; 46 promises; vectors test slices of 23 promises |
+| [interface/implementation.yaml](interface/implementation.yaml) | The implementation interface: the Model Context Protocol as the wire between an engine, its implementations and its consumers, with Conduit's keys as an extension of the protocol, and the proof of who is who in both directions | Draft; 45 promises; vectors test slices of 23 promises |
 | [implementation-defined.yaml](implementation-defined.yaml) | What is left to each engine, which it documents as its conformance document | Draft; 17 items |
 
-Every area has been written as promises, 520 in all: 226 of the layer `language`, 246 of the
-layer `convention` and 48 of the layer `interface`. The JSON Schemas of documents, contracts and
+Every area has been written as promises, 516 in all: 225 of the layer `language`, 244 of the
+layer `convention` and 47 of the layer `interface`. The JSON Schemas of documents, contracts and
 manifests, the core package as documents and the manifest's file format exist: they are
 `schemas/`, `core/` and `promises/manifest.yaml`. The vectors and the core exist on
 S1, with the scope and remaining work stated above and in the
@@ -278,6 +278,11 @@ with the IDs it held, so that none of them is ever reused.
 | File | IDs it held | Removed by |
 | --- | --- | --- |
 | `promises/graphs.yaml`, the static meaning of a graph and what held when a step was dispatched; its [last version](https://github.com/shrav-k/conduit/blob/0a9a32326830452d9761f4963077db4fb618918a/spec/promises/graphs.yaml) | GRA-001 to GRA-028. Consolidation pass 1 folded GRA-013 into GRA-019 and GRA-016 into GRA-020. Ruling 41 removed the rest by decision 1 of the principles review (ruling 40, point 3c): an instance's own setup and retirement work is a setup hook and a retire hook, and an operation built from others is an ordinary implementation. GRA-002's rule went to TPL-012; GRA-003's to OPS-022, CON-004 and POOL-013; GRA-022's to CON-004 and POOL-013; nothing replaces the others. | [Ruling 41](../docs/proposals/ruling-41/README.md) |
+
+### Other IDs removed by rulings
+
+IFC-011, SCT-012, OPS-031 and REV-013 are retired identifiers. Nothing replaces them
+([ruling 78](../docs/proposals/ruling-78/README.md)).
 
 ## The form of a promise
 
@@ -356,7 +361,9 @@ named flag, recorded with the plan when used: `--reopen`, `--recreate`, `--prune
 cascade is one command under one flag, printed and recorded with the plan: register its
 Conduit, open it, call the cascade operation,
 close the Conduit, then root lifts its own tombstone. The `--withhold` flag belongs
-with the withhold behavior in batch 2. Narrowing never waits. A plan prints and records every
+with the withhold behavior in batch 2. Narrowing never waits and never needs a flag: a Conduit the file no longer names is closed on apply,
+and so is a narrowing of a Conduit's operations, and the plan prints and records each closing;
+`--prune` is for removing another object the file no longer names. A plan prints and records every
 widening, including one caused by moving a package pin or changing a reusable template's
 operations (PKG-031). A package should keep a standard template's operations across releases;
 the plan still checks the operations that actually resolve. A plan prints, beside each Agent

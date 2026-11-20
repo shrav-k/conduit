@@ -14,8 +14,6 @@
 #                  diagnostic whose `ruleId` is the ID of the promise that decided it), OBJ-008,
 #                  OBJ-023, PKG-006, LIF-020, SEC-003 (a diagnostic names the place by its JSON
 #                  Pointer and holds no part of a secret)
-#   handle.v1      CTR-002, IFC-011, IFC-033 (a handle is a property whose schema is this
-#                  contract; on the wire it is an opaque string the implementation issued)
 #   condition.v1   LIF-011, OBS-002, OBS-003, PRV-009
 #   record.v1      REC-002, LIF-013, SEC-015, SEC-018, PRV-024 (no record holds what the
 #                  `secrets` or the `identity` of `run.v1` hold)
@@ -102,19 +100,6 @@ spec:
               properties:
                 fullyQualifiedName: {$ref: github.com/shrav-k/conduit/core#pointer.v1}
   required: [message]
----
-apiVersion: github.com/shrav-k/conduit/v0
-kind: Schema
-metadata:
-  name: handle.v1
-  description: >-
-    A handle: an opaque string that an implementation issued, which the engine passes back
-    unchanged and never interprets. An input or an output of an Operation contract is a handle
-    where its property's schema is this contract. A handle permits nothing, and no instance
-    holds one.
-spec:
-  type: string
-  minLength: 1
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

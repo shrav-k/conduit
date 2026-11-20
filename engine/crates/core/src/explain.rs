@@ -166,12 +166,12 @@ pub const REASON_CAUSES: &[(&str, &str)] = &[
     ),
     ("OPS-029", "A reference must name an object that exists."),
     (
-        "OPS-030",
-        "Recording an invocation as failed requires every attempt to be fenced.",
+        "OPS-014",
+        "Only occurred: true is accepted when reconciling an invocation.",
     ),
     (
-        "OPS-031",
-        "A reconciliation may state revision only when recording a control effect on an existing live instance.",
+        "OPS-030",
+        "Reconciliation requires an invocation whose outcome is unknown.",
     ),
     (
         "OPS-032",
@@ -212,10 +212,6 @@ pub const REASON_CAUSES: &[(&str, &str)] = &[
     ),
     ("REV-002", "A change must name the current revision."),
     ("REV-011", "A change must name a revision."),
-    (
-        "REV-013",
-        "Reconciled control values must preserve the Type configuration schema.",
-    ),
     (
         "REV-014",
         "Setup, retirement and change must wait for any dispatched setup, retirement or change to end.",

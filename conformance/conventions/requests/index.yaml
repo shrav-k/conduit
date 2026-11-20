@@ -532,11 +532,9 @@
       "case": "conventions/requests/reconcile-false/case.yaml",
       "promises": [
         "OPS-014",
-        "OPS-030",
-        "OPS-029",
+        "OPS-023",
         "ACC-033",
-        "OPS-009",
-        "OPS-024"
+        "OPS-012"
       ],
       "safety_rows": [
         "S1-reconcile"
@@ -547,10 +545,8 @@
       "case": "conventions/requests/reconcile-fenced/case.yaml",
       "promises": [
         "OPS-014",
-        "OPS-030",
         "OPS-013",
-        "OPS-024",
-        "OPS-025"
+        "OPS-012"
       ],
       "safety_rows": [
         "S1-reconcile"
@@ -561,8 +557,7 @@
       "case": "conventions/requests/reconcile-invalid/case.yaml",
       "promises": [
         "OPS-029",
-        "OPS-030",
-        "OPS-031",
+        "OPS-033",
         "ACC-033"
       ],
       "safety_rows": [
@@ -573,8 +568,6 @@
       "id": "requests-reconcile-revision-in-progress",
       "case": "conventions/requests/reconcile-revision-in-progress/case.yaml",
       "promises": [
-        "OPS-023",
-        "OPS-031",
         "OPS-030"
       ],
       "safety_rows": [
@@ -585,8 +578,6 @@
       "id": "requests-reconcile-revision-succeeded",
       "case": "conventions/requests/reconcile-revision-succeeded/case.yaml",
       "promises": [
-        "OPS-023",
-        "OPS-031",
         "OPS-030"
       ],
       "safety_rows": [
@@ -613,7 +604,6 @@
       "case": "conventions/requests/reconcile-unconfirmed-cancel/case.yaml",
       "promises": [
         "OPS-014",
-        "OPS-030",
         "OPS-027"
       ],
       "safety_rows": [
@@ -625,7 +615,6 @@
       "case": "conventions/requests/reconcile-unfenced-restart/case.yaml",
       "promises": [
         "OPS-014",
-        "OPS-030",
         "IMP-007"
       ],
       "safety_rows": [
@@ -722,11 +711,11 @@
         "IMP-007",
         "OPS-012",
         "OPS-013",
-        "OPS-014",
-        "OPS-030"
+        "OPS-014"
       ],
       "safety_rows": [
-        "S1-unknown-write"
+        "S1-unknown-write",
+        "S1-reconcile"
       ]
     },
     {

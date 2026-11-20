@@ -100,7 +100,6 @@ exports:
   # Schemas of results, statuses and records (results.yaml).
   - object.v1
   - diagnostic.v1
-  - handle.v1
   - condition.v1
   - record.v1
   # Schemas of documents (spec/schemas/).
@@ -155,7 +154,6 @@ exports:
   - sectioned-conduit.v1
   - consumes-item.v1
   - sectioned-operator.v1
-  - manages.v1
   - fleet-management.v1
   - provenance.v1
   - tombstone.v1

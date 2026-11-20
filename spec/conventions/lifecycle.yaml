@@ -319,8 +319,7 @@
     its retirement under LIF-028, to reconcile any other invocation that was dispatched to it,
     to unregister it under LIF-017, to ask under LIF-009 for a new instance in its place where a
     nested instantiation made it, and to declare it lost under PLC-017 where it is a node. A
-    reconciliation of a control dispatched to it stores nothing in it, whichever way it records
-    the effect, under REV-010. Requests through the Conduits of which it was the target are
+    reconciliation of a control dispatched to it records the outcome alone under REV-010. Requests through the Conduits of which it was the target are
     requests through closed Conduits, which ACC-011 covers. The Conduits of which it is the
     consumer are closed once its shutdown is confirmed, or once a request to unregister it
     removes it, under CON-008 and LIF-017, and ACC-039 says what they permit until then.
@@ -599,9 +598,7 @@
   then: >-
     Recording that a setup or an open occurred gives the outcome succeeded and changes nothing
     else: no instance is made ready and no Conduit is opened. Recording that a
-    retirement or a close occurred confirms the shutdown. Recording that it did not occur gives
-    the outcome failed only once every dispatched part is fenced under OPS-014, and changes
-    nothing else.
+    retirement or a close occurred confirms the shutdown.
   observable: >-
     After a reconciliation that records a setup as having occurred, inspecting the instance
     reports the state it had, as LIF-004 leaves it after a setup whose outcome is unknown; an
@@ -613,11 +610,7 @@
     that an open makes, LIF-041, ACC-032, ACC-054 and SEC-008 among them; one whose consumer was
     retired in the meantime stays registered, under CON-031, until CON-008 closes it. After one
     that records a retirement as having
-    occurred, the shutdown is confirmed, and the instance is removed under LIF-035. After one
-    that records that a setup did not occur, the state is as LIF-004 leaves it. After one that
-    records that a retirement did not occur, the shutdown is as LIF-024 gives it after a
-    retirement that failed, and LIF-026 lets the instance be retired again. A Conduit's shutdown
-    is confirmed already, under LIF-024. Once a reconciliation confirms the shutdown of an
+    occurred, the shutdown is confirmed, and the instance is removed under LIF-035. Once a reconciliation confirms the shutdown of an
     instance, the Conduits of which it is the consumer are closed, under CON-008, as they are
     when a retirement succeeds. Each of the four is a management verb, so the reconciliation is
     authorized against the target that authorized the request being reconciled, as ACC-033

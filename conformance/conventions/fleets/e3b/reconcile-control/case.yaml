@@ -1,16 +1,15 @@
 {
   "id": "fleets-reconcile-control",
-  "title": "reconcile control (041b)",
+  "title": "Control reconciliation records the outcome and leaves the configuration and revision unchanged",
   "layers": [
     "convention",
     "interface"
   ],
   "promises": [
     "ACC-033",
-    "REV-010",
-    "REV-002",
-    "REV-011",
-    "REV-014"
+    "OPS-014",
+    "OPS-013",
+    "REV-010"
   ],
   "profile": "first-build",
   "initial": {
@@ -534,10 +533,41 @@
       "expect": {
         "reply": {
           "_meta": {
-            "io.github.shrav-k.conduit/reason": "invalid"
+            "io.github.shrav-k.conduit/outcome": "succeeded"
           }
         },
-        "external_intents": []
+        "external_intents": [],
+        "object_facts": [
+          {
+            "id": "00000000-0000-4000-8000-000000000109",
+            "config": {
+              "accountServices": false,
+              "peerMessaging": false
+            },
+            "revision": "current"
+          }
+        ],
+        "invocation_facts": [
+          {
+            "id": "00000000-0000-4000-8000-000000008805",
+            "state": "succeeded"
+          }
+        ],
+        "required_promises": [
+          "REV-010"
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-ended",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000109",
+              "invocation": "00000000-0000-4000-8000-000000008805",
+              "outcome": "succeeded",
+              "checked": "observed",
+              "reconciled": true
+            }
+          }
+        ]
       }
     },
     {
@@ -548,60 +578,6 @@
       },
       "expect": {
         "reply": {
-          "_meta": {
-            "io.github.shrav-k.conduit/reason": "conflict"
-          }
-        },
-        "external_intents": []
-      }
-    },
-    {
-      "input": {
-        "kind": "lifecycle-fixture",
-        "file": "requests",
-        "index": 3
-      },
-      "expect": {
-        "reply": {
-          "_meta": {
-            "io.github.shrav-k.conduit/reason": "conflict"
-          }
-        },
-        "external_intents": []
-      }
-    },
-    {
-      "input": {
-        "kind": "lifecycle-fixture",
-        "file": "requests",
-        "index": 4
-      },
-      "expect": {
-        "reply": {
-          "_meta": {
-            "io.github.shrav-k.conduit/outcome": "succeeded"
-          }
-        },
-        "external_intents": [],
-        "object_facts": [
-          {
-            "id": "00000000-0000-4000-8000-000000000109",
-            "config": {
-              "accountServices": true
-            },
-            "revision": "041b-reconcile-control-4-0"
-          }
-        ]
-      }
-    },
-    {
-      "input": {
-        "kind": "lifecycle-fixture",
-        "file": "requests",
-        "index": 5
-      },
-      "expect": {
-        "reply": {
           "ignored": true
         },
         "external_intents": [],
@@ -609,17 +585,11 @@
           {
             "id": "00000000-0000-4000-8000-000000008805",
             "state": "unknown",
-            "attempt": 1,
-            "attempt_fences": {
-              "1": {
-                "fenced": true
-              }
-            }
+            "attempt": 1
           }
         ],
         "required_promises": [
-          "OPS-013",
-          "OPS-014"
+          "OPS-013"
         ]
       }
     },
@@ -748,11 +718,28 @@
       },
       "expect": {
         "reply": {
+          "isError": true,
           "_meta": {
-            "io.github.shrav-k.conduit/outcome": "succeeded"
+            "io.github.shrav-k.conduit/reason": "invalid"
+          },
+          "structuredContent": {
+            "diagnostics": [
+              {
+                "ruleId": "OPS-014"
+              }
+            ]
           }
         },
-        "external_intents": []
+        "external_intents": [],
+        "invocation_facts": [
+          {
+            "id": "00000000-0000-4000-8000-000000008805",
+            "state": "unknown"
+          }
+        ],
+        "required_promises": [
+          "OPS-014"
+        ]
       }
     }
   ]

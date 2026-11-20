@@ -2,6 +2,7 @@
 # Standing: draft specification; see spec/README.md for status and coverage.
 #
 # Removed IDs (not reused):
+# REV-013: nothing replaces it (ruling 78).
 # Removed: REV-008 → REV-015 (validation before dispatch) (ruling 41).
 #
 # This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
@@ -117,8 +118,9 @@
     are reported as unknown. They are the settings of the inputs the request supplied, at the
     pointers the control's `changes` gives for those inputs.
   observable: >-
-    Inspection shows the earlier stored values, the earlier revision, and the word unknown
-    against each setting the control addressed.
+    Inspection shows the earlier stored values, the earlier revision, and unknown against each
+    setting the control addressed. Those settings stay reported unknown after reconciliation,
+    under REV-010. Sending the control again requires the current revision under REV-002.
   vectors: []
 
 
@@ -129,40 +131,12 @@
   when: >-
     A control whose outcome is unknown is reconciled under OPS-014.
   then: >-
-    A reconciliation that records the control as having taken effect, on an instance that exists
-    and is not retired, is a request to change that instance: it names the instance's current
-    revision, and the values the control was sent, which the engine keeps under OPS-008, are
-    stored at the pointers of its `changes`. A reconciliation that records that the effect did
-    not occur requires the invocation to be fenced under OPS-014, names no revision and
-    stores nothing. Where the instance is retired or no longer
-    exists, a reconciliation of the control names no revision, whichever way it records the
-    effect: it records the outcome and stores nothing.
+    The reconciliation records the outcome alone.
   observable: >-
-    After a reconciliation that stores values, the stored configuration equals the current
-    configuration with the values the control was sent applied at those pointers, whatever other
-    change was stored after the control was dispatched. The revision advances under REV-003 if
-    anything changed, and those settings are no longer reported as unknown. Such a
-    reconciliation is a request to change an object, so REV-002 and REV-011 apply to it as to
-    any other: one that names a revision that is not current reports conflict, and one that
-    names none reports invalid. One where those values, applied to the current configuration,
-    would make it fail the type's schema is REV-013. A reconciliation that records that the
-    effect did not occur changes no object and so names no revision: the control's outcome
-    becomes failed only once it is fenced under OPS-014, and the settings it addressed are
-    no longer reported as unknown. One that
-    names a revision all the same reports invalid, under OPS-031. In `reconcile.v1` the revision
-    is the input `revision`. The values are not stated in the request: the engine stores those
-    it sent. The request is authorized under ACC-033 against the target that manages the
-    instance: the Pool that owns a Resource or the Fleet that owns an Agent, and `management`
-    for other families, a retired owner or an instance that no longer exists. It is not
-    authorized by a Conduit to the instance itself, as the control was. A retired instance takes
-    no change, under LIF-015, so a reconciliation of a control dispatched to it records the
-    outcome alone, whichever way it records the effect, as REV-007 stores nothing for a control
-    that succeeds after its instance was retired, and the settings the control addressed are no
-    longer reported as unknown. Once the instance no longer exists there is no current revision
-    to name and no configuration to store values in: the reconciliation is authorized against
-    `management`, under ACC-033, and records that the effect occurred or that it did not, and
-    nothing else. One that names a revision all the same reports invalid, under OPS-031. ACC-055
-    also limits which invocations a holder other than root may reconcile.
+    The stored configuration and revision are unchanged. Inspection still reports the settings
+    the control addressed as unknown under REV-009. The request is authorized under ACC-033
+    against the target that manages the instance, and ACC-055 limits reconciliation by
+    holders other than root.
   vectors: []
 
 - id: REV-011
@@ -206,24 +180,6 @@
 
 
 
-- id: REV-013
-  layer: convention
-  level: must
-  when: >-
-    A reconciliation records a control as having taken effect, and the values the control was
-    sent, applied to the current configuration at the pointers of its `changes`, would make that
-    configuration fail the type's schema.
-  then: >-
-    The reconciliation is not dispatched, and reports invalid.
-  observable: >-
-    The stored configuration and revision are as before. The control's outcome is still unknown,
-    and the settings it addressed are still reported as unknown under REV-009. It arises where
-    another change was stored after the control was dispatched: REV-015 checked the same values
-    against the configuration as it stood then.
-  vectors: []
-
-
-
 - id: REV-014
   layer: convention
   level: must
@@ -237,8 +193,7 @@
   observable: >-
     The engine neither queues the request nor waits for the other to end: the result is returned
     at once, the implementation receives no call, and the instance and its revision are as they
-    were. The caller asks again once the other has ended. A control is a change, and so is a
-    reconciliation that stores the values of a control, under REV-010. A reconciliation of a
+    were. The caller asks again once the other has ended. A control is a change. A reconciliation of a
     setup or a retirement of the instance, an open or a close among them, under LIF-028, counts
     as a setup or a retirement of it. The setups and retirements that the engine dispatches
     within an actor's invocation, such as the parts of a Pool's setup under POOL-013 and the

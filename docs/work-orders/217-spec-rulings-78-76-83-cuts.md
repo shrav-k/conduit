@@ -225,4 +225,28 @@ merges.
 
 ## Record
 
-Not yet run.
+Run on 2026-11-20 through Conduit itself, by the dogfood's own Agents, which root called by
+`conduit call`, in Pacific time. `turn-worker-1.turn.v1` (09:43 to 10:15) built it. Then
+`turn-verifier-1.turn.v1` (10:25 to 10:31), read-only, found two musts: `sectioned.yaml`'s
+header still gave SCT-012's restriction to translation, and the DL16 row still called fences
+pending. It also found one should, that a closed input object changed validation for other
+arguments. Worker-1's second turn (10:32 to 10:41) fixed all three.
+
+`turn-reader-1.turn.v1` (10:42 to 10:57) made the Claude reader's first read through Conduit,
+the first dogfood milestone. Its two musts are withdrawn: root's copy of the tree it read still
+held three files the worker had deleted. Its two shoulds and one nit are applied by worker-1's
+third turn (10:58 to 11:05):
+- `revision` is simply gone from `reconcile.v1`'s input, with no `not` clause, which was a
+  choice this order did not make;
+- the three passages on a hook after reconciliation are reworded;
+- OBJ-022 has its conjunction back.
+
+The checks the worker reported:
+- the release suite, 404 passed and 5 ignored;
+- conformance, 547 cases, including the 3 failures expected before;
+- the vector delta, 629 changes, 1 declared flip, 0 undeclared and 0 errors.
+
+Experiment 012's account marks OPS-021 and OPS-028 "text changed, not rerun", under order 153's
+check. No model changed. The paired read (A77) resumed inside the dogfood: the verifier read
+round 1 and the reader round 2, so the two reads were not of one tree. The gate's run on the
+squash is the coordinator's, at the merge.

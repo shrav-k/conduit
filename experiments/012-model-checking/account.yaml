@@ -324,11 +324,12 @@
   note: 'Source row: “P4, addressed stops and unknown answers”.'
 - id: PRV-009
   class: safety
-  standing: holds, not graded
+  standing: text changed, not rerun
+  was: holds, not graded
   model: placement::P6
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: 88a48e726ecbb486f7fcabdb5cc6b47351c18e6bc1208d14010ec2776469b2ff
-  note: 'Source row: “P6, status provenance and time”.'
+  note: 'Source row: “P6, status provenance and time”. Work order 217 changed the promise text without rerunning the model.'
 - id: PRV-010
   class: safety
   standing: text changed, not rerun
@@ -745,11 +746,12 @@
   note: Bounded source slice; no individual finding.
 - id: LIF-015
   class: safety
-  standing: holds, not graded
+  standing: text changed, not rerun
+  was: holds, not graded
   model: lifecycle::L
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: ce46aa17190ac4a8e847a69aacd2914155e9d9001e8dd1945612a2bef165dc46
-  note: Bounded source slice; no individual finding.
+  note: Bounded source slice; no individual finding. Work order 217 changed the promise text without rerunning the model.
 - id: LIF-016
   class: safety
   standing: holds, not graded
@@ -852,7 +854,7 @@
   model: lifecycle::Q
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: 309e7cf4c9e5fb92ed2542de7e537c5a8e52039efbfdb9f369e703d3c0e05d17
-  note: Bounded source slice; no individual finding.
+  note: Bounded source slice; no individual finding. Work order 217 changed the promise text without rerunning the model.
 - id: LIF-029
   class: safety
   standing: holds, not graded
@@ -1202,7 +1204,7 @@
     counterexamples. Order 077 is to be written, not yet run; MC7a-002 and MC6’s Unfenced reproduce the missing
     fence. Held only under ruling 75 A1''s fence, which ruling 78 point 6 withdrew. Work order 160 reran MC2
     under ruling 78 point 6, where O and W hold; this text still holds the fence and ''did not occur'', so
-    the row waits for the order that writes that point into spec/.'
+    the row waits for the order that writes that point into spec/. Work order 217 changed the promise text without rerunning the model.'
 - id: OPS-018
   class: safety
   standing: text changed, not rerun
@@ -1215,7 +1217,7 @@
     counterexamples. Order 077 is to be written, not yet run; MC7a-002 and MC6’s Unfenced reproduce the missing
     fence. Held only under ruling 75 A1''s fence, which ruling 78 point 6 withdrew. Work order 160 reran MC2
     under ruling 78 point 6, where O and W hold; this text still holds the fence and ''did not occur'', so
-    the row waits for the order that writes that point into spec/.'
+    the row waits for the order that writes that point into spec/. Work order 217 changed the promise text without rerunning the model.'
 - id: OPS-019
   class: safety
   standing: static
@@ -1226,14 +1228,15 @@
   note: 'MC7a: “Static: a static decision, to be shown by vectors”.'
 - id: OPS-021
   class: safety
-  standing: 'contradiction: MC2-001'
+  standing: text changed, not rerun
+  was: 'contradiction: MC2-001'
   model: lifecycle::H, A, A2
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: 22c58befda5943708f591f98617920c148475282ee1905feadd634f18e3d43d9
   note: 'MC6’s Unfenced control reproduces MC2-001 for hooks: A fails at 37 actions and A2 at 50; Correct holds
     under the fenced reading. H/K also hold on Correct. Supporting OPS-014/OPS-024 require order 077, to be written,
     not yet run. MC2 is the earlier operation-identity model. Held only under ruling 75 A1''s fence, which ruling
-    78 point 6 withdrew.'
+    78 point 6 withdrew. Work order 217 clarified the observable after hook reconciliation.'
 - id: OPS-022
   class: safety
   standing: text changed, not rerun
@@ -1261,7 +1264,7 @@
     fence. MC2 excludes “filters in OPS-024 (the operation is effectful)”. Held only under ruling 75 A1''s
     fence, which ruling 78 point 6 withdrew. Work order 160 reran MC2 under ruling 78 point 6, where O and
     W hold; this text still holds the fence and ''did not occur'', so the row waits for the order that writes
-    that point into spec/.'
+    that point into spec/. Work order 217 changed the promise text without rerunning the model.'
 - id: OPS-026
   class: safety
   standing: static
@@ -1284,7 +1287,7 @@
     under the fenced reading. H/K also hold on Correct. Supporting OPS-014/OPS-024 require order 077, to be written,
     not yet run. MC2 is the earlier operation-identity model. Held only under ruling 75 A1''s fence, which ruling
     78 point 6 withdrew. Work order 172a changed its observable: an implementation recognizes a hook''s new attempt by
-    the invocation''s ID (F14).'
+    the invocation''s ID (F14). Work order 217 clarified the observable after hook reconciliation.'
 - id: OPS-029
   class: safety
   standing: static
@@ -1358,11 +1361,12 @@
   note: Bounded source slice; no individual finding.
 - id: REV-009
   class: safety
-  standing: holds, not graded
+  standing: text changed, not rerun
+  was: holds, not graded
   model: controls::U
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: b6881882fd2c2bfe596500fbb47d2886d67db21fd49f44f8d3ab331897af5036
-  note: Bounded source slice; no individual finding.
+  note: Bounded source slice; no individual finding. Work order 217 changed the promise text without rerunning the model.
 - id: REV-010
   class: safety
   standing: text changed, not rerun
@@ -1371,7 +1375,7 @@
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: 9688e18eeb80fa4189ca22232b71b46d19f120f3dee66767e0a8f8107edefb75
   note: MC7a supersedes MC2’s excluded control configuration storage/reconciliation slice; R holds. MC7a-002 concerns
-    the supporting unfenced OPS-014 reading, not a refutation of R.
+    the supporting unfenced OPS-014 reading, not a refutation of R. Work order 217 changed the promise text without rerunning the model.
 - id: REV-011
   class: safety
   standing: static
@@ -1385,20 +1389,14 @@
     no property counts the changes stored per named revision, and by reading, the correct model applies two changes
     that name r0 (FR-461). MC2 revisions'' rerun registers that property, expected to be refuted (the review''s
     decision D32).'
-- id: REV-013
-  class: safety
-  standing: holds, not graded
-  model: controls::V
-  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
-  digest: 3fae6f52ca626b8edbb0a3babd72ca3413a2406c78778e8d58ee271c54682251
-  note: Bounded source slice; no individual finding.
 - id: REV-014
   class: safety
-  standing: holds, not graded
+  standing: text changed, not rerun
+  was: holds, not graded
   model: controls::T
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: 65babe44ade7aaf6e51752b1029604a64dc0f868b549aa4f4c991b513a2ccf8f
-  note: Bounded source slice; no individual finding.
+  note: Bounded source slice; no individual finding. Work order 217 changed the promise text without rerunning the model.
 - id: REV-015
   class: safety
   standing: static
@@ -1523,8 +1521,6 @@
 - id: OBJ-025
   class: not safety
 - id: OPS-025
-  class: not safety
-- id: OPS-031
   class: not safety
 - id: PLC-011
   class: not safety

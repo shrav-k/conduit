@@ -492,7 +492,7 @@ kind: Operation
 metadata:
   name: reconcile.v1
   description: >-
-    Record, with what was checked, whether the effect of an invocation whose outcome is unknown occurred.
+    Record, with what was checked, that the effect of an invocation whose outcome is unknown occurred.
     The invocation is named by the ID the engine gave it, which a consumer learns from the result
     of its request, or of a repeat of it. An invocation of a management verb is reconciled through
     the target that authorized the request being reconciled, by an open Conduit to that target that
@@ -501,19 +501,16 @@ metadata:
     through the target that manages the instance it was dispatched to: the Pool that owns a Resource,
     and the owning Fleet for an Agent, and `management` for an Interface, a Pool or a Fleet. Where the Pool that owns a Resource is
     retired, `management` authorizes in its place, and so it does where the instance of the invocation
-    no longer exists: the reconciliation then records the outcome and stores nothing, and names no
-    `revision`. A request that names an invocation whose outcome is not unknown, or records that
-    the effect did not occur before the invocation is fenced under OPS-014, reports conflict under
-    OPS-030; one whose ID names no invocation reports invalid. Recording that a setup or an open
-    occurred gives it the outcome succeeded and changes nothing else: a further setup makes the
-    instance ready, and `open.v1` sent again opens the Conduit. Recording that a retirement or a
-    close occurred confirms
-    the shutdown, and the instance is removed. An actor tells whether a run is running from the instance's
-    condition `Running`. Recording that the effect did not occur gives the outcome failed only once
-    the invocation is fenced under OPS-014, and changes nothing else. Where a control of an
-    instance that exists and is not retired took effect, `revision`
-    is required, and the values that the control was sent are stored at the pointers of its `changes`.
-    A reconciliation that stores nothing names no `revision`: one that does reports invalid.
+    no longer exists. A request with `occurred: false` reports invalid under OPS-014. With
+    `occurred: true`, an invocation whose outcome is not unknown reports conflict under
+    OPS-030, and an ID that names no invocation reports invalid under OPS-029. Recording
+    that a setup or an open occurred gives it the outcome succeeded and changes nothing
+    else: a further setup makes the instance ready, and `open.v1` sent again opens the
+    Conduit. Recording that a retirement or a close occurred confirms the shutdown and
+    removes the instance. An actor tells whether a run is running from the instance's
+    condition `Running`. A reconciliation of a control records the outcome and what was
+    checked. The stored configuration and revision stay as they were, and the settings the
+    control addressed stay reported unknown (REV-009, REV-010).
 
     ACC-033 and OPS-014 determine authority: an Agent uses its owning Fleet, or management where that
     owner is retired or the instance removed. ACC-055 limits bounded access reconciliation by the
@@ -534,18 +531,13 @@ spec:
       checked:
         type: string
         minLength: 1
-      revision:
-        $ref: github.com/shrav-k/conduit/core#revision.v1
     required:
     - invocation
     - occurred
     - checked
   effect: >-
-    Changes the invocation's outcome from unknown to succeeded, or to failed only once the
-    invocation is fenced under OPS-014. Where a retirement or a close is recorded as having
-    occurred, confirms
-    the shutdown, which removes the instance. For a control that took effect on an instance that exists
-    and is not retired, stores the values it was sent.
+    Records what was checked and changes the invocation's outcome from unknown to succeeded.
+    For a retirement or a close, it confirms the shutdown, which removes the instance.
   deduplicates: true
 ---
 apiVersion: github.com/shrav-k/conduit/v0

@@ -1,16 +1,12 @@
 {
   "id": "fleets-reconcile-array-element",
-  "title": "Control reconciliation stores held values through array pointer tokens",
+  "title": "Control reconciliation leaves array settings unchanged",
   "layers": [
     "convention",
     "interface"
   ],
   "promises": [
-    "REV-010",
-    "OBJ-016",
-    "CTR-006",
-    "REV-013",
-    "REV-003"
+    "REV-010"
   ],
   "profile": "first-build",
   "initial": {
@@ -528,14 +524,32 @@
             "name": "agent-a",
             "config": {
               "limits": [
-                2
+                1
               ]
             },
-            "revision": "reconcile-array-element-0-0"
+            "revision": "current"
           }
         ],
         "required_promises": [
           "REV-010"
+        ],
+        "invocation_facts": [
+          {
+            "id": "00000000-0000-4000-8000-000000008805",
+            "state": "succeeded"
+          }
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-ended",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000109",
+              "invocation": "00000000-0000-4000-8000-000000008805",
+              "outcome": "succeeded",
+              "checked": "observed",
+              "reconciled": true
+            }
+          }
         ]
       }
     },
@@ -558,15 +572,33 @@
             "config": {
               "limits": [
                 {
-                  "value": 2
+                  "value": 1
                 }
               ]
             },
-            "revision": "reconcile-array-element-1-0"
+            "revision": "current"
           }
         ],
         "required_promises": [
           "REV-010"
+        ],
+        "invocation_facts": [
+          {
+            "id": "00000000-0000-4000-8000-000000008805",
+            "state": "succeeded"
+          }
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-ended",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000109",
+              "invocation": "00000000-0000-4000-8000-000000008805",
+              "outcome": "succeeded",
+              "checked": "observed",
+              "reconciled": true
+            }
+          }
         ]
       }
     },
@@ -590,15 +622,33 @@
               "limits": [
                 [
                   1,
-                  3
+                  2
                 ]
               ]
             },
-            "revision": "reconcile-array-element-2-0"
+            "revision": "current"
           }
         ],
         "required_promises": [
           "REV-010"
+        ],
+        "invocation_facts": [
+          {
+            "id": "00000000-0000-4000-8000-000000008805",
+            "state": "succeeded"
+          }
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-ended",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000109",
+              "invocation": "00000000-0000-4000-8000-000000008805",
+              "outcome": "succeeded",
+              "checked": "observed",
+              "reconciled": true
+            }
+          }
         ]
       }
     },
@@ -620,14 +670,32 @@
             "name": "agent-a",
             "config": {
               "a/b~": [
-                2
+                1
               ]
             },
-            "revision": "reconcile-array-element-3-0"
+            "revision": "current"
           }
         ],
         "required_promises": [
           "REV-010"
+        ],
+        "invocation_facts": [
+          {
+            "id": "00000000-0000-4000-8000-000000008805",
+            "state": "succeeded"
+          }
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-ended",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000109",
+              "invocation": "00000000-0000-4000-8000-000000008805",
+              "outcome": "succeeded",
+              "checked": "observed",
+              "reconciled": true
+            }
+          }
         ]
       }
     }

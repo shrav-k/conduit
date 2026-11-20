@@ -477,3 +477,67 @@ The coordinator records stage 2's setup by the amendment the registration names,
 has merged; this order registers what can be fixed before. The admin then has a fresh, read-only
 Opus reader read the diff before it merges (ruling 79). Do not stage anything. Report each choice
 you make as your own, the wording you chose for decisions 3 to 5, and every check's last line.
+
+## Record
+
+Run on 2026-11-20, from about 00:09 to 00:17 UTC, on the Mac from `main` `201005c7` (order 050n's
+refresh), in one round: the worker (228 s), then a fresh Codex verifier (231 s). The worker
+changed only `experiments/028-a78-dogfood/README.md`, by decisions 1 to 4, with DATE as 2026-11-19,
+and A78's row of `ROADMAP.md`, by decision 5; it ran no cargo command, since the order changes no
+code. Its own wording for decisions 3 to 5 is the setup's and measures' sections and the row's
+clause. The verifier found both prescribed blocks verbatim and `check_docs`,
+`check_private_paths`, `check_roadmap`, `check_rulings` and `git diff --check` clean. It found two
+musts and three shoulds:
+
+- V1 (must): the setup's D58 item dropped the prohibition on reading the order's text, report
+  schema and refs through a slot's or the reader's clone's git directory.
+- V2 (must): with a start by the Codex Agents alone, the items about `reader-1` cannot be recorded
+  before stage 2's first turn, as the setup's opening paragraph asks.
+- V3 (should): the stage verdict could credit claim 2 when the only turn of `reader-1` is lost and
+  the read runs outside Conduit.
+- V4 (should): the inherited set-up measure ends when root's two turn tools answer, condition 2
+  when each of root's turn tools on the store answers.
+- V5 (should): the redaction rule gives no placeholder for an unexpected account.
+
+A fresh read-only Opus reader then read the order (ruling 79, point 2) on the checkpoint. It ran
+the order's start checks against `201005c7`, `check_docs`, `check_private_paths`, `check_roadmap`
+and `check_rulings` (Errors: 0 each), `git diff --check` (clean) and the order's twelve one-line
+checks (as the order states, the headings exactly as listed); it compared decision 2's block, DATE
+filled, with the README's section (identical) and the README's base lines with the base (unchanged,
+it only adds); it grepped the added lines for private values (one hit, model tokens) and checked
+the commit identity (neutral). It confirmed V1 as F1, V2 as a should, F2, since decision 3 sets
+the opening paragraph, and V4 as F3, and refuted V3 and V5 as findings against the work: both
+concern text decision 2 sets word for word, claim 2's own sentence already keeps a lost turn from
+showing it, and the account check is recorded as a category, never the value. It added F4:
+
+- F1 (must): V1, with the text of the item that restores "never through a slot's or the reader's
+  clone's".
+- F2 (should): V2, with two lines after the setup's opening paragraph.
+- F3 (should): V4, with a sentence that sets the endpoint for the measure and the restarts.
+- F4 (should): the row's clause attached the first dogfood milestone to the stop rules, where
+  decision 5 asks that it say stage 2 is the milestone's run.
+
+The fixer found `origin/main` still at `201005c7`, so the branch needed no rebase, and applied each
+finding in the reader's words:
+
+- F1: the D58 item now reads "refs from a git directory of its own, never through a slot's or the
+  reader's clone's. It runs each clone's guards with that git directory and the clone only as the
+  working tree, runs nothing from a clone, and runs a guard that answered unknown again before the
+  next turn."
+- F2: after the setup's opening paragraph: "If `reader-1` joins later, the items that concern it
+  are recorded by a dated amendment merged before its first turn, and the first result after it
+  joins repeats them."
+- F3: the measures' opening ends "Stage 2 adds the measures below. Set-up seconds, there and in the
+  setup's restarts, run until each of root's turn tools on the store answers, as condition 2 is
+  read below."
+- F4: A78's row reads "and five stop rules; stage 2 is the first dogfood milestone's run, so orders
+  after order 3 go through Conduit".
+- V3 and V5: no change, as the reader refuted them; any change to decision 2's block is a
+  coordinator amendment.
+
+The fixer then ran, in the worktree: `python3 tools/check_docs.py`, `python3
+tools/check_private_paths.py`, `check_roadmap` and `check_rulings` (Errors: 0 each); `git diff
+--check` (clean); and the order's twelve one-line checks, the two diffs taken against `201005c7`,
+which print 1, the section's heading, 0, 1, 0, 0, 0, the headings exactly as the order lists them,
+2, 1, 0 and 1. Apart from this Record, the diff against `201005c7` holds only `ROADMAP.md` and the
+README. The gate's run on this order's squash is the coordinator's at the merge.

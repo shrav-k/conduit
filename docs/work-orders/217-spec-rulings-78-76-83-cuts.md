@@ -44,7 +44,8 @@ Ruling 78 point 6 says no actor records that an unknown effect did not occur; it
 `false` reports invalid, naming OPS-014; (b) `occurred` is removed, and a reconciliation records
 that the effect occurred; (c) `false` reports conflict under OPS-030, as an unfenced one does today.
 
-Answer: none yet.
+Answer: (a). The owner chose, on 2026-11-20, "Keep it; false is refused": `occurred` stays and
+`false` reports invalid, naming OPS-014, with the engine's explicit diagnostic (ruling 52).
 
 If the line above still reads "none yet", the start check stops the order. The coordinator writes
 the owner's answer there before dispatch, and item 3 follows it. With the answer, the coordinator
@@ -210,6 +211,7 @@ grep -rl -e 'apiKey' -e 'example.org/s1/' -e 'agent-a' spec/schemas/examples/val
 tr -s ' \n' '  ' < spec/README.md | grep -c 'Narrowing never waits and never needs a flag: a Conduit the file no longer names is closed on apply'  # 1; fails today
 grep -c -e 'handles are cut\.' -e 'the `manages:` shorthand is cut\.' -e 'there is no `manages:` shorthand\.' -e 'that is S1 itself is replaced' -e 'No actor records that an unknown effect did not occur, and no attempt is fenced' -e 'For a control, REV-009, REV-010, REV-013, OPS-031' IN_FORCE.md  # 0; fails today (6)
 grep -c 'a machine provider no longer stores the labels' IN_FORCE.md  # 1: the labels stay
+grep -c '"io.github.shrav-k.conduit/reason": "invalid"' conformance/conventions/requests/reconcile-false/case.yaml  # 1 or more; fails today (0): false reports invalid under OPS-014
 git reset -q -- spec conformance docs/work-orders/217-declared.yaml  # stage nothing
 ```
 

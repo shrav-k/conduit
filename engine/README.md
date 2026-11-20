@@ -191,7 +191,7 @@ cargo run --release -p conduit-shell -- install --store /tmp/conduit-store ../co
 cargo run --release -p conduit-shell -- install --store /tmp/conduit-store ../conformance/fixtures/s1/archives/agents.tar.gz#SHA256
 cargo run --release -p conduit-shell -- submit --store /tmp/conduit-store ../conformance/fixtures/s1/project
 cargo run --release -p conduit-shell -- inspect --store /tmp/conduit-store
-# Stop serve with Ctrl-C before exporting records.
+# Export records through serve while it runs.
 cargo run --release -p conduit-shell -- records --store /tmp/conduit-store
 ```
 
@@ -205,8 +205,8 @@ initialization and setup to end. This local command owns its runs and ends them 
 `serve` owns the persistent runner and consumer HTTP server. Every open of a store
 first commits recovery, ending interrupted invocations unknown without replay. Inspection makes
 core inspect requests as root, one JSON line per object, including authority refusals.
-Records exports ordered CloudEvents as JSON lines and reports gaps on stderr; stop `serve`
-before exporting records. Any printed error result, rejection, or outcome other than
+Records exports ordered CloudEvents as JSON lines and reports gaps on stderr. The export goes
+through `serve` while it runs. Any printed error result, rejection, or outcome other than
 `succeeded` gives a nonzero exit. Inspection still prints every object's result when some
 inspections are refused. `submit` stops at its first failed step and prints JSON summary
 lines with `step` and `outcome` after the result lines, including the failed step. Earlier

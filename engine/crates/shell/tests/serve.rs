@@ -1,6 +1,7 @@
 //! Process coverage for the joined HTTP adapter and unchanged npm filesystem runner.
 mod common;
 use conduit_shell::{Config, MissingExecutor, Shell, boundary};
+use fs2::FileExt;
 use rmcp::{
     ClientHandler, RoleClient, ServiceExt,
     model::{CallToolRequestParams, CallToolResult, ClientConfig, ProtocolVersion},
@@ -14,7 +15,7 @@ use std::{
     collections::BTreeMap,
     fs,
     path::{Path, PathBuf},
-    process::{Child, Command, Stdio},
+    process::{Child, Command, Output, Stdio},
     sync::{
         Arc,
         atomic::{AtomicUsize, Ordering},
@@ -59,13 +60,7 @@ fn state(store: &Path) -> Value {
         .clone()
 }
 fn cli(store: &Path, verb: &str, args: &[&str]) -> Value {
-    let output = Command::new(env!("CARGO_BIN_EXE_conduit"))
-        .arg(verb)
-        .arg("--store")
-        .arg(store)
-        .args(args)
-        .output()
-        .unwrap();
+    let output = cli_output(store, verb, args);
     assert!(
         output.status.success(),
         "{}",
@@ -80,6 +75,15 @@ fn cli(store: &Path, verb: &str, args: &[&str]) -> Value {
         assert_ne!(reply["isError"], true, "{reply}");
     }
     replies.last().unwrap().clone()
+}
+fn cli_output(store: &Path, verb: &str, args: &[&str]) -> Output {
+    Command::new(env!("CARGO_BIN_EXE_conduit"))
+        .arg(verb)
+        .arg("--store")
+        .arg(store)
+        .args(args)
+        .output()
+        .unwrap()
 }
 fn call(name: &str, arguments: Value) -> CallToolRequestParams {
     serde_json::from_value(json!({"name":name,"arguments":arguments})).unwrap()
@@ -388,7 +392,7 @@ fn run_groups(store: &Path, server: &Server) -> Vec<i32> {
     assert_eq!(groups.len(), 2, "two real filesystem groups must be live");
     groups
 }
-fn stop_server(server: &mut Server, store: &Path, groups: &[i32]) {
+fn terminate_server(server: &mut Server) {
     assert!(
         Command::new("kill")
             .args(["-TERM", &server.0.id().to_string()])
@@ -405,6 +409,9 @@ fn stop_server(server: &mut Server, store: &Path, groups: &[i32]) {
         assert!(start.elapsed() < Duration::from_secs(600));
         std::thread::sleep(Duration::from_millis(20));
     }
+}
+fn stop_server(server: &mut Server, store: &Path, groups: &[i32]) {
+    terminate_server(server);
     for &group in groups {
         let start = Instant::now();
         while unsafe { libc::kill(-group, 0) } == 0 {
@@ -685,6 +692,278 @@ fn author_commands_require_serve_and_make_recorded_requests() {
         );
     }
     stop_server(&mut server, &store, &[]);
+}
+
+fn records_store(store: &Path) -> (u16, String) {
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = listener.local_addr().unwrap().port();
+    let address = format!("http://127.0.0.1:{port}/mcp");
+    cli(store, "init", &["--url", &address]);
+    (port, address)
+}
+
+fn record_lines(stdout: &[u8]) -> Vec<Value> {
+    std::str::from_utf8(stdout)
+        .unwrap()
+        .lines()
+        .map(|line| serde_json::from_str(line).unwrap())
+        .collect()
+}
+
+fn complete_records(store: &Path) -> Vec<u8> {
+    let output = cli_output(store, "records", &[]);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "{}",
+        stderr.lines().next().unwrap_or("")
+    );
+    assert!(output.stderr.is_empty());
+    output.stdout
+}
+
+#[test]
+fn records_while_serving_match_records_after_stop() {
+    let temp = tempfile::tempdir().unwrap();
+    let store = temp.path().join("store");
+    let (port, _) = records_store(&store);
+    let mut server = start_server(&store, port);
+    let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
+    let spec = conduit_loader::Specification::read(&repo.join("spec")).unwrap();
+    let core = boundary::context(&repo).unwrap().core_package;
+    let project = temp.path().join("project");
+    fs::create_dir(&project).unwrap();
+    fs::write(
+        project.join("documents.json"),
+        serde_json::to_vec(&json!([
+            {"apiVersion":spec.names().api_version,"kind":"Pool","metadata":{"name":"change-pool"},"spec":{"type":format!("{core}#pool.v1")}}
+        ]))
+        .unwrap(),
+    )
+    .unwrap();
+    cli(&store, "submit", &[project.to_str().unwrap()]);
+    let registered = state(&store)["objects"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|object| object["name"] == "change-pool")
+        .unwrap()["id"]
+        .clone();
+    cli(&store, "unregister", &["Pool/change-pool"]);
+    assert!(
+        state(&store)["objects"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|object| object["id"] != registered)
+    );
+
+    let a = complete_records(&store);
+    cli(&store, "inspect", &[]);
+    let b = complete_records(&store);
+    terminate_server(&mut server);
+    let c = complete_records(&store);
+    assert!(!a.is_empty());
+    assert_eq!(a.last(), Some(&b'\n'));
+    assert!(b.starts_with(&a) && b.len() > a.len());
+    assert!(b == c, "exports before and after shutdown differ");
+    assert!(record_lines(&b[a.len()..]).iter().any(|record| {
+        record["type"] == "invocation-dispatched"
+            && record["data"]["operation"] == format!("{core}#inspect.v1")
+    }));
+    assert!(record_lines(&b).iter().any(|record| {
+        record["type"] == "object-change"
+            && record["data"]["target"] == registered
+            && record["data"]["action"] == "removed"
+    }));
+}
+
+#[test]
+fn records_while_serving_report_a_gap_as_after_stop() {
+    let temp = tempfile::tempdir().unwrap();
+    let store = temp.path().join("store");
+    let (port, _) = records_store(&store);
+    let mut server = start_server(&store, port);
+    let arguments = json!({"before":chrono::Utc::now().to_rfc3339()}).to_string();
+    cli(&store, "call", &["management.purge.v1", &arguments]);
+    let live = cli_output(&store, "records", &[]);
+    assert!(!live.status.success());
+    let stderr = String::from_utf8_lossy(&live.stderr);
+    assert!(
+        stderr.starts_with("records: export has gaps:"),
+        "{}",
+        stderr.lines().next().unwrap_or("")
+    );
+    assert!(stderr.contains("\"cause\":\"purged\""));
+    assert!(!live.stdout.is_empty());
+    terminate_server(&mut server);
+    let stopped = cli_output(&store, "records", &[]);
+    assert_eq!(live.status.code(), stopped.status.code());
+    assert!(live.stdout == stopped.stdout, "exports with gaps differ");
+    assert!(live.stderr == stopped.stderr, "gap diagnostics differ");
+}
+
+#[tokio::test]
+async fn records_route_answers_root_alone() {
+    use reqwest::{Method, StatusCode};
+
+    let temp = tempfile::tempdir().unwrap();
+    let store = temp.path().join("store");
+    let (port, _) = records_store(&store);
+    let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
+    let shell = Shell::open(
+        &store,
+        boundary::context(&repo).unwrap(),
+        Config::for_store(&store).unwrap(),
+    )
+    .unwrap();
+    let snapshot = shell.state().unwrap();
+    let id = |kind, name| {
+        snapshot
+            .objects
+            .iter()
+            .find(|object| object["kind"] == kind && object["name"] == name)
+            .unwrap()["id"]
+            .as_str()
+            .unwrap()
+    };
+    let pool = id("Pool", "system");
+    shell.issue_client_token(pool).unwrap();
+    drop(shell);
+
+    let _server = start_server(&store, port);
+    let token = |subject| fs::read_to_string(store.join("client-tokens").join(subject)).unwrap();
+    let root_token = token(id("Interface", "root"));
+    let pool_token = token(pool);
+    let client = reqwest::Client::builder().no_proxy().build().unwrap();
+    let url = format!("http://127.0.0.1:{port}/records");
+    let record_count = || state(&store)["records"].as_array().unwrap().len();
+    let before = record_count();
+    let response = client
+        .get(&url)
+        .bearer_auth(&root_token)
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK, "GET /records with root");
+    let reply: Value = response.json().await.unwrap();
+    let records = record_lines(&complete_records(&store));
+    assert!(!records.is_empty());
+    assert!(reply == json!({"records":records,"gaps":[],"complete":true}));
+
+    for (method, token, origin, status) in [
+        (Method::GET, None, None, StatusCode::UNAUTHORIZED),
+        (
+            Method::GET,
+            Some("forged-token"),
+            None,
+            StatusCode::UNAUTHORIZED,
+        ),
+        (
+            Method::GET,
+            Some(root_token.as_str()),
+            Some("http://127.0.0.1:1"),
+            StatusCode::FORBIDDEN,
+        ),
+        (
+            Method::POST,
+            Some(root_token.as_str()),
+            None,
+            StatusCode::METHOD_NOT_ALLOWED,
+        ),
+        (
+            Method::HEAD,
+            Some(root_token.as_str()),
+            None,
+            StatusCode::METHOD_NOT_ALLOWED,
+        ),
+        (
+            Method::GET,
+            Some(pool_token.as_str()),
+            None,
+            StatusCode::FORBIDDEN,
+        ),
+    ] {
+        let mut request = client.request(method.clone(), &url);
+        if let Some(token) = token {
+            request = request.bearer_auth(token);
+        }
+        if let Some(origin) = origin {
+            request = request.header("origin", origin);
+        }
+        let response = request.send().await.unwrap();
+        assert_eq!(response.status(), status, "{method} /records");
+        assert!(!response.text().await.unwrap().contains("\"records\""));
+    }
+    assert_eq!(record_count(), before);
+}
+
+#[test]
+fn records_fallback_uses_serving_snapshot_when_disk_is_unreadable() {
+    let temp = tempfile::tempdir().unwrap();
+    let store = temp.path().join("store");
+    let (port, _) = records_store(&store);
+    // Start as an existing store that predates publication of the root ID.
+    let metadata = store.join("root-client-id");
+    if metadata.exists() {
+        fs::remove_file(&metadata).unwrap();
+    }
+    let mut server = start_server(&store, port);
+    let expected = complete_records(&store);
+    assert!(!expected.is_empty());
+    fs::write(store.join("state.json"), b"invalid JSON").unwrap();
+    assert!(
+        complete_records(&store) == expected,
+        "live export differs from the serving snapshot"
+    );
+    // Simulate a serving build that has not published the root ID.
+    fs::remove_file(metadata).unwrap();
+    let output = cli_output(&store, "records", &[]);
+    assert!(!output.status.success());
+    assert!(output.stdout.is_empty());
+    assert_eq!(
+        String::from_utf8(output.stderr).unwrap(),
+        "conduit records: root client identity is unavailable. Restart conduit serve with this build.\n"
+    );
+    terminate_server(&mut server);
+}
+
+#[test]
+fn records_when_held_without_serve_names_the_address() {
+    assert_records_names_unanswered_address(false);
+}
+
+#[test]
+fn records_fallback_names_address_when_root_token_is_unavailable() {
+    assert_records_names_unanswered_address(true);
+}
+
+fn assert_records_names_unanswered_address(remove_token: bool) {
+    let temp = tempfile::tempdir().unwrap();
+    let store = temp.path().join("store");
+    let socket = tokio::net::TcpSocket::new_v4().unwrap();
+    socket.bind("127.0.0.1:0".parse().unwrap()).unwrap();
+    let address = format!("http://{}/mcp", socket.local_addr().unwrap());
+    cli(&store, "init", &["--url", &address]);
+    if remove_token {
+        fs::remove_dir_all(store.join("client-tokens")).unwrap();
+    }
+    let lease = fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(store.join("writer.lock"))
+        .unwrap();
+    FileExt::try_lock_exclusive(&lease).unwrap();
+    let output = cli_output(&store, "records", &[]);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(!output.status.success());
+    assert!(output.stdout.is_empty());
+    assert!(
+        stderr.contains(&address) && stderr.contains("serve does not answer"),
+        "{}",
+        stderr.lines().next().unwrap_or("")
+    );
+    assert!(stderr.contains("another process holds the store"));
 }
 
 #[test]

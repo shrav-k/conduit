@@ -93,6 +93,12 @@
                         }
                       },
                       "required": [
+                        "directory",
+                        "turnDeadlineSeconds",
+                        "effort",
+                        "accountServices",
+                        "model",
+                        "peerMessaging",
                         "account"
                       ],
                       "additionalProperties": false
@@ -115,6 +121,11 @@
                         }
                       },
                       "required": [
+                        "directory",
+                        "turnDeadlineSeconds",
+                        "effort",
+                        "accountServices",
+                        "model",
                         "account"
                       ],
                       "additionalProperties": false
@@ -195,7 +206,10 @@
                 "accountServices": false,
                 "model": "",
                 "peerMessaging": false,
-                "account": "agent@example.org"
+                "account": "agent@example.org",
+                "directory": null,
+                "turnDeadlineSeconds": 180,
+                "effort": ""
               }
             },
             {
@@ -208,7 +222,10 @@
                   "name": "api-key"
                 },
                 "peerMessaging": false,
-                "account": null
+                "account": null,
+                "directory": null,
+                "turnDeadlineSeconds": 180,
+                "effort": ""
               }
             },
             {
@@ -216,7 +233,10 @@
               "value": {
                 "accountServices": false,
                 "model": "",
-                "peerMessaging": false
+                "peerMessaging": false,
+                "directory": null,
+                "turnDeadlineSeconds": 180,
+                "effort": ""
               }
             },
             {
@@ -225,7 +245,10 @@
                 "accountServices": false,
                 "model": "",
                 "peerMessaging": false,
-                "account": null
+                "account": null,
+                "directory": null,
+                "turnDeadlineSeconds": 180,
+                "effort": ""
               }
             },
             {
@@ -238,7 +261,10 @@
                   "name": "api-key"
                 },
                 "peerMessaging": false,
-                "account": "agent@example.org"
+                "account": "agent@example.org",
+                "directory": null,
+                "turnDeadlineSeconds": 180,
+                "effort": ""
               }
             },
             {
@@ -247,7 +273,10 @@
                 "accountServices": true,
                 "model": "chosen",
                 "peerMessaging": false,
-                "account": "agent@example.org"
+                "account": "agent@example.org",
+                "directory": null,
+                "turnDeadlineSeconds": 180,
+                "effort": ""
               }
             },
             {
@@ -256,7 +285,10 @@
                 "accountServices": false,
                 "model": "",
                 "peerMessaging": true,
-                "account": "agent@example.org"
+                "account": "agent@example.org",
+                "directory": null,
+                "turnDeadlineSeconds": 180,
+                "effort": ""
               }
             }
           ]
@@ -280,7 +312,10 @@
               "value": {
                 "accountServices": false,
                 "model": "",
-                "account": "agent@example.org"
+                "account": "agent@example.org",
+                "directory": null,
+                "turnDeadlineSeconds": 180,
+                "effort": ""
               }
             },
             {
@@ -292,14 +327,20 @@
                   "kind": "Resource",
                   "name": "api-key"
                 },
-                "account": null
+                "account": null,
+                "directory": null,
+                "turnDeadlineSeconds": 180,
+                "effort": ""
               }
             },
             {
               "valid": false,
               "value": {
                 "accountServices": false,
-                "model": ""
+                "model": "",
+                "directory": null,
+                "turnDeadlineSeconds": 180,
+                "effort": ""
               }
             },
             {
@@ -307,7 +348,10 @@
               "value": {
                 "accountServices": false,
                 "model": "",
-                "account": null
+                "account": null,
+                "directory": null,
+                "turnDeadlineSeconds": 180,
+                "effort": ""
               }
             },
             {
@@ -319,7 +363,10 @@
                   "kind": "Resource",
                   "name": "api-key"
                 },
-                "account": "agent@example.org"
+                "account": "agent@example.org",
+                "directory": null,
+                "turnDeadlineSeconds": 180,
+                "effort": ""
               }
             },
             {
@@ -327,7 +374,10 @@
               "value": {
                 "accountServices": true,
                 "model": "chosen",
-                "account": "agent@example.org"
+                "account": "agent@example.org",
+                "directory": null,
+                "turnDeadlineSeconds": 180,
+                "effort": ""
               }
             },
             {
@@ -336,7 +386,10 @@
                 "accountServices": false,
                 "model": "",
                 "account": "agent@example.org",
-                "peerMessaging": true
+                "peerMessaging": true,
+                "directory": null,
+                "turnDeadlineSeconds": 180,
+                "effort": ""
               }
             }
           ]

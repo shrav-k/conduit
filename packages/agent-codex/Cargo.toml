@@ -1,6 +1,6 @@
 [package]
 name = "agent-codex"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2024"
 rust-version = "1.97.1"
 publish = false
@@ -18,6 +18,7 @@ path = "tests/fixtures/client.rs"
 
 [dependencies]
 anyhow = "1"
+libc = "0.2"
 serde_json = "1"
 rmcp = { version = "=3.9.0", features = ["client", "transport-io", "transport-streamable-http-client-reqwest"] }
 tokio = { version = "1", features = ["full"] }

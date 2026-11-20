@@ -436,3 +436,144 @@ Codex verifier and a fresh read-only Opus reader read the result before the chec
 ([ruling 79](../proposals/ruling-79/README.md), point 2). The local gate that
 [ruling 80](../proposals/ruling-80/README.md) has a merge wait on, `tools/gate.py`, runs at order
 050n's merge, read with the expected engine failure known.
+
+## Record
+
+Run on 2026-11-18, from about 13:50 to 14:21 UTC, on the Mac from `BASE` `wo/050-agents-0.2.0` at
+`7d1f01ed` (the coordinator's acceptance of the stop lock in order 050d's Record), in two rounds:
+the worker (655 s) and a fresh Codex verifier (386 s), then the worker again (486 s) and a second
+fresh Codex verifier (310 s). The change is the eight files of Scope, the four it names in each
+package. `ERROR_CLASSES` gains `network` after `context-window`, in both versions;
+`ClientTree::stop` and `Session::shutdown` return a `StopReport`, whose `note()` is byte for byte
+the note of `BASE`; a failed turn's error is a `FailedTurn`, whose text no longer carries the stop
+note and whose `fields()` give, for `.v2`, `{"failedTurn":{...}}` with `turn`, `cause`, `class`,
+`clientStarted`, `survivors` and `stopConfirmed`; `main.rs` appends those fields as a second text
+block of the failed result's `content`; each wrapper suite gains the five cases of
+`fixed_failure_causes_in_both_versions` and the test `v2_failed_turn_fields_reach_the_result` (14
+tests to 15); and both READMEs gain the `network` row and the section
+`## The .v2 failed turn's fields`. The worker applied decisions 1 to 8 as written. Its own choices:
+a private conversion that sorts the reading's PIDs and a private constant for an unconfirmed stop
+with no survivor; a stdio caller that advertises both elicitation modes and records any request, so
+that the test sees an elicitation as well as reading the JSON; and doc-tests run on their own after
+the wrapper suite stopped. Its sandbox denied PID-scoped `ps`, so the tree test stopped at its
+preflight in both packages (14 wrapper tests passed in each). Its mutation failed at the first `.v2`
+result's block count, 1 against 2, and passed restored.
+
+The first verifier, which ran no Rust suite in its read-only sandbox, found one must and three
+shoulds: on MCP 2026-07-28 the error results omitted `resultType`, which IFC-001 and the protocol
+require; the tree test could pass with survivors out of order, since the note sorts a copy and the
+JSON assertion reused the report's vector; no passing case had `stopConfirmed: false`; and the
+READMEs said every `.v2` error had two blocks, though an invalid configuration answers with one.
+Round 2 built the failed result with `CallToolResult::error` and `ContentBlock::text`, which sets
+`resultType` `complete` and which the MCP library strips for a legacy peer, and asserted it on
+modern stdio and its absence on a legacy one, through a fourth case of the new test with the legacy
+handshake; it compared the survivors with the independently observed live PIDs, ascending; it added
+the library unit test `unconfirmed_stop_report_sorts_survivors`, which sends `[43, 41, 42]` with
+`unconfirmed` through the report's conversion; it let `check_report` take the unconfirmed flag; and
+it tied the README's second block to a failed turn. The second verifier found one must and four
+shoulds: a successful turn on 2026-07-28 still omitted `resultType`, as at `BASE`; the read-error
+fallback, `StopReport::UNCONFIRMED`, had no deterministic test; the failed-home cases did not check
+the fields; the invalid-configuration case did not check the whole one-block shape; and the worker's
+report lacked the totals of the other test targets.
+
+A fresh read-only Opus reader then read the result (ruling 79, point 2), on a scratch copy on macOS
+arm64 where PID-scoped `ps` is allowed. Every text check of "Done when" printed what the order says;
+fmt and clippy were clean in both packages; `cargo test --release` gave 15 wrapper tests passed and
+0 failed in each, the package test 1 in each and Codex's manifest test 1, but the library's unit
+tests 2, not 1. `v2_client_tree_stop_leaves_no_survivor` passed (10.31 s for Codex) with survivors
+`[]` and `stopConfirmed` true for the deadline and the cancellation and an empty TERM stderr, the
+stdio blocks were the order's, and both digests equalled the worker's. The red check failed at the
+block count, 1 against 2, and passed restored, with `cmp` silent. It found one must and five
+shoulds:
+
+- F1: a done-when is not met as worded: it asks for every other target as at `BASE`, the library's
+  unit test 1, and each library now has 2.
+- F2: the failed arm does not use decision 4's code as written, since round 2 builds the result with
+  `CallToolResult::error` and `ContentBlock::text`, so the red check's statement is not in the file.
+- F3: round 2 weakened 050d's live tree test: `check_report` took the unconfirmed flag from the very
+  report it checks, and `stopConfirmed` was compared with that report's own flag, so an unconfirmed
+  live stop passed, where decision 6 says `check_report` runs as at `BASE`.
+- F4: the new README section never said the fields are not outputs of `turn.v1`, and said "Only this
+  README lists the classes", which is false, as the sibling's README lists them too.
+- F5: the README paraphrased decision 7's two replacement sentences.
+- F6: on 2026-07-28 a successful turn still omits `resultType`, the second verifier's open must; it
+  was so at `BASE`, and the order neither asks for nor forbids it, so it is the coordinator's call.
+
+The fixer kept the branch on `wo/050-agents-0.2.0` at `7d1f01ed`, which had not moved, and applied
+each finding, the same in both packages:
+
+- F1: the test stays. The library's unit tests are 2 in each package;
+  `unconfirmed_stop_report_sorts_survivors` was added by the worker's round 2 for the verifier's
+  ordering and unconfirmed findings.
+- F2: a departure from decision 4, as the worker's round 2's IFC-001 correction: the failed arm
+  builds `CallToolResult::error` from `ContentBlock::text` blocks, which adds `resultType`
+  `complete` on MCP 2026-07-28 and restructures the success arm. The wire result still has `isError`
+  true, no `structuredContent` and no `_meta`. The red check's actual statement is
+  `content.push(ContentBlock::text(fields.to_string()));`, and its observed failure was at
+  `tests/wrapper.rs:1581`, the block count, 1 against 2 (at `tests/wrapper.rs:1593` after this
+  round's lines).
+- F3: the tree test calls `PlantedTree::check_report(&live, false, &report, &expected, "; ");` (the second reader's S4 later restored BASE's helper and TERM call) and
+  asserts that the fields' `stopConfirmed` equals `true`, so an unconfirmed live stop fails the test
+  again, as at `BASE`; the unconfirmed note stays covered by the library's unit test.
+- F4: both READMEs read "The fields are not outputs of `turn.v1`, whose schemas stay as 0.1.1
+  published them." and "The classes are listed in this README and in no schema or description."
+- F5: both READMEs read "A `.v2` failed call also holds the failed turn's fields." and "failed
+  call's fields. On TERM the wrapper writes the note `client tree: PIDs P1, P2 outlived the stop`,
+  or `client tree: the process table could not be read, so the stop is unconfirmed`, to its stderr
+  and exits with status 143.", with "failed turn's fields" and "fields" each a link to the anchor
+  `the-v2-failed-turns-fields`.
+- F6, which is also the second verifier's must, taken by the reader's second choice: a departure
+  from decision 6, under which every other test keeps passing unchanged, and beyond decision 4,
+  which shapes the failed arm alone: the success arm sets
+  `result.result_type = Some(ResultType::COMPLETE)`, which the MCP library strips for a legacy peer.
+  `stdio_v2_defaults_and_invalid_configuration_remain_callable` gains the case `modern`, a valid
+  configuration served over the 2026-07-28 discovery, and asserts `resultType` `complete` on its
+  successful calls and no `resultType` on every legacy reply, the successful ones included; the test
+  count stays 15. Without the new line, the test failed at the modern success's `resultType`, `Null`
+  against `complete`; restored with `cp`, it passed and `cmp` printed nothing. The two `main.rs`
+  stay one file.
+
+Of the second verifier's four shoulds, the totals are given below; the deterministic test of the
+read-error fallback, the failed-home fields and the full invalid-configuration shape were not
+applied, since the reader did not take them up and the order asks for none of them, and they stay
+with the coordinator.
+
+The fixer then ran, from the worktree's root with `BASE` set to `wo/050-agents-0.2.0`,
+`python3 tools/check_docs.py` and `python3 tools/check_private_paths.py` (Errors: 0 each),
+`git diff --check wo/050-agents-0.2.0...HEAD` (clean), and the text checks of "Done when", which
+printed `0`, `0`, `agent-codex 0` and `agent-claude-code 0`, `0` each, `2`, `0`, `1` each, `1` each,
+`2` each, `1` each, `1` each, `0` each, `15` each and `0`. On macOS arm64 with PID-scoped `ps`
+allowed, in each package, `cargo fmt --check` and
+`cargo clippy --offline --all-targets -- -D warnings` exited 0, and `cargo test --offline --release`
+gave, for Codex, 15 wrapper tests passed and 0 failed, the library's unit tests 2, the manifest test
+1 and the package test 1; for Claude Code, 15 wrapper tests passed and 0 failed, the library's unit
+tests 2 and the package test 1. With `--nocapture`, `v2_failed_turn_fields_reach_the_result`
+printed, in both packages, for `.v2` network
+`client turn 1 failed: client failure: network; session cannot restart implicitly`, then
+`{"failedTurn":{"cause":"client-failure","class":"network","clientStarted":true,"stopConfirmed":true,"survivors":[],"turn":1}}`,
+and on the next call `session failed at turn 1: client failure: network; implicit restart refused`;
+the same with class `authentication` for `FAIL:401 unauthorized`; for `.v1` network the first text
+alone; and over the legacy handshake the same as the modern `.v2` network case.
+`v2_client_tree_stop_leaves_no_survivor` took 10.23 s (Codex) and 10.58 s (Claude Code). The Codex
+run printed the planted PIDs (client, background, session, double fork) deadline 85538, 85594,
+85595, 85606 and cancellation 85870, 85881, 85882, 85893, each with the fields
+`{"failedTurn":{"cause":"deadline","class":null,"clientStarted":true,"stopConfirmed":true,"survivors":[],"turn":1}}`
+and the same with `cancelled`; and TERM 86397, 86408, 86409, 86420. The Claude Code run printed
+deadline 86786, 86809, 86810, 86821; cancellation 87019, 87039, 87040, 87051, with the same fields;
+and TERM 87288, 87308, 87309, 87320. Both gave the deadline, cancellation and `.v1` texts of order
+050d word for word, and TERM's status 143 with empty stderr; `ps -o pid= -p` on the twenty-four PIDs
+printed nothing. The Codex red check, the order's edit made on the statement F2 names, failed at
+`tests/wrapper.rs:1593`, "v2 network result block count", 1 against 2; restored with `cp`, it passed
+and `cmp` printed nothing. The package build printed
+`dist/agent-codex.tar.gz#df657e25e670a7fd0f813dc9593099c6c8465993acf093b789acc45f0da00b12` and
+`dist/agent-claude-code.tar.gz#3c67cbc7c4043bdaa2336c6213cc7caed221672c7034913b1d8b16f35f308a74`,
+both new with F6; they are a host build's. The engine's expected failure,
+`live_s1_scripted_agents_call_engine_with_distinct_run_identities`, was not run. The gate's run,
+with that failure known, is the coordinator's, on the squash at order 050n's merge.
+
+A second fresh read-only Opus reader read `b0532ca7` and found no must and four shoulds, which the
+coordinator's fixer applied (S4 restoring `BASE`'s `check_report` helper and TERM call, so that
+decision 6's "The TERM case does not change" holds), after which `cargo test --release` on macOS
+arm64 gave, in each package, 15 wrapper tests passed and 0 failed,
+`v2_client_tree_stop_leaves_no_survivor` included, the library's unit tests 2 and the package test
+1, and for Codex the manifest test 1.

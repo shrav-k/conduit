@@ -1,0 +1,11 @@
+{
+  "name": "codex-no-account-hook.tar.gz",
+  "address": "example.org/conformance/codex-no-account-hook",
+  "version": "0.2.0",
+  "digest": "sha256:cf95b5a6d4a61951a82e6514adb536604c8b9ee2fc2de61dacef6fe2810b0358",
+  "directory": "file:///pinned/codex/",
+  "completion": {
+    "status": "complete",
+    "file": "codex-archive"
+  }
+}

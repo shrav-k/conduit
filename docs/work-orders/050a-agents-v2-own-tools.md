@@ -493,3 +493,73 @@ Step 11's first registrations are each accepted, with no diagnostic. Each regist
 
 Report the totals passed and failed. Tests that bind loopback ports may fail in your sandbox; if
 they do, say so, and the admin reruns them. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 on the Mac, from `main` `50e7cc5c` (the merge of this order's own text, #157),
+in one round: the worker (821 s) and a fresh Codex verifier (278 s), whose report lists no
+finding. The worker's output is checkpointed as one commit, `bb75e294`, on
+`wo/050a-agents-v2-own-tools`. As the order says, the branch is kept and not merged on its own.
+
+Both packages are at version 0.2.0. Each exports `codex.v2` or `claude-code.v2` beside its
+unchanged `.v1` Type, through a new item `wrapper-v2`. The `.v2` Type is appended to
+`contracts.yaml` as a new document, so the 0.1.1 file stays a byte prefix of it. A `.v2` launch
+runs the client in the directory that `directory` names, or in the run's own directory when it is
+null. `settings.json` and `mcp.json` always go in the run's directory. The client's own tools are
+on by default (`ownTools`), with its sandbox and approval prompts off: Codex gets
+`--sandbox danger-full-access` and `--cd` before `resume`, and Claude Code gets its seven named
+tools and `bypassPermissions`. Hosted search is on only when `accountServices` and `ownTools` are
+both true. `turnDeadlineSeconds` (1 to 604800, default 180) sets the turn deadline and the
+client's MCP tool timeout, and `effort` passes through. In both versions an invalid configuration
+no longer stops the wrapper: it lists `turn` and fails each turn, naming the input. An `error`
+event no longer ends a turn. A failed turn names its number and one fixed cause, with no client
+text in the result. The causes are: the deadline; cancellation; `client failure: CLASS`, from one
+constant class table; the client's exit status or signal, or an unknown status when the wait
+fails, after a bounded 2-second wait; EOF; no thread; invalid client output; a changed resumed
+thread; and a client that did not start. The two `lib.rs` differ only at line 17, and the two
+`main.rs` are identical. The READMEs gain a `.v2` section, say that `ownTools` is a temporary
+switch, and describe the reach that nothing confines.
+
+The worker's checks: the four Python checks and `git diff --check` passed. In each package
+`cargo fmt --check` and clippy were clean and 10 tests passed (20 in all, none failed). The
+byte-prefix, version-line, `lib.rs`/`main.rs` and private-path checks gave the stated results.
+The host builds' archive digests were
+`1e5f4f901f35584f6e0bf08f90f0cea082232a263cea0f54fd9cd601c7699681` (agent-codex) and
+`5349be22451cf1624251e468c2b6ace74420c40ddd2365812982b3e03002ec43` (agent-claude-code).
+
+In step 11 the engine accepted both projects of valid templates with no diagnostic. It also
+accepted, with no diagnostic, both projects whose template sets `turnDeadlineSeconds: 604801`,
+against what the order expected. Instantiating such a template was refused with INS-014, naming
+`turnDeadlineSeconds` and `maximum`. The worker reported this as a contradiction (finding
+`050a-registration`, citing INS-014 and SCH-009) and took the nearest sound reading. It changed
+nothing outside the two packages and said that correcting the expectation needs work outside the
+order's scope. The verifier found the discrepancy consistent with INS-014's and SCH-009's
+instantiation rules. It did not rerun the Rust tests or the registrations in its read-only
+sandbox.
+
+The worker's own choices:
+
+- the launch version is held as an `Option<bool>` for own tools, and the client's working
+  directory is kept apart from `Config::cwd`;
+- a configuration error is stored for repeated turn answers, and a session failure as a
+  turn-number and cause pair;
+- a failure to prepare the run's files maps to a deferred, fixed configuration error;
+- supplemental registrations of invalid instances check the maximum without starting a client.
+
+The branches of orders 076 and 078 are stacked on this branch's commit. The A78 dogfood runs the
+Agent packages from 076's branch (the handover).
+
+### The last verifier's findings
+
+The last verify report, round 1's, lists no finding. Its verdict, verbatim: "No verified faults
+found. The reported template-registration discrepancy is consistent with INS-014/SCH-009’s
+instantiation rules. Static checks passed; Rust tests and registration commands were not rerun in
+the read-only sandbox."
+
+### Next
+
+No further round is owed, but the branch does not merge alone. Under NAM-024 it merges as one
+0.2.0 with order 050, which is not yet written (each Agent's own home, the hooks, the account
+check), and with orders 076 and 078 (row 10 of the handover's queue). The handover's plan also
+puts a fresh conversation without an engine restart (`newConversation` on `turn.v1`) on this
+branch.

@@ -1,6 +1,28 @@
 {
   "cases": [
     {
+      "id": "registration-agent-v2-account-binding",
+      "case": "language/registration/agent-v2-account-binding/case.yaml",
+      "promises": [
+        "MAN-017"
+      ]
+    },
+    {
+      "id": "registration-agent-v2-account-hook-missing",
+      "case": "language/registration/agent-v2-account-hook-missing/case.yaml",
+      "promises": [
+        "TPL-005"
+      ]
+    },
+    {
+      "id": "registration-agent-v2-packages",
+      "case": "language/registration/agent-v2-packages/case.yaml",
+      "promises": [
+        "CTR-013",
+        "PKG-020"
+      ]
+    },
+    {
       "id": "registration-argument-map-default",
       "case": "language/registration/argument-map-default/case.yaml",
       "promises": [

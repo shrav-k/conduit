@@ -23,6 +23,62 @@ fn json_bytes(value: &Value) -> Vec<u8> {
     bytes.push(b'\n');
     bytes
 }
+fn agent_fixtures(root: &Path, check: bool, generated: &mut BTreeMap<String, Vec<u8>>) {
+    let fixtures = root.join("conformance/fixtures/agents");
+    for name in ["agent-claude-code", "agent-codex"] {
+        let package = fixtures.join(name);
+        let entries = ["conduit.yaml", "contracts.yaml"]
+            .into_iter()
+            .map(|file| {
+                (
+                    file.to_string(),
+                    (fs::read(package.join(file)).unwrap(), b'0', String::new()),
+                )
+            })
+            .collect();
+        write_fixture(&package.join("contracts.tar.gz"), &archive(entries), check);
+    }
+
+    // Registration selects an item that omits the account operation.
+    let codex = fixtures.join("agent-codex");
+    let mut manifest = documents(&codex.join("conduit.yaml")).remove(0);
+    manifest["address"] = json!("example.org/conformance/codex-no-account-hook");
+    let mut wrapper = manifest["implementations"]["wrapper-v2"].take();
+    let account = wrapper["implements"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|op| op.as_str().unwrap().ends_with("#account-hook.v1"))
+        .unwrap()
+        .as_str()
+        .unwrap()
+        .to_owned();
+    wrapper["implements"]
+        .as_array_mut()
+        .unwrap()
+        .retain(|op| op != &account);
+    wrapper["tools"].as_object_mut().unwrap().remove(&account);
+    manifest["implementations"] = json!({"wrapper-v2": wrapper});
+    let mut contracts = documents(&codex.join("contracts.yaml"));
+    let v1 = contracts
+        .iter_mut()
+        .find(|d| d["kind"] == "Type" && d["metadata"]["name"] == "codex.v1")
+        .unwrap();
+    // The synthetic manifest has no v1 wrapper for this unused default.
+    v1["spec"].as_object_mut().unwrap().remove("implementation");
+    let entries = BTreeMap::from([
+        (
+            "conduit.json".into(),
+            (json_bytes(&manifest), b'0', String::new()),
+        ),
+        (
+            "contracts.json".into(),
+            (json_bytes(&json!(contracts)), b'0', String::new()),
+        ),
+    ]);
+    generated.insert("codex-no-account-hook".into(), archive(entries));
+}
+
 fn release_fixtures(root: &Path, check: bool, generated: &mut BTreeMap<String, Vec<u8>>) {
     let packages = root.join("conformance/fixtures/s1/packages");
     let mut releases = vec![];
@@ -53,20 +109,20 @@ fn release_fixtures(root: &Path, check: bool, generated: &mut BTreeMap<String, V
     let mut manifest = documents(&packages.join("agents/conduit.yaml")).remove(0);
     manifest["version"] = json!("0.2.0");
     let mut docs = documents(&packages.join("agents/contracts.yaml"));
-    // C12: registration-only fixtures, no signIn or hooks. PKG-031: turn template.
-    // Ruling 83: subscription only. No apiKey; account is required, a string or null, no default.
+    // These fixtures declare the released schema and hooks for installation checks.
+    // They have no wrapper items and cannot run those hooks.
     for name in ["claude-code.v2", "codex.v2"] {
-        let mut properties = json!({
-            "accountServices":{"type":"boolean","default":false},
-            "model":{"type":"string","default":""},
-            "account":{"type":["string","null"]}
-        });
-        if name == "claude-code.v2" {
-            properties["peerMessaging"] = json!({"type":"boolean","default":false});
-        }
+        let package = name.strip_suffix(".v2").unwrap();
+        let source = root.join(format!(
+            "conformance/fixtures/agents/agent-{package}/contracts.yaml"
+        ));
+        let ty = documents(&source)
+            .into_iter()
+            .find(|d| d["kind"] == "Type" && d["metadata"]["name"] == name)
+            .unwrap();
         docs.push(json!({"apiVersion":manifest["apiVersion"],"kind":"Type","metadata":{"name":name},"spec":{
-            "family":"Agent","schema":{"type":"object","properties":properties,"required":["account"],"additionalProperties":false},
-            "offers":["#conversation.v1"],"requires":[],"records":{"inputs":false,"outputs":false}
+            "family":"Agent","schema":ty["spec"]["schema"],"signIn":ty["spec"]["signIn"],
+            "offers":["#conversation.v1"],"requires":ty["spec"]["requires"],"records":{"inputs":false,"outputs":false}
         }}));
         manifest["exports"]
             .as_array_mut()
@@ -280,6 +336,7 @@ fn main() {
         ("contracts.yaml".into(), (docs.clone(), b'0', String::new())),
     ]);
     let mut generated = BTreeMap::new();
+    agent_fixtures(&root, check, &mut generated);
     for (name, changed) in [
         (
             "wrong-address",

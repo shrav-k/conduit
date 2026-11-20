@@ -104,18 +104,18 @@ decision 7 compares every member of the fixture's schema.
 `toolsDirectory` is CTR-014's member (`spec/promises/contracts.yaml`), whose checks
 [order 157](157-own-tools-reported.md), the full review's order 15, built: "On the branch of orders
 050a and 076, the `.v2` Agent Types of the Agent packages' 0.2.0 will state
-`toolsDirectory: {directory: /directory}`". With it, the engine reads `directory` only to report
-the reach of the client's own tools when the instance is inspected (CTR-014's observable,
-LIF-013).
+`toolsDirectory: {directory: /directory}`". Through it, the engine reads `directory` only to
+report the reach of the client's own tools when the instance is inspected (CTR-014's observable,
+LIF-013); the item's binding of `/directory` still passes the value to the wrapper (MAN-017).
 
-**What the coordinator probed.** In a scratch directory outside the repository, the coordinator
-made both `contracts.yaml` as decisions 1 to 3 give them, packed each with `BASE`'s `conduit.yaml`
-and a placeholder wrapper into an archive, and registered decision 6's projects with an engine
-built from order 048a-1's branch. A and P were accepted in both packages with no diagnostic, and N
-was refused in both with one error, MAN-017's, naming `negative-account`, `PROBE_API_KEY` and
-`/apiKey`. It also saw that a template with `config: {}`, or one that sets `apiKey`, is accepted at
-registration with no diagnostic: the whole schema, with `additionalProperties: false`, is checked
-when an instance is made (INS-014). Decision 7's check passed on the probe's files and failed on
+**What the coordinator probed.** In a scratch directory outside the repository, the coordinator made
+both `contracts.yaml` as decisions 1 to 3 give them, packed each with `BASE`'s `conduit.yaml` and a
+placeholder wrapper into an archive, and registered decision 6's projects with an engine built from
+order 048a-1's branch. A and P were accepted in both packages with no diagnostic, and N was refused
+in both with one error, MAN-017's, naming `negative-account`, `PROBE_API_KEY` and `/apiKey`. It also
+saw that a template with `config: {}`, or one that sets `apiKey`, is accepted at registration with
+no diagnostic: the whole schema, with `additionalProperties: false`, is checked when an instance is
+made (INS-014). Decision 7's check, as first written, passed on the probe's files and failed on
 `BASE`'s. That was a probe, not a result: your run is the evidence.
 
 **What the branch already does, so that you do not redo it.** Each package's `contracts.yaml`
@@ -146,12 +146,13 @@ rewords it.
 
    - append `account` to the end of `required`, which keeps every name it holds, in order.
 
-   Nothing else in the schema changes: no `apiKey` and no `oneOf`; every other property, its
-   default and its bounds stay; and `additionalProperties` stays false. Write `'null'` quoted, so
-   that YAML reads a string. So `account` has no default and a template states it, as a string or
-   as null; and a template that sets `apiKey` names a property the schema does not hold, which
-   INS-014 refuses when an instance is made. `account` is the fixture's member as order 044 gave
-   it; order 048a-1 added `apiKey` to `required`, and order 202 removed `apiKey` and the `oneOf`.
+   Nothing else in the schema changes: no `apiKey` and no `oneOf`; every other property, its default
+   and its bounds stay; and `additionalProperties` stays false. Write `'null'` quoted, so that YAML
+   reads a string. So `account` has no default, and the resolved configuration holds it, from the
+   template or an instantiation argument, as a string or as null; and a template that sets `apiKey`
+   names a property the schema does not hold, which INS-014 refuses when an instance is made.
+   `account` is the fixture's member as order 044 gave it; order 048a-1 added `apiKey` to
+   `required`, and order 202 removed `apiKey` and the `oneOf`.
 
 2. **`toolsDirectory`.** In each `.v2` Type's `spec`, after `schema` and before `offers`, add the
    line `  toolsDirectory: {directory: /directory}`. `directory` is required and confined to
@@ -161,6 +162,11 @@ rewords it.
    - In `codex.v2`, "although Codex 0.167.0 still offers its collaboration tools" becomes
      "although Codex still offers its collaboration tools". The description then names no client
      version; the README keeps the version read.
+   - In both, "When the template names a directory, the client's own tools are on" becomes "When
+     the configuration names a directory, the client's own tools are on", since an instantiation
+     argument can supply `directory` or replace the template's (INS-006), and CTR-014's observable
+     is keyed on the resolved value (the coordinator's amendment after the review, for the second
+     verifier's must and the reader's R5).
    - In `claude-code.v2`, "They run as the engine's operating-system user and nothing confines them
      in v0." becomes "On the engine's own runner, they run as the engine's operating-system user
      and nothing confines them in v0."; and after "no Conduit grants, limits or records it (ruling
@@ -180,9 +186,9 @@ rewords it.
 5. **The READMEs**, both, in the package's own client's terms. Write no absolute local path and no
    client version beyond those the Codex README already records.
    - In `## The .v2 Agent`, "All properties are required after SCH-009 fills their defaults;
-     authors may omit them." becomes "All properties are required after SCH-009 fills their
-     defaults. Authors may omit every one but `account`, which has no default." Keep the new
-     sentence on one line, as each README keeps its sentences.
+     authors may omit them." becomes "All properties are required in the resolved instance
+     configuration after SCH-009 fills their defaults." Keep the new sentence on one line, as each
+     README keeps its sentences.
    - The input table gains one row, after its last:
 
      ```text
@@ -193,26 +199,30 @@ rewords it.
      line of its own:
 
      ```text
-     `account` names the subscription account that the client is to be signed in to, and has no default, so every template states it; a null `account` signs in to no subscription.
+     `account` names the subscription account that the client is to be signed in to.
+     Each resolved `.v2` instance configuration must contain `account`, which has no Type default.
+     Its value can come from the template or an instantiation argument.
+     A null `account` signs in to no subscription.
      The package's 0.2.0 is subscription-only: the Type states no `apiKey` and takes no API key, and API access comes later as a declared route (ruling 83).
      Nothing falls back from a sign-in to a key (ruling 82, point 1).
      No item of this package binds `account`, so it reaches neither the wrapper nor the client.
      ```
 
    - After that paragraph, add a second paragraph, exactly, each sentence on a line of its own:
-     in both READMEs its first line is
+     in both READMEs its first two lines are
 
      ```text
-     The Type states `toolsDirectory: {directory: /directory}` (CTR-014), so inspection reports the reach of the client's own tools wherever `directory` is a string; the engine reads `directory` for nothing else.
+     When `directory` is a string, the engine reads it through the Type's `toolsDirectory: {directory: /directory}` declaration (CTR-014) only to report the reach of the client's own tools on inspection.
+     The item's `AGENT_DIRECTORY` binding passes the string value to the wrapper.
      ```
 
-     in `agent-codex/README.md` its second line is
+     in `agent-codex/README.md` its third line is
 
      ```text
      The Type's description names no client version (ruling 82, point 5); this README records the version read.
      ```
 
-     and in `agent-claude-code/README.md` its second line is
+     and in `agent-claude-code/README.md` its third line is
 
      ```text
      The Type's description says that these tools run as the engine's operating-system user on the engine's own runner, and, under another runtime provider, on the machine of the instance's node with the limits that provider's contract states.
@@ -228,6 +238,16 @@ rewords it.
      ```
 
      Change the quoted `.env` refusal as decision 9 says, since it quotes the wrapper.
+
+   - The reach paragraph that follows the second paragraph keys own tools on the configuration, as
+     decision 3 keys the descriptions. In `agent-codex/README.md`, "When the template names a
+     directory, nothing confines the client in v0." becomes "When the configuration names a
+     directory, nothing confines the client in v0."; the README qualifies the runner in its section
+     on `wrapper-v2-path`. In `agent-claude-code/README.md`, the same sentence becomes "On the
+     engine's own runner, the client has unconfined reach in v0 when the configuration names a
+     directory.", and the paragraph's next lines are rewrapped. (The coordinator's amendment after
+     the review: the worker's round 2 wrote the Claude Code sentence, and the reader's R4 made the
+     Codex README match.)
 
    Write no other sentence that holds `since the Agent holds no API key (ruling 83)`: "Done when"
    counts it once in each file that holds it.
@@ -279,10 +299,11 @@ rewords it.
    Type from the package's `contracts.yaml` and from `BASE`'s, and the fixture's `.v2` schema. It
    prints, for each Type, whether every property the fixture's schema holds is equal in the
    package's; whether the package's schema holds `apiKey`; whether it holds a `oneOf`; whether
-   `required` ends with `account`; whether `additionalProperties` is equal; whether `account` states
-   a default; whether the schema, less `account`, is `BASE`'s; whether the `spec`, less `schema` and
-   `toolsDirectory`, is `BASE`'s; the `toolsDirectory`; whether the description is `BASE`'s with
-   decision 3's edits; whether it holds `0.167`; and whether it holds decision 25's sentence.
+   `required` is `BASE`'s followed by one `account`; whether `additionalProperties` is equal;
+   whether `account` states a default; whether the schema, less `account`, is `BASE`'s; whether the
+   `spec`, less `schema` and `toolsDirectory`, is `BASE`'s; the `toolsDirectory`; whether the
+   description is `BASE`'s with decision 3's edits; whether it holds `0.167`; and whether it holds
+   decision 25's sentence.
 
 8. **What this order does not do.** No `signIn`, no hook, no `requires` entry and no login, which
    are orders 050h to 050m's; no `apiKey`, no `oneOf` and no item that binds `/account`; no
@@ -352,12 +373,19 @@ grep -c 'ruling 83' packages/agent-codex/README.md packages/agent-claude-code/RE
 grep -c 'sets `apiKey` explicitly' packages/agent-codex/README.md   # 0
 grep -c 'toolsDirectory' packages/agent-codex/README.md packages/agent-claude-code/README.md   # at least 1 each
 grep -c 'authors may omit them' packages/agent-codex/README.md packages/agent-claude-code/README.md   # 0 each
-grep -c 'Authors may omit every one but `account`, which has no default.' packages/agent-codex/README.md packages/agent-claude-code/README.md   # 1 each
-grep -cxF '`account` names the subscription account that the client is to be signed in to, and has no default, so every template states it; a null `account` signs in to no subscription.' packages/agent-codex/README.md packages/agent-claude-code/README.md   # 1 each
+grep -cxF 'All properties are required in the resolved instance configuration after SCH-009 fills their defaults.' packages/agent-codex/README.md packages/agent-claude-code/README.md   # 1 each
+grep -cxF '`account` names the subscription account that the client is to be signed in to.' packages/agent-codex/README.md packages/agent-claude-code/README.md   # 1 each
+grep -cxF 'Each resolved `.v2` instance configuration must contain `account`, which has no Type default.' packages/agent-codex/README.md packages/agent-claude-code/README.md   # 1 each
+grep -cxF 'Its value can come from the template or an instantiation argument.' packages/agent-codex/README.md packages/agent-claude-code/README.md   # 1 each
+grep -cxF 'A null `account` signs in to no subscription.' packages/agent-codex/README.md packages/agent-claude-code/README.md   # 1 each
 grep -cxF "The package's 0.2.0 is subscription-only: the Type states no \`apiKey\` and takes no API key, and API access comes later as a declared route (ruling 83)." packages/agent-codex/README.md packages/agent-claude-code/README.md   # 1 each
 grep -cxF 'Nothing falls back from a sign-in to a key (ruling 82, point 1).' packages/agent-codex/README.md packages/agent-claude-code/README.md   # 1 each
 grep -cxF 'No item of this package binds `account`, so it reaches neither the wrapper nor the client.' packages/agent-codex/README.md packages/agent-claude-code/README.md   # 1 each
-grep -cxF "The Type states \`toolsDirectory: {directory: /directory}\` (CTR-014), so inspection reports the reach of the client's own tools wherever \`directory\` is a string; the engine reads \`directory\` for nothing else." packages/agent-codex/README.md packages/agent-claude-code/README.md   # 1 each
+grep -cxF "When \`directory\` is a string, the engine reads it through the Type's \`toolsDirectory: {directory: /directory}\` declaration (CTR-014) only to report the reach of the client's own tools on inspection." packages/agent-codex/README.md packages/agent-claude-code/README.md   # 1 each
+grep -cxF "The item's \`AGENT_DIRECTORY\` binding passes the string value to the wrapper." packages/agent-codex/README.md packages/agent-claude-code/README.md   # 1 each
+grep -c 'When the template names a directory' packages/agent-codex/README.md packages/agent-claude-code/README.md packages/agent-codex/contracts.yaml packages/agent-claude-code/contracts.yaml   # 0 each
+grep -c 'When the configuration names a directory, nothing confines the client in v0.' packages/agent-codex/README.md   # 1
+grep -cxF "On the engine's own runner, the client has unconfined reach in v0 when the configuration" packages/agent-claude-code/README.md   # 1
 grep -cxF "The Type's description names no client version (ruling 82, point 5); this README records the version read." packages/agent-codex/README.md   # 1
 grep -cxF 'No template gives a `.v2` Agent an API key: the Type states no `apiKey` (ruling 83), and nothing falls back from a sign-in to a key (ruling 82, point 1).' packages/agent-codex/README.md   # 1
 grep -cxF "The Type's description says that these tools run as the engine's operating-system user on the engine's own runner, and, under another runtime provider, on the machine of the instance's node with the limits that provider's contract states." packages/agent-claude-code/README.md   # 1
@@ -383,9 +411,11 @@ fixture = {t["metadata"]["name"]: t["spec"]["schema"]
            if t["metadata"]["name"].endswith(".v2")}
 runtime = ("Under another runtime provider, these tools run on the machine of the instance's node, "
            "as the operating-system user and with the limits that its contract states.")
-edits = {"codex.v2": [("although Codex 0.167.0 still offers", "although Codex still offers")],
+trigger = ("When the template names a directory", "When the configuration names a directory")
+edits = {"codex.v2": [("although Codex 0.167.0 still offers", "although Codex still offers"), trigger],
          "claude-code.v2": [("prompts off. They run as", "prompts off. On the engine's own runner, they run as"),
-                            ("records it (ruling 70). The client's", "records it (ruling 70). " + runtime + " The client's")]}
+                            ("records it (ruling 70). The client's", "records it (ruling 70). " + runtime + " The client's"),
+                            trigger]}
 for package, name in [("agent-codex", "codex.v2"), ("agent-claude-code", "claude-code.v2")]:
     path = f"packages/{package}/contracts.yaml"
     pick = lambda text: [d for d in yaml.safe_load_all(text) if d["metadata"]["name"] == name][0]
@@ -403,7 +433,7 @@ for package, name in [("agent-codex", "codex.v2"), ("agent-claude-code", "claude
           all(s["properties"].get(k) == v for k, v in f["properties"].items()),
           "apiKey" in s["properties"],
           "oneOf" in s,
-          s["required"][-1:] == ["account"],
+          s["required"] == was["spec"]["schema"]["required"] + ["account"],
           s["additionalProperties"] == f["additionalProperties"],
           "default" in s["properties"].get("account", {}),
           rest == was["spec"]["schema"],
@@ -428,8 +458,10 @@ cargo test --release
 cargo run --release --bin package
 ```
 
-`cargo test --release` reports, for `tests/wrapper.rs`, 15 passed and 0 failed, the dotenv test
-with decision 9's `DOTENV_REFUSAL`, and every other
+`cargo test --release` reports, for `tests/wrapper.rs`, 15 passed and 0 failed: Codex's wrapper
+test compares decision 9's `DOTENV_REFUSAL` at runtime, while Claude Code's `dotenv-file` case
+passes as a successful turn, so the source comparison of "Done when", each of the four files with
+`BASE`'s after decision 9's substitution, checks Claude Code's refusal and constant; and every other
 test target as at `BASE` (the library's unit tests 2 and the package test 1 in each, and in
 `agent-codex` the manifest test 1); the package test reads the new `contracts.yaml` from the
 archive. Report the totals, the digest that `package` prints (it is a host build's), and decision
@@ -449,3 +481,104 @@ Codex verifier and a fresh read-only Opus reader read the result before the chec
 ([ruling 79](../proposals/ruling-79/README.md), point 2). The local gate that
 [ruling 80](../proposals/ruling-80/README.md) has a merge wait on, `tools/gate.py`, runs at order
 050n's merge, read with the expected engine failure known.
+
+## Record
+
+Run on 2026-11-18, from about 19:00 to 19:27 UTC, on the Mac from `BASE` `wo/050-agents-0.2.0` at
+`80040519` (the note of S4's restore in order 050e's F3 bullet), in two rounds: the worker (715 s)
+and a fresh Codex verifier (235 s), then the worker again (384 s) and a second fresh Codex verifier
+(261 s). The change is the eight files of Scope, the four it names in each package. Both `.v2` Types
+gain `account: {type: [string, 'null']}`, last in `properties` and appended to `required`, with no
+default, no `apiKey` and no `oneOf`, and `toolsDirectory: {directory: /directory}` between `schema`
+and `offers`; `codex.v2`'s description names no client version, and `claude-code.v2`'s gains "On the
+engine's own runner" and decision 25's other-runtime sentence. Both READMEs gain the `account` row,
+the account paragraph and the `toolsDirectory` paragraph; the Codex README's `## The .v2 Agent's own
+home` takes decision 5's API-key sentence. The `.env` refusal ends
+`since the Agent holds no API key (ruling 83)` in each `src/lib.rs`, each `tests/wrapper.rs`
+constant and the Codex README's quote. The worker's own choices: the line breaks of the edited
+descriptions and of the Codex home paragraph, and doc-tests run on their own after the wrapper
+suite stopped. Its sandbox denied PID-scoped `ps`, so `v2_client_tree_stop_leaves_no_survivor`
+stopped at its preflight in both packages in both rounds (14 wrapper tests passed in each). Decision
+6's registration gave, in both packages and both rounds, A and P accepted with no diagnostic and N
+refused with one MAN-017 error naming `negative-account`, `PROBE_API_KEY` and `/apiKey`.
+
+The first verifier, which ran no Rust suite, found no must and four shoulds: decision 5's "every
+template states it" is false, since INS-006 and INS-012 let an instantiation argument supply the
+configuration; "the engine reads `directory` for nothing else" is false, since the item binds
+`AGENT_DIRECTORY: /directory` (CTR-014, MAN-017); Claude Code's reach paragraph did not name the
+engine's own runner; and the order said each package's dotenv test checks the new refusal, which
+Claude Code's does not. Round 2 rewrote the two README sentences and qualified Claude Code's reach
+paragraph, beyond the order's prescribed text, which left three of "Done when"'s checks at 0. The
+second verifier found four musts and two shoulds: the order's decision 1, decision 5 and its checks
+still put `account` on the template and said `directory` is read for nothing else; both Type
+descriptions keyed own tools on "When the template names a directory", where an argument can supply
+or replace `directory`; the order's dotenv evidence; the Codex reach paragraph's runner; and
+decision 7's script, which would pass `account` twice in `required`.
+
+A fresh read-only Opus reader then read the result (ruling 79, point 2). Every line of "Done when"
+printed what the order says but three, lines 355, 356 and 360 as then numbered, which printed 0 for
+each README; decision 7's script printed its two lines exactly; `check_docs`, `check_private_paths`
+and `git diff --check` passed. On a scratch copy on macOS arm64, `cargo test --release` gave in each
+package 15 wrapper tests passed and 0 failed, `v2_client_tree_stop_leaves_no_survivor` included,
+the library's unit tests 2 and the package test 1, and Codex's manifest test 1; the digests equalled
+the worker's (`3b7b2fc5...011c` and `b90fa8cd...cb04a`); decision 6's probe gave the worker's
+replies. The diff held the eight files of Scope, both commits had the work-order identity, and the
+added lines held no private path. It found three musts and four shoulds:
+
+- R1: decision 5's first bullet was not applied as written; the READMEs read "All properties are
+  required in the resolved instance configuration after SCH-009 fills their defaults."
+- R2: decision 5's account paragraph's first line became four lines, which are right, since INS-012
+  accepts `/config/account` and INS-014 checks the resolved configuration; decision 1 makes the
+  same false claim ("a template states it").
+- R3: decision 5's `toolsDirectory` sentence became two lines, both true.
+- R4: round 2 rewrote Claude Code's reach paragraph, which no decision names, and the Codex README
+  still keyed it on the template.
+- R5: both `.v2` Type descriptions still say "When the template names a directory", which decision
+  3 forbade this order to change; it proposed carrying it to a later description order.
+- R6: the order's test evidence says each package's dotenv test uses `DOTENV_REFUSAL`; only Codex's
+  compares it at runtime.
+- R7: decision 7's script would pass with `account` twice in `required`.
+
+The fixer kept the branch on `wo/050-agents-0.2.0` at `80040519`, which had not moved, and applied
+each finding; the amendments to this order are the coordinator's:
+
+- R1: decision 5's first bullet prescribes the READMEs' sentence, and its check is a `grep -cxF` of
+  it.
+- R2: decision 1 says the resolved configuration holds `account`, from the template or an
+  instantiation argument; decision 5 prescribes the READMEs' four lines, each with its own
+  `grep -cxF` check.
+- R3: decision 5 prescribes the READMEs' two lines, each with its own check, and the paragraph's
+  other line for each README becomes its third; "What it builds" says the engine reads `directory`
+  through `toolsDirectory` only to report it, and that the item's binding still passes it to the
+  wrapper.
+- R4: the Codex README reads "When the configuration names a directory, nothing confines the client
+  in v0."; decision 5 gains a bullet naming both READMEs' reach sentences.
+- R5, which is also the second verifier's open must: applied in this order, not carried forward.
+  Decision 3 gains a bullet, and both Type descriptions read "When the configuration names a
+  directory, the client's own tools are on", rewrapped at that line; decision 7's script adds the
+  edit to both Types' lists, and "Done when" checks that no README or `contracts.yaml` of the two
+  holds "When the template names a directory". No later order needs to carry it.
+- R6: the test evidence says that Codex's wrapper test compares `DOTENV_REFUSAL` at runtime, that
+  Claude Code's `dotenv-file` case passes as a successful turn, and that the source comparison of
+  "Done when" checks Claude Code's refusal and constant.
+- R7: the script compares `required` with `BASE`'s followed by one `account`, and decision 7 says
+  so. With `account` appended twice in memory, its fourth field printed `False` for both Types.
+
+The fixer then ran, from the worktree's root with `BASE` set to `wo/050-agents-0.2.0`,
+`python3 tools/check_docs.py` and `python3 tools/check_private_paths.py` (Errors: 0 each),
+`git diff --check` and `git diff --check wo/050-agents-0.2.0...HEAD` (clean), and every line of
+"Done when", each of which printed what is said beside it (the first after the commit, since the
+order file was still uncommitted before it). Decision 7's script, under `/usr/bin/python3` with
+PyYAML 6.0.1, printed its two expected lines. On macOS arm64 with PID-scoped `ps` allowed, in each
+package, `RUST_TEST_THREADS=4 cargo test --release --offline` gave 15 wrapper tests passed and 0
+failed, `v2_client_tree_stop_leaves_no_survivor` included, the library's unit tests 2 and the
+package test 1, and for Codex the manifest test 1. The package build printed
+`dist/agent-codex.tar.gz#da8fd18073b04e5201b0493a1dd4938772f1280985e78ed2469204694863f4d0` and
+`dist/agent-claude-code.tar.gz#d8253b47deb74d2dc006b5ea4a03048c3c1e1035c7a451b764d91775548a8abf`,
+both new with R5's description edit; they are a host build's. Decision 6's probe, rerun on those
+archives with the worktree's engine (unchanged from `BASE`), gave in both packages A and P accepted
+with no diagnostic, and N `accepted: false` with one error, `MAN-017`,
+`template "negative-account" selects #probe: PROBE_API_KEY -> /apiKey is not a required scalar place, or required input admits null`.
+The engine's expected failure, `live_s1_scripted_agents_call_engine_with_distinct_run_identities`,
+was not run. The gate's run, with that failure known, is the coordinator's, on the squash at order
+050n's merge.

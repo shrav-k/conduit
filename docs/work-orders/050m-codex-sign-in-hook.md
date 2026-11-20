@@ -1216,3 +1216,142 @@ verifier and a fresh read-only Opus reader read the result before the checkpoint
 [ruling 80](../proposals/ruling-80/README.md) has a merge wait on, `tools/gate.py`, runs at order
 050n's merge, read with the expected engine failure known, and order 050n carries this lane into
 0.2.0 only if A5's live check passes.
+
+## Record
+
+Run on 2026-11-19, from about 09:59 to 10:42 UTC, on the Windows node under Linux (x86_64), from
+`wo/050-lane-codex` at `fa01e235` (order 050l's Record). It ran in two rounds: the worker (1112 s)
+and a fresh Codex verifier (349 s), then the worker again (804 s) and a second fresh Codex verifier
+(335 s). The change is the seven files of Scope. `codex.v2` requires
+`github.com/shrav-k/conduit/core#sign-in-hook.v1`, defaults it to `#wrapper-v2`, and states
+`signIn` with the account place `/account`, the browser login and the device login; each `.v2` item
+implements the hook and maps it to the tool `sign-in`, and all three items stay plain. `src/lib.rs`
+gains the sign-in hook: it reads the stated logins from `contracts.yaml`, refuses a return, the
+device login and any other name, checks the first port on loopback, starts
+`codex login -c cli_auth_credentials_store="file"` in the Agent's own home, relays the first URL on
+stderr that passes `redirect_url_matches` within `LOGIN_URL_DEADLINE` (30 s) as an
+`input_required` result with its request state, and leaves a task that tracks the login's
+descendants and stops its group after its exit or `LOGIN_LIMIT` (900 s). Every child is built
+through `client_command`, which strips `CODEX_REFRESH_TOKEN_URL_OVERRIDE` and
+`CODEX_REVOKE_TOKEN_URL_OVERRIDE`, and only the account check's child gets the refresh override
+set to `https://refresh.invalid/oauth/token` (ruling 86, point 5). Order 050l's last reader's two
+shoulds are in: the scripted app-server writes `account-eof` at its input's end, which the
+`detached-eof` case asserts is absent, and `scan_group` returns `None` where its reading fails,
+which makes the account check's stop unconfirmed. `src/main.rs` lists `sign-in` after `sign-out`;
+the scripted client gains a scripted login; `tests/wrapper.rs` has 28 tests; the README gains
+`## The .v2 sign-in hook`. The worker's own choices: the hook reads incoming `_meta` through rmcp's
+request context; it checks the written URL authority for an empty user-info marker that parsing
+drops, and refuses raw paths that parsing would normalize; it drains stderr while waiting for the
+child, and seeds the scoped stop from a reading of the group at the URL's hand-off and before a
+wait on EOF; in round 2, it accepts the pinned CLI's fixed scope, originator and two flow flags and
+refuses every other query parameter, uses the existing `POLL` interval to track the login, and
+exposes the parser through a hidden test entry point to keep the test counts. Both rounds' tests
+ran on Linux x86_64 and passed: the library's 2, the manifest test 1, the package test 1 and 28
+wrapper tests. Decision 10 gave R and P2 accepted with no diagnostic, and S and P1 refused under
+TPL-019, with `v2-sign-in-on-path: invalid number of run items` and
+`v2-path-turn-and-retire: invalid number of run items`, which name neither item. Round 2's three
+mutations failed at their assertions, the drop order's in 3 of 3 runs, and passed after the
+restore. In round 2 the first mutation harness copied its own inherited environment in memory to
+supply Cargo's offline setting, against the order's "Never read or print any process's
+environment"; nothing was printed, the order's log matched no secret pattern and the reports hold
+no environment, and the recheck used a command-local setting. The order was not paired under A77,
+since it is on the sign-in chain's critical path and its first dispatch stopped at preflight.
+
+The first verifier found four musts and three shoulds. The musts: the URL check accepted any
+unique extra query parameter, so a URL with a credential or a login hint passed (IFC-049); the raw
+authority check could miss an empty user-info marker behind mixed slash and backslash separators;
+a detached descendant started after the URL's hand-off could survive the login's exit; and the
+stdio test re-serialized rmcp's decoded result, so it could not see an extra `content` or a canary
+in a dropped field. The shoulds: the parser took one or three ports; the failure cases that start
+a client did not check the wrapper's stderr; and the README stated revocation and sign-out before
+the browser login as certain. Round 2 applied all seven. The second verifier found four musts and
+three shoulds. The musts: discovery read the process table before it published what it found into
+the tree, so a whole-tree stop between the two could miss an observed descendant; step 7 took an
+ended login before testing whether it ran, so a failed replacement erased its outcome; the parser
+took everything before `, ports: [` as the host; and the mutation harness's read of its
+environment. The shoulds: the raw-wire check kept only `input_required` results; the README's
+process-tree limits still said the tree is sampled only during a stop; and the README presented a
+TLS failure at a system proxy as certain.
+
+A fresh read-only Opus reader then read the result on the Mac (macOS arm64), from a scratch copy
+of `1146407b` on `fa01e235` (ruling 79, point 2). Every line of "Done when" printed what the order
+says and its script printed its three lines with every value True; `check_docs`,
+`check_private_paths` and `set_names --check` gave Errors: 0, and `git diff --check` was clean;
+`cargo fmt --check` and `clippy -D warnings` were clean and `cargo test --release` gave the
+library's 2, the manifest test 1, the package test 1 and 28 wrapper tests passed. The three
+mutations failed where they should, the drop order's in 3 of 3 runs, and passed after the restore,
+`cmp` silent; a fourth of its own, the refresh block set on every child, also failed. With an
+engine built on the scratch copy, decision 10 gave the worker's replies. Decision 2's citations
+held against an existing clone at the tag, so no network was used. The host digest was
+`4aa43e27a1483b2e0dec88558f3b97bef570cd9144c36415bcc17c1152e44514`. It rated the second verifier's
+four musts as shoulds and found no must and eight shoulds:
+
+- R1 (`050m-read1-1`): step 7 takes `self.login` before testing `is_running`, so a replacement
+  sign-in that then fails erases an ended login's outcome, and a retry answers `STATE_UNKNOWN`.
+- R2 (`050m-read1-2`): the login tracker read the whole process table every 20 ms (`POLL`) for up
+  to 15 minutes, the worker's own choice.
+- R3 (`050m-read1-3`): `LoginGroup::discover` read the table before publishing into the tree's
+  `seen`, so a whole-tree stop between the two could miss an observed descendant; within the
+  documented class of limits, so a should.
+- R4 (`050m-read1-4`): the README's process-tree limits still said the tree is sampled only during
+  a stop.
+- R5 (`050m-read1-5`): `redirect_url_matches` refuses any parameter outside six required names and
+  four fixed-value ones, two of them literals of Codex 0.167.1, which a Codex bump can change.
+- R6 (`050m-read1-6`): round 2's mutation harness read its own inherited environment.
+- R7 (`050m-read1-7`): the raw-wire check kept only `input_required` results, so an extra member
+  on a complete sign-in reply would not be seen.
+- R8 (`050m-read1-8`): the stated-logins parser accepted an empty host or an extra mapping member
+  before `ports`.
+
+The fixer kept the branch on `wo/050-lane-codex` at `fa01e235`, without a rebase, since the lane
+had not moved, and applied each finding:
+
+- R1: step 7 reads `if self.login.as_ref().is_some_and(Login::is_running)`, then takes the earlier
+  login and stops it, so an ended login stays until step 12 replaces it.
+  `v2_sign_in_hook_starts_the_browser_login` gains, after the ended login, a sign-in refused at the
+  port (PND-010) and a retry with the ended login's state, which answers `LOGIN_ENDED`; its wait for
+  the tracker to sample the detached descendant goes from 250 to 600 ms.
+- R2: `while_tracking` uses its own `const LOGIN_TRACK: Duration = Duration::from_millis(250);`, and
+  `POLL` stays for stops.
+- R3: `discover` takes the tree's lock before it reads the table and holds it through the
+  publication, so a whole-tree stop's reading, which holds the same lock, comes before or after
+  both. No test drives the race.
+- R4: the limit reads "The wrapper samples the tree during a stop, and while a sign-in hook's login
+  runs, every 250 milliseconds. A process that left the client's group and lost its parent links to
+  the tree between two samples, or before a stop's first read, is neither stopped nor named." The
+  reader's text said "every POLL interval"; with R2 the login's interval is `LOGIN_TRACK`, so the
+  fixer names its value.
+- R5: kept, as a departure from decision 4's letter taken to answer the first verifier's IFC-049
+  must. The README's sign-in section gains: "The fixed scope, originator and flow flags the hook
+  accepts were read at rust-v0.167.1 (`codex-rs/login/src/server.rs:580-623`,
+  `codex-rs/login/src/auth/default_client.rs:42`); a bump of the Codex version reads them again,
+  since a changed value fails the hook with no login URL."
+- R6: recorded above: in memory only, nothing printed, rerun with a command-local setting. Later
+  briefs give a command-local `CARGO_NET_OFFLINE=true cargo ...` line, which the fixer used.
+- R7: the stdio test collects every captured result whose `resultType` is `complete` and whose text
+  begins `sign-in hook`, checks that there are 3 on the waiting path, 2 with the failure probes and
+  none for `.v1`, and that each has exactly the keys `content`, `isError` and `resultType`.
+- R8: after the split the parser returns `None` for an empty host or one holding `,`, a space, `:`,
+  `{` or `}`, and `v2_stated_logins_match_the_type` gains the forms `host: ,` and
+  `host: 127.0.0.1, extra: x`, built from the stated host.
+
+The second verifier's proxy should, which the reader did not carry, stays open for the
+coordinator. On the worktree, R1's change taken out failed at the retry's `unwrap` in
+`v2_sign_in_hook_starts_the_browser_login`, and R8's host check taken out failed at the new
+malformed forms; each passed after the restore. The fixer then ran on the Mac (macOS arm64), from
+the worktree, on the files of this commit before it was made: every line of "Done when" printed
+what the order says but the first two, which print 1 for this Record alone; its script
+printed its three lines with every value True, with a system Python that has PyYAML; `check_docs`,
+`check_private_paths` and `set_names --check` gave Errors: 0, and `git diff --check` was clean. In
+`packages/agent-codex/`, one cargo command at a time with `RUST_TEST_THREADS=4`,
+`CONDUIT_VECTOR_THREADS=4` and `CARGO_NET_OFFLINE=true`: `cargo fmt --check` (exit 0),
+`cargo clippy --all-targets -- -D warnings` (clean), `cargo test --release` (the library's 2, the
+manifest test 1, the package test 1 and 28 wrapper tests passed, 0 failed,
+`v2_client_tree_stop_leaves_no_survivor` among them), `v2_sign_in` (3 passed), `v2_stated_logins`
+(1) and `v2_refresh_override` (1) with `--nocapture`, and `cargo run --release --bin package`
+(digest `049f6f9370a644b0c2b792ac1e023c8448e57a2adb1d9dc56cb1d48b3b7537bf`, a host build's). The
+relay mutation failed at the canary assertion, the refresh mutation at "turn: template refresh
+override reached the child environment", and the drop order's in 3 of 3 runs at "detached-eof: the
+hook closed the app-server's input before its stop"; each passed after the restore, `cmp` silent.
+`contracts.yaml` and `conduit.yaml` are unchanged by the fixer, so decision 10 was not run again.
+The gate's run on this order's squash is the coordinator's, at order 050n's merge.

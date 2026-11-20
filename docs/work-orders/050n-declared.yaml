@@ -1,0 +1,102 @@
+[
+  {
+    "name": "Portable Agent 0.2.0 installation, registration and failed turn cases",
+    "kind": "added",
+    "cases": [
+      "registration-agent-v2-packages",
+      "registration-agent-v2-account-binding",
+      "registration-agent-v2-account-hook-missing",
+      "explain-failed-turn-content",
+      "explain-failed-model-turn-content"
+    ]
+  },
+  {
+    "name": "Live S1 pins the released Agent metadata at 0.2.0",
+    "kind": "fixture",
+    "operation": "replace",
+    "cases": [
+      "registration-live-agents"
+    ],
+    "paths": [
+      "conformance/fixtures/agents/agent-*/conduit.yaml",
+      "conformance/fixtures/agents/agent-*/contracts.yaml",
+      "conformance/fixtures/agents/agent-*/contracts.tar.gz",
+      "conformance/language/registration/live-agents/fixture.json",
+      "engine/examples/s1/conduit.yaml"
+    ]
+  },
+  {
+    "name": "The S1 Agent defaults case reads the regenerated release and schemas",
+    "kind": "fixture",
+    "operation": "replace",
+    "cases": [
+      "agents-v2-defaults"
+    ],
+    "paths": [
+      "conformance/fixtures/install-archives/agents-0.2.0.tar.gz",
+      "conformance/language/packages/agents-v2-defaults/claude-code.v2-values.json",
+      "conformance/language/packages/agents-v2-defaults/codex.v2-values.json",
+      "conformance/language/packages/agents-v2-defaults/install.json"
+    ]
+  },
+  {
+    "name": "The released required list starts with directory",
+    "kind": "expectation",
+    "operation": "replace",
+    "cases": [
+      "agents-v2-defaults"
+    ],
+    "paths": [
+      "/steps/1/expect/reply/package/project/documents/[23]/spec/schema/required/0"
+    ],
+    "before": "account",
+    "after": "directory"
+  },
+  {
+    "name": "The released required lists include the remaining populated fields and account",
+    "kind": "expectation",
+    "operation": "add",
+    "cases": [
+      "agents-v2-defaults"
+    ],
+    "paths": [
+      "/steps/1/expect/reply/package/project/documents/[23]/spec/schema/required/[1-6]"
+    ]
+  },
+  {
+    "name": "Evaluation fills the released directory default",
+    "kind": "expectation",
+    "operation": "add",
+    "cases": [
+      "agents-v2-defaults"
+    ],
+    "paths": [
+      "/steps/[23]/expect/reply/samples/*/value/directory"
+    ],
+    "after": null
+  },
+  {
+    "name": "Evaluation fills the released effort default",
+    "kind": "expectation",
+    "operation": "add",
+    "cases": [
+      "agents-v2-defaults"
+    ],
+    "paths": [
+      "/steps/[23]/expect/reply/samples/*/value/effort"
+    ],
+    "after": ""
+  },
+  {
+    "name": "Evaluation fills the released turn deadline default",
+    "kind": "expectation",
+    "operation": "add",
+    "cases": [
+      "agents-v2-defaults"
+    ],
+    "paths": [
+      "/steps/[23]/expect/reply/samples/*/value/turnDeadlineSeconds"
+    ],
+    "after": 180
+  }
+]

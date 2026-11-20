@@ -1,0 +1,320 @@
+# A77's record of order 050j (docs/implementation/WORK_ORDERS.md, "The record each order
+# keeps"), written before the merge: `merged`, `ci` and each `not recorded` are the
+# coordinator's to fill at order 050n's merge.
+order: "050j"
+group: code
+chain: 'off'
+worker: codex
+dispatched: 2026-11-19T08:37Z
+merged: no, a checkpoint on wo/050-lane-claude that merges with order 050n
+base: b4891ae26cab358f16268603054a8e19c0cc73ee
+lines: +1719 -21
+order_reads:
+- model: opus
+  findings: {must: 0, should: 4, nit: 0}
+  changes: 'the read of the text as written; all four applied: decision 2''s indentation
+    rule, decision 8''s step 2 flags, decision 7''s tool-name assertion and decision
+    10''s sentence on item 1''s loader vector'
+- model: opus
+  findings: one read of 050j's and 050m's texts and the 050 plan after ruling 86,
+    3 musts and 9 shoulds in all; on 050j's text no must and one should, that 050j
+    and 050m rewrite the same sentence of docs/work-orders/README.md
+  changes: carried to the second read
+- model: opus
+  findings: the second read of the same texts, no must and 9 shoulds; on 050j's
+    text one should (the same sentence, and the 050m row's 'keyed') and one date
+    (2026-11-18 for ruling 86)
+  changes: 'applied: the 050m row''s ''keyed'' and ruling 86''s date; the shared
+    sentence left to whichever of 050j and 050m merges second'
+rounds: [774, 611]
+passes:
+- reader: codex
+  round: 1
+  model: the client's default (the runner passes none)
+  client: codex-cli 0.167.1
+  effort: high
+  loaded: [AGENTS.md]   # the repository's, read by codex-cli itself; the key records none
+  seconds: 374
+  tokens: 1926341 in, 10456 out
+  marked: {must: 4, should: 2, nit: 0}
+  musts_accepted: 4
+  musts_rejected: []
+  classes: {}
+- reader: opus-paired
+  round: 1
+  model: claude-opus-5-5
+  client: Claude Code 2.1.318
+  effort: high
+  loaded: []
+  seconds: 145
+  tokens: 1154515 in (32, 92957 cache creation, 1061526 cache read), 13718 out
+  marked: {must: 0, should: 0, nit: 0}
+  musts_accepted: 0
+  musts_rejected: []
+  classes: {}
+- reader: codex
+  round: 2
+  model: the client's default (the runner passes none)
+  client: codex-cli 0.167.1
+  effort: high
+  loaded: [AGENTS.md]   # the repository's, read by codex-cli itself; the key records none
+  seconds: 295
+  tokens: 1364816 in, 10424 out
+  marked: {must: 4, should: 1, nit: 0}
+  musts_accepted: 4   # judged: (2) must; (1), (3) and (4) should
+  musts_rejected: []
+  classes: {implementation: 1}
+- reader: opus
+  round: 2
+  model: not recorded
+  client: not recorded
+  effort: not recorded
+  loaded: not recorded
+  seconds: not recorded
+  tokens: not recorded
+  marked: {must: 3, should: 3, nit: 0}
+  musts_accepted: 3
+  musts_rejected: []
+  classes: not recorded
+- reader: opus-fix
+  round: 2
+  model: not recorded
+  client: not recorded
+  effort: not recorded
+  loaded: not recorded
+  seconds: not recorded
+  tokens: not recorded
+  marked: {must: 0, should: 0, nit: 0}
+  musts_accepted: 0
+  musts_rejected: []
+  classes: {}
+- reader: opus
+  round: 2
+  model: not recorded
+  client: not recorded
+  effort: not recorded
+  loaded: not recorded
+  seconds: not recorded
+  tokens: not recorded
+  marked: {must: 1, should: 4, nit: 0}
+  musts_accepted: 1
+  musts_rejected: []
+  classes: not recorded
+- reader: opus-fix
+  round: 2
+  model: claude-opus-5-5
+  client: not recorded
+  effort: not recorded
+  loaded: not recorded
+  seconds: not recorded
+  tokens: not recorded
+  marked: {must: 0, should: 0, nit: 0}
+  musts_accepted: 0
+  musts_rejected: []
+  classes: {}
+- reader: opus
+  round: 2
+  model: not recorded
+  client: not recorded
+  effort: not recorded
+  loaded: not recorded
+  seconds: not recorded
+  tokens: not recorded
+  marked: {must: 1, should: 3, nit: 0}
+  musts_accepted: 1
+  musts_rejected: []
+  classes: {implementation: 1}   # the record's own text
+fixes:
+- by: opus-fix (the first fixer)
+  fixed: [stale capture directory removed after the overlap check (M1), the Record (M2), the watch stops the group once the leader exits (S1), read_url refuses a link or FIFO (S2)]
+  read_by: opus (the second reader, at af632176)
+- by: opus-fix (the second fixer)
+  fixed: [this record (M1), the amendment sentence (S2), paired finding 3's words (S3), the README's group stop and non-regular-file refusal (S4)]
+  read_by: opus (the third reader, at 391ca546)
+- by: coordinator
+  fixed: [the paired reader's effort, the judgment of the second verifier's findings, the Codex passes' loaded, these fixes]
+  read_by: none before the lane's fast-forward
+rebases: 0
+ci:
+  linux: none
+  macos: none
+paired:
+  findings:
+  - number: 1
+    severity: should
+    decision: 8. Document the redirect login and sign-in hook
+    file: packages/agent-claude-code/README.md
+    line: 545
+    problem: The README describes the pending plain-hook relay and named-login refusal
+      as current behavior.
+    evidence: README.md:543–547 says the plain hook’s request “is still relayed”
+      and “The engine refuses” a named login before dispatch. The work order at
+      lines 1285–1289 assigns those changes to orders 207 and 209. At this checkpoint,
+      spec/interface/implementation.yaml:238–240 reads a plain `input_required`
+      as unknown, and spec/promises/pending.yaml:208–211 describes matching the
+      result of a plain hook rather than refusing the named request before dispatch.
+    fix: Qualify the README statements as behavior delivered by orders 207 and 209
+      until those changes land.
+    judgment:
+      accepted: false
+      reason: The README text is the order's prescribed text (decision 8, the order's
+        lines 1242-1250), and it describes the 0.2.0 release, whose engine builds
+        orders 207 and 209 before the release; nothing in this package is wrong.
+      severity: null
+      class: null
+      fault: null
+  - number: 2
+    severity: must
+    decision: 5. Serve the sign-in tool and browser helper
+    file: packages/agent-claude-code/src/main.rs
+    line: 60
+    problem: The wrapper starts login and returns URL elicitation even when the
+      tool request lacks the URL elicitation capability.
+    evidence: spec/interface/implementation.yaml:1271–1273 says a server must “rely
+      on no capability that a request does not declare” and answer with error -32021
+      and `data.requiredCapabilities` when it needs one. src/main.rs:43–65 checks
+      return input and arguments, then calls `session.sign_in()` without checking
+      that capability. The success request in tests/wrapper.rs:3375–3377 and 3433–3437
+      supplies only the tool name and arguments.
+    fix: Check the request’s URL elicitation capability before launching the client.
+      Answer with -32021 and the required capability when absent. Test both a capable
+      request and an incapable request that leaves no login record.
+    judgment:
+      accepted: true
+      reason: null
+      severity: should
+      class: null
+      fault: per-request URL elicitation capability not checked before the login
+        starts
+  - number: 3
+    severity: must
+    decision: 4. Start and watch the client's redirect login
+    file: packages/agent-claude-code/src/sign_in.rs
+    line: 252
+    problem: Starting sign-in can erase the Agent’s existing client home, including
+      its stored login.
+    evidence: src/lib.rs:221–230 canonicalizes the home and accepts any directory
+      below the state directory. src/sign_in.rs:248–256 derives the capture path
+      with `.join(CAPTURE_NAME)` and immediately calls `fs::remove_dir_all(&capture)`.
+      If the accepted home already resolves to that capture path, the hook deletes
+      and later removes the home itself. The order at line 632 calls for a new directory
+      beside the home.
+    fix: Create an exclusively owned capture directory inside the state directory.
+      Preserve existing directories and refuse any overlap with the canonical client
+      home. Cover an accepted in-state home that resolves to the capture path.
+    judgment:
+      accepted: true
+      reason: null
+      severity: should
+      class: null
+      fault: capture directory may overlap the client home
+  - number: 4
+    severity: must
+    decision: 4. Start and watch the client's redirect login
+    file: packages/agent-claude-code/src/sign_in.rs
+    line: 267
+    problem: The hook can accept a URL that arrives after its deadline.
+    evidence: src/sign_in.rs:265–285 checks for the capture file before checking
+      `Instant::now() >= until` and sleeps for a full `POLL` between iterations.
+      If the file appears after the deadline while the hook is asleep, the next
+      iteration can return that URL. The order at lines 636–642 says the hook waits
+      “at most 30 seconds” and fails if no URL arrives in time.
+    fix: Bound each poll by the remaining time and give the deadline precedence
+      over a late capture. Add a delayed-handoff test alongside the silent-client
+      case.
+    judgment:
+      accepted: true
+      reason: null
+      severity: nit
+      class: null
+      fault: a URL at most one poll late is accepted
+  - number: 5
+    severity: must
+    decision: 4. Start and watch the client's redirect login
+    file: packages/agent-claude-code/src/sign_in.rs
+    line: 292
+    problem: If the login leader exits before the hook returns, surviving members
+      of its process group can escape the hook’s failure cleanup.
+    evidence: src/sign_in.rs:267–277 detects the exit with `child.try_wait()`. Cleanup
+      at lines 292–295 calls `signal_group(group, start, libc::SIGKILL, true)` and
+      then kills the individual child. With `require_leader` true, src/lib.rs:911–915
+      refuses the group signal after the leader has been reaped. The order at lines
+      640–642 says the hook “stops the login's own group” on this failure.
+    fix: Use a PID-reuse-safe cleanup path that can stop the login group after its
+      leader exits, while leaving other groups running. Check it with a scripted
+      login whose leader exits and leaves a group member alive.
+    judgment:
+      accepted: true
+      reason: null
+      severity: should
+      class: null
+      fault: group survivors after the login leader exits
+  - number: 6
+    severity: should
+    decision: 7. Add the three sign-in tests
+    file: packages/agent-claude-code/tests/wrapper.rs
+    line: 3205
+    problem: The success test demonstrates a matching URL and a working callback,
+      but it can pass when the hook changes the URL handed to the browser.
+    evidence: docs/proposals/review-signin-2026-11-16/README.md:401–404 requires
+      the hook to relay “the URL of the login it started.” tests/wrapper.rs:3205–3209
+      checks the URL’s shape, and line 3141 checks only the challenge’s length and
+      alphabet. The fixture at tests/fixtures/client.rs:595–605 completes the callback
+      when the state matches. A different well-formed challenge would pass both
+      checks.
+    fix: Have the fixture record a digest of the exact URL it passes to the browser.
+      Compare that digest with the returned URL’s digest without printing either
+      value.
+    judgment:
+      accepted: true
+      reason: null
+      severity: should
+      class: null
+      fault: success test does not pin the exact URL relayed
+  key:
+    1: codex
+    2: codex
+    3: codex
+    4: codex
+    5: codex
+    6: codex
+  verdicts:
+    codex: Changes required at checkpoint 6eecefd8. The scope, manifest, Type declaration,
+      documentation checks, private-path check, name check, and whitespace check
+      passed read-only verification. Cargo tests and registration were reviewed
+      from the worker’s report.
+    opus-paired: "I found nothing to refute. The checkpoint (b4891ae2..HEAD) applies\
+      \ decisions 1 to 10 of order 050j as written, and I found no fault.\n\n- **Scope:**\
+      \ the nine changed files are exactly the order's Scope. The working tree is\
+      \ clean after the commit.\n- **Contracts and manifest:** the `contracts.yaml`\
+      \ change is decision 2's block. I read the login line with its values masked;\
+      \ its members are in order, with `ports` `any` and `carried` false. `requires`\
+      \ lists the four hooks, and `implementation` maps each to `#wrapper-v2`. The\
+      \ manifest's `implements` line and its `sign-in` tools line match decision\
+      \ 3. `plain` is untouched.\n- **lib.rs:** it gains exactly the two `login`\
+      \ lines. Against `agent-codex/src/lib.rs` it differs in 5 lines: `CLAUDE`,\
+      \ the two `login` lines and `pub mod sign_in;`.\n- **sign_in.rs:** the opening\
+      \ comment and imports and the appended block are decision 4's code, verbatim\
+      \ after formatting. `stdout(Stdio::null())` occurs once (`src/sign_in.rs:230`),\
+      \ and the constants are at lines 148, 150 and 152.\n- **main.rs:** it adds\
+      \ the import, the `{Path, PathBuf}` change, the `sign-in` tool declaration,\
+      \ the `call_tool` branch before 050i's, and the capture branch before `--headers-helper`.\
+      \ Nothing else changes.\n- **Scripted client:** its additions are decision\
+      \ 6's code.\n- **wrapper.rs:**\n  - It has 26 tests.\n  - The four-tool list\
+      \ occurs 0 times. The five-tool list occurs 4 times (lines 1410, 2159, 2864\
+      \ and 3424).\n  - The helpers are verbatim.\n  - The three new tests follow\
+      \ the order's steps and table. The through-the-wrapper test keeps the `waiting`\
+      \ connection open through cancel. That is what lets its refused-connection\
+      \ check fail if the wrapper's end did not stop the login: an open connection\
+      \ leaves the scripted listener blocked but still bound.\n  - The stdout check\
+      \ fails under the stdout mutation, and `assert_no_hook_canary` covers `LOGIN_TOKEN`,\
+      \ `LOGIN_CLAIM` and `ACCOUNT` (wrapper.rs:1695-1707).\n- **README:** it carries\
+      \ decision 1's S1 and the three changes of decision 8, verbatim. It has two\
+      \ `(#the-v2-sign-in-hook)` links and names no client version other than 2.1.318.\n\
+      - **050i's file:** it changes by +2/−1, as S2 asks.\n- **Private paths:**\
+      \ the package holds none (a grep excluding `target` and `dist` found 0).\n\
+      - **Worker's report:** it quotes no login literal and no private path. It\
+      \ reports the sandbox `ps` preflight failure as the order asks.\n\nI did not\
+      \ rerun cargo, the engine registration or the PyYAML scripts, because this\
+      \ session is read-only."
+escapes: []

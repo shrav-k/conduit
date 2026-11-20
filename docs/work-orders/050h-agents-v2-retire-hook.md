@@ -719,3 +719,173 @@ Codex verifier and a fresh read-only Opus reader read the result before the chec
 ([ruling 79](../proposals/ruling-79/README.md), point 2). The local gate that
 [ruling 80](../proposals/ruling-80/README.md) has a merge wait on, `tools/gate.py`, runs at order
 050n's merge, read with the expected engine failure known.
+
+## Record
+
+Run on 2026-11-18, from about 20:25 to 20:56 UTC, on the Windows computer (WSL, Linux x86_64),
+stacked as the owner approved that day: from order 050f's verified branch at `e214d842`, before
+050f's Record; the coordinator then rebased the two checkpoint commits onto `wo/050-agents-0.2.0` at
+`4d2862b3`. It ran in two rounds: the worker (818 s) and a fresh Codex verifier (271 s), then the
+worker again (494 s) and a second fresh Codex verifier (277 s). The change is the 14 files of Scope.
+Both `.v2` Types require `github.com/shrav-k/conduit/core#retire-hook.v1`, default it to
+`#wrapper-v2` and end their descriptions with S; each `.v2` item, Codex's two and Claude Code's one,
+implements the hook and maps it to the tool `retire`. Each `src/lib.rs` reads the state directory
+first and gains `retire` and `retire_within`: the hook stops the conversation's client tree, refuses
+every turn from then on, checks the home as a launch does, runs the client's logout
+(`codex logout -c cli_auth_credentials_store="file"` or `claude auth logout`) with the home alone,
+its output discarded, under `LOGOUT_DEADLINE` (60 s), and after exit 0 empties the home by entry,
+links removed and not followed. Each `src/main.rs` lists the plain tool `retire` on a `.v2` wrapper;
+the scripted client gains a logout that records its call and prints synthetic canaries; each
+`tests/wrapper.rs` gains three tests (18 each); each README gains `## The .v2 retire hook`. The
+worker's own choices: in round 1, one I/O helper that gives every entry read and removal error the
+fixed text, a comparison of the whole stdio success object, and temporary scripts for the probes and
+the mutation; in round 2, logout's working-directory fallback (R1 below), the stdio test's .v2 run
+kept and followed by two fresh wrapper runs, each with a named directory removed after its turn,
+one a success and one a logout exit 3, with raw stdout kept through a duplex stream, and a separate
+temporary Codex fixture for the negative control. In both rounds, both packages passed 18 wrapper
+tests, Codex 22 tests in all and Claude Code 21, and the mutation of "Done when" failed at the
+expected assertion and passed after the restore. Decision 9 gave R and P2 accepted with no
+diagnostic, Claude Code's N refused under TPL-005, Codex's N refused under MAN-017 on the `.v1`
+item's `AGENT_PEER_MESSAGING` binding, not TPL-005, and P1 refused under TPL-019 with the text
+`v2-path-turn-only: invalid number of run items`.
+
+The first verifier found four musts and three shoulds. The musts: logout could not start when a
+named directory had gone after configuration, since logout kept it as its working directory; the
+READMEs said a further retirement calls the hook again, where an error of the plain hook leaves the
+outcome unknown (IFC-010), so nothing is dispatched until reconciliation records `failed`; the
+READMEs' introductions said "ever set up" for TPL-018's "a setup was ever dispatched" and left out
+the runtime provider's `stopped` and `unknown`; and P1's diagnostic names neither item, which
+TPL-019 requires, an engine gap older than this order. The shoulds: Codex's N was masked by MAN-017;
+the error cases did not check the raw output streams for the canaries; and the README presented
+Codex's revocation request as unconditional. Round 2 gave logout a fallback directory, rewrote the
+README passages, checked both raw streams on a success and a failure, reached TPL-005 with the
+separate fixture, and found P1's diagnostic still naming neither item. The second verifier found two
+musts and four shoulds. The musts: `empty_home` reads the home by its path after logout, so a home
+replaced by a link while logout ran would be followed and the target's entries removed; and P1's
+diagnostic. The shoulds: a directory that goes between the check and the spawn still stops logout;
+no test observes that the client was stopped before logout began; the retry checks would pass if a
+failed retirement emptied the login file but kept its name; and the Codex README did not say which
+token the revocation request names.
+
+A fresh read-only Opus reader then read the result on the Mac (ruling 79, point 2), on the branch at
+`1f73976d` on `4d2862b3`. Every line of "Done when" printed what the order says and its script
+printed its four lines; `check_docs`, `check_private_paths` and `set_names --check` gave Errors: 0,
+and `git diff --check` was clean; the diff held the 14 files of Scope, the files that must not
+change were unchanged, and both commits had the work-order identity. On a scratch copy,
+`cargo fmt --check` and `clippy -D warnings` were clean in each package, and `cargo test --release`
+gave in `agent-codex` the library's 2, the manifest test 1, the package test 1 and 18 wrapper tests
+passed, and in `agent-claude-code` 2, 1 and 18, with `v2_client_tree_stop_leaves_no_survivor`
+passing; the digests were `2d97e162...0dfb` and `04911dcf...c1f7`. The mutation failed at
+`tests/wrapper.rs:1861`, `assert!(entry_names(&home).is_empty())`, and passed after the restore,
+`cmp` silent. With an engine built on a scratch copy it reran decision 9 and got the worker's
+replies. It ran no engine test, as the order says. It found no must and eight shoulds:
+
+- R1: logout departs from decision 4's step 1: when the named directory is gone, logout runs in the
+  wrapper's working directory, or in the home if that is gone too, a fallback the order does not
+  give; the worker marked it as its own.
+- R2: the READMEs' retry sentence, "A further retirement can dispatch it again only after
+  reconciliation records the outcome as `failed`", departs from decision 8's "a further retirement
+  calls it again (TPL-018)" and is the correct one (IFC-010, OPS-021).
+- R3: Codex's N is refused under MAN-017 before the hook is checked, so the order's N leaves TPL-005
+  unshown for Codex.
+- R4: P1's diagnostic names neither item, which TPL-019 requires; the gap is in `engine/`, outside
+  this order's scope.
+- R5: the Codex README's revocation paragraph left out decision 8's scope, a request naming the
+  home's own stored token.
+- R6: step 3 of the Codex README wrote the logout command with Rust's escapes,
+  `cli_auth_credentials_store=\"file\"`.
+- R7: the closing list of limits in each README had no lead-in, so it read as evidence.
+- R8: the second verifier's first must, as hardening: check the home again after logout, before
+  emptying it.
+
+The fixer kept the branch on `wo/050-agents-0.2.0` at `4d2862b3`, without a rebase, and applied each
+finding:
+
+- R1: no code change; the fallback stands here as the worker's own choice under decision 4, with the
+  stdio runs that remove the named directory after a turn, a success and a logout exit 3, open to
+  the coordinator's strike. Turn launches keep their configured working directory.
+- R2: the READMEs keep the corrected wording. Every error of the plain retire hook leaves its
+  outcome unknown, so a failed logout is dispatched again only after reconciliation records
+  `failed`; the Session-level retries of `v2_retire_error_paths_hold_no_canary` exercise the hook,
+  not the engine's redispatch. Order 050n's accounts-guide line should use the same wording.
+- R3: no change on this branch. Codex's N was refused under MAN-017, the text saying that
+  `AGENT_PEER_MESSAGING -> /peerMessaging` is not a required scalar place, or required input admits
+  null; the worker's separate fixture, a copy of `wrapper-v2`'s bindings without the hook, reached
+  TPL-005; both ran from temporary archives outside the repository. Whether 050n's loader vector
+  uses a candidate whose bindings are valid for `codex.v2` is the coordinator's.
+- R4: found, not fixed. An engine order should make TPL-019's diagnostic name both items and assert,
+  in a registration test, that P1's names `example.org/conduit/agent-codex#wrapper-v2` and
+  `#wrapper-v2-path`.
+- R5: the Codex README reads "At the tag named in the read, Codex's source attempts one best-effort
+  revocation request naming the home's own stored token, when the home holds one, and then removes
+  the home's login even if the request fails, so successful local sign-out gives no confirmation of
+  vendor revocation.", followed by the source sentence and the C3 link as before.
+- R6: step 3 reads `codex logout -c cli_auth_credentials_store="file"`.
+- R7: both READMEs put the line `Limits:` between the evidence sentence and the first limit.
+- R8: in both `src/lib.rs`, `retire_within` checks between logout and `empty_home` that
+  `client_home(&self.config)?` still equals `home`, and otherwise fails with
+  `client home ({HOME_VARIABLE}): cannot empty the home`. This adds one statement to decision 4's
+  `retire_within`, on the reader's finding, and is the coordinator's, open to the owner's strike. A
+  home replaced during logout by a link outside the state directory is refused with
+  `the home resolves outside CONDUIT_STATE_DIR`, and one replaced by a link to another directory
+  inside it with `cannot empty the home`. On a scratch copy, a scripted logout that replaced the
+  home with each link left the target's entry in place and gave those two texts; with the check
+  removed, the retirement succeeded and emptied the target. The window between the check and the
+  read of the home remains; the second verifier's directory-handle fix was not taken, and the
+  order's 18 tests gain no test for it.
+
+The second verifier's other three shoulds, which the reader did not carry (the spawn after the
+directory check, the stop before logout, the login's bytes on a failed retry), stay open for the
+coordinator. The fixer then ran on the Mac, from the worktree's root, on the files of this commit
+before it was made: every line of "Done when" (each printed what the order says), its script (its
+four lines), `check_docs`, `check_private_paths` and `set_names --check` (Errors: 0 each),
+`git diff --check` and `git diff --check wo/050-agents-0.2.0` (clean). In each package, one cargo
+command at a time with `RUST_TEST_THREADS=4`: `cargo fmt --check` (exit 0),
+`cargo clippy --all-targets -- -D warnings` (clean), `cargo test --release` (`agent-codex`: the
+library's 2, the manifest test 1, the package test 1 and 18 wrapper tests passed;
+`agent-claude-code`: 2, 1 and 18 passed; 0 failed in each),
+`cargo test --release --test wrapper v2_retire` (3 passed in each) and
+`cargo run --release --bin package` (digests `7dd44c8d...df9d` and `c7904d84...799e`, host builds).
+The mutation of "Done when" failed at `tests/wrapper.rs:1861`,
+`assertion failed: entry_names(&home).is_empty()`, and passed after the restore with `cmp` silent.
+The engine's tests were not run, as the order says. The gate's run on this order's squash is the
+coordinator's, at order 050n's merge.
+
+The coordinator settled the logout's exit in a home with no login on 2026-11-19, as "Who decided
+what" left it, from sources read and no client run. Codex: at the tag order 050g read,
+`rust-v0.167.1` (commit `0a94398fa60c`, https://github.com/openai/codex/tree/rust-v0.167.1),
+fetched read-only, `run_logout` (`codex-rs/cli/src/login.rs:566-656`) exits 0 there. Its
+`logout_with_revoke` finds no stored login, since the file store answers none where `auth.json` is
+missing (`codex-rs/login/src/auth/storage.rs:264-271`), so `revoke_auth_tokens` returns before any
+request (`codex-rs/login/src/auth/revoke.rs:55-61`); the file store's `logout` takes the home's
+write lock, which creates `auth.lock` in the home (`storage.rs:195-212`), and its removal of
+`auth.json` finds nothing and answers `false` (`storage.rs:171-175`;
+`codex-rs/login/src/auth/manager.rs:1045-1060, 1546-1569`); `run_logout` then prints
+`Not logged in` on standard error and exits 0 (`login.rs:651-656`). It exits 1 instead only where
+the configuration does not load (`load_config_or_exit`, `login.rs:673-695`), where a store's
+removal fails (`login.rs:620-621`), or where a cleanup fails that neither the home's
+`config.toml` nor a machine-managed configuration sets up here, a Bedrock provider's or a
+required remote configuration's (`login.rs:568-576, 636-637, 647-648`), since the load and the
+requirements read the machine's layers too and the hook's logout does not pass
+`--ignore-user-config`; so the exit 0 holds on a machine whose configuration loads, with no
+managed requirements, and a home with no Bedrock provider in its `config.toml`;
+`codex login status`, which the hook does not run, exits 1 when not logged in
+(`login.rs:545-547`). Claude Code: its pages state no exit status for `claude auth logout`, in a
+home with a login or without one. Read again on 2026-11-19 (order 050g's CC1 to CC3, with the
+error reference, https://code.claude.com/docs/en/errors, and
+https://code.claude.com/docs/en/troubleshoot-install), the CLI reference gives the command only
+"Log out from your Anthropic account", and the one exit status it states for an `auth` command is
+`claude auth status`'s, "Exits with code 0 if logged in, 1 if not"; the error reference gives the
+words a logout prints when its save goes through, "Successfully logged out from your Anthropic
+account.", and nothing for a home that holds no login. For the hook: in `agent-codex`, the
+retirement of an Agent never signed in, as one whose `account` is null, meets the logout's exit 0,
+sends nothing to the vendor and empties the home, the `auth.lock` the logout wrote included, so
+the hook succeeds and the retirement is confirmed; the README's first limit, which calls that exit
+unknown, is overtaken for Codex by this reading of the source, though not by an observation of the
+client, and restating it is the coordinator's. In `agent-claude-code` the limit stands as written:
+were the exit not 0, the retirement of a Claude Agent never signed in would stay unconfirmed, its
+hook failing, dispatched again only after reconciliation records `failed`, and failing again while
+the home holds no login. Neither hook changes, so order 050n gains no decision from this. What
+Claude Code's logout exits with there stays open until a run of the client in an empty scratch
+home observes it, which the coordinator owes before the first real retirement of a Claude Agent
+that never signed in.

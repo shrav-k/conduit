@@ -842,3 +842,142 @@ fresh Codex verifier and a fresh read-only Opus reader read the result before th
 ([ruling 79](../proposals/ruling-79/README.md), point 2). The local gate that [ruling
 80](../proposals/ruling-80/README.md) has a merge wait on, `tools/gate.py`, runs at order 050n's
 merge, read with the expected engine failure known.
+
+## Record
+
+Run on 2026-11-19, from about 11:06 to 11:18 UTC and again from about 15:29 to 15:40 UTC, on the Mac
+(macOS, arm64), from `wo/050-lane-claude` at `acfe6273` (this order's text), with the coordinator's
+literals file in place for Claude Code 2.1.318, in two rounds: the worker (448 s) and a fresh Codex
+verifier (260 s), then the worker again (394 s) and a second fresh Codex verifier (270 s). It was
+one of A77's paired orders, in the code group and off the sign-in chain, dispatched with one round
+and continued from the coordinator's report. The change is the four files of Scope. `claude-code.v2`
+states, after `browser` and as one JSON line, the login `code-page`, `return: page` and `carried:
+false`, with the browser login's `authorization` and `clientId` and the client's page, and its
+description gains Q1 (vi)'s sentence; `src/sign_in.rs`'s fixed failure texts of the login's start
+end with ` (PND-010)`; `tests/wrapper.rs` reads both logins (`stated_logins`), teaches
+`login_template` and `ifc_049_failures` the page login, has the relay test check the relayed URL
+against the code-page login, and gains `v2_stated_logins_each_match_one_url` (27 tests); the
+README's `## The .v2 sign-in hook` takes decision 4's eight changes and the subsection `### The
+code-page login`. In round 1 the worker applied decisions 1 to 6 as written; its own choices were
+`/usr/bin/python3` for the YAML scripts and cargo run offline.
+
+The paired read of round 1: the merged list held 9 findings, 6 of Codex's verifier's, 2 marked must,
+3 should and 1 nit, and 3 of the Opus paired reader's (claude-opus-5-5, Claude Code 2.1.318, effort
+high, no MCP server, nothing loaded, 98 s), 1 should and 2 nits. The coordinator judged the list
+blind before opening the key: #1 and #2, on the README's 0.2.0 text, rejected as decision 4's
+prescribed text, which describes the 0.2.0 release, whose engine builds orders 207 and 209 before it
+ships (as judged for order 050j's paired finding 1); #3 (one fixed text names PND-010 for three
+distinguishable start failures) and #8 (`assert_eq!` on the shared literals would print them on
+failure) accepted as shoulds and carried to round 2; #4, #5 and #6 (helper doc comments describe the
+browser login alone), #7 (the relay fixture writes the literals to a temporary file) and #9 (the
+synthetic S256 challenge has nonzero pad bits) nits; no must.
+
+Round 2 changed prescribed code and text, and each change stands as the coordinator's amendment,
+open to the owner's strike:
+
+- Decision 2: `LOGIN_DID_NOT_START` is removed, and its six call sites each take one of six fixed
+  texts, `client login did not start: <cause> (PND-010)`, with these causes: could not resolve state
+  directory, capture directory overlaps client home, could not create capture directory, client
+  process tree is closed, could not spawn client, client process ID unavailable (paired finding 3).
+  Three of them are tested: could not spawn client (`no-client`), capture directory overlaps client
+  home (`capture-is-home`) and could not create capture directory (`capture-blocked`). The other
+  three, client process tree is closed, client process ID unavailable and could not resolve state
+  directory, are reached only by races or by states that a scripted client cannot set up (a tree
+  already closed, a child with no PID, a state directory that vanishes after the home check), and
+  are left untested.
+- Decision 3: the `no-client` and `capture-is-home` cases expect the new texts; a `capture-blocked`
+  case (a regular file at the capture path) is added; the authorization and clientId checks use
+  `assert!` with messages that name only the field (paired finding 8).
+- Decision 4: the README lists the six texts.
+- The amended values of "Done when": the numstat of `src/sign_in.rs` 23, 11; `PND-010` in
+  `src/sign_in.rs` 10; the `LOGIN_DID_NOT_START` constant 0; `PND-010` in `tests/wrapper.rs` 6; the
+  lines holding `` (PND-010)` `` in the README 11. The `git diff --quiet` line prints 1 once this
+  Record and A77's record are committed, for those two files of `docs/` alone; every other line of
+  "Done when" stands as written.
+
+The second verifier found 1 must, 2 shoulds and 1 nit, which the runner passed on unjudged: (1), a
+must, the `.v2` hook still fails to start a login without naming PND-010 when the home check or the
+configuration check refuses (`sign_in.rs` lines 389 and 394), where `sign-in-hook.v1` asks for "a
+diagnostic naming PND-010 and why"; (2), a should, the README presents the engine's refusal of a
+named login before any part runs as available on this branch; (3), a should, the login matrix's
+synthetic challenge, ending in `m`, has nonzero pad bits, which a conforming S256 encoder cannot
+give; (4), a nit, `ifc_049_failures`'s doc comment still names a redirect login alone. The
+coordinator's judgment: (1) accepted as a should, not a must, the order's fault, since decision 6
+kept the home's and the configuration's refusals as they are so that order 050c's shared refusals
+would not change, and the work follows the order; it is carried to order 050n (the coordinator's
+choice), which can end those two refusals with ` (PND-010)` in the hook alone, leaving the shared
+texts unchanged; (2) rejected, as paired findings 1 and 2 were, the prescribed text of the 0.2.0
+release; (3) a nit, the order's synthetic value, as paired finding 9; (4) a nit, as paired findings
+5 and 6, fixed below. In round 2 the worker passed 26 of 27 wrapper tests, the library's 2 and the
+package test 1: the sandbox denied the PID-scoped `ps` of `v2_client_tree_stop_leaves_no_survivor`,
+which the reader's run on the Mac passed. Decision 5's registration gave exit 0, `accepted: true`
+and no diagnostic, and, with the code-page login renamed `browser`, exit 1, `package admission
+failed`, `accepted: false` and one diagnostic, `CTR-013`, whose message ends `signIn: logins 0 and 1
+are both named "browser"`; the host archive's digest was `4bfc0d97...016cb`.
+
+A fresh read-only Opus reader then read the result on the Mac (ruling 79, point 2), on the branch at
+`87a01e21` on `acfe6273`. `check_docs`, `check_private_paths`, `set_names --check` and
+`check_schemas` gave Errors: 0, and `git diff --check` was clean; every count of "Done when" printed
+what the order says but the five that round 2's amendment changes; the structural script printed
+`True True True True True`, and the literal search found `contracts.yaml` alone for each value;
+`cargo fmt --check` and `clippy -D warnings` were clean; on a scratch copy, `cargo test --release`
+gave the library's 2, the package test 1 and 27 wrapper tests passed, 0 failed,
+`v2_client_tree_stop_leaves_no_survivor` among them; the `--nocapture` runs printed each error
+case's text ending in `(PND-010)` where it is one of decision 2's, the relay `[]` and
+`["redirect_uri"]`, and the matrix's four lines, two `[]` and two `["redirect_uri"]`, with no
+literal and no `https://` in any output; the `redirect_uri` mutation failed at left `[]`, right
+`["redirect_uri"]`, and passed after the restore, `cmp` silent; the digest was `4bfc0d97...016cb`;
+and decision 5's registration, rerun, gave the worker's two replies. A scan of the added lines found
+no private detail, and both commits had the work-order identity. It found two musts and three
+shoulds:
+
+- M1: five of the order's lines of "Done when", as written, no longer print their expected values,
+  since round 2's amendment to prescribed code is recorded nowhere in the order.
+- M2: neither this Record nor A77's record of this order, `docs/work-orders/050k-a77.yaml`, exists
+  on the branch, so the paired read's numbers and the round-2 judgments are recorded nowhere.
+- S1: round 2's verifier marked a must that nobody has judged: the `.v2` hook still fails to start a
+  login without naming PND-010 when the home or configuration check refuses.
+- S2: round 2's amendment tests three of its six new start-failure texts; the other three are
+  untested, and the Record does not say so.
+- S3: the remaining findings of round 2's verifier need their judgment in the Record, and the stale
+  doc comments, accepted as nits, are still in the code.
+
+The fixer kept the branch on `wo/050-lane-claude` at `acfe6273`, without a rebase, since the lane
+had not moved past it, and acted on each finding:
+
+- M1: this Record's amendment lines for decisions 2, 3 and 4 and the amended values of "Done when",
+  above.
+- M2: this Record, and `docs/work-orders/050k-a77.yaml`, written from the paired read's list and
+  key, the runner's logs and the readers' reports, with `merged: no` and `ci` none until order
+  050n's merge. Its `paired.findings` are the list's nine findings, verbatim with the coordinator's
+  judgments; the key's paths and digests of the private reports are left out; each value that no
+  file at hand gives, the Codex client's version and the later Opus passes' models, clients,
+  efforts, seconds and tokens, reads `not recorded`, for the coordinator to fill.
+- S1: the reader's option (a), the least change: the judgment above, (1) a should, the order's
+  fault, citing decision 6, carried to order 050n. No code changes for it. The coordinator may take
+  option (b) instead, ending the two refusals with ` (PND-010)` in the hook alone.
+- S2: the sentence on the three untested texts, in decision 2's amendment line above.
+- S3: the judgments above, (2) rejected, (3) a nit, (4) a nit; and, as the coordinator's change, the
+  two helper doc comments in `tests/wrapper.rs`: `login_template`'s now reads "A stated login's URL
+  in the form Claude Code 2.1.318's builder gives (the browser login's is the one the scripted login
+  hands over), built from the stated login; the login fills `{port}`, `{state}` and `{challenge}`.",
+  and `ifc_049_failures`'s "IFC-049's checks of a URL for a redirect or page login, each failing
+  check named." This fixes paired findings 4, 5 and 6 and the second verifier's nit.
+
+The fixer then ran on the Mac, from the worktree's root, on the files of this commit before it was
+made: every count of "Done when" against `acfe6273` (each printed what the order says, or the
+amended value above; the status count printed 0 before this Record and A77's record were added and 2
+after, and the `git diff --quiet` line printed 1 after, both for these two files of `docs/`), the
+structural script under `/usr/bin/python3` (`True True True True True`), the literal search
+(`contracts.yaml` alone, three times), `check_docs`, `check_private_paths` and `set_names --check`
+(Errors: 0 each), and `git diff --check` (clean). In `packages/agent-claude-code/`, one cargo
+command at a time with `RUST_TEST_THREADS=4`: `cargo fmt --check` (exit 0), `cargo clippy
+--all-targets -- -D warnings` (clean), `cargo test --release` (the library's 2, the package test 1
+and 27 wrapper tests passed, 0 failed), `cargo test --release --test wrapper -- --nocapture
+v2_sign_in` (3 passed; 8 lines name PND-010, and no output holds `https://`) and `cargo test
+--release --test wrapper -- --nocapture v2_stated_logins` (1 passed; four lines, two `[]` and two
+`["redirect_uri"]`). The `redirect_uri` mutation of "Done when" failed at `tests/wrapper.rs:3717`,
+left `[]`, right `["redirect_uri"]`, and passed after the restore, `cmp` silent. The archive and
+decision 5's registration were not run again: `contracts.yaml` and `conduit.yaml` are unchanged
+since the reader's run. The gate's run on this order's squash is the coordinator's, at order 050n's
+merge.

@@ -60,9 +60,9 @@ PYTHON_GATES = (
 PYTHON_REASON = "CI's docs job runs it on each pull request"
 RUST_WHY = 'rust discovery did not pass, so no Rust directory or engine gate was chosen'
 ENGINE_PREFIXES = ('engine/', 'spec/', 'conformance/', 'packages/agent-claude-code/',
-                   'packages/agent-codex/')
+                   'packages/agent-codex/', 'packages/provider-file/')
 ENGINE_WHY = ('the branch changes nothing under engine/, spec/, conformance/, '
-              'packages/agent-claude-code/ or packages/agent-codex/')
+              'packages/agent-claude-code/, packages/agent-codex/ or packages/provider-file/')
 UNREACHED_WHY = ('the branch changes nothing in these, in a directory they depend on by path, '
                  'or in a path they read: ')
 NOT_BUILT_WHY = ('listed in macos_only of checks.yml, which CI does not build; '

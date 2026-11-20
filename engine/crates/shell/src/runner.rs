@@ -1,12 +1,16 @@
 //! Engine-owned processes and MCP sessions. Only completions reenter the durable shell.
 use crate::{Execution, Executor, Result, RunIdentity, Shell, store::private_directory};
-use conduit_core::archives::{InstalledPackage, Member};
+use conduit_core::{
+    ProviderEndCause, ProviderRunEnd,
+    archives::{InstalledPackage, Member},
+};
 use rmcp::{
     RoleClient, ServiceExt,
     model::{ClientRequest, GetExtensions, JsonRpcMessage, RequestId},
     service::{Peer, PeerRequestOptions, RunningService, RxJsonRpcMessage, TxJsonRpcMessage},
     transport::Transport,
 };
+use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
@@ -26,7 +30,7 @@ use std::{
     time::{Duration, Instant},
 };
 use tokio::{
-    io::{AsyncBufReadExt, AsyncWriteExt, BufReader},
+    io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader},
     process::{Child, ChildStdin, ChildStdout},
     runtime::{Handle, Runtime},
     sync::Mutex as AsyncMutex,
@@ -76,17 +80,7 @@ impl Drop for ProcessGroup {
 /// FD 3 is the lifetime channel; no credential is passed through it.
 pub fn guard_main() -> Result<()> {
     let mut args = std::env::args_os().skip(2);
-    let names: Vec<String> = serde_json::from_str(
-        &args
-            .next()
-            .ok_or("guard needs environment names")?
-            .to_string_lossy(),
-    )
-    .map_err(|_| "invalid guard environment names")?;
-    let environment = names
-        .into_iter()
-        .filter_map(|name| std::env::var_os(&name).map(|v| (name, v)))
-        .collect::<BTreeMap<_, _>>();
+    let mode = args.next().ok_or("guard needs launch mode")?;
     let program = args.next().ok_or("guard needs program")?;
     // SAFETY: the runner explicitly installs its inherited lifetime descriptor at FD 3.
     let mut lifetime = unsafe { fs::File::from_raw_fd(3) };
@@ -99,7 +93,22 @@ pub fn guard_main() -> Result<()> {
         .try_clone()
         .map_err(|_| "guard status pipe failed")?;
     let mut command = Command::new(program);
-    command.args(args).env_clear().envs(environment);
+    command.env_clear();
+    if mode == "--private-launch" {
+        // The guard's own argv and environment carry no bound values. Only its
+        // child receives this launch data, and FD 4 closes before that child starts.
+        let pipe = unsafe { fs::File::from_raw_fd(4) };
+        let launch: PrivateLaunch =
+            serde_json::from_reader(pipe).map_err(|_| "invalid private run launch")?;
+        command.args(launch.arguments).envs(launch.environment);
+    } else {
+        let names: Vec<String> = serde_json::from_str(&mode.to_string_lossy())
+            .map_err(|_| "invalid guard environment names")?;
+        let environment = names
+            .into_iter()
+            .filter_map(|name| std::env::var_os(&name).map(|value| (name, value)));
+        command.args(args).envs(environment);
+    }
     // SAFETY: restore the normal termination disposition in the child only.
     unsafe {
         command.pre_exec(|| {
@@ -108,6 +117,7 @@ pub fn guard_main() -> Result<()> {
         });
     }
     let mut child = command.spawn().map_err(|_| "run spawn failed")?;
+    drop(command);
     // Only the run retains the stdio pipes. Its exit must close the MCP session promptly.
     unsafe {
         libc::close(0);
@@ -163,11 +173,46 @@ pub fn guard_main() -> Result<()> {
     Err("guard could not terminate its process group".into())
 }
 
+#[derive(Serialize, Deserialize)]
+struct PrivateLaunch {
+    arguments: Vec<String>,
+    environment: BTreeMap<String, String>,
+}
+
 struct Run {
     service: RunningService<RoleClient, ()>,
     group: Arc<ProcessGroup>,
     responses: Responses,
     setup: String,
+    provider: Option<ProviderLaunch>,
+}
+
+struct ProviderLaunch {
+    subject: String,
+    end: Mutex<Option<ProviderEndCause>>,
+}
+
+impl Run {
+    fn transport_closed(&self) -> bool {
+        self.service.is_closed() || self.service.peer().is_transport_closed()
+    }
+
+    fn ending_at_shutdown(&self) -> Option<ProviderRunEnd> {
+        // PRV-026: reserve a shutdown cause before sending any shutdown signal,
+        // while preserving exits and transport failures already observed.
+        let provider = self.provider.as_ref()?;
+        let cause = *provider.end.lock().unwrap().get_or_insert_with(|| {
+            if self.transport_closed() || self.group.stopped.load(Ordering::SeqCst) {
+                ProviderEndCause::TransportFailure
+            } else {
+                ProviderEndCause::RunnerShutdown
+            }
+        });
+        Some(ProviderRunEnd {
+            launch: self.setup.clone(),
+            cause,
+        })
+    }
 }
 struct Inner {
     stopping: AtomicBool,
@@ -280,6 +325,7 @@ impl Runner {
         };
         let deadline = Instant::now() + shell.config.stop_grace;
         for run in runs.values() {
+            run.ending_at_shutdown();
             run.group.request_stop();
         }
         self.await_stops(&shell, &mut runs, deadline);
@@ -303,7 +349,8 @@ impl Runner {
                 }
                 if shell
                     .submit(
-                        json!({"kind":"builtin-run-stopped","object":subject}),
+                        json!({"kind":"builtin-run-stopped","object":subject,
+                            "provider":run.ending_at_shutdown()}),
                         &crate::MissingExecutor,
                     )
                     .is_err()
@@ -371,7 +418,9 @@ impl Executor for Arc<Inner> {
             ));
         }
         if operation.ends_with("#stop.v1") {
-            if let Some(run) = self.runs.lock().unwrap().remove(&subject) {
+            let run = self.runs.lock().unwrap().remove(&subject);
+            if let Some(run) = run {
+                self.note_provider_end(&run, ProviderEndCause::Stopped);
                 run.group.stop();
             }
             return Ok(Execution::SetupReport(
@@ -388,12 +437,12 @@ impl Executor for Arc<Inner> {
         let intent = intent.clone();
         let this = self.clone();
         self.handle.spawn(async move {
-            let invocation = intent["invocation"].as_str().unwrap();
-            let outcome = match this.start(&intent, identity).await {
-                Ok(()) => "succeeded",
+            let invocation = intent["invocation"].as_str().unwrap().to_owned();
+            let (outcome, provider_run) = match this.start(intent, identity).await {
+                Ok(run) => ("succeeded", run),
                 Err(error) => {
                     this.errors.lock().unwrap().push(error);
-                    "failed"
+                    ("failed", None)
                 }
             };
             let executor = this
@@ -402,14 +451,20 @@ impl Executor for Arc<Inner> {
                 .unwrap()
                 .as_ref()
                 .and_then(Weak::upgrade);
-            if let Some(shell) = this.shell.upgrade()
-                && let Err(e) = shell.setup_report(
-                    invocation,
-                    json!({"kind":"run","outcome":outcome}),
-                    executor.as_deref().unwrap_or(&this),
-                )
-            {
+            let Some(shell) = this.shell.upgrade() else {
+                return;
+            };
+            if let Err(e) = shell.setup_report(
+                &invocation,
+                json!({"kind":"run","outcome":outcome}),
+                executor.as_deref().unwrap_or(&this),
+            ) {
                 this.errors.lock().unwrap().push(e);
+                return;
+            }
+            drop(shell);
+            if let Some(run) = provider_run {
+                this.observe_provider_exit(&run).await;
             }
         });
         Ok(Execution::Deferred)
@@ -459,6 +514,7 @@ impl Inner {
         cwd: &Path,
         env: &BTreeMap<String, String>,
         setup: &str,
+        private: bool,
     ) -> Result<(Child, Arc<ProcessGroup>)> {
         let shell = self.shell.upgrade().ok_or("shell stopped")?;
         let cancelled = self.cancelled_setups.lock().unwrap();
@@ -472,17 +528,31 @@ impl Inner {
             return Err("lifetime descriptor failed".into());
         }
         let fd = unsafe { OwnedFd::from_raw_fd(fd) };
+        let (launch_writer, launch_fd) = if private {
+            let (writer, reader) = UnixStream::pair().map_err(|_| "private launch pipe failed")?;
+            let fd = unsafe { libc::fcntl(reader.as_raw_fd(), libc::F_DUPFD_CLOEXEC, 10) };
+            if fd < 0 {
+                return Err("private launch descriptor failed".into());
+            }
+            (Some(writer), Some(unsafe { OwnedFd::from_raw_fd(fd) }))
+        } else {
+            (None, None)
+        };
         let mut command = Command::new(&self.guard);
+        command.arg("__run-guard").env_clear();
+        if private {
+            command.arg("--private-launch").arg(program);
+        } else {
+            command
+                .arg(
+                    serde_json::to_string(&env.keys().collect::<Vec<_>>())
+                        .map_err(|_| "guard environment encoding failed")?,
+                )
+                .arg(program)
+                .args(args)
+                .envs(env);
+        }
         command
-            .arg("__run-guard")
-            .arg(
-                serde_json::to_string(&env.keys().collect::<Vec<_>>())
-                    .map_err(|_| "guard environment encoding failed")?,
-            )
-            .arg(program)
-            .args(args)
-            .env_clear()
-            .envs(env)
             .current_dir(cwd)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
@@ -493,6 +563,11 @@ impl Inner {
                 if libc::dup2(fd.as_raw_fd(), 3) < 0 {
                     return Err(std::io::Error::last_os_error());
                 }
+                if let Some(launch_fd) = &launch_fd
+                    && libc::dup2(launch_fd.as_raw_fd(), 4) < 0
+                {
+                    return Err(std::io::Error::last_os_error());
+                }
                 Ok(())
             });
         }
@@ -501,6 +576,7 @@ impl Inner {
             .kill_on_drop(true)
             .spawn()
             .map_err(|_| "guard spawn failed")?;
+        drop(command);
         let group = Arc::new(ProcessGroup {
             pid: child.id().ok_or("guard has no PID")? as i32,
             stopped: AtomicBool::new(false),
@@ -516,12 +592,30 @@ impl Inner {
             !groups.is_empty()
         });
         pending.entry(setup.into()).or_default().push(group.clone());
+        drop(pending);
         drop(cancelled);
+        if let Some(writer) = launch_writer
+            && serde_json::to_writer(
+                writer,
+                &PrivateLaunch {
+                    arguments: args.to_vec(),
+                    environment: env.clone(),
+                },
+            )
+            .is_err()
+        {
+            group.stop();
+            return Err("private run launch failed".into());
+        }
         Ok((child, group))
     }
-    async fn start(&self, intent: &Value, identity: BTreeMap<String, String>) -> Result<()> {
-        let subject = string(intent, "subject")?;
-        let setup = string(intent, "invocation")?;
+    async fn start(
+        &self,
+        intent: Value,
+        identity: BTreeMap<String, String>,
+    ) -> Result<Option<Arc<Run>>> {
+        let subject = string(&intent, "subject")?.to_owned();
+        let setup = string(&intent, "invocation")?.to_owned();
         let inputs = &intent["inputs"];
         let (config, state) = {
             let shell = self.shell.upgrade().ok_or("shell stopped")?;
@@ -554,7 +648,7 @@ impl Inner {
             .shell
             .upgrade()
             .ok_or("shell stopped")?
-            .state_directory(subject)?;
+            .state_directory(&subject)?;
         identity.insert(
             state_variable.clone(),
             state_directory.to_string_lossy().into(),
@@ -568,7 +662,11 @@ impl Inner {
         )?;
         let work = self.directory.join("work").join(Uuid::new_v4().to_string());
         private_directory(&work)?;
-        let item = &inputs["item"];
+        let item = inputs["item"].clone();
+        let bound_args = package_arguments(&item, inputs)?;
+        let private = inputs.get("secrets").is_some();
+        let observe = intent["observeProviderExit"] == true;
+        drop(intent);
         let (program, mut args) = if item.get("package").is_some() {
             let package = &item["package"];
             if package["registryType"] != "npm" {
@@ -580,7 +678,7 @@ impl Inner {
             if package["transport"]["type"] != "stdio" {
                 return Err("built-in runner requires stdio package transport".into());
             }
-            let path = self.npm_package(package, setup, &helper_env).await?;
+            let path = self.npm_package(package, &setup, &helper_env).await?;
             let manifest: Value = serde_json::from_slice(
                 &fs::read(path.join("package.json")).map_err(|_| "npm package manifest missing")?,
             )
@@ -601,10 +699,11 @@ impl Inner {
                 vec![bin.to_str().ok_or("non-UTF8 bin")?.to_owned()],
             )
         } else {
-            self.command(item, subject, &state)?
+            self.command(&item, &subject, &state)?
         };
-        args.extend(package_arguments(item, inputs)?);
-        let (mut child, group) = self.spawn(&program, &args, &work, &env, setup)?;
+        args.extend(bound_args);
+        let (mut child, group) = self.spawn(&program, &args, &work, &env, &setup, private)?;
+        drop((args, env));
         // Historical diagnostics only. Never use persisted PIDs to inspect or kill a
         // process after reopening: the OS may have reused them for another process.
         crate::store::atomic_write(
@@ -631,7 +730,7 @@ impl Inner {
         };
         responses.lock().unwrap().clear();
         let cancelled = self.cancelled_setups.lock().unwrap();
-        if self.stopping.load(Ordering::SeqCst) || cancelled.contains(setup) {
+        if self.stopping.load(Ordering::SeqCst) || cancelled.contains(&setup) {
             group.stop();
             return Err("setup cancelled".into());
         }
@@ -639,24 +738,79 @@ impl Inner {
             service,
             group,
             responses,
-            setup: setup.into(),
+            setup,
+            provider: observe.then(|| ProviderLaunch {
+                subject: subject.clone(),
+                end: Mutex::new(None),
+            }),
         });
-        if let Some(previous) = self
-            .runs
-            .lock()
-            .unwrap()
-            .insert(subject.into(), run.clone())
-        {
+        if let Some(previous) = self.runs.lock().unwrap().insert(subject, run.clone()) {
             previous.group.stop();
         }
         drop(cancelled);
         // Reap the guard after lifetime termination; keep it owned while the session runs.
         let group = run.group.clone();
+        let observed = observe.then_some(run);
         self.handle.spawn(async move {
             let _ = child.wait().await;
             group.stop();
         });
-        Ok(())
+        Ok(observed)
+    }
+
+    async fn observe_provider_exit(&self, run: &Run) {
+        let socket = run
+            .group
+            .lifetime
+            .lock()
+            .unwrap()
+            .as_ref()
+            .and_then(|fd| fd.try_clone().ok());
+        let Some(socket) = socket else {
+            self.note_provider_end(run, ProviderEndCause::Exited);
+            return;
+        };
+        if socket.set_nonblocking(true).is_err() {
+            return;
+        }
+        let Ok(mut socket) = tokio::net::UnixStream::from_std(socket) else {
+            return;
+        };
+        // An exit status or EOF means the child or its guard ended. The first
+        // cause claimed for the launch governs, including during shutdown.
+        let ended = socket.read_exact(&mut [0; 4]).await;
+        if ended.is_ok()
+            || ended.is_err_and(|error| {
+                matches!(
+                    error.kind(),
+                    std::io::ErrorKind::UnexpectedEof | std::io::ErrorKind::ConnectionReset
+                )
+            })
+        {
+            self.note_provider_end(run, ProviderEndCause::Exited);
+        }
+    }
+
+    fn note_provider_end(&self, run: &Run, cause: ProviderEndCause) {
+        let Some(provider) = &run.provider else {
+            return;
+        };
+        {
+            let mut end = provider.end.lock().unwrap();
+            if end.is_some() {
+                return;
+            }
+            *end = Some(cause);
+        }
+        if let Some(shell) = self.shell.upgrade()
+            && let Err(error) = shell.submit(
+                json!({"kind":"builtin-secret-provider-exited","object":provider.subject,
+                    "launch":run.setup,"cause":cause}),
+                &crate::MissingExecutor,
+            )
+        {
+            self.errors.lock().unwrap().push(error);
+        }
     }
     fn command(
         &self,
@@ -787,7 +941,7 @@ impl Inner {
             "--no-fund".into(),
             "--registry=https://registry.npmjs.org".into(),
         ]);
-        let (mut child, group) = self.spawn(Path::new("npm"), &args, cwd, env, setup)?;
+        let (mut child, group) = self.spawn(Path::new("npm"), &args, cwd, env, setup, false)?;
         child.stdin.take();
         // Guard keeps running until its lifetime ends. Exit status uses the lifetime
         // socket in the opposite direction; stdout belongs only to npm.
@@ -1197,7 +1351,8 @@ impl Inner {
         Ok(Execution::Deferred)
     }
     async fn call(&self, run: &Run, key: &Attempt, call: Value) -> Result<Value> {
-        if run.group.stopped.load(Ordering::SeqCst) || run.service.is_closed() {
+        if run.group.stopped.load(Ordering::SeqCst) || run.transport_closed() {
+            self.note_provider_end(run, ProviderEndCause::TransportFailure);
             return Err("run stopped".into());
         }
         if self.cancelled_attempts.lock().unwrap().contains(key) {
@@ -1210,7 +1365,10 @@ impl Inner {
         let handle = peer
             .send_cancellable_request(request, PeerRequestOptions::no_options())
             .await
-            .map_err(|_| "run missing")?;
+            .map_err(|error| {
+                self.cleanup_transport_failure(run, &error);
+                "run missing"
+            })?;
         let id = handle.id.clone();
         self.requests
             .lock()
@@ -1233,14 +1391,21 @@ impl Inner {
                 return Ok(completion);
             }
         }
-        if matches!(
-            response,
-            Err(rmcp::service::ServiceError::TransportClosed
-                | rmcp::service::ServiceError::TransportSend(_))
-        ) {
-            run.group.stop();
+        if let Err(error) = response {
+            self.cleanup_transport_failure(run, &error);
         }
         Err("run missing or malformed reply".into())
+    }
+
+    fn cleanup_transport_failure(&self, run: &Run, error: &rmcp::service::ServiceError) {
+        if matches!(
+            error,
+            rmcp::service::ServiceError::TransportClosed
+                | rmcp::service::ServiceError::TransportSend(_)
+        ) {
+            self.note_provider_end(run, ProviderEndCause::TransportFailure);
+            run.group.stop();
+        }
     }
 }
 
@@ -1294,7 +1459,7 @@ mod tests {
         runner._runtime.block_on(async {
             let (mut child, group) = runner
                 .inner
-                .spawn(program, args, cwd, env, "test-exec")
+                .spawn(program, args, cwd, env, "test-exec", false)
                 .unwrap();
             child.stdin.take();
             use tokio::io::AsyncReadExt;
@@ -1632,6 +1797,7 @@ mod tests {
                     parent.path(),
                     &env,
                     "test-environment",
+                    false,
                 )
                 .unwrap();
             child.stdin.take();

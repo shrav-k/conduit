@@ -27,6 +27,7 @@ pub mod requests;
 mod retirement;
 mod revisions;
 pub mod schemas;
+mod secrets;
 mod sign_in;
 
 use serde::{Deserialize, Serialize};
@@ -130,6 +131,22 @@ pub struct Request {
     pub operation: String,
 }
 
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum ProviderEndCause {
+    Exited,
+    TransportFailure,
+    Stopped,
+    RunnerShutdown,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ProviderRunEnd {
+    pub launch: String,
+    pub cause: ProviderEndCause,
+}
+
 #[derive(Clone, Debug, Deserialize)]
 #[serde(tag = "kind", rename_all = "kebab-case", deny_unknown_fields)]
 pub enum Input {
@@ -183,6 +200,14 @@ pub enum Input {
     BuiltinRunStopped {
         evidence: Evidence,
         object: String,
+        #[serde(default)]
+        provider: Option<ProviderRunEnd>,
+    },
+    BuiltinSecretProviderExited {
+        evidence: Evidence,
+        object: String,
+        launch: String,
+        cause: ProviderEndCause,
     },
     ExpireOutputs {
         invocation: String,
@@ -461,6 +486,7 @@ fn reply_context(input: &Input) -> Option<(String, Option<String>)> {
         | Input::Recover { evidence }
         | Input::SignInWaitEnded { evidence, .. }
         | Input::BuiltinRunStopped { evidence, .. }
+        | Input::BuiltinSecretProviderExited { evidence, .. }
         | Input::FirstStart { evidence, .. } => (evidence, None),
         _ => return None,
     };
@@ -595,12 +621,20 @@ fn step_body(state: State, input: Input, context: &Context) -> Result<Transition
             lifecycle::report(&mut transition, &evidence, &invocation, report, context)?;
         }
         Input::Recover { evidence } => requests::recover(&mut transition, &evidence, context)?,
-        Input::BuiltinRunStopped { evidence, object } => {
-            if let Some(subject) = transition
-                .state
-                .objects
-                .iter_mut()
-                .find(|o| o["id"] == object)
+        Input::BuiltinRunStopped {
+            evidence,
+            object,
+            provider,
+        } => {
+            let current = provider.is_none_or(|end| {
+                secrets::provider_runner_stopped(&mut transition.state, &object, &end)
+            });
+            if current
+                && let Some(subject) = transition
+                    .state
+                    .objects
+                    .iter_mut()
+                    .find(|o| o["id"] == object)
             {
                 if subject.get("runtime").is_some() {
                     return Err("builtin runner cannot observe a provider-owned run".into());
@@ -614,6 +648,14 @@ fn step_body(state: State, input: Input, context: &Context) -> Result<Transition
                     vec![object.clone()],
                 ));
             }
+        }
+        Input::BuiltinSecretProviderExited {
+            evidence,
+            object,
+            launch,
+            cause,
+        } => {
+            secrets::provider_exited(&mut transition, &evidence, &object, &launch, cause)?;
         }
         Input::ExpireOutputs { invocation } => requests::expire(&mut transition, &invocation)?,
         Input::Access { evidence, request } => {

@@ -481,7 +481,12 @@ fn request_for(
             },
             tool: format!("{}.{local}", p["local_name"].as_str().unwrap()),
             arguments: arguments.clone(),
-            serving: parent["serving"].as_str().map(str::to_owned),
+            serving: if parent.get("setup_parent").is_some() {
+                parent["authorization_serving"].as_str()
+            } else {
+                parent["serving"].as_str()
+            }
+            .map(str::to_owned),
             readable: true,
             authority_readable: true,
             client_capabilities: None,
@@ -958,7 +963,7 @@ pub(crate) fn emit(
     );
     Ok(())
 }
-fn bindings(config: &Value, bindings: &Value) -> Result<Value> {
+fn bindings(config: &Value, bindings: &Value, secrets: &mut Value) -> Result<Value> {
     let mut values = json!({});
     for (name, pointer) in bindings.as_object().into_iter().flatten() {
         if let Some(value) = config
@@ -973,16 +978,34 @@ fn bindings(config: &Value, bindings: &Value) -> Result<Value> {
                     )
                     .map_err(|e| e.to_string())?
                 ),
+                Value::Object(reference)
+                    if reference.len() == 2
+                        && value["kind"] == "Resource"
+                        && value["id"].is_string() =>
+                {
+                    // MAN-017 permits only scalar values and secret references at run pointers.
+                    secrets[name] = value["id"].clone();
+                    continue;
+                }
                 _ => return Err("non-scalar run binding".into()),
             };
         }
     }
     Ok(values)
 }
-pub(crate) fn run_inputs(o: &Value, v: &Value, c: &Context) -> Result<Value> {
+pub(crate) fn run_inputs(o: &Value, v: &Value, c: &Context) -> Result<(Value, Value)> {
     let item = &v["setup"]["item"]["item"];
-    let environment = bindings(&o["config"], &item["environment"])?;
-    let arguments = bindings(&o["config"], &item["packageArguments"])?;
+    let mut secrets = json!({"environment":{},"packageArguments":{}});
+    let environment = bindings(
+        &o["config"],
+        &item["environment"],
+        &mut secrets["environment"],
+    )?;
+    let arguments = bindings(
+        &o["config"],
+        &item["packageArguments"],
+        &mut secrets["packageArguments"],
+    )?;
     let run_schema = &c
         .core_environment
         .scopes
@@ -991,9 +1014,10 @@ pub(crate) fn run_inputs(o: &Value, v: &Value, c: &Context) -> Result<Value> {
         .find(|d| d["kind"] == "Operation" && d["metadata"]["name"] == "run.v1")
         .ok_or("missing run contract")?["spec"]["inputSchema"]["properties"]["identity"];
     let identity = json!({"materializeFor":v["object"],"environmentNames":run_schema["properties"]["environment"]["required"],"fileNames":run_schema["properties"]["files"]["required"]});
-    Ok(
+    Ok((
         json!({"item":item,"environment":environment,"packageArguments":arguments,"identity":identity}),
-    )
+        secrets,
+    ))
 }
 pub(crate) fn report(
     t: &mut Transition,
@@ -1023,6 +1047,9 @@ pub(crate) fn report(
         evidence,
         cursor: 0,
     };
+    if crate::secrets::lifecycle_report(t, &mut a, c, i, &report)? {
+        return Ok(());
+    }
     if v.get("retirement").is_some() {
         return crate::retirement::report(t, &mut a, c, i, report);
     }
@@ -1120,10 +1147,7 @@ pub(crate) fn report(
                     }
                     return Ok(());
                 }
-                let extra = run_inputs(o, &v, c)?;
-                t.state.invocations[i]["setup"]["run_phase"] = json!("run");
-                emit(t, &mut a, c, i, "run.v1", extra)?;
-                return Ok(());
+                return crate::secrets::prepare_run(t, &mut a, c, i);
             }
             part(
                 t,
@@ -1191,6 +1215,21 @@ pub(crate) fn report(
     }
     Ok(())
 }
+pub(crate) fn run_unavailable(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+) -> Result<()> {
+    part(t, i, "run", "unavailable", false, false, Value::Null);
+    t.state.invocations[i]["setup"]["run_phase"] = json!("ended");
+    advance(t, a, c, i)?;
+    if t.state.invocations[i]["state"] != "in-progress" {
+        child_ended(t, a, c, i)?;
+    }
+    Ok(())
+}
+
 pub(crate) fn child_ended(
     t: &mut Transition,
     a: &mut Allocation<'_>,
@@ -1410,6 +1449,7 @@ pub(crate) fn cancel(
     c: &Context,
     i: usize,
 ) -> Result<()> {
+    crate::secrets::cancel(t, a, c, i)?;
     if t.state.invocations[i].get("retirement").is_some() {
         return crate::retirement::cancel(t, a, c, i);
     }

@@ -1,0 +1,49 @@
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: store
+spec:
+  type: '#scripted-secret.v1'
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: secret-read
+spec:
+  capability: github.com/shrav-k/conduit/core#secret-provider.v1
+  operations: [github.com/shrav-k/conduit/core#get-secret.v1]
+  requirements:
+    read:
+      requirement: '#read-filter.v1'
+      arguments: {label: owning-conduit}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: consumer
+spec:
+  type: '#consumer.v1'
+  inputs:
+    source:
+      schema: {$ref: github.com/shrav-k/conduit/core#secret-reference.v1}
+      to: [/config/source, /conduits/source/target]
+  config:
+    unused: null
+    directory: /fixture
+  conduits:
+    source: {from: secret-read}
+  implementation:
+    github.com/shrav-k/conduit/core#retire-hook.v1: '#consumer-exec'
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Pool
+metadata:
+  name: secret-pool
+spec:
+  type: github.com/shrav-k/conduit/core#pool.v1
+  entries:
+    consumer:
+      from: consumer
+      arguments:
+        source: {entry: store}
+    store: {from: store}

@@ -1,0 +1,11 @@
+{
+  "snapshots": [],
+  "project": {
+    "files": {
+      "conduit.yaml": "manifest",
+      "contracts.yaml": "contracts",
+      "templates.yaml": "templates",
+      "instances.yaml": "instances"
+    }
+  }
+}

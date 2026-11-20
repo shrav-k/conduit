@@ -10,7 +10,7 @@ use chrono::{DateTime, SecondsFormat, Utc};
 use conduit_core::{Context, Input, State, Transition};
 pub use identity::RunIdentity;
 use serde_json::{Value, json};
-use std::collections::{BTreeMap, VecDeque};
+use std::collections::{BTreeMap, BTreeSet, VecDeque};
 use std::io::Write;
 use std::path::Path;
 use std::sync::{Arc, Condvar, Mutex, Weak};
@@ -144,6 +144,7 @@ impl Ticket {
 struct Writer {
     store: Store,
     waiters: BTreeMap<(String, u64), Vec<Weak<ReplyCell>>>,
+    read_values: BTreeMap<String, String>,
     open_micros: Option<u64>,
     unwritten: u64,
 }
@@ -168,8 +169,13 @@ impl CommitMeasures {
 }
 struct Committed {
     ticket: Ticket,
-    intents: Vec<Value>,
+    intents: Vec<Intent>,
     notifications: Vec<Value>,
+}
+
+struct Intent {
+    descriptor: Value,
+    secrets: Option<Value>,
 }
 
 pub struct Shell {
@@ -229,6 +235,7 @@ impl Shell {
             writer: Mutex::new(Writer {
                 store,
                 waiters: BTreeMap::new(),
+                read_values: BTreeMap::new(),
                 open_micros: None,
                 unwritten: 0,
             }),
@@ -387,6 +394,7 @@ impl Shell {
                 | "setup-report"
                 | "recover"
                 | "builtin-run-stopped"
+                | "builtin-secret-provider-exited"
                 | "access"
                 | "submit"
                 | "request"
@@ -557,6 +565,16 @@ impl Shell {
         let mut writer = self.writer.lock().map_err(|_| "writer lock poisoned")?;
         let started = Instant::now();
         let kind = input["kind"].as_str().unwrap_or("").to_string();
+        let read_value = (kind == "complete")
+            .then(|| {
+                Some((
+                    input["invocation"].as_str()?.to_owned(),
+                    input["completion"]["result"]["structuredContent"]["value"]
+                        .as_str()?
+                        .to_owned(),
+                ))
+            })
+            .flatten();
         let mut measures = CommitMeasures::default();
         // DL2: taking memory leaves the cache empty on every failed step/write.
         let mut stored = writer.store.take()?;
@@ -586,6 +604,56 @@ impl Shell {
             // DL2: retain a transition only when its test explicitly requests a trace.
             trace.push(t.clone());
         }
+        if let Some((id, value)) = read_value
+            && t.records.iter().any(|r| {
+                r["type"] == "request-ended"
+                    && r["data"]["invocation"] == id
+                    && r["data"]["operation"]
+                        == format!("{}#get-secret.v1", self.context.core_package)
+                    && r["data"]["outcome"] == "succeeded"
+            })
+        {
+            writer.read_values.insert(id, value);
+        }
+        let intents = std::mem::take(&mut t.external_intents)
+            .into_iter()
+            .map(|descriptor| {
+                let secrets = if let Some(bindings) = descriptor.get("secretBindings") {
+                    let mut secrets = bindings.clone();
+                    let mut used = BTreeSet::new();
+                    for map in secrets.as_object_mut().unwrap().values_mut() {
+                        for value in map.as_object_mut().unwrap().values_mut() {
+                            let id = value.as_str().ok_or("missing secret read ID")?;
+                            used.insert(id.to_owned());
+                            *value = json!(
+                                writer
+                                    .read_values
+                                    .get(id)
+                                    .ok_or("secret read value unavailable")?
+                            );
+                        }
+                    }
+                    for id in used {
+                        writer.read_values.remove(&id);
+                    }
+                    Some(secrets)
+                } else {
+                    None
+                };
+                Ok(Intent {
+                    descriptor,
+                    secrets,
+                })
+            })
+            .collect::<Result<_>>()?;
+        writer.read_values.retain(|id, _| {
+            t.state.invocations.iter().any(|v| {
+                v["state"] == "in-progress"
+                    && v["secret_reads"]["reads"]
+                        .as_object()
+                        .is_some_and(|reads| reads.values().any(|read| read == id.as_str()))
+            })
+        });
         // Publish replies only after both records and invocation state are durable.
         for ended in &t.request_replies {
             if let Some(cells) = writer
@@ -685,20 +753,24 @@ impl Shell {
         }
         Ok(Committed {
             ticket: Ticket { invocation, cell },
-            intents: t.external_intents,
+            intents,
             notifications,
         })
     }
 
     fn drive(
         &self,
-        intents: Vec<Value>,
+        intents: Vec<Intent>,
         notifications: Vec<Value>,
         executor: &dyn Executor,
     ) -> Result<()> {
         executor.tools_changed(&notifications)?;
         let mut queue = VecDeque::from(intents);
-        while let Some(intent) = queue.pop_front() {
+        while let Some(Intent {
+            descriptor: intent,
+            secrets,
+        }) = queue.pop_front()
+        {
             let kind = intent["kind"].as_str().ok_or("intent has no kind")?;
             let run = matches!(kind, "builtin-runner" | "provider-call")
                 && intent["operation"] == format!("{}#run.v1", self.context.core_package);
@@ -710,7 +782,15 @@ impl Shell {
             let execution = match kind {
                 "dispatch" => executor.dispatch(&intent)?,
                 "refresh-tools-and-call" => executor.refresh_tools_and_call(&intent)?,
-                "builtin-runner" => executor.builtin_runner(&intent, identity.as_ref())?,
+                "builtin-runner" => {
+                    if let Some(secrets) = secrets {
+                        let mut run = intent.clone();
+                        run["inputs"]["secrets"] = secrets;
+                        executor.builtin_runner(&run, identity.as_ref())?
+                    } else {
+                        executor.builtin_runner(&intent, identity.as_ref())?
+                    }
+                }
                 "provider-call" => executor.provider_call(&intent, identity.as_ref())?,
                 "connect" => executor.connect(&intent)?,
                 "cancel" => executor.cancel(&intent)?,

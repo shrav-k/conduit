@@ -281,4 +281,32 @@ coordinator runs `tools/gate.py`, then has a fresh, read-only Opus reader read t
 
 ## Record
 
-Not yet run.
+Run on 2026-11-20 through Conduit itself, by the dogfood's own Agents, which root called by
+`conduit call`, in Pacific time. Worker-2's first turn (10:25 to 10:51) built the read path and
+stopped under the stop rule: SEC-010's refusal where more than one open Conduit lists
+`get-secret.v1` had no rule deciding it in ACC-056's order. The owner ranked SEC-010 in tier 2
+after ACC-001 ("A now, C at the review"; the answer above, #452). The second turn (10:56 to
+11:25) applied the three edits word for word and finished the order.
+
+`turn-verifier-2.turn.v1` (11:27 to 11:37) found three musts:
+- a provider that exits during a read could be taken for one that ended with the runner;
+- an ambiguous read lacked ACC-056's refusal diagnostic;
+- the live test could pass two of its checks without showing them.
+
+The third turn (11:38 to 11:55) fixed all three. `turn-reader-1.turn.v1` (11:56 to 12:13), the
+Claude reader, found it ready with four shoulds, which the fourth turn (12:20 to 12:31) applied:
+- a case with a filtered setup Conduit;
+- assertions that the store's run was asked for again after the restart, and of the run part's
+  outcome after the close;
+- the "Not shown" wording restored in `engine/CONFORMANCE.md`;
+- `absent`'s second form documented.
+
+The checks the worker reported:
+- the release suite, 412 passed;
+- the ten secret-read vectors and the 130 tool tests;
+- the vector delta, 0 undeclared and 0 errors.
+
+Root marked SEC-010's row in experiment 012's account "text changed, not rerun" outside the
+order's scope, because the owner's wording changed that promise's text. The owner has since
+allowed orders to do that themselves. The gate's run on the squash is the coordinator's, at the
+merge.

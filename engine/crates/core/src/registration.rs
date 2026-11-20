@@ -643,6 +643,9 @@ impl Builder<'_> {
             }
             if slot == "entries" {
                 object["entry_pool"] = owner["id"].clone();
+            } else if let Some(pool) = owner.get("entry_pool") {
+                // A Pool entry can pass its sibling reference into a declared Conduit.
+                object["entry_pool"] = pool.clone();
             }
         }
         let position = self.objects.len();

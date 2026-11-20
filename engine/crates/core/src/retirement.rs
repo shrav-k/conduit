@@ -476,9 +476,7 @@ pub(crate) fn report(
                 return hook(t, a, c, i, &o);
             }
             if state == "stopped" && v["cancelled"] != true {
-                t.state.invocations[i]["retirement"]["phase"] = json!("run");
-                let extra = lifecycle::run_inputs(&o, &v, c)?;
-                return lifecycle::emit(t, a, c, i, "run.v1", extra);
+                return crate::secrets::prepare_run(t, a, c, i);
             }
             if state != "unknown" && state != "stopped" {
                 return Err("invalid run state".into());
@@ -506,6 +504,18 @@ pub(crate) fn report(
         _ if v["cancelled"] == true => return Ok(()),
         _ => return Err("report does not match retirement part".into()),
     }
+    stop(t, a, c, i, &o)
+}
+pub(crate) fn run_unavailable(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+) -> Result<()> {
+    add(t, i, "hook", "unavailable");
+    let o = access::object(&t.state, &t.state.invocations[i]["object"])
+        .ok_or("retirement object disappeared")?
+        .clone();
     stop(t, a, c, i, &o)
 }
 pub(crate) fn cancel(

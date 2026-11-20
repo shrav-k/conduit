@@ -107,6 +107,10 @@ pub const REFUSAL_CAUSES: &[(&str, &str)] = &[
         "SEC-008",
         "Only root on its own behalf opens a secret Conduit, for a Resource or Agent consumer.",
     ),
+    (
+        "SEC-010",
+        "The engine reads a secret only through exactly one open Conduit of the instance's own that lists it; more than one is open (SEC-007).",
+    ),
 ];
 
 pub const REASON_CAUSES: &[(&str, &str)] = &[
@@ -780,6 +784,8 @@ pub(crate) fn diagnostic(
     let mut refusal = json!({"tier":tier,"operation":operation,"named":named,"cause":cause});
     if tier == 2 {
         let sender = &route["consumer"];
+        let reading_consumer = route.get("readingConsumer");
+        let conduit_consumer = reading_consumer.unwrap_or(sender);
         let path = path.filter(|path| is_root(state, sender, c) || sender_live_path(path, sender));
         let stone = path
             .is_none()
@@ -788,7 +794,9 @@ pub(crate) fn diagnostic(
         let presented = if let Some(path) = path {
             access::object(state, &path["target"])
         } else {
-            stone.and_then(|stone| stone.get("target"))
+            stone.and_then(|stone| stone.get("target")).or_else(|| {
+                reading_consumer.and_then(|_| access::object_by_id(state, &route["target"]))
+            })
         };
         // The operation that tier() resolved, through a closed Conduit as well.
         let resolved = stone.map_or(operation.into(), |stone| closed_operation(stone, route, c));
@@ -802,9 +810,9 @@ pub(crate) fn diagnostic(
         if let Some(target) = target {
             refusal["target"] = inventory::object(target);
             conduits.extend(state.objects.iter()
-                .filter(|p| sender_live_path(p, sender) && access::id(&p["target"]) == &target["id"])
+                .filter(|p| sender_live_path(p, conduit_consumer) && access::id(&p["target"]) == &target["id"])
                 .map(|p| json!({"name":p["name"],"as":p.get("local_name").or_else(|| p["nested"].get("name")).unwrap_or(&p["name"]),"state":if p["open"] == true {"open"} else {"registered"},"operations":p["operations"]})));
-            let mut closed: Vec<_> = visible_closed(state, sender, c)
+            let mut closed: Vec<_> = visible_closed(state, conduit_consumer, c)
                 .filter(|(_, stone)| stone["target"]["id"] == target["id"])
                 .collect();
             closed.sort_by_cached_key(|(id, stone)| (closed_time(stone), *id));
@@ -813,7 +821,7 @@ pub(crate) fn diagnostic(
             }));
         }
         refusal["exists"] = json!(
-            path.is_some()
+            (path.is_some() || reading_consumer.is_some() && target.is_some())
                 && objects
                     .iter()
                     .all(|(key, reference)| resolve_named(state, key, reference).is_some())

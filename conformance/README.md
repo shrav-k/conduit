@@ -85,7 +85,10 @@ An empty intent list rejects every dispatch. Every emitted record is validated a
 `record.v1`; the fixtures additionally assert IDs, supplied times, causes and applicable causal
 fields. `stateUnchanged` compares object definitions and lifecycle, allowing required records
 and allocation bookkeeping to grow. `absent` asserts that JSON Pointers do not exist, for
-example `/reply/outcome` on an undispatched request. `input_required` projects the step's input requests, each `{invocation, attempt, request, meta, expires}`, which the shell relays to the Interface that asked (IFC-049); a step that gives none has no such member. Every request step is checked for an
+example `/reply/outcome` on an undispatched request. An `absent` item can also use `{text, under}`
+to assert that no string or key contains `text` under any listed scope. The scopes are `/reply`,
+`/records`, `/external_intents` and `/state`. A missing scope fails the step.
+`input_required` projects the step's input requests, each `{invocation, attempt, request, meta, expires}`, which the shell relays to the Interface that asked (IFC-049); a step that gives none has no such member. Every request step is checked for an
 error diagnostic naming its deciding promise whenever it reports a reason (IFC-050), and
 exactly one refusal diagnostic in the form `refusal.v1` when refused (ACC-056). An error tool
 result's first text block states its reason or outcome and its final error diagnostic messages
@@ -300,7 +303,9 @@ A portable expectation holds no `object_facts`, `invocation_facts`, `object_coun
 `required_promises` are allowed only on the steps for which the schema requires them:
 `first-start`, `submit-files`, `register-project`, `registration-orders`, `install-archive`
 and `resolve-project`. These steps build the case's state and keep only what the schema asks.
-An `absent` pointer begins `/reply`, `/records` or `/external_intents`; a `capture` pointer
+An `absent` pointer begins `/reply`, `/records` or `/external_intents`. The portable checker
+skips `{text, under}` items in its pointer check. The runner evaluates those items and allows
+`/state` as a scope so a case can check that a value is absent from state. A `capture` pointer
 begins `/reply` or `/records`. Whenever an actual reply ends with a reason, the expected
 reply states that reason at the same place and its diagnostic array's first item states
 `ruleId`.

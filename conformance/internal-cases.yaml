@@ -511,5 +511,13 @@
     "setup-target-registered",
     "state-dir-binding"
   ],
-  "exceptions": []
+  "exceptions": [
+    {
+      "case": "secret-reads-setup-filter-isolation",
+      "initial": false,
+      "steps": [6],
+      "state": "restore",
+      "why": "CON-022 and MAN-012 prevent registering a setup Conduit with a filter, so the fixture supplies one as restored state to test the read dispatch."
+    }
+  ]
 }

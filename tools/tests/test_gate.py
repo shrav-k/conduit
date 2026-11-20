@@ -1236,7 +1236,8 @@ class GateTests(unittest.TestCase):
                  ('packages/g/README.md', {'packages/g'}, False),
                  ('specs/x.yaml', set(), False), ('engine/x', {'packages/h'}, True),
                  ('conformance/x', set(), True), ('packages/agent-claude-code/x', set(), True),
-                 ('packages/agent-codex/x', set(), True), ('docs/x.md', set(), False),
+                 ('packages/agent-codex/x', set(), True), ('packages/provider-file/x', set(), True),
+                 ('docs/x.md', set(), False),
                  ('tools/x.py', set(), False)]
         with mock.patch.object(gate, 'RUST_READS', reads):
             for path, expected, engine in cases:

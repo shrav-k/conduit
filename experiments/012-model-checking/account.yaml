@@ -596,11 +596,13 @@
   note: 'MC5b: “Static authority to open a reading Conduit; to be shown by vectors”.'
 - id: SEC-010
   class: safety
-  standing: restated
+  standing: text changed, not rerun
+  was: restated
   model: secrets::P
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: fe3df116eeb83e3ce7d7853759e38fe5136e5564858181a597f8d72e1c5b7cf5
-  note: 'Source row: “P: own open Conduit and secret delivered for its run”. Graded from holds by FR-460.'
+  note: 'Source row: “P: own open Conduit and secret delivered for its run”. Graded from holds by FR-460. Work
+    order 218 named the deciding rule of an ambiguous read (ACC-056).'
 - id: SEC-011
   class: safety
   standing: static

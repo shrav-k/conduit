@@ -935,7 +935,9 @@
     request, the refusing promise is the first that refuses in this order: (1) who is asking:
     IFC-032 and IFC-022, where the request establishes no instance, then the sender and the
     invocations it serves, under IFC-021, IFC-028, IFC-016, ACC-019, ACC-034, ACC-039 and
-    IMP-008; (2) ACC-001; (3) the rules on the caller and the operation it asks for alone:
+    IMP-008; (2) ACC-001, then SEC-010 where the engine's read of a secret finds more than
+    one open Conduit from the instance to the secret Resource that lists `get-secret.v1`;
+    (3) the rules on the caller and the operation it asks for alone:
     ACC-032 on an operation reserved to root, ACC-057, CTR-013 and SEC-007, and PND-009 and
     PND-010 on who may answer or sign in; (4) ACC-033; (5) the bound: ACC-029, ACC-030, ACC-053
     and ACC-055; (6) the rules that read the object the request names: ACC-054, SEC-008, ACC-024
@@ -1031,7 +1033,7 @@
     | REC-004 | Purging records is reserved to root acting on its own behalf (ACC-032). |
     | SEC-007 | get-secret is never dispatched for an instance request; the engine alone reads it. |
     | SEC-008 | Only root on its own behalf opens a secret Conduit, for a Resource or Agent consumer. |
-    | SEC-010 | Only the engine dispatches a secret read, through the instance's own Conduit (SEC-007). |
+    | SEC-010 | The engine reads a secret only through exactly one open Conduit of the instance's own that lists it; more than one is open (SEC-007). |
 
     Where an unknown tool spelling cannot identify an operation or local Conduit name,
     named.tool and operation echo that spelling; the explanation states that no presented

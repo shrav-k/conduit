@@ -52,7 +52,7 @@ fn capability_error(data: &Value, c: &Context) -> Option<bool> {
     Some(extensions.is_some_and(|ext| ext.contains_key(&mark(c, "implementation-interface"))))
 }
 #[allow(clippy::too_many_arguments)]
-fn envelope(
+pub(crate) fn envelope(
     c: &Context,
     outcome: Option<&str>,
     reason: Option<&str>,
@@ -786,7 +786,7 @@ fn intent(v: &Value, state: &State, c: &Context) -> Result<Value> {
     Ok(dispatch_intent(v, url_elicitation, c))
 }
 
-fn dispatch_intent(v: &Value, url_elicitation: bool, c: &Context) -> Value {
+pub(crate) fn dispatch_intent(v: &Value, url_elicitation: bool, c: &Context) -> Value {
     const CAPABILITIES: &str = "io.modelcontextprotocol/clientCapabilities";
     let implementation = &v["implementation"];
     let item = &implementation["item"];
@@ -827,7 +827,7 @@ fn dispatch_intent(v: &Value, url_elicitation: bool, c: &Context) -> Value {
         if v["sign_in_login"].is_string() {
             meta[mark(c, "signInLogin")] = json!({"name":v["sign_in_login"]});
         }
-        if item["plain"] == true {
+        if item["plain"] == true || v["secret_read"].is_object() {
             meta[CAPABILITIES]["extensions"][mark(c, "implementation-interface")] =
                 json!({"revision":"v0"});
         }
@@ -1593,6 +1593,10 @@ fn invoke_inner(
     if let Some(parent) = parent {
         invocation["sender"] = parent["sender"].clone();
         invocation["setup_parent"] = parent["id"].clone();
+        if let Some(serving) = &request.serving {
+            // A part belongs to its setup, while its access travels as the sender's request.
+            invocation["authorization_serving"] = json!(serving);
+        }
         invocation["serving"] = parent["id"].clone();
         invocation["caller"] = parent["caller"].clone();
         invocation["filters"] = parent["filters"].clone();
@@ -1896,6 +1900,13 @@ pub(crate) fn complete(
         .position(|v| v["id"] == id)
         .ok_or("completion names no invocation")?;
     let v = t.state.invocations[i].clone();
+    if v["secret_read"].is_object() {
+        let mut a = Allocation {
+            evidence,
+            cursor: 0,
+        };
+        return crate::secrets::complete(t, &mut a, c, i, attempt, completion);
+    }
     if v["discovery"] == "pending" && v["attempt"] == attempt && v["state"] == "in-progress" {
         let mut a = Allocation {
             evidence,
@@ -2417,6 +2428,9 @@ pub(crate) fn recover(t: &mut Transition, evidence: &Evidence, c: &Context) -> R
         cursor: 0,
     };
     for i in 0..t.state.invocations.len() {
+        if crate::secrets::recover(t, &mut a, c, i)? {
+            continue;
+        }
         if t.state.invocations[i]["state"] == "in-progress" {
             if let Some(id) = t.state.invocations[i].get("retirement_of")
                 && let Some(o) = t.state.objects.iter_mut().find(|o| o["id"] == *id)

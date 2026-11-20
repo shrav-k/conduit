@@ -160,6 +160,16 @@ pub(super) fn check(
     }
     if let Some(absent) = fields.remove("absent") {
         for pointer in absent.as_array().ok_or("invalid absent pointers")? {
+            if let Some(text) = pointer["text"].as_str() {
+                for path in pointer["under"].as_array().ok_or("missing absence scope")? {
+                    let path = path.as_str().ok_or("invalid absence scope")?;
+                    let part = actual.pointer(path).ok_or("absence scope missing")?;
+                    if contains_text(part, text) {
+                        return Err(format!("unexpected text under {path}"));
+                    }
+                }
+                continue;
+            }
             let pointer = pointer.as_str().ok_or("invalid pointer")?;
             if actual.pointer(pointer).is_some() {
                 return Err(format!("unexpected field {pointer}"));
@@ -258,6 +268,17 @@ pub(super) fn check(
     }
     .map_err(|e| format!("step {}: {e}; reply: {}", index + 1, actual["reply"]))?;
     Ok(())
+}
+
+fn contains_text(value: &Value, text: &str) -> bool {
+    match value {
+        Value::String(value) => value.contains(text),
+        Value::Array(values) => values.iter().any(|value| contains_text(value, text)),
+        Value::Object(values) => values
+            .iter()
+            .any(|(key, value)| key.contains(text) || contains_text(value, text)),
+        _ => false,
+    }
 }
 
 /// OPS-036 states no list ordering. Match projections by augmenting paths, so an early

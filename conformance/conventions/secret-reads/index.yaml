@@ -1,0 +1,115 @@
+{
+  "cases": [
+    {
+      "id": "secret-reads-nonroot-optional",
+      "case": "conventions/secret-reads/nonroot-optional/case.yaml",
+      "promises": [
+        "SEC-008",
+        "ACC-005",
+        "CON-004",
+        "POOL-015",
+        "TPL-012",
+        "SEC-010",
+        "SEC-012"
+      ]
+    },
+    {
+      "id": "secret-reads-nonroot-required",
+      "case": "conventions/secret-reads/nonroot-required/case.yaml",
+      "promises": [
+        "SEC-008",
+        "ACC-005",
+        "CON-004",
+        "POOL-015",
+        "TPL-012"
+      ]
+    },
+    {
+      "id": "secret-reads-pool-run",
+      "case": "conventions/secret-reads/pool-run/case.yaml",
+      "promises": [
+        "SEC-010",
+        "SEC-011",
+        "SEC-015",
+        "SEC-018",
+        "SEC-020",
+        "PRV-003",
+        "POOL-013",
+        "POOL-015",
+        "REC-001",
+        "REC-002"
+      ]
+    },
+    {
+      "id": "secret-reads-provider-restart",
+      "case": "conventions/secret-reads/provider-restart/case.yaml",
+      "promises": [
+        "PRV-026",
+        "SEC-014",
+        "SEC-017",
+        "SEC-011",
+        "OBS-004"
+      ]
+    },
+    {
+      "id": "secret-reads-read-failed",
+      "case": "conventions/secret-reads/read-failed/case.yaml",
+      "promises": [
+        "SEC-012",
+        "SEC-015",
+        "SEC-018",
+        "TPL-012"
+      ]
+    },
+    {
+      "id": "secret-reads-retire-run",
+      "case": "conventions/secret-reads/retire-run/case.yaml",
+      "promises": [
+        "TPL-018",
+        "SEC-010",
+        "SEC-011",
+        "SEC-015"
+      ]
+    },
+    {
+      "id": "secret-reads-retire-unavailable",
+      "case": "conventions/secret-reads/retire-unavailable/case.yaml",
+      "promises": [
+        "TPL-018",
+        "SEC-010",
+        "SEC-011",
+        "SEC-012"
+      ]
+    },
+    {
+      "id": "secret-reads-rotate-close",
+      "case": "conventions/secret-reads/rotate-close/case.yaml",
+      "promises": [
+        "SEC-014",
+        "SEC-017",
+        "SEC-010",
+        "SEC-012",
+        "CON-004"
+      ]
+    },
+    {
+      "id": "secret-reads-setup-filter-isolation",
+      "case": "conventions/secret-reads/setup-filter-isolation/case.yaml",
+      "promises": [
+        "SEC-010",
+        "SEC-011"
+      ]
+    },
+    {
+      "id": "secret-reads-two-conduits",
+      "case": "conventions/secret-reads/two-conduits/case.yaml",
+      "promises": [
+        "SEC-010",
+        "SEC-012",
+        "CON-004",
+        "ACC-056",
+        "REC-001"
+      ]
+    }
+  ]
+}

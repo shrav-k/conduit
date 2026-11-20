@@ -204,6 +204,9 @@ impl Controls {
                 }
             }
             for pointer in expect["absent"].as_array().into_iter().flatten() {
+                if pointer.is_object() {
+                    continue;
+                }
                 if !pointer.as_str().is_some_and(|p| {
                     ["/reply", "/records", "/external_intents"]
                         .iter()

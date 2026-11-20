@@ -1,0 +1,46 @@
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: manage-setup
+spec:
+  capability: github.com/shrav-k/conduit/core#object-management.v1
+  operations: [github.com/shrav-k/conduit/core#set-up.v1]
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: entry-setup
+spec:
+  capability: github.com/shrav-k/conduit/core#pool-management.v1
+  operations: [github.com/shrav-k/conduit/core#set-up.v1]
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: open-declarations
+spec:
+  capability: github.com/shrav-k/conduit/core#access-control.v1
+  operations: [github.com/shrav-k/conduit/core#open.v1]
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Interface
+metadata:
+  name: operator-interface
+spec:
+  type: github.com/shrav-k/conduit/core#interface.v1
+  conduits:
+    manage:
+      from: manage-setup
+      target: {kind: Resource, name: management}
+    entries:
+      from: entry-setup
+      target: {kind: Pool, name: demo}
+    access:
+      from: open-declarations
+      target: {kind: Resource, name: access}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Interface
+metadata:
+  name: operator
+from: operator-interface

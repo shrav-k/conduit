@@ -8,6 +8,8 @@ Stage 1 is orders 1 to 3, which root sends through turns on Agents of the `condu
 measures for orders 2 and 3 are
 [registered below](#orders-2-and-3-registered-before-order-2-runs), before order 2 runs; those
 for orders 4 and 5 are registered before order 4 runs.
+Stage 2, on the store initialized again with the Agent packages 0.2.0, or 0.2.1 if it is first
+initialized with them, is [registered below](#stage-2-registered-before-its-first-turn).
 
 ## The setup as run
 
@@ -426,3 +428,270 @@ Before stage 2's first turn:
 
 Every Agent of stage 2 runs under the owner's operating-system user too, so
 [What it cannot show](#what-it-cannot-show) holds for every result of stage 2.
+
+## Stage 2: registered before its first turn
+
+Registered on 2026-11-19 by work order 211, before stage 2's first turn
+([ruling 45](../../docs/proposals/ruling-45/README.md)), after the section above wrote stage 2's
+documents. It holds for every order of stage 2: an order that root dispatches to go through
+Conduit on the store initialized again with the Agent packages 0.2.0, or 0.2.1 if it is first
+initialized with them, one turn at a time either way, fixed as stage 2's at its dispatch. Stage 2
+ends when the owner ends it or when a dated amendment lets turns run at once; a turn sent while
+another is in flight is not stage 2's. An upgrade of the store's Agent packages, or a new
+initialization, ends stage 2 unless a dated amendment merged before it says otherwise. This text
+changes only by a dated amendment, merged before the first turn it changes. Its choices are the
+coordinator's, each open to the owner's strike
+([ruling 48](../../docs/proposals/ruling-48/README.md)).
+
+### Stage 2's orders
+
+Root sends each order through the turn Conduits of
+[stage 2's instances](stage-2/fleet/instances.yaml): the worker and the verifier of one pair work
+in that pair's slot clone, and `reader-1` gives the order its fresh read on Claude Opus before it
+merges ([ruling 79](../../docs/proposals/ruling-79/README.md)), in a clone of its own. Each Agent
+keeps the login that the owner gave it once, through `conduit sign-in`, in a home of its own.
+
+- If order 2 or 3 has not run when stage 2 starts, stage 2's first orders are those orders. They
+  each get two verdicts: A78's, under the seven conditions of
+  [their registration](#orders-2-and-3-registered-before-order-2-runs), and stage 2's, under this
+  section's nine. The setup recorded below serves as theirs, and their conditions are read as
+  stage 2's conditions 1 to 7 are read below.
+- [Ruling 89](../../docs/proposals/ruling-89/README.md), point 3, sets the first dogfood
+  milestone: the Agents of the owner's primary accounts, signed in through Conduit on the Mac, run
+  Conduit's work orders one turn at a time. The coordinator reads it as the owner's word for an
+  order after order 3 to go through Conduit before
+  [order 203](../../docs/work-orders/203-new-conversation.md), one turn at a time. Such an order
+  is an order of stage 2, judged here, and does not count toward A78's five, whose orders 4 and 5
+  a coordinator Agent sends.
+- No order that changes this experiment's directory, or the harness, is sent through Conduit in
+  stage 2. An order's text and its report schema are on `main` before its first turn.
+- Each order of stage 2 keeps the directory, the redactions and the result that orders 2 and 3
+  keep ([What counts](#what-counts-and-what-each-outcome-changes)). The account values that its
+  sign-ins and account checks return are private values: the records export carries them, and
+  they are replaced in the export by the placeholders of the section above before it is copied.
+  Its result opens with "Not binding.", then the first paragraph of What it cannot show and the
+  first paragraph of [What stage 2 cannot show](#what-stage-2-cannot-show), then its verdict.
+
+### `reader-1`, D58, D59 and A77
+
+- `reader-1` is signed in and sent turns only once D58's guard is in the harness, as the setup
+  below records it ([ruling 89](../../docs/proposals/ruling-89/README.md), point 5), and after the
+  Claude scratch-home sign-in of
+  [027's amendment](../027-a5-sign-in/README.md#amendment-of-2026-11-19-the-live-check-as-it-runs)
+  has passed; if that sign-in failed or ended a fault, only once the owner, told of it, has
+  answered. Until then the four Codex Agents carry stage 2, and each order's fresh read runs
+  outside Conduit as the method runs it. Stage 2's store may be initialized before then, as
+  item 2 of the section above's list allows: it is then rendered without `reader-1` and
+  `turn-reader-1`, and both are added from stage 2's documents once the guard holds. Item 3 of
+  that list then holds for the four Codex Agents before stage 2's first turn, and for `reader-1`
+  before its own first turn.
+- `reader-1` is [the Claude verifier slot](#the-claude-verifier-slot). The coordinator reads its
+  "reach over the worker's tree", which waits for the owner's answer on D59, as a Conduit or a
+  directory of `reader-1` that names a worker's slot. `reader-1` has neither: the harness brings
+  each order's branch into its own clone. Its own tools, like every unconfined Agent's, still
+  reach the worker's slot. If the owner strikes this reading, `reader-1` is sent no turn until
+  the owner has answered D59.
+- A turn of `reader-1` is the fresh Opus read before the merge, as
+  [the method](../../docs/implementation/METHOD_AS_RUN.md#6-the-opus-reader-and-fixes-by-hand)
+  gives it, sent through Conduit. It is never A77's paired read: a paired reader is given only
+  what the Codex verifier is given and runs no command that writes, and `reader-1` runs the
+  order's checks, so the Opus reader of A77's paired read is started outside Conduit, as A77
+  registers it. A77 pairs no order until order 050n merges (its amendment of 2026-11-19), and
+  stage 2 starts after it: an order of stage 2 may then be paired, and its paired Opus read is
+  still started outside Conduit. How an order's A77 record gives a turn of `reader-1`, and which
+  verifier an order on the second pair has there, are A77's to say, by a dated amendment of its
+  own section.
+
+### Stage 2's claim
+
+For each of its orders, stage 2 claims what [the claim](#claim) of orders 2 and 3 claims, on the
+store initialized again with the Agent packages 0.2.0, or 0.2.1 if it is first initialized with
+them, one turn at a time either way: the four Codex Agents and, once it joins, `reader-1`, each
+signed in once by the owner and keeping its client's login in a home of its own. It adds two
+claims:
+
+1. the owner's one sign-in of each Agent carries the stage: no turn waits on a sign-in asked
+   again;
+2. the fresh read on Claude Opus before each merge can be a turn of `reader-1` through Conduit:
+   fresh, valid against its schema, and leaving its clone unchanged. Only an order whose fresh
+   read was a turn of `reader-1` shows it.
+
+It claims nothing that orders 2 and 3 do not: nothing about access (D57), Agents kept apart (D60)
+or speed (D54). It claims nothing about turns at once, which stage 2 does not send, and nothing
+about how well `reader-1` reads beside the reader it replaces, since no read of `reader-1` is
+paired with another reader's.
+
+### Stage 2's setup, recorded before its first turn
+
+The coordinator records each item below here by a dated amendment merged before stage 2's first
+turn. Stage 2's first result repeats each item, with the command that shows it where one does.
+If `reader-1` joins later, the items that concern it are recorded by a dated amendment merged
+before its first turn, and the first result after it joins repeats them.
+
+- the commit of `main` the dogfood engine runs, and that it holds the merges of orders 050n and
+  051b-2, each shown by `git merge-base --is-ancestor`. Run the same check for `b1f6f8ca` and
+  `60126251`, as in [orders 2 and 3's setup](#setup-recorded-before-order-2s-first-turn). Record
+  whether the commit holds the order that removes the `reconcile.v1` caveat (ruling 78, point 6),
+  or that the harness calls no `reconcile.v1`, and the call timeout the engine is served with.
+- each Agent archive's version and digest, and the commit it was built from.
+- stage 2's documents as rendered, giving each line that differs from the files in
+  `stage-2/fleet/` beyond filling a placeholder, 0 if none, and the Agents' deadlines. If the
+  store was first rendered without `reader-1`, record when it and `turn-reader-1` were added.
+- that the store was initialized again with no Agent of stage 1, and when.
+- the commit or digest of the harness with D58's guard, and when the guard held, before
+  `reader-1` was added and signed in. The harness reads each order's text, report schema and
+  refs from a git directory of its own, never through a slot's or the reader's clone's. It
+  runs each clone's guards with that git directory and the clone only as the working tree,
+  runs nothing from a clone, and runs a guard that answered unknown again before the next
+  turn.
+- the outcome of 027's scratch-home Claude sign-in, by a link to its result, or the owner's
+  answer to its failure, before `reader-1` is signed in.
+- each sign-in by the owner, one at a time. Record the kind of login `sign-in-login.v1` names,
+  without a URL, code or credential, the seconds from `sign-in.v1` dispatch to its end in the
+  records, and whether the account check answered the account the Agent names, without the
+  account's value. Record that the login files in the clients' default homes kept their size,
+  time and inode, checking only those. Record each client's everyday status before and after,
+  through a filter that prints only whether a login is held and whether the expected account
+  is named. Leave Keychain items unopened.
+- the version each Agent runs, from `codex --version` or `claude --version` on the binary the
+  Agent resolves, with the resolved path recorded as a placeholder.
+- the commit or digest of the harness's scripts as run, and the lines its log and guard files
+  write for each turn, as orders 2 and 3's setup lists them and for each measure below. Give
+  the digests of the brief and of the report schema that `reader-1` is given. A measure that
+  no line gives is not shown.
+- three restarts of the engine on stage 2's store after the sign-ins, with no turn sent, and
+  their median. Time each as set-up seconds are. After each restart, every account check
+  answers the account its Agent names and no sign-in action is pending. If any of the three
+  exceeds condition 2's bound, amend it before stage 2's first turn by the rule in orders 2
+  and 3's setup. If `reader-1` joins later, make one more such restart after its sign-in and
+  amend the bound by the same rule if exceeded, in a dated amendment merged before its first
+  turn.
+
+### Stage 2's measures
+
+Every order of stage 2 takes each per-turn and per-order measure as
+[orders 2 and 3's Measures](#measures) takes it, with each number beside the command that gives
+it. Stage 2 adds the measures below. Set-up seconds, there and in the setup's restarts, run
+until each of root's turn tools on the store answers, as condition 2 is read below.
+
+Per turn:
+
+- the pair's slot clone or the reader's clone in which the turn ran.
+- the seconds it waited, once ready, for the turn in flight to end.
+- the seconds the harness spent readying the clone before the turn, for its lock, fetch,
+  branch and clean, counted apart from the restart's seconds.
+- for a turn of `reader-1`, its verdict, its findings by level and its clone guard's answer.
+
+Per order:
+
+- the pair the order ran on.
+- each read run outside Conduit in place of a turn of `reader-1`, and why.
+- each sign-in action raised, by Agent, with the part that raised it (sign-in or setup), the
+  restart it followed and the check's answer (another account, no account, failed or unknown).
+- each setup's account check, by Agent, with the answer the records give (the named account,
+  another, none, failed or unknown), or not shown.
+- the sign-in actions pending after each restart and before any turn, by Agent, as the
+  harness's check gives them.
+- each client's version at the order's first turn, read as in the setup, beside its version
+  from the setup.
+- each stop and pause, with its rule, its evidence and when it was lifted.
+
+Per stage, in each result, over stage 2's orders so far:
+
+- the restarts and their seconds, the waits for a turn in flight and the turns sent, showing
+  what a new conversation without a restart would remove, with no pass condition on this
+  measure.
+- the seconds of each turn of `reader-1` and its tokens where the client reports them, with no
+  comparison.
+
+### Stage 2's pass conditions
+
+An order of stage 2 passes when all nine hold, and a condition not shown fails it, as for orders
+2 and 3. Conditions 1 to 7 are [those of orders 2 and 3](#pass-conditions), read for stage 2 so:
+a turn is a turn on any Agent of stage 2; in condition 1, the plain turn beside a turn of
+`reader-1` is a plain Claude Code run on the same machine and account; in condition 2, set-up
+seconds run until each of root's turn tools on the store answers; in condition 3, a report of
+`reader-1` is valid against the reader's schema that the setup records; and in condition 4, the
+guards include D58's guards on the harness's own git directory and files, and the guard of the
+reader's clone, which holds when the turn left its HEAD and its branch unmoved, the harness's
+`git status` of the clone is empty and no ignored path is new since the turn's start, except
+these: a rewritten Cargo.lock, restored and noted; a new `target/` or a package's
+`packages/NAME/dist/`, noted; and a new `__pycache__/` that holds only `.pyc` files, which the
+harness removes after the turn, before the guard reads, and notes. Any other new ignored path
+breaks the guard.
+
+8. **No sign-in is asked again of an Agent the owner signed in.** No sign-in action is raised, for
+   an Agent of stage 2 that the owner has signed in, from the order's first restart to its last
+   end, the window counting from that Agent's last sign-in by the owner, unless the result shows,
+   by a log line it cites, that the provider ended that login itself. An action raised by a
+   setup's account check that failed or ended unknown counts, and the result names it apart.
+9. **Every read is fresh.** Each turn of `reader-1` and each verifier's turn, but a repair turn,
+   is the first of a new conversation of its Agent: it is preceded on that Agent by a restart of
+   the engine or, where installed, by a `new-conversation.v1` that succeeded, as the harness's log
+   shows it. A read that is not fresh is not ruling 79's read, and nothing merges on it.
+
+Stage 2's claims hold when each of its first five orders passes. An order that fell back to the
+plain runner before its first turn stays among the five, its turns counted as lost under
+condition 1, or as not shown, with the reason. Each order has its result. Once
+the fifth has its result, or stage 2 ends with fewer, a result for the stage gives the verdict,
+and with fewer than five orders it says that the claims are not shown. With no turn of
+`reader-1` among the five, it says that claim 2 is not shown.
+
+### Stage 2's stop rules
+
+A stop pauses stage 2: the harness sends no further turn through Conduit, the coordinator tells
+the owner that day with the rule and its evidence, and the orders in flight go on on the plain
+runner, where each lost turn runs again (D54). A stop does not take A78 off the core chain; that
+stays the owner's (D54). The coordinator lifts a stop once its cause is a row of the first build's
+open log and the fix, or why none is needed, is in the order's result, except where a rule leaves
+the lift to the owner.
+
+1. **A guard answers broken.** That includes D58's guards on the harness's own git directory and
+   files, the guard of the reader's clone, and a write that the sweep sees by an Agent outside its
+   own slot or clone and its own state directory. The lift is the owner's when the write reached
+   another Agent's state directory, a login, the main checkout or a remote.
+2. **An Agent acts under an account it does not name.** A setup's account check answers another
+   account, as the records give it. The lift is the owner's.
+3. **A sign-in is asked again.** When an Agent the owner signed in raises a sign-in action, that
+   Agent is sent no turn until the owner signs it in again through `conduit sign-in`, and the
+   other Agents go on. A second time on any Agent stops stage 2. Only the owner signs an Agent in.
+4. **Two turns in a row are lost** to a fault of the engine, an Agent package or the harness, as
+   condition 1 reads a lost turn, or a turn is recorded as not having occurred (condition 5).
+5. **The engine does not come back.** A restart on the store does not bring back root's turn
+   tools within twice condition 2's bound, or the store does not start.
+
+An allowance's end is a pause, not a stop. When the ChatGPT Codex allowance runs out, the Codex
+Agents' turns wait for it; when the Claude allowance runs low, A77's paired reads stop first and
+dispatch next, and nothing merges unread
+([IN_FORCE.md, topic 15](../../IN_FORCE.md#15-how-the-work-is-governed)). No API key is used, and
+no Agent names one. A read of `reader-1` that is lost, or still invalid after its repair turn, is
+run outside Conduit as the method runs the fresh read, so that nothing merges unread.
+
+### What stage 2 cannot show
+
+Each Agent keeps its client's login in a home of its own, which keeps the accounts apart for the
+clients but is no wall against an Agent that runs code
+([ruling 84](../../docs/proposals/ruling-84/README.md), point 2): under one user, any Agent of
+stage 2, `reader-1` among them, can read or use another's login, and each one's own tools reach
+every slot. Each can also read what the owner's environment and shell profile hold, an API-key
+variable among them, a reach the owner accepts for the dogfood
+([ruling 89](../../docs/proposals/ruling-89/README.md), point 4), and stage 2 shows nothing about
+whether an Agent used it. A sign-in that carried the stage shows that it did so on this store,
+for this stage's length, not across a package's upgrade or the install of 0.2.1 (A78's P4, not
+registered). An account check that answered the named account shows what the client said, not
+which account the provider charged. One turn at a time shows nothing about turns at once: two
+pairs show five Agents kept in one store and two slot clones used in turn, not two orders run
+together. And no read of `reader-1` is paired with another reader's, so stage 2 shows nothing
+about how well it reads.
+
+### What stage 2 leaves unregistered
+
+- Turns at once. Once order 203's `new-conversation.v1` is installed with the packages 0.2.1,
+  root's turn Conduits gain it by a change of stage 2's documents, and a dated amendment, merged
+  before the first turn sent while another is in flight, registers what that adds: the restarts
+  and waits it removes, both pairs at once, and whether a store of 0.2.0 takes the Agents of
+  0.2.1 without new sign-ins (A78's P4).
+- A third pair, a second account, which comes after the S1 rerun's pin and only on the owner's
+  word ([ruling 84](../../docs/proposals/ruling-84/README.md), point 3; ruling 89, point 7), the
+  Linux node as a node of the Fleet, and a tree granted through the Pool (orders 4 and 5, D59):
+  each by its own registration or amendment, before the first turn it changes.

@@ -314,8 +314,7 @@
     a `source` that names the runtime provider.
   observable: >-
     An actor settles a setup or a retirement of unknown outcome by reading this condition, and
-    reconciles it under OPS-014: the run is named by the instance's ID, and `reconcile.v1` names
-    no handle. Where the runtime provider has not reported the run's state, the condition's
+    reconciles it under OPS-014. The run is named by the instance's ID. Where the runtime provider has not reported the run's state, the condition's
     `status` is `Unknown` with no time, under OBS-003. How often the engine asks
     `inspect-run.v1` of its own accord is DL5 of the implementation-defined list, and each call
     gives the machine of the instance's node beside its ID, under PRV-027. Its result may also

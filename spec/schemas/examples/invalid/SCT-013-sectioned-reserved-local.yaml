@@ -1,2 +1,2 @@
 agents:
-  worker: {from: worker-template, owner: team, consumes: {manages: {to: {kind: Resource, name: files}, from: read}}}
+  worker: {from: worker-template, owner: team, consumes: {operator: {to: {kind: Resource, name: files}, from: read}}}

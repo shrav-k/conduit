@@ -286,8 +286,7 @@
           "arguments": {
             "invocation": "$i",
             "occurred": true,
-            "checked": "Checked storage.",
-            "revision": "r1"
+            "checked": "Checked storage."
           }
         }
       }

@@ -12,8 +12,7 @@
           "arguments": {
             "invocation": "00000000-0000-4000-8000-000000008805",
             "occurred": true,
-            "checked": "observed",
-            "revision": "current"
+            "checked": "observed"
           }
         },
         "evidence": {
@@ -195,8 +194,7 @@
           "arguments": {
             "invocation": "00000000-0000-4000-8000-000000008805",
             "occurred": true,
-            "checked": "observed",
-            "revision": "current"
+            "checked": "observed"
           }
         },
         "evidence": {
@@ -389,8 +387,7 @@
           "arguments": {
             "invocation": "00000000-0000-4000-8000-000000008805",
             "occurred": true,
-            "checked": "observed",
-            "revision": "current"
+            "checked": "observed"
           }
         },
         "evidence": {
@@ -579,8 +576,7 @@
           "arguments": {
             "invocation": "00000000-0000-4000-8000-000000008805",
             "occurred": true,
-            "checked": "observed",
-            "revision": "current"
+            "checked": "observed"
           }
         },
         "evidence": {

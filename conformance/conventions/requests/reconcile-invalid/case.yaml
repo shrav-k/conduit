@@ -28,11 +28,10 @@
   "id": "requests-reconcile-invalid",
   "promises": [
     "OPS-029",
-    "OPS-030",
-    "OPS-031",
+    "OPS-033",
     "ACC-033"
   ],
-  "title": "Reconciliation rejects nonexistent invocations and misplaced revisions after authority",
+  "title": "Reconciliation rejects a nonexistent invocation or a non-boolean occurred argument",
   "steps": [
     {
       "input": {
@@ -1677,19 +1676,14 @@
         },
         "external_intents": [],
         "reply": {
+          "isError": true,
           "_meta": {
             "io.github.shrav-k.conduit/reason": "invalid"
           },
-          "isError": true,
-          "content": [
-            {
-              "type": "text"
-            }
-          ],
           "structuredContent": {
             "diagnostics": [
               {
-                "ruleId": "OPS-031",
+                "ruleId": "OPS-033",
                 "level": "error"
               }
             ]
@@ -1697,7 +1691,7 @@
         },
         "required_promises": [
           "OPS-023",
-          "OPS-031"
+          "OPS-033"
         ],
         "records": [
           {
@@ -1717,12 +1711,21 @@
             "type": "request-ended",
             "time": "2026-11-09T12:30:00Z",
             "data": {
+              "reason": "invalid",
               "target": "00000000-0000-4000-8000-000000000117"
             }
           }
         ],
         "absent": [
-          "/reply/_meta/io.github.shrav-k.conduit~1outcome"
+          "/reply/_meta/io.github.shrav-k.conduit~1outcome",
+          "/reply/_meta/io.github.shrav-k.conduit~1invocation"
+        ],
+        "invocation_facts": [
+          {
+            "id": "$i",
+            "state": "unknown",
+            "attempt": 1
+          }
         ]
       }
     }

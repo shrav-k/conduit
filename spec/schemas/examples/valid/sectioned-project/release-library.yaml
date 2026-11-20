@@ -1,0 +1,7 @@
+# A release library with an Interface that can inspect its Pool.
+pools:
+  releases: {type: github.com/shrav-k/conduit/core#pool.v1}
+resources:
+  artifacts: {type: example.org/files#local-directory.v1, owner: releases, config: {path: /srv/releases}}
+interfaces:
+  auditor: {type: github.com/shrav-k/conduit/core#interface.v1, consumes: {catalog: {to: {kind: Pool, name: releases}, from: github.com/shrav-k/conduit/core#pool-view}}}

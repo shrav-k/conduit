@@ -85,11 +85,7 @@
       "id": "fleets-reconcile-array-element",
       "case": "conventions/fleets/e3b/reconcile-array-element/case.yaml",
       "promises": [
-        "REV-010",
-        "OBJ-016",
-        "CTR-006",
-        "REV-013",
-        "REV-003"
+        "REV-010"
       ],
       "safety_rows": [
         "fleets-reconcile-array-element"
@@ -100,10 +96,9 @@
       "case": "conventions/fleets/e3b/reconcile-control/case.yaml",
       "promises": [
         "ACC-033",
-        "REV-010",
-        "REV-002",
-        "REV-011",
-        "REV-014"
+        "OPS-014",
+        "OPS-013",
+        "REV-010"
       ],
       "safety_rows": [
         "fleets-reconcile-control"
@@ -113,11 +108,7 @@
       "id": "fleets-reconcile-whole-config",
       "case": "conventions/fleets/e3b/reconcile-whole-config/case.yaml",
       "promises": [
-        "ACC-033",
-        "REV-010",
-        "CTR-006",
-        "REV-013",
-        "REV-003"
+        "REV-010"
       ],
       "safety_rows": [
         "fleets-reconcile-whole-config"
@@ -292,7 +283,6 @@
       "case": "conventions/fleets/e3b/routing-retired/case.yaml",
       "promises": [
         "ACC-033",
-        "REV-010",
         "CON-008"
       ],
       "safety_rows": [

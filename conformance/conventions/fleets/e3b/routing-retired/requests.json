@@ -396,7 +396,7 @@
           "tool": "management.reconcile.v1",
           "arguments": {
             "invocation": "00000000-0000-4000-8000-000000008801",
-            "occurred": false,
+            "occurred": true,
             "checked": "owner retired"
           }
         },
@@ -541,7 +541,7 @@
           "tool": "management.reconcile.v1",
           "arguments": {
             "invocation": "00000000-0000-4000-8000-000000008802",
-            "occurred": false,
+            "occurred": true,
             "checked": "setup owner retired"
           }
         },

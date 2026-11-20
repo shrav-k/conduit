@@ -7,7 +7,6 @@
   ],
   "promises": [
     "ACC-033",
-    "REV-010",
     "CON-008"
   ],
   "profile": "first-build",

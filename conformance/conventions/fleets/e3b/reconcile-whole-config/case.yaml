@@ -1,16 +1,12 @@
 {
   "id": "fleets-reconcile-whole-config",
-  "title": "reconcile whole config (041b review)",
+  "title": "Control reconciliation leaves whole configuration unchanged",
   "layers": [
     "convention",
     "interface"
   ],
   "promises": [
-    "ACC-033",
-    "REV-010",
-    "CTR-006",
-    "REV-013",
-    "REV-003"
+    "REV-010"
   ],
   "profile": "first-build",
   "initial": {
@@ -519,7 +515,7 @@
       "expect": {
         "reply": {
           "_meta": {
-            "io.github.shrav-k.conduit/reason": "invalid"
+            "io.github.shrav-k.conduit/outcome": "succeeded"
           }
         },
         "external_intents": [],
@@ -530,6 +526,27 @@
             "config": {
               "accountServices": false,
               "peerMessaging": false
+            }
+          }
+        ],
+        "invocation_facts": [
+          {
+            "id": "00000000-0000-4000-8000-000000008805",
+            "state": "succeeded"
+          }
+        ],
+        "required_promises": [
+          "REV-010"
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-ended",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000109",
+              "invocation": "00000000-0000-4000-8000-000000008805",
+              "outcome": "succeeded",
+              "checked": "observed",
+              "reconciled": true
             }
           }
         ]
@@ -551,13 +568,33 @@
         "object_facts": [
           {
             "name": "agent-a",
-            "config": {},
-            "revision": "041b-reconcile-control-4-0"
+            "config": {
+              "accountServices": false,
+              "peerMessaging": false
+            },
+            "revision": "current"
           }
         ],
         "required_promises": [
-          "REV-010",
-          "REV-013"
+          "REV-010"
+        ],
+        "invocation_facts": [
+          {
+            "id": "00000000-0000-4000-8000-000000008805",
+            "state": "succeeded"
+          }
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-ended",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000109",
+              "invocation": "00000000-0000-4000-8000-000000008805",
+              "outcome": "succeeded",
+              "checked": "observed",
+              "reconciled": true
+            }
+          }
         ]
       }
     }

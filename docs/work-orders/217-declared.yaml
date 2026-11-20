@@ -1,0 +1,149 @@
+# Order 217 vector changes for rulings 78 and 83.
+- name: Publish plain string watch IDs in both schemas under IFC-033
+  kind: fixture
+  cases: [e05-handle]
+  paths: ["conformance/interface/schemas/e05-handle/fixture.json"]
+- name: Publish plain string watch IDs in both schemas under IFC-033
+  kind: flip
+  cases: [e05-handle]
+  paths: ["/steps/0/expect/reply/tool"]
+- name: Publish plain string watch IDs in both schemas under IFC-033
+  kind: metadata
+  cases: [e05-handle]
+  paths: ["/promises/*", "/title"]
+- name: Keep the secret tool omitted while using an ordinary string in the neighboring operation
+  kind: fixture
+  cases: [e05-secret-omitted]
+  paths: ["conformance/interface/schemas/e05-secret-omitted/fixture.json"]
+- name: Record a control outcome and preserve array values and revision
+  kind: expectation
+  cases: [fleets-reconcile-array-element]
+  paths: ["/steps/1/expect/invocation_facts/*", "/steps/1/expect/object_facts/*", "/steps/1/expect/record_facts/*", "/steps/2/expect/invocation_facts/*", "/steps/2/expect/object_facts/*", "/steps/2/expect/record_facts/*", "/steps/3/expect/invocation_facts/*", "/steps/3/expect/object_facts/*", "/steps/3/expect/record_facts/*", "/steps/4/expect/invocation_facts/*", "/steps/4/expect/object_facts/*", "/steps/4/expect/record_facts/*"]
+- name: Record a control outcome and preserve array values and revision
+  kind: fixture
+  cases: [fleets-reconcile-array-element]
+  paths: ["conformance/conventions/fleets/e3b/reconcile-array-element/requests.json"]
+- name: Record a control outcome and preserve array values and revision
+  kind: metadata
+  cases: [fleets-reconcile-array-element]
+  paths: ["/promises/*", "/title"]
+- name: Confirm an effect without storing values or checking a revision and reject false after retirement
+  kind: expectation
+  cases: [fleets-reconcile-control]
+  paths: ["/steps/2/expect/invocation_facts/*", "/steps/2/expect/object_facts/*", "/steps/2/expect/record_facts/*", "/steps/2/expect/reply/*", "/steps/2/expect/required_promises/*", "/steps/3/expect/invocation_facts/*", "/steps/3/expect/reply/*", "/steps/3/expect/required_promises/*", "/steps/4/expect/invocation_facts/*", "/steps/4/expect/reply/*", "/steps/4/expect/required_promises/*", "/steps/5/expect/external_intents", "/steps/5/expect/object_facts/*", "/steps/5/expect/reply/*", "/steps/6/expect/external_intents", "/steps/6/expect/invocation_facts/*", "/steps/6/expect/reply/*", "/steps/6/expect/required_promises/*", "/steps/7/expect/external_intents", "/steps/7/expect/reply/*"]
+- name: Confirm an effect without storing values or checking a revision and reject false after retirement
+  kind: fixture
+  cases: [fleets-reconcile-control]
+  paths: ["conformance/conventions/fleets/e3b/reconcile-control/requests.json"]
+- name: Confirm an effect without storing values or checking a revision and reject false after retirement
+  kind: input
+  cases: [fleets-reconcile-control]
+  paths: ["/steps/4/input/evidence/*", "/steps/4/input/file", "/steps/4/input/index", "/steps/4/input/kind", "/steps/4/input/request/*", "/steps/5/input/file", "/steps/5/input/index", "/steps/5/input/kind", "/steps/6/input/file", "/steps/6/input/index", "/steps/6/input/kind", "/steps/7/input/evidence/*", "/steps/7/input/kind", "/steps/7/input/request/*"]
+- name: Confirm an effect without storing values or checking a revision and reject false after retirement
+  kind: metadata
+  cases: [fleets-reconcile-control]
+  paths: ["/promises/*", "/title"]
+- name: Record the control outcome and preserve the whole configuration and revision
+  kind: expectation
+  cases: [fleets-reconcile-whole-config]
+  paths: ["/steps/1/expect/invocation_facts/*", "/steps/1/expect/record_facts/*", "/steps/1/expect/reply/*", "/steps/1/expect/required_promises/*", "/steps/2/expect/invocation_facts/*", "/steps/2/expect/object_facts/*", "/steps/2/expect/record_facts/*", "/steps/2/expect/required_promises/*"]
+- name: Record the control outcome and preserve the whole configuration and revision
+  kind: fixture
+  cases: [fleets-reconcile-whole-config]
+  paths: ["conformance/conventions/fleets/e3b/reconcile-whole-config/requests.json"]
+- name: Record the control outcome and preserve the whole configuration and revision
+  kind: metadata
+  cases: [fleets-reconcile-whole-config]
+  paths: ["/promises/*", "/title"]
+- name: Use the accepted boolean when testing Fleet authority
+  kind: fixture
+  cases: [fleets-routing]
+  paths: ["conformance/conventions/fleets/e3b/routing/requests.json"]
+- name: Use the accepted boolean when testing fallback authority
+  kind: fixture
+  cases: [fleets-routing-retired]
+  paths: ["conformance/conventions/fleets/e3b/routing-retired/requests.json"]
+- name: Use the accepted boolean when testing fallback authority
+  kind: metadata
+  cases: [fleets-routing-retired]
+  paths: ["/promises/*"]
+- name: Reject false with OPS-014 and suppress redispatch of the unknown write
+  kind: expectation
+  cases: [requests-reconcile-false]
+  paths: ["/steps/2/expect/absent/*", "/steps/2/expect/invocation_facts/*", "/steps/2/expect/records/*", "/steps/2/expect/reply/*", "/steps/2/expect/required_promises/*", "/steps/5/expect/absent/*", "/steps/5/expect/invocation_facts/*", "/steps/5/expect/records/*", "/steps/5/expect/reply/*", "/steps/5/expect/required_promises/*", "/steps/6/expect/absent/*", "/steps/6/expect/invocation_facts/*", "/steps/6/expect/records/*", "/steps/6/expect/reply/*", "/steps/6/expect/required_promises/*", "/steps/7/expect/absent/*", "/steps/7/expect/external_intents/*", "/steps/7/expect/invocation_facts/*", "/steps/7/expect/records/*", "/steps/7/expect/reply/*", "/steps/7/expect/required_promises/*"]
+- name: Reject false with OPS-014 and suppress redispatch of the unknown write
+  kind: metadata
+  cases: [requests-reconcile-false]
+  paths: ["/promises/*", "/title"]
+- name: Reject false before and after a late answer and keep the unknown write from redispatching
+  kind: expectation
+  cases: [requests-reconcile-fenced]
+  paths: ["/steps/3/expect/absent/*", "/steps/3/expect/records/*", "/steps/3/expect/reply/*", "/steps/3/expect/required_promises/*", "/steps/4/expect/required_promises/*", "/steps/5/expect/absent/*", "/steps/5/expect/records/*", "/steps/5/expect/reply/*", "/steps/5/expect/required_promises/*", "/steps/5/expect/state/*", "/steps/6/expect/absent/*", "/steps/6/expect/external_intents/*", "/steps/6/expect/records/*", "/steps/6/expect/reply/*", "/steps/6/expect/required_promises/*", "/steps/6/expect/state/*"]
+- name: Reject false before and after a late answer and keep the unknown write from redispatching
+  kind: metadata
+  cases: [requests-reconcile-fenced]
+  paths: ["/promises/*", "/title"]
+- name: Keep the unknown-ID check and reject a non-boolean occurred argument under OPS-033
+  kind: expectation
+  cases: [requests-reconcile-invalid]
+  paths: ["/steps/4/expect/absent/*", "/steps/4/expect/invocation_facts/*", "/steps/4/expect/records/*", "/steps/4/expect/reply/*", "/steps/4/expect/required_promises/*"]
+- name: Drop the revision argument and send a non-boolean occurred argument
+  kind: fixture
+  cases: [requests-reconcile-invalid]
+  paths: ["conformance/conventions/requests/reconcile-invalid/requests.json"]
+- name: Keep the unknown-ID check and reject a non-boolean occurred argument under OPS-033
+  kind: metadata
+  cases: [requests-reconcile-invalid]
+  paths: ["/promises/*", "/title"]
+- name: Drop revision and retain the conflict for an in-progress invocation
+  kind: expectation
+  cases: [requests-reconcile-revision-in-progress]
+  paths: ["/steps/2/expect/records/*", "/steps/2/expect/reply/*", "/steps/2/expect/required_promises/*"]
+- name: Drop revision and retain the conflict for an in-progress invocation
+  kind: fixture
+  cases: [requests-reconcile-revision-in-progress]
+  paths: ["conformance/conventions/requests/reconcile-revision-in-progress/requests.json"]
+- name: Drop revision and retain the conflict for an in-progress invocation
+  kind: metadata
+  cases: [requests-reconcile-revision-in-progress]
+  paths: ["/promises/*", "/title"]
+- name: Drop revision and retain the conflict for a succeeded invocation
+  kind: expectation
+  cases: [requests-reconcile-revision-succeeded]
+  paths: ["/steps/3/expect/records/*", "/steps/3/expect/reply/*", "/steps/3/expect/required_promises/*"]
+- name: Drop revision and retain the conflict for a succeeded invocation
+  kind: fixture
+  cases: [requests-reconcile-revision-succeeded]
+  paths: ["conformance/conventions/requests/reconcile-revision-succeeded/requests.json"]
+- name: Drop revision and retain the conflict for a succeeded invocation
+  kind: metadata
+  cases: [requests-reconcile-revision-succeeded]
+  paths: ["/promises/*", "/title"]
+- name: Reject false and preserve the unknown outcome after unconfirmed cancellation
+  kind: expectation
+  cases: [requests-reconcile-unconfirmed-cancel]
+  paths: ["/steps/3/expect/absent/*", "/steps/3/expect/records/*", "/steps/3/expect/reply/*", "/steps/3/expect/required_promises/*"]
+- name: Reject false and preserve the unknown outcome after unconfirmed cancellation
+  kind: metadata
+  cases: [requests-reconcile-unconfirmed-cancel]
+  paths: ["/promises/*", "/title"]
+- name: Reject false and preserve the unknown outcome after restart
+  kind: expectation
+  cases: [requests-reconcile-unfenced-restart]
+  paths: ["/steps/3/expect/absent/*", "/steps/3/expect/records/*", "/steps/3/expect/reply/*", "/steps/3/expect/required_promises/*"]
+- name: Reject false and preserve the unknown outcome after restart
+  kind: metadata
+  cases: [requests-reconcile-unfenced-restart]
+  paths: ["/promises/*", "/title"]
+- name: Reject false and keep the outcome unknown across another restoration
+  kind: expectation
+  cases: [requests-restart-interrupted]
+  paths: ["/steps/4/expect/required_promises/*", "/steps/5/expect/absent/*", "/steps/5/expect/records/*", "/steps/5/expect/reply/*", "/steps/5/expect/required_promises/*", "/steps/5/expect/state/*", "/steps/6/expect/state/*"]
+- name: Reject false and keep the outcome unknown across another restoration
+  kind: input
+  cases: [requests-restart-interrupted]
+  paths: ["/steps/5/capture/reconciler"]
+- name: Reject false and keep the outcome unknown across another restoration
+  kind: metadata
+  cases: [requests-restart-interrupted]
+  paths: ["/promises/*", "/title"]

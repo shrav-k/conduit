@@ -676,8 +676,7 @@
     setup or retirement of a member and the cascade, report refused through its closed Conduit,
     and through `management` too. A retired container with shutdown unconfirmed is retired again
     through `management` (LIF-026). A reconciliation whose instance no longer exists records
-    succeeded or failed under OPS-014 and stores nothing; for a control REV-010 fixes its
-    inputs. An object that does not exist has no owning Pool or Fleet. Authority to inspect it
+    succeeded under OPS-014. An object that does not exist has no owning Pool or Fleet. Authority to inspect it
     or act on it by a stale reference is `management`'s alone. With that authority the request
     reports invalid under OPS-029. A caller with only an owner's authority reports refused
     under OPS-023, with ACC-056's diagnostic and only the disclosure its tier permits. An

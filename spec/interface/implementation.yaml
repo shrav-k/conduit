@@ -1,13 +1,14 @@
 # The implementation interface: the shared wire between an engine and an implementation, and
 # between an engine and a consumer.
 # The wire is the Model Context Protocol. One baseline revision is required of everyone; either
-# side may support others, and the protocol's own per-request negotiation picks one. Handles
-# follow the protocol's guidance for stateful tools. The protocol's own fields are named as its
+# side may support others, and the protocol's own per-request negotiation picks one. The protocol's
+# own fields are named as its
 # revision 2026-07-28 names them. Promises here have the layer `interface`, but IFC-014, IFC-043
 # and IFC-044, rules on documents, have the layer `language`.
 # Standing: draft specification; see spec/README.md for status and coverage.
 #
 # Removed IDs (not reused):
+# IFC-011: nothing replaces it (ruling 78).
 # Removed: IFC-024 → OPS-009 (repeat a lost request); no replacement tool (ruling 41).
 # IFC-034: nothing replaces it (ruling 41).
 # IFC-035: nothing replaces it (ruling 38).
@@ -288,21 +289,6 @@
     change the table above for other input_required results.
   vectors: []
 
-- id: IFC-011
-  layer: interface
-  level: must
-  when: >-
-    An operation's input or output is a handle: a top-level property of the operation's
-    `inputSchema` or `outputSchema` whose schema is a `$ref` to
-    `github.com/shrav-k/conduit/core#handle.v1`.
-  then: >-
-    On the wire it is an opaque string that the implementation issued. The engine passes it back
-    unchanged and never interprets it. A handle permits nothing, and the implementation checks
-    it on every call.
-  observable: >-
-    A call that carries a handle the implementation does not recognize has the outcome failed
-    and performs nothing.
-  vectors: []
 
 - id: IFC-012
   layer: interface
@@ -947,9 +933,7 @@
     contract of the operation, no definition can be derived, and no tool is presented for the
     operation.
   observable: >-
-    A handle, whose schema is `github.com/shrav-k/conduit/core#handle.v1`, is so given the
-    schema of a string, in place or as a copy, which is what IFC-011 makes it on the wire. JSON
-    Schema resolves a `$ref` that is a JSON Pointer against the root of the schema that holds
+    An implementation's own ID can be an ordinary string input or output. JSON Schema resolves a `$ref` that is a JSON Pointer against the root of the schema that holds
     it, so a contract's schema written in the place of a `$ref` would send its own pointers,
     such as `#/$defs/name`, to the tool's root, and a contract that refers to itself, directly
     or through others, has no finite form written in place. With one copy of each contract and

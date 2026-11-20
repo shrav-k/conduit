@@ -16,23 +16,25 @@
               "inputSchema": {
                 "type": "object",
                 "properties": {
-                  "handle": {
-                    "$ref": "@core#handle.v1"
+                  "watchId": {
+                    "type": "string",
+                    "minLength": 1
                   }
                 },
                 "required": [
-                  "handle"
+                  "watchId"
                 ]
               },
               "outputSchema": {
                 "type": "object",
                 "properties": {
-                  "handle": {
-                    "$ref": "@core#handle.v1"
+                  "watchId": {
+                    "type": "string",
+                    "minLength": 1
                   }
                 },
                 "required": [
-                  "handle"
+                  "watchId"
                 ]
               },
               "idempotentHint": false,
@@ -77,13 +79,13 @@
     "inputSchema": [
       {
         "value": {
-          "handle": "opaque"
+          "watchId": "watch-17"
         },
         "valid": true
       },
       {
         "value": {
-          "handle": {}
+          "watchId": {}
         },
         "valid": false
       }
@@ -91,17 +93,17 @@
     "outputSchema": [
       {
         "value": {
-          "handle": "opaque"
+          "watchId": "watch-17"
         },
         "valid": true
       },
       {
         "value": {
-          "handle": {}
+          "watchId": {}
         },
         "valid": false
       }
     ]
   },
-  "copy_count": 1
+  "copy_count": 0
 }

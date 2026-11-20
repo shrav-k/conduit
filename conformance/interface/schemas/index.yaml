@@ -83,7 +83,6 @@
       "id": "e05-handle",
       "case": "interface/schemas/e05-handle/case.yaml",
       "promises": [
-        "IFC-011",
         "IFC-033"
       ],
       "safety_rows": []

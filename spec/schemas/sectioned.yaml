@@ -1,10 +1,10 @@
 # Sectioned documents, defined by translation into canonical framed documents.
 # JSON Schema 2020-12, within spec/schema-profile.md.
 # Promises encoded: SCT-001, SCT-002, SCT-005, SCT-006, SCT-007, SCT-009,
-# SCT-012, SCT-013, SCT-016; OBJ-019, OBJ-022.
+# SCT-013, SCT-016; OBJ-019, OBJ-022.
 # Checked during translation: version inheritance, missing or conflicting Agent owners,
 # at most one fleet per file, shared Fleet generation, SCT-008 targets, generated name
-# lengths, cross-document name collisions and an Agent managing only its own Fleet.
+# lengths and cross-document name collisions.
 # Package files accept only templates and apiVersion (MAN-011).
 # The wire's document.v1 remains canonical and does not reference sectioned.v1.
 # Standing: draft specification; see spec/README.md for status and coverage.
@@ -469,13 +469,10 @@ spec:
             enum:
             - t
             - operator
-            - manages
         additionalProperties:
           $ref: github.com/shrav-k/conduit/core#consumes-item.v1
       operator:
         $ref: github.com/shrav-k/conduit/core#sectioned-operator.v1
-      manages:
-        $ref: github.com/shrav-k/conduit/core#manages.v1
     required:
     - type
     additionalProperties: false
@@ -501,13 +498,10 @@ spec:
             enum:
             - t
             - operator
-            - manages
         additionalProperties:
           $ref: github.com/shrav-k/conduit/core#consumes-item.v1
       operator:
         $ref: github.com/shrav-k/conduit/core#sectioned-operator.v1
-      manages:
-        $ref: github.com/shrav-k/conduit/core#manages.v1
     required:
     - from
     additionalProperties: false
@@ -517,7 +511,7 @@ kind: Schema
 metadata:
   name: sectioned-agent.v1
   description: An inline or referenced Agent definition. Owner is required unless the file supplies
-    fleet; its manages target must equal that owner.
+    fleet.
 spec:
   oneOf:
   - type: object
@@ -558,23 +552,10 @@ spec:
             enum:
             - t
             - operator
-            - manages
         additionalProperties:
           $ref: github.com/shrav-k/conduit/core#consumes-item.v1
       operator:
         $ref: github.com/shrav-k/conduit/core#sectioned-operator.v1
-      manages:
-        allOf:
-        - $ref: github.com/shrav-k/conduit/core#manages.v1
-        - required:
-          - fleets
-          properties:
-            fleets:
-              minProperties: 1
-              maxProperties: 1
-          not:
-            required:
-            - pools
     required:
     - type
     additionalProperties: false
@@ -606,23 +587,10 @@ spec:
             enum:
             - t
             - operator
-            - manages
         additionalProperties:
           $ref: github.com/shrav-k/conduit/core#consumes-item.v1
       operator:
         $ref: github.com/shrav-k/conduit/core#sectioned-operator.v1
-      manages:
-        allOf:
-        - $ref: github.com/shrav-k/conduit/core#manages.v1
-        - required:
-          - fleets
-          properties:
-            fleets:
-              minProperties: 1
-              maxProperties: 1
-          not:
-            required:
-            - pools
     required:
     - from
     additionalProperties: false
@@ -672,7 +640,6 @@ spec:
             enum:
             - t
             - operator
-            - manages
         additionalProperties:
           $ref: github.com/shrav-k/conduit/core#consumes-item.v1
       operator:
@@ -709,7 +676,6 @@ spec:
             enum:
             - t
             - operator
-            - manages
         additionalProperties:
           $ref: github.com/shrav-k/conduit/core#consumes-item.v1
       operator:
@@ -723,7 +689,7 @@ apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
 metadata:
   name: sectioned-pool.v1
-  description: An inline or referenced Pool definition. No consumes, operator or manages.
+  description: An inline or referenced Pool definition. No consumes or operator.
 spec:
   oneOf:
   - type: object
@@ -914,48 +880,3 @@ spec:
     required:
     - from
     additionalProperties: false
----
-apiVersion: github.com/shrav-k/conduit/v0
-kind: Schema
-metadata:
-  name: manages.v1
-  description: Scope notation. Consumer-specific restrictions, owner equality and generated-name
-    lengths are checked during translation under SCT-012 and SCT-013.
-spec:
-  type: object
-  properties:
-    fleets:
-      type: object
-      propertyNames:
-        type: string
-        maxLength: 63
-        pattern: ^[a-z]([a-z0-9]|-[a-z0-9])*-?$
-        not:
-          enum:
-          - system
-          - local
-          - management
-          - access
-          - root
-      additionalProperties:
-        enum:
-        - manage
-        - view
-    pools:
-      type: object
-      propertyNames:
-        type: string
-        maxLength: 63
-        pattern: ^[a-z]([a-z0-9]|-[a-z0-9])*-?$
-        not:
-          enum:
-          - system
-          - local
-          - management
-          - access
-          - root
-      additionalProperties:
-        enum:
-        - manage
-        - view
-  additionalProperties: false

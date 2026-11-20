@@ -27,11 +27,9 @@
   },
   "id": "requests-reconcile-revision-in-progress",
   "promises": [
-    "OPS-023",
-    "OPS-031",
     "OPS-030"
   ],
-  "title": "Forbidden reconciliation revision takes precedence over in-progress conflict",
+  "title": "Reconciliation of an in-progress invocation reports conflict",
   "steps": [
     {
       "input": {
@@ -1544,7 +1542,7 @@
         "external_intents": [],
         "reply": {
           "_meta": {
-            "io.github.shrav-k.conduit/reason": "invalid"
+            "io.github.shrav-k.conduit/reason": "conflict"
           },
           "isError": true,
           "content": [
@@ -1555,7 +1553,7 @@
           "structuredContent": {
             "diagnostics": [
               {
-                "ruleId": "OPS-031",
+                "ruleId": "OPS-030",
                 "level": "error"
               }
             ]
@@ -1563,7 +1561,7 @@
         },
         "required_promises": [
           "OPS-023",
-          "OPS-031"
+          "OPS-030"
         ],
         "records": [
           {
@@ -1583,7 +1581,8 @@
             "type": "request-ended",
             "time": "2026-11-09T12:30:00Z",
             "data": {
-              "target": "00000000-0000-4000-8000-000000000117"
+              "target": "00000000-0000-4000-8000-000000000117",
+              "reason": "conflict"
             }
           }
         ],

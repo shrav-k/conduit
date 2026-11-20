@@ -1,12 +1,13 @@
 //! Loopback MCP adapter. Access, records and outcomes stay in the core.
 use crate::{Execution, Executor, Result, RunIdentity, Shell, Ticket};
 use axum::{
-    Router,
+    Json, Router,
     body::{Body, to_bytes},
     extract::{Request, State},
-    http::{StatusCode, request::Parts},
+    http::{HeaderMap, Method, StatusCode, header, request::Parts},
     middleware::{self, Next},
     response::{IntoResponse, Response},
+    routing::any,
 };
 use chrono::{DateTime, Utc};
 use conduit_core::access::Identity;
@@ -31,7 +32,7 @@ use std::{
     },
 };
 use tokio::{
-    net::TcpListener,
+    net::{TcpListener, TcpStream},
     sync::{broadcast, watch},
 };
 use tokio_util::sync::CancellationToken;
@@ -669,22 +670,69 @@ fn unauthorized() -> Response {
     )
         .into_response()
 }
-async fn authenticate(State(handler): State<Handler>, request: Request, next: Next) -> Response {
-    let (mut parts, body) = request.into_parts();
-    let token = parts
-        .headers
+async fn verified_instance(shell: &Arc<Shell>, headers: &HeaderMap) -> Result<Option<String>> {
+    let token = headers
         .get("authorization")
         .and_then(|v| v.to_str().ok())
-        .and_then(|s| s.strip_prefix("Bearer "));
-    // Verification reads the committed state under the writer mutex. Waiting for
-    // an in-flight commit must not block an async worker (including initialize).
-    let token = token.map(str::to_owned);
-    let shell = handler.shell.clone();
-    let verified = tokio::task::spawn_blocking(move || shell.verify_token(token.as_deref())).await;
-    let identity = match verified {
-        Ok(Ok(Identity::Instance { id })) => Some(id),
-        Ok(Ok(_)) => None,
-        _ => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+        .and_then(|s| s.strip_prefix("Bearer "))
+        .map(str::to_owned);
+    // Verification reads the committed state under the writer mutex.
+    let shell = shell.clone();
+    let identity = tokio::task::spawn_blocking(move || shell.verify_token(token.as_deref()))
+        .await
+        .map_err(|_| "token verification task failed")??;
+    Ok(match identity {
+        Identity::Instance { id } => Some(id),
+        _ => None,
+    })
+}
+fn origin_allowed(headers: &HeaderMap, engine_url: &str) -> bool {
+    let origin = url::Url::parse(engine_url)
+        .unwrap()
+        .origin()
+        .ascii_serialization();
+    headers
+        .get_all("origin")
+        .iter()
+        .all(|value| value == origin.as_str())
+}
+async fn records(State(shell): State<Arc<Shell>>, method: Method, headers: HeaderMap) -> Response {
+    if method != Method::GET {
+        return (StatusCode::METHOD_NOT_ALLOWED, [(header::ALLOW, "GET")]).into_response();
+    }
+    if !origin_allowed(&headers, &shell.config.engine_url) {
+        return StatusCode::FORBIDDEN.into_response();
+    }
+    let identity = match verified_instance(&shell, &headers).await {
+        Ok(Some(id)) => id,
+        Ok(None) => return unauthorized(),
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+    };
+    let response = tokio::task::spawn_blocking(move || -> Result<Response> {
+        let state = shell.state()?;
+        if !state.objects.iter().any(|object| {
+            object["id"] == identity
+                && object["kind"] == "Interface"
+                && object["name"] == "root"
+                && object.get("spec").is_none()
+        }) {
+            return Ok(StatusCode::FORBIDDEN.into_response());
+        }
+        drop(state);
+        let export = shell.submit(json!({"kind":"export-records"}), &crate::MissingExecutor)?;
+        Ok(Json(export).into_response())
+    })
+    .await;
+    match response {
+        Ok(Ok(response)) => response,
+        _ => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+    }
+}
+async fn authenticate(State(handler): State<Handler>, request: Request, next: Next) -> Response {
+    let (mut parts, body) = request.into_parts();
+    let identity = match verified_instance(&handler.shell, &parts.headers).await {
+        Ok(identity) => identity,
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
     let bytes = match to_bytes(body, 4 * 1024 * 1024).await {
         Ok(b) => b,
@@ -699,16 +747,7 @@ async fn authenticate(State(handler): State<Handler>, request: Request, next: Ne
         }
     };
     let value: Value = serde_json::from_slice(&bytes).unwrap_or(Value::Null);
-    let origin = url::Url::parse(&handler.shell.config.engine_url)
-        .unwrap()
-        .origin()
-        .ascii_serialization();
-    if parts
-        .headers
-        .get_all("origin")
-        .iter()
-        .any(|v| v != origin.as_str())
-    {
+    if !origin_allowed(&parts.headers, &handler.shell.config.engine_url) {
         if record_rejection(&handler, identity.as_deref(), &value, false)
             .await
             .is_err()
@@ -950,7 +989,10 @@ pub async fn serve(
     );
     let router = Router::new()
         .route_service("/mcp", service)
-        .layer(middleware::from_fn_with_state(handler, authenticate));
+        .layer(middleware::from_fn_with_state(handler, authenticate))
+        // The MCP middleware records requests and refusals. This route shares
+        // only its credential and Origin checks.
+        .route("/records", any(records).with_state(shell.clone()));
     axum::serve(listener, router)
         .with_graceful_shutdown(shutdown.cancelled_owned())
         .await
@@ -964,6 +1006,104 @@ pub async fn serve(
 mod relay;
 #[cfg(test)]
 mod session_tests;
+
+fn client_token(directory: &Path, asked: &str) -> Result<String> {
+    let bytes = crate::store::private_read(&directory.join("state.json"))?;
+    let mut decoder = serde_json::Deserializer::from_slice(&bytes);
+    decoder.disable_recursion_limit();
+    let state: Value =
+        serde::Deserialize::deserialize(&mut decoder).map_err(|_| "invalid store")?;
+    let (kind, name) = asked
+        .split_once('/')
+        .map_or((None, asked), |(k, n)| (Some(k), n));
+    let id = state["state"]["objects"]
+        .as_array()
+        .ok_or("missing objects")?
+        .iter()
+        .find(|o| o.get("spec").is_none()
+            && ["Agent", "Interface", "Resource", "Pool"].iter().any(|k| o["kind"] == *k)
+            && kind.is_none_or(|k| o["kind"] == k)
+            && (o["name"] == name || o["id"] == name))
+        .and_then(|o| o["id"].as_str())
+        .ok_or_else(|| format!("tools for {asked}: instance does not exist; submit its instance document first (use conduit inspect to see registered objects)"))?;
+    String::from_utf8(crate::store::private_read(
+        &directory.join("client-tokens").join(id),
+    ).map_err(|_| format!("tools for {asked}: instance exists but has no presented tools yet (client identity is unavailable); set it up with conduit call through its management Conduit, then open its access Conduits"))?)
+    .map_err(|_| "invalid client token file".into())
+}
+
+fn root_client_token(directory: &Path) -> Result<String> {
+    let id = crate::store::private_read(&directory.join(crate::ROOT_CLIENT_ID_FILE)).map_err(
+        |_| "root client identity is unavailable. Restart conduit serve with this build.",
+    )?;
+    let id = std::str::from_utf8(&id).map_err(|_| "invalid root client ID")?;
+    uuid::Uuid::parse_str(id).map_err(|_| "invalid root client ID")?;
+    let token = crate::store::private_read(&directory.join("client-tokens").join(id))
+        .map_err(|_| "root client identity is unavailable")?;
+    String::from_utf8(token).map_err(|_| "invalid client token file".into())
+}
+
+/// Store owner helper for an export through the serving shell.
+pub async fn records_client(directory: &Path) -> Result<Value> {
+    let config = crate::Config::for_store(directory)?;
+    let endpoint = url::Url::parse(&config.engine_url)
+        .and_then(|url| url.join("/records"))
+        .map_err(|_| "invalid engine URL")?;
+    let connect_timeout = std::time::Duration::from_secs(2);
+    let unanswered = || {
+        format!(
+            "another process holds the store and conduit serve does not answer at {}",
+            config.engine_url
+        )
+    };
+    let token = match root_client_token(directory) {
+        Ok(token) => token,
+        Err(error) => {
+            let host = match endpoint.host().ok_or("missing engine host")? {
+                url::Host::Ipv6(ip) => ip.to_string(),
+                host => host.to_string(),
+            };
+            let port = endpoint
+                .port_or_known_default()
+                .ok_or("missing engine port")?;
+            tokio::time::timeout(connect_timeout, TcpStream::connect((host.as_str(), port)))
+                .await
+                .map_err(|_| unanswered())?
+                .map_err(|_| unanswered())?;
+            return Err(error);
+        }
+    };
+    let client = reqwest::Client::builder()
+        .no_proxy()
+        .redirect(reqwest::redirect::Policy::none())
+        .connect_timeout(connect_timeout)
+        .read_timeout(config.call_timeout)
+        .build()
+        .map_err(|e| e.to_string())?;
+    let response = client
+        .get(endpoint)
+        .bearer_auth(token)
+        .send()
+        .await
+        .map_err(|_| unanswered())?;
+    if response.status() != StatusCode::OK {
+        return Err(format!(
+            "record export at {} returned HTTP {}",
+            config.engine_url,
+            response.status()
+        ));
+    }
+    let bytes = response
+        .bytes()
+        .await
+        .map_err(|_| "could not read record export")?;
+    let mut decoder = serde_json::Deserializer::from_slice(&bytes);
+    decoder.disable_recursion_limit();
+    let export =
+        serde::Deserialize::deserialize(&mut decoder).map_err(|_| "invalid record export")?;
+    decoder.end().map_err(|_| "invalid record export")?;
+    Ok(export)
+}
 
 /// Store owner helper: no lease, recovery, direct invoke or cached permit.
 pub async fn client(
@@ -980,29 +1120,8 @@ pub async fn client(
         },
     };
     let config = crate::Config::for_store(directory)?;
-    let bytes = crate::store::private_read(&directory.join("state.json"))?;
-    let mut decoder = serde_json::Deserializer::from_slice(&bytes);
-    decoder.disable_recursion_limit();
-    let state: Value =
-        serde::Deserialize::deserialize(&mut decoder).map_err(|_| "invalid store")?;
     let asked = as_instance.unwrap_or("root");
-    let (kind, name) = asked
-        .split_once('/')
-        .map_or((None, asked), |(k, n)| (Some(k), n));
-    let id = state["state"]["objects"]
-        .as_array()
-        .ok_or("missing objects")?
-        .iter()
-        .find(|o| o.get("spec").is_none()
-            && ["Agent", "Interface", "Resource", "Pool"].iter().any(|k| o["kind"] == *k)
-            && kind.is_none_or(|k| o["kind"] == k)
-            && (o["name"] == name || o["id"] == name))
-        .and_then(|o| o["id"].as_str())
-        .ok_or_else(|| format!("tools for {asked}: instance does not exist; submit its instance document first (use conduit inspect to see registered objects)"))?;
-    let token = String::from_utf8(crate::store::private_read(
-        &directory.join("client-tokens").join(id),
-    ).map_err(|_| format!("tools for {asked}: instance exists but has no presented tools yet (client identity is unavailable); set it up with conduit call through its management Conduit, then open its access Conduits"))?)
-    .map_err(|_| "invalid client token file")?;
+    let token = client_token(directory, asked)?;
     let mut initialized = None;
     for attempt in 1..=3 {
         let transport = StreamableHttpClientTransport::with_client(

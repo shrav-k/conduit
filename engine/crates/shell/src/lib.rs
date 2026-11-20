@@ -22,6 +22,8 @@ use uuid::Uuid;
 
 pub type Result<T> = std::result::Result<T, String>;
 
+const ROOT_CLIENT_ID_FILE: &str = "root-client-id";
+
 #[derive(Clone)]
 pub struct Config {
     pub trust_domain: Option<String>,
@@ -347,19 +349,29 @@ impl Shell {
     fn client_token(&self, writer: &Writer, instance: &str) -> Result<()> {
         // DL13: issue a token only for an instance in the last committed State.
         let state = writer.store.snapshot()?;
-        if !state.objects.iter().any(|o| {
-            o["id"] == instance
-                && o.get("spec").is_none()
-                && ["Interface", "Agent", "Resource", "Pool"]
-                    .iter()
-                    .any(|k| o["kind"] == *k)
-        }) {
-            return Err("token subject is not an instance".into());
-        }
+        let subject = state
+            .objects
+            .iter()
+            .find(|o| {
+                o["id"] == instance
+                    && o.get("spec").is_none()
+                    && ["Interface", "Agent", "Resource", "Pool"]
+                        .iter()
+                        .any(|k| o["kind"] == *k)
+            })
+            .ok_or("token subject is not an instance")?;
         let directory = writer.store.directory.join("client-tokens");
         store::private_directory(&directory)?;
         let token = self.authority.token(instance, &self.config.engine_url)?;
-        store::atomic_write(&directory, instance, token.as_bytes())
+        store::atomic_write(&directory, instance, token.as_bytes())?;
+        if subject["kind"] == "Interface" && subject["name"] == "root" {
+            store::atomic_write(
+                &writer.store.directory,
+                ROOT_CLIENT_ID_FILE,
+                instance.as_bytes(),
+            )?;
+        }
+        Ok(())
     }
 
     pub fn issue_client_token(&self, instance: &str) -> Result<()> {

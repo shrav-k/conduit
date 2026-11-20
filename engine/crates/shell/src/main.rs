@@ -222,6 +222,11 @@ fn run() -> Result<()> {
                 &repository,
             ));
         }
+        Err(error) if command == "records" && error == "store already has an active shell" => {
+            let runtime = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
+            let export = runtime.block_on(conduit_shell::server::records_client(&store))?;
+            return print_records(export);
+        }
         Err(error) => return Err(error),
     };
     if command == "serve" {
@@ -290,19 +295,7 @@ fn run() -> Result<()> {
         }
         "records" => {
             let export = shell.submit(json!({"kind":"export-records"}), &MissingExecutor)?;
-            for record in export["records"]
-                .as_array()
-                .ok_or("invalid record export")?
-            {
-                println!("{record}");
-            }
-            if export["complete"] != true {
-                success = false;
-                eprintln!(
-                    "records: export has gaps: {}; preserve the available records and check retention",
-                    export["gaps"]
-                );
-            }
+            return print_records(export);
         }
         "inspect" => {
             let state = shell.state()?;
@@ -380,6 +373,24 @@ fn run() -> Result<()> {
             "{command}: one or more printed results did not succeed; see their diagnostics"
         ))
     }
+}
+fn print_records(export: Value) -> Result<()> {
+    for record in export["records"]
+        .as_array()
+        .ok_or("invalid record export")?
+    {
+        println!("{record}");
+    }
+    if export["complete"] != true {
+        eprintln!(
+            "records: export has gaps: {}; preserve the available records and check retention",
+            export["gaps"]
+        );
+        return Err(
+            "records: one or more printed results did not succeed; see their diagnostics".into(),
+        );
+    }
+    Ok(())
 }
 fn set_up_instances(
     shell: &Shell,

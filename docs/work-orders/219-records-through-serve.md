@@ -209,4 +209,24 @@ merges.
 
 ## Record
 
-Not yet run.
+Run on 2026-11-20 through Conduit itself, by the dogfood's own Agents, which root called by
+`conduit call`, in Pacific time. `turn-worker-1.turn.v1` (12:20 to 12:37) built it: `conduit
+records` exports through serve while serve holds the store. The order's four regression tests
+reproduced the gap on the unchanged engine, and the release suite passed, 408 tests.
+
+`turn-verifier-1.turn.v1` (12:48 to 12:51) was the first verifier under the owner's rule that a
+verifier runs only what settles a doubt. It found two musts in the lease fallback: the live
+export decoded the whole state to find root's credential, and a missing root credential hid the
+no-server diagnostic. The second turn (13:07 to 13:11) fixed both, each with a test that failed
+first.
+
+`turn-reader-1.turn.v1` (13:12 to 13:16), the Claude reader, accepted it with one should and two
+nits, which the third turn (13:17 to 13:19) settled:
+- the Done-when filter `records_` now matches 6 tests, the order's 4 plus the 2 from the
+  verifier's fixes;
+- the diagnostic for a store started by an earlier build, which wrote no `root-client-id`, now
+  says to restart `conduit serve` with this build;
+- engine/CONFORMANCE.md no longer says the Host allowlist covers `/records`, and names what it
+  checks instead.
+
+The gate's run on the squash is the coordinator's, at the merge.

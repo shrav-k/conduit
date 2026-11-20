@@ -71,7 +71,7 @@ const DESCRIPTIONS: [&str; 15] = [
     "List the pending actions raised at root through serve, one JSON line each as list.v1 gives them; prints nothing when none is raised.",
     "Answer a setup action raised at root through serve, through root's Conduit to the target that authorizes inspection of its subject; a setup takes dismissed. Sends nothing for an action not raised at root or of another kind.",
     "Sign in an Agent or Resource through serve and root's Conduit to its owner: shows the engine's message and the full URL, opens the browser only after you type y, and retries each time you press Enter until the engine answers. --login asks for one of the Type's stated logins; the engine refuses it where the sign-in hook is plain, as in the 0.2.0 Agent packages. Carries no return from another machine.",
-    "Export ordered CloudEvents as JSON lines; stop serve first. Gaps cause a nonzero exit.",
+    "Export ordered CloudEvents as JSON lines. Uses serve while it holds the store. Gaps cause a nonzero exit.",
     "Hold the store, set up registered instances and serve MCP on its fixed loopback URL. SIGTERM or Ctrl-C ends runs.",
     "List tools presented to root or a named instance. Set up the instance first and open its Conduits if its list is empty.",
     "Call a presented root tool once through serve. ARGUMENTS-JSON must be an object (default {}). Failed or unknown outcomes cause a nonzero exit.",

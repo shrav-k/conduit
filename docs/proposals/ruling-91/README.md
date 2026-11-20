@@ -1,6 +1,6 @@
 # Ruling 91: an account check that answers another account after a sign-in's wait has ended holds the Agent, and the sign-in message for carried: false names no method
 
-Status: in force; directive (A88: both decisions written into spec/ and the engine, after the first dogfood milestone) (ruled by the owner on 2026-11-19, as the coordinator's notes date the answers, at about 16:45 PST). Holds now: [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach) (points 1 and 2, spec pending), and the row of A88 in [the tracker's action items](../../AUDIT.md#p1--prove-the-language-can-be-rebuilt-and-its-promises-kept). This record says why.
+Status: in force; done (A88: both decisions written into spec/ and the engine by order 216) (ruled by the owner on 2026-11-19, as the coordinator's notes date the answers, at about 16:45 PST). Holds now: [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach) (points 1 and 2, in spec/ by order 216), and the row of A88 in [the tracker's action items](../../AUDIT.md#p1--prove-the-language-can-be-rebuilt-and-its-promises-kept). This record says why.
 
 On 2026-11-19, while writing [order 215](../../work-orders/215-build-sign-in-follow-up.md), the
 sign-in chain's follow-up and the first order that A78's stage 2 sends through Conduit
@@ -186,7 +186,8 @@ Nothing new. The coordinator's readings above are open to the owner's strike.
 ## What follows
 
 - [IN_FORCE.md](../../../IN_FORCE.md), topic 9: a line on the late answer's hold (point 1), and
-  one under ruling 80 point 8's line on the message's words (point 2), both spec pending.
+  one under ruling 80 point 8's line on the message's words (point 2), both written into
+  `spec/` and the engine by order 216 (A88).
 - [The ledger](../ruling-log.md) gains row 91; no other ruling's status changes.
 - [The tracker](../../AUDIT.md#p1--prove-the-language-can-be-rebuilt-and-its-promises-kept) gains
   A88, and [the roadmap](../../../ROADMAP.md#the-order-of-the-work) cites it in step 3.

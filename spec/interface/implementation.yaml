@@ -1411,7 +1411,7 @@
     the person brings back, if anything; for device it says the code is in the engine's
     panel. For carried: false it says that nothing comes back through the Interface, and that
     the person completes the login on that node's machine, at it or over a connection Conduit
-    manages, by remote desktop or by SSH, pasting the code or forwarding the port.
+    manages.
     No text from the hook is relayed. No message holds a code or fingerprint.
     The URL is HTTPS only,
     contains no credential or personal data and is not pre-authenticated. No tool content,

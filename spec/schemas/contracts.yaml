@@ -422,9 +422,8 @@ spec:
       description: >-
         Whether the engine may carry the return from the person's Interface to its program.
         False carries none: the person completes the login on the program's machine, at it or
-        over a connection Conduit manages, by remote desktop or by SSH, pasting the code or
-        forwarding the port, and no process running Conduit's code reads, holds or relays the
-        return (CTR-013, PND-013, IFC-049).
+        over a connection Conduit manages, and no process running Conduit's code reads, holds
+        or relays the return (CTR-013, PND-013, IFC-049).
     issuer:
       type: string
       format: uri

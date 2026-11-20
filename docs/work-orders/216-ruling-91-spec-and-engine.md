@@ -329,4 +329,22 @@ Stage nothing. The coordinator then has a fresh, read-only Opus reader read the 
 
 ## Record
 
-Not yet run.
+Run on 2026-11-20 through Conduit itself, by the dogfood's own Agents. Root called the store's
+turn tools by `conduit call`: `turn-worker-2.turn.v1` (08:29 to 08:48 PST), a Codex Agent in its
+own home, then `turn-verifier-2.turn.v1` (08:48 to 08:55), read-only, which passed the work with
+one should: the ruling's record and the ledger still called both decisions spec pending. The
+results were copied back into a trusted worktree. The run is outside A78 stage 2's original
+registration, as experiment 028's amendment of 2026-11-20 now records.
+
+As built, a late poll that answers the expected account still ends `sign-in.v1` succeeded, and a
+late answer of no account, or of the first check's account, offers another input request (decision
+5's report). That question goes to the owner; nothing here changes it.
+
+`tools/gate.py` on the worker's commit: `Gate: PASS. 49 passed; not run: rust unreached.`
+
+A fresh read of the diff after the gate (ruling 92) found every decision applied and no must. It
+reran both core tests, the case `requests-sign-in-late-other-account` and the vectors test (2
+passed). Its shoulds, with the verifier's, are applied in the merge change: the ruling's record,
+the ledger and A88 now say that order 216 wrote both decisions into `spec/` and the engine, and
+the uneven lines in `spec/promises/pending.yaml` and `spec/README.md` are rewrapped. The gate's
+run on the squash is the coordinator's at the merge.

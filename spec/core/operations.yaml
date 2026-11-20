@@ -1375,8 +1375,10 @@ metadata:
     account-hook runs first; the expected account succeeds; no account, another account or a
     failed or unknown check proceeds to sign-in-hook, which relays a URL action. Retries poll for
     the account, a failed or unknown poll counting as none yet; a wrong account found then is
-    undone and the invocation fails with the action still pending. Failed undo holds model
-    work. Missing URL capability returns
+    undone and the invocation fails with the action still pending. A failed undo, or an account
+    other than the expected one and than the one the first check found, reported by a check that
+    answers after DL18, holds every request to the instance but the parts of sign-in.v1, of a
+    setup and of its retirement (PND-011). Missing URL capability returns
     -32021. No held request resumes and no later hook runs after DL18.
     The optional request _meta signInLogin asks for one stated login; an unknown name reports
     invalid before any part, with the stated names, and so does any name where the instance's

@@ -319,3 +319,16 @@ Status: accepted, not done (each group is still in the tree)
 ## DEC-032, 2026-11-20, the owner's machines
 
 Private, held by the coordinator.
+
+## DEC-033, 2026-11-20, the testing audit
+
+Owner's words: "We should also do an audit of our testing infrastructure, what is and isn't
+needed, and how to keep it minimal until v0 is shipped to improve velocity"; then gate speed-ups
+-> "Yes, all (Rec.)"; suite reruns -> "Trim now (Rec.)"; the 012 account rule -> "Allow it
+(Rec.)"; what gates v0 -> "DEC-005 + mutation run as info (Rec.)"
+
+Lands in: AGENTS.md's work-order rules; HOW-WE-WORK section 3; work order 223 (the gate's
+speed-ups); ROADMAP.md's "What v0 must pass" (ruling 47's six gate v0; mutation testing runs once
+on the core before the owner's judgment, as information; independent builds inform after)
+
+Status: accepted, not done (order 223)

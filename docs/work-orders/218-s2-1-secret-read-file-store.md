@@ -55,12 +55,9 @@ new value after a rotation (SEC-014, SEC-017). Not this step: S2's vectors V1 to
 keychain store (S2-2), runtime-provider runs (S2-R3 and S2-R4's Docker runtime), and the batch-2
 rule on driven Agents (013's G1).
 
-**When it runs.** An order of A78's stage 2, sent through Conduit under
-[order 211's registration](211-a78-stage-2-registration.md) ("Stage 2's orders"): one worker turn
-and one verifier turn by `conduit call` on the Mac, then the local gate and a fresh read. It
-changes nothing under `experiments/028-a78-dogfood/` and not the harness. It can run beside
-orders 219 and 220: keep out of `engine/crates/shell/src/main.rs` and `server.rs`, which order
-219 changes, unless the read needs them, and say why. By
+**When it runs.** Through Conduit's dogfood: a worker turn and a verifier turn by `conduit
+call`, then the local gate and a fresh read. Keep out of `engine/crates/shell/src/main.rs` and
+`server.rs` (order 219's) unless the read needs them, and say why. By
 [ruling 89](../proposals/ruling-89/README.md), each item says what must hold; how you build it is
 yours.
 
@@ -69,6 +66,19 @@ yours.
 and the options it leaves. Do not choose. An engine choice that no promise governs (how the
 value travels from the read to the run inside the engine, a record's extra fields, a case's
 layout) is yours: list it under `own_choices`.
+
+**The owner's answer (2026-11-20).** Round 1 stopped here: SEC-010 refuses the read where more
+than one open Conduit from the instance to the secret Resource lists `get-secret.v1`, but
+ACC-056's order names no rule deciding it (REC-001). The owner ranked SEC-010 ("A now, C at the
+review"). Make exactly these edits under `spec/`, and no other: (1) ACC-056's `then`: `(2)
+ACC-001;` becomes `(2) ACC-001, then SEC-010 where the engine's read of a secret finds more than
+one open Conduit from the instance to the secret Resource that lists `get-secret.v1`;`; (2) its
+SEC-010 cause row becomes `The engine reads a secret only through exactly one open Conduit of
+the instance's own that lists it; more than one is open (SEC-007).`; (3) SEC-010's
+`observable`: `the read reports refused, and SEC-012 applies` becomes `the read reports refused,
+decided by ACC-001 where none is open and by SEC-010 where more than one is, under ACC-056, and
+SEC-012 applies`. A case shows it: two such Conduits, refused with `ruleId` SEC-010, nothing
+started, no value anywhere. Lines marked "(answer)" below check it.
 
 ## What must hold
 
@@ -194,19 +204,9 @@ for the engine's own runner. Run
 
 ## What this leaves, for S2-2 and later
 
-Report this list, corrected by what you built:
-
-- **S2-2, the keychain store's package:** SEC-006 for that store (only its locator, a locked
-  keychain answering failed with no fallback), and SEC-005 and SEC-022 checked when its package
-  is installed.
-- **S2-3, the dry run:** S2's V3 and V4 (SEC-016 among V4's promises, since a read whose dispatch
-  record cannot be kept needs a store that fails, a case the vectors cannot hold), and
-  SEC-019, which binds S2's Linear server, not the engine.
-- **Later, not S2's:** SEC-013, SEC-023 and SEC-024 (secrets in a `remote` item's headers; S2's
-  items are `command` items); SEC-010's runtime-provider half, with the first runtime provider
-  the engine calls; the language checks SEC-001 to SEC-004, SEC-009 and SEC-021, unless S2-3's
-  cases need them first; IN_FORCE's *spec pending* lines of ruling 78 points 11 and 17 and of
-  batch 2 (topics 9 and 12).
+Report the list round 1's report gave (S2-2: the keychain store's SEC-006, SEC-005 and SEC-022;
+S2-3: S2's V3 and V4 with SEC-016, and SEC-019; later: SEC-013, SEC-023, SEC-024, SEC-010's
+runtime-provider half, SEC-001 to SEC-004, SEC-009, SEC-021), corrected by what you built.
 
 ## Before you change anything
 
@@ -234,7 +234,7 @@ unless you say why), `engine/crates/conformance/` where the case schema needs it
 index piece, `case.schema.json` and `case-schema/` where extended), `engine/CONFORMANCE.md`,
 `engine/README.md`, `engine/STANDING.md` only by the tool, `tools/gate.py` and
 `tools/tests/test_gate.py` as above, `packages/provider-file/` only as above, and create
-`docs/work-orders/218-declared.yaml`. Change nothing under `spec/`, `docs/` outside the
+`docs/work-orders/218-declared.yaml`. Change nothing under `spec/` beyond the owner's answer's three edits, `docs/` outside the
 declaration, `experiments/`, any other `packages/` path, `IN_FORCE.md`, `ROADMAP.md`,
 `docs/AUDIT.md`, `engine/Cargo.lock` or any `Cargo.toml`. Anything else that needs changing goes
 in your report.
@@ -260,7 +260,10 @@ python3 tools/check_private_paths.py            # Errors: 0
 python3 -m unittest discover -s tools/tests     # OK
 /usr/bin/python3 tools/vector_delta.py HEAD WORKTREE --declared docs/work-orders/218-declared.yaml; echo "exit $?"  # 0 undeclared; 0 errors; exit 0
 git diff --check                                # prints nothing
-git diff --name-only HEAD -- spec experiments IN_FORCE.md ROADMAP.md docs/AUDIT.md engine/Cargo.lock | wc -l | tr -d ' '  # 0
+git diff --name-only HEAD -- experiments IN_FORCE.md ROADMAP.md docs/AUDIT.md engine/Cargo.lock | wc -l | tr -d ' '  # 0
+git diff --name-only HEAD -- spec | grep -v -x -e spec/conventions/access.yaml -e spec/promises/secrets.yaml | wc -l | tr -d ' '  # 0 (answer)
+/usr/bin/python3 -c "import yaml; print(sum('(2) ACC-001, then SEC-010 where' in p.get('then','') for p in yaml.safe_load(open('spec/conventions/access.yaml')) if isinstance(p,dict)))"  # 1; fails today (0) (answer)
+grep -rlE "ruleId: ?['\"]?SEC-010" conformance | wc -l | tr -d ' '  # 1 or more; fails today (0) (answer)
 grep -E '^\| (SEC-0(10|11|12|14|15|17|18|20)|PRV-026) \|' engine/STANDING.md | grep -c '| case passes |$'  # 9; fails today (0)
 grep -c '^| SEC-.*| case passes |$' engine/STANDING.md  # 10 or more; fails today (2)
 grep -rl 'provider-file' engine/crates/shell/tests | wc -l | tr -d ' '  # 1 or more; fails today (0)

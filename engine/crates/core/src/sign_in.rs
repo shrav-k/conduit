@@ -490,7 +490,7 @@ fn poll_answered(
     }
 }
 
-/// PND-011: an account check that ended failed or unknown, which the relay's message explains.
+/// PND-011: an account check that ended failed or unknown, explained at relay or an earlier end.
 fn unexplained_check(outcome: &str) -> Value {
     match outcome {
         "failed" | "unknown" => json!(outcome),
@@ -700,14 +700,14 @@ pub(crate) fn retried(
     }
 }
 
-pub(crate) fn sign_in_hook_part(state: &State, part: &Value, c: &Context) -> bool {
-    part["operation"] == c.qualified("sign-in-hook.v1")
-        && part.get("setup_parent").is_some_and(|parent| {
-            state
-                .invocations
-                .iter()
-                .any(|v| v["id"] == *parent && v["operation"] == c.qualified("sign-in.v1"))
-        })
+pub(crate) fn is_part(state: &State, part: &Value, c: &Context) -> bool {
+    part.get("setup_parent").is_some_and(|parent| {
+        let operation = c.qualified("sign-in.v1");
+        state
+            .invocations
+            .iter()
+            .any(|v| v["id"] == *parent && v["operation"] == operation)
+    })
 }
 
 pub(crate) fn hook_url_action(
@@ -1128,7 +1128,7 @@ pub(crate) fn hook_input(
         None
     };
     if let Some(cause) = drop_cause {
-        finish_hook_input(t, a, c, i, cause)?;
+        finish_part_input(t, a, c, i, cause)?;
         t.decisions.push(decision(
             "drop-sign-in-hook-answer",
             &["IFC-010", "OPS-027"],
@@ -1171,7 +1171,7 @@ pub(crate) fn hook_input(
         Some(Err(fault)) => Some(fault),
         None => None,
     };
-    finish_hook_input(
+    finish_part_input(
         t,
         a,
         c,
@@ -1185,7 +1185,7 @@ pub(crate) fn hook_input(
     }
 }
 
-fn finish_hook_input(
+pub(crate) fn finish_part_input(
     t: &mut Transition,
     a: &mut Allocation<'_>,
     c: &Context,
@@ -1343,6 +1343,46 @@ pub(crate) fn end_hook_wait(
     Ok(())
 }
 
+pub(crate) fn cancel_parts(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+) -> Result<()> {
+    end_hook_wait(t, a, c, i, "by cancellation under OPS-027")?;
+    let parent = t.state.invocations[i]["id"].clone();
+    let name = match t.state.invocations[i]["sign_in"]["phase"].as_str() {
+        Some("account-pending") => "account",
+        Some("poll-pending") => "poll",
+        Some("undo-pending") => "sign-out",
+        _ => "sign-in",
+    };
+    for p in 0..t.state.invocations.len() {
+        let part = &t.state.invocations[p];
+        if part["setup_parent"] == parent && part["state"] == "in-progress" {
+            let id = part["id"].clone();
+            t.external_intents
+                .push(json!({"kind":"cancel","invocation":part["id"],"attempt":part["attempt"]}));
+            let cause = explain::outcome_cause(part, "unknown", "OPS-027")?;
+            requests::finish(
+                t,
+                a,
+                c,
+                p,
+                "unknown",
+                json!({}),
+                json!([]),
+                Some(vec![cause]),
+            )?;
+            t.state.invocations[i]["sign_in"]["parts"]
+                .as_array_mut()
+                .unwrap()
+                .push(json!({"name":name,"outcome":"unknown","invocation":id}));
+        }
+    }
+    Ok(())
+}
+
 pub(crate) fn signed_in(
     t: &mut Transition,
     a: &mut Allocation<'_>,
@@ -1400,7 +1440,21 @@ fn end_sign_in(
     cause: &str,
 ) -> Result<()> {
     end_hook_wait(t, a, c, i, &format!("{outcome} under {rule}"))?;
-    let diagnostic = explain::outcome_diagnostic(&t.state.invocations[i], outcome, rule, cause)?;
+    let invocation = &t.state.invocations[i];
+    let explanation = invocation["sign_in"]["check"]
+        .as_str()
+        .filter(|_| invocation.get("sign_in_wait").is_none())
+        .map(|check| {
+            format!(
+                "{cause} The account check before sign-in-hook.v1 ended {check}, so whether the account is signed in is not known (PND-011)."
+            )
+        });
+    let diagnostic = explain::outcome_diagnostic(
+        invocation,
+        outcome,
+        rule,
+        explanation.as_deref().unwrap_or(cause),
+    )?;
     requests::finish(
         t,
         a,
@@ -1411,8 +1465,12 @@ fn end_sign_in(
         json!([]),
         Some(vec![diagnostic]),
     )?;
-    let invocation = &mut t.state.invocations[i];
-    invocation["sign_in"]["phase"] = json!("ended");
+    t.state.invocations[i]["sign_in"]["phase"] = json!("ended");
+    link_raised_action(t, i)
+}
+
+pub(crate) fn link_raised_action(t: &mut Transition, i: usize) -> Result<()> {
+    let invocation = &t.state.invocations[i];
     if let Some(action) = invocation["sign_in"].get("raised") {
         let (id, action) = (invocation["id"].clone(), action.clone());
         link_action(t, &id, &action)?;
@@ -2471,6 +2529,11 @@ mod tests {
             "spec":{"effect":"Start a login"}
         });
         contracts.insert("sign-in-hook.v1".into(), sign_in_hook.clone());
+        contracts.insert(
+            "sign-out-hook.v1".into(),
+            json!({"kind":"Operation","metadata":{"name":"sign-out-hook.v1"},
+                "spec":{"effect":"Sign out the account"}}),
+        );
         let indexes = json!({"core":contracts});
         let instance = json!({"id":"s1","name":"s1","kind":"Agent","owner":"f","placement":"n1",
             "type":c.qualified("type.v1"),
@@ -2535,6 +2598,315 @@ mod tests {
         let entry = serde_json::to_string(entry).unwrap();
         for value in ["opaque-hook-state-0001", "Open the device page."] {
             assert!(!entry.contains(value));
+        }
+    }
+
+    fn account_part_fixture() -> (Transition, Context) {
+        let (mut t, c) = hook_part_fixture();
+        let mut instance = t.state.objects[1].clone();
+        let mut environment: crate::schemas::Environment =
+            serde_json::from_value(instance["held"]["environment"].clone()).unwrap();
+        let contracts = &mut environment.scopes.get_mut("core").unwrap().contracts;
+        let account_hook = json!({"kind":"Operation","metadata":{"name":"account-hook.v1"},
+            "spec":{"outputSchema":{"type":"object","required":["account"],
+                "properties":{"account":{"type":["string","null"]}}}}});
+        contracts.insert("account-hook.v1".into(), account_hook.clone());
+        let indexes = json!({"core":contracts});
+        instance["held"]["environment"] = json!(environment);
+        instance["held"]["indexes"] = indexes;
+        let sign_in_hook = c.qualified("sign-in-hook.v1");
+        instance["resolved_implementations"][&sign_in_hook] = json!({"item":{"plain":false}});
+        let check = &mut t.state.invocations[1];
+        check["id"] = json!("k1");
+        check["operation"] = json!(c.qualified("account-hook.v1"));
+        check["plain"] = json!(false);
+        check["contract"] = account_hook;
+        check["held_target"] = crate::registration::publication_object(&instance, &c).unwrap();
+        t.state.objects[1] = instance;
+        t.state.invocations[0]["sign_in"] = json!({"phase":"account-pending","parts":[]});
+        (t, c)
+    }
+
+    fn unused_evidence(t: &Transition) -> Evidence {
+        let mut evidence = evidence();
+        evidence
+            .ids
+            .retain(|id| !t.state.allocated_ids.contains(id));
+        evidence
+    }
+
+    fn answer_part(t: &mut Transition, c: &Context, id: &str, result: Value) {
+        let evidence = unused_evidence(t);
+        requests::complete(
+            t,
+            &evidence,
+            id,
+            1,
+            requests::Completion::Result { result },
+            c,
+        )
+        .unwrap();
+    }
+
+    fn account_result(c: &Context, outcome: &str, account: Value) -> Value {
+        json!({
+            "_meta":{format!("{}outcome", c.meta_prefix):outcome},
+            "isError":outcome != "succeeded",
+            "content":[],
+            "structuredContent":{"account":account}
+        })
+    }
+
+    fn undo_part_fixture() -> (Transition, Context) {
+        let (mut t, c) = hook_part_fixture();
+        answer_part(&mut t, &c, "h1", url_action());
+        let mut t = transition(t.state);
+        let mut undo = t.state.invocations[1].clone();
+        undo.as_object_mut().unwrap().remove("hook_input");
+        undo["id"] = json!("u1");
+        undo["operation"] = json!(c.qualified("sign-out-hook.v1"));
+        undo["contract"] =
+            t.state.objects[1]["held"]["indexes"]["core"]["sign-out-hook.v1"].clone();
+        undo["hook"] = json!(true);
+        t.state.invocations.push(undo);
+        t.state.invocations[0]["sign_in"]["phase"] = json!("undo-pending");
+        t.state.invocations[0]["sign_in"]["undo"] = json!({"account":"third-account","hook":"u1"});
+        (t, c)
+    }
+
+    #[test]
+    fn sign_in_cancellation_ends_each_part() {
+        let (account, account_context) = account_part_fixture();
+        let (hook, hook_context) = hook_part_fixture();
+        let mut waiting = hook.clone();
+        answer_part(&mut waiting, &hook_context, "h1", url_action());
+        let waiting = transition(waiting.state);
+        let (mut undo, undo_context) = undo_part_fixture();
+        undo.state.pending_actions.insert(
+            "action".into(),
+            json!({"action":{"id":"action","kind":"sign-in","subject":[{"id":"s1"}],
+                "evidence":[],"expiry":"2026-11-19T12:00:00Z"},"raisedBy":"earlier-sign-in"}),
+        );
+        let mut discovering = account.clone();
+        discovering.state.invocations[1]["discovery"] = json!("pending");
+        let mut polling = waiting.clone();
+        let mut poll = account.state.invocations[1].clone();
+        poll["id"] = json!("p1");
+        polling.state.invocations.push(poll);
+        polling.state.invocations[0]["sign_in"]["phase"] = json!("poll-pending");
+        polling.state.invocations[0]["sign_in"]["poll"] = json!("p1");
+
+        for (mut t, c, inflight) in [
+            (account, &account_context, Some("k1")),
+            (undo, &undo_context, Some("u1")),
+            (waiting, &hook_context, None),
+            (hook, &hook_context, Some("h1")),
+            (discovering, &account_context, Some("k1")),
+            (polling, &hook_context, Some("p1")),
+        ] {
+            let evidence = unused_evidence(&t);
+            requests::cancel(&mut t, &evidence, "g1", None, c).unwrap();
+            let mut expected = vec![json!({"kind":"cancel","invocation":"g1","attempt":1})];
+            if let Some(id) = inflight {
+                expected.push(json!({"kind":"cancel","invocation":id,"attempt":1}));
+            }
+            assert_eq!(t.external_intents, expected);
+            for part in &t.state.invocations {
+                assert_eq!(part["state"], "unknown", "invocation {}", part["id"]);
+                let rule = if part["id"] == "g1" || part["id"].as_str() == inflight {
+                    "OPS-027"
+                } else {
+                    "PND-010"
+                };
+                assert_eq!(part["cause"][0]["ruleId"], rule);
+            }
+            if inflight == Some("u1") {
+                let condition = &t.state.objects[1]["status"]["conditions"][0];
+                assert_eq!(condition["status"], "False");
+                assert_eq!(condition["reason"], "SignOutUnknown");
+                let facts = &t.state.pending_actions["action"]["action"]["evidence"];
+                assert_eq!(facts[0]["value"], "g1");
+                assert_eq!(facts[1]["value"], "sign-out-unknown");
+            }
+            for part in &t.state.invocations[1..] {
+                let mut late = transition(t.state.clone());
+                answer_part(&mut late, c, part["id"].as_str().unwrap(), url_action());
+                assert_eq!(late.reply, json!({"ignored":true}));
+                assert!(late.records.is_empty() && late.external_intents.is_empty());
+            }
+        }
+    }
+
+    #[test]
+    fn sign_in_non_hook_urls_raise_no_action() {
+        let (account, account_context) = account_part_fixture();
+        let (undo, undo_context) = undo_part_fixture();
+        let (mut poll, poll_context) = hook_part_fixture();
+        answer_part(&mut poll, &poll_context, "h1", url_action());
+        let mut poll = transition(poll.state);
+        poll.state
+            .invocations
+            .push(account.state.invocations[1].clone());
+        poll.state.invocations[0]["attempt"] = json!(2);
+        poll.state.invocations[0]["sign_in"]["phase"] = json!("poll-pending");
+        poll.state.invocations[0]["sign_in"]["poll"] = json!("k1");
+        for (mut t, c, id, phase) in [
+            (account, &account_context, "k1", "sign-in-pending"),
+            (undo, &undo_context, "u1", "ended"),
+            (poll, &poll_context, "k1", "retry-pending"),
+        ] {
+            let actions = t.state.pending_actions.clone();
+            answer_part(&mut t, c, id, url_action());
+            assert!(t.state.pending_actions == actions, "action raised by {id}");
+            assert!(t.state.sign_in_holds.is_empty());
+            assert!(
+                t.records
+                    .iter()
+                    .all(|r| r["data"].get("pendingAction").is_none())
+            );
+            let part = t.state.invocations.iter().find(|v| v["id"] == id).unwrap();
+            assert_eq!(part["state"], "unknown");
+            let cause = &part["cause"][0];
+            assert_eq!(cause["ruleId"], "IFC-010");
+            assert!(
+                cause["message"]["text"]
+                    .as_str()
+                    .unwrap()
+                    .contains("part of sign-in.v1")
+            );
+            assert_eq!(t.state.invocations[0]["sign_in"]["phase"], phase);
+            if id == "u1" {
+                let condition = &t.state.objects[1]["status"]["conditions"][0];
+                assert_eq!(condition["status"], "False");
+                assert_eq!(condition["reason"], "SignOutUnknown");
+            }
+        }
+    }
+
+    #[test]
+    fn sign_in_keyed_parts_are_not_sent_after_retirement() {
+        let (account, account_context) = account_part_fixture();
+        let (undo, undo_context) = undo_part_fixture();
+        for (mut t, c, id, operation, parent_rule) in [
+            (
+                account,
+                &account_context,
+                "k1",
+                "account-hook.v1",
+                "PND-003",
+            ),
+            (undo, &undo_context, "u1", "sign-out-hook.v1", "PND-011"),
+        ] {
+            let part = t
+                .state
+                .invocations
+                .iter_mut()
+                .find(|v| v["id"] == id)
+                .unwrap();
+            part["discovery"] = json!("pending");
+            part["plain"] = json!(false);
+            part["implementation"] =
+                json!({"item":{"plain":true,"keyed":[c.qualified(operation)]}});
+            t.state.objects[1]["state"] = json!("retired");
+            answer_part(
+                &mut t,
+                c,
+                id,
+                json!({"capabilities":{"extensions":{
+                    format!("{}implementation-interface", c.meta_prefix):{"revision":"v0"}
+                }}}),
+            );
+            assert!(
+                t.external_intents.is_empty(),
+                "sent a hook after retirement"
+            );
+            let part = t
+                .request_replies
+                .iter()
+                .find(|reply| reply.invocation == id)
+                .unwrap();
+            assert_eq!(
+                part.reply["_meta"][format!("{}reason", c.meta_prefix)],
+                "unavailable"
+            );
+            let cause = part.reply["structuredContent"]["diagnostics"][0]["message"]["text"]
+                .as_str()
+                .unwrap();
+            for text in ["LIF-015", "LIF-005", "was not sent"] {
+                assert!(cause.contains(text));
+            }
+            let parent = &t.state.invocations[0];
+            assert_eq!(parent["state"], "failed");
+            assert_eq!(parent["cause"][0]["ruleId"], parent_rule);
+            let ended_part = parent["sign_in"]["parts"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|part| part["invocation"] == id)
+                .unwrap();
+            assert_eq!(ended_part["outcome"], "unavailable");
+            if id == "u1" {
+                let condition = &t.state.objects[1]["status"]["conditions"][0];
+                assert_eq!(condition["status"], "False");
+                assert_eq!(condition["reason"], "SignOutUnknown");
+            }
+        }
+    }
+
+    #[test]
+    fn sign_in_cancel_and_restart_link_the_action_raised() {
+        let (mut t, c) = account_part_fixture();
+        answer_part(
+            &mut t,
+            &c,
+            "k1",
+            account_result(&c, "succeeded", json!("other-account")),
+        );
+        let action = t.state.invocations[0]["sign_in"]["raised"].clone();
+        assert!(action.is_string());
+        for restart in [false, true] {
+            let mut ended = transition(t.state.clone());
+            let evidence = unused_evidence(&ended);
+            if restart {
+                requests::recover(&mut ended, &evidence, &c).unwrap();
+            } else {
+                requests::cancel(&mut ended, &evidence, "g1", None, &c).unwrap();
+            }
+            for records in [&ended.records, &ended.state.records] {
+                let record = records
+                    .iter()
+                    .find(|r| r["type"] == "invocation-ended" && r["data"]["invocation"] == "g1")
+                    .unwrap();
+                assert_eq!(
+                    record["data"]["pendingAction"],
+                    json!([action]),
+                    "restart={restart}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn sign_in_explains_an_uncertain_first_check_before_relay() {
+        for outcome in ["failed", "unknown", "succeeded"] {
+            let (mut t, c) = account_part_fixture();
+            answer_part(&mut t, &c, "k1", account_result(&c, outcome, Value::Null));
+            let hook = t.reply["hook"].as_str().unwrap().to_owned();
+            let mut t = transition(t.state);
+            answer_part(&mut t, &c, &hook, account_result(&c, "failed", Value::Null));
+            assert!(t.input_required.is_empty());
+            let parent = &t.state.invocations[0];
+            assert_eq!(parent["state"], "failed");
+            let cause = &parent["cause"][0];
+            assert_eq!(cause["ruleId"], "PND-010");
+            let text = cause["message"]["text"].as_str().unwrap();
+            if outcome == "succeeded" {
+                assert!(!text.contains("The account check before sign-in-hook.v1 ended"));
+            } else {
+                assert!(text.contains(&format!(
+                    "The account check before sign-in-hook.v1 ended {outcome}, so whether the account is signed in is not known (PND-011)."
+                )), "{text}");
+            }
         }
     }
 

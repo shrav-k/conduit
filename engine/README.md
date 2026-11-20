@@ -755,8 +755,9 @@ standard error, opens the browser only after you type `y`, and retries each time
 Enter, until the engine answers: signed in, failed where you type `n` or input ends, or
 ended once the URL action's wait ends (DL18). It prints the result as one JSON line and
 exits 0 only where the sign-in succeeded. It carries no return from another machine (order
-051b-3, with the keyed release). Interrupting it leaves the sign-in waiting until that wait
-ends.
+051b-3, with the keyed release). An interrupt at the prompt leaves the sign-in waiting until
+that wait ends, and an interrupt while a call is in flight cancels the sign-in and each part
+in progress, so a new `conduit sign-in` may follow at once.
 
 ```sh
 engine/target/release/conduit install --store /tmp/conduit-live-store \

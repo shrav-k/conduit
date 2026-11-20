@@ -282,4 +282,23 @@ diff (ruling 79), runs `tools/gate.py` and merges.
 
 ## Record
 
-Not yet run.
+Run on 2026-11-20 through Conduit itself, the first order the dogfood's own Agents built. Root
+called the store's turn tools by `conduit call`: `turn-worker-1.turn.v1` (07:28 to 07:47 PST), a
+Codex Agent in its own home; `turn-verifier-1.turn.v1` (07:48 to 07:58), read-only, which found two
+musts; and `turn-worker-1.turn.v1` again in the same conversation (07:59 to 08:01), which fixed
+both: `engine/CONFORMANCE.md`'s keys-per-hook entry now says that a non-hook part's URL request
+ends that part unknown under IFC-010 and raises no sign-in action, and the report lists
+`requests-keyed-hook-dispatch` among its vectors. The results were copied back from the Agents'
+directory into a trusted worktree. The run is outside A78 stage 2's registration: a dogfood probe,
+as the owner chose, whose gaps the coordinator's notes (private) record.
+
+`tools/gate.py` on the two commits: `Gate: PASS. 18 passed; not run: rust unreached.`
+
+A fresh read of the diff after the gate (ruling 92) found decisions 1 to 7 applied, decision 8 not
+triggered, and no must. It reran the core tests, `relayed_sign_in_starts_the_expiry_timer`, the
+case `requests-keyed-hook-dispatch`, the vector delta (10 changes, 0 flips, 0 undeclared, 0
+errors) and `promise_standing --check` (Errors: 0), and saw the expiry test fail with decision 6's
+timer start removed. Its one should, S1, is applied: `sign_in::cancel_parts` records each part it
+cancels in the parent's `sign_in.parts` as unknown, named for the phase (`account`, `poll`,
+`sign-out` or `sign-in`), as `lifecycle::cancel` records its parts; the core suite passed (153).
+The gate's run on the squash is the coordinator's at the merge.

@@ -1337,6 +1337,70 @@ async fn sign_in_relays_through_the_interface_and_polls_to_signed_in() {
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn relayed_sign_in_starts_the_expiry_timer() {
+    let temp = temporary();
+    let case = repository().join("conformance/conventions/requests/sign-in-hold");
+    let shell = Arc::new(fixed_case_shell(temp.path(), &case, 9));
+    let token = sign_in_root_token(&shell, temp.path());
+    let script = Arc::new(SignInScript::new(&shell, false));
+    let mut executor = ServingExecutor::new(script.clone());
+    executor.sign_in_wait_limit = Some(chrono::TimeDelta::milliseconds(300));
+    let stop = CancellationToken::new();
+    let task = tokio::spawn(server::serve(
+        shell.clone(),
+        Arc::new(executor),
+        stop.clone(),
+    ));
+    let url = &shell.config.engine_url;
+    ready(url).await;
+    let prefix = &shell.context.meta_prefix;
+    let client = url_client(url, &token, prefix).await;
+    *shell.trace.lock().unwrap() = Some(Vec::new());
+
+    let login_key = format!("{prefix}signInLogin");
+    let mut request = sign_in_request();
+    request.meta = Some(serde_json::from_value(json!({&login_key: {"name": "browser"}})).unwrap());
+    let prompt = sign_in_prompt(client.call_tool_once(request).await, "first request");
+    assert_keyed_sign_in_prompt(&prompt, &login_key);
+
+    let invocation = tokio::time::timeout(Duration::from_secs(4), async {
+        loop {
+            let ended = {
+                let trace = shell.trace.lock().unwrap();
+                trace
+                    .as_ref()
+                    .unwrap()
+                    .iter()
+                    .flat_map(|t| &t.decisions)
+                    .find(|d| d.action == "sign-in-wait-ended" && d.facts["ended"] == true)
+                    .map(|d| d.facts["invocation"].clone())
+            };
+            if let Some(invocation) = ended {
+                break invocation;
+            }
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    })
+    .await
+    .expect("the relay did not end sign-in at the timer's expiry");
+    let state = shell.state().unwrap();
+    let ended = state
+        .invocations
+        .iter()
+        .find(|v| v["id"] == invocation)
+        .unwrap();
+    assert_eq!(
+        ended["operation"],
+        format!("{}#sign-in.v1", shell.context.core_package)
+    );
+    assert_eq!(ended["state"], "unknown");
+    script.expect_dispatches(&["account-hook.v1", "sign-in-hook.v1"]);
+    client.cancel().await.unwrap();
+    stop.cancel();
+    task.await.unwrap().unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn sign_in_decline_through_the_interface_ends_failed() {
     const RETURN: &str =
         "http://127.0.0.1:8400/callback?code=join-code-0001&state=join-state-0123456789abcdef";

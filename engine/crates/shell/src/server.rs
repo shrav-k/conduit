@@ -172,12 +172,16 @@ pub fn preflight(shell: &Shell) -> Result<()> {
 pub struct ServingExecutor {
     inner: Arc<dyn Executor>,
     changes: broadcast::Sender<String>,
+    #[cfg(test)]
+    pub(crate) sign_in_wait_limit: Option<chrono::TimeDelta>,
 }
 impl ServingExecutor {
     pub fn new(inner: Arc<dyn Executor>) -> Self {
         Self {
             inner,
             changes: broadcast::channel(1024).0,
+            #[cfg(test)]
+            sign_in_wait_limit: None,
         }
     }
 }
@@ -283,6 +287,10 @@ pub(crate) fn end_sign_in_wait_at(
     expires: DateTime<Utc>,
 ) -> tokio::task::JoinHandle<()> {
     tokio::spawn(async move {
+        #[cfg(test)]
+        let expires = executor
+            .sign_in_wait_limit
+            .map_or(expires, |limit| expires.min(Utc::now() + limit));
         let wait = (expires - Utc::now()).to_std().unwrap_or_default();
         tokio::select! {
             biased;

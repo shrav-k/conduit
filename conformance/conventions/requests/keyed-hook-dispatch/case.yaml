@@ -3989,6 +3989,20 @@
             "kind": "cancel",
             "invocation": "$sign3",
             "attempt": 1
+          },
+          {
+            "kind": "cancel",
+            "invocation": "$check3",
+            "attempt": 1
+          }
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-ended",
+            "data": {
+              "invocation": "$check3",
+              "outcome": "unknown"
+            }
           }
         ]
       }
@@ -4160,16 +4174,8 @@
         }
       },
       "expect": {
-        "external_intents": [],
-        "record_facts": [
-          {
-            "type": "invocation-ended",
-            "data": {
-              "invocation": "$check3",
-              "outcome": "unknown"
-            }
-          }
-        ]
+        "reply": {"ignored": true},
+        "external_intents": []
       }
     },
     {

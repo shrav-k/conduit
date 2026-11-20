@@ -2053,7 +2053,8 @@ pub(crate) fn complete(
         cursor: 0,
     };
     let plain = v["plain"] == true;
-    let sign_in_hook = sign_in::sign_in_hook_part(&t.state, &v, c);
+    let sign_in_part = sign_in::is_part(&t.state, &v, c);
+    let sign_in_hook = sign_in_part && v["operation"] == c.qualified("sign-in-hook.v1");
     let readonly = read_only(&v["contract"]["spec"]);
     let mut content = json!([]);
     let mut outputs = json!({});
@@ -2114,6 +2115,16 @@ pub(crate) fn complete(
             return crate::sign_in::hook_input(t, &mut a, c, i, &result);
         }
         Completion::Result { result } if sign_in::url_elicitation(&result) => {
+            if sign_in_part {
+                sign_in::finish_part_input(
+                    t,
+                    &mut a,
+                    c,
+                    i,
+                    "The implementation asked for URL input from a part of sign-in.v1 other than sign-in-hook.v1, so nothing was relayed and no sign-in action was raised.",
+                )?;
+                return crate::lifecycle::child_ended(t, &mut a, c, i);
+            }
             lapse = Some(sign_in::Trigger::UrlElicitation);
         }
         Completion::Result { result } => {
@@ -2248,34 +2259,37 @@ fn complete_hook_discovery(
 ) -> Result<()> {
     let extension = mark(c, "implementation-interface");
     let attempt = v["attempt"].as_u64().unwrap_or(0);
-    if matches!(completion, Completion::Result { result }
-        if result["capabilities"]["extensions"][&extension]["revision"] == "v0")
-    {
-        if t.state
+    let has_extension = matches!(completion, Completion::Result { result }
+        if result["capabilities"]["extensions"][&extension]["revision"] == "v0");
+    let retired = sign_in::is_part(&t.state, v, c)
+        && access::object_by_id(&t.state, &v["target"]).is_none_or(|o| o["state"] == "retired");
+    if has_extension
+        && t.state
             .invocations
             .iter()
             .any(|p| p["id"] == v["setup_parent"] && p["state"] != "in-progress")
-        {
-            let cause = explain::outcome_cause(v, "unknown", "OPS-027")?;
-            t.decisions.push(decision(
-                "drop-hook-of-ended-parent",
-                &["OPS-027", "IFC-037"],
-                &[],
-                json!({"invocation":v["id"]}),
-                vec![],
-            ));
-            fence_attempt(&mut t.state.invocations[i], attempt);
-            return finish(
-                t,
-                a,
-                c,
-                i,
-                "unknown",
-                json!({}),
-                json!([]),
-                Some(vec![cause]),
-            );
-        }
+    {
+        let cause = explain::outcome_cause(v, "unknown", "OPS-027")?;
+        t.decisions.push(decision(
+            "drop-hook-of-ended-parent",
+            &["OPS-027", "IFC-037"],
+            &[],
+            json!({"invocation":v["id"]}),
+            vec![],
+        ));
+        fence_attempt(&mut t.state.invocations[i], attempt);
+        return finish(
+            t,
+            a,
+            c,
+            i,
+            "unknown",
+            json!({}),
+            json!([]),
+            Some(vec![cause]),
+        );
+    }
+    if has_extension && !retired {
         t.state.invocations[i]["discovery"] = json!("read");
         record_hook_dispatch(t, a, c, v)?;
         t.decisions.push(decision(
@@ -2291,22 +2305,40 @@ fn complete_hook_discovery(
         return Ok(());
     }
 
-    t.decisions.push(decision(
-        "hook-without-extension",
-        &["IFC-037", "PKG-020"],
-        &[],
-        json!({"invocation":v["id"],"extension":extension,"revision":"v0"}),
-        vec![],
-    ));
     let operation = v["operation"].as_str().ok_or("hook has no operation")?;
+    let mut route = json!({
+        "target":v["target"],"caller":v["caller"],"consumer":v["sender"],
+        "conduit":v["conduit"],"operation":operation,"arguments":v["arguments"]
+    });
+    let cause = if retired {
+        t.decisions.push(decision(
+            "withhold-sign-in-hook-for-retirement",
+            &["IFC-037", "LIF-015", "LIF-005"],
+            &[],
+            json!({"invocation":v["id"],"instance":v["target"]}),
+            vec![],
+        ));
+        "the instance was retired under LIF-005 or is gone, so LIF-015 does not permit this part of sign-in.v1 to be dispatched and the call was not sent.".into()
+    } else {
+        t.decisions.push(decision(
+            "hook-without-extension",
+            &["IFC-037", "PKG-020"],
+            &[],
+            json!({"invocation":v["id"],"extension":extension,"revision":"v0"}),
+            vec![],
+        ));
+        route["missingExtension"] = json!(extension);
+        route["extensionRevision"] = json!("v0");
+        format!(
+            "the implementation's result of server/discover does not list Conduit's extension {extension} at revision v0, so this hook, which its item lists under keyed, was not sent; the item's other calls are sent as before."
+        )
+    };
     let rejection = sign_in::rejection(
         "unavailable",
         "IFC-037",
         operation,
         &v["held_target"],
-        &format!(
-            "the implementation's result of server/discover does not list Conduit's extension {extension} at revision v0, so this hook, which its item lists under keyed, was not sent; the item's other calls are sent as before."
-        ),
+        &cause,
     );
     // The hook's call is never sent here, so no copy of it is in flight (OPS-014).
     fence_attempt(&mut t.state.invocations[i], attempt);
@@ -2315,7 +2347,7 @@ fn complete_hook_discovery(
         t,
         a,
         c,
-        &json!({"target":v["target"],"caller":v["caller"],"consumer":v["sender"],"conduit":v["conduit"],"operation":operation,"arguments":v["arguments"],"missingExtension":extension,"extensionRevision":"v0"}),
+        &route,
         rejection.reason,
         &rejection.rule,
         None,
@@ -2454,6 +2486,10 @@ pub(crate) fn cancel(
             "OPS-027",
         )?])
     };
+    let sign_in = t.state.invocations[i]["operation"] == c.qualified("sign-in.v1");
+    if sign_in {
+        sign_in::cancel_parts(t, &mut a, c, i)?;
+    }
     finish(
         t,
         &mut a,
@@ -2465,16 +2501,19 @@ pub(crate) fn cancel(
         cause,
     )?;
     let invocation = &t.state.invocations[i];
-    if invocation["operation"] == c.qualified("sign-in.v1")
-        && invocation["sign_in"]["phase"] == "undo-pending"
-    {
-        let instance = invocation["object"].clone();
-        let id = invocation["id"].clone();
-        let hook = invocation["sign_in"]["undo"]["hook"].clone();
-        sign_in::undo_ended(t, &instance, &id, &hook, "unknown", &evidence.time)?;
-        let sign_in = &mut t.state.invocations[i]["sign_in"];
-        sign_in["phase"] = json!("ended");
-        sign_in.as_object_mut().unwrap().remove("undo");
+    if sign_in {
+        if invocation["sign_in"]["phase"] == "undo-pending" {
+            let instance = invocation["object"].clone();
+            let id = invocation["id"].clone();
+            let hook = invocation["sign_in"]["undo"]["hook"].clone();
+            sign_in::undo_ended(t, &instance, &id, &hook, "unknown", &evidence.time)?;
+            t.state.invocations[i]["sign_in"]
+                .as_object_mut()
+                .unwrap()
+                .remove("undo");
+        }
+        t.state.invocations[i]["sign_in"]["phase"] = json!("ended");
+        sign_in::link_raised_action(t, i)?;
     } else if invocation["operation"] == c.qualified("sign-out-hook.v1")
         && let Some(parent) = invocation.get("setup_parent")
         && t.state.invocations.iter().any(|v| {
@@ -2543,6 +2582,9 @@ pub(crate) fn recover(t: &mut Transition, evidence: &Evidence, c: &Context) -> R
                 json!([]),
                 Some(vec![cause]),
             )?;
+            if t.state.invocations[i]["operation"] == c.qualified("sign-in.v1") {
+                sign_in::link_raised_action(t, i)?;
+            }
             let v = &t.state.invocations[i];
             if v["hook"] == true
                 && v["operation"] == c.qualified("sign-out-hook.v1")

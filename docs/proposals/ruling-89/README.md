@@ -211,6 +211,9 @@ outside the tree.
   orders" are 0.2.0's, so the pin comes at milestone 1 (point 7).
 - **Ruling 79, point 1, for one review only**: the readiness review for the first dogfood and its
   delta pass run on Fable (point 1). Point 1 otherwise stands.
+- **Ruling 80, point 7**, its "the plain runner keeps the other orders meanwhile": by the
+  coordinator's reading of point 3, until milestone 1 (see "After the ruling" below).
+  *Coordinator's*, open to the owner's strike.
 - **Ruling 82, point 1**: the coordinator's reading that answer 5 keeps Q3 option a's two terms,
   now: the Type keeps the name `codex.v2`, at a scratch address, installed only in the scratch
   store (the coordinator's application of the readiness review's B3, under point 1).
@@ -271,3 +274,26 @@ outside the tree.
   its dated amendment for the live check (points 1 and 5). - Later, and not in this change: the
   delta pass after 048b-join; the chain's texts refreshed with the review's findings; D58's guard in
   the harness, outside the tree; the live check's run sheet completed, outside the tree.
+
+## After the ruling
+
+2026-11-19, later, the coordinator's note; it changes no decision, so it gets no new number
+([ruling 67](../ruling-67/README.md)). IN_FORCE.md, topic 15, kept a last sentence from
+[ruling 80](../ruling-80/README.md), point 7: until order 050 and the review's order 62, A78's
+orders 2 and 3 run through Conduit one at a time "and the plain runner carries the rest". That
+differs from the owner's words in point 3, milestone 1 "running Conduit's work orders one turn at
+a time", and under [AGENTS.md](../../../AGENTS.md#what-holds), point 2, such a line is a defect
+that the owner's words govern until it is fixed. The coordinator rewrote it to say that, until
+order 050 and the review's order 62 let orders run in parallel, A78's orders 2 and 3 run through
+Conduit one at a time and, from milestone 1, Conduit's work orders one turn at a time, the plain
+runner carrying the other orders until then. What goes beyond the owner's words is marked there
+as the coordinator's, open to the owner's strike: milestone 1 starts with A78's stage 2, its run
+(order 211); and point 3 is the owner's later word for orders after A78's order 3 to go through
+Conduit from milestone 1, before order 203, so that it, not ruling 80, point 7's "the plain
+runner keeps the other orders meanwhile", governs the time after milestone 1; after it, the plain
+runner still carries an order that the dogfood itself needs before its turns can run, such as a
+fix of the engine or the harness that they wait on, an order that no Agent of milestone 1 can run
+or that A78's registration keeps out of Conduit, and any order while that registration pauses the
+turns through Conduit. The milestones' terms above, which set no gate and no deadline that binds,
+are unchanged. [Order 211](../../work-orders/211-a78-stage-2-registration.md), which
+registers stage 2 as milestone 1's run, waits for this change before it starts.

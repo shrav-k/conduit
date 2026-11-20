@@ -1,8 +1,7 @@
-# The repository's checks, as AGENTS.md lists them, on every pull request and every push to main.
-# Every job runs on a standard GitHub-hosted runner: `ubuntu-latest`, or `macos-latest` for the
-# macOS jobs. Only a public repository runs them with no quota and no charge, and ruling 64,
-# point 3, allows nothing that costs credits. Nothing here uses a larger runner, a paid service
-# or a secret.
+# The repository's checks, as AGENTS.md lists them, run on ubuntu-latest on each pull request
+# and push to main. The macOS jobs run in nightly.yml. This public repository uses standard
+# GitHub-hosted runners. Ruling 64, point 3, allows nothing that costs credits.
+# Nothing here uses a larger runner, a paid service or a secret.
 
 name: checks
 
@@ -168,14 +167,12 @@ jobs:
   # clippy, whose rules change with the toolchain, are checked only in engine/ and
   # packages/. A directory listed in macos_only is a probe of macOS itself that cannot compile on
   # Linux, and is listed without being built.
-  # The output `packages`, the entries under packages/, is the matrix of the macOS package job.
   rust-dirs:
     name: rust directories
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
       matrix: ${{ steps.find.outputs.matrix }}
-      packages: ${{ steps.find.outputs.packages }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -201,12 +198,6 @@ jobs:
           matrix=$(printf '%s\n' "${entries[@]}" | jq -cs .)
           echo "$matrix" | jq .
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
-          packages=$(echo "$matrix" | jq -c '[.[] | select(.dir | startswith("packages/")) | {dir}]')
-          if [ "$(echo "$packages" | jq length)" -eq 0 ]; then
-            echo "No crate was found under packages/, so the macOS jobs would test none."
-            exit 1
-          fi
-          echo "packages=$packages" >> "$GITHUB_OUTPUT"
 
   rust-dir:
     name: rust (${{ matrix.dir }})
@@ -395,115 +386,6 @@ jobs:
       - name: cargo test --release --doc
         run: cargo test --release --doc
 
-  # The Mac run that orders built on Windows had by hand (the full review's FR-271, point 3, and
-  # FR-493, gate 2), as two macOS jobs: each package's clippy and release tests, and the release
-  # tests of the engine's loader, core and conformance crates. Formatting reads only the source
-  # and is checked on Linux. Their caches are saved from pushes to main alone (work order 187).
-  macos-package:
-    name: macos (${{ matrix.dir }})
-    needs: rust-dirs
-    runs-on: macos-latest
-    timeout-minutes: 90
-    strategy:
-      fail-fast: false
-      matrix:
-        include: ${{ fromJSON(needs.rust-dirs.outputs.packages) }}
-    # From inside each directory, so that its rust-toolchain.toml applies and its tests find the
-    # repository's paths, such as ../spec, where they expect them.
-    defaults:
-      run:
-        working-directory: ${{ matrix.dir }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - name: Install the toolchain that rust-toolchain.toml pins
-        run: |
-          rustup toolchain install --no-self-update --profile minimal
-          rustup component add clippy
-          rustup show active-toolchain
-          cargo --version
-      # One package's test runs tools/check_schemas.py, which needs PyYAML and jsonschema; the
-      # versions are those of the docs job.
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.12"
-      - name: Install PyYAML and jsonschema
-        run: python3 -m pip install "pyyaml==6.0.1" "jsonschema[format-nongpl]==4.20.0"
-      # GitHub's macOS runners have hostnames longer than 63 characters, which provider-local-machine
-      # refuses by design, with no truncation; its tests need a host it accepts.
-      - name: Set a hostname of at most 63 characters
-        run: |
-          sudo scutil --set HostName conduit-ci
-          sudo hostname conduit-ci
-          hostname
-      - name: Restore the cargo cache
-        id: cache
-        uses: actions/cache/restore@v6
-        with:
-          path: |
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            ${{ matrix.dir }}/target/
-          key: cargo-${{ runner.os }}-${{ matrix.dir }}-${{ hashFiles(format('{0}/Cargo.lock', matrix.dir), format('{0}/rust-toolchain.toml', matrix.dir)) }}
-          restore-keys: cargo-${{ runner.os }}-${{ matrix.dir }}-
-      - name: cargo clippy --all-targets -- -D warnings
-        run: cargo clippy --all-targets -- -D warnings
-      - name: cargo test --release
-        if: ${{ !cancelled() }}
-        run: cargo test --release
-      - name: Save the cargo cache
-        if: ${{ !cancelled() && github.event_name == 'push' && steps.cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v6
-        with:
-          path: |
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            ${{ matrix.dir }}/target/
-          key: ${{ steps.cache.outputs.cache-primary-key }}
-
-  macos-engine:
-    name: "macos (engine: loader, core, conformance)"
-    runs-on: macos-latest
-    timeout-minutes: 90
-    defaults:
-      run:
-        working-directory: engine
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - name: Install the toolchain that rust-toolchain.toml pins
-        run: |
-          rustup toolchain install --no-self-update --profile minimal
-          rustup show active-toolchain
-          cargo --version
-      - name: Restore the cargo cache
-        id: cache
-        uses: actions/cache/restore@v6
-        with:
-          path: |
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            engine/target/
-          key: cargo-${{ runner.os }}-engine-${{ hashFiles('engine/Cargo.lock', 'engine/rust-toolchain.toml') }}
-          restore-keys: cargo-${{ runner.os }}-engine-
-      - name: cargo test --release -p conduit-loader -p conduit-core -p conduit-conformance
-        run: cargo test --release -p conduit-loader -p conduit-core -p conduit-conformance
-      - name: Save the cargo cache
-        if: ${{ !cancelled() && github.event_name == 'push' && steps.cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v6
-        with:
-          path: |
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            engine/target/
-          key: ${{ steps.cache.outputs.cache-primary-key }}
-
   # Repeat changed packages on Linux (the full review's FR-493, gate 7). Use cargo test as
   # rust-dir does: nextest puts tests in separate processes and cannot reproduce faults that
   # need two test threads in one process, such as a forked child's lock or tracing interest.
@@ -668,12 +550,12 @@ jobs:
             exit 1
           fi
 
-  # One result for all Rust directories, all engine shards, the doctests, the macOS jobs and the
+  # One result for all Rust directories, all engine shards, the doctests and the
   # repeated package tests. A skipped or cancelled dependency fails it, so its stable name stays
   # useful; the repeats alone may be skipped, and only when changed packages listed no crate.
   rust:
     name: rust
-    needs: [rust-dirs, rust-dir, engine-build, engine-tests, engine-doc, macos-package, macos-engine, changed-packages, package-repeats]
+    needs: [rust-dirs, rust-dir, engine-build, engine-tests, engine-doc, changed-packages, package-repeats]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -685,13 +567,11 @@ jobs:
           BUILD: ${{ needs.engine-build.result }}
           SHARDS: ${{ needs.engine-tests.result }}
           DOCTESTS: ${{ needs.engine-doc.result }}
-          MACOS_PACKAGES: ${{ needs.macos-package.result }}
-          MACOS_ENGINE: ${{ needs.macos-engine.result }}
           CHANGED: ${{ needs.changed-packages.result }}
           ANY_CHANGED: ${{ needs.changed-packages.outputs.any }}
           REPEATS: ${{ needs.package-repeats.result }}
         run: |
-          echo "rust directories: $DIRS; rust checks: $CHECKS; engine build: $BUILD; shards: $SHARDS; doctests: $DOCTESTS; macos packages: $MACOS_PACKAGES; macos engine: $MACOS_ENGINE; changed packages: $CHANGED (any: $ANY_CHANGED); repeated package tests: $REPEATS"
-          test "$DIRS" = success && test "$CHECKS" = success && test "$BUILD" = success && test "$SHARDS" = success && test "$DOCTESTS" = success && test "$MACOS_PACKAGES" = success && test "$MACOS_ENGINE" = success &&
+          echo "rust directories: $DIRS; rust checks: $CHECKS; engine build: $BUILD; shards: $SHARDS; doctests: $DOCTESTS; changed packages: $CHANGED (any: $ANY_CHANGED); repeated package tests: $REPEATS"
+          test "$DIRS" = success && test "$CHECKS" = success && test "$BUILD" = success && test "$SHARDS" = success && test "$DOCTESTS" = success &&
             test "$CHANGED" = success &&
             { { test "$ANY_CHANGED" = true && test "$REPEATS" = success; } || { test "$ANY_CHANGED" = false && test "$REPEATS" = skipped; }; }

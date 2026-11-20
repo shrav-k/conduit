@@ -2,6 +2,7 @@
 """Run the local merge gates for what the branch changes, without fetching anything."""
 
 import argparse
+from contextlib import ExitStack
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import importlib.util
@@ -58,6 +59,8 @@ PYTHON_GATES = (
     ('tool tests', ('-m', 'unittest', 'discover', '-s', 'tools/tests')),
 )
 PYTHON_REASON = "CI's docs job runs it on each pull request"
+TOOL_TESTS_WHY = ('the branch changes nothing under tools/ or .github/workflows/, and no .rs, '
+                  'Cargo.toml or Cargo.lock under packages/ or experiments/. ' + PYTHON_REASON)
 RUST_WHY = 'rust discovery did not pass, so no Rust directory or engine gate was chosen'
 ENGINE_PREFIXES = ('engine/', 'spec/', 'conformance/', 'packages/agent-claude-code/',
                    'packages/agent-codex/', 'packages/provider-file/')
@@ -67,6 +70,11 @@ UNREACHED_WHY = ('the branch changes nothing in these, in a directory they depen
                  'or in a path they read: ')
 NOT_BUILT_WHY = ('listed in macos_only of checks.yml, which CI does not build; '
                  'the gate does not run it either')
+OWN_PATHS_ONLY = {
+    'experiments/011-short-form-spike': ('A79 is finished and its result is recorded. '
+                                        'Order 049a1 still runs its tests. '
+                                        "CI's rust job tests it on each pull request"),
+}
 # directory, path read, evidence file within the directory, literal evidence in that file.
 RUST_READS = (
     ('packages/provider-file', 'spec/', 'tests/schema_drift.rs', '"../../spec'),
@@ -189,7 +197,7 @@ def rust_manifests(root):
                   key=lambda path: os.fsencode(path.relative_to(root)))
 
 
-def discover_rust(root, manifests, query):
+def discover_rust(root, manifests, query, *, target_cache=False):
     """Discover CI's workspace roots and their path dependencies, without building."""
     try:
         workflow = (root / WORKFLOW).read_text(encoding='utf-8')
@@ -210,6 +218,14 @@ def discover_rust(root, manifests, query):
                                               directory.startswith('packages/')))
     directories.sort(key=lambda entry: os.fsencode(entry.path))
     holders = [entry.path for entry in directories] + ['engine']
+    if target_cache:
+        cache_names = {}
+        for directory in holders:
+            name = directory.replace('/', '-')
+            if name in cache_names:
+                raise DiscoveryError(f'target-cache name {name} matches both '
+                                     f'{cache_names[name]} and {directory}')
+            cache_names[name] = directory
     dependencies = {directory: set() for directory in holders}
     for directory in holders:
         output = query(['metadata', '--no-deps', '--format-version', '1', '--offline',
@@ -243,6 +259,13 @@ def selects_path(path, entry):
     return path.startswith(entry) if entry.endswith('/') else path == entry
 
 
+def tool_tests_reached(changed):
+    return any(path.startswith((b'tools/', b'.github/workflows/'))
+               or (path.startswith((b'packages/', b'experiments/'))
+                   and (path.endswith(b'.rs') or os.path.basename(path) in (b'Cargo.toml', b'Cargo.lock')))
+               for path in changed)
+
+
 def select_rust(directories, dependencies, changed, all_directories):
     paths = [os.fsdecode(path) for path in changed]
     holders = [entry.path for entry in directories] + ['engine']
@@ -264,16 +287,23 @@ def select_rust(directories, dependencies, changed, all_directories):
                 queue.append((dependency, route + [dependency]))
         return None
 
-    selected = {}
+    selected, skipped_own_paths = {}, {}
     for entry in directories:
         directory = entry.path
         reason = f'the branch changes {direct[directory]} of its paths' if direct[directory] else None
-        reason = reason or dependency_reason(directory)
-        if reason is None:
+        if reason is None and all_directories and directory in OWN_PATHS_ONLY:
+            reason = '--all was given'
+        via = None if reason else dependency_reason(directory)
+        if reason is None and via is None:
             for reader, path, evidence, _ in RUST_READS:
                 if reader == directory and any(selects_path(changed_path, path) for changed_path in paths):
-                    reason = f'it reads {path} ({evidence}), which the branch changes'
+                    via = f'it reads {path} ({evidence}), which the branch changes'
                     break
+        if via and directory in OWN_PATHS_ONLY:
+            skipped_own_paths[directory] = (f'{via}. It runs here only on its own changes or with '
+                                            f'--all. {OWN_PATHS_ONLY[directory]}.')
+            continue
+        reason = reason or via
         if reason is None and all_directories:
             reason = '--all was given'
         if reason:
@@ -286,7 +316,64 @@ def select_rust(directories, dependencies, changed, all_directories):
     engine_reason = engine_reason or dependency_reason('engine')
     if engine_reason is None and all_directories:
         engine_reason = '--all was given'
-    return selected, engine_reason
+    return selected, skipped_own_paths, engine_reason
+
+
+def target_cache_lock_status(lock):
+    try:
+        if not stat.S_ISREG(lock.lstat().st_mode):
+            return ''
+        with lock.open(encoding='utf-8') as stream:
+            details = json.loads(stream.read(4096))
+    except (OSError, ValueError):
+        return ''
+    pid = details.get('pid') if isinstance(details, dict) else None
+    if type(pid) is not int or not 0 < pid < 2**31:
+        return ''
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return f' for PID {pid}, which is not running'
+    except PermissionError:
+        pass
+    return f' for PID {pid}, which is running'
+
+
+def claim_target_cache(directory, shown, head, started, cleanup):
+    lock = directory / 'gate.lock'
+    def remove_owned_lock(identity):
+        try:
+            if os.path.samestat(identity, lock.lstat()):
+                lock.unlink()
+        except FileNotFoundError:
+            pass
+
+    try:
+        directory.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(mode='w', dir=directory, prefix='.gate.lock-',
+                                         encoding='utf-8') as stream:
+            json.dump(dict(pid=os.getpid(), head=head, started=started), stream)
+            stream.write('\n')
+            stream.flush()
+            cleanup.callback(remove_owned_lock, os.fstat(stream.fileno()))
+            os.link(stream.name, lock)
+    except FileExistsError:
+        if directory.is_dir():
+            return (f'target-cache lock {shown}/gate.lock exists{target_cache_lock_status(lock)}. '
+                    'Remove the lock if no gate is running')
+        return f'target-cache directory {shown} is not a directory'
+    except OSError as fault:
+        return f'cannot lock target-cache directory {shown}: {fault.strerror}'
+    return None
+
+
+def invalidate_path_fingerprints(target, names):
+    for profile in ('debug', 'release'):
+        fingerprints = target / profile / '.fingerprint'
+        if fingerprints.is_dir():
+            for fingerprint in fingerprints.iterdir():
+                if fingerprint.name.rpartition('-')[0] in names and fingerprint.is_dir():
+                    shutil.rmtree(fingerprint)
 
 
 def positive_integer(text):
@@ -350,19 +437,19 @@ def run_command(args, *, cwd, env, timeout, log, redact=redact_output):
     """
     buffer = bytearray()
     timed_out = False
-    process = None
+    process = reader = stop = None
     try:
         try:
-            process = subprocess.Popen(args, cwd=cwd, env=env, stdin=subprocess.DEVNULL,
-                                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                       start_new_session=True)
-        except OSError:
-            buffer.extend(b'could not start the command\n')
-        if process is not None:
-            stop = threading.Event()
-            reader = threading.Thread(target=read_output, args=(process.stdout, buffer, stop),
-                                      daemon=True)
             try:
+                process = subprocess.Popen(args, cwd=cwd, env=env, stdin=subprocess.DEVNULL,
+                                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                           start_new_session=True)
+            except OSError:
+                buffer.extend(b'could not start the command\n')
+            if process is not None:
+                stop = threading.Event()
+                reader = threading.Thread(target=read_output, args=(process.stdout, buffer, stop),
+                                          daemon=True)
                 reader.start()
                 try:
                     process.wait(timeout=timeout)
@@ -371,15 +458,18 @@ def run_command(args, *, cwd, env, timeout, log, redact=redact_output):
                     end_group(process)
                 # Inside the try: an interrupt during this wait still ends the group (decision 8).
                 reader.join(PIPE_WAIT)
-            except KeyboardInterrupt:
+        except KeyboardInterrupt:
+            if process is not None:
                 end_group(process)
-                if reader.ident is not None:
-                    reader.join(PIPE_WAIT)
-                raise
-            finally:
+            if reader is not None and reader.ident is not None:
+                reader.join(PIPE_WAIT)
+            raise
+        finally:
+            if stop is not None:
                 stop.set()
-                if reader.ident is not None:
-                    reader.join()
+            if reader is not None and reader.ident is not None:
+                reader.join()
+            if process is not None:
                 process.stdout.close()
     finally:
         output = redact(bytes(buffer).decode('utf-8', errors='replace'))
@@ -736,18 +826,25 @@ def show(row, output='', findings=(), plan=False):
 
 
 def main(root, argv, run=run_command, machine=None):
+    with ExitStack() as cleanup:
+        return run_gate(root, argv, run, machine, cleanup)
+
+
+def run_gate(root, argv, run, machine, cleanup):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--base', default='origin/main', metavar='REF')
     parser.add_argument('--plan', action='store_true')
     parser.add_argument('--private-names-file', metavar='FILE')
     parser.add_argument('--derive-private-names', action='store_true')
     parser.add_argument('--all', action='store_true')
+    parser.add_argument('--target-cache', metavar='DIR')
     parser.add_argument('--jobs', type=positive_integer, default=6, metavar='N')
     parser.add_argument('--test-threads', type=positive_integer, default=4, metavar='N')
     options = parser.parse_args(argv)
     root = Path(root).resolve()
     clean_environment, removed, credentials = scrub_environment()
-    settings = dict(jobs=options.jobs, test_threads=options.test_threads, all=options.all)
+    settings = dict(jobs=options.jobs, test_threads=options.test_threads, all=options.all,
+                    target_cache=None)
     environment_set = dict(CARGO_NET_OFFLINE='true', RUSTUP_AUTO_INSTALL='0',
                            CARGO_TERM_COLOR='never', CARGO_BUILD_JOBS=str(options.jobs),
                            RUST_TEST_THREADS=str(options.test_threads))
@@ -797,6 +894,25 @@ def main(root, argv, run=run_command, machine=None):
                               unreadable_sibling_remotes=derivation.unreadable_remotes,
                               sources=derivation.sources)
     head = git(root, environment, 'rev-parse', 'HEAD').stdout.decode().strip()
+    started = utc_now()
+    target_cache = None
+    if options.target_cache is not None:
+        try:
+            target_cache = Path(options.target_cache).resolve()
+            shown_cache = redact_output(str(target_cache), private_names)
+            if target_cache == root or root in target_cache.parents:
+                return not_started(f'target-cache directory {shown_cache} is inside the gate\'s root')
+            if target_cache.exists() and not target_cache.is_dir():
+                return not_started(f'target-cache directory {shown_cache} is not a directory')
+            if not options.plan:
+                cleanup.callback(signal.signal, signal.SIGTERM, signal.getsignal(signal.SIGTERM))
+                signal.signal(signal.SIGTERM, signal.default_int_handler)
+                fault = claim_target_cache(target_cache, shown_cache, head, started, cleanup)
+                if fault:
+                    return not_started(fault)
+        except (OSError, RuntimeError):
+            return not_started('the target-cache directory could not be opened')
+        settings['target_cache'] = shown_cache
     branch_result = git(root, environment, 'symbolic-ref', '--quiet', '--short', 'HEAD')
     branch = branch_result.stdout.decode().strip() if branch_result.returncode == 0 else None
     contains_base = git(root, environment, 'merge-base', '--is-ancestor', base, 'HEAD').returncode == 0
@@ -821,6 +937,8 @@ def main(root, argv, run=run_command, machine=None):
         print(f'Base: the branch lacks {behind} commits of {shown_base}. CI tests a pull request '
               'merged with them; the gate tests the branch alone.')
     print(f'Changed since the merge base: {len(changed)} paths.')
+    if target_cache is not None:
+        print(f'Target cache: {shown_cache}. The tree\'s own crates rebuild and registry crates are reused.')
     if derivation is not None:
         show_derivation(derivation, names_file, 'CONDUIT_PRIVATE_NAMES' in removed)
     elif private_names is not None:
@@ -843,7 +961,7 @@ def main(root, argv, run=run_command, machine=None):
           f"{', '.join(removed) or 'no named variable'}, "
           f'and {credentials} variables named for a credential.')
 
-    record = dict(format=1, tool=TOOL, started=utc_now(), finished=None, result='incomplete',
+    record = dict(format=1, tool=TOOL, started=started, finished=None, result='incomplete',
                   base=dict(ref=shown_base, commit=base), merge_base=merge_base, head=head,
                   branch=shown_branch, contains_base=contains_base, behind=behind,
                   tree=dict(clean=not dirty, uncommitted_paths=dirty), changed_paths=len(changed),
@@ -877,6 +995,8 @@ def main(root, argv, run=run_command, machine=None):
         def redact(text):
             if raw_output is not None:
                 raw_output.append(text)
+            if target_cache is not None:
+                text = text.replace(str(target_cache), '<target-cache>')
             return redact_output(text, private_names)
 
         print(redact_output(f'running {current}: {display or command_text(args)}', private_names),
@@ -920,7 +1040,8 @@ def main(root, argv, run=run_command, machine=None):
                     return raw_output[-1] if raw_output else result.output
 
                 try:
-                    directories, dependencies = discover_rust(root, manifests, query)
+                    directories, dependencies = discover_rust(
+                        root, manifests, query, target_cache=target_cache is not None)
                     discovery.update(result='PASS', exit=0)
                 except DiscoveryError as fault:
                     discovery.update(result='FAIL',
@@ -990,6 +1111,10 @@ def main(root, argv, run=run_command, machine=None):
                       ['python3', VECTOR, merge_base, 'WORKTREE', '--declared-changed'])]
         for current, args, printed in commands:
             row = gate_row(current, command_text(printed), reason=PYTHON_REASON)
+            if current == 'tool tests' and not (options.all or tool_tests_reached(changed)):
+                row.update(required=False, why=TOOL_TESTS_WHY)
+                finish(row)
+                continue
             if options.plan:
                 row['result'] = 'PASS'  # Only show WOULD RUN; no check is claimed or recorded.
                 finish(row)
@@ -1086,13 +1211,22 @@ def main(root, argv, run=run_command, machine=None):
         if discovery['result'] != 'PASS':
             finish(gate_row('rust and engine', None, required=False, why=RUST_WHY))
         else:
-            selected, engine_reason = select_rust(directories, dependencies, changed, options.all)
+            selected, skipped_own_paths, engine_reason = select_rust(
+                directories, dependencies, changed, options.all)
+            prepared = set()
 
             def rust_command(name, directory, arguments, reason):
                 nonlocal current
                 current = name
                 env = dict(environment)
                 printed = command_text(['cargo', *arguments])
+                target = None
+                if target_cache is not None and arguments[0] in ('clippy', 'test'):
+                    cache_name = directory.replace('/', '-')
+                    target = target_cache / cache_name
+                    printed = command_text(['cargo', arguments[0], '--target-dir',
+                                            f'<target-cache>/{cache_name}', *arguments[1:]])
+                    arguments = [arguments[0], '--target-dir', str(target), *arguments[1:]]
                 if arguments[0] == 'test':
                     env['RUST_TEST_THREADS'] = str(options.test_threads)
                     printed = f'RUST_TEST_THREADS={options.test_threads} ' + printed
@@ -1106,6 +1240,34 @@ def main(root, argv, run=run_command, machine=None):
                 log_name = redact_output(name, private_names).replace(' ', '-').replace('/', '-')
                 log = log_directory / (f'{position:02d}-' + log_name + '.log')
                 started = time.monotonic()
+                if target is not None and directory not in prepared:
+                    raw = []
+                    with tempfile.TemporaryDirectory() as temporary:
+                        metadata = execute([cargo, 'metadata', '--format-version', '1', '--offline'],
+                                           Path(temporary) / 'metadata.log', 5, directory=directory,
+                                           raw_output=raw)
+                    if metadata.timed_out or metadata.exit != 0:
+                        failure = timeout_words(5) if metadata.timed_out else f'exit {metadata.exit}'
+                        log.write_text(metadata.output, encoding='utf-8')
+                        row.update(result='FAIL', why=f'cached path metadata: {failure}', exit=metadata.exit,
+                                   seconds=round(time.monotonic() - started, 1),
+                                   log=log.relative_to(root).as_posix())
+                        finish(row, metadata.output)
+                        return
+                    try:
+                        output = raw[-1] if raw else metadata.output
+                        # Cargo's JSON is one line. The runner also captures warnings from stderr.
+                        payload = next((line for line in output.splitlines() if line.startswith('{')), '')
+                        packages = json.loads(payload)['packages']
+                        names = {package['name'] for package in packages if package['source'] is None}
+                        invalidate_path_fingerprints(target, names)
+                    except (ValueError, KeyError, TypeError, OSError) as fault:
+                        why = (f'cannot invalidate path fingerprints: {fault.strerror}'
+                               if isinstance(fault, OSError) else 'invalid cached path metadata')
+                        row.update(result='FAIL', why=why, seconds=round(time.monotonic() - started, 1))
+                        finish(row)
+                        return
+                    prepared.add(directory)
                 result = execute([cargo, *arguments], log, 90, env, printed + ' in ' + directory,
                                  directory=directory)
                 row.update(result='FAIL' if result.timed_out or result.exit != 0 else 'PASS',
@@ -1116,6 +1278,10 @@ def main(root, argv, run=run_command, machine=None):
                 finish(row, result.output)
 
             for entry in directories:
+                if entry.path in skipped_own_paths:
+                    finish(gate_row('rust ' + entry.path, None, required=False,
+                                    why=skipped_own_paths[entry.path]))
+                    continue
                 if entry.path not in selected:
                     continue
                 reason = selected[entry.path]
@@ -1129,7 +1295,8 @@ def main(root, argv, run=run_command, machine=None):
                     rust_command('rust ' + entry.path + ' clippy', entry.path,
                                  ['clippy', '--all-targets', '--', '-D', 'warnings'], reason)
                 rust_command('rust ' + entry.path + ' test', entry.path, ['test', '--release'], reason)
-            unreached = [entry.path for entry in directories if entry.path not in selected]
+            unreached = [entry.path for entry in directories
+                         if entry.path not in selected and entry.path not in skipped_own_paths]
             if unreached:
                 finish(gate_row('rust unreached', None, required=False,
                                 why=UNREACHED_WHY + ', '.join(unreached)))

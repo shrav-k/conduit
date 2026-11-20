@@ -236,6 +236,9 @@ What each check needs:
   lets rustup install nothing, so each Rust directory it runs needs the toolchain it pins
   installed through rustup and its crates in cargo's cache, and its discovery, which runs cargo
   from the root, needs rustup's default toolchain.
+  The tool tests run with `--all` or when a change touches `tools/`, `.github/workflows/`, or a
+  Rust source, `Cargo.toml` or `Cargo.lock` under `packages/` or `experiments/`. Experiment 011
+  runs with `--all` or when its own directory changes.
   With `--derive-private-names` it also asks the machine for the private names, through
   `scutil` on macOS and `tailscale` where it is installed, each answering from the machine
   itself, and skips by name a source it cannot read.
@@ -299,8 +302,8 @@ repository, its `branches/main/protection`, its `rulesets`, its `actions/variabl
   change arrives through a pull request, with no approving review required; the rule binds
   administrators too; and force-pushes and deletion are refused. No ruleset is defined. When the
   protection was first applied is not recorded.
-- **No status check is required** by a branch setting. CI's `rust` check passes only when every Rust
-  job does, the macOS jobs of order 187 among them. The full review's [decision
+- **No status check is required** by a branch setting. CI's `rust` check aggregates the Rust jobs
+  in `checks`. Order 223 moved the macOS jobs to `nightly`. The full review's [decision
   D11](docs/proposals/full-review/decisions.md#the-pipeline-and-verification) asks the owner to make
   `docs` and `rust` required once the CI fix (#266) has held over three runs and the engine's test
   shards wait on no other job. Since order 152 the shards wait only on the engine's build. [CI's

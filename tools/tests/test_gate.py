@@ -20,12 +20,14 @@ from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import gate
+import set_names
 
 REPOSITORY = Path(__file__).resolve().parents[2]
 
 
 class FakeRunner:
-    def __init__(self):
+    def __init__(self, root):
+        self.root = root
         self.calls = []
         self.responses = {}
         self.version = 'v8.24.2\n'
@@ -34,6 +36,8 @@ class FakeRunner:
         self.inspect = None
         self.workspaces = {}
         self.dependencies = {}
+        self.package_names = {}
+        self.resolved_packages = {}
 
     def __call__(self, args, *, cwd, env, timeout, log, redact):
         self.calls.append(dict(args=list(args), cwd=cwd, env=dict(env), timeout=timeout, log=log))
@@ -44,11 +48,16 @@ class FakeRunner:
             workspace = self.workspaces.get(manifest, manifest)
             result = self.responses.get('locate-project', gate.CommandResult(0, str(cwd / workspace) + '\n'))
         elif len(args) > 1 and args[1] == 'metadata':
-            directory = str(Path(args[-1]).parent)
-            dependencies = [dict(path=str(cwd / path), kind=kind)
+            directory = (Path(args[-1]).parent.as_posix() if '--no-deps' in args
+                         else cwd.relative_to(self.root).as_posix())
+            dependencies = [dict(path=str(self.root / path), kind=kind, name=Path(path).name)
                             for path, kind in self.dependencies.get(directory, [])]
+            packages = [dict(name=name, source=None, dependencies=dependencies)
+                        for name in self.package_names.get(directory, [Path(directory).name])]
+            if '--no-deps' not in args:
+                packages = self.resolved_packages.get(directory, packages)
             result = self.responses.get('metadata', gate.CommandResult(
-                0, json.dumps(dict(packages=[dict(dependencies=dependencies)]))))
+                0, json.dumps(dict(packages=packages))))
         elif args[-1] == 'version':
             result = self.responses.get('version', gate.CommandResult(0, self.version))
         elif 'git' in args and '--report-path' in args:
@@ -140,7 +149,7 @@ class GateTests(unittest.TestCase):
         self.base = self.commit()
         self.git('branch', 'base')
         self.git('checkout', '-qb', 'work')
-        self.fake = FakeRunner()
+        self.fake = FakeRunner(self.root)
 
     def git(self, *args, env=None):
         return subprocess.run(['git', *args], cwd=self.root, env=env, check=True,
@@ -281,7 +290,7 @@ class GateTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn(gate.NO_COMMITS, output)
         self.assertFalse(self.row('identity')['required'])
-        self.assertIn('not run: identity, secrets, engine.', output.splitlines()[-1])
+        self.assertIn('not run: identity, tool tests, secrets, engine.', output.splitlines()[-1])
 
         # Valid Git identities may hold Unicode separators that are not Git row delimiters.
         for separator in ('\u2028', '\u2029', '\x85'):
@@ -885,7 +894,7 @@ class GateTests(unittest.TestCase):
         self.assertIn('gitleaks is not installed; the pin is 8.24.2', output)
         self.assertIn('NOT RUN engine: ' + gate.ENGINE_WHY, output)
         self.assertNotIn('rust and engine', output)
-        self.assertIn('Gate: PASS. 13 passed; not run: secrets, engine.', output)
+        self.assertIn('Gate: PASS. 12 passed; not run: tool tests, secrets, engine.', output)
         self.fake.responses['tools/check_schemas.py'] = gate.CommandResult(1, 'detail\nlast failure line\n')
         self.fake.calls.clear()
         code, output, error = self.invoke()
@@ -894,14 +903,14 @@ class GateTests(unittest.TestCase):
         line = next(line for line in output.splitlines() if line.startswith('FAIL schemas'))
         self.assertIn('exit 1; its last line: last failure line; log target/gate/logs/', line)
         self.assertIn('    last failure line', error)
-        self.assertEqual(len(self.fake.calls), 12)
+        self.assertEqual(len(self.fake.calls), 11)
         self.assertIn('tools/vector_delta.py', self.fake.calls[-1]['args'])
         self.fake.responses['tools/check_schemas.py'] = gate.CommandResult(None, 'partial\n', True)
         code, output, _ = self.invoke()
         self.assertEqual(code, 1)
         self.assertIn('ended after 15 minutes, with its process group', output)
         self.fake.responses.clear()
-        self.write('untracked.txt', 'untracked\n')
+        self.write('tools/untracked.py', '# untracked\n')
         self.fake.responses['tools/check_docs.py'] = gate.CommandResult(0,
             'Notice: skipped repository permalinks at first\nNotice: skipped repository permalinks at second\n')
         self.fake.responses['-m'] = gate.CommandResult(0, 'Ran tests\n\nOK (skipped=3)\n')
@@ -1072,13 +1081,13 @@ class GateTests(unittest.TestCase):
                          [['cargo', 'metadata', '--no-deps', '--format-version', '1', '--offline',
                            '--manifest-path', 'engine/Cargo.toml'], ['gitleaks', 'version']])
         would = [line for line in output.splitlines() if line.startswith('WOULD RUN ')]
-        self.assertEqual(len(would), 13)
+        self.assertEqual(len(would), 12)
         self.assertTrue(would[0].startswith('WOULD RUN identity:'))
         self.assertTrue(would[-1].startswith('WOULD RUN secrets:'))
         self.assertTrue(any(line.startswith('PASS rust discovery') for line in output.splitlines()))
         self.assertIn('NOT RUN engine: ' + gate.ENGINE_WHY, output)
-        self.assertEqual(output.splitlines()[-1], 'Gate plan: rust discovery passed; 13 other gates '
-                         'would run, 1 would not. No other gate was checked, and no record was written.')
+        self.assertEqual(output.splitlines()[-1], 'Gate plan: rust discovery passed; 12 other gates '
+                         'would run, 2 would not. No other gate was checked, and no record was written.')
         self.assertFalse((self.root / gate.OUTPUT).exists())
         self.fake.calls.clear()
         code, plan, _ = self.invoke('--plan', '--derive-private-names', installed='gitleaks',
@@ -1093,7 +1102,7 @@ class GateTests(unittest.TestCase):
         self.git('reset', '--hard', self.base)
         code, output, _ = self.invoke('--plan')
         self.assertEqual(code, 0)
-        self.assertIn('Gate plan: rust discovery passed; 11 other gates would run, 3 would not.', output)
+        self.assertIn('Gate plan: rust discovery passed; 10 other gates would run, 4 would not.', output)
         self.assertEqual([call['args'][1] for call in self.fake.calls], ['metadata'])
         self.assertFalse((self.root / gate.OUTPUT).exists())
 
@@ -1305,7 +1314,7 @@ class GateTests(unittest.TestCase):
             if call['args'][1] == 'test':
                 self.assertEqual(call['env']['RUST_TEST_THREADS'], '3')
             self.assertFalse(planted.keys() & call['env'].keys())
-        self.assertEqual(self.record()['settings'], dict(jobs=5, test_threads=3, all=True))
+        self.assertEqual(self.record()['settings'], dict(jobs=5, test_threads=3, all=True, target_cache=None))
         self.assertEqual(self.record()['environment']['set'],
                          dict(CARGO_NET_OFFLINE='true', RUSTUP_AUTO_INSTALL='0', CARGO_TERM_COLOR='never',
                               CARGO_BUILD_JOBS='5', RUST_TEST_THREADS='3'))
@@ -1339,11 +1348,310 @@ class GateTests(unittest.TestCase):
                 self.invoke(*args)
             self.assertEqual(stopped.exception.code, 2)
 
+    def test_target_cache_commands_and_redaction(self):
+        self.crates('packages/a')
+        cache = self.parent / 'planted-cache-name'
+        names = self.names_file(cache.name)
+        options = ('--all', '--target-cache', str(cache), '--private-names-file', str(names))
+        code, output, _ = self.invoke('--plan', *options)
+        self.assertEqual(code, 0)
+        self.assertFalse(cache.exists())
+        self.assertFalse(self.record_path().exists())
+        self.assertIn('WOULD RUN rust packages/a clippy:', output)
+        self.assertIn('<target-cache>/packages-a', output)
+        self.assertIn('<target-cache>/engine', output)
+        lock = cache / 'gate.lock'
+        observed = []
+
+        def inspect(call):
+            if call['args'][1] in ('clippy', 'test'):
+                observed.append(json.loads(lock.read_text()))
+        self.fake.inspect = inspect
+        self.fake.responses['test'] = gate.CommandResult(0, f'checked in {cache}\n')
+        self.fake.calls.clear()
+        code, output, error = self.invoke(*options)
+        self.assertEqual(code, 0)
+        self.assertFalse(lock.exists())
+        self.assertEqual(len(observed), 4)
+        self.assertEqual(observed, [dict(pid=os.getpid(), head=self.record()['head'],
+                                        started=self.record()['started'])] * 4)
+        for directory, prefix in (('packages/a', 'rust packages/a'), ('engine', 'engine')):
+            for subcommand in ('fmt', 'clippy', 'test'):
+                call = next(call for call in self.fake.calls
+                            if call['cwd'] == self.root / directory and call['args'][1] == subcommand)
+                command = self.row(f'{prefix} {subcommand}')['command']
+                self.assertNotIn('CARGO_TARGET_DIR', call['env'])
+                if subcommand == 'fmt':
+                    self.assertEqual(call['args'], ['cargo', 'fmt', '--check'])
+                    self.assertNotIn('--target-dir', command)
+                else:
+                    name = directory.replace('/', '-')
+                    self.assertEqual(call['args'][2:4], ['--target-dir', str(cache / name)])
+                    self.assertIn(f'<target-cache>/{name}', command)
+        shown = str(cache.parent / '[redacted]')
+        self.assertEqual(output.count(shown), 1)
+        self.assertEqual(self.record()['settings']['target_cache'], shown)
+        self.assertIn('checked in <target-cache>', self.logs())
+        self.assert_private(output + error + self.record_path().read_text() + self.logs(), cache)
+
+    def test_target_cache_invalidates_transitive_path_fingerprints_once(self):
+        self.crates('packages/a', 'packages/b', 'packages/c')
+        self.write('packages/a/README.md', 'changed\n')
+        self.fake.dependencies.update({'packages/a': [('packages/b', None)],
+                                       'packages/b': [('packages/c', None)]})
+        self.fake.package_names['packages/c'] = ['c', 'c-member']
+        self.fake.resolved_packages['packages/a'] = [
+            dict(name=name, source=None) for name in ('a', 'b', 'c', 'c-member')]
+        cache = self.parent / 'cache'
+        stale, kept = [], []
+        for profile in ('debug', 'release'):
+            fingerprints = cache / 'packages-a' / profile / '.fingerprint'
+            for name in ('a-123', 'b-123', 'c-123', 'c-member-123', 'a-registry-456', 'registry-456'):
+                path = fingerprints / name
+                path.mkdir(parents=True)
+                (stale if name.endswith('123') else kept).append(path)
+
+        def inspect(call):
+            if call['args'][1] == 'clippy':
+                self.assertFalse(any(path.exists() for path in stale))
+                stale[0].mkdir()
+            if call['args'][1] in ('clippy', 'test'):
+                self.assertTrue(all(path.is_dir() for path in kept))
+        self.fake.inspect = inspect
+        self.assertEqual(self.invoke('--target-cache', str(cache))[0], 0)
+        self.assertTrue(stale[0].is_dir())
+        self.assertFalse(any(path.exists() for path in stale[1:]))
+
+    def test_target_cache_invalidates_crates_outside_workspace_membership(self):
+        self.crates('packages/a')
+        self.write('packages/a/README.md', 'changed\n')
+        # The engine workspace metadata lists neither excluded crate. A direct edge names
+        # probe-b, but only the package's resolved metadata contains its dependency probe-c.
+        self.fake.dependencies['packages/a'] = [('engine/probe-b', None)]
+        self.fake.resolved_packages['packages/a'] = [
+            dict(name=name, source=None) for name in ('a', 'probe-b', 'probe-c')]
+        self.fake.resolved_packages['packages/a'].append(
+            dict(name='registry-only', source='registry+https://example.invalid/index'))
+        cache = self.parent / 'cache'
+        stale, kept = [], []
+        for profile in ('debug', 'release'):
+            fingerprints = cache / 'packages-a' / profile / '.fingerprint'
+            stale.append(fingerprints / 'probe-c-123')
+            kept.append(fingerprints / 'registry-only-456')
+            stale[-1].mkdir(parents=True)
+            kept[-1].mkdir()
+
+        def inspect(call):
+            if call['args'][1] == 'clippy':
+                self.assertFalse(any(path.exists() for path in stale))
+                self.assertTrue(all(path.is_dir() for path in kept))
+        self.fake.inspect = inspect
+        self.assertEqual(self.invoke('--target-cache', str(cache))[0], 0)
+        resolved = [call['args'] for call in self.fake.calls
+                    if call['args'][1] == 'metadata' and '--no-deps' not in call['args']]
+        self.assertEqual(len(resolved), 1)
+        self.assertIn('--offline', resolved[0])
+
+    def test_target_cache_interrupted_before_lock_publication(self):
+        cache = self.parent / 'cache'
+        with contextlib.ExitStack() as cleanup:
+            with mock.patch.object(gate.os, 'fstat', side_effect=KeyboardInterrupt):
+                with self.assertRaises(KeyboardInterrupt):
+                    gate.claim_target_cache(cache, 'cache', self.base, 'start', cleanup)
+        self.assertEqual(list(cache.iterdir()), [])
+
+        link = os.link
+
+        def interrupt_after_link(source, destination):
+            link(source, destination)
+            raise KeyboardInterrupt
+
+        with contextlib.ExitStack() as cleanup:
+            with mock.patch.object(gate.os, 'link', side_effect=interrupt_after_link):
+                with self.assertRaises(KeyboardInterrupt):
+                    gate.claim_target_cache(cache, 'cache', self.base, 'start', cleanup)
+        self.assertEqual(list(cache.iterdir()), [])
+
+    def test_target_cache_sigterm_ends_the_child_group_and_releases_lock(self):
+        cache = self.parent / 'cache'
+        ready = self.root / 'ready'
+        self.write('tools/check_docs.py',
+                   'import os, signal, subprocess, sys, time\n'
+                   'from pathlib import Path\n'
+                   'child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])\n'
+                   'def stop(sig, frame):\n'
+                   '    child.wait()\n'
+                   '    sys.exit(0)\n'
+                   'signal.signal(signal.SIGTERM, stop)\n'
+                   'Path("ready").write_text(f"{os.getpid()} {child.pid}\\n")\n'
+                   'time.sleep(60)\n')
+        script = (
+            'import signal, sys\n'
+            'sys.path.insert(0, sys.argv[1])\n'
+            'import gate\n'
+            'gate.shutil.which = lambda name: None\n'
+            'previous = signal.getsignal(signal.SIGTERM)\n'
+            'status = gate.main(sys.argv[2], ["--base", "base", "--target-cache", sys.argv[3]])\n'
+            'assert signal.getsignal(signal.SIGTERM) == previous\n'
+            'sys.exit(status)\n'
+        )
+        with subprocess.Popen([sys.executable, '-c', script, str(REPOSITORY / 'tools'),
+                               str(self.root), str(cache)], cwd=self.root,
+                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+                              env=dict(os.environ, PYTHONDONTWRITEBYTECODE='1')) as process:
+            pids = []
+            try:
+                deadline = time.monotonic() + 10
+                while len(pids) != 2 and process.poll() is None and time.monotonic() < deadline:
+                    if ready.exists():
+                        pids = [int(pid) for pid in ready.read_text().split()]
+                    if len(pids) != 2:
+                        time.sleep(0.02)
+                self.assertEqual(len(pids), 2)
+                self.assertTrue((cache / 'gate.lock').is_file())
+                process.terminate()
+                output, _ = process.communicate(timeout=20)
+                self.assertEqual(process.returncode, 130)
+                self.assertIn('Gate: interrupted during docs', output)
+                self.assertFalse((cache / 'gate.lock').exists())
+                for pid in pids:
+                    with self.assertRaises(ProcessLookupError):
+                        os.kill(pid, 0)
+                pids.clear()
+            finally:
+                if pids:
+                    try:
+                        os.killpg(pids[0], signal.SIGTERM)
+                    except ProcessLookupError:
+                        pass
+                if process.poll() is None:
+                    process.kill()
+                process.communicate(timeout=5)
+
+    def test_set_names_excludes_target_only_within_repository(self):
+        root = self.parent / 'target' / 'repository'
+        source = root / 'engine' / 'source.rs'
+        build = root / 'engine' / 'target' / 'generated.rs'
+        for path in (source, build):
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.touch()
+        with mock.patch.object(set_names, 'ROOT', root):
+            self.assertEqual(set_names.files(['engine']), [source])
+
+    def test_target_cache_refuses_a_held_lock(self):
+        cache = self.parent / 'cache'
+        cache.mkdir()
+        lock = cache / 'gate.lock'
+        text = json.dumps(dict(pid=os.getpid()))
+        lock.write_text(text)
+        code, output, _ = self.invoke('--target-cache', str(cache))
+        self.assertEqual(code, 2)
+        self.assertIn('Gate: NOT RUN:', output)
+        self.assertIn(f'{lock} exists for PID {os.getpid()}, which is running', output)
+        self.assertIn('Remove the lock if no gate is running', output)
+        with mock.patch.object(gate.os, 'kill', side_effect=ProcessLookupError):
+            code, output, _ = self.invoke('--target-cache', str(cache))
+        self.assertEqual(code, 2)
+        self.assertIn('which is not running', output)
+        self.assertEqual(lock.read_text(), text)
+        self.assertEqual(list(cache.iterdir()), [lock])
+        self.assertEqual(self.fake.calls, [])
+
+    def test_target_cache_releases_lock_after_failure_interrupt_or_error(self):
+        cache = self.parent / 'cache'
+        lock = cache / 'gate.lock'
+        self.fake.responses['tools/check_docs.py'] = gate.CommandResult(1, 'failed\n')
+        self.assertEqual(self.invoke('--target-cache', str(cache))[0], 1)
+        self.assertFalse(lock.exists())
+
+        for fault, exit_code in ((KeyboardInterrupt, 130), (RuntimeError, None)):
+            with self.subTest(fault=fault):
+                def inspect(call):
+                    self.assertTrue(lock.exists())
+                    raise fault
+                self.fake.inspect = inspect
+                if exit_code is None:
+                    with self.assertRaises(RuntimeError):
+                        self.invoke('--target-cache', str(cache))
+                else:
+                    self.assertEqual(self.invoke('--target-cache', str(cache))[0], exit_code)
+                self.assertFalse(lock.exists())
+
+    def test_target_cache_rejects_invalid_paths_and_colliding_names(self):
+        inside = self.root / 'target' / 'cache'
+        file = self.parent / 'file'
+        file.touch()
+        for path, reason in ((inside, "inside the gate's root"), (file, 'is not a directory')):
+            for options in ((), ('--plan',)):
+                with self.subTest(path=path, options=options):
+                    code, output, _ = self.invoke('--target-cache', str(path), *options)
+                    self.assertEqual(code, 2)
+                    self.assertIn(reason, output)
+        self.assertEqual(self.fake.calls, [])
+        self.assertFalse(inside.exists())
+        self.crates('packages/a/b', 'packages/a-b')
+        cache = self.parent / 'cache'
+        code, output, _ = self.invoke('--target-cache', str(cache))
+        self.assertEqual(code, 1)
+        self.assertIn('FAIL rust discovery', output)
+        self.assertIn('target-cache name packages-a-b matches both packages/a-b and packages/a/b', output)
+        self.assertFalse((cache / 'gate.lock').exists())
+
+    def test_tool_tests_run_for_their_inputs_and_all(self):
+        for path, reached in (('tools/x.py', True), ('.github/workflows/other.yml', True),
+                              ('packages/p/src/x.rs', True), ('packages/p/Cargo.toml', True),
+                              ('packages/p/Cargo.lock', True), ('experiments/e/src/x.rs', True),
+                              ('experiments/e/Cargo.toml', True), ('experiments/e/Cargo.lock', True),
+                              ('docs/x.md', False), ('packages/p/README.md', False),
+                              ('engine/src/x.rs', False), ('spec/x.yaml', False), (None, True)):
+            with self.subTest(path=path):
+                changed = self.write(path, 'changed\n') if path else None
+                self.fake.calls.clear()
+                code, output, _ = self.invoke(*(() if path else ('--all',)))
+                self.assertEqual(code, 0)
+                row = self.row('tool tests')
+                self.assertEqual(row['required'], reached)
+                self.assertEqual(row['result'], 'PASS' if reached else 'NOT RUN')
+                self.assertEqual(row['command'], 'python3 -m unittest discover -s tools/tests')
+                self.assertEqual(any(call['args'][1:3] == ['-m', 'unittest']
+                                     for call in self.fake.calls), reached)
+                if not reached:
+                    self.assertEqual(row['why'], gate.TOOL_TESTS_WHY)
+                    self.assertIn(gate.PYTHON_REASON, output)
+                    self.assertIn('tool tests', output.splitlines()[-1].split('not run: ')[1])
+                if changed:
+                    changed.unlink()
+
+    def test_rust_own_paths_only_reports_the_dependency_and_read_routes(self):
+        spike = 'experiments/011-short-form-spike'
+        name = 'rust ' + spike
+        self.crates(spike, 'experiments/other')
+        self.fake.dependencies[spike] = [('engine/crates/core', None)]
+        for path, reason in (('engine/README.md', 'depends by path on engine'),
+                             ('spec/x.yaml', 'reads spec/'),
+                             ('conformance/fixtures/s1/x.json', 'reads conformance/fixtures/s1/')):
+            with self.subTest(path=path):
+                changed = self.write(path, 'changed\n')
+                self.assertEqual(self.invoke()[0], 0)
+                row = self.row(name)
+                self.assertEqual(row['result'], 'NOT RUN')
+                self.assertFalse(row['required'])
+                self.assertIn(reason, row['why'])
+                self.assertIn(gate.OWN_PATHS_ONLY[spike], row['why'])
+                self.assertNotIn(spike, self.row('rust unreached')['why'])
+                changed.unlink()
+        self.assertEqual(self.invoke('--all')[0], 0)
+        self.assertEqual(self.row(name + ' test')['result'], 'PASS')
+        self.write(spike + '/README.md', 'its own change\n')
+        self.assertEqual(self.invoke()[0], 0)
+        self.assertEqual(self.row(name + ' test')['result'], 'PASS')
+
     def test_reads_table_agrees_with_the_tree(self):
         tracked = set(subprocess.run(['git', 'ls-files', '-z'], cwd=REPOSITORY, check=True,
                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode().split('\0'))
         directories = {str(Path(path).parent) for path in tracked if path.endswith('/Cargo.toml')
                        and path.split('/')[0] in ('packages', 'experiments')}
+        self.assertLessEqual(gate.OWN_PATHS_ONLY.keys(), directories)
         for directory, path, evidence, text in gate.RUST_READS:
             with self.subTest(directory=directory, path=path):
                 self.assertIn(directory, directories)
@@ -1430,8 +1738,12 @@ class GateTests(unittest.TestCase):
             processes.extend(started_pids)
             return result, elapsed, started_pids
 
-        result, elapsed, started_pids = run('trap', 1, 'trap')
-        self.assertLess(elapsed, 15)
+        def run_quickly(mode, timeout, label):
+            with mock.patch.object(gate, 'GRACE', 1), mock.patch.object(gate, 'PIPE_WAIT', 1):
+                return run(mode, timeout, label)
+
+        result, elapsed, started_pids = run_quickly('trap', 1, 'trap')
+        self.assertLess(elapsed, 8)
         self.assertEqual(len(started_pids), 2)
         self.assertTrue(result.timed_out)
         self.assertTrue(gone(started_pids))
@@ -1478,21 +1790,21 @@ class GateTests(unittest.TestCase):
         # the answer that the two cases above make certain.
         for attempt in range(5):
             with self.subTest(attempt=attempt):
-                result, elapsed, started_pids = run('plain', 0.5, 'plain-' + str(attempt))
+                result, elapsed, started_pids = run_quickly('plain', 0.5, 'plain-' + str(attempt))
                 self.assertTrue(result.timed_out)
-                self.assertLess(elapsed, 15)
+                self.assertLess(elapsed, 8)
                 self.assertTrue(gone(started_pids))
 
         # A child that left the group and holds the output pipe does not hold the result.
-        result, elapsed, started_pids = run('escape', 1, 'escape')
-        self.assertLess(elapsed, 15)
+        result, elapsed, started_pids = run_quickly('escape', 1, 'escape')
+        self.assertLess(elapsed, 8)
         self.assertTrue(result.timed_out)
         self.assertIn('before sleeping', log.read_text())
         self.assertTrue(gone(started_pids[:1]))
 
         # The timeout counts the leader alone: a leader that exits 0 at once is not a timeout.
-        result, elapsed, started_pids = run('detach', 3, 'detach')
-        self.assertLess(elapsed, 15)
+        result, elapsed, started_pids = run_quickly('detach', 3, 'detach')
+        self.assertLess(elapsed, 8)
         self.assertFalse(result.timed_out)
         self.assertEqual(result.exit, 0)
         self.assertIn('before sleeping', result.output)

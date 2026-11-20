@@ -229,7 +229,8 @@ git -C "<MAC_CHECKOUT>" worktree add -q "<WO_DIR>/NNN" wo/NNN-name
 The reset runs only for an existing local tree; otherwise the branch is set, then the tree added.
 Orders built on Windows passed the changed crate's tests, fmt and clippy on the Mac before
 merge. Since order 193b the gate of [section 7](#7-merge-and-the-record) runs them there,
-for each Rust directory the branch reaches and the engine; CI's macOS jobs (187) run after. 131
+for each Rust directory the branch reaches and the engine. Since order 223, CI's macOS jobs
+(187) run nightly and on request. 131
 failed to compile on macOS (rustix's `mknodat`) and expected Linux's error message; 137 and 140 used
 `chmod --` and `find -printf` (fixed in #241). Windows' sandbox could not use the pinned toolchain
 for 075's spec suites ([075's Record](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/075-spec-own-tools-reach.md#record)) and timed
@@ -299,14 +300,19 @@ with the private names it derives (the Mac's account, host and computer names, g
 global identity, the repositories beside this one and their remotes, and the tailnet's
 peers, less those shorter than 4 characters, in the origin remote's URL or on its list of
 public words) given to `tools/check_private_paths.py` alone and never printed;
-the vector changes against the declarations the branch adds or changes, the tools' unit tests
-and `git diff --check`; `cargo fmt --check`,
+the vector changes against the declarations the branch adds or changes and `git diff --check`.
+The tool tests run with `--all` or when a change touches `tools/`, `.github/workflows/`, or a
+Rust source, `Cargo.toml` or `Cargo.lock` under `packages/` or `experiments/`. The gate runs
+`cargo fmt --check`,
 clippy with `-D warnings` and `cargo test --release` in each package that the branch
 changes, that depends by path on a directory it changes, or that reads a path it changes,
-and the tests alone of each such experiment; the engine's fmt, clippy and release tests
-when `engine/`, `spec/`, `conformance/` or an Agent package changes; and gitleaks on the
-branch's commits when the release that checks.yml pins is on the `PATH`. Cargo runs
-offline. The gate prints one line for each gate, PASS, FAIL or NOT RUN with its command
+and the tests alone of each such experiment. Experiment 011 runs with `--all` or when its own
+directory changes. The engine's fmt, clippy and release tests run
+when `engine/`, `spec/`, `conformance/` or an Agent package changes. Gitleaks scans the branch's
+commits when the release that checks.yml pins is on the `PATH`. Cargo runs offline.
+`--target-cache DIR` uses one target directory per Rust directory, rebuilds the tree's own
+crates and reuses registry crates. The gate holds `DIR/gate.lock` for the run. The gate prints
+one line for each gate, PASS, FAIL or NOT RUN with its command
 and why, and a last line that says PASS only when every required gate passed, and writes
 its record to `target/gate/<HEAD>.json`. `--plan` runs `rust discovery` alone and lists
 the other gates without running them, and exits 1 when discovery does not pass; `--all`
@@ -338,13 +344,14 @@ crate whose directory, or the directory of one of its path dependencies, the pul
 and `package tests repeated (directory)` runs that crate's release tests five more times on Linux,
 all five even after a failure; when it lists none, and on a push, the repeats are skipped. `engine
 build` runs fmt, clippy and builds a nextest archive; `engine tests (1/4)` through `(4/4)` use that
-archive; `engine doctests` runs doctests. Since 187, `macos (directory)` runs clippy and release
-tests for each package on `macos-latest`, and `macos (engine: loader, core, conformance)` runs those
-three crates' release tests there. Each of these Rust jobs feeds the `rust` gate: failed, skipped or
+archive; `engine doctests` runs doctests. These Rust jobs feed the `rust` gate: failed, skipped or
 cancelled jobs fail it, except that the repeats may be skipped when `changed packages` lists no
 crate. Since 152 the engine jobs depend on its build alone, so a package or experiment cannot skip
 them. Once a day and on request, [nightly.yml](../../.github/workflows/nightly.yml) runs the
-engine's tests with npm and the vectors on the differential build. 068 built CI (#198); since 070
+engine's tests with npm and the vectors on the differential build. Since 223, it also runs the
+macOS jobs from order 187. `macos (directory)` runs clippy and release tests for each package on
+`macos-latest`. `macos (engine: loader, core, conformance)` runs those three crates' release tests
+there. 068 built CI (#198); since 070
 (#240) engine shards take 1 to 8 minutes, down from 12 to 38. No check is required on `main` by a
 branch setting. The admin decides what to fix, reorder or put to the owner.
 

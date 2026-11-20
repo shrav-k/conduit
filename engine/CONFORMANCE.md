@@ -165,6 +165,18 @@ is demonstrated by these tests.
 
 ## I3-04: standalone Agent adapters
 
+The Agent packages on `main` are 0.2.0. They export the original `.v1` Types unchanged and
+the `.v2` Types with each Agent's own home, `signIn` and the account, sign-out, sign-in and
+retire hooks. The items are plain ([ruling 86](../docs/proposals/ruling-86/README.md), point 1).
+The package reads use Claude Code 2.1.318 and Codex 0.167.1 for sign-in, account and logout.
+Codex turns still launch against the 0.167.0 baseline. The sign-in and account hooks were
+built against scripted clients. A5's Codex check and the Claude Code scratch sign-in are
+the real-client checks for those hooks, both at the
+[live check sitting](../experiments/027-a5-sign-in/README.md#amendment-of-2026-11-19-the-live-check-as-it-runs).
+The `.v2` Types' turns have also run against real clients in the dogfood ([ruling 70][r70]).
+
+The rest of this section records the standalone adapters as first built for `.v1`.
+
 The first build uses the independently buildable packages under packages/agent-claude-code
 and packages/agent-codex. Their Types use plain tool mappings (PKG-020): turn.v1 maps to turn,
 marked startsModelWork. The single wrapper per Agent starts no native client at setup and
@@ -441,11 +453,13 @@ what a statement says changes the statement ([order 183][wo183]).
   account, and where that check finds no account or another or ends failed or unknown dispatches a
   `sign-in-hook.v1` part, relays its URL elicitation and signs the instance in once a poll on the
   person's retry finds the expected account (orders 048a-5d and 048a-5ef; row DL18 in "Choices still required").
-- The Agent packages on `main` are 0.1.1: their Types, `claude-code.v1` and `codex.v1`, keep the
+- The Agent packages on `main` are 0.2.0. They export `claude-code.v1` and `codex.v1` unchanged,
+  and export the `.v2` Types with each Agent's own home, `signIn` and the account, sign-out,
+  sign-in and retire hooks on plain items (I3-04). The `.v1` Types keep the
   client's own tools off apart from the remaining tools and reach inputs stated below; neither
   states `toolsDirectory`, so inspection reports `ownTools` with `stated: false` (I3-04; I4-02;
-  LIF-013). The `.v2` Types turn own tools on and remain on the unmerged branches of orders 050a and
-  076; the dogfood engine runs them ([ruling 70][r70]; [work orders][orders], "Running the orders
+  LIF-013). The `.v2` Types turn own tools on, and the dogfood engine runs them
+  ([ruling 70][r70]; [work orders][orders], "Running the orders
   through Conduit").
 
 ### What v0 claims

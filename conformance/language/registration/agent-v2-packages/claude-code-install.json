@@ -1,0 +1,11 @@
+{
+  "name": "contracts.tar.gz",
+  "address": "example.org/conduit/agent-claude-code",
+  "version": "0.2.0",
+  "digest": "sha256:826054c424ee89061a2858204fcb26617abe088abde73cf38cfd986c8bf4fbdb",
+  "directory": "file:///pinned/claude-code/",
+  "completion": {
+    "status": "complete",
+    "file": "claude-code-archive"
+  }
+}

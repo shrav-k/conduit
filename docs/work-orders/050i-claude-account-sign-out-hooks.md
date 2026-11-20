@@ -869,3 +869,110 @@ verifier and a fresh read-only Opus reader read the result before the checkpoint
 79](../proposals/ruling-79/README.md), point 2). The local gate that [ruling
 80](../proposals/ruling-80/README.md) has a merge wait on, `tools/gate.py`, runs at order 050n's
 merge, read with the expected engine failure known.
+
+## Record
+
+Run on 2026-11-19, from about 03:16 to 03:40 UTC, on the Windows computer (WSL2, Linux x86_64),
+from `wo/050-lane-claude` at `7bf4cb47` (order 050h's last shoulds), in two rounds: the worker
+(657 s) and a fresh Codex verifier (266 s), then the worker again (293 s) and a second fresh Codex
+verifier (238 s). The change is the seven files of Scope. The `wrapper-v2` item implements
+`account-hook.v1` and `sign-out-hook.v1`, mapped to the tools `account` and `sign-out`;
+`src/lib.rs` gains the one line `pub mod sign_in;`; the new `src/sign_in.rs` holds decision 2's
+code: the account hook checks the home, runs `claude auth status` in the client directory alone,
+reads at most 65,536 bytes under a 30-second deadline and answers the top-level `email` of a JSON
+object whose `loggedIn` is true, or null where it is false on exit 1; the sign-out hook stops the
+client first, ends a running conversation and runs order 050h's logout unchanged. `src/main.rs`
+lists both tools on a `.v2` wrapper and rejects arguments; the scripted client gains a status;
+`tests/wrapper.rs` gains five tests (23); the README gains `## The .v2 account and sign-out hooks`.
+In both rounds the wrapper passed 23 tests, the library 2 and the package test 1, decision 7's
+registration gave `accepted: true` with no diagnostic, and the mutation of "Done when" failed at
+the expected assertion and passed after the restore; the host archive's digest was
+`9f8f3756...e099` both times. The worker marked decision 6 as the nearest sound reading in round 1
+and as written in round 2. Its own choices: in round 1, table-driven error cases, the login's bytes
+checked without printing them, and cargo run offline; in round 2, in answer to the first verifier,
+a status-descendant mode in the scripted client (a check inside `status-hang` that spawns
+`fixture-status-descendant` when the test has bound its socket, and a new argument branch), and
+assertions added inside the prescribed tests: a valid status padded to 65,536 and 65,537 bytes, a
+deadline with a conversation running whose descendant must exit and whose conversation then takes
+another turn without a restart, and stdio calls that fail the status and the logout with a
+synthetic login present. The worker reported decisions 4 and 5 as written; these additions are its
+own choices under them (R2 below).
+
+The first verifier found no must and six shoulds: the README said that any missing named directory
+keeps the status from starting, where a directory refused at startup leaves the status in the
+wrapper's working directory; the README promised that a failure before the logout leaves the login
+in place, though stopping a running client comes first; the oversized-output case could pass under
+a silent truncation; the deadline case did not check that a running conversation survives and the
+status's own group is killed; no stdio call captured a hook failure after the client had emitted
+canaries; and round 1's report carried a local directory prefix in its package line. Round 2
+answered each, as above, and wrote the package line with a placeholder for the directory. The
+second verifier found no must and three shoulds: the sign-out test with a running conversation
+would pass if sign-out marked the session failed and logged out while the conversation's process
+still lived; the account tests would pass if the status inherited logout's directory fallback, with
+no case that removes an accepted directory before an account call; and the README does not say that
+the deadline's failure takes precedence over an oversized output when the client has not exited.
+
+A fresh read-only Opus reader then read the result on the Mac (macOS, arm64; ruling 79, point 2), on
+the branch at `28c04902` on `7bf4cb47`. `check_docs`, `check_private_paths` and `set_names --check`
+gave Errors: 0, and `git diff --check` was clean, also against the base; the diff held the seven
+files of Scope, the files that must not change were unchanged, every count of "Done when" printed
+what the order says and its script printed `True True True True`. Formatted with rustfmt, decision
+2's code block was identical to `src/sign_in.rs`. `cargo fmt --check` (on a scratch copy) and
+`clippy -D warnings` were clean; `cargo test --release` gave the library's 2, the package test 1
+and 23 wrapper tests passed, 0 failed, and the five new tests printed what the worker reported. The
+host archive's digest was `183f938a...b6da`, a host build's. The mutation failed at
+`tests/wrapper.rs:2455` (the second `account()` gave `Some("synthetic-claim-canary")`) and passed
+after the restore, `cmp` silent. With an engine built on the Mac and a fresh store, decision 7's
+registration gave `accepted: true` with no diagnostic. A scan of the added lines found no private
+detail, and both commits had the work-order identity. It found no must and three shoulds:
+
+- R1: the README's new section departs from decision 6: its sign-out failure sentence used the
+  test fixture's wording in place of the order's, and named the wrapper, not the hook; it dropped
+  "unlike the retire hook" and, from the did-not-start item, "unlike the sign-out hook's logout";
+  its two source links stood on lines of their own, not inline; and it used curly quotes, which the
+  README at the base does not.
+- R2: round 2's status-descendant mode in the scripted client goes beyond decision 4's "Nothing
+  else in the file changes", and its added assertions beyond decision 5's cases, though the worker
+  reported both as written; they are sound and test decision 2's kill of the status's group alone.
+- R3: round 1's worker report holds a local directory path in its package line, which the Record
+  must not carry.
+
+The fixer kept the branch on `wo/050-lane-claude` at `7bf4cb47`, without a rebase, and applied
+each finding:
+
+- R1: in the README, the did-not-start item adds ", since the status, unlike the sign-out hook's
+  logout, runs in the client directory alone"; the paragraph after the sign-out hook's steps reads
+  "The sign-out hook keeps the home and every other entry in it, unlike the retire hook. Its
+  failures are the retire hook's logout failures. The hook itself removes nothing before the
+  client's logout runs, so a failure before the logout starts leaves the login in place; after a
+  failed or timed-out logout, the account hook reports whether a login remains."; the sources open
+  "Claude Code's CLI reference, section "CLI commands", read on 2026-11-18, says that" and "A5's
+  stage 0 recorded Claude Code 2.1.318", each with its link inline as decision 6 has it, and the
+  two standalone link lines are gone; the README holds no curly quote. Decision 6 stands as the
+  nearest sound reading, with these changes, not as written.
+- R2: no code change; the status-descendant mode and the added assertions stand as the worker's
+  own round-2 choices under decisions 4 and 5, made in answer to the first verifier, open to the
+  coordinator's strike, which would drop the mode and the deadline case with a running
+  conversation.
+- R3: this Record gives each package line as the archive's file name and digest alone:
+  `agent-claude-code.tar.gz#9f8f3756...e099` from the Linux worker, and `183f938a...b6da` from the
+  Mac, a separate host build.
+
+The second verifier's three shoulds, which the reader did not carry (the sign-out test's check
+that the conversation's process stopped before logout, an account case whose accepted directory is
+removed before the call, and the precedence of the deadline over an oversized output), stay open
+for the coordinator. The fixer then ran on the Mac, from the worktree's root, on the files of this
+commit before it was made: every count of "Done when" against `wo/050-lane-claude` (each printed
+what the order says, the status count read as `git diff --name-status`, which listed the seven
+files of Scope and, once the Record was added, this order file), its script under
+`/usr/bin/python3` (`True True True True`), `check_docs`,
+`check_private_paths` and `set_names --check` (Errors: 0 each), `git diff --check` and
+`git diff --check wo/050-lane-claude...HEAD` (clean). In `packages/agent-claude-code/`, one cargo
+command at a time with `RUST_TEST_THREADS=4`: `cargo fmt --check` (exit 0),
+`cargo clippy --all-targets -- -D warnings` (clean), `cargo test --release` (the library's 2, the
+package test 1 and 23 wrapper tests passed, 0 failed),
+`cargo test --release --test wrapper -- v2_account v2_sign_out` (5 passed) and
+`cargo run --release --bin package` (`183f938a...b6da`, the reader's). The mutation of "Done when"
+failed at `tests/wrapper.rs:2455` with `Some("synthetic-claim-canary")` and passed after the
+restore, `cmp` silent. The engine's tests were not run, as the order says. The gate's run on this
+order's squash is the coordinator's, at order 050n's merge.

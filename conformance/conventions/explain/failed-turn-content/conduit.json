@@ -1,0 +1,19 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "address": "example.org/conformance/failed-turn",
+  "implementations": {
+    "scripted-turn": {
+      "plain": true,
+      "implements": [
+        "#turn.v1"
+      ],
+      "tools": {
+        "#turn.v1": "turn"
+      },
+      "remote": {
+        "type": "streamable-http",
+        "url": "https://scripted.invalid/mcp"
+      }
+    }
+  }
+}

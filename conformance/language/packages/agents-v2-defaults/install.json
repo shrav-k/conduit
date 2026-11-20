@@ -2,7 +2,7 @@
   "name": "agents-0.2.0.tar.gz",
   "address": "example.org/s1/agents",
   "version": "0.2.0",
-  "digest": "sha256:8f151f36064055c6e19599e36e6bd26281d6f84f88c6f8d0b9ec79d5543008bc",
+  "digest": "sha256:09e985481081192fc23ffd518273c21245765afcb8db5a6ad1b467c156664159",
   "directory": null,
   "completion": {
     "status": "complete",

@@ -1,7 +1,7 @@
 # Live S1 project
 
-This is S1's fixture project with independently packaged Claude Code and Codex Types. Both
-reach inputs are false on each Agent template. `turn-a` and `turn-b` authorize the root
+This is S1's fixture project with the Claude Code and Codex packages at 0.2.0. It uses their
+`.v1` Types with both reach inputs false on each Agent template. `turn-a` and `turn-b` authorize the root
 Interface to request explicit model turns; setup itself starts none.
 
 The `s1` Fleet owns both Agents (FLEET-002). Submission sets up the Fleet before its

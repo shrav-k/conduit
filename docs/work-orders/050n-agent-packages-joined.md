@@ -633,3 +633,182 @@ coordinator turns IN_FORCE.md's *Spec pending, order 050* lines into pointers to
 updates A5's and A78's rows, tells the owner whether anything else the S1 rerun's pin waits for has
 not merged (ruling 89, point 7), and puts order 203 on this order's tree. This order's Record is
 written at its foot at the merge.
+
+## Record
+
+Run on 2026-11-20, from about 00:08 to 00:41 UTC, on the Mac from `4d57724b`, the tip of the
+coordinator's join of the Codex and Claude Code lanes, in one round ([ruling
+87](../proposals/ruling-87/README.md), point 1): the worker (1584 s) and a fresh Codex verifier
+(350 s). It was not paired: A77's pairing is paused until this order merges (ruling 89, point 6).
+The change is 51 files, all in Scope. Both packages' sign-in hooks append ` (PND-010)` to a start
+failure that lacks it, after any stop note, and their tests check the shared configuration and home
+refusals through sign-in, account and turn (decision 2; `PND-010` in the wrapper tests went from 6
+to 12 for Claude Code and from 2 to 9 for Codex). The Codex README takes decision 3's proxy
+sentence, the 600-second login limit and the logout statement read from the source. The engine pins
+0.2.0: the fixture copies and their archives, `engine/examples/s1/conduit.yaml`, the live
+registration fixture and the shell test, with S1 still on the `.v1` Types (decision 4). The S1
+`.v2` fixture carries `schema`, `requires` and `signIn` as the packages state them (decision 5).
+Decision 6's four cases are new: `registration-agent-v2-packages` (CTR-013, PKG-020),
+`registration-agent-v2-account-binding` (MAN-017), `registration-agent-v2-account-hook-missing`
+(TPL-005) and `explain-failed-turn-content` (IFC-025). Decision 7's check found 14 sentences in each
+description. `engine/CONFORMANCE.md` and `docs/guides/accounts.md` take decision 8's texts, and the
+standing table and `050n-declared.yaml` decision 9's (vector delta: 71 changes; 0 flips; 0
+undeclared; 0 errors). The worker's whole engine suite passed with 400 passed, 0 failed and 4
+ignored, `live_s1_scripted_agents_call_engine_with_distinct_run_identities` among them; each
+package's wrapper target had one failure, `v2_client_tree_stop_leaves_no_survivor`, because its
+sandbox denied PID-scoped `ps`. Its own choices: the suffix applied at the hook's boundaries, a
+synthetic Codex archive with the unused `.v1` default removed so that it installs and is refused
+under TPL-005 alone (finding 050n-1), and a synthetic read-only `turn.v1` for the IFC-025 case,
+since the released `turn.v1` starts model work and IFC-010 makes its plain error unknown (finding
+050n-2). It also found that after retirement Claude Code reaches its home checks before the closed
+client tree refuses the start (050n-3), and that the Q1 answer's six sentences are 14 in each
+description (050n-4).
+
+The verifier found one must: a Codex retry after retirement gained the ` (PND-010)` suffix, against
+decision 2's rule that the retry path's texts stay as they are. It found six shoulds: the IFC-025
+case leaves the released `turn.v1` shape untested; the shape case does not project
+`toolsDirectory`; it does not assert that the released items have no `keyed` member; the guide
+promises the unanswered count after every command; the guide's Codex bullet omits how a browser on
+another machine completes the sign-in; and the guide presents vendor revocation as certain.
+
+A fresh read-only Opus reader then read the order on the branch before its rebase, warm, in the
+worktree at `009c070f` (ruling 79, point 2). It ran the eight Python checks (Errors: 0 each),
+`vector_delta.py` (71 changes; 0 flips; 0 undeclared; 0 errors), `git diff --check`, the order's
+greps and comparisons (each as stated), `make_archives --check` (42 fixtures verified), the six
+added or changed cases (PASS), the shell `agents` target (2 passed, 2 ignored), engine fmt and
+clippy, and each package's fmt, clippy and whole suite on the Mac (Codex wrapper 30/0, Claude Code
+wrapper 29/0, `v2_client_tree_stop_leaves_no_survivor` passing in both, which discharges the rerun
+the worker owed). Decision 2's mutation failed at the new assertions in both packages (Codex 2
+passed, 3 failed; Claude Code 3 passed, 2 failed), each restored with `cp` and checked with `cmp`.
+It did not rerun the whole engine suite, since no engine source changed. It refuted two of the
+verifier's shoulds: the absence of a `keyed` item is pinned by the byte-identical copies and the
+unchanged package contracts, and the guide words revocation as decision 8 requires. It found one
+must and four shoulds:
+
+- R1 (must): the Codex hook maps every readiness refusal through the suffix, so a retry or a return
+  on a retired session, a `.v1` Agent or a refused configuration answers with ` (PND-010)`, though
+  it starts no login; the README's row stated the changed text for every call. This confirms the
+  verifier's must.
+- R2: the IFC-025 case reaches outcome failed only through a synthetic `turn.v1`; the released
+  Types' failed turn, which is unknown (ruling 86), stays unshown.
+- R3: the guide says the count is printed after every command, where the CLI prints it only while
+  it is above 0, and leaves out decision 8's "not as an error".
+- R4: the guide's Codex bullet no longer says how a sign-in from a browser on another machine
+  completes.
+- R5: the shape case does not project `toolsDirectory`, which the targeted review's item 1 lists
+  for both Types.
+
+The fixer left the branch on `4d57724b`, for the coordinator to rebase onto order 214's merge, and
+applied each finding:
+
+- R1: `sign_in_within` computes `starts`, true only for a call with no request state that is not a
+  return, and maps the readiness refusal through `sign_in_start_failure` only then, keeping the
+  check order. The new test `v2_sign_in_retry_after_retirement_keeps_its_text` retires a `.v2`
+  session and checks that a retry and a return each answer `RETIRED_REFUSAL` exactly. The README's
+  row splits into "on a call that starts a login", with the suffix, and "on a retry or a return",
+  without it.
+- R2: a new case, `explain-failed-model-turn-content` (IFC-025, and IFC-010 from the reread's R2-2,
+  below), in `conformance/conventions/explain/failed-model-turn-content/` and the directory's
+  `index.yaml`, copies the released `turn.v1` (`startsModelWork` true and the packages'
+  `outputSchema`) and the same two-block failed completion. It expects outcome unknown, `isError`
+  true, the engine's block `unknown: ...` under IFC-010 and both blocks unchanged after it. One step
+  differs from the reader's text: the engine's result carries `structuredContent` with the IFC-010
+  error diagnostic alone, as IFC-025 allows ("none of the operation's outputs, `diagnostics`
+  apart"), so the case asserts that diagnostic and the absence of `/reply/structuredContent/text`
+  and `/reply/structuredContent/clientTools`, where the reader asked for `structuredContent` absent.
+  The case is declared among the added cases of `050n-declared.yaml`, and `engine/STANDING.md` was
+  rewritten by its tool (IFC-025: 35 to 36 cases).
+- R3: the guide's sentence now reads, verbatim from the reader's fix, "After each command except
+  `conduit pending`, while any remain, the engine prints how many pending actions at root are still
+  unanswered. During the first sign-ins, read that number as the sign-ins you still have to do, not
+  as an error."
+- R4: the Codex bullet gains, verbatim, "If that browser is on another machine, the sign-in
+  completes only through your own SSH forward of the login's loopback port on the engine's machine;
+  Conduit carries no return in 0.2.0."
+- R5: both Type projections of `registration-agent-v2-packages` carry
+  `"toolsDirectory": {"directory": "/directory"}` beside `signIn`. The case is added by this order,
+  so no expectation edit needed declaring.
+
+Each fix taken out failed its check: R1's `starts` set to true failed the new test (5 passed, 1
+failed); R2's nested absence, pointed at `diagnostics`, failed the case; and R5's directory changed
+to another value failed the shape case at `toolsDirectory/directory`. Each was restored by `cp` and
+checked by `cmp`. The fixer then ran, in the worktree: in `packages/agent-codex/`, `cargo fmt
+--check` (clean), `cargo clippy --all-targets -- -D warnings` (clean) and `cargo test --release`
+(lib 2/0, manifest 1/0, package 1/0, wrapper 31/0); decision 2's mutation there again (3 passed, 3
+failed, at the configuration, refusal and wrapper-tool assertions; restored, 6 passed, `cmp`
+clean); in `engine/`, `cargo fmt --check` (clean), the cases `explain-failed` and
+`registration-agent-v2` (2 and 3 cases passed) and `cargo test --release -p conduit-conformance`
+(no failure); and from the root the eight Python checks (Errors: 0 each), `vector_delta.py
+4d57724b WORKTREE` (72 changes; 0 flips; 0 undeclared; 0 errors) and `git diff --check` (clean).
+The Claude Code package and the engine's sources are unchanged by the fixer. The whole engine
+suite, the rebase onto order 214's merge and the gate's run on the squash are the coordinator's.
+
+Before the merge, on 2026-11-20, the branch was rebased onto `main` at `fc1c54a6`, which holds order
+214's merge (`a6dcd98b`: the sign-in hook's call names the baseline revision), ruling 91 and order
+211, with the fetch, the rebase and the check that `main` is an ancestor in one command, and every
+commit by the neutral author and committer. Its 47 commits replayed with no conflict: of the 13
+files `main` changed since the branch's base, only `engine/CONFORMANCE.md` is also changed here, in
+other sections, and the rebased tree differs from `0bc33ffe`'s by `main`'s changes alone. Both
+packages are still the lanes' tips with this order's changes alone: under this order's commits,
+`packages/agent-claude-code/` equals the Claude lane's tip `f1ede6a5`, and `packages/agent-codex/`
+the Codex lane's tip `1ee93ee0` (its sibling `03b33819`, which differs from it only in order 050h's
+file, holds the same package), so the diff limited to each package is exactly what decisions 2 and 3
+and R1's fix changed.
+
+A second fresh read-only Opus reader read the fixed branch at `0bc33ffe`, before the rebase, and
+found no must and two shoulds, both applied as their fixes state:
+
+- R2-1: R1's fix split only the retirement row of the Codex README, though a retry or a return now
+  keeps the `.v1` and refused-configuration texts too. The README's sentence now says that the
+  shared refusals gain ` (PND-010)` on a call that starts a login and that a retry or a return keeps
+  their texts; the `.v1` and configuration rows say "on a call that starts a login"; and a new row
+  gives a `.v1` Agent or a refused configuration, on a retry or a return, the same text without the
+  suffix. The code was right and is unchanged.
+- R2-2: `explain-failed-model-turn-content` asserts IFC-010's unknown outcome and its diagnostic, so
+  its promises, in the case and in the directory's `index.yaml`, list IFC-010 after IFC-025.
+  `promise_standing.py --write` changed IFC-010's count alone, from 26 to 27 cases, and R2's item
+  above cites it.
+
+Order 214 changes only the sign-in hook's call: the core writes
+`io.modelcontextprotocol/protocolVersion` 2026-07-28 into its `_meta`, on the first call and on
+every re-send, plain or keyed, while every provider session still opens with the legacy handshake.
+Read against "What 209 to 048b-join built", nothing this order relies on reads differently. The
+refusal of a named login before any part, the going on after a failed check and DL18's end are
+untouched. The relay of the hook's URL request, which both READMEs state, now holds for an rmcp
+3.9.0 server, the version both packages lock; before order 214 such a server refused that result on
+the legacy session. No decision is added. The packages' own sign-in tests negotiate 2026-07-28 by
+discovery, not by the engine's route, which on this branch only order 214's stand-in test shows
+(`sign_in_relays_url_from_rmcp_stdio_provider`); the route through the 0.2.0 wrappers themselves
+waits for the coordinator's dry run, which order 214's merge says is repeated against the real
+wrappers after it.
+
+Then, warm in the worktree, with `RUST_TEST_THREADS=4`: in each package, `cargo fmt --check` and
+`cargo clippy --all-targets -- -D warnings` (clean), `cargo test --release` (Codex: lib 2/0,
+manifest 1/0, package 1/0, wrapper 31/0; Claude Code: lib 2/0, package 1/0, wrapper 29/0), its
+sign-in tests alone (`--test wrapper v2_sign_in`: Codex 6 passed, Claude Code 5 passed) and `cargo
+run --release --bin package` (a host build's digest, not a pin); in `engine/`, `cargo fmt --check`
+(clean), `make_archives -- --check` (42 reproducible archive fixtures verified), the shell `agents`
+target (2 passed, 0 failed, 2 ignored,
+`live_s1_scripted_agents_call_engine_with_distinct_run_identities` among the passed), order 214's
+runner and core tests (each passed), the cases `explain-failed` (2 passed), `cargo test --release -p
+conduit-conformance` (no failure), `cargo clippy --all-targets -- -D warnings` (clean) and the whole
+suite once (402 passed, 0 failed, 5 ignored); from the root, the eight Python checks (Errors: 0
+each), `vector_delta.py` from the rebased commit under this order's (72 changes; 0 flips; 0
+undeclared; 0 errors), the order's greps and comparisons with that commit as `HEAD` (each as stated,
+but for this order's own file, which holds this Record), and `git diff --check` (clean).
+`tools/gate.py --derive-private-names`, run against `origin/main` as the merge queue runs it, on the
+commit before this paragraph was added, ended `Gate: PASS. 24 passed; not run: rust unreached.` and
+the path of its record. The live check's pass, the squash, the gate's run on it and the merge are
+the coordinator's.
+
+The live check's pass: before the merge the branch was rebased again, onto `main` at `4cba49d4`,
+which merged the live check's dated result,
+`experiments/027-a5-sign-in/results-2026-11-19-1-step-1.md` (#440), with A5's row; `main` changed
+only documents since the previous base. The result reads pass, and its line ``Codex step outcome:
+**pass**, Type `codex.v2`, package `example.org/conduit/a5-stage-1-check`.``, set as `PASS_LINE`
+in the start check's last line and run against `origin/main` after a fetch, printed 1.
+`packages/agent-codex/` at the Codex lane's tip equals the package commit the result records
+(`34f4e662`); the branch changes it only by this order's decisions 2 and 3 and the reads' fixes
+(R1, R2-1), which touch failure texts, a README and how long an unfinished login waits (900 to 600
+seconds), not the route the check ran. The coordinator judges that the pass stands for the tree
+joined here, open to the owner's strike (ruling 82, point 1).

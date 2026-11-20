@@ -74,12 +74,34 @@
         "default": false,
         "type": "boolean"
       },
+      "directory": {
+        "default": null,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "effort": {
+        "default": "",
+        "type": "string"
+      },
       "model": {
         "default": "",
         "type": "string"
+      },
+      "turnDeadlineSeconds": {
+        "default": 180,
+        "maximum": 604800,
+        "minimum": 1,
+        "type": "integer"
       }
     },
     "required": [
+      "directory",
+      "turnDeadlineSeconds",
+      "effort",
+      "accountServices",
+      "model",
       "account"
     ],
     "type": "object"

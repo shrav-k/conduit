@@ -80,7 +80,12 @@
         "inputs": false,
         "outputs": false
       },
-      "requires": [],
+      "requires": [
+        "github.com/shrav-k/conduit/core#sign-in-hook.v1",
+        "github.com/shrav-k/conduit/core#account-hook.v1",
+        "github.com/shrav-k/conduit/core#sign-out-hook.v1",
+        "github.com/shrav-k/conduit/core#retire-hook.v1"
+      ],
       "schema": {
         "additionalProperties": false,
         "properties": {
@@ -94,6 +99,17 @@
             "default": false,
             "type": "boolean"
           },
+          "directory": {
+            "default": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "effort": {
+            "default": "",
+            "type": "string"
+          },
           "model": {
             "default": "",
             "type": "string"
@@ -101,12 +117,49 @@
           "peerMessaging": {
             "default": false,
             "type": "boolean"
+          },
+          "turnDeadlineSeconds": {
+            "default": 180,
+            "maximum": 604800,
+            "minimum": 1,
+            "type": "integer"
           }
         },
         "required": [
+          "directory",
+          "turnDeadlineSeconds",
+          "effort",
+          "accountServices",
+          "model",
+          "peerMessaging",
           "account"
         ],
         "type": "object"
+      },
+      "signIn": {
+        "account": "/account",
+        "logins": [
+          {
+            "authorization": "https://claude.com/cai/oauth/authorize",
+            "carried": false,
+            "clientId": "9d1c250a-e61b-44d9-88ed-5944d1962f5e",
+            "name": "browser",
+            "redirect": {
+              "host": "localhost",
+              "path": "/callback",
+              "ports": "any"
+            },
+            "return": "redirect"
+          },
+          {
+            "authorization": "https://claude.com/cai/oauth/authorize",
+            "carried": false,
+            "clientId": "9d1c250a-e61b-44d9-88ed-5944d1962f5e",
+            "name": "code-page",
+            "page": "https://platform.claude.com/oauth/code/callback",
+            "return": "page"
+          }
+        ]
       }
     }
   },
@@ -125,7 +178,12 @@
         "inputs": false,
         "outputs": false
       },
-      "requires": [],
+      "requires": [
+        "github.com/shrav-k/conduit/core#sign-in-hook.v1",
+        "github.com/shrav-k/conduit/core#account-hook.v1",
+        "github.com/shrav-k/conduit/core#sign-out-hook.v1",
+        "github.com/shrav-k/conduit/core#retire-hook.v1"
+      ],
       "schema": {
         "additionalProperties": false,
         "properties": {
@@ -139,15 +197,64 @@
             "default": false,
             "type": "boolean"
           },
+          "directory": {
+            "default": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "effort": {
+            "default": "",
+            "type": "string"
+          },
           "model": {
             "default": "",
             "type": "string"
+          },
+          "turnDeadlineSeconds": {
+            "default": 180,
+            "maximum": 604800,
+            "minimum": 1,
+            "type": "integer"
           }
         },
         "required": [
+          "directory",
+          "turnDeadlineSeconds",
+          "effort",
+          "accountServices",
+          "model",
           "account"
         ],
         "type": "object"
+      },
+      "signIn": {
+        "account": "/account",
+        "logins": [
+          {
+            "authorization": "https://auth.openai.com/oauth/authorize",
+            "carried": true,
+            "clientId": "app_EMoamEEZ73f0CkXaXp7hrann",
+            "issuer": "https://auth.openai.com",
+            "name": "browser",
+            "redirect": {
+              "host": "127.0.0.1",
+              "path": "/auth/callback",
+              "ports": [
+                1455,
+                1457
+              ]
+            },
+            "return": "redirect"
+          },
+          {
+            "authorization": "https://auth.openai.com/codex/device",
+            "clientId": "app_EMoamEEZ73f0CkXaXp7hrann",
+            "name": "device",
+            "return": "device"
+          }
+        ]
       }
     }
   },

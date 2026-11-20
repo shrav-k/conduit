@@ -1,0 +1,13 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "packages": {
+    "example.org/conduit/agent-claude-code": {
+      "version": "0.2.0",
+      "digest": "sha256:826054c424ee89061a2858204fcb26617abe088abde73cf38cfd986c8bf4fbdb"
+    },
+    "example.org/conduit/agent-codex": {
+      "version": "0.2.0",
+      "digest": "sha256:a0a6153787ec497a23ea36085686aecb7517c67a9f4caeb16919029fa7067518"
+    }
+  }
+}

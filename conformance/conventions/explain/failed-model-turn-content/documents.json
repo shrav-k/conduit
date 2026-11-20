@@ -1,0 +1,186 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Operation",
+    "metadata": {
+      "name": "turn.v1"
+    },
+    "spec": {
+      "startsModelWork": true,
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "clientTools": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "reported",
+                  "not_reported",
+                  "unavailable"
+                ]
+              },
+              "observations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "event": {
+                      "type": "integer"
+                    },
+                    "pointer": {
+                      "type": "string"
+                    },
+                    "freshness": {
+                      "type": "string",
+                      "enum": [
+                        "current",
+                        "session_init_unverified"
+                      ]
+                    },
+                    "reportedNames": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "names": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "pointer",
+                    "names",
+                    "reportedNames",
+                    "freshness"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "status",
+              "observations"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "text",
+          "clientTools"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Capability",
+    "metadata": {
+      "name": "conversation.v1"
+    },
+    "spec": {
+      "operations": [
+        "#turn.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "scripted-agent.v1"
+    },
+    "spec": {
+      "family": "Agent",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "offers": [
+        "#conversation.v1"
+      ],
+      "requires": [],
+      "implementation": {
+        "#turn.v1": "#scripted-turn"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Agent",
+    "metadata": {
+      "name": "agent-template"
+    },
+    "spec": {
+      "type": "#scripted-agent.v1",
+      "config": {}
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Fleet",
+    "metadata": {
+      "name": "fleet"
+    },
+    "from": "github.com/shrav-k/conduit/core#fleet"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Agent",
+    "metadata": {
+      "name": "agent"
+    },
+    "from": "agent-template",
+    "owner": "fleet"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "turn"
+    },
+    "spec": {
+      "capability": "#conversation.v1",
+      "operations": [
+        "#turn.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "root-turn"
+    },
+    "from": "turn",
+    "consumer": {
+      "kind": "Interface",
+      "name": "root"
+    },
+    "target": {
+      "kind": "Agent",
+      "name": "agent"
+    }
+  }
+]

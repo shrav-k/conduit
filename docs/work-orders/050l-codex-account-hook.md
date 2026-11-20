@@ -1022,3 +1022,125 @@ gate that [ruling 80](../proposals/ruling-80/README.md) has a merge wait on, `to
 order 050n's merge, read with the expected engine failure known. No archive built from this lane is
 installed as `codex.v2` anywhere; the coordinator builds `codex-account-check.v1` from the lane's
 tip, after order 050m, only in A5's scratch state directory, as experiment 027 pre-registers.
+
+## Record
+
+Run on 2026-11-19, from about 03:15 to 03:47 UTC, on the Mac (macOS, Darwin 25.6.0, arm64), from
+`wo/050-lane-codex` at `7bf4cb47` (order 050h's last shoulds). It ran in two rounds: the worker
+(906 s) and a fresh Codex verifier (292 s), then the worker again (365 s) and a second fresh Codex
+verifier (275 s). The change is the seven files of Scope. `codex.v2` requires
+`github.com/shrav-k/conduit/core#account-hook.v1` and `#sign-out-hook.v1` before the retire hook
+and defaults both to `#wrapper-v2`; each `.v2` item implements both and maps them to the tools
+`account` and `sign-out`. `src/lib.rs` gains the account hook, which starts
+`codex app-server --stdio -c cli_auth_credentials_store="file"` with the Agent's own home, asks
+`initialize` and then `account/read` with `refreshToken` false under one `ACCOUNT_DEADLINE` (30 s)
+for the two steps, answers decision 3's report or one of its fixed texts, and stops the app-server's
+group alone with the new `ClientTree::stop_group`; the sign-out hook, which stops the client's tree
+and runs order 050h's logout, keeping the home; and `record_group`. `src/main.rs` lists `account`
+and `sign-out` after `retire` on a `.v2` wrapper; the scripted client gains a scripted app-server;
+`tests/wrapper.rs` gains five tests (23); the README gains `## The .v2 account and sign-out hooks`.
+The worker's own choices: the scoped stop reuses `TreeState::find` and the identity-checked
+delivery, which moved the whole-tree stop's group signal into `SignalDelivery::signal` with no
+change of behaviour (code of orders 050d and 050e); the stdio test compares whole reply objects; a
+temporary Python driver read the registration replies; and, in round 2, a `delayMs` script member,
+a `shared-deadline` case and the hooks run between two turns, beyond decisions 6 and 7, all at the
+admin's request. In both rounds the worker's sandbox denied PID-scoped `ps`, so 22 of the 23
+wrapper tests passed and `v2_client_tree_stop_leaves_no_survivor` stopped at its preflight, as the
+order foresaw. The mutation failed at the `account-requests.jsonl` assertion and passed after the
+restore. Decision 9 gave R and P2 accepted with no diagnostic, N refused under MAN-017 on the `.v1`
+item's `AGENT_PEER_MESSAGING` binding, so TPL-005 for `account-hook.v1` stays unshown, and P1
+refused under TPL-019 with `v2-path-turn-and-retire: invalid number of run items`, which names
+neither item. The host digest was `10aa5908263154274cfeb0badbee009728b225ad05a7464905cffc1876025150`.
+
+The first verifier found three musts and four shoulds. The musts: the account read can change the
+stored login, since answering may refresh a ChatGPT login and rewrite the home's login file, though
+`account-hook.v1` states no effect (CTR-002); the hook closes stdin before the scoped stop's first
+reading, so an app-server that exits then lets a descendant in a new session reparent out of reach;
+and the order and README promise that a failed sign-out leaves the login, though Codex can fail
+after removing it. The shoulds: the other group's liveness check accepted an unreaped child; the
+launch arguments were compared only with the same helper the launch uses; the timeout cases would
+pass with a fresh deadline per step; and no test resumed a conversation after a hook. Round 2
+applied the four shoulds and left the three musts, which change prescribed text, to the
+coordinator. The second verifier kept those three musts and added a fourth, that the scoped stop
+starts its TERM and KILL timers before its first reading and signal; and three shoulds: an
+incomplete scoped stop discards the identities it found; the README states the release build's
+temporary-directory refusal without the source read's path-prefix condition; and the README ties
+every reported email to an ID token issued at sign-in, which the `chatgpt` tag does not establish.
+
+A fresh read-only Opus reader then read the result on the Mac (ruling 79, point 2), at `361e4e63`
+on `7bf4cb47`. Every line of "Done when" printed what the order says and its script printed its two
+lines; `check_docs`, `check_private_paths` and `set_names --check` gave Errors: 0 and
+`git diff --check` was clean; the tree held the seven files of Scope. On a scratch copy,
+`cargo fmt --check` and `clippy -D warnings` were clean and `cargo test --release` gave the
+library's 2, the manifest test 1, the package test 1 and 23 wrapper tests passed, with
+`v2_client_tree_stop_leaves_no_survivor` passing. The printed texts matched decision 3's table and
+decision 7's cases; the package's digest matched the worker's; the mutation failed at
+`tests/wrapper.rs:2314` and passed after the restore, `cmp` silent; and with an engine built on the
+scratch copy decision 9 gave the worker's replies. It found no must and five shoulds:
+
+- R1: the second verifier's descendant must. The hook drops stdin before `stop_group`'s first
+  reading, and on `Reply::Eof` waits up to `EXIT_WAIT` for the exit first; either lets the
+  app-server exit and its descendant in a new session reparent outside the stop's seeds, against
+  decision 3's "is found through its parent and stopped". Its step 4 prescribes the sequence.
+- R2: the timer must. Each phase of `stop_group` starts `STOP_GRACE` or `KILL_WAIT` before its first
+  reading and signal, where the whole-tree stop starts them after.
+- R3: the sign-out must. Decision 8's "A failed sign-out leaves the login for the next attempt." is
+  wrong where Codex fails after removing the credential or a logout is stopped at its deadline.
+- R4: the no-effect must. The route is the owner's (ruling 82, point 1), so 050l changes no code;
+  the conflict with CTR-002 needs the owner's decision before order 050m gives `codex.v2` `signIn`.
+- R5: this Record, with the build's departures and the reader's results.
+
+The fixer kept the branch on `wo/050-lane-codex` at `7bf4cb47`, without a rebase, and applied each
+finding:
+
+- R1: `read_account` runs `tree.stop_group` before it drops stdin, and in the `Reply::Eof` arm takes
+  one reading of the app-server's group, `scan_group(pid, start)`, before the `EXIT_WAIT` wait.
+  `stop_group` takes the identities that reading found as a third argument, `seen`, and starts its
+  own set from them, so a descendant reparented by the exit is still found; `scan_group` reads the
+  table seeded from that group alone, as `stop_group` does. This departs from decision 3's step 4
+  and from `stop_group`'s signature there, and is the coordinator's, open to the owner's strike. The
+  README's step 4 gains: "It closes the app-server's input only after that stop. If the
+  app-server's output ends first, it reads the tree once before waiting for the exit, so a
+  descendant reparented by the exit is still found." The scripted app-server gains a `detach`
+  member, which starts `sleep 60` in a new session and records its PID, an `exitOnEof` member,
+  which reads its input to the end and returns, and a read behavior `eof-exit`, which closes stdout
+  and exits 0 after 300 ms. `v2_account_hook_error_paths_hold_no_canary` gains two cases, so the
+  test count stays 23: `detached-eof` (the report of no account) and `detached-exit`
+  (`account hook (account/read): client exit: status 0`), each checking that the child in the new
+  session is gone. On the worktree, with the reading before the wait removed, `detached-exit`
+  failed with "the app-server's child in a new session outlived the account hook" and passed after
+  the restore. With stdin dropped before the stop again, `detached-eof` still passed in three runs,
+  since the stop's first reading beat the scripted app-server's exit; with 100 ms added between the
+  two it failed. So `detached-eof` guards the order only where the exit wins that race.
+- R2: each phase leaves its deadline unset until its first reading has signalled, then sets it with
+  `*until.get_or_insert_with(|| Instant::now() + grace)` and tests it from then on, as the
+  whole-tree stop does. No test times the phases.
+- R3: the README's sentence now reads "A failed sign-out may or may not have removed the login:
+  Codex can fail after removing it, and a logout stopped at its deadline can stop at any point. The
+  engine reads the outcome as unknown (IFC-010).", followed by the PND-011 sentence as before. This
+  departs from decision 8's text, on the reader's finding; decision 4's "a failed logout leaves the
+  login in place" stays as written above and is the coordinator's to amend.
+- R4: no change. Open, and it blocks order 050m: the coordinator puts to the owner whether to keep
+  the `account/read` route and amend the hook's no-effect reading, or to choose a route that cannot
+  persist a refresh.
+- R5: this Record.
+
+The second verifier's other three shoulds, which the reader did not carry (identities kept after an
+incomplete scoped stop, the temporary-directory condition, the email's provenance and CTR-013),
+stay open for the coordinator. The fixer then ran on the Mac, from the worktree, on the files of
+this commit before it was made: every line of "Done when" printed what the order says but the
+second, which printed 1 for this Record under `docs` alone; its script printed its two lines with a
+system Python that has PyYAML; `check_docs`, `check_private_paths` and `set_names --check` gave
+Errors: 0, and `git diff --check` and `git diff --check wo/050-lane-codex...HEAD` were clean. In
+`packages/agent-codex/`, one cargo command at a time with `RUST_TEST_THREADS=4`:
+`cargo fmt --check` (exit 0), `cargo clippy --all-targets -- -D warnings` (clean),
+`cargo test --release` (the library's 2, the manifest test 1, the package test 1 and 23 wrapper
+tests passed, 0 failed, `v2_client_tree_stop_leaves_no_survivor` among them),
+`cargo test --release --test wrapper v2_account` (4 passed) and `v2_sign_out` (1 passed), and
+`cargo run --release --bin package` (digest
+`584ac6ba37e0789ed3d978a5ed5f33dce7fb588b8ca0352d276c1ab361c022d5`, a host build's). The mutation
+failed at `tests/wrapper.rs:2331`, the `account-requests.jsonl` assertion, and passed after the
+restore, `cmp` silent. With the engine built in `engine/` and a temporary store outside the
+repository, removed afterwards, decision 9 gave R and P2 accepted with no diagnostic, N refused
+under MAN-017 and P1 under TPL-019 with the texts above. The engine's tests were not run, as the
+order says. The gate's run on this order's squash is the coordinator's, at order 050n's merge.

@@ -1,0 +1,9 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "packages": {
+    "example.org/conformance/codex-no-account-hook": {
+      "version": "0.2.0",
+      "digest": "sha256:cf95b5a6d4a61951a82e6514adb536604c8b9ee2fc2de61dacef6fe2810b0358"
+    }
+  }
+}

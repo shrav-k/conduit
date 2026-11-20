@@ -500,3 +500,178 @@ fresh Codex verifier and a fresh read-only Opus reader read the result before th
 ([ruling 79](../proposals/ruling-79/README.md), point 2). The local gate that
 [ruling 80](../proposals/ruling-80/README.md) has a merge wait on, `tools/gate.py`, runs at order
 050n's merge, read with the expected engine failure known.
+
+## Record
+
+Run on 2026-11-18, from about 06:18 to 07:02 UTC, on the Mac from `BASE` `wo/050-agents-0.2.0` at
+`b92b3575` (the second reader's shoulds and the coordinator's rulings on order 050c), in two rounds:
+the worker (1075 s) and a fresh Codex verifier (439 s), then the worker again (644 s) and a second
+fresh Codex verifier (483 s). The change is the fourteen files of Scope, the seven it names in each
+package. Each `.v2` launch starts the client as the leader of a new process group and records the
+leader's PID and start time; every `.v2` stop (a failed turn, a deadline, a cancellation, the
+wrapper's TERM and the end of its input) reads the process table, from `/proc/PID/stat` on Linux
+and `proc_pidinfo` on macOS, finds the live members of each recorded group and every process
+reached from them by parent links, sends TERM, then KILL after two seconds, and waits one second
+more. The failed turn's text gains `; client tree: PIDs P1, P2 outlived the stop` where processes
+outlived it, or the unconfirmed note where the table could not be read; on TERM the wrapper writes
+that note on its stderr and exits with status 143. Each package gains `libc`, the library its
+`parse_stat` unit test, the scripted client its `TREE` message, the wrapper suite
+`v2_client_tree_stop_leaves_no_survivor` (13 tests to 14), and both READMEs decision 9's texts and
+the section `## The .v2 client's process tree`. The worker applied decisions 1 to 10 as written. Its
+own choices: ordered collections for PIDs and groups and a monotonic clock for the deadlines; a
+macOS PID buffer sized from the system's estimate and grown when filled, and a Linux reader that
+tolerates non-UTF-8 bytes in the unused process name; and a PID-scoped `ps` preflight before
+planting, with a guard that signals a PID only when `ps` confirms its recorded start time. Its
+sandbox denied PID-scoped `ps`, so the tree test stopped at the preflight in both packages (13
+wrapper tests passed in each) and neither the regression nor the mutation proof ran; and
+`cargo metadata --offline` exited 101 in both packages, since `wasm-bindgen-futures` 0.4.80 is not
+in the cache. The first verifier, whose sandbox also denied `ps`, found five musts and two shoulds:
+a Linux `/proc` enumeration error was dropped, so an incomplete table could report a clean stop; a
+process that left its group between the read and the group signal was credited with TERM it never
+got; end of input could return 0 after the TERM task had the signal; one failed start-time lookup
+left later planted PIDs outside the guard; the regression and mutation results were missing; the
+TERM case sampled `ps` twice; and the READMEs left out a group whose leader's start time was never
+recorded. Round 2 propagated the enumeration error, tracked group and direct TERM apart, raced TERM
+against serving in a biased `tokio::select!`, which it marked as its nearest sound reading of
+decision 6, attempted all four lookups with a `tree-cleanup` request to the scripted client when one
+failed, took one snapshot after the TERM exit, and documented the missing start time. The second
+verifier found four musts and one should: the select drops the serving future, and with it the
+session and its client, before the TERM stop's first read; a readable `/proc` with no PID entries
+counts as a complete table; the fixture acknowledged cleanup while the orphan could still be live;
+the regression and mutation results were still missing; and the `.v1` check asserts only the
+group and the text, not that the client ended and its three descendants were left.
+
+A fresh read-only Opus reader then read the result (ruling 79, point 2). On a scratch copy on
+macOS arm64, where PID-scoped `ps` is allowed, it ran fmt and clippy (clean) and
+`cargo test --release` in each package: 14 wrapper tests passed and 0 failed, the library's unit
+test 1, every other target as at `BASE`; `v2_client_tree_stop_leaves_no_survivor` took 10.39 s
+(Codex) and 10.21 s (Claude Code), with the deadline, cancellation and `.v1` texts as the order
+gives them, TERM's status 143 with empty stderr, and no planted PID left. The Codex mutation failed
+at the ended-or-named assertion, the restored source passed and `cmp` was silent. The digests
+equalled round 2's. The Linux table read was neither compiled nor run, since no Linux target is
+installed. It found one must and three shoulds:
+
+- R1: decision 6 is not applied as written. The biased `select!` drops the serving future before
+  the TERM handler runs, which releases the session that owns the client's `Child`, spawned with
+  `kill_on_drop(true)`, so an idle client can be killed before the stop's first read and a child in
+  a session of its own then loses its parent link and survives with no name.
+- R2: on Linux, a readable `/proc` with no PID entries is taken as a complete table, so the stop
+  forgets every group and reports clean where it should say the stop is unconfirmed.
+- R3: the fixture's cleanup path wrote `tree-cleaned` even where it never read the orphan's start
+  time and so could not signal it, so a failing run could leave a `sleep 60` running.
+- R4: decision 9's sentence was not applied word for word: the READMEs kept the old full stop and
+  added "For `.v2` it first stops the client's whole process tree." as a sentence of its own.
+
+The fixer kept the branch on `wo/050-agents-0.2.0` at `b92b3575`, which had not moved, and applied
+each finding, the same in both packages:
+
+- R1: in `main.rs`, the session goes into its `Arc<Mutex<_>>` in `run()`'s scope, and only a clone
+  moves into the serving future, so the session and its client live until `exit(143)`; the TERM
+  handler still takes no lock, and the two `main.rs` stay one file.
+- R2: the Linux `processes()` returns `NotFound` when the table holds no entry for the wrapper's
+  own PID, which reaches decision 4's unconfirmed fallback; the two `lib.rs` still differ by 2
+  lines.
+- R3: where the scripted client cannot read the orphan's start time, it sends KILL to the orphan at
+  once, kills its two direct children (beyond R3's text, so that a failing run leaves nothing), and
+  panics before writing `tree.json`; on a cleanup request it signals all three, waits for both
+  children and for up to half a second for the orphan to be gone, and writes `tree-cleaned` only
+  when all three are confirmed ended, exiting 1 without it otherwise.
+- R4: both READMEs read "Cleanup ends the client after the cause is selected; for `.v2` it first
+  stops the client's whole process tree."
+
+Of the second verifier's findings, the first three musts are R1 to R3, fixed, and the fourth is met
+by the reader's and the fixer's runs; its should on the `.v1` check was not applied, since the
+reader did not take it up and the order asks for neither assertion, and stays with the coordinator.
+
+The fixer then ran, from the worktree's root with `BASE` set to `wo/050-agents-0.2.0`,
+`python3 tools/check_docs.py` and `python3 tools/check_private_paths.py` (Errors: 0 each),
+`git diff --check wo/050-agents-0.2.0...HEAD` (clean), and the text checks of "Done when", which
+printed `0`, `0`, `1`, `1`, `2`, `0`, `7`, `1` and `1`, `0` in each of the four files, `2` and `2`,
+`14` and `14`, and `0`. On macOS arm64, in each package, `cargo fmt --check` and
+`cargo clippy --all-targets -- -D warnings` exited 0, and `cargo test --release` gave, for Codex, 14
+wrapper tests passed and 0 failed, the library's unit test 1, the manifest test 1 and the package
+test 1; for Claude Code, 14 wrapper tests passed and 0 failed, the library's unit test 1 and the
+package test 1. With `--nocapture`, `v2_client_tree_stop_leaves_no_survivor` took 10.20 s (Codex)
+and 10.42 s (Claude Code). The Codex run printed the planted PIDs (client, background, session,
+double fork) deadline 20218, 20229, 20230, 20241; cancellation 20351, 20362, 20363, 20374; `.v1`
+20479, 20490, 20491, 20502; and TERM 20598, 20609, 20610, 20621. The Claude Code run printed
+deadline 24323, 24343, 24344, 24355; cancellation 24501, 24521, 24522, 24533; `.v1` 24929, 24949,
+24950, 24962; and TERM 25229, 25249, 25250, 25262. In both, the deadline turn failed with
+`client turn 1 failed: deadline: no turn boundary within 2 seconds (input turnDeadlineSeconds); session cannot restart implicitly`,
+the next turn was refused as
+`session failed at turn 1: deadline: no turn boundary within 2 seconds (input turnDeadlineSeconds); implicit restart refused`,
+the cancellation failed with `client turn 1 failed: cancelled; session cannot restart implicitly`,
+the `.v1` check's text was
+`client turn 1 failed: deadline: no turn boundary within 2 seconds; session cannot restart implicitly`,
+and the wrapper exited on TERM with status 143 and empty stderr, so no failed text held a
+`client tree:` note. `ps -o pid= -p` on the sixteen PIDs of each run printed nothing. The Codex
+mutation, `self.tree.stop(false).await` replaced by `None` in `Session::shutdown`, failed in the
+deadline case at `tests/wrapper.rs:517`, "each live planted PID must be ended or named in the stop
+report. Live PIDs: [20865, 20866, 20877]"; `ps` on its four PIDs printed nothing afterwards;
+restored with `cp`, the test passed and `cmp` printed nothing. The package build printed
+`dist/agent-codex.tar.gz#bddacd7efa6c09cf67d4f48ac4af8eecd4291fce9304ee13a1249ff3eebff268` and
+`dist/agent-claude-code.tar.gz#b0f0656b755ce8dbdeddd93d41889e91db292b1c6326a9e362dc80f90026600f`,
+both new with R1 and R2; they are a host build's. The Linux table read, with R2's check, was
+neither compiled nor run. The engine's expected failure,
+`live_s1_scripted_agents_call_engine_with_distinct_run_identities`, was not run. The gate's run,
+with that failure known, is the coordinator's, on the squash at order 050n's merge.
+
+A second fresh read-only Opus reader read the fixed result on a scratch clone of `169c8786`. Every
+check of "Done when" held there, with the tree test at 10.27 s (Codex) and 10.26 s (Claude Code)
+and the digests equal to the ones above, and it found no must and two shoulds:
+
+- R5: the run times above were each one second short of the run log's, which gives 1075 s, 439 s,
+  644 s and 483 s.
+- R6: decision 6 was still not applied as written. The biased `select!` drops the serving future
+  at TERM, and with it rmcp's drop guard, which cancels a turn in flight; that turn's cancellation
+  then ran `Session::cancel`, and so a second stop of the tree, `stop(false)`, at the same moment
+  as the TERM task's `stop(true)`. An instrumented scratch copy logged both stops in the same
+  microsecond.
+
+The coordinator chose decision 6 as written over the `select!` race, since two stops of one tree
+must not run at once. This round applied both shoulds, the same in both packages:
+
+- R5: the four run times read 1075 s, 439 s, 644 s and 483 s, as the log gives them.
+- R6: `main.rs` spawns the TERM task, which at its first signal sets a shared `AtomicBool`, runs
+  `tree.stop(true).await`, writes `{WRAPPER}: {note}` where the stop returns one and exits with
+  status 143; `serve.await` is the only main path, so serving goes on and TERM cancels no turn.
+  At the end of input, where the flag is set, the wrapper neither stops the tree nor writes the
+  note, and awaits `std::future::pending()`, so that the TERM task owns the exit. The two `main.rs`
+  stay one file.
+- Beyond R6's text, in `lib.rs`: the spawned task alone still let a turn in flight run a second
+  stop, since TERM's stop ends the client, the turn reads the end of its output and fails, and the
+  failed turn's `Session::shutdown` runs `stop(false)`. An instrumented scratch copy of the Claude
+  Code package with only the `main.rs` change logged `stop running close=true` and, 1.8 ms later,
+  `stop running close=false` in the same wrapper. So `ClientTree` gains a second field, an async
+  lock that one stop holds while it runs, and `stop(false)` waits for good where TERM's stop has
+  begun: before the lock where it has already begun, and after the lock where TERM's began while
+  this stop was waiting for it. A stop that began before TERM runs to its end and TERM's stop then
+  runs after it. The two `lib.rs` still differ by 2 lines. With the change, the same instrumented
+  run logged, in the TERM case, `stop running close=true`, then `stop entered close=false` and
+  `stop close=false parked before the lock: TERM's stop has begun` 1.8 ms later, then the TERM
+  task's exit with status 143 about 2 s after, and no second running stop. The lock, and the parking
+  of every stop(false) once TERM's stop has begun, are this round's own choice, beyond decisions 4
+  and 6 as written. A TERM that arrives during a running stop now waits for it, at most STOP_GRACE +
+  KILL_WAIT, before its own stop. The coordinator accepts them, since two stops of one tree must not
+  run at once, open to the owner's strike.
+
+This round's runs, on macOS arm64 from the worktree's root and in each package, with PID-scoped
+`ps` allowed: `cargo fmt --check` and `cargo clippy --offline --all-targets -- -D warnings` exited
+0; `cargo test --offline --release` gave, for Codex, 14 wrapper tests passed and 0 failed, the
+library's unit test 1, the manifest test 1 and the package test 1, and for Claude Code, 14 wrapper
+tests passed and 0 failed, the library's unit test 1 and the package test 1. With `--nocapture`,
+`v2_client_tree_stop_leaves_no_survivor` took 10.21 s (Codex) and 10.22 s (Claude Code). The Codex
+run printed the planted PIDs (client, background, session, double fork) deadline 58753, 58773,
+58774, 58785; cancellation 58909, 58920, 58921, 58932; `.v1` 59050, 59061, 59062, 59073; and TERM
+59176, 59187, 59188, 59199. The Claude Code run printed deadline 59346, 59368, 59369, 59380;
+cancellation 59491, 59511, 59512, 59523; `.v1` 59629, 59649, 59650, 59661; and TERM 59757, 59777,
+59778, 59789. Both gave the deadline, retry, cancellation and `.v1` texts above word for word, and
+TERM's status 143 with empty stderr. `ps -o pid= -p` on the thirty-two PIDs and on the instrumented
+runs' planted PIDs printed nothing. The package build printed
+`dist/agent-codex.tar.gz#8d76e2204107c10f9473a913d79468a7f301afb93e308d27e71556f94d775dba` and
+`dist/agent-claude-code.tar.gz#124ba40ef33ce4beec9fd8a8eefd5ca8334334333fca01f1124c18a24e1cee83`,
+both new with R6; they are a host build's. `python3 tools/check_docs.py` and
+`python3 tools/check_private_paths.py` gave Errors: 0 each, and
+`git diff --check wo/050-agents-0.2.0...HEAD` was clean. The Linux table read was neither compiled
+nor run, and the engine's expected failure,
+`live_s1_scripted_agents_call_engine_with_distinct_run_identities`, was not run.

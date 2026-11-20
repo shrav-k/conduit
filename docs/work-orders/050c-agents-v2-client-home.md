@@ -483,3 +483,146 @@ read-only Opus reader read the result before the checkpoint stands
 ([ruling 79](../proposals/ruling-79/README.md), point 2). The local gate that
 [ruling 80](../proposals/ruling-80/README.md) has a merge wait on, `tools/gate.py`, runs at order
 050n's merge, read with the expected engine failure known.
+
+## Record
+
+The first dispatch ran on 2026-11-17, from about 11:26 to 11:28 UTC, on the Mac, from `BASE`
+`wo/050-agents-0.2.0` at `fbcdb976`, in one round: the worker (49 s) and a fresh Codex verifier
+(37 s). It stopped at the preflight, which printed `order 1`, not `order 0`: that cut did not track
+this order's file, which `main` gained at `5eb71667` (#343). Every other preflight value was the one
+the order lists. The worker changed nothing and applied none of decisions 1 to 10, and the verifier
+reproduced the values and found nothing. Two fresh read-only Opus readers then found that no "Done
+when" was met (R1, a must: rebase the cut onto `main` and dispatch the order again as a fresh
+round 1) and that the dispatch had not run the order's preflight before starting Codex (R2, a
+should); a second reader added F1, that this text should ride the cut into the order's Record, and
+F2, a count the first fixer misstated, which its fixer corrected. Their fixers changed no package
+file and left R1 and R2 to the coordinator, whose steps they are. The coordinator then rebased the
+cut onto `main`, with this order's file on it, and dispatched the order again.
+
+The second dispatch ran on 2026-11-18, from about 02:46 to 03:14 UTC, on the Mac, from `BASE`
+`wo/050-agents-0.2.0` at `9f5b6512` (the Record of order 050a), in two rounds: the worker (595 s)
+and a fresh Codex verifier (258 s), then the worker again (491 s) and a second fresh Codex verifier
+(304 s). The preflight printed every value the order lists, `order 0` and `packages 0` among them.
+The change is the eight files of Scope, `src/lib.rs`, `tests/wrapper.rs`, `tests/fixtures/client.rs`
+and `README.md` in each package. The shared source gains `HOME_NAME`, `HOME_VARIABLE` and
+`CREDENTIAL_STORE`, `Config::state_dir` read from `CONDUIT_STATE_DIR` for `.v2` alone, and
+`client_home`, which every `.v2` launch calls before it sets the home variable to the canonical
+home; Codex's `.v2` arguments gain `-c cli_auth_credentials_store="file"`. The scripted client
+answers `HOME`, the tests grow from 10 to 13 in each package, with 17 cases in the stdio test, and
+both READMEs take decision 8's texts and the new section `## The .v2 Agent's own home`. The worker
+applied decisions 1 to 10 as written and reported one gap: PRV-029's setup-time diagnostic of a
+missing state directory, which the order leaves open with the coordinator. Its own choices: shared
+test helpers that compare sorted entries, environments and refusals; renaming the first home within
+the temporary tree before the link-replacement case installs its link; scripted probes that use
+directory permissions to see the creation and `.env` refusals; and the archive output given with
+paths relative to each package. The first verifier found one must: on Unix a canonical home that is
+not valid Unicode passed the checks, but Codex treats such a `CODEX_HOME` as unset and falls back to
+the engine user's default home, whose `.env` the wrapper never checked. It found three shoulds and a
+nit: the README's file-store guarantee left out that a managed requirement takes precedence; the
+tests expected `client-home` through `HOME_NAME`, so a renamed constant would pass; they expected
+the file-store setting through `CREDENTIAL_STORE`, so a value of `keyring` would pass; and, the nit,
+that Codex matches the `CODEX_` prefix in any ASCII case. Round 2 added a Codex-only refusal,
+`client home (CODEX_HOME): the canonical home path is not valid Unicode`, before the `.env` look-up,
+with a Unix case in `v2_client_home_refusals_start_no_client` that skips where the file system
+rejects the fixture's name; qualified the README's guarantee and added that `codex exec` still loads
+managed requirements, drawn from a Codex source checkout outside the repository; and made the tests
+expect the literal `state/client-home` and `cli_auth_credentials_store="file"`. It did not take the
+nit. It marked decisions 3 and 6, and 4 and 8, as its nearest sound reading, not as written. Both
+packages passed fmt, clippy and `cargo test --release` (13 wrapper tests passed and 0 failed in
+each), and the archives were
+`dist/agent-codex.tar.gz#bff045f5e93569b0fd3e15348b3e7f287446041020a8fcf734945b2589771c58` and
+`dist/agent-claude-code.tar.gz#815fbf17fb6124cb9fc701a82f04a3bffc38325f4dc6771ad69975e4cfed6e75`.
+The second verifier found one must, that the Unicode refusal ran before decision 3's `.env` steps,
+so a non-Unicode home that held a `.env` got the Unicode text, and five shoulds: both READMEs still
+named a shared login as a limit of `.v2` with no directory; the README still left out the prefix's
+case; the containment check holds at launch, but a same-user change before Codex resolves the path
+can move the home; the marker test could pass if the wrapper cleared the home before the resumed
+launch, since the scripted client re-creates its files at every turn; and the non-Unicode case never
+ran on the check host.
+
+A fresh read-only Opus reader then read the result (ruling 79, point 2). On a scratch clone at
+`9f5b6512` with the work's diff applied, it ran the text checks of "Done when" (each printed its
+listed value), `check_docs` and `check_private_paths` (Errors: 0 each) and `git diff --check`
+(clean); in each package fmt, clippy and `cargo test --release` (13 wrapper tests passed and 0
+failed in each, the other targets as at `BASE`) and the package build, whose digests matched round
+2's; the mutation check, which failed at `tests/wrapper.rs:1197` on the client's home variable and
+passed once restored, with `cmp` silent; and the refusal test with `--nocapture`, which printed that
+the non-Unicode case was skipped. It found decisions 1, 2 and 4 to 7 met as written, decision 3 met
+but for round 2's added refusal, and decisions 8 and 9 met but for the README departures of S3 and
+the skipped case of S2; it found the scope the eight files, the added lines free of private detail
+and both commits with the work-order identity as author and committer. It found no must; it rated
+verifier 2's must a should, since either order refuses and no client starts, and did not repeat
+verifier 2's shoulds on the path-resolution window and on the marker test's re-created files, which
+the order did not ask for. It found five shoulds:
+
+- S1: round 2's Unicode refusal is not among decision 3's texts, and it ran before the `.env`
+  look-up, against decision 3's "in this order"; the coordinator never gave its text or place.
+- S2: the non-Unicode case never runs on the Mac, where the file system rejects its fixture's
+  name, so "13 passed" counts it though no assertion on the new refusal ran.
+- S3: the Codex README departed from decision 8's wording, said that `codex exec` loads managed
+  requirements, which no file it cites holds, linked R4 for facts that order 197's results give
+  under R1, and left out the prefix's case.
+- S4: both READMEs still named a shared login as a limit of `.v2` with no directory.
+- S5: this Record was still to be written, with the digests alone and no private path, listing
+  verifier 2's must and shoulds and what was done about each.
+
+The fixer kept the branch on `wo/050-agents-0.2.0` at `9f5b6512`, which had not moved, and applied
+each finding:
+
+- S1: in both copies of `src/lib.rs`, the `ensure!(home.to_str().is_some(), ...)` block and its
+  comment move after the `.env` match's closing brace, still inside `if !CLAUDE`, right before
+  `Ok(home)`, and the Codex README lists the Unicode refusal after the two `.env` refusals, so
+  decision 3's texts and order hold for every case it lists. The refusal's text and its place, as
+  an amendment to decision 3, are the coordinator's to rule on in this Record.
+- S2: applied here: the non-Unicode case is skipped on macOS, where the fixer's run printed
+  `non-Unicode client home case skipped: filesystem rejected the test name`, and the guard is
+  unexercised there. Before order 050n's gate, the coordinator runs
+  `cargo test --release --test wrapper v2_client_home_refusals -- --nocapture` in
+  `packages/agent-codex` on a Linux file system, once as is, where it must not print `skipped`,
+  and once with the `ensure!(home.to_str().is_some(), ...)` deleted, where it must fail, and
+  records both results here.
+- S3: the README's sentences on the setting now read "The setting makes Codex keep each Agent's
+  login in a file in its own home, so two Agents' logins never share a store, unless a managed
+  requirement supplies the setting, which then takes precedence", cited to order 197's R1, which
+  drops the uncited `codex exec` clause and its link to R4; the non-Unicode sentence cites R1; and
+  the `.env` sentence says "whose name does not begin `CODEX_` in any ASCII case". The qualified
+  wording is a departure from decision 8, the coordinator's to record.
+- S4: the Codex README says "Shared OS identity, access to other run credentials and, for `.v1`,
+  the shared login still prevent strong isolation."; the Claude Code README says "For `.v1`, the
+  shared login, and for both, OS-user access to files and run credentials remain mediated limits;".
+- S5: this Record. Of verifier 2's findings, the must is S1, fixed; the shared login is S4 and the
+  prefix's case S3, both fixed; the non-Unicode run is S2, left for the coordinator's Linux run;
+  the path-resolution window and the marker test's re-created files were not applied, as the
+  reader judged, since the order asks for neither, and stay with the coordinator.
+
+The fixer then ran, from the worktree's root with `BASE` set to `wo/050-agents-0.2.0`,
+`python3 tools/check_docs.py` and `python3 tools/check_private_paths.py` (Errors: 0 each),
+`git diff --check` and `git diff --check wo/050-agents-0.2.0...HEAD` (clean), and the text checks
+of "Done when", which printed `0`, `0`, `2`, `2`, `8`, `0` and `0`, `13` and `13`, and `0`. In each
+package it ran `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` (exit 0 each)
+and `cargo test --release`: for Codex, 13 wrapper tests passed and 0 failed, the manifest test 1
+and the package test 1; for Claude Code, 13 wrapper tests passed and 0 failed and the package test
+1. The package build printed
+`dist/agent-codex.tar.gz#4ff0b430384aefd2fd0fcd19f5fd5dd0c37bfb797af5263dc7e14d44dfbdd93e`, new
+with the moved guard, and
+`dist/agent-claude-code.tar.gz#815fbf17fb6124cb9fc701a82f04a3bffc38325f4dc6771ad69975e4cfed6e75`,
+unchanged. The mutation check, with the `.envs(home.as_ref()...)` line deleted, gave the
+unused-variable warning and failed at `tests/wrapper.rs:1197`; restored with `cp`, the test passed
+and `cmp` printed nothing. The gate's run, with the expected engine failure
+`live_s1_scripted_agents_call_engine_with_distinct_run_identities` known, is the coordinator's, on
+the squash at order 050n's merge.
+
+The coordinator amends decision 3 with a last step for Codex alone, after the `.env` steps: where
+the canonical home is not valid Unicode, the launch is refused with
+`client home (CODEX_HOME): the canonical home path is not valid Unicode`, since Codex 0.167.1 treats
+such a `CODEX_HOME` as unset. The coordinator also accepts the Codex README's qualified file-store
+sentence, cited to order 197's R1, in place of decision 8's wording. Both rulings are the
+coordinator's, open to the owner's strike. The Linux run of S2, which exercises the non-Unicode
+refusal, is still owed; its two results are recorded here before order 050n's gate.
+
+The coordinator ran S2 on the Linux node on 2026-11-18, on an ext4 file system, at the 0.2.0
+branch's 80040519: `cargo test --release --test wrapper v2_client_home_refusals -- --nocapture` in
+`packages/agent-codex` printed "test v2_client_home_refusals_start_no_client ... ok" and "1 passed;
+0 failed" with no "skipped" line; with the `ensure!` that refuses a non-Unicode home
+(`src/lib.rs:235-238`) deleted, it printed "panicked at tests/wrapper.rs:1691:5" and "0 passed; 1
+failed"; the file was restored.

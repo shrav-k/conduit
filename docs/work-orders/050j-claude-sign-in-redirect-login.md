@@ -1509,3 +1509,228 @@ fresh Codex verifier and a fresh read-only Opus reader read the result before th
 ([ruling 79](../proposals/ruling-79/README.md), point 2). The local gate that [ruling
 80](../proposals/ruling-80/README.md) has a merge wait on, `tools/gate.py`, runs at order 050n's
 merge, read with the expected engine failure known.
+
+## Record
+
+Run on 2026-11-19, from about 08:37 to 09:17 UTC, on the Mac (macOS, arm64), from
+`wo/050-lane-claude` at `b4891ae2` (this order's text), with the coordinator's literals file in
+place for Claude Code 2.1.318, in two rounds: the worker (774 s) and a fresh Codex verifier (374 s),
+then the worker again (611 s) and a second fresh Codex verifier (295 s). It was A77's first paired
+order, in the code group and off the sign-in chain, dispatched with one round and continued from the
+coordinator's report. The change is the nine files of Scope. `claude-code.v2` states `signIn` with
+the account place `/account` and the redirect login `browser`, `ports: any` and `carried: false`,
+and requires the four hooks, each served by `#wrapper-v2`; the `wrapper-v2` item maps
+`sign-in-hook.v1` to the tool `sign-in`; `src/lib.rs` gains its two lines; `src/sign_in.rs` gains
+decision 4's hook, which runs `claude auth login` in the Agent's own home with the wrapper's own
+program as its browser and relays the first URL handed over; `src/main.rs` serves the tool and the
+browser helper; the scripted client gains a login; `tests/wrapper.rs` gains three tests (26); the
+README gains `## The .v2 sign-in hook` and decision 1's S1, and order 050i's Record its S2. In round
+1 the worker applied decisions 1 to 10 as written; its own choices were `/usr/bin/python3` for the
+YAML scripts, cargo run offline, the response variants matched before serializing, and the
+through-the-wrapper test's connection kept open through the cancel.
+
+The paired read of round 1: the merged list held 6 findings, all Codex's verifier's, 4 marked must
+and 2 should; the Opus paired reader (claude-opus-5-5, Claude Code 2.1.318, effort high, no MCP
+server, nothing loaded, 145 s) found none. The coordinator judged the list blind before opening the
+key: #1, on the README's 0.2.0 text, rejected as decision 8's prescribed text; #2 (the request's
+URL-elicitation capability unchecked before the login starts), #3 (starting sign-in could erase the
+client home and its stored login, where the capture directory overlapped the home), #5 (group
+survivors after the login's leader exits) and #6 (the success test does not pin the exact URL
+relayed) accepted as shoulds and carried to round 2; #4 (a URL at most one poll late is accepted) a
+nit; no must.
+
+Round 2 changed prescribed code and text, and each change stands as the coordinator's amendment,
+open to the owner's strike:
+
+- Decision 4's `src/sign_in.rs`: the capture directory is created, mode 0700, directly inside the
+  canonical state directory, after a check that it and the resolved home do not overlap; the hook
+  watches the login's leader with `waitid` and `WNOWAIT` (`login_exited`) and, on a failure before
+  the answer, kills the login's group while the unreaped leader still holds its ID, then reaps it
+  (`stop_starting_login`). Tested by the error cases `capture-is-home` and `exit-with-descendant`,
+  whose descendant's socket must close while the conversation's client keeps answering.
+- Decision 5's `src/main.rs`: a `sign-in` call whose request does not declare URL elicitation
+  (IFC-045) is answered `-32021` with URL elicitation in `data.requiredCapabilities`, before any
+  login starts. Tested over stdio in `v2_sign_in_tool_through_the_wrapper`, with no login record
+  left by the incapable call.
+- Decision 6's scripted client: it writes `login-url.sha256`, the digest of the exact URL it hands
+  to its browser, and its `login-exit` mode can leave a live descendant in the login's group.
+  Decision 7's tests compare that digest with the relayed URL's (`assert_handed_over_url`, in the
+  Session and stdio tests) without printing either.
+- Decision 8's README text: the capability rule, the capture directory's refusal, and that a failure
+  stops the login's group and removes the capture directory the hook created.
+
+The second verifier found 4 musts and 1 should, which the runner passed on unjudged: (1) a login
+whose leader exits after the URL is handed over leaves its group's survivors to neither the
+600-second watch nor the next call; (2) a TERM during the capture leaves `sign-in-capture` behind
+and every later sign-in fails; (3) a FIFO at the capture path blocks the read past the 30-second
+deadline; (4) `sign-in-hook.v1` asks for a diagnostic naming PND-010 where a login fails to start,
+and the order's fixed texts name none; and a should, that the test helper `process_gone` reads a
+permission error as an exit. The coordinator judged them: (1) accepted as a should, implementation,
+fixed by the first fixer's S1; (2) accepted as a must, implementation, fixed by its M1; (3) accepted
+as a should, implementation, fixed by its S2; (4) accepted as a should, the order's fault, since
+`sign-in-hook.v1` asks a hook that cannot start a login to fail with a diagnostic naming PND-010 and
+decision 4's fixed texts name none: it is carried to order 050k, which ends those texts with `
+(PND-010)`; and the should on `process_gone` a nit on a prescribed test helper. In round 2 the
+worker passed 25 of 26 wrapper tests, the library's 2 and the package test 1: the sandbox denied the
+PID-scoped `ps` of `v2_client_tree_stop_leaves_no_survivor`, which the reader's rerun on the Mac
+passed. Decision 9's registration gave `accepted: true` with no diagnostic, and, with
+`sign-in-hook.v1` removed from `requires`, `accepted: false` with one SUB-005 diagnostic whose
+`keywordLocation` ends `/dependentSchemas/signIn/properties/requires/allOf/0/contains`; the host
+archive's digest was `258ffea2...cb1fe`.
+
+A fresh read-only Opus reader then read the result on the Mac (ruling 79, point 2), on the branch at
+`9e8f867b` on `b4891ae2`. `check_docs`, `check_private_paths` and `set_names --check` gave Errors:
+0, and `git diff --check` was clean; the diff held the nine files of Scope; every count of "Done
+when" printed what the order says; both scripts, under `/usr/bin/python3`, printed
+`True True True True` and `True True True True True`; both literal searches found `contracts.yaml`
+alone; `cargo fmt --check` and `clippy -D warnings` were clean; `cargo test --release` gave the
+library's 2, the package test 1 and 26 wrapper tests passed, 0 failed, three times; the stdout
+mutation failed at the assertion that the wrapper's standard output holds no `URL_CANARY` and passed
+after the restore, `cmp` silent; the digest was `258ffea2...cb1fe`; and decision 9's two replies
+were the worker's. A scan of the added lines found no private detail, and both commits had the
+work-order identity. On a scratch copy, a probe that cut a sign-in short while the login held it
+left the capture directory behind, and the next sign-in failed with `client login did not start`. It
+read the second verifier's musts as follows: (2) is M1's cause, (1) is S1, (3) is S2 and (4) is S3;
+the should on `process_gone` is a nit on a prescribed helper. It found three musts and three
+shoulds:
+
+- M1: round 2's exclusive creation of the capture directory makes a directory that an interrupted
+  call left (a TERM, a dropped future, a crash) a lasting refusal with a text that does not say why.
+- M2: this Record was not written, and must carry round 2's changes as the coordinator's amendments,
+  the paired read's numbers and the second verifier's unjudged findings.
+- M3: A77's record for this order, `docs/work-orders/050j-a77.yaml`, is absent.
+- S1: after the URL is handed over, a leader that exits on its own leaves its group's survivors to
+  neither the 600-second watch nor the next call (the second verifier's must 1).
+- S2: the URL's read follows a link and blocks on a FIFO with no bound (the second verifier's must
+  3).
+- S3: the fixed texts of a login that fails to start name no PND-010, which `sign-in-hook.v1` asks
+  for (the second verifier's must 4); the coordinator decides.
+
+The fixer kept the branch on `wo/050-lane-claude` at `b4891ae2`, without a rebase, since the lane
+had not moved, and acted on each finding:
+
+- M1: in `start_login`, after the overlap check, the two lines
+  `// A directory an interrupted call left holds no home: the check above rules that out.` and
+  `let _ = fs::remove_dir_all(&capture);`; the error case `capture-exists` is now `capture-stale`,
+  which expects a URL that passes IFC-049, one login line and the directory gone with its planted
+  file; the README's item 2 reads "The hook refuses a capture directory that overlaps the resolved
+  home, and removes one that an interrupted earlier call left." This answers the second verifier's
+  must 2 too.
+- M2: this Record.
+- M3: not written here. The order's own record of A77 is, by WORK_ORDERS.md's "The record each order
+  keeps", the coordinator's to commit in its first pull request after the merge's checks run on
+  `main` has ended, with `merged` and `ci` known; the coordinator writes it at order 050n's merge,
+  from the paired read's list and key and with each private value a placeholder. The second
+  fixer wrote it after all, as below.
+- S1: the watch task polls `login_exited` every 20 ms for at most 600 seconds and then calls
+  `stop_starting_login`, so the group is killed while the exited leader, still unreaped, holds its
+  ID, whether the leader exits or the limit comes. The scripted login's `login-exit-after-url` mode
+  now leaves a live descendant, as `login-exit` does, and exits a second after handing its URL over;
+  the new error case `exit-after-url-with-descendant` expects the URL, then the descendant's socket
+  closed within 5 seconds, while the conversation's client keeps answering.
+- S2: `read_url` opens the entry with `O_NOFOLLOW` and `O_NONBLOCK` and requires a regular file, and
+  answers `client login gave no usable URL` otherwise. The scripted login's new `login-fifo` mode
+  makes a FIFO at the capture path; the new error case `fifo`, with `login-silent`, expects that
+  text within 10 seconds and the login gone.
+- S3: no change in this order. The coordinator judged it a should, the order's fault, and carries it
+  to order 050k, which ends decision 4's fixed failure texts with ` (PND-010)` as `sign-in-hook.v1`
+  asks.
+
+Each of these changes to decision 4's code, decision 6's scripted login, decision 7's tests and
+decision 8's text stands, as round 2's do, as the coordinator's amendment, open to the owner's
+strike.
+
+The second verifier's should on `process_gone` was left as the prescribed helper has it. Each fix
+taken out failed its test, on the worktree and restored after: without the removal, `capture-stale`
+failed at the sign-in's result; with round 2's watch, `exit-after-url-with-descendant` failed with
+`login descendant kept running`; without `O_NONBLOCK`, the test hung at the `fifo` case until a
+60-second alarm ended it. The fixer then ran on the Mac, from the worktree's root, on the files of
+this commit before it was made: every count of "Done when" against `b4891ae2` (each printed what the
+order says; the status count printed 0 before the Record was added and 1, this order file, after),
+both scripts under `/usr/bin/python3` (`True True True True` and `True True True True True`), both
+literal searches (`contracts.yaml` alone), `check_docs`, `check_private_paths` and
+`set_names --check` (Errors: 0 each), and `git diff --check` (clean). In
+`packages/agent-claude-code/`, one cargo command at a time with `RUST_TEST_THREADS=4`:
+`cargo fmt --check` (exit 0), `cargo clippy --all-targets -- -D warnings` (clean),
+`cargo test --release` (the library's 2, the package test 1 and 26 wrapper tests passed, 0 failed),
+`cargo test --release --test wrapper -- --nocapture v2_sign_in` (3 passed; the error cases printed
+their texts, `fifo` `client login gave no usable URL`, and `capture-stale` and
+`exit-after-url-with-descendant` `URL passed IFC-049`) and `cargo run --release --bin package`
+(`agent-claude-code.tar.gz#79f8d751...da19d`, a host build's). The stdout mutation of "Done when"
+failed at the assertion that the wrapper's standard output holds no `URL_CANARY` and passed after
+the restore, `cmp` silent. Decision 9's registration was not run again: `contracts.yaml` and
+`conduit.yaml` are unchanged since the reader's run.
+
+A second fresh read-only Opus reader then read the result on the Mac, at `af632176` on `b4891ae2`.
+`check_docs`, `check_private_paths` and `set_names --check` gave Errors: 0, and `git diff --check`
+was clean, on the tree and from `b4891ae2`; every count of "Done when" printed what the order says;
+both scripts, under `/usr/bin/python3`, printed `True True True True` and `True True True True
+True`; both literal searches found `contracts.yaml` alone; `cargo fmt --check` and `clippy -D
+warnings` were clean; on a scratch copy, `cargo test --release` gave the library's 2, the package
+test 1 and 26 wrapper tests passed, 0 failed, and the wrapper's 26 passed three more times; the
+`--nocapture` run printed each case's text or `URL passed IFC-049`, and no URL; the stdout mutation
+failed at the assertion that the wrapper's standard output holds no `URL_CANARY` and passed after
+the restore, `cmp` silent; the digest was `79f8d751...da19d`; and decision 9's registration, rerun
+with this archive, gave `accepted: true` with no diagnostic and, with `sign-in-hook.v1` removed from
+`requires`, exit 1, `accepted: false` and one SUB-005 diagnostic whose `keywordLocation` ends
+`/dependentSchemas/signIn/properties/requires/allOf/0/contains`. Each of the first fixer's fixes
+taken out failed its test: without M1's removal, `capture-stale` failed at the sign-in's result, and
+with round 2's watch, `exit-after-url-with-descendant` failed with `login descendant kept running`.
+A scan of the added lines found no private detail, and the three commits had the work-order
+identity. It found one must and four shoulds:
+
+- M1: A77's record for this order, `docs/work-orders/050j-a77.yaml`, is still absent, though
+  WORK_ORDERS.md's template allows an order not yet merged (`merged: no` and the reason).
+- S1: this Record gives the reader's reading of the second verifier's four musts and its should, not
+  the coordinator's judgment, which WORK_ORDERS.md asks for when the coordinator writes the Record.
+- S2: this Record does not say that the first fixer's changes to decision 4's code, decision 6's
+  scripted login, decision 7's tests and decision 8's text stand as the coordinator's amendments.
+- S3: this Record's words for paired finding #3 dropped its harm, the loss of the client home and
+  its stored login.
+- S4: the README names neither the stop of the login's group once the login's own process exits nor
+  the refusal of a URL handed over as anything but a regular file.
+
+The second fixer kept the branch on `wo/050-lane-claude` at `b4891ae2`, without a rebase, since the
+lane had not moved past it, and acted on each finding:
+
+- M1: `docs/work-orders/050j-a77.yaml`, written from the paired read's list and key with each
+  private value a placeholder, `merged: no` and `ci` none until order 050n's merge. Its
+  `paired.findings` are the list's six findings, verbatim with the coordinator's judgments; the
+  key's paths and digests of the private reports are left out; each value that no file at hand
+  gives, the judgments of the second Codex pass and the later Opus passes' models, clients, seconds
+  and tokens, reads `not recorded`, for the coordinator to fill. The first fixer's M3 item says so.
+- S1: no change by the fixer, whose place it was not to judge in the coordinator's name; the
+  coordinator then gave its judgment of the second verifier's findings, above, and the A77 record
+  carries it.
+- S2: the reader's sentence, after the first fixer's list.
+- S3: the reader's words for #3, in the paired read's paragraph, rewrapped.
+- S4: in the README's `## The .v2 sign-in hook`, the wrapper stops the login "with its process
+  group, after 600 seconds or once the login's own process exits", and `client login gave no usable
+  URL` answers also a URL "handed over as anything but a regular file, such as a link or a FIFO".
+  This change to decision 8's text stands, as the first fixer's do, as the coordinator's amendment,
+  open to the owner's strike.
+
+The second fixer then ran on the Mac, from the worktree's root, on the files of this commit before
+it was made: every count of "Done when" against `b4891ae2` (each printed what the order says, but
+the status count, which printed 2, this order file and A77's record, both in this commit), both
+scripts under `/usr/bin/python3` (`True True True True` and `True True True True True`), both
+literal searches (`contracts.yaml` alone), `check_docs`, `check_private_paths` and `set_names
+--check` (Errors: 0 each), and `git diff --check` (clean). In `packages/agent-claude-code/`, one
+cargo command at a time with `RUST_TEST_THREADS=4`: `cargo fmt --check` (exit 0), `cargo clippy
+--all-targets -- -D warnings` (clean), `cargo test --release` (the library's 2, the package test 1
+and 26 wrapper tests passed, 0 failed), `cargo test --release --test wrapper -- --nocapture
+v2_sign_in` (3 passed; each case printed its text or `URL passed IFC-049`, as in the reader's run)
+and `cargo run --release --bin package` (`agent-claude-code.tar.gz#79f8d751...da19d`, unchanged, a
+host build's). The stdout mutation of "Done when" failed at the assertion that the wrapper's
+standard output holds no `URL_CANARY` and passed after the restore, `cmp` silent. Decision 9's
+registration was not run again: `contracts.yaml` and `conduit.yaml` are unchanged since the reader's
+run. The gate's run on this order's squash is the coordinator's, at order 050n's merge.
+
+A third fresh read-only Opus reader then reread the branch at `391ca546` and reran every check of
+"Done when" on this Mac, each as before. It found one must, that this Record and A77's record gave
+the paired Opus reader's effort as default where it ran at high, and three shoulds: the
+coordinator's judgment of the second verifier's findings, absent; the Codex passes' `loaded`, given
+as empty where the key records none and Codex reads the repository's `AGENTS.md` by itself; and the
+A77 record's `fixes`, left empty. The coordinator applied all four: the effort, the judgment above,
+`loaded` with its source, and the fixers' work under `fixes`, with a pass for this read. The lane's
+fast-forward follows.

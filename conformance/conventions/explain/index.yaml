@@ -12,6 +12,21 @@
       "safety_rows": []
     },
     {
+      "id": "explain-failed-model-turn-content",
+      "case": "conventions/explain/failed-model-turn-content/case.yaml",
+      "promises": [
+        "IFC-025",
+        "IFC-010"
+      ]
+    },
+    {
+      "id": "explain-failed-turn-content",
+      "case": "conventions/explain/failed-turn-content/case.yaml",
+      "promises": [
+        "IFC-025"
+      ]
+    },
+    {
       "id": "explain-outcome-causes",
       "case": "conventions/explain/outcome-causes/case.yaml",
       "promises": [

@@ -1,0 +1,232 @@
+{
+  "id": "registration-agent-v2-packages",
+  "title": "Both released Agent packages declare four plain hooks and their sign-in logins",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "CTR-013",
+    "PKG-020"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "claude-code-install": "claude-code-install.json",
+    "claude-code-archive": "../../../fixtures/agents/agent-claude-code/contracts.tar.gz",
+    "codex-install": "codex-install.json",
+    "codex-archive": "../../../fixtures/agents/agent-codex/contracts.tar.gz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "claude-code-install"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "diagnostics": [],
+          "package": {
+            "project": {
+              "documents": [
+                {
+                  "kind": "Type",
+                  "metadata": {
+                    "name": "claude-code.v1"
+                  }
+                },
+                {
+                  "kind": "Capability",
+                  "metadata": {
+                    "name": "conversation.v1"
+                  }
+                },
+                {
+                  "kind": "Operation",
+                  "metadata": {
+                    "name": "turn.v1"
+                  }
+                },
+                {
+                  "kind": "Type",
+                  "metadata": {
+                    "name": "claude-code.v2"
+                  },
+                  "spec": {
+                    "toolsDirectory": {
+                      "directory": "/directory"
+                    },
+                    "signIn": {
+                      "account": "/account",
+                      "logins": [
+                        {
+                          "name": "browser",
+                          "return": "redirect"
+                        },
+                        {
+                          "name": "code-page",
+                          "return": "page"
+                        }
+                      ]
+                    },
+                    "requires": [
+                      "github.com/shrav-k/conduit/core#sign-in-hook.v1",
+                      "github.com/shrav-k/conduit/core#account-hook.v1",
+                      "github.com/shrav-k/conduit/core#sign-out-hook.v1",
+                      "github.com/shrav-k/conduit/core#retire-hook.v1"
+                    ],
+                    "implementation": {
+                      "#turn.v1": "#wrapper-v2",
+                      "github.com/shrav-k/conduit/core#sign-in-hook.v1": "#wrapper-v2",
+                      "github.com/shrav-k/conduit/core#account-hook.v1": "#wrapper-v2",
+                      "github.com/shrav-k/conduit/core#sign-out-hook.v1": "#wrapper-v2",
+                      "github.com/shrav-k/conduit/core#retire-hook.v1": "#wrapper-v2"
+                    }
+                  }
+                }
+              ],
+              "manifest": {
+                "implementations": {
+                  "wrapper-v2": {
+                    "plain": true,
+                    "tools": {
+                      "#turn.v1": "turn",
+                      "github.com/shrav-k/conduit/core#sign-in-hook.v1": "sign-in",
+                      "github.com/shrav-k/conduit/core#account-hook.v1": "account",
+                      "github.com/shrav-k/conduit/core#sign-out-hook.v1": "sign-out",
+                      "github.com/shrav-k/conduit/core#retire-hook.v1": "retire"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [],
+        "state": {
+          "installed_packages": [
+            {
+              "package": {
+                "address": "example.org/conduit/agent-claude-code",
+                "version": "0.2.0",
+                "digest": "sha256:826054c424ee89061a2858204fcb26617abe088abde73cf38cfd986c8bf4fbdb"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "codex-install"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "diagnostics": [],
+          "package": {
+            "project": {
+              "documents": [
+                {
+                  "kind": "Type",
+                  "metadata": {
+                    "name": "codex.v1"
+                  }
+                },
+                {
+                  "kind": "Capability",
+                  "metadata": {
+                    "name": "conversation.v1"
+                  }
+                },
+                {
+                  "kind": "Operation",
+                  "metadata": {
+                    "name": "turn.v1"
+                  }
+                },
+                {
+                  "kind": "Type",
+                  "metadata": {
+                    "name": "codex.v2"
+                  },
+                  "spec": {
+                    "toolsDirectory": {
+                      "directory": "/directory"
+                    },
+                    "signIn": {
+                      "account": "/account",
+                      "logins": [
+                        {
+                          "name": "browser",
+                          "return": "redirect"
+                        },
+                        {
+                          "name": "device",
+                          "return": "device"
+                        }
+                      ]
+                    },
+                    "requires": [
+                      "github.com/shrav-k/conduit/core#sign-in-hook.v1",
+                      "github.com/shrav-k/conduit/core#account-hook.v1",
+                      "github.com/shrav-k/conduit/core#sign-out-hook.v1",
+                      "github.com/shrav-k/conduit/core#retire-hook.v1"
+                    ],
+                    "implementation": {
+                      "#turn.v1": "#wrapper-v2",
+                      "github.com/shrav-k/conduit/core#sign-in-hook.v1": "#wrapper-v2",
+                      "github.com/shrav-k/conduit/core#account-hook.v1": "#wrapper-v2",
+                      "github.com/shrav-k/conduit/core#sign-out-hook.v1": "#wrapper-v2",
+                      "github.com/shrav-k/conduit/core#retire-hook.v1": "#wrapper-v2"
+                    }
+                  }
+                }
+              ],
+              "manifest": {
+                "implementations": {
+                  "wrapper-v2": {
+                    "plain": true,
+                    "tools": {
+                      "#turn.v1": "turn",
+                      "github.com/shrav-k/conduit/core#sign-in-hook.v1": "sign-in",
+                      "github.com/shrav-k/conduit/core#account-hook.v1": "account",
+                      "github.com/shrav-k/conduit/core#sign-out-hook.v1": "sign-out",
+                      "github.com/shrav-k/conduit/core#retire-hook.v1": "retire"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [],
+        "state": {
+          "installed_packages": [
+            {
+              "package": {
+                "address": "example.org/conduit/agent-claude-code",
+                "version": "0.2.0",
+                "digest": "sha256:826054c424ee89061a2858204fcb26617abe088abde73cf38cfd986c8bf4fbdb"
+              }
+            },
+            {
+              "package": {
+                "address": "example.org/conduit/agent-codex",
+                "version": "0.2.0",
+                "digest": "sha256:a0a6153787ec497a23ea36085686aecb7517c67a9f4caeb16919029fa7067518"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,224 @@
+{
+  "id": "registration-agent-v2-account-binding",
+  "title": "Both Agent v2 templates can bind a required account input to configuration",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "MAN-017"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "claude-code-install": "claude-code-install.json",
+    "claude-code-archive": "../../../fixtures/agents/agent-claude-code/contracts.tar.gz",
+    "codex-install": "codex-install.json",
+    "codex-archive": "../../../fixtures/agents/agent-codex/contracts.tar.gz",
+    "fixture": "fixture.json",
+    "manifest": "conduit.json",
+    "documents": "documents.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "first-start",
+        "evidence": {
+          "time": "2026-11-19T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000000001",
+            "00000000-0000-4000-8000-000000000002",
+            "00000000-0000-4000-8000-000000000003",
+            "00000000-0000-4000-8000-000000000004",
+            "00000000-0000-4000-8000-000000000005",
+            "00000000-0000-4000-8000-000000000006",
+            "00000000-0000-4000-8000-000000000007",
+            "00000000-0000-4000-8000-000000000008",
+            "00000000-0000-4000-8000-000000000009",
+            "00000000-0000-4000-8000-000000000010",
+            "00000000-0000-4000-8000-000000000011",
+            "00000000-0000-4000-8000-000000000012",
+            "00000000-0000-4000-8000-000000000013",
+            "00000000-0000-4000-8000-000000000014",
+            "00000000-0000-4000-8000-000000000015",
+            "00000000-0000-4000-8000-000000000016",
+            "00000000-0000-4000-8000-000000000017",
+            "00000000-0000-4000-8000-000000000018",
+            "00000000-0000-4000-8000-000000000019",
+            "00000000-0000-4000-8000-000000000020",
+            "00000000-0000-4000-8000-000000000021",
+            "00000000-0000-4000-8000-000000000022",
+            "00000000-0000-4000-8000-000000000023",
+            "00000000-0000-4000-8000-000000000024"
+          ],
+          "revisions": [
+            "rev-1-0",
+            "rev-1-1",
+            "rev-1-2",
+            "rev-1-3",
+            "rev-1-4",
+            "rev-1-5",
+            "rev-1-6",
+            "rev-1-7"
+          ],
+          "suffixes": [
+            "00001",
+            "00002",
+            "00003"
+          ]
+        },
+        "machine": {
+          "hostname": "vector.example",
+          "labels": {
+            "kubernetes.io/hostname": "vector.example",
+            "kubernetes.io/os": "darwin",
+            "kubernetes.io/arch": "arm64"
+          },
+          "state": "reachable"
+        },
+        "trustDomain": "vectors.example"
+      },
+      "expect": {
+        "reply": {
+          "started": true
+        },
+        "external_intents": [],
+        "required_promises": [
+          "FST-001"
+        ],
+        "state": {
+          "started": true
+        },
+        "record_facts": []
+      }
+    },
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "claude-code-install"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "diagnostics": []
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [],
+        "state": {
+          "installed_packages": [
+            {
+              "package": {
+                "address": "example.org/conduit/agent-claude-code",
+                "version": "0.2.0",
+                "digest": "sha256:826054c424ee89061a2858204fcb26617abe088abde73cf38cfd986c8bf4fbdb"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "codex-install"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "diagnostics": []
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [],
+        "state": {
+          "installed_packages": [
+            {
+              "package": {
+                "address": "example.org/conduit/agent-claude-code",
+                "version": "0.2.0",
+                "digest": "sha256:826054c424ee89061a2858204fcb26617abe088abde73cf38cfd986c8bf4fbdb"
+              }
+            },
+            {
+              "package": {
+                "address": "example.org/conduit/agent-codex",
+                "version": "0.2.0",
+                "digest": "sha256:a0a6153787ec497a23ea36085686aecb7517c67a9f4caeb16919029fa7067518"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "register-project",
+        "file": "fixture",
+        "evidence": {
+          "time": "2026-11-19T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000000100",
+            "00000000-0000-4000-8000-000000000101",
+            "00000000-0000-4000-8000-000000000102",
+            "00000000-0000-4000-8000-000000000103",
+            "00000000-0000-4000-8000-000000000104",
+            "00000000-0000-4000-8000-000000000105",
+            "00000000-0000-4000-8000-000000000106",
+            "00000000-0000-4000-8000-000000000107",
+            "00000000-0000-4000-8000-000000000108",
+            "00000000-0000-4000-8000-000000000109",
+            "00000000-0000-4000-8000-000000000110",
+            "00000000-0000-4000-8000-000000000111",
+            "00000000-0000-4000-8000-000000000112",
+            "00000000-0000-4000-8000-000000000113",
+            "00000000-0000-4000-8000-000000000114",
+            "00000000-0000-4000-8000-000000000115",
+            "00000000-0000-4000-8000-000000000116",
+            "00000000-0000-4000-8000-000000000117",
+            "00000000-0000-4000-8000-000000000118",
+            "00000000-0000-4000-8000-000000000119"
+          ],
+          "revisions": [
+            "rev-100-0",
+            "rev-100-1",
+            "rev-100-2",
+            "rev-100-3",
+            "rev-100-4",
+            "rev-100-5",
+            "rev-100-6",
+            "rev-100-7",
+            "rev-100-8",
+            "rev-100-9"
+          ],
+          "suffixes": [
+            "00064",
+            "00065",
+            "00066",
+            "00067"
+          ]
+        },
+        "request": {
+          "sender": "00000000-0000-4000-8000-000000000005",
+          "caller": "00000000-0000-4000-8000-000000000005",
+          "conduit": "00000000-0000-4000-8000-000000000006",
+          "target": "00000000-0000-4000-8000-000000000003",
+          "operation": "@core#register.v1"
+        }
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "diagnostics": []
+        },
+        "external_intents": [],
+        "required_promises": [],
+        "record_facts": [],
+        "state": {
+          "started": true
+        }
+      }
+    }
+  ]
+}

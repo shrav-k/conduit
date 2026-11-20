@@ -3,44 +3,56 @@
 For A5 and for Agents that each have a home of their own ([ruling 49](../proposals/ruling-49/README.md)).
 Nothing here is done in a terminal the coordinator runs: you do each step yourself.
 
-State on 2026-11-12: ruling 49's sign-in is in `spec/` (orders 038a and 038c), but neither it
-nor each Agent's separate home is built: their orders, 050, 048a, 048b and 051b, are not yet
-written. The first build's
-[closeout](../proposals/first-build/increment-3/closeout-results-2026-11-10.md) used shared
-logins. The engine behavior described below is the ruled flow to come, not a flow available
-in the current shell.
+With Agent packages 0.2.0, each `.v2` Agent keeps its client's login in its own home inside
+its state directory. Your everyday Claude Code and Codex logins stay as they are.
 
 ## Before the engine can sign an Agent in
 
-1. **Choose how to sign Codex in.** Its browser login completes by itself on one machine.
-   From another, its return comes back through `conduit` or an SSH forward. A device code
-   stays an option where your account has it on. Claude Code needs a browser on its Agent's
-   own machine.
-2. **Know which email each account uses.** The configuration names the account each Agent is
-   for, and the engine refuses a sign-in to any other ([ruling 49](../proposals/ruling-49/README.md),
-   point 3). Tell the coordinator the two emails for Claude and the two for ChatGPT, or a label
-   for each if you would rather not.
-3. **Leave your own logins as they are.** Your everyday `claude` and `codex` keep `~/.claude`
-   and `~/.codex`. Each Agent gets its own directory in the engine's store; signing an Agent in
-   never signs you out.
+Know which email each account uses. The configuration names the account each Agent is for,
+and the engine accepts only that account ([ruling 49](../proposals/ruling-49/README.md), point 3).
+Tell the coordinator the two emails for Claude and the two for ChatGPT, or a label for each if
+you would rather keep the emails to yourself.
 
 ## When the engine asks you to sign in
 
-Once the work for ruling 49 is merged, `conduit` lists the sign-ins waiting for you. For each it
-shows which Agent it is for, the account expected and the full URL.
+Run `conduit pending` to see which Agents are waiting for sign-in. After a restart it shows
+any Agent whose account check failed at setup. After each command except `conduit pending`,
+while any remain, the engine prints how many pending actions at root are still unanswered.
+During the first sign-ins, read that number as the sign-ins you still have to do, not as an
+error.
+
+Use `conduit sign-in` or root's Interface only to answer a pending sign-in action.
+For a Codex Agent, a failed check proceeds to the sign-in
+hook, and Codex's login first signs that home out. A Codex Agent left idle until its access
+token lapses may fail its account check and ask you to sign in again. The check blocks token
+refresh, though a turn would have refreshed it ([ruling 86](../proposals/ruling-86/README.md), point 5).
+
+In 0.2.0, sign in with the client's default login. The engine refuses a login name. The Codex
+device code and Claude Code's code-page login wait for later releases.
 
 - **Read the URL before you open it.** It should be on the vendor's own domain: `claude.ai` or
   `claude.com` for Claude, `openai.com` or `chatgpt.com` for Codex.
 - **Sign in as the account named.** If your browser is signed in to the other account, use a
   private window or another browser profile. A sign-in as the wrong account is refused and
-  undone, and the engine asks again.
-- **Codex** uses its browser login: on one machine it completes by itself; from another,
-  bring its return back through `conduit` or an SSH forward. You can choose a device code
-  where your account has it on, and enter that code at the page shown. **Claude Code** signs
-  in with a browser on the Agent's own machine; Conduit carries no Claude return.
+  undone, and the engine asks again. The account check alone decides who signed in (PND-011).
+- **Codex** may open the default browser of the engine user's graphical session on the
+  engine's own runner. Close that window, keep that browser free of an OpenAI session and
+  open the sign-in link in your own browser. If that browser is on another machine, the
+  sign-in completes only through your own SSH forward of the login's loopback port on the
+  engine's machine; Conduit carries no return in 0.2.0.
+- **Claude Code** completes sign-in only if your browser reaches the login's loopback port
+  on the engine's machine. That limit holds until order 050o's managed connection is built.
+
+## When an Agent retires
+
+Each client's logout at retirement revokes that home's token at the vendor, as the
+[logout read](../../experiments/027-a5-sign-in/results-2026-11-17-logout-source.md#the-outcome-under-item-8)
+records. If the machine is lost and logout cannot reach it, the login stays until you revoke
+it at the vendor. The engine dispatches a failed logout again only after reconciliation
+records the outcome as `failed`.
 
 ## A5, the test
 
-The coordinator runs it once the flow exists: your second accounts each signed in to an Agent of
-their own, beside the first, for 48 hours, recording each sign-in, each refresh and the
-deliberate wrong-account attempt.
+In A5, your second accounts each sign in to an Agent of their own beside the first for
+48 hours. The coordinator records each sign-in, each refresh and the deliberate wrong-account
+attempt.

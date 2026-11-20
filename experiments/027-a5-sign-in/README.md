@@ -8,7 +8,7 @@ Amended on 2026-11-15 by work order 167: how a signal stops the probe, the notic
 
 Stage 0b pre-registered on 2026-11-16 by work order 195, [below](#stage-0b): part A, a read of Codex's public source and documentation, done on 2026-11-16, [results](results-2026-11-16-0b-source.md); part B, a watched run, not yet run.
 
-Stage 1's first step pre-registered on 2026-11-17 by work order 197, [below](#stage-1-step-1-the-account-check): the live account check of ruling 82, point 1, not yet run; before it, a read of Codex's public source for `account/read`, done on 2026-11-17, [results](results-2026-11-17-account-read-source.md). The same order replaced, in the stages below, Codex's ID-token route and A5's "gates nothing" with ruling 82's route and gate.
+Stage 1's first step pre-registered on 2026-11-17 by work order 197, [below](#stage-1-step-1-the-account-check): the live account check of ruling 82, point 1, run on 2026-11-19, with the Claude scratch sign-in that its amendment adds, [results](results-2026-11-19-1-step-1.md); before it, a read of Codex's public source for `account/read`, done on 2026-11-17, [results](results-2026-11-17-account-read-source.md). The same order replaced, in the stages below, Codex's ID-token route and A5's "gates nothing" with ruling 82's route and gate.
 
 The refresh-blocked probe pre-registered on 2026-11-19 by work order 208, [below](#stage-1-before-step-1-the-refresh-blocked-probe), before order 050m relies on its route: whether Codex 0.167.1's `account/read`, with refresh blocked for the check's process alone, ever writes the home's auth.json; run under the same order, on the Linux node, with a fabricated login, [results](results-2026-11-19-refresh-probe.md).
 

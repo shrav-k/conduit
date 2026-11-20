@@ -695,3 +695,76 @@ about how well it reads.
   word ([ruling 84](../../docs/proposals/ruling-84/README.md), point 3; ruling 89, point 7), the
   Linux node as a node of the Fleet, and a tree granted through the Pool (orders 4 and 5, D59):
   each by its own registration or amendment, before the first turn it changes.
+
+## Amendment of 2026-11-20: stage 2 directly through Conduit
+
+Amended on 2026-11-20 (PST), after order 215's turns, which ran as a dogfood probe outside stage
+2's registration (pull request 443). *Coordinator's* marks a line open to the owner's strike
+(ruling 92, point 6).
+
+**The owner's decision**, verbatim as the coordinator's notes (private) hold it. At about 01:00,
+asked what should happen with the dogfood, the owner chose "One turn now as a stopgap", whose
+option read: "Run order 215's first turn on the tested shell harness, with the record clearly
+marking the harness as temporary. Codex builds its Rust replacement in parallel, and the dogfood
+moves onto it as each part lands." At about 01:15, for the stopgap turn, the owner answered "Run
+it as approved". At about 03:15 the owner chose "Directly through Conduit (Recommended)", whose
+option read: "Every dogfood order goes by `conduit call` of root's turn tools, with Conduit's
+records as evidence and each manual step a logged gap. The shell harness is retired. 211's
+registration gets a dated amendment saying so."
+
+*Coordinator's*: for each later turn of stage 2, this amendment replaces the harness and the
+method order 211 registered [above](#stage-2-registered-before-its-first-turn); the rest stands.
+Where stage 2 names the harness, read Conduit's records; a measure no record gives is not shown.
+
+**The setup as it was done**, on 2026-11-19 and 2026-11-20 (PST), as the store's setup and
+harness logs and the coordinator's notes (private) hold it, the paths as `<codex-path>` and
+`<claude-path>`:
+
+- The engine at `b897d316` (order 050n, pull request 441); `git merge-base --is-ancestor`
+  exits 0 there for `83b74bf4` (051b-2), `b1f6f8ca` and `60126251`. Built at it: agent-codex
+  0.2.0, `sha256:be01c2efe3d836fc4177fe5337ff489ac6f3bb2b4b89172e68629f9b79a6e887`, and
+  agent-claude-code 0.2.0,
+  `sha256:fea05dc9e880c06c608b84ef33a791b45f2f156d4d1436a6e5e818a213bb6bab`; Codex 0.167.1 at
+  `<codex-path>`, Claude Code 2.1.318 at `<claude-path>`. The store's init: exit 0, one restart
+  of 14 s, a sign-in action at root for each of the five Agents.
+- The harness at commit `3efeab26`. Each of the seven starts of serve in the harness's serve log
+  had a call timeout of 15000 s.
+- The owner's five sign-ins, just after midnight on 2026-11-20, in one sitting, by
+  `conduit sign-in` and a browser approval: `worker-1`, `verifier-1`, `worker-2`, `verifier-2`,
+  then `reader-1`, after 027's Claude sign-in
+  [passed](../027-a5-sign-in/results-2026-11-19-1-step-1.md#the-claude-sign-ins-result). Each
+  succeeded; the unanswered actions counted 4, 3, 2, 1, then none; `conduit pending` listed none.
+  The everyday Codex and Claude Code logins were unchanged by their statuses, and the Codex
+  default home's login file had its stat equal before and after.
+- The restarts after the sign-ins: one of 19 s, then three with no turn sent, 19, 23 and 24 s
+  (median 23 s, under condition 2's 240 s), each with every setup passing and no action raised.
+- Not recorded: the init's time and that it held no Agent of stage 1; the rendered lines that
+  differ; each sign-in's login kind, seconds and account check; the Claude default home's login
+  file; each Agent's resolved version; `reconcile.v1`'s caveat.
+
+**The method as run for order 215** on 2026-11-20, the first order built through Conduit by its
+own Agents (pull request 443). The coordinator started serve on the store by hand with a long
+call timeout (7200 s). `worker-1` and `verifier-1` share one directory, `slot-1`, which the
+coordinator brought to `main` before the first turn. Root called, by `conduit call`,
+`turn-worker-1.turn.v1` (07:28 to 07:47 PST), `turn-verifier-1.turn.v1` (07:48 to 07:58, two
+musts) and `turn-worker-1.turn.v1` again in the same conversation (07:59 to 08:01, both fixed).
+All three succeeded. The coordinator copied the results back into a trusted worktree, and the
+gate and the fresh read ran there.
+
+*Coordinator's*: turns sent before this amendment merges, order 216's included, are outside stage
+2's registration, as order 215's were.
+
+**What this method does not have**:
+
+- A guard on what an unconfined Agent touches: the harness's guards are retired with it, and
+  Conduit has none. `verifier-1` has the worker's reach over `slot-1`. *Coordinator's*: so pass
+  condition 4 is not shown, and no order of stage 2 can pass as registered until a guard exists
+  in Conduit itself or the owner decides otherwise; stop rule 1 has no guard to answer it. Pass
+  condition 9 is read from Conduit's records of the restart or `new-conversation.v1` before the
+  turn, and is not shown where they do not show it.
+- `reader-1`'s turns. [Ruling 89](../../docs/proposals/ruling-89/README.md), point 5, tied the
+  Claude reader slot to D58's guard in the harness. *Coordinator's*: `reader-1`, though signed
+  in, takes no turn until a guard exists in Conduit itself or the owner decides otherwise; each
+  fresh read runs outside Conduit, and stage 2's claim 2 is not shown.
+- The steps done by hand, each a gap in the coordinator's notes (private), to be ordered as
+  engine and package work ([ruling 92](../../docs/proposals/ruling-92/README.md), points 2, 9).

@@ -121,8 +121,15 @@ provider or the conformance document. And every provider can be swapped: each pr
 has at least two implementations, built on different existing tools, that pass the same vectors.
 
 **What v0 must pass.** Ruling 47 lists [the experiments](docs/proposals/ruling-47/README.md#when-to-publish)
-that v0, the reference engine, must pass before the owner judges whether to publish it (A75).
-The other probes are observational and do not block publication.
+that v0, the reference engine, must pass before the owner judges whether to publish it (A75):
+S1 to S10 end to end with their vectors passing (S10 needs a second provider for each contract,
+A63); S1 and S2 with real Claude Code and Codex Agents; every safety vector; the author
+measurements against the baseline; model checking of the safety promises; and the subscription
+terms (DEC-005). The other probes are observational and do not block publication.
+
+The methods below inform the owner's judgment; only those that the list above names gate it.
+Mutation testing runs once on the core before that judgment, as information, and the
+independent builds inform it after ([DEC-033](docs/decisions/log.md#dec-033-2026-11-20-the-testing-audit)).
 
 | Method | What it shows | Action |
 | --- | --- | --- |

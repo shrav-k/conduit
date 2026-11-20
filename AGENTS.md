@@ -112,6 +112,12 @@ describes. If you were started with an order from `docs/work-orders/`:
 - Do not edit `~/.claude`, `~/.claude.json`, `~/.codex/config.toml` or any other configuration of
   the owner's, and never read, print or copy a credential.
 - Run the order's checks, and the checks below that apply, before you finish.
+- Run the whole engine suite at most once, at the end; a verifier or reader runs only what settles
+  a doubt. The gate runs everything before each merge
+  ([DEC-033](docs/decisions/log.md#dec-033-2026-11-20-the-testing-audit)).
+- An order that changes the text of a promise experiment 012 models marks that row of
+  `experiments/012-model-checking/account.yaml` "text changed, not rerun", whatever its scope says
+  ([DEC-033](docs/decisions/log.md#dec-033-2026-11-20-the-testing-audit)).
 - Answer in the order's report schema. List apart every choice you made yourself and every check's
   last line, and never report a check you did not run.
 

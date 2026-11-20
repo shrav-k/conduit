@@ -35,6 +35,11 @@ From [DEC-029](docs/decisions/log.md#dec-029-2026-11-20-who-decides-and-who-does
 
 From [DEC-030](docs/decisions/log.md#dec-030-2026-11-20-how-an-order-runs-and-merges).
 
+- A worker runs the whole engine suite at most once, at the end; a verifier or reader runs only
+  what settles a doubt; the gate runs everything before each merge. `by review`
+- An order that changes a modelled promise's text marks its row of 012's account "text changed,
+  not rerun". `checked: tools/check_model_account.py`
+
 ## 4. Proof: scenarios, experiments and measurement
 
 From [DEC-026](docs/decisions/log.md#dec-026-2026-11-20-proof-cases-experiments-measurement).

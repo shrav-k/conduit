@@ -21,7 +21,6 @@
     `Schema` is a contract, and this test is not applied to it. In a sectioned document the
     section fixes the family. SCT-005 makes a template; SCT-006 makes an instance and, for an
     inline definition, its template together. Every translated instance has `from`.
-  vectors: []
 
 - id: INS-002
   layer: language
@@ -36,7 +35,6 @@
     made, or one that an installed package exports. The forms `from` may take are INS-025. An
     inline sectioned definition makes its template and instance together under SCT-006, within
     the same submission.
-  vectors: []
 
 - id: INS-003
   layer: language
@@ -48,7 +46,6 @@
     The document is rejected.
   observable: >-
     Resolving returns a diagnostic naming the undeclared argument.
-  vectors: []
 
 - id: INS-004
   layer: language
@@ -60,7 +57,6 @@
     The document is rejected.
   observable: >-
     Resolving returns a diagnostic naming the missing input.
-  vectors: []
 
 - id: INS-005
   layer: language
@@ -71,7 +67,6 @@
     No instance is made, and the document that supplies the argument is rejected.
   observable: >-
     Resolving returns a diagnostic naming the input and the part of the schema the value fails.
-  vectors: []
 
 - id: INS-006
   layer: language
@@ -90,7 +85,6 @@
     declared Conduit's `target` as its destination puts `{kind: Resource, name: scratch}` there,
     although `target` itself accepts several kinds. At a place that `secret-reference.v1`
     governs a bare name is rejected, under SEC-001, although that schema fixes the kind.
-  vectors: []
 
 - id: INS-007
   layer: language
@@ -101,7 +95,6 @@
     The default is assigned to each of its destinations.
   observable: >-
     In the resolved instance each destination holds the default value.
-  vectors: []
 
 - id: INS-008
   layer: language
@@ -114,7 +107,6 @@
   observable: >-
     In the resolved instance each destination equals the template's value there. Where the
     template gives none, it holds a default of the type's schema under INS-019, or is absent.
-  vectors: []
 
 - id: INS-009
   layer: language
@@ -126,7 +118,6 @@
     under INS-005. It is never treated as the input not being supplied.
   observable: >-
     Where null is permitted, each destination holds null and no default is applied.
-  vectors: []
 
 - id: INS-010
   layer: language
@@ -138,7 +129,6 @@
     The template is rejected.
   observable: >-
     Resolving returns a diagnostic naming both inputs and the destinations that overlap.
-  vectors: []
 
 - id: INS-011
   layer: language
@@ -156,7 +146,6 @@
     OBJ-014 and NAM-019 state: `/conduits/checkout/arguments/limit` is accepted beside a
     declared Conduit `checkout` that writes no `arguments`, and
     `/requirements/rate/arguments/limit` beside an applied requirement `rate` that writes none.
-  vectors: []
 
 - id: INS-012
   layer: language
@@ -183,7 +172,6 @@
     `/requirements/rate/requirement`; and anything under `/inputs`. What is required of an
     `operations` that an input fills is INS-023, and what an entry's `placement` and `runtime`
     give its Resource is POOL-009.
-  vectors: []
 
 - id: INS-013
   layer: language
@@ -201,7 +189,6 @@
     names as that template then stands. Every value that a schema governed is held as SCH-009
     filled it, so the declared part of an inspection result shows `{depth: 1}` where an argument
     gave `{}` for an input whose schema states that default.
-  vectors: []
 
 - id: INS-014
   layer: language
@@ -217,7 +204,6 @@
     form of OBJ-009, which every reference schema accepts, so the configuration as it is stored
     satisfies the same schema. A template that has no `config` is checked against its type's
     schema as an empty map, under INS-024.
-  vectors: []
 
 - id: INS-016
   layer: language
@@ -233,7 +219,6 @@
     After instantiation no setup has run, no Conduit other than a default made under FLEET-005
     has been opened, and no implementation has received a call. The registration result lists
     those defaults.
-  vectors: []
 
 - id: INS-017
   layer: language
@@ -245,7 +230,6 @@
     The two results are the same, apart from generated names and IDs.
   observable: >-
     The two resolved instances are equal field by field once names and IDs are set aside.
-  vectors: []
 
 - id: INS-018
   layer: language
@@ -258,7 +242,6 @@
     The value reaches its destination exactly as supplied. Whether a relative path is then valid
     is decided by the schema of the type that receives it. Where a value is tied to a node,
     as an absolute path is, PLC-020 says who interprets it.
-  vectors: []
 
 - id: INS-019
   layer: language
@@ -274,7 +257,6 @@
     absent. The defaults of the properties of an input's own schema are filled into the
     argument, or into the input's default, before it is assigned, under SCH-009 and SCH-010.
     A control applies no default to a setting whose input is not supplied, as REV-006 states.
-  vectors: []
 
 
 
@@ -294,7 +276,6 @@
     instances is a new instance: it is made from the nested instantiation as the instance holds
     it, and from the template that the nested instantiation's `from` names as that template then
     stands.
-  vectors: []
 
 - id: INS-021
   layer: language
@@ -308,7 +289,6 @@
   observable: >-
     An input with no `schema`, or with no `to` or an empty one, is rejected with a diagnostic
     naming the input. `to: [/config/model]` assigns the value to the `model` member of `config`.
-  vectors: []
 
 
 
@@ -324,7 +304,6 @@
     Resolving returns a diagnostic naming the operation. An input may have a Conduit template's
     `operations` as its destination under INS-012, and the check that CON-017 makes on a list
     the template writes is then made on the resolved list, when the Conduit is instantiated.
-  vectors: []
 
 
 
@@ -342,7 +321,6 @@
     have a destination inside it, because the parent that INS-011 requires is present. Resolving
     a template that writes no `config` and one that writes `config: {}`, otherwise equal, gives
     the same template.
-  vectors: []
 
 
 
@@ -369,4 +347,3 @@
     implementation, and `from` names a template. A value of any other form is rejected with a
     diagnostic naming it, and INS-002 rejects one that does not resolve to a template of the
     same kind.
-  vectors: []

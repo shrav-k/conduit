@@ -26,7 +26,6 @@
     dispatched through an open Conduit that lists that operation.
   observable: >-
     Every record of model work starting names such an invocation, its caller and its Conduit.
-  vectors: []
 
 - id: IMP-002
   layer: convention
@@ -41,7 +40,6 @@
   observable: >-
     No record of model work starting follows any of those events, unless a separate invocation
     of an operation that declares it is also recorded.
-  vectors: []
 
 - id: IMP-003
   layer: language
@@ -54,7 +52,6 @@
   observable: >-
     Reading the contracts of the operations a Conduit lists tells whether its consumer can
     start model work on its target.
-  vectors: []
 
 - id: IMP-007
   layer: convention
@@ -74,7 +71,6 @@
     For a setup hook or a retire hook, the further setup or retirement that dispatches a new
     attempt under OPS-021 is the repeat, and its caller is the attempt's caller, under OPS-028.
     An invocation that was in progress across a restart has the outcome unknown.
-  vectors: []
 
 
 
@@ -92,4 +88,3 @@
     that implements an unmarked operation, or a setup or retire hook, whose operations carry no
     mark, cannot start model work by an onward request. Nor can it start model work later: once
     an invocation has ended the engine dispatches no request on its behalf, under ACC-019.
-  vectors: []

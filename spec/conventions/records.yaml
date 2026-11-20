@@ -34,7 +34,6 @@
     recorded as PND-012 states. An enrollment record names its provider, enrollment ID and
     transition; its answer holds the evidence shown and weaker-check flag (PND-008, PND-012).
     Neither a join action nor the typed fingerprint is recorded (ENR-003, ENR-007).
-  vectors: []
 
 - id: REC-002
   layer: convention
@@ -89,7 +88,6 @@
     Exception to management's keeping no inputs: an install.v1 request confirming shared
     client IDs (CTR-013) keeps data.inputs.confirmClientIds, the client IDs confirmed, and
     no other input. A return under PND-013 is none of the _meta values this rule keeps.
-  vectors: []
 
 - id: REC-003
   layer: convention
@@ -111,7 +109,6 @@
     that name it, under LIF-013, and an object that has been unregistered or removed is no
     longer inspected. How the records that name no object that
     still exists are read is DL8 of the implementation-defined list.
-  vectors: []
 
 - id: REC-004
   layer: convention
@@ -140,7 +137,6 @@
     apart from records (LIF-040, ACC-044); a purge removes neither.
     Pending actions and the answered state that prevents answering twice are engine state
     and are not removed by a purge (PND-012).
-  vectors: []
 
 - id: REC-005
   layer: convention
@@ -157,7 +153,6 @@
     the engine names for the context in which the record was made, such as one node; the
     sequence extension of CloudEvents orders events within one `source` in the same way. An
     engine that names one `source` for every record keeps all its records in one order.
-  vectors: []
 
 - id: REC-006
   layer: convention
@@ -174,4 +169,3 @@
     returned, and no gap remains for it. A loss of records is not presented as a purge under
     REC-004, and no record of a purge is kept for it. Which losses of records outside the
     engine it can tell is DL8 of the implementation-defined list.
-  vectors: []

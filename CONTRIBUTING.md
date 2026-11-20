@@ -120,7 +120,8 @@ the native probes run beside it, as the row "In parallel" does.
 ## Writing promises
 
 1. A promise keeps the exact form `id`, `layer`, `level`, `when`, `then`, `observable`,
-   `vectors: []`, with folded `>-` text indented four spaces and lines under 97 characters.
+   with folded `>-` text indented four spaces and lines under 97 characters; which cases test
+   it is recorded only by the cases' `promises` tags.
    `layer` is `language`, `convention` or `interface`. `level` is `must`, `must not`, `should`
    or `may`.
 2. IDs are never reused or renumbered. A new promise takes the next number never used in that

@@ -66,7 +66,7 @@ What it checks, and reports under these numbers:
      examples/valid/first-start/ writes out the documents that first start makes, which no
      submission may hold (FST-006), so the rule for FST-006 is not applied to it.
   7. Promises under spec/promises/, spec/conventions/ and spec/interface/ have exactly the
-     seven fields of spec/README.md, allowed layers and levels, unique IDs, and no ID named
+     six fields of spec/README.md, allowed layers and levels, unique IDs, and no ID named
      as retired in a head comment or the README's removed-file register is reused.
   8. The totals that spec/README.md states under Contents are those the promise files of
      step 7 hold: the number of promises in all and of each layer, in the sentence "N in all:
@@ -2252,7 +2252,7 @@ def retired_ids(head):
 
 
 def check_promises():
-    fields = {"id", "layer", "level", "when", "then", "observable", "vectors"}
+    fields = {"id", "layer", "level", "when", "then", "observable"}
     seen, retired = {}, {}
     total, before = 0, len(errors)
     file_counts = {}
@@ -2282,7 +2282,7 @@ def check_promises():
             total += 1
             label = f"{rel(path)} promise {index}"
             if not isinstance(promise, dict):
-                fail(f"{label}: must be a record with exactly seven fields")
+                fail(f"{label}: must be a record with exactly six fields")
                 continue
             id_ = promise.get("id")
             label += f" ({id_})"
@@ -2315,7 +2315,7 @@ def check_promises():
                     retired.setdefault(id_, set()).add("spec/README.md removed-file register")
     for id_ in sorted(seen.keys() & retired.keys()):
         fail(f"{seen[id_]}: live ID is retired in {', '.join(sorted(retired[id_]))}")
-    print(f"7. Checked {total} promises in {len(paths)} files: seven fields, layers, levels, "
+    print(f"7. Checked {total} promises in {len(paths)} files: six fields, layers, levels, "
           f"unique IDs and {len(retired)} retired IDs; {len(errors) - before} errors.")
     return (file_counts, layer_counts) if len(errors) == before else None
 

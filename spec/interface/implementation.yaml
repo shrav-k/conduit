@@ -52,7 +52,6 @@
     and reports unavailable, and its record says why, as under IFC-037. A call that the
     implementation rejects with the protocol's error -32020, because its headers disagree with
     its body, is sent once more under IFC-046.
-  vectors: []
 
 - id: IFC-002
   layer: interface
@@ -66,7 +65,6 @@
   observable: >-
     Any such engine and any such implementation can complete a request with each other at the
     baseline revision.
-  vectors: []
 
 - id: IFC-003
   layer: interface
@@ -84,7 +82,6 @@
     protocol's JSON-RPC error for an unsupported version, is sent again at a revision both
     support, under IFC-046, and is one invocation, not two. Any other request so rejected ends
     unknown, under IFC-046.
-  vectors: []
 
 - id: IFC-004
   layer: interface
@@ -109,7 +106,6 @@
     that has no negotiation of extensions, such as 2025-11-25 and those before it, may serve
     such a call where both sides support it, under IFC-003 and DL12; a result whose `resultType`
     is absent, under IFC-010, is a result at such a revision.
-  vectors: []
 
 - id: IFC-005
   layer: interface
@@ -122,7 +118,6 @@
   observable: >-
     An engine states which version of this specification it implements, and that version fixes
     the baseline it must support.
-  vectors: []
 
 - id: IFC-006
   layer: interface
@@ -169,7 +164,6 @@
     PRV-005 names. A sign-in-hook.v1 call also holds
     `io.github.shrav-k.conduit/signInLogin`, {name}, where the person asked for a login, and
     on PND-013's retry `io.github.shrav-k.conduit/signInReturn`, {value}.
-  vectors: []
 
 - id: IFC-007
   layer: interface
@@ -189,7 +183,6 @@
     states no `effect`, that is not a control and whose contract is not marked
     `startsModelWork: true`, and unknown for any other. URL-mode elicitation follows IFC-016
     and IFC-049.
-  vectors: []
 
 - id: IFC-008
   layer: interface
@@ -205,7 +198,6 @@
     error says that the implementation performed nothing, so the invocation's outcome is failed,
     as for a result that states failed under IFC-009, and the record names the revision of
     Conduit's extension that the call declared.
-  vectors: []
 
 - id: IFC-009
   layer: interface
@@ -233,7 +225,6 @@
     one that holds both an outcome and a reason has: a result that contradicts itself is trusted
     in neither part. The `isError` of the result that the engine gives a consumer is the
     engine's own, as IFC-025 states.
-  vectors: []
 
 - id: IFC-010
   layer: interface
@@ -287,7 +278,6 @@
     A URL-mode input request outside sign-in.v1 follows IFC-016: the call ends unknown and,
     only for a signIn Type with a string expected account, raises PND-005. This does not
     change the table above for other input_required results.
-  vectors: []
 
 
 - id: IFC-012
@@ -346,7 +336,6 @@
     The error's message also repeats ACC-056's explanation, and data carries the refusal
     diagnostic beside the reason. Tier 1 discloses no difference between a name never
     presented and a tool whose Conduit closed, apart from what the request itself named.
-  vectors: []
 
 - id: IFC-013
   layer: interface
@@ -359,7 +348,6 @@
     The next tool list that the engine serves to the consumer omits them. A consumer may hold a
     tool list for as long as the protocol lets it. A call to a tool that is no longer presented
     reports refused under ACC-001, and is answered as IFC-012 states.
-  vectors: []
 
 - id: IFC-014
   layer: language
@@ -379,7 +367,6 @@
     under LIF-041. No tools of one consumer share a name. Each name is at most 128 characters:
     its local name at most 63 under OBJ-001 and OBJ-022 and its export name at most 63 under
     NAM-004, joined by a dot.
-  vectors: []
 
 - id: IFC-015
   layer: interface
@@ -397,7 +384,6 @@
     that named each of them would let it present as any. The onward requests that this
     specification provides for, a hook's under TPL-017 among them, come from an implementation
     that is run, with the `token` of its run, under PRV-022.
-  vectors: []
 
 - id: IFC-016
   layer: interface
@@ -450,7 +436,6 @@
     their results. Task input requests use tasks/get and tasks/update as IFC-049 states. A
     task request that does not proceed carries the same explanation and deciding diagnostic
     in the error as IFC-012.
-  vectors: []
 
 - id: IFC-017
   layer: interface
@@ -504,7 +489,6 @@
     PRV-026 makes again before a read, and the run that a retirement asks for to serve its
     retire hook, under TPL-018. The promises of this file hold
     whatever runtime provider runs the item.
-  vectors: []
 
 
 
@@ -535,7 +519,6 @@
     invocation may, are two equal items, and nothing in an item says which it is. The read of a
     secret is sent only the filters of the instance's own Conduit through which it is made,
     under SEC-011.
-  vectors: []
 
 - id: IFC-019
   layer: interface
@@ -563,7 +546,6 @@
     `io.github.shrav-k.conduit/restriction`, as IFC-026 states. Which requirements an
     implementation can apply is stated by `supports` in its manifest under PKG-019, and an
     implementation marked `plain` states none under PKG-020.
-  vectors: []
 
 - id: IFC-020
   layer: interface
@@ -586,7 +568,6 @@
     The request carries Conduit's keys, so it declares Conduit's extension, under IFC-036: the
     protocol's extensions are disabled by default, and a client enables one only where its
     developer opts in.
-  vectors: []
 
 - id: IFC-021
   layer: interface
@@ -601,7 +582,6 @@
     reports refused, whatever open Conduits the Resource is the consumer of. An Interface or an
     Agent that names none makes the request on its own behalf and is its caller. What a request
     reports that names an invocation which the sending instance does not serve is IFC-028.
-  vectors: []
 
 - id: IFC-022
   layer: interface
@@ -644,7 +624,6 @@
     provider that runs it apart, such as in a container, under PRV-006. What a request reports
     from which no instance can be established is IFC-032, and what the engine does not pass on
     is IFC-030.
-  vectors: []
 
 - id: IFC-023
   layer: interface
@@ -659,7 +638,6 @@
     the implementation under IFC-006. A request without the key carries no idempotency key
     and is a new invocation under OPS-011. The key does not appear in the `arguments`.
     A request that carries it declares Conduit's extension, under IFC-036.
-  vectors: []
 
 - id: IFC-025
   layer: interface
@@ -751,7 +729,6 @@
     for Agents. Neither key holds evidence values or prompts (PND-004).
     pendingAction is a list of action IDs, including when it names one action, and carries
     no evidence value.
-  vectors: []
 
 
 
@@ -776,7 +753,6 @@
     values, and never after it has performed any part of what the call asks. IFC-019 states the
     obligation to apply every filter, and this promise the form of the result where one cannot
     be kept.
-  vectors: []
 
 - id: IFC-027
   layer: interface
@@ -790,7 +766,6 @@
     The caller is told the reason, which a consumer receives as IFC-025 states, and the record
     of the request states it. The engine's own access decision was made before the call and
     permitted the request, as ACC-002 requires.
-  vectors: []
 
 - id: IFC-028
   layer: interface
@@ -806,7 +781,6 @@
     one of them that names such an invocation reports refused, and is not taken as made on its
     own behalf. A setup hook or a retire hook is an invocation dispatched to the instance, and
     its onward requests name it.
-  vectors: []
 
 # --- The names a version assigns.
 
@@ -831,7 +805,6 @@
     whatever else is wrong with it, because OPS-023 puts a request that cannot be read first.
     The prefix for this version is the one `names.yaml` states, and the name of Conduit's
     extension is that prefix followed by `implementation-interface`.
-  vectors: []
 
 
 
@@ -852,7 +825,6 @@
     is the engine's own as an enforcement point, and never what a consumer presented.
     A provider call is not a request, under PRV-005: the input `identity` of `run.v1` carries
     what a run is to present, and its runtime provider keeps it under PRV-022.
-  vectors: []
 
 - id: IFC-031
   layer: interface
@@ -866,7 +838,6 @@
     A request that the implementation makes of such a service holds no key that begins
     `io.github.shrav-k.conduit/`, in its `_meta` or anywhere else. An onward request through
     the engine is not such a call: it names the invocation it serves under IFC-020.
-  vectors: []
 
 - id: IFC-032
   layer: interface
@@ -900,7 +871,6 @@
     REC-002.
     The refusal explains that no instance was established (ACC-056). An HTTP 401 may carry
     error_description as RFC 6750 allows, without disclosing objects.
-  vectors: []
 
 
 
@@ -982,7 +952,6 @@
     Type and Type description of the consumer's own target. It includes no configuration, owner
     or placement. Kind, name and Type are fixed, so IFC-038's opening and closing notifications
     cover changes to this description.
-  vectors: []
 
 
 
@@ -1024,7 +993,6 @@
     extension has a server act on an extension only as each request declares it, whatever
     earlier requests declared. IFC-025 says what the result of every
     other request holds.
-  vectors: []
 
 
 
@@ -1064,7 +1032,6 @@
     whatever caching hints it carries, so a discovery result read for one run or one connection
     is not taken for another. What an implementation answers to a request that declares a
     revision it does not support is IFC-008.
-  vectors: []
 
 - id: IFC-038
   layer: interface
@@ -1087,7 +1054,6 @@
     whether or not a notification was sent or received. A consumer learns from the discovery
     result at which revision to declare Conduit's extension on a request that carries Conduit's
     keys, under IFC-036.
-  vectors: []
 
 - id: IFC-039
   layer: interface
@@ -1101,7 +1067,6 @@
     Conduit defines no key of its own for trace context, and no key under the prefix of
     Conduit's keys holds any. What trace context a request carries changes nothing that the
     engine decides, under IFC-040.
-  vectors: []
 
 - id: IFC-040
   layer: interface
@@ -1116,7 +1081,6 @@
     and IFC-020, as they would be without trace context or with any other value of it. The
     instance that sent a request is part of every access decision, so the mechanism of IFC-022
     does not establish it from trace context either.
-  vectors: []
 
 - id: IFC-041
   layer: interface
@@ -1178,7 +1142,6 @@
     names no `Authorization`, under IFC-043. A `remote` item that names no headers is sent
     none. Beside these headers the engine sends what the protocol and its transport require,
     and never what a consumer presented to identify itself, under IFC-030.
-  vectors: []
 
 
 
@@ -1213,7 +1176,6 @@
     condition that it states, the engine accepts the run's `token` there too, beside any other
     means that DL13 offers there, so that a harness that sends `token` to `CONDUIT_URL` works
     under every engine, under PRV-022.
-  vectors: []
 
 - id: IFC-043
   layer: language
@@ -1231,7 +1193,6 @@
     value from configuration there would be the same for every request, and proves nothing of
     who sent it. A plain item may name the header, since the engine presents it no proof, and
     a header that carries a secret goes only where SEC-024 lets it go.
-  vectors: []
 
 
 
@@ -1256,7 +1217,6 @@
     `get-secret.v1`, and at no loopback host on an engine that, as configured, can restart on
     another machine or run as several parts. So an `http` URL on loopback serves a plain
     server alone, on an engine that can do neither.
-  vectors: []
 
 
 
@@ -1287,7 +1247,6 @@
     true`, and unknown for any other. An implementation that carries Conduit's keys answers
     so only where it has performed nothing, under IFC-047, so the outcome is then failed
     under OPS-007, as for the error of IFC-008 that names Conduit's extension.
-  vectors: []
 
 - id: IFC-046
   layer: interface
@@ -1319,7 +1278,6 @@
     is supported by both, or the second call is rejected again, nothing more is sent, and that
     error is read as IFC-010 and OPS-007 read any other. A provider call sent so is one
     provider call, under PRV-005.
-  vectors: []
 
 
 
@@ -1351,7 +1309,6 @@
     under OPS-007, and a repeat of the request is dispatched as a new attempt under OPS-024.
     A plain implementation, which carries none of Conduit's keys, is bound by no such
     promise: IFC-010 reads its -32021 as any other error.
-  vectors: []
 
 - id: IFC-050
   layer: interface
@@ -1370,7 +1327,6 @@
     error diagnostic's message; a condition's message states its cause. A pending notice
     states its kind, visible subjects, permitted evidence and answer asked. Wording is the
     engine's choice; the ruleId, reason and refusal.v1 fields are observable.
-  vectors: []
 
 - id: IFC-049
   layer: interface
@@ -1463,4 +1419,3 @@
     result, record, diagnostic or log of either holds a page login's code, as PND-014 holds
     for a carried value. The connection Conduit manages for a Claude sign-in does not bind the
     person who completes the login; the expected account (PND-011) remains the only binding.
-  vectors: []

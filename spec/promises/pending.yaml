@@ -20,7 +20,6 @@
     action uses its setup invocation's ID; stored kinds receive an engine ID when raised,
     whether or not that happens within an invocation. Where there is a raising invocation,
     the action retains its attribution to that invocation.
-  vectors: []
 
 - id: PND-002
   layer: convention
@@ -41,7 +40,6 @@
     PND-004 even from root's tool results. Agents' list and inspect results carry no pending
     actions. Peer delivery is written in batch 2 with appointment, keep and withhold (ruling
     68, point 3).
-  vectors: []
 
 - id: PND-003
   layer: convention
@@ -62,7 +60,6 @@
     expired or void action reports conflict after the access decision. Expiry starts no
     hook, setup or model work. Answers add no authority and do not resume any request that
     ended.
-  vectors: []
 
 - id: PND-004
   layer: interface
@@ -90,7 +87,6 @@
     on the wire. The panel can display the full recorded evidence to a person permitted to
     inspect the answer. A return is neither evidence nor a prompt. PND-013 and PND-014 alone
     govern it, and only signInReturn carries it.
-  vectors: []
 
 - id: PND-009
   layer: convention
@@ -117,7 +113,6 @@
     already answered, the raised-at test uses its retained subjects and the Interface's
     current scope; it is no longer listed, but an authorized further answer reports conflict
     under PND-003.
-  vectors: []
 
 - id: PND-012
   layer: convention
@@ -132,7 +127,6 @@
     Raising adds no record type of its own. Computed setup actions add none. Pending state
     and answered state used to prevent repeated answers survive a purge of records under
     REC-004; expiry changes no request outcome.
-  vectors: []
 
 - id: PND-005
   layer: convention
@@ -165,7 +159,6 @@
     request, under IFC-016. No action is raised for a Type without signIn or with a null
     account setting; its call ends as that form ends it, with an explicit diagnostic. After
     expiry a new sign-in is raised on the next held request or setup, never by expiry alone.
-  vectors: []
 
 - id: PND-010
   layer: convention
@@ -230,7 +223,6 @@
     received the sign-in: only its retry in the invocation bound by requestState
     (IFC-049) carries a return under PND-013. Polling continues under PND-011, and the account
     check alone decides completion.
-  vectors: []
 
 - id: PND-011
   layer: convention
@@ -268,7 +260,6 @@
     and a different account is undone by a sign-out-hook.v1 part before setup proceeds. A setup
     check that failed or ended unknown raises the action under PND-005 as no account does,
     undoes nothing, and lets setup proceed to its setup hook (TPL-012).
-  vectors: []
 
 - id: PND-013
   layer: convention
@@ -336,7 +327,6 @@
     Where it cannot tell, or cannot bind the port, it opens none and asks the person to paste.
     Its listener answers only a request matching path, Host and state and stops after that
     request or at DL18. The engine cannot tell where a return came from (spec/README.md).
-  vectors: []
 
 - id: PND-014
   layer: convention
@@ -359,7 +349,6 @@
     cause, and holds none of the value. A request that carries signInReturn where PND-013
     takes no return reports invalid, with a diagnostic naming PND-013 and the key, and holds
     no value.
-  vectors: []
 
 - id: PND-006
   layer: convention
@@ -378,7 +367,6 @@
     or expiry for that invocation stays answered and is not recomputed as unanswered. A
     later unsuccessful setup makes a new action. Computation adds no record and dispatches
     nothing.
-  vectors: []
 
 - id: PND-007
   layer: convention
@@ -397,7 +385,6 @@
     acknowledged. The retirement result names each notice in
     io.github.shrav-k.conduit/pendingAction. Raising a notice closes nothing beyond CON-008
     and confers no permission. Evidence is disclosed under PND-002 and PND-004.
-  vectors: []
 
 - id: PND-008
   layer: convention
@@ -425,4 +412,3 @@
     pending-action.v1 wire views. Answer records hold the evidence shown, the
     weaker-check flag and whether a fingerprint was compared or the weaker check accepted;
     tool inspection and export withhold this evidence as well (PND-004, ENR-007).
-  vectors: []

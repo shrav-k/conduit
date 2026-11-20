@@ -38,11 +38,11 @@ How to read a line:
   - What binds, its parts and its three layers: spec/README.md, "What this is" and "Contents" (13, 17 NS1, 31, 32 G1, 37, 40). The layer decisions LD1 to LD5, with LD1's layer test, have no other record than [the layered claim](docs/AUDIT.md#layered-claim) (14).
   - The seven shared conventions: spec/conventions/ (14 LD3, 17).
   - The implementation interface as the one shared wire, so one engine's internal services need not work with another's: IFC-001, IFC-002 (14).
-  - The form of a promise, stable IDs that are never reused, and the register of removed promise files: spec/README.md (17 NS2, 20, 41 P2).
+  - The form of a promise, stable IDs that are never reused, and the register of removed promise files: spec/README.md (17 NS2, 20, 41 P2; 78 point 17 as amended).
   - The three conformance levels, each naming its version: spec/README.md, "Conformance" (24 PD5, 38 point 12a).
   - The seventeen implementation-defined entries, DL1 to DL10, DL12, DL13 and DL15 to DL19: spec/implementation-defined.yaml (31 L1, 32 U10, 41, 42 D8, 43 Q2, 49, 51, round 5's M69 as accepted by 58 point 1).
 - *Spec pending, ruling 78*: the words for the convention layer say what it holds. The seven conventions stay few and stated as invariants, and the layer also holds the provider contracts and the core's own procedures. LD1's layer test is restated for the three layers. spec/README.md's "the few behaviors every part must agree on" and the words of 13 and 14 in the layered claim say otherwise today; no promise moves or changes (78 point 15).
-- *Spec pending, ruling 78*: 17 NS2's writing rules for promises change. Rule 1 (one obligation per promise) is reworded to say what a promise may hold, a rule is added on what an `observable` may say, and a promise's `vectors` field is reworded: the manifest's case tags are the one record of which cases test a promise. spec/README.md's form of a promise says otherwise today. No behavior changes (78 point 17, F124 and F127).
+- *Spec pending, ruling 78*: 17 NS2's writing rules for promises change. Rule 1 (one obligation per promise) is reworded to say what a promise may hold, and a rule is added on what an `observable` may say. spec/README.md's form of a promise says otherwise today. No behavior changes (78 point 17, F124 and F127).
 - A vector is a given-when-then case under conformance/. It binds a conformance claim, not meaning (17 NS4, 32 G1).
 - Where each kind of decision is written: the language and the conventions in `spec/`, with vectors; a type contract with its type's package; and the conformance document with the reference engine (14 LD5, 42 N18, 47).
 - Specification files carry no change narrative (58 point 6). The specification's one description stays first (45 point 1).

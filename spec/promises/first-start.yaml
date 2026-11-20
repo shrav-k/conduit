@@ -26,7 +26,6 @@
     canonical form, under PLC-026, and its labels are those reported for that machine under
     PRV-014, fixed at first start with any other labels configured under DL6 (ENR-010).
     The trust domain is chosen and recorded under FST-007.
-  vectors: []
 
 - id: FST-002
   layer: convention
@@ -43,7 +42,6 @@
     `root-pool`. They are not first-start objects. The `system` Conduit serves as root's default
     to that Pool, with the root-pool operation list of FLEET-005. Their provenance cause is
     `first-start` (ACC-044), and none may be closed by request (ACC-024).
-  vectors: []
 
 - id: FST-003
   layer: convention
@@ -56,7 +54,6 @@
   observable: >-
     No object beyond those of FST-001 and FST-002 exists, and no record shows a call to any
     other implementation.
-  vectors: []
 
 - id: FST-005
   layer: language
@@ -70,7 +67,6 @@
     into `github.com/shrav-k/conduit/core`. The templates are `system`, `node`,
     `management`, `access` and `root`, and for the three Conduits `root-management`,
     `root-access` and `root-pool`.
-  vectors: []
 
 
 
@@ -91,7 +87,6 @@
     because their names are taken under OBJ-002: the engine makes those objects itself and is
     handed no document for them. A template of any other project or package whose `type` is
     `node.v1` is rejected under PLC-028, so no node is made from one either.
-  vectors: []
 
 - id: FST-007
   layer: convention
@@ -111,4 +106,3 @@
     reserved. The file `engine-id` holds the engine's SPIFFE ID (PRV-022). Restarts, moves under
     DL17, and repeated first starts keep the same domain. Inspection of `system` shows it,
     without showing credentials.
-  vectors: []

@@ -44,7 +44,7 @@ class CondensationChecks(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             record = {"id": "OLD-002", "layer": "language", "level": "must",
-                      "when": "always", "then": "holds", "observable": "visible", "vectors": []}
+                      "when": "always", "then": "holds", "observable": "visible"}
             for name in ("promises", "conventions", "interface"):
                 (root / "spec" / name).mkdir(parents=True)
             (root / "spec/README.md").write_text(
@@ -67,6 +67,25 @@ class CondensationChecks(unittest.TestCase):
             for expected in ("fields differ", "invalid layer", "invalid level", "duplicate ID",
                              "OLD-002): live ID is retired", "HEAD-001): live ID is retired"):
                 self.assertTrue(any(expected in error for error in errors), (expected, errors))
+
+    def test_promise_with_vectors_field_is_refused(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            promises = root / "spec/promises"
+            promises.mkdir(parents=True)
+            (root / "spec/README.md").write_text(
+                "### Promise files that rulings removed\n\n## Next\n", encoding="utf-8")
+            record = {"id": "LIVE-001", "layer": "language", "level": "must",
+                      "when": "always", "then": "holds", "observable": "visible"}
+            record["vectors"] = []
+            (promises / "a.yaml").write_text(schemas.yaml.safe_dump([record]), encoding="utf-8")
+            errors = []
+            with patch.object(schemas, "ROOT", root), patch.object(schemas, "errors", errors), \
+                    contextlib.redirect_stdout(io.StringIO()):
+                schemas.check_promises()
+            self.assertEqual(len(errors), 1, errors)
+            self.assertIn("fields differ", errors[0])
+            self.assertIn("extra ['vectors']", errors[0])
 
     @contextlib.contextmanager
     def permalink_repository(self):

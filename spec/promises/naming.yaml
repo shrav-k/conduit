@@ -34,7 +34,6 @@
     have no path: `example.org` and `example.org/a` are accepted, and `example.org/` and
     `example.org//a` are not. A path segment starts with a letter or a digit, so
     `example.org/.`, `example.org/..` and `example.org/-a` are rejected.
-  vectors: []
 
 - id: NAM-002
   layer: language
@@ -47,7 +46,6 @@
   observable: >-
     `github.com/acme/conduit-history#shared-reviewer` resolves to that export. The export's name
     alone, or a path with the export as a further segment, does not.
-  vectors: []
 
 - id: NAM-003
   layer: language
@@ -60,7 +58,6 @@
   observable: >-
     A local reference resolves only among the objects that exist. If no such object exists the
     reference is unresolved, even when an installed package exports that name.
-  vectors: []
 
 - id: NAM-004
   layer: language
@@ -74,7 +71,6 @@
   observable: >-
     Installation returns a diagnostic naming the export. `local-directory.v1` is accepted. The
     63 characters are counted over the whole name, its dots and its version segment included.
-  vectors: []
 
 - id: NAM-005
   layer: language
@@ -90,7 +86,6 @@
     under NAM-001, so nothing written after the address can carry a version. A path segment that
     looks like a version, as in `example.org/files/v2#local-directory.v1`, is part of the
     address: it names another package and selects no release of `example.org/files`.
-  vectors: []
 
 - id: NAM-006
   layer: language
@@ -104,7 +99,6 @@
     A manifest that lists an address twice, gives a version range, or omits a version or a
     digest is rejected with a diagnostic naming the item. The manifest's file, its `packages`
     map and its other keys are MAN-001 to MAN-010.
-  vectors: []
 
 - id: NAM-007
   layer: language
@@ -119,7 +113,6 @@
     manifest and is not listed in one, under NAM-020 and NAM-021. An item of the `operations` of
     a bound does not refer to an address in this sense: it is data, compared as a name and never
     resolved, under ACC-029.
-  vectors: []
 
 - id: NAM-008
   layer: language
@@ -133,7 +126,6 @@
     The result lists the unused address as a diagnostic that did not prevent registration. A
     listed package that is not installed makes the registration rejected under PKG-006, whether
     or not a document refers to it.
-  vectors: []
 
 - id: NAM-009
   layer: language
@@ -157,7 +149,6 @@
     submitting the project again with other contracts, does not change them. Two submissions
     with one digest, read from two directories, give their templates the items as each directory
     resolved them, so the instances made from each run that directory's programs.
-  vectors: []
 
 - id: NAM-010
   layer: language
@@ -170,7 +161,6 @@
   observable: >-
     Two instances made from one template at different times hold the same package versions and
     digests, whatever manifests were submitted in between.
-  vectors: []
 
 - id: NAM-011
   layer: language
@@ -185,7 +175,6 @@
     instances can be connected by a Conduit. If a version that a template or an instance holds
     is no longer installed, inspecting it reports that package as not installed, and nothing is
     substituted.
-  vectors: []
 
 - id: NAM-012
   layer: language
@@ -215,7 +204,6 @@
     rejected under PKG-006. Moving a package's archive to another place, such as from one
     hosting service to another or to a folder, changes its `fetch`, and nothing else, on every
     engine.
-  vectors: []
 
 - id: NAM-013
   layer: language
@@ -227,7 +215,6 @@
     a document of the package itself, in the form NAM-022 gives.
   observable: >-
     After installation the objects that exist are exactly those that existed before it.
-  vectors: []
 
 - id: NAM-014
   layer: language
@@ -240,7 +227,6 @@
   observable: >-
     A project that lists a different version of the other package does not change what the
     package's own documents resolve to.
-  vectors: []
 
 - id: NAM-015
   layer: language
@@ -253,7 +239,6 @@
   observable: >-
     A Conduit that names the `.v1` capability is not satisfied by a target that offers only
     `.v2`.
-  vectors: []
 
 - id: NAM-016
   layer: convention
@@ -266,7 +251,6 @@
   observable: >-
     One target is the target of two open Conduits at once, one naming `.v1` and one naming
     `.v2`.
-  vectors: []
 
 - id: NAM-017
   layer: convention
@@ -278,7 +262,6 @@
     The Conduit is kept from opening for that reason.
   observable: >-
     Package versions are not compared when a Conduit is opened.
-  vectors: []
 
 - id: NAM-018
   layer: language
@@ -298,7 +281,6 @@
     map. `#directory.read.v1` selects the operation of that name in the document's own project
     or package. The `from` of an instance or of a nested instantiation names a template and is
     not a selection: its forms are INS-025.
-  vectors: []
 
 - id: NAM-019
   layer: language
@@ -317,7 +299,6 @@
     under INS-011. A property that has a `default` in the schema of an input, and that is absent
     from a map which the argument supplies, takes that default before the argument is checked,
     under SCH-009, and the argument is kept so filled.
-  vectors: []
 
 - id: NAM-020
   layer: language
@@ -331,7 +312,6 @@
     A document that refers to `github.com/shrav-k/conduit/core#interface.v1` and to nothing else
     in a package is accepted with no manifest. The Schema contracts the core package exports,
     its reference schemas among them, resolve in the same way.
-  vectors: []
 
 - id: NAM-021
   layer: language
@@ -352,7 +332,6 @@
     form for the core package's own manifest, whose implementation items state none of
     `command`, `package` and `remote` under MAN-012. No manifest that is handed over or fetched
     is read in that form.
-  vectors: []
 
 
 
@@ -392,7 +371,6 @@
     exception: they write its address in full, which resolves under NAM-020. So are the
     `operations` of a bound, which name the project's own operations by its address, under
     ACC-029.
-  vectors: []
 
 - id: NAM-023
   layer: convention
@@ -409,7 +387,6 @@
     version says. One that it does not accept reaches no implementation, whatever the other
     version says: this is OPS-033, with the version that the target holds. A result whose
     outputs fail that version has the outcome unknown, under OPS-007.
-  vectors: []
 
 - id: NAM-024
   layer: language
@@ -450,7 +427,6 @@
     the same address is installed, a same-named contract that breaks this rule is rejected:
     installation reports invalid under PKG-023, with a NAM-024 diagnostic naming the contract
     and changed pointer.
-  vectors: []
 
 - id: NAM-025
   layer: language
@@ -462,7 +438,6 @@
   observable: >-
     A contract of one name means the same, apart from the additions NAM-024 allows, in every
     release at one address.
-  vectors: []
 
 - id: NAM-026
   layer: convention
@@ -478,7 +453,6 @@
     operation's package that the target holds has no contract of the operation at all, the
     engine presents no tool for it, under IFC-033: a consumer's call that names such a tool is
     answered as a call to a tool that is not presented, and reports refused under IFC-012.
-  vectors: []
 
 
 
@@ -503,7 +477,6 @@
     SCH-012. An instance document that gives no name has none to share. It counts every
     translated document, generated names included, together with framed documents; SCT-014
     locates a collision at both authored places.
-  vectors: []
 
 
 
@@ -535,4 +508,3 @@
     writes it. A local reference to an object that does not exist is OBJ-008 too. The
     registration of a rejected document reports invalid under OBJ-023, and a request to install
     a package that holds one reports invalid under PKG-023.
-  vectors: []

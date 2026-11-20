@@ -21,7 +21,6 @@
     document with `owner`, `placement`, `runtime` or `arguments`, a Fleet template submitted in
     a project or outside the core package, or a Type of family Fleet outside the core package is
     rejected with a diagnostic naming it; registration reports invalid (OBJ-023).
-  vectors: []
 
 - id: FLEET-002
   layer: language
@@ -37,7 +36,6 @@
     another Fleet is a new Agent with its own ID, under an unused name, or under the old name
     only once the old Agent is retired and removed and its tombstone lifted (LIF-035, LIF-041,
     ACC-053). No request moves an Agent.
-  vectors: []
 
 - id: FLEET-003
   layer: language
@@ -52,7 +50,6 @@
     invalid (OBJ-023), and the Fleet owns the same Agents as before. Registering into a live
     existing Fleet needs both `management` and that Fleet (ACC-033 row 1A). With the Fleet in
     the same submission, it needs `management` alone (row 2). ACC-057 also applies.
-  vectors: []
 
 - id: FLEET-004
   layer: convention
@@ -68,7 +65,6 @@
     runs nothing and applies nothing to its Agents together; each request names one Agent, and a
     cascade dispatches one retirement per Agent (LIF-021). A bound naming a Fleet covers that
     Fleet alone (ACC-029).
-  vectors: []
 
 - id: FLEET-005
   layer: convention
@@ -95,7 +91,6 @@
     ACC-054 prevents another actor from registering root's Conduits. The listed operations
     exclude both cascades and acting for a Fleet. Later capability additions never widen these
     lists.
-  vectors: []
 
 - id: FLEET-006
   layer: language
@@ -112,4 +107,3 @@
     NAM-027 already rejects duplicate names. Names otherwise stay engine-wide per kind: a Pool
     or Fleet may share a name with an Agent, Interface or Resource, subject to FLEET-005. The
     engine-made `system` Pool of FST-001 is the reserved first-start instance.
-  vectors: []

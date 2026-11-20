@@ -171,4 +171,16 @@ do not bind that name the field, and every check's last line. Stage nothing. The
 
 ## Record
 
-Not yet run.
+Run on 2026-11-20 through Conduit itself, by the dogfood's own Agents, in Pacific time. Root
+corrected two things in the dispatch, both the order's own defects:
+- the promise count is 516, not 520, because order 217 removed four promises;
+- item 7's IN_FORCE.md citation is undated, "(17 NS2, 20, 41 P2; 78 point 17 as amended)", with
+  its Done-when grep to match, because `tools/check_rulings.py` forbids dates in IN_FORCE.md.
+
+Worker-1's first turn (13:37 to 13:44) removed the fields and then stopped, correctly, on the
+dated citation. Its second turn (13:46 to 13:57) applied the undated one and finished: 516 fields
+and the three list lines of SCH-009 and CTR-013 removed from 27 files, every other byte kept;
+131 tool tests, and the one whole engine run, 407 passed. `turn-verifier-1.turn.v1` (13:58 to
+14:01) passed it, with one should on the worker's report. `turn-reader-1.turn.v1` (14:01 to
+14:03), the Claude reader, accepted it with no findings. The gate's run on the squash is the
+coordinator's, at the merge.

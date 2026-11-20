@@ -29,7 +29,6 @@
     three values and never any other, including unknown. No instance, a Conduit included, has a
     suspended state: to narrow access, its Conduit is closed and a narrower one opened, under
     ACC-011.
-  vectors: []
 
 - id: LIF-002
   layer: language
@@ -40,7 +39,6 @@
     Its state is registered.
   observable: >-
     Inspecting the new instance reports the state registered.
-  vectors: []
 
 - id: LIF-003
   layer: convention
@@ -55,7 +53,6 @@
     being opened. A setup whose outcome was unknown and that is reconciled as having occurred
     leaves the state as it was, under LIF-028: the instance is ready once a further setup
     succeeds.
-  vectors: []
 
 - id: LIF-004
   layer: convention
@@ -67,7 +64,6 @@
   observable: >-
     An instance that was registered is still registered, and one that was ready is still ready.
     The status names the setup and its outcome, or the reason it was not dispatched.
-  vectors: []
 
 - id: LIF-005
   layer: convention
@@ -80,7 +76,6 @@
   observable: >-
     Inspecting the instance reports the state retired and what retired it, even while its
     shutdown is not confirmed. For a Conduit, retiring is being closed.
-  vectors: []
 
 - id: LIF-006
   layer: convention
@@ -92,7 +87,6 @@
   observable: >-
     No operation moves a ready instance to registered, or a retired instance to ready or
     registered. What a request to set up a retired instance reports is LIF-015.
-  vectors: []
 
 - id: LIF-007
   layer: language
@@ -107,7 +101,6 @@
     of its kind, until it is removed. A reference to the retired instance by its name still
     resolves until then, so a request can still name it; a request that names it afterwards
     reports invalid under OPS-029. That a request names an object by a reference is LIF-031.
-  vectors: []
 
 - id: LIF-008
   layer: convention
@@ -123,7 +116,6 @@
     retired until a replacement is registered under LIF-009. Until then the part of a setup for
     it reports conflict, under CON-004 or POOL-013, a diagnostic names the retired instance, and
     the consumer of a closed declared Conduit has no access through it.
-  vectors: []
 
 - id: LIF-009
   layer: convention
@@ -185,7 +177,6 @@
     replacement never lifts a tombstone. A declared Conduit whose local name or target and
     capability match a tombstone needs an explicit lift first, even though OBJ-003 would
     generate a new object name.
-  vectors: []
 
 - id: LIF-010
   layer: convention
@@ -199,7 +190,6 @@
     Inspection shows the same lifecycle state and the same placement as before, with what could
     not be observed reported as unknown under OBS-003. Instances on other nodes report as
     before. What a request to such an instance reports is PLC-023.
-  vectors: []
 
 - id: LIF-011
   layer: convention
@@ -215,7 +205,6 @@
   observable: >-
     An Agent whose type reports it paused, or whose run is reported stopped, under PRV-009, is
     still ready. Only setup and retirement change the lifecycle state.
-  vectors: []
 
 - id: LIF-012
   layer: convention
@@ -227,7 +216,6 @@
   observable: >-
     Inspecting a template returns no lifecycle state, and no operation gives it one. What a
     request to set up or to retire a template reports is LIF-032.
-  vectors: []
 
 - id: LIF-013
   layer: convention
@@ -289,7 +277,6 @@
     the string where it is one. This discloses that one value of the target's configuration,
     and no other part of it. The Agent's runtime is already shown in `declared` under PRV-006;
     these members name no runtime provider.
-  vectors: []
 
 # --- Retirement and unregistration.
 
@@ -304,7 +291,6 @@
     Inspecting a retired instance shows pending or unknown against its shutdown, and never any
     other value: a confirmed shutdown removes the instance, under LIF-035, so confirmed is seen
     only in the result and the record of what confirmed it. Which of them it is follows LIF-024.
-  vectors: []
 
 - id: LIF-015
   layer: convention
@@ -323,7 +309,6 @@
     requests through closed Conduits, which ACC-011 covers. The Conduits of which it is the
     consumer are closed once its shutdown is confirmed, or once a request to unregister it
     removes it, under CON-008 and LIF-017, and ACC-039 says what they permit until then.
-  vectors: []
 
 - id: LIF-016
   layer: convention
@@ -337,7 +322,6 @@
     An external service, a shared Resource and every other instance are as they were, apart from
     the Conduits of which the retired instance is an end. CON-008 closes those of which it is
     the target at once, and those of which it is the consumer once its shutdown is confirmed.
-  vectors: []
 
 - id: LIF-017
   layer: convention
@@ -361,7 +345,6 @@
     under LIF-035, so a request that names it reports invalid under OPS-029. Like any change,
     the request names the object's current revision. A request for `unregister.v1` that names a
     template is LIF-012.
-  vectors: []
 
 - id: LIF-018
   layer: convention
@@ -380,7 +363,6 @@
     have no such invocation to reconcile; it, like any retired instance, may be removed by a
     request to unregister it, under LIF-017, while its shutdown is still unknown. A Conduit's
     shutdown is confirmed when it is closed, under LIF-024, and waits for no reconciliation.
-  vectors: []
 
 - id: LIF-019
   layer: convention
@@ -398,7 +380,6 @@
     DL8 of the implementation-defined list. Objects that referred to it hold the same ID as
     before and report it as missing, except for those Conduits, which are closed and removed
     under CON-008, LIF-017 and LIF-035.
-  vectors: []
 
 - id: LIF-020
   layer: convention
@@ -412,7 +393,6 @@
     The container and its members are as they were. A diagnostic names every Resource or Agent
     in the way under IFC-025. A member that is registered or ready, or retired with shutdown
     pending or unknown, prevents retirement of its owning Pool or Fleet.
-  vectors: []
 
 - id: LIF-021
   layer: convention
@@ -455,7 +435,6 @@
     requested of the Fleet. The actor's Conduit need list only that cascade operation, not
     `retire.v1`: the retirements it dispatches are parts of it. Here the container is the Pool
     or Fleet, and its members are its owned Resources or Agents respectively.
-  vectors: []
 
 - id: LIF-022
   layer: convention
@@ -469,7 +448,6 @@
   observable: >-
     The request reports refused under LIF-034, whoever makes it, and the object is as it was.
     Closing one of root's declared first-start Conduits or a default is refused under ACC-024.
-  vectors: []
 
 - id: LIF-023
   layer: convention
@@ -486,7 +464,6 @@
     node lost, with no request, where the machine provider reports its machine gone, under
     PLC-024. Nothing is collected for being unused, unreferenced or old. The removal of an
     instance whose shutdown is confirmed is LIF-035, and is not a retirement.
-  vectors: []
 
 
 
@@ -525,7 +502,6 @@
     shutdown, and from the moment it is closed its shutdown is confirmed. A confirmed shutdown
     removes the instance, under LIF-035. What a reconciliation of a setup or a retirement
     changes is LIF-028.
-  vectors: []
 
 - id: LIF-025
   layer: convention
@@ -543,7 +519,6 @@
     whatever its parts dispatched. A node's setup under PLC-026 counts even though it dispatches
     nothing, so this exception does not cover a node that was set up. A setup that ended unknown
     was dispatched too.
-  vectors: []
 
 - id: LIF-026
   layer: convention
@@ -567,7 +542,6 @@
     dispatched at all, and no run is asked for, under PLC-027. A request that names an instance
     whose shutdown is confirmed reports invalid under OPS-029, because that instance has been
     removed, under LIF-035.
-  vectors: []
 
 
 
@@ -585,7 +559,6 @@
     stopped. The instance's own state is unchanged under LIF-004. A later setup leaves what is
     already open, ready or running as it is, under CON-004, POOL-013 and PRV-007. Meanwhile the
     consumer may make the requests that its open Conduits permit, under ACC-003, and no other.
-  vectors: []
 
 
 
@@ -617,7 +590,6 @@
     states. ACC-055 further limits reconciliation. A reconciliation of an open opens nothing, so
     it gives no provenance under ACC-044; confirming a close or retirement preserves its
     tombstone under LIF-040.
-  vectors: []
 
 - id: LIF-029
   layer: convention
@@ -630,7 +602,6 @@
   observable: >-
     The declared Conduit has one Conduit before and after the request. A request for a new
     Resource for a Pool's entry whose Resource is not retired is POOL-003.
-  vectors: []
 
 
 
@@ -656,7 +627,6 @@
     names it by the ID the engine gave it. A request that names an object by a reference that
     resolves to nothing reports invalid too, under OPS-029. Where the actor is not permitted,
     OPS-023 gives refused first.
-  vectors: []
 
 - id: LIF-032
   layer: convention
@@ -672,7 +642,6 @@
     `access`. The thing that the request names exists and is not one the operation addresses, so
     the reason is invalid, as OPS-029 gives it for a request that names nothing. Where the actor
     is not permitted, OPS-023 gives refused first.
-  vectors: []
 
 
 
@@ -694,7 +663,6 @@
     Conduit or a Pool's entry made, and LIF-029 and POOL-003 a request for one of those that is
     not retired. A request that names nothing reports invalid under OPS-029. Where the actor is
     not permitted, OPS-023 gives refused first.
-  vectors: []
 
 - id: LIF-034
   layer: convention
@@ -711,7 +679,6 @@
     has placed on it, would make the request report conflict under LIF-017, LIF-020 or PLC-011,
     as OPS-023 orders the reasons. A request to close one of root's declared first-start Conduits or a default reports
     refused under ACC-024; root may close its own other Conduits on its own behalf.
-  vectors: []
 
 
 
@@ -733,7 +700,6 @@
     confirmed or a request to unregister it removes it, under LIF-017.
     Removing or unregistering an instance removes its state directory and contents under
     PRV-029. Retirement makes a pending sign-in void (PND-003).
-  vectors: []
 
 
 
@@ -786,7 +752,6 @@
     restarts, the runtime provider may first be run again, with reads of its own, under PRV-026.
     An instance with no item that is run, such as one reached only by `remote`, has no run to
     stop, and nothing is asked for.
-  vectors: []
 
 # Names stay the only address; an expected ID is a precondition, as
 # Kubernetes's `preconditions.uid` is.
@@ -822,7 +787,6 @@
     object are subject to ACC-056: it carries that rule's explanation, with IDs and
     existence disclosed only at tier 2. expectedId is also accepted by sign-in.v1 under
     PND-010.
-  vectors: []
 
 - id: LIF-040
   layer: convention
@@ -849,7 +813,6 @@
     OPS-036). A tombstone is not a record and no purge removes it. Engine-made nodes, defaults
     and first-start objects, including first-start Conduits, get none. Removal or unregistering
     does not lift one.
-  vectors: []
 
 - id: LIF-041
   layer: convention
@@ -874,4 +837,3 @@
     `register-replacement.v1` lifts nothing and reports this conflict when matched (LIF-009).
     Every client is subject to this check. ACC-056 states the disclosure tiers for the
     diagnostic.
-  vectors: []

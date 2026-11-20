@@ -28,7 +28,7 @@ class PromiseTotalsChecks(unittest.TestCase):
             file.parent.mkdir(parents=True, exist_ok=True)
             file.write_text(schemas.yaml.safe_dump([
                 {"id": id_, "layer": layer, "level": "must", "when": "always",
-                 "then": "holds", "observable": "visible", "vectors": []}
+                 "then": "holds", "observable": "visible"}
                 for id_, layer in promises
             ]), encoding="utf-8")
         self.rows = (

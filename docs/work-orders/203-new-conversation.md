@@ -20,8 +20,10 @@ them.
 **Its number.** This order carries [the full review's](../proposals/full-review/orders.md) queue
 row 62. It takes 203, the next number after 202 that no file uses, since 062 is the number of a
 merged order of the condensation (the batch records' logs), whose Record is in
-[the record](../implementation/WORK_ORDERS.md#order-062). When this order's Record is condensed,
-its heading is `### Order 203`.
+[the record](../implementation/WORK_ORDERS.md#order-062). Under
+[ruling 90](../proposals/ruling-90/README.md), point 4, this order's Record stays in this file,
+which a later archive move carries whole into `docs/archive/work-orders/`; no row is written for
+it.
 
 **How this order is written.** It states what each package must do and the tests that show it.
 It gives exact text only for the contract, the diagnostics, the declaration and the cases the
@@ -75,46 +77,92 @@ engine, and each restart sets every slot up again and so runs its account check 
 owner's first dogfood milestone, serial turns; the second, parallel slots, comes once this order
 ships ([ruling 89](../proposals/ruling-89/README.md), point 3), and IN_FORCE.md keeps A78's
 orders one at a time only "until order 050 and the review's order 62". So, under the owner's lever
-"Pipeline the chain" (ruling 89, point 2), this order is dispatched on order 050n's verified
-round-1 branch, before 050n merges.
+"Pipeline the chain" (ruling 89, point 2), this order is dispatched stacked on order 050n's built
+branch, before 050n merges.
 
 **Where this order starts.** Your tree starts at the commit the coordinator's dispatch note names
 as `BASE`, which is `HEAD`. It holds order 050n's work in one of two ways, either of which serves:
-050n has merged to `main`, and `BASE` is on `main`; or, stacked, `BASE` is the tip of 050n's
-round-1 branch, `wo/050n-agent-packages-joined`, which holds 050n's build, committed, read by its
-verifier and not yet by its reader or merged. You tell them apart by 050n's Record, which the
-admin writes at the foot of 050n's order file at the merge: read that file from `main`, where it
-is present before either base exists, since your round-1 tree may not hold it; until 050n merges
-it has no `## Record` heading.
+050n has merged to `main`, and `BASE` is on `main`; or, stacked, `BASE` is `bd06d0d3`, the tip of
+050n's branch `wo/050n-agent-packages-joined`: 050n's build, read by its verifier and a fresh
+reader, fixed, read again, rebased onto `main` at `fc1c54a6` (which holds order 214, ruling 91 and
+order 211) and passed by the local gate, but not merged, since its merge waits on the owner's live
+check. You tell them apart by `main`'s copy of 050n's order file: 050n's branch already holds its
+Record, but `main` gains it only at 050n's merge, so `main`'s copy has no `## Record` heading until
+050n merges. Read that file from `main`, at `docs/work-orders/050n-agent-packages-joined.md`, or,
+once [ruling 90](../proposals/ruling-90/README.md)'s archive move has carried it there, at
+`docs/archive/work-orders/050n-agent-packages-joined.md`; the start check looks in both.
 Report which base you have. Nothing below reads which it is, but for the start check's two lines
-that say so. On a round-1 branch the copy of this order's file in your tree may be older than the
+that say so. On 050n's branch the copy of this order's file in your tree may be older than the
 text on `main`; where they differ, `main`'s governs: read it with
 `git show origin/main:docs/work-orders/203-new-conversation.md`.
 
 This order was refreshed on 2026-11-19 against the two lanes' tips (`f1ede6a5` for Claude Code,
-`34f4e662` for Codex) and against 050n's text as refreshed for its dispatch, before 050n was
-built; the coordinator reads 050n's round-1 build before dispatching this order and revises this
-text where they differ. What it expects of 050n is: both packages at version 0.2.0 in
-`conduit.yaml` and `Cargo.toml`; `conversation.v1` with operations `['#turn.v1']`; each item that implements `turn.v1` marked `plain: true`
-([ruling 86](../proposals/ruling-86/README.md), point 1), with an `implements` list that holds
-`'#turn.v1'` and, in each `.v2` item, the core package's hooks that the lanes added (orders 050h
-to 050m), each mapped in `tools`; 050a's check passing (the 0.1.1 contracts a byte prefix of each
-`contracts.yaml`); and the engine's copies at 0.2.0: each package's `conduit.yaml` and
-`contracts.yaml` equal to its copy under `conformance/fixtures/agents/`, each copy's
-`contracts.tar.gz` holding those two copies, its digest pinned in
-`conformance/language/registration/live-agents/fixture.json` and
-`engine/examples/s1/conduit.yaml`, and `engine/crates/shell/tests/agents.rs` pinning version
-0.2.0. The two packages' sources are no longer one source but for the `CLAUDE` constant: orders
-050i to 050k changed Claude Code's, and 050l and 050m Codex's. Order 050n keeps them two (its
-decision 1), moves the copies and pins to 0.2.0, has `make_archives` write the copies' archives, and builds the
-S1 fixture's `.v2` Types from the copies. Its case for TPL-005 on `account-hook.v1` (its decision
-6) installs a synthetic package that `make_archives` writes into
-`conformance/fixtures/install-archives/`: the 0.2.0 Codex contracts under an address of its own,
-one item copied from the copy's `wrapper-v2` without `account-hook.v1`, and a template of that
-package's own `codex.v2`, so that the case names none of the copies; 050n may have written it as
-a shell test instead. Which hooks each `.v2` item lists, and so which tools each wrapper lists, is as 050n leaves it: the Codex
-lane's account and sign-in hooks (orders 050l and 050m) join only on a pass of the live check
-(ruling 82, point 1). This order never assumes a list, and adds to the one it finds.
+`34f4e662` for Codex) and against 050n's text, and revised on 2026-11-20 by the coordinator
+against 050n's build at `bd06d0d3`, with this start check run there. What it finds there, and
+expects of any `BASE`:
+
+- Both packages at version 0.2.0 in `conduit.yaml` and `Cargo.toml`, `conversation.v1` with
+  operations `['#turn.v1']`, and 050a's check passing (the 0.1.1 contracts a byte prefix of each
+  `contracts.yaml`). In each `contracts.yaml`, each Type's `spec.implementation` is a block map
+  whose `'#turn.v1'` line has a four-space indent, and the file's last document is `codex.v2` or
+  `claude-code.v2`, ending in a newline.
+- Each item that implements `turn.v1` is marked `plain: true`
+  ([ruling 86](../proposals/ruling-86/README.md), point 1). Codex has three such items: `wrapper`
+  (a flow `implements` list), and `wrapper-v2` and `wrapper-v2-path` (block lists); Claude Code
+  has two: `wrapper` and `wrapper-v2`, both with flow lists. Each `.v2` item implements, after
+  `'#turn.v1'`, the core package's four hooks the lanes added (orders 050h to 050m), in this order:
+  `retire-hook.v1`, `account-hook.v1`, `sign-out-hook.v1` and `sign-in-hook.v1`, each mapped in
+  `tools` to `retire`, `account`, `sign-out` and `sign-in`. So both wrappers list `turn` for
+  `.v1`, and `turn`, `retire`, `account`, `sign-out` and `sign-in`, in that order, for `.v2`. The
+  tests that assert those lists are, in each package, `stdio_exposes_only_turn_and_setup_never_launches_client`,
+  `stdio_v2_defaults_and_invalid_configuration_remain_callable`,
+  `v2_retire_tool_through_the_wrapper`, `v2_account_and_sign_out_tools_through_the_wrapper` and
+  `v2_sign_in_tool_through_the_wrapper`. Still, this order never assumes a list: it records the
+  one it finds at `BASE` and adds to it.
+- The engine's copies at 0.2.0: each package's `conduit.yaml` and `contracts.yaml` equal to its
+  copy under `conformance/fixtures/agents/`, each copy's `contracts.tar.gz` holding those two
+  copies, its digest pinned once in `conformance/language/registration/live-agents/fixture.json`
+  and once in `engine/examples/s1/conduit.yaml`, and `engine/crates/shell/tests/agents.rs` pinning
+  version 0.2.0. The two packages' sources are no longer one source but for the `CLAUDE`
+  constant: orders 050i to 050k changed Claude Code's, and 050l and 050m Codex's, and order 050n
+  keeps them two (its decision 1).
+- `make_archives` (050n's decisions 4 and 5) writes each copy's `contracts.tar.gz` in place, from
+  the copy's two files, and lists none of them under `conformance/fixtures/install-archives/`. It
+  builds the release `agents-0.2.0` with each `.v2` Type's `schema`, `signIn` and `requires` read
+  from the copies, and with the non-Type documents of the Claude Code copy's `contracts.yaml`. It
+  also writes the synthetic package of 050n's TPL-005 case,
+  `conformance/fixtures/install-archives/codex-no-account-hook.tar.gz`, from the Codex copy: the
+  copy's manifest under the address `example.org/conformance/codex-no-account-hook`, keeping its
+  `version` and `exports`, with one item, the copy's `wrapper-v2` without `account-hook.v1` in
+  `implements` and `tools`; and every document of the copy's `contracts.yaml`, `codex.v1`'s
+  `implementation` removed (050n's finding 050n-1), written as `conduit.json` and
+  `contracts.json`. Its `--check` ends `42 reproducible archive fixtures verified`.
+- 050n's cases (its decision 6 and its reader's R2). Two besides `registration-live-agents` name
+  the copies' archives as fixture aliases: `registration-agent-v2-packages` (CTR-013, PKG-020) and
+  `registration-agent-v2-account-binding` (MAN-017), both under
+  `conformance/language/registration/`. Each pins each copy's version and digest in its install
+  files, `claude-code-install.json` and `codex-install.json`, and in its `case.yaml`'s expected
+  `state.installed_packages`; the binding case also in its project manifest, `conduit.json`. The
+  packages case also projects each installed copy's `documents`, an array with exact cardinality
+  (four documents in each copy at 0.2.0). The TPL-005 case,
+  `registration-agent-v2-account-hook-missing`, is a portable case, not a shell test: its
+  `files` are `codex-install` (`codex-install.json`, its install file), `codex-archive` (the
+  synthetic archive), `fixture`, `manifest` (`conduit.json`) and `documents` (`documents.json`,
+  its template file, an Agent of `example.org/conformance/codex-no-account-hook#codex.v2`); it
+  names none of the copies.
+- 050n's Record gives the per-target test totals at `bd06d0d3`: for Codex, lib 2/0, manifest
+  1/0, package 1/0 and wrapper 31/0; for Claude Code, lib 2/0, package 1/0 and wrapper 29/0; and
+  for the engine's target `agents`, 2 passed, 0 failed and 2 ignored.
+
+Merged since this order was written, and changing nothing it builds: order 214 makes the engine's
+call of the sign-in hook alone name protocol revision 2026-07-28 in its `_meta`, while every
+provider session still opens with the legacy handshake; `new-conversation.v1` is a plain
+operation, not a hook, and answers a complete `CallToolResult` as `turn` does, so the engine
+reaches it over that session as it reaches `turn`, and the new test's plain client (`().serve`)
+negotiates as `BASE`'s stdio tests do. [Ruling 91](../proposals/ruling-91/README.md)'s hold on a
+late answer of another account is spec pending, for [order 216](216-ruling-91-spec-and-engine.md),
+written ahead to run after milestone 1, which changes nothing under `packages/` and no wrapper. Ruling 90 changes only where this order's Record ends up, as above, and where
+the start check reads 050n's file.
 
 Before you change anything, check from the repository root that you find there what that gives,
 and stop, change nothing and report if any check prints otherwise:
@@ -126,8 +174,8 @@ test "$(git rev-parse HEAD)" = "$(git rev-parse "$BASE")"; echo "head $?"
 git ls-files --error-unmatch docs/work-orders/203-new-conversation.md >/dev/null; echo "order $?"
 test -e docs/work-orders/203-declared.yaml; echo "declared $?"
 git status --short | wc -l
-git cat-file -e origin/main:docs/work-orders/050n-agent-packages-joined.md; echo "050n order $?"
-git show origin/main:docs/work-orders/050n-agent-packages-joined.md | grep -c "^## Record"
+F=docs/work-orders/050n-agent-packages-joined.md; git cat-file -e "origin/main:$F" 2>/dev/null || F=docs/archive/work-orders/050n-agent-packages-joined.md; git cat-file -e "origin/main:$F"; echo "050n order $?"
+git show "origin/main:$F" | grep -c "^## Record"
 grep -c '^version: 0.2.0$' packages/agent-codex/conduit.yaml packages/agent-claude-code/conduit.yaml
 grep -c '^version = "0.2.0"$' packages/agent-codex/Cargo.toml packages/agent-claude-code/Cargo.toml
 grep -c "^  operations: \['#turn.v1'\]$" packages/agent-codex/contracts.yaml packages/agent-claude-code/contracts.yaml
@@ -140,37 +188,45 @@ for NAME in agent-codex agent-claude-code; do python3 -c 'import sys,tarfile; [p
 git grep -lE 'fixtures/agents/agent-(codex|claude-code)/|live-agents/fixture\.json|examples/s1/conduit\.yaml' -- 'conformance/**/case.yaml' 'conformance/**/case.json' 'conformance/**/case.yml'
 ls conformance/fixtures/install-archives
 git grep -l TPL-005 -- 'conformance/**/case.yaml' engine/crates/shell/tests | xargs grep -l 'account-hook.v1'
+for C in agent-v2-packages agent-v2-account-binding; do grep -c '"version": "0.2.0",' conformance/language/registration/$C/case.yaml; done
+python3 -c 'import json,sys; print(*[len(s["expect"]["reply"]["package"]["project"]["documents"]) for s in json.load(open(sys.argv[1]))["steps"]])' conformance/language/registration/agent-v2-packages/case.yaml
 (cd engine && CARGO_NET_OFFLINE=true cargo run --release -p conduit-conformance --example make_archives -- --check 2>&1 | tail -n 1)
 ```
 
 They print `main 0`; then `merged 0` where 050n has merged and `BASE` is on `main`, or `merged 1`
-on 050n's round-1 branch; `head 0`, `order 0`, `declared 1` (no declaration yet: you write it,
-decision 7) and `0`; `050n order 0` (050n's order file, on `main`), then `1` where 050n has
-merged or `0` where it has not, as on its round-1 branch, since its file has no Record yet: stop where this line and the `merged` line disagree, `merged 0`
-with `0` or `merged 1` with `1`; `1` for each of the two `conduit.yaml`, the two `Cargo.toml` and
-the two `contracts.yaml`; `agent-codex 0.1.1 0` and `agent-claude-code 0.1.1 0` (050a's check,
-against the 0.1.1 contracts as `main` held them at `e4ceb4c8`); `0` (no file holds the new names
-yet); for each package and each of `conduit.yaml` and `contracts.yaml`, `NAME FILE 0` and
-`NAME archive FILE 0`; for each package, `1` or more for `fixture.json` and `1` or more for
-`conduit.yaml` (the archive's digest is pinned in both; keep the counts, as order 050n's done-when
-allows more than one); `1` (the test's version pin); for each package, one line for each of the
-archive's two members, `conduit.yaml` and `contracts.yaml`, with the name, mode, owner and group
-IDs and names, and time that order 050n built it with, and no size (keep them: the done-when
-compares the rebuilt archives' listings with them; the listing is Python's `tarfile`, not
-`tar -tv`, whose fields differ between BSD and GNU tar); the case files that name any of decision
-7's eight files as a fixture alias, among them
-`conformance/language/registration/live-agents/case.yaml` (keep the list: decision 7's declaration
-covers each; for each other case, keep also the files it names that pin a copy's version `0.2.0`
-or a copy's digest, such as an `install-archive` step's install file); the files under
-`conformance/fixtures/install-archives/` (keep the list, and name among them the synthetic TPL-005
-package); the `case.yaml` of order 050n's TPL-005 case for `account-hook.v1`, or the shell test
-where 050n wrote it as one (for a case, list then that `case.yaml`'s `files` entries, and name
-among them its template file and its install file; keep them; that case must not
-be among the cases listed above, since its template is of the synthetic package's own `codex.v2`
-and it installs no copy: where it is, or where its template is of the copy's `codex.v2`, stop and
-report, since what that case becomes at 0.2.1 is then the coordinator's); and
-`N reproducible archive fixtures verified` (keep its line). `/usr/bin/python3` is the Mac's
-interpreter with PyYAML; where `python3` has PyYAML, it serves as well.
+stacked on 050n's branch; `head 0`, `order 0`, `declared 1` (no declaration yet: you write it,
+decision 7) and `0`; `050n order 0` (050n's order file, on `main`, in either place), then `1`
+where 050n has merged or `0` where it has not, as when stacked, since `main`'s copy has no Record
+yet: stop where this line and the `merged` line disagree, `merged 0` with `0` or `merged 1` with
+`1`; `1` for each of the two `conduit.yaml`, the two `Cargo.toml` and the two `contracts.yaml` (on
+a base without 050n's work the four version counts print `0`: stop); `agent-codex 0.1.1 0` and
+`agent-claude-code 0.1.1 0` (050a's check, against the 0.1.1 contracts as `main` held them at
+`e4ceb4c8`); `0` (no file holds the new names yet); for each package and each of `conduit.yaml`
+and `contracts.yaml`, `NAME FILE 0` and `NAME archive FILE 0`; for each package, `1` for
+`fixture.json` and `1` for `conduit.yaml` (the archive's digest is pinned once in each; keep the
+counts); `1` (the test's version pin); for each package, one line for each of the archive's two
+members, `conduit.yaml 0o644 0 0   0` and `contracts.yaml 0o644 0 0   0` (the name, mode, owner
+and group IDs, empty owner and group names, and time that order 050n built it with, and no size;
+keep them: the done-when compares the rebuilt archives' listings with them; the listing is
+Python's `tarfile`, not `tar -tv`, whose fields differ between BSD and GNU tar); the three case
+files that name any of decision 7's eight files as a fixture alias,
+`conformance/language/registration/agent-v2-account-binding/case.yaml`,
+`conformance/language/registration/agent-v2-packages/case.yaml` and
+`conformance/language/registration/live-agents/case.yaml`, and no other (stop where the list
+differs: decision 7 names what each case becomes); the files under
+`conformance/fixtures/install-archives/`, among them `agents-0.2.0.tar.gz`, the synthetic TPL-005
+package `codex-no-account-hook.tar.gz`, `digests.json` and `README.md`, and none named for a copy
+(keep the list); `conformance/language/registration/agent-v2-account-hook-missing/case.yaml`,
+050n's TPL-005 case for `account-hook.v1`, which is not among the three cases above, since its
+template is of the synthetic package's own `codex.v2` and it installs no copy (where it is among
+them, where its template is of the copy's `codex.v2`, or where 050n's case is a shell test
+instead, stop and report: what that case becomes at 0.2.1 is then the coordinator's); `3` and `3`
+(the two cases' expected versions of installed copies, 0.2.0); `4 4` (each install step of the
+packages case projects four documents); and `42 reproducible archive fixtures verified` (keep its
+line). `/usr/bin/python3` is the Mac's interpreter with PyYAML; where `python3` has PyYAML, it
+serves as well. The coordinator ran these lines at `bd06d0d3`, which printed all of the above,
+and at `fc1c54a6`, `main` without 050n's work, where they stop at `merged 0` with `0`, at the four
+version counts and at the case list.
 
 Then, still before any change, record for the report: the tools that each wrapper lists at
 `BASE`, for `.v1` and for `.v2`, in their order; and each test in each `tests/wrapper.rs` at
@@ -178,8 +234,9 @@ Then, still before any change, record for the report: the tools that each wrappe
 and copy the archive it names to a new temporary directory outside the repository, keeping the
 `ARCHIVE#SHA256` line it printed: the done-when installs this 0.2.0 archive beside the new one.
 Record also each package's per-target test totals at `BASE` and those of the engine's target
-`agents`, taking them from the coordinator's dispatch note, which carries them from 050n's
-verified report, or from 050n's Record, and only for a total that neither gives by running
+`agents`, taking them from 050n's Record (in your tree at `BASE` when stacked, or on `main` once
+050n has merged), as listed above for `bd06d0d3`, or from the coordinator's dispatch note, and
+only for a total that neither gives by running
 `cargo test --release` in that package or `cargo test --release --test agents` in `engine/`: the
 done-when compares the totals with these.
 
@@ -487,52 +544,63 @@ generator keeps 0.2.0's release as it is:
   byte-for-byte copies of the package's new files; `contracts.tar.gz` is rebuilt from those two
   copies alone, deterministically, with the listing that the start checks kept (the same member
   names in the same order, with the same modes, owner, group and time), its size apart; and `README.md` names version
-  0.2.1 where it named 0.2.0 and, where it names the order that made the copies, names
-  `(work order 203, the full review's order 62)`, with no other change. Order 050n has
-  `make_archives` write the copies' archives (its decision 4): rebuild them by running it in write
-  mode (`cargo run --release -p conduit-conformance --example make_archives` in `engine/`), which,
-  with the next bullet's change, leaves every other output it writes at its `BASE` bytes. Where
-  `BASE`'s `make_archives` does not write them, build them as 050n's decision 4 states them, and
-  report how, as your own choice. Where `make_archives` also lists the copies' archives in
-  `conformance/fixtures/install-archives/` and its `digests.json`, those entries, whose new bytes
-  equal a copy's new `contracts.tar.gz`, are the only change allowed there.
-- In `engine/crates/conformance/examples/make_archives.rs`, the release `agents-0.2.0`, which
-  takes documents from the copies (the non-Type documents of the Claude Code copy's
-  `contracts.yaml` and, as order 050n left it, members of the `.v2` Types), and every other
-  generator output built from the copies, the synthetic TPL-005 package that order 050n has
-  `make_archives` write from the Codex copy included, each keep their `BASE` bytes:
-  none holds `new-conversation.v1`, neither the Operation, nor its entry in
-  `conversation.v1`'s `operations`, nor a Type's default implementation of it, nor an item's
-  `implements` entry or `tools` entry for it. How the generator leaves them out is yours to choose
-  and report. A fixture named 0.2.0 does not hold 0.2.1's operation, and so
-  `conformance/fixtures/s1/packages/agents-0.2.0`, its archive and the synthetic package's under
-  `conformance/fixtures/install-archives/`, `digests.json` (but for the entries the bullet above
-  allows) and the `agents-v2-defaults` vector's pinned digest stay byte for
-  byte: the write mode leaves them as they are. Nothing else in the generator changes.
+  0.2.1 where it named 0.2.0 and, where it names the order that made the copies,
+  `(work order 050n)`, names `(work order 203, the full review's order 62)` instead, with no other
+  change. Order 050n has `make_archives` write the copies' archives in place (its decision 4):
+  rebuild them by running it in write mode
+  (`cargo run --release -p conduit-conformance --example make_archives` in `engine/`), which, with
+  the next bullet's change, leaves every other output it writes at its `BASE` bytes. It lists no
+  copy's archive under `conformance/fixtures/install-archives/`, so nothing there and nothing in
+  its `digests.json` changes.
+- In `engine/crates/conformance/examples/make_archives.rs`, every generator output built from the
+  copies keeps its `BASE` bytes. These are the release `agents-0.2.0`, which takes the non-Type
+  documents of the Claude Code copy's `contracts.yaml` (at 0.2.1 the new Operation among them, and
+  `conversation.v1` with its new `operations` entry) and each `.v2` Type's `schema`, `signIn` and
+  `requires`, which 0.2.1 does not change; and the synthetic TPL-005 package
+  `codex-no-account-hook`, which takes from the Codex copy its manifest, its `version` and
+  `exports` included, its item `wrapper-v2` and every contract document. None holds
+  `new-conversation.v1`: neither the Operation, nor its entry in `conversation.v1`'s `operations`,
+  nor a Type's default implementation of it, nor an `exports` entry, nor an item's `implements`
+  entry or `tools` entry for it; and the synthetic package's `version` stays `0.2.0`, which at
+  `BASE` it takes from the copy. How the generator leaves them out is yours to choose and report.
+  A fixture named 0.2.0 does not hold 0.2.1's operation, and so
+  `conformance/fixtures/s1/packages/agents-0.2.0`, the two archives under
+  `conformance/fixtures/install-archives/` and its `digests.json`, the `agents-v2-defaults`
+  vector's files and the TPL-005 case's files stay byte for byte: the write mode leaves them as
+  they are. Nothing else in the generator changes.
 - In `conformance/language/registration/live-agents/fixture.json` and
   `engine/examples/s1/conduit.yaml`: for each Agent package, its `version` becomes `0.2.1` and its
   `digest` the `sha256:` digest of the copy's new `contracts.tar.gz`. Nothing else changes.
 - In `engine/crates/shell/tests/agents.rs`: the pin `version: 0.2.0` becomes `version: 0.2.1`.
   Nothing else changes.
-- In each other case that the start checks listed, such as order 050n's portable cases that
-  register each package's copy, the files the start checks kept as pinning a copy's version or
-  digest (an `install-archive` step's install file, say): the copy's `version` `0.2.0` becomes
-  `0.2.1` and its digest the copy's new one, in that file's own form. Nothing else in them
-  changes, and no `case.yaml` changes; a case whose name or title says 0.2.0 keeps it, and you
-  report it.
-- **The TPL-005 case.** Order 050n's case for TPL-005 on `account-hook.v1` installs the
-  synthetic package, whose template is of its own `codex.v2` and whose bytes stay as at `BASE`
-  (the bullet above), so it passes unchanged and is not in the declaration. Where 050n wrote it as
-  a shell test, that test does not change either.
+- **Order 050n's two cases that install the copies**, `registration-agent-v2-packages` and
+  `registration-agent-v2-account-binding`, under `conformance/language/registration/`, move to
+  0.2.1 with them, the coordinator's revision of this text at 050n's build. In each, the files
+  `claude-code-install.json` and `codex-install.json`, the binding case's `conduit.json`, and the
+  `case.yaml`'s expected `state.installed_packages`: each copy's `version` `0.2.0` becomes `0.2.1`
+  and its `digest` the copy's new one, in that file's own form. And in
+  `registration-agent-v2-packages/case.yaml`, each `install-archive` step's
+  `expect.reply.package.project.documents` array gains, after its last member, the member
+  `{"kind": "Operation", "metadata": {"name": "new-conversation.v1"}}`, written as the file
+  writes the `turn.v1` member: a case's arrays have exact cardinality, and each copy's
+  `contracts.yaml` now ends with that Operation, so the case fails at
+  `/reply/package/project/documents: expected 4 items, found 5` without it. Nothing else in either
+  case changes, the expected `implementation` and `tools` maps included (maps are projections, so
+  their new entries need no expectation), and no other `case.yaml` changes. Neither case's ID or
+  title names 0.2.0.
+- **The TPL-005 case**, `registration-agent-v2-account-hook-missing`, installs the synthetic
+  package, whose template is of its own `codex.v2` and whose bytes stay as at `BASE` (the bullet
+  above), so it passes unchanged and is not in the declaration.
 - **The declaration.** The case `registration-live-agents` names eight of these files as fixture
   aliases: `fixture.json`, `engine/examples/s1/conduit.yaml` and, for each package, the copy's
-  `conduit.yaml`, `contracts.yaml` and `contracts.tar.gz`. Order 050n may have added cases that
-  name some of them too: the start checks listed every such case. `tools/vector_delta.py` compares each
-  alias as bytes and reports each changed one as a `fixture` change, and the local gate's row
-  `vector changes` fails on any change that no declaration covers. So write the new file
-  `docs/work-orders/203-declared.yaml`, in this build and not before: the gate reads a
-  declaration through `--declared-changed` only where the branch adds or changes it from its merge
-  base, and this order's text is already on `main`. It holds this one shape, byte for byte:
+  `conduit.yaml`, `contracts.yaml` and `contracts.tar.gz`; the two cases above name the copies'
+  archives and their own pin files. `tools/vector_delta.py` compares each alias as bytes and
+  reports each changed one as a `fixture` change, reports each changed expectation by its JSON
+  path, and the local gate's row `vector changes` fails on any change that no declaration covers.
+  So write the new file `docs/work-orders/203-declared.yaml`, in this build and not before: the
+  gate reads a declaration through `--declared-changed` only where the branch adds or changes it
+  from its merge base, and this order's text is already on `main`. It holds these seven shapes,
+  byte for byte:
 
 ```yaml
 - name: the copies and pins of the Agent packages move to 0.2.1
@@ -547,23 +615,60 @@ generator keeps 0.2.0's release as it is:
   - conformance/fixtures/agents/agent-claude-code/conduit.yaml
   - conformance/fixtures/agents/agent-claude-code/contracts.yaml
   - conformance/fixtures/agents/agent-claude-code/contracts.tar.gz
+- name: the copies of the Agent packages move to 0.2.1, in registration-agent-v2-packages
+  kind: fixture
+  cases: [registration-agent-v2-packages]
+  paths:
+  - conformance/fixtures/agents/agent-codex/contracts.tar.gz
+  - conformance/fixtures/agents/agent-claude-code/contracts.tar.gz
+  - conformance/language/registration/agent-v2-packages/claude-code-install.json
+  - conformance/language/registration/agent-v2-packages/codex-install.json
+- name: the copies of the Agent packages move to 0.2.1, in registration-agent-v2-account-binding
+  kind: fixture
+  cases: [registration-agent-v2-account-binding]
+  paths:
+  - conformance/fixtures/agents/agent-codex/contracts.tar.gz
+  - conformance/fixtures/agents/agent-claude-code/contracts.tar.gz
+  - conformance/language/registration/agent-v2-account-binding/claude-code-install.json
+  - conformance/language/registration/agent-v2-account-binding/codex-install.json
+  - conformance/language/registration/agent-v2-account-binding/conduit.json
+- name: the installed copies' versions move to 0.2.1
+  kind: expectation
+  operation: replace
+  cases: [registration-agent-v2-packages, registration-agent-v2-account-binding]
+  paths: ['/steps/*/expect/state/installed_packages/*/package/version']
+  before: '0.2.0'
+  after: '0.2.1'
+- name: the installed copies' digests move with them
+  kind: expectation
+  operation: replace
+  cases: [registration-agent-v2-packages, registration-agent-v2-account-binding]
+  paths: ['/steps/*/expect/state/installed_packages/*/package/digest']
+- name: each copy's documents end with the new Operation
+  kind: expectation
+  operation: add
+  cases: [registration-agent-v2-packages]
+  paths: ['/steps/*/expect/reply/package/project/documents/4/kind']
+  after: Operation
+- name: the new Operation's name
+  kind: expectation
+  operation: add
+  cases: [registration-agent-v2-packages]
+  paths: ['/steps/*/expect/reply/package/project/documents/4/metadata/name']
+  after: new-conversation.v1
 ```
 
-  For each other case that the start checks listed, add after it one shape of the same form,
-  named `the copies of the Agent packages move to 0.2.1, in CASE`, its `cases` that case's ID and
-  its `paths` the files of these eight that the case names, in the order above, then the files of
-  that case whose pins the item above moves. Change the file only to match
-  the change: if `vector_delta.py` reports a fixture change outside those shapes, a change of any case the start
-  checks did not list, or any `case.yaml` change, stop and report it; do not widen a shape. If a
-  case that the start checks listed needs any other change to pass with the 0.2.1 copies, its
-  `case.yaml` or an expectation beyond those pins, stop and report it: the coordinator decides,
-  with this order's text.
+  The coordinator checked these shapes against a simulation of decisions 1, 2 and 7 at
+  `bd06d0d3`: they cover its 33 changes (17 `fixture`, 16 `expectation`) and nothing else, and the
+  four cases above passed. Change the file only to match the change: if `vector_delta.py` reports
+  any change outside those shapes, of any other case, or of any other `case.yaml` path, stop and
+  report it; do not widen a shape. If a case needs any other change to pass with the 0.2.1 copies,
+  stop and report it: the coordinator decides, with this order's text.
 
-No vector's `case.yaml`, no promise and no other test changes, beyond the pins above; if the
-engine's tests need one to
-change, stop and report. Then run `python3 tools/promise_standing.py --check`; if it reports
-`engine/STANDING.md` stale, run it with `--write`, which may change that file alone, and report
-the change.
+No other vector's `case.yaml`, no promise and no other test changes, beyond decision 7's; if the
+engine's tests need one to change, stop and report. Then run
+`python3 tools/promise_standing.py --check`; if it reports `engine/STANDING.md` stale, run it with
+`--write`, which may change that file alone, and report the change.
 
 **8. What this order does not do.** No change to `turn.v1`, to any description, or to any
 `schema`, `offers`, `requires`, `signIn` or `records`; no input on `turn.v1`; no continuing of a
@@ -573,9 +678,10 @@ no change to the Agent's own home or to any hook's behavior; no change to `tests
 `conformance/`, `spec/` or `docs/` beyond decision 7's files and its declaration. A vector through
 the engine that grants `new-conversation.v1` through a Conduit is not this order's. The harness's
 switch from its restart to this operation, and the Fleet's Conduits that grant it, are the
-coordinator's, once 0.2.1 is installed. So are `engine/CONFORMANCE.md`'s present-state bullet and
-`docs/guides/accounts.md`, which order 050n brings to 0.2.0: the coordinator brings them to 0.2.1,
-with one sentence on `new-conversation.v1`, in this order's merge; report where each names 0.2.0.
+coordinator's, once 0.2.1 is installed. So are `engine/CONFORMANCE.md`'s present-state bullets,
+`docs/guides/accounts.md` and `engine/examples/s1/README.md` ("the Claude Code and Codex packages
+at 0.2.0"), which order 050n brings to 0.2.0: the coordinator brings them to 0.2.1, with one
+sentence on `new-conversation.v1`, in this order's merge; report where each names 0.2.0.
 
 ## Who decided what
 
@@ -593,13 +699,16 @@ milestone, come once this order ships is the owner's ([ruling 89](../proposals/r
 point 3), a target that sets no gate and no deadline by the coordinator's reading; and the lever
 "Pipeline the chain" is the owner's (ruling 89, point 2). The coordinator's: building it after
 0.2.0, not on a lane; applying that lever to this order, which is not on the sign-in chain, so that
-it starts from 050n's round-1 branch, and the start check and the steps at the merge that go with
-it; the release number 0.2.1; the names `new-conversation.v1` and
+it starts stacked on 050n's built branch, and the start check and the steps at the merge that go
+with it; the release number 0.2.1; the names `new-conversation.v1` and
 `new-conversation`; the contract's `effect`, its `destructiveHint`, its empty closed input and its
 output, the conversation's number within one run as the ID the log's row asks for, and `ended`;
 `.v1` and `.v2` alike; moving the engine's copies of the contracts with the release, in this
 order, while the generator keeps its release `agents-0.2.0` as 0.2.0's; the declaration of the
-eight fixture changes, written in the build; the stop as at a failed turn; forgetting the thread,
+copies' and pins' changes, written in the build; moving 050n's two cases that install the copies,
+`registration-agent-v2-packages` and `registration-agent-v2-account-binding`, to 0.2.1 with their
+pins and, in the first, the new Operation's member of each `documents` array, revised in this text
+at 050n's build; the stop as at a failed turn; forgetting the thread,
 the failure and the turn count, so that a failed conversation's successor is allowed and turn
 numbers count per conversation, the successor by the coordinator's reading in decision 3, open to
 the owner's strike under ruling 82, point 5, and put to the owner before dispatch, since the full
@@ -649,7 +758,8 @@ READMEs' content. Apply them as written and report them under `decisions` as the
 **Size: M**: about 250 changed lines in each package: some 30 in `lib.rs`, 40 in `main.rs`, 35
 in `contracts.yaml`, 10 in `conduit.yaml`, 130 in `tests/wrapper.rs` and 25 in the README; and,
 outside them, decision 7's copies of two files and a rebuilt archive in each package's copy, with
-about 25 changed lines elsewhere, the generator and the 12-line declaration among them.
+about 110 changed lines elsewhere: the generator, the pins, the two cases' files (some 30 lines)
+and the 53-line declaration among them.
 
 ## Scope
 
@@ -660,10 +770,11 @@ check of a running login needs it. Outside them, decision 7's files alone: in ea
 `conformance/fixtures/agents/agent-codex/` and `conformance/fixtures/agents/agent-claude-code/`,
 `conduit.yaml`, `contracts.yaml`, `contracts.tar.gz` and `README.md`;
 `conformance/language/registration/live-agents/fixture.json`; `engine/examples/s1/conduit.yaml`;
-`engine/crates/shell/tests/agents.rs`; `engine/crates/conformance/examples/make_archives.rs`; the
-files of the other cases the start checks listed whose pins decision 7 moves;
-in `conformance/fixtures/install-archives/` and its `digests.json`, the copies' archives and their
-entries alone, where decision 7 allows them; `engine/STANDING.md` only as decision 7 says; and the
+`engine/crates/shell/tests/agents.rs`; `engine/crates/conformance/examples/make_archives.rs`; in
+`conformance/language/registration/agent-v2-packages/`, `case.yaml`, `claude-code-install.json`
+and `codex-install.json`; in `conformance/language/registration/agent-v2-account-binding/`,
+`case.yaml`, `claude-code-install.json`, `codex-install.json` and `conduit.json`;
+`engine/STANDING.md` only as decision 7 says; and the
 new file `docs/work-orders/203-declared.yaml`, which you write as decision 7 gives it. Nothing else, in the
 packages or outside them. The build's ignored output (`target/`, `dist/`) may change.
 
@@ -682,11 +793,9 @@ git diff --check
 Each prints what is said beside it:
 
 ```bash
-git status --short | grep -vE '^ M (packages/agent-(codex|claude-code)/(Cargo\.toml|Cargo\.lock|conduit\.yaml|contracts\.yaml|src/lib\.rs|src/main\.rs|tests/wrapper\.rs|README\.md)|packages/agent-claude-code/src/sign_in\.rs|conformance/fixtures/agents/agent-(codex|claude-code)/(conduit\.yaml|contracts\.yaml|contracts\.tar\.gz|README\.md)|conformance/language/registration/live-agents/fixture\.json|engine/examples/s1/conduit\.yaml|engine/crates/shell/tests/agents\.rs|engine/crates/conformance/examples/make_archives\.rs|conformance/fixtures/install-archives/(digests\.json|[^/]+\.tar\.gz)|engine/STANDING\.md)$|^\?\? docs/work-orders/203-declared\.yaml$' | grep -vxF "$(sed -n 's/^  - / M /p' docs/work-orders/203-declared.yaml)" | wc -l   # 0
+git status --short | grep -vE '^ M (packages/agent-(codex|claude-code)/(Cargo\.toml|Cargo\.lock|conduit\.yaml|contracts\.yaml|src/lib\.rs|src/main\.rs|tests/wrapper\.rs|README\.md)|packages/agent-claude-code/src/sign_in\.rs|conformance/fixtures/agents/agent-(codex|claude-code)/(conduit\.yaml|contracts\.yaml|contracts\.tar\.gz|README\.md)|conformance/language/registration/live-agents/fixture\.json|conformance/language/registration/agent-v2-(packages|account-binding)/case\.yaml|engine/examples/s1/conduit\.yaml|engine/crates/shell/tests/agents\.rs|engine/crates/conformance/examples/make_archives\.rs|engine/STANDING\.md)$|^\?\? docs/work-orders/203-declared\.yaml$' | grep -vxF "$(sed -n 's/^  - / M /p' docs/work-orders/203-declared.yaml)" | wc -l   # 0
 git diff --quiet "$BASE" -- packages/agent-codex/tests/fixtures packages/agent-claude-code/tests/fixtures packages/agent-codex/src/bin packages/agent-claude-code/src/bin packages/agent-codex/tests/package.rs packages/agent-claude-code/tests/package.rs packages/agent-codex/tests/manifest.rs spec; echo $?   # 0
-git diff --name-only "$BASE" -- conformance/fixtures/s1/packages/agents-0.2.0 conformance/language/packages/agents-v2-defaults | wc -l   # 0
-for F in $(git diff --name-only "$BASE" -- conformance/fixtures/install-archives ':(exclude)conformance/fixtures/install-archives/digests.json'); do cmp -s "$F" conformance/fixtures/agents/agent-codex/contracts.tar.gz || cmp -s "$F" conformance/fixtures/agents/agent-claude-code/contracts.tar.gz; echo "$F $?"; done   # nothing, or each 0: only the copies' archives, where make_archives lists them there
-git diff "$BASE" -- conformance/fixtures/install-archives/digests.json   # nothing, or only the entries decision 7 allows
+git diff --name-only "$BASE" -- conformance/fixtures/s1/packages/agents-0.2.0 conformance/language/packages/agents-v2-defaults conformance/fixtures/install-archives conformance/language/registration/agent-v2-account-hook-missing | wc -l   # 0
 ls conformance/fixtures/install-archives   # the names the start checks kept
 for NAME in agent-codex agent-claude-code; do for F in conduit.yaml contracts.yaml; do cmp -s packages/$NAME/$F conformance/fixtures/agents/$NAME/$F; echo "$NAME $F $?"; tar -xOzf conformance/fixtures/agents/$NAME/contracts.tar.gz $F | cmp -s - conformance/fixtures/agents/$NAME/$F; echo "$NAME archive $F $?"; done; done   # each 0
 for NAME in agent-codex agent-claude-code; do python3 -c 'import sys,tarfile; [print(m.name, oct(m.mode), m.uid, m.gid, m.uname, m.gname, m.mtime) for m in tarfile.open(sys.argv[1])]' conformance/fixtures/agents/$NAME/contracts.tar.gz; done   # the lines the start checks kept, byte for byte
@@ -700,14 +809,17 @@ the interpreter that has PyYAML):
 
 ```bash
 /usr/bin/python3 tools/vector_delta.py "$BASE" WORKTREE --declared docs/work-orders/203-declared.yaml; echo "exit $?"
-/usr/bin/python3 tools/vector_delta.py "$BASE" WORKTREE --declared-changed | tail -n 2; echo "exit ${PIPESTATUS[0]}"
+out=$(/usr/bin/python3 tools/vector_delta.py "$BASE" WORKTREE --declared-changed); rc=$?; printf '%s\n' "$out" | tail -n 2; echo "exit $rc"
 ```
 
-The first prints one `fixture` line for each path of each shape of the declaration, each
-`"declared": true` (eight for `registration-live-agents`); then
-`Declarations read from docs/work-orders/203-declared.yaml: S shapes.`, with S the shapes,
-`Vector delta: C changes; 0 flips; 0 undeclared; 0 errors.`, with C the lines before, and
-`exit 0` (`1 shapes` and `8 changes` where the start checks listed that case alone). The second reads the
+The first prints 33 change lines, each `"declared": true`: 17 `fixture` lines (the eight files of
+`registration-live-agents`; the copies' two archives and the two install files of
+`registration-agent-v2-packages`; and the copies' two archives, the two install files and
+`conduit.json` of `registration-agent-v2-account-binding`) and 16 `expectation` lines (in the
+packages case, the six versions and digests of installed copies and, in each of its two steps,
+`documents/4/kind` and `documents/4/metadata/name` added; in the binding case, its six versions and
+digests); then `Declarations read from docs/work-orders/203-declared.yaml: 7 shapes.`,
+`Vector delta: 33 changes; 0 flips; 0 undeclared; 0 errors.` and `exit 0`. The second reads the
 new file as untracked and prints the same two lines and `exit 0`. Report each last line; if any
 other change appears, stop as decision 7 says.
 
@@ -792,11 +904,11 @@ Do not run the engine's full `cargo test --release`: `tools/gate.py` runs it onc
 0 failed, and its totals are those at `BASE`: decision 7 adds no test. The last command's last
 line is the one the start checks kept, `N reproducible archive fixtures verified` with the same N:
 the release `agents-0.2.0`, the synthetic TPL-005 package and every other generated byte are as at
-`BASE`, but for the two copies' archives. Then, one command at a time in `engine/`, for
-`registration-live-agents`, each case the start checks listed and the TPL-005 case,
+`BASE`, but for the two copies' archives (`42` at `bd06d0d3`). Then, one command at a time in
+`engine/`, for each of `registration-live-agents`, `registration-agent-v2-packages`,
+`registration-agent-v2-account-binding` and `registration-agent-v2-account-hook-missing`,
 `cargo run --release -p conduit-conformance -- .. CASE_ID`: each prints a line beginning
-`PASS CASE_ID` and `1 cases passed` (more where another case's ID begins with `CASE_ID`), and no
-`FAIL`. Where 050n wrote the TPL-005 case as a shell test, run that test alone by name.
+`PASS CASE_ID` and `1 cases passed`, and no `FAIL`.
 `live_s1_scripted_agents_call_engine_with_distinct_run_identities` passes, so the copies equal the
 0.2.1 package files and the pinned version and digests match. Report each command's last line
 and the totals.
@@ -862,7 +974,7 @@ falls in A77's pause ([ruling 89](../proposals/ruling-89/README.md), point 6): i
 orders, not paired, and the coordinator's A77 record says why; dispatched after, it is paired or
 not as A77's registration has it, and the coordinator says which before dispatch.
 
-Where the coordinator dispatched this order on 050n's round-1 branch, the result is read there,
+Where the coordinator dispatched this order stacked on 050n's branch, the result is read there,
 with `tools/gate.py --base` set to `BASE`, since `origin/main` lacks 050n's work. It merges only
 after 050n has merged, and then only once the coordinator has done the following (the
 coordinator's, under the lever of ruling 89, point 2):
@@ -871,11 +983,11 @@ coordinator's, under the lever of ruling 89, point 2):
   this order's commits are replayed onto 050n's squash, committing and rebasing under the work
   orders' identity; where 050n's branch was rebased or fixed after this order started, `BASE` is
   still the commit to rebase from;
-- resolve any conflict where 050n's reader or fixer changed, after its round 1, what this order
-  changes (each package's `conduit.yaml`, `contracts.yaml`, `Cargo.toml`, `Cargo.lock`,
+- resolve any conflict where 050n's branch changed after `BASE`, at its live check or its
+  merge, what this order changes (each package's `conduit.yaml`, `contracts.yaml`, `Cargo.toml`, `Cargo.lock`,
   `src/lib.rs`, `src/main.rs`, `tests/wrapper.rs` and `README.md`, the copies under
-  `conformance/fixtures/agents/`, the pins of decision 7, `make_archives.rs` and the cases' pin
-  files), keeping 050n's merged text and applying this order's decisions to it; never resolve an
+  `conformance/fixtures/agents/`, the pins of decision 7, `make_archives.rs` and the two cases'
+  pin files and `case.yaml`), keeping 050n's merged text and applying this order's decisions to it; never resolve an
   archive or a digest by hand: copy the packages' files to the copies again, run `make_archives`
   in write mode, set the pins to the new digests, write `engine/STANDING.md` with
   `python3 tools/promise_standing.py --write`, and redo the declaration where its paths changed;

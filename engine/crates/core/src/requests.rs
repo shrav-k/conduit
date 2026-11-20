@@ -896,6 +896,11 @@ fn dispatch_intent(v: &Value, url_elicitation: bool, c: &Context) -> Value {
     if url_elicitation {
         call["params"]["_meta"][CAPABILITIES]["elicitation"] = json!({"url": {}});
     }
+    // The sign-in hook can return input_required on a legacy session only if its call names
+    // the baseline revision. Its Type's URL capability above supplies the other required key.
+    if v["hook"] == true && operation == c.qualified("sign-in-hook.v1") {
+        call["params"]["_meta"]["io.modelcontextprotocol/protocolVersion"] = json!("2026-07-28");
+    }
     json!({"kind":"dispatch","invocation":v["id"],"attempt":v["attempt"],"target":v["target"],"implementation":implementation,"call":call})
 }
 
@@ -2914,6 +2919,87 @@ mod tests {
         assert_eq!(params.remove("requestState"), Some(json!("impl-state-1")));
         assert_eq!(params.remove("inputResponses"), Some(responses));
         assert_eq!(retry, first);
+    }
+
+    #[test]
+    fn sign_in_hook_uses_baseline_revision_on_dispatch_and_resend() {
+        const VERSION: &str = "io.modelcontextprotocol/protocolVersion";
+        const CAPABILITIES: &str = "io.modelcontextprotocol/clientCapabilities";
+        let (mut state, c) = fixture();
+        let mut environment = c.core_environment.clone();
+        let contracts = &mut environment.scopes.get_mut("core").unwrap().contracts;
+        contracts.get_mut("type.v1").unwrap()["spec"]["signIn"] = json!({"account":"/account"});
+        let indexes = json!({"core":contracts});
+        let target = state
+            .objects
+            .iter_mut()
+            .find(|o| o["id"] == "agent")
+            .unwrap();
+        target["held"] =
+            json!({"environment":environment,"indexes":indexes,"contexts":{},"scope":"core"});
+
+        let sign_in = c.qualified("sign-in-hook.v1");
+        let account = c.qualified("account-hook.v1");
+        let mut hook = json!({
+            "id":"hook","attempt":1,"state":"in-progress","hook":true,"plain":true,
+            "operation":sign_in,"target":"agent","arguments":{},
+            "contract":{"spec":{"effect":"Begin the instance client login."}},
+            "implementation":{"item":{"plain":true,"tools":{&sign_in:"sign_in_hook",&account:"account_hook"}}}
+        });
+        let mut check = hook.clone();
+        check["operation"] = json!(account);
+        let check = intent(&check, &state, &c).unwrap();
+        let params = &check["call"]["params"];
+        assert_eq!(params["name"], "account_hook");
+        assert_eq!(params["_meta"].get(VERSION), None);
+        assert_eq!(
+            params["_meta"][CAPABILITIES],
+            json!({"elicitation":{"url":{}}})
+        );
+
+        let plain = intent(&hook, &state, &c).unwrap();
+        let params = &plain["call"]["params"];
+        assert_eq!(params["name"], "sign_in_hook");
+        assert_eq!(params["_meta"][VERSION], "2026-07-28");
+        assert_eq!(
+            params["_meta"][CAPABILITIES],
+            json!({"elicitation":{"url":{}}})
+        );
+
+        hook["plain"] = json!(false);
+        hook["implementation"]["item"]["keyed"] = json!([sign_in]);
+        let keyed = intent(&hook, &state, &c).unwrap();
+        let meta = &keyed["call"]["params"]["_meta"];
+        assert_eq!(meta[VERSION], "2026-07-28");
+        assert_eq!(
+            meta[CAPABILITIES],
+            json!({"elicitation":{"url":{}},"extensions":{mark(&c, "implementation-interface"):{"revision":"v0"}}})
+        );
+
+        // The keyed sign-in hook's call sent after its server/discover answer lists the extension.
+        let mut discovering = state.clone();
+        let mut pending = hook.clone();
+        pending["discovery"] = json!("pending");
+        discovering.invocations.push(pending);
+        let discovered = answer(
+            &transition(discovering),
+            &c,
+            Completion::Result {
+                result: json!({"capabilities":{"extensions":{mark(&c, "implementation-interface"):{"revision":"v0"}}}}),
+            },
+        );
+        let sent = &discovered.external_intents.last().unwrap()["call"];
+        assert_eq!(sent["method"], "tools/call");
+        assert_eq!(sent["params"]["_meta"][VERSION], "2026-07-28");
+        assert_eq!(*sent, keyed["call"]);
+
+        // Exercise the shared resend builder with a read-only fixture. The real hook's
+        // effect precludes a resend for this protocol error under IFC-046.
+        hook["contract"]["spec"] = json!({});
+        state.invocations.push(hook);
+        let resent = answer(&transition(state), &c, rpc(-32020, Value::Null));
+        assert_eq!(resent.external_intents[0]["kind"], "refresh-tools-and-call");
+        assert_eq!(resent.external_intents[0]["call"], keyed["call"]);
     }
 
     #[test]

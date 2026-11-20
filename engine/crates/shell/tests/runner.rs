@@ -351,6 +351,218 @@ fn scripted_server() {
     }
 }
 
+const DEVICE_LOGIN_URL: &str = "https://example.org/device";
+
+#[tokio::test]
+#[ignore = "rmcp stdio fixture, spawned by the sign-in runner test"]
+async fn rmcp_sign_in_provider() {
+    use rmcp::{
+        ErrorData, RoleServer, ServerHandler, ServiceExt, model::*, service::RequestContext,
+    };
+
+    struct SignInProvider;
+
+    impl ServerHandler for SignInProvider {
+        fn get_info(&self) -> ServerConfig {
+            ServerConfig::new(ServerCapabilities::builder().enable_tools().build())
+        }
+
+        async fn call_tool(
+            &self,
+            request: CallToolRequestParams,
+            context: RequestContext<RoleServer>,
+        ) -> Result<CallToolResponse, ErrorData> {
+            match request.name.as_ref() {
+                "account_hook" => Ok(CallToolResult::structured(json!({"account":null})).into()),
+                "sign_in_hook" => {
+                    if context
+                        .client_capabilities()
+                        .and_then(|c| c.elicitation)
+                        .and_then(|e| e.url)
+                        .is_none()
+                    {
+                        return Err(ErrorData::invalid_request(
+                            "no URL elicitation declared",
+                            None,
+                        ));
+                    }
+                    let request = serde_json::from_value(json!({
+                        "method":"elicitation/create",
+                        "params":{"mode":"url","message":"Open the device login","url":DEVICE_LOGIN_URL}
+                    }))
+                    .unwrap();
+                    Ok(CallToolResponse::InputRequired(InputRequiredResult::new(
+                        Some(BTreeMap::from([("login".into(), request)])),
+                        None,
+                    )))
+                }
+                _ => Err(ErrorData::invalid_params("unexpected tool", None)),
+            }
+        }
+    }
+
+    SignInProvider
+        .serve(rmcp::transport::stdio())
+        .await
+        .unwrap()
+        .waiting()
+        .await
+        .unwrap();
+}
+
+#[test]
+fn sign_in_relays_url_from_rmcp_stdio_provider() {
+    use conduit_shell::server::{ServingExecutor, serve};
+    use rmcp::{
+        ClientServiceExt,
+        model::*,
+        service::ClientLifecycleMode,
+        transport::{
+            StreamableHttpClientTransport,
+            streamable_http_client::StreamableHttpClientTransportConfig,
+        },
+    };
+    use tokio_util::sync::CancellationToken;
+
+    let parent = tempfile::tempdir().unwrap();
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let config = Config {
+        engine_url: format!("http://{}/mcp", listener.local_addr().unwrap()),
+        ..Config::default()
+    };
+    drop(listener);
+    let shell = open(parent.path(), config);
+    shell.submit(
+        json!({"kind":"first-start","machine":conduit_shell::local_machine(BTreeMap::new()).unwrap()}),
+        &MissingExecutor,
+    ).unwrap();
+
+    let repo = repository();
+    let fixtures = repo.join("conformance/conventions/requests");
+    let manifest_path = fixtures.join("sign-in-login-plain-hook/manifest.json");
+    let documents_path = fixtures.join("sign-in-lapse-and-conflict/documents.json");
+    let mut manifest = boundary::value(&manifest_path).unwrap();
+    manifest["implementations"]["signed-server"]["command"] = json!([
+        std::env::current_exe().unwrap(),
+        "--exact",
+        "rmcp_sign_in_provider",
+        "--ignored",
+        "--nocapture"
+    ]);
+    let spec = conduit_loader::Specification::read(&repo.join("spec")).unwrap();
+    let project = conduit_loader::read_submitted_files(
+        &[
+            (
+                "conduit.json".into(),
+                serde_json::to_vec(&manifest).unwrap(),
+            ),
+            ("documents.json".into(), fs::read(documents_path).unwrap()),
+        ],
+        &spec,
+    )
+    .unwrap();
+    let project = conduit_core::packages::Project {
+        manifest: project.manifest.map(|doc| doc.root.to_json()),
+        documents: project
+            .documents
+            .iter()
+            .map(|doc| doc.root.to_json())
+            .collect(),
+        directory: None,
+    };
+    let root = id(&shell, "root");
+    let state = shell.state().unwrap();
+    let route = state
+        .objects
+        .iter()
+        .find(|v| v["local_name"] == "management" && v["consumer"] == root)
+        .unwrap();
+    let reply = shell.submit(
+        json!({"kind":"register-project","snapshots":[],"builtin":shell.context.builtin,"project":project,
+            "request":{"sender":root,"caller":root,"conduit":route["id"],"target":route["target"],
+                "operation":format!("{}#register.v1", shell.context.core_package)}}),
+        &MissingExecutor,
+    ).unwrap();
+    assert_eq!(reply["accepted"], true, "{reply}");
+
+    let runner = new_runner(&shell);
+    let executor = Arc::new(ServingExecutor::new(runner.executor()));
+    runner.set_completion_executor(Arc::downgrade(&(executor.clone() as Arc<dyn Executor>)));
+    let instance = json!({"instance":{"kind":"Agent","name":"signed"}});
+    let setup = invoke(
+        &shell,
+        executor.as_ref(),
+        "root",
+        "group.set-up.v1",
+        instance.clone(),
+    );
+    assert_eq!(outcome(&shell, &setup), "succeeded", "{setup}");
+    assert_eq!(runner.running_count(), 1);
+
+    shell.issue_client_token(&root).unwrap();
+    let token = fs::read_to_string(parent.path().join("store/client-tokens").join(root)).unwrap();
+    let response = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap()
+        .block_on(async {
+            let stop = CancellationToken::new();
+            let task = tokio::spawn(serve(shell.clone(), executor, stop.clone()));
+            let url = &shell.config.engine_url;
+            let http = reqwest::Client::builder().no_proxy().build().unwrap();
+            tokio::time::timeout(Duration::from_secs(10), async {
+                while http.get(url).send().await.is_err() {
+                    assert!(!task.is_finished(), "engine server exited before binding");
+                    tokio::time::sleep(Duration::from_millis(10)).await;
+                }
+            })
+            .await
+            .expect("engine server did not bind");
+            let mut client = ClientConfig::default();
+            client.capabilities.elicitation =
+                Some(ElicitationCapability::new().with_url(UrlElicitationCapability::new()));
+            let transport = StreamableHttpClientTransport::with_client(
+                http,
+                StreamableHttpClientTransportConfig::with_uri(url.as_str()).auth_header(token),
+            );
+            let client = client
+                .serve_with_lifecycle(
+                    transport,
+                    ClientLifecycleMode::Discover {
+                        preferred_versions: vec![ProtocolVersion::V_2026_07_28],
+                    },
+                )
+                .await
+                .unwrap();
+            let request = CallToolRequestParams::new("group.sign-in.v1")
+                .with_arguments(instance.as_object().unwrap().clone());
+            let response = client.call_tool_once(request).await;
+            client.cancel().await.unwrap();
+            stop.cancel();
+            task.await.unwrap().unwrap();
+            response.unwrap()
+        });
+    if let CallToolResponse::Complete(result) = response {
+        let reply = serde_json::to_value(result).unwrap();
+        panic!(
+            "expected a relayed sign-in URL, got outcome {} under {}",
+            outcome(&shell, &reply),
+            reply["structuredContent"]["diagnostics"][0]["ruleId"]
+                .as_str()
+                .unwrap_or("no rule")
+        );
+    }
+    let CallToolResponse::InputRequired(result) = response else {
+        panic!("expected an input-required sign-in result");
+    };
+    let requests = result.input_requests.unwrap();
+    assert_eq!(requests.len(), 1);
+    let request = serde_json::to_value(&requests["url"]).unwrap();
+    assert_eq!(request["method"], "elicitation/create");
+    assert_eq!(request["params"]["mode"], "url");
+    assert_eq!(request["params"]["url"], DEVICE_LOGIN_URL);
+}
+
 // Completion transitions must pass through the serving decorator, even though the
 // initial call returned Deferred on a different thread.
 struct CompletionObserver(std::sync::atomic::AtomicUsize);

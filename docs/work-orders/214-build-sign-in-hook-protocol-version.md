@@ -182,4 +182,91 @@ coordinator's notes, private).
 
 ## Record
 
-Not yet run.
+Run on 2026-11-20, ending about 00:43 UTC, on the Windows node from `main` `201005c7` (order 050n's
+refresh), in one round (ruling 87): the worker (1792 s) and a fresh Codex verifier (299 s). The
+change is two files of Scope. In `engine/crates/core/src/requests.rs`, `dispatch_intent` writes
+`io.modelcontextprotocol/protocolVersion` `2026-07-28` into the call's `_meta` when the invocation
+is a hook and its operation is the core's qualified `sign-in-hook.v1`, beside the
+`clientCapabilities` that IFC-045's URL declaration already writes for a Type that states `signIn`;
+every dispatch and re-send is built there, through `intent`, so the first call and each re-send
+carry both keys, plain or keyed, and no other call changes. The core test
+`sign_in_hook_uses_baseline_revision_on_dispatch_and_resend` checks that the account hook's call
+names no revision, that the plain and the keyed sign-in hook's calls carry both keys, and that the
+`refresh-tools-and-call` re-send rebuilds the keyed call. In `engine/crates/shell/tests/runner.rs`,
+the ignored test `rmcp_sign_in_provider` serves an rmcp 3.9.0 `ServerHandler` over stdio, whose
+account hook answers no account and whose sign-in hook answers `InputRequired` with one URL-mode
+elicitation; `sign_in_relays_url_from_rmcp_stdio_provider` spawns it through the runner's own spawn
+and unchanged legacy handshake, with the plain-hook Type and manifest of the requests fixtures, and
+checks that `sign-in.v1` brings the URL to the Interface. The worker's own choices: the fixture as
+an ignored test of the same executable, launched by exact name; the plain-hook fixtures with a
+command override; a read-only contract to exercise the re-send path, which the real hook's effect
+precludes under IFC-046. On the unchanged engine the shell test ended `sign-in.v1` unknown under
+PND-010, as the dry run did. The whole suite at default concurrency was killed by SIGKILL in the
+conformance vectors' executable (`target/release/deps/vectors-*`); rerun with one harness thread and
+two vector workers it passed, 402 passed, 0 failed and 5 ignored; Clippy passed.
+
+The Codex verifier found two musts, two shoulds and a nit: (1) a non-plain sign-in hook now names
+the baseline revision without IFC-037's discovery or the extension's declaration; (2) the fixture,
+run through libtest, prints libtest's `running 1 test` on the stdout that carries MCP; should 1, the
+fixture ignores the request's capabilities, so the test would pass if the URL capability were lost
+on the wire; should 2, the fixture lists no tools; and a nit, an absolute path in the worker's
+report.
+
+A fresh read-only Opus reader then verified the order (ruling 79). It ran both named tests on the
+Mac and on the node (1 passed each); removed the three lines of the fix in place and saw the shell
+test fail at `crates/shell/tests/runner.rs:536:9` with `expected a relayed sign-in URL, got outcome
+unknown under PND-010` on both machines, and the core test at `requests.rs:2960` (left `Null`, right
+`2026-07-28`), restoring with `cp` and `cmp`; and on the node the core suite (148 passed), the
+runner tests (18 passed, 3 ignored), the shell's sign-in lib tests (14 passed), the conformance
+vectors (2 passed, 295 s), Clippy and `cargo fmt --check` (clean). `promise_standing --check`,
+`check_docs` and `check_private_paths` gave Errors: 0, `git diff --check` was clean, the vector
+delta 0 changes, nothing changed under `packages/`, `spec/`, `conformance/`, `docs/`,
+`experiments/`, `engine/Cargo.lock` or the shell's sources, and `().serve(transport)` still counted
+one. It refuted the verifier's must 1 (decision 2 sets the blast radius as the sign-in hook's
+call, plain or keyed, and a non-plain call carrying Conduit's keys without discovery is order 209's
+recorded gap, neither widened nor in scope), must 2 as a must (the fact holds, but it is the file's
+established fixture pattern, the runner skips non-JSON lines, and the 0.2.0 wrappers print no such
+line), should 2 (no path that lists tools reaches a sign-in hook) and the nit (the report is not
+tracked). It found no must and four shoulds:
+
+- S1: the stand-in sign-in hook ignores its `RequestContext` and elicits whatever the call declares,
+  so the test would pass if the URL elicitation capability were dropped between the core and the
+  wire (the verifier's should 1).
+- S2: the core test proves a re-send carries both keys only through the `refresh-tools-and-call`
+  path, which a real sign-in hook never takes, and not the call sent after a keyed hook's
+  `server/discover` answer.
+- S3: the worker reported the failing line on `main` as `runner.rs:521`; the committed test fails at
+  `runner.rs:536:9`.
+- S4: `engine/CONFORMANCE.md` does not record that the sign-in hook's call alone names `2026-07-28`
+  per request on a session opened by the legacy handshake.
+
+The fixer rebased the branch onto `origin/main` at `6ccb3471` (order 215, written ahead) with the
+work-order identity, without conflict, and applied each finding:
+
+- S1: the fixture names its context and, in the sign-in hook's arm, refuses with `invalid_request`
+  `no URL elicitation declared` when `context.client_capabilities()` holds no `elicitation.url`.
+  With the fix the shell test passes. With the three lines of the fix removed it fails at
+  `crates/shell/tests/runner.rs:547:9` (536 before the 11 lines S1 adds) with `expected a relayed
+  sign-in URL, got outcome unknown under PND-010`. With the core declaring `elicitation` as `{}` in
+  place of `{"url": {}}`, it fails at the same line with the same message, where the fixture as the
+  worker wrote it passed.
+- S2: the core test also pushes the keyed sign-in hook with its discovery pending, answers its
+  `server/discover` with a result that lists Conduit's extension at `v0`, and checks that the call
+  sent is a `tools/call` naming `2026-07-28` and equal to the keyed call, IFC-045's URL capability
+  and the extension included.
+- S3: this Record cites the failing line as `crates/shell/tests/runner.rs:536:9` on the worker's
+  commit, and the verifier's SIGKILL by the executable's name only.
+- S4: the keyed-hooks bullet of `engine/CONFORMANCE.md` gains the reader's sentence: "From order
+  214, the sign-in-hook.v1 call, plain or keyed and on every re-send, carries
+  io.modelcontextprotocol/protocolVersion 2026-07-28 beside IFC-045's clientCapabilities, so that an
+  rmcp 3.9.0 server opened by the legacy handshake may answer it InputRequired (IFC-007, IFC-010);
+  no other call names a revision." This is outside the worker's scope, as the reader noted, and is
+  the coordinator's record pass.
+
+The mutations ran in place in the worktree, each restored with `cp` and checked with `cmp`. The
+fixer then ran, in the worktree on the Mac with `RUST_TEST_THREADS=4` and
+`CONDUIT_VECTOR_THREADS=4`: both named tests (1 passed each), `cargo test --release -p conduit-core`
+(148 passed), the runner tests (18 passed, 3 ignored), the shell's sign-in lib tests (14 passed),
+`cargo clippy --all-targets -- -D warnings` (clean) and `cargo fmt --all -- --check` (exit 0), then
+`python3 tools/check_docs.py` and `python3 tools/check_private_paths.py` (Errors: 0 each) and `git
+diff --check` (clean). The gate's run on this order's squash is the coordinator's at the merge.

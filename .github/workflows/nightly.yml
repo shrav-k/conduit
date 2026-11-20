@@ -1,8 +1,7 @@
-# Two runs kept out of the checks on each pull request, once a day and on request: the engine's
-# tests that fetch the pinned @modelcontextprotocol/server-filesystem from npm, which need the
-# network, and the conformance vectors on the differential build, which take far longer than the
-# checks. Each job runs on `ubuntu-latest`, a standard GitHub-hosted runner, which is free for a
-# public repository; neither uses a larger runner, paid service or secret.
+# Once a day and on request, the engine tests that fetch the pinned
+# @modelcontextprotocol/server-filesystem from npm and the differential vectors run on ubuntu-latest.
+# The package and engine macOS jobs run on macos-latest. All use standard GitHub-hosted runners
+# for this public repository and need no larger runner, paid service or secret.
 
 name: nightly
 
@@ -96,3 +95,136 @@ jobs:
         env:
           CONDUIT_VECTOR_THREADS: "4"
         run: cargo run --release -p conduit-conformance --features differential
+
+  macos-dirs:
+    name: macOS package directories
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      packages: ${{ steps.find.outputs.packages }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - id: find
+        run: |
+          entries=()
+          for manifest in packages/*/Cargo.toml packages/*/*/Cargo.toml; do
+            [ -f "$manifest" ] || continue
+            case "$manifest" in */target/*) continue ;; esac
+            # Only workspace roots enter the matrix.
+            workspace_manifest=$(cargo locate-project --workspace --message-format plain --manifest-path "$manifest")
+            [ "$workspace_manifest" = "$PWD/$manifest" ] || continue
+            entries+=("$(jq -cn --arg dir "${manifest%/Cargo.toml}" '{dir: $dir}')")
+          done
+          packages=$(printf '%s\n' "${entries[@]}" | jq -cs .)
+          if [ "$(echo "$packages" | jq length)" -eq 0 ]; then
+            echo "No crate was found under packages/, so the macOS jobs would test none."
+            exit 1
+          fi
+          echo "packages=$packages" >> "$GITHUB_OUTPUT"
+
+  macos-package:
+    name: macos (${{ matrix.dir }})
+    needs: macos-dirs
+    runs-on: macos-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.macos-dirs.outputs.packages) }}
+    # From inside each directory, so that its rust-toolchain.toml applies and its tests find the
+    # repository's paths, such as ../spec, where they expect them.
+    defaults:
+      run:
+        working-directory: ${{ matrix.dir }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install the toolchain that rust-toolchain.toml pins
+        run: |
+          rustup toolchain install --no-self-update --profile minimal
+          rustup component add clippy
+          rustup show active-toolchain
+          cargo --version
+      # One package's test runs tools/check_schemas.py, which needs PyYAML and jsonschema; the
+      # versions are those of the docs job.
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install PyYAML and jsonschema
+        run: python3 -m pip install "pyyaml==6.0.1" "jsonschema[format-nongpl]==4.20.0"
+      # GitHub's macOS runners have hostnames longer than 63 characters, which provider-local-machine
+      # refuses by design, with no truncation; its tests need a host it accepts.
+      - name: Set a hostname of at most 63 characters
+        run: |
+          sudo scutil --set HostName conduit-ci
+          sudo hostname conduit-ci
+          hostname
+      - name: Restore the cargo cache
+        id: cache
+        uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            ${{ matrix.dir }}/target/
+          key: cargo-${{ runner.os }}-${{ matrix.dir }}-${{ hashFiles(format('{0}/Cargo.lock', matrix.dir), format('{0}/rust-toolchain.toml', matrix.dir)) }}
+          restore-keys: cargo-${{ runner.os }}-${{ matrix.dir }}-
+      - name: cargo clippy --all-targets -- -D warnings
+        run: cargo clippy --all-targets -- -D warnings
+      - name: cargo test --release
+        if: ${{ !cancelled() }}
+        run: cargo test --release
+      - name: Save the cargo cache
+        if: ${{ !cancelled() && steps.cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            ${{ matrix.dir }}/target/
+          key: ${{ steps.cache.outputs.cache-primary-key }}
+
+  macos-engine:
+    name: "macos (engine: loader, core, conformance)"
+    runs-on: macos-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: engine
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install the toolchain that rust-toolchain.toml pins
+        run: |
+          rustup toolchain install --no-self-update --profile minimal
+          rustup show active-toolchain
+          cargo --version
+      - name: Restore the cargo cache
+        id: cache
+        uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            engine/target/
+          key: cargo-${{ runner.os }}-engine-${{ hashFiles('engine/Cargo.lock', 'engine/rust-toolchain.toml') }}
+          restore-keys: cargo-${{ runner.os }}-engine-
+      - name: cargo test --release -p conduit-loader -p conduit-core -p conduit-conformance
+        run: cargo test --release -p conduit-loader -p conduit-core -p conduit-conformance
+      - name: Save the cargo cache
+        if: ${{ !cancelled() && steps.cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            engine/target/
+          key: ${{ steps.cache.outputs.cache-primary-key }}

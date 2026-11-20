@@ -185,6 +185,10 @@ What each check needs:
   compares the working tree with `origin/main` as last fetched, or with `--base REF`, and
   never fetches, pushes or calls GitHub. It fails a commit since the base whose author or
   committer is not `Conduit work order <work-orders@conduit.invalid>`.
+  `--target-cache DIR` uses one target directory per Rust directory, rebuilds the tree's own
+  crates, and holds `DIR/gate.lock` for the run. The tool tests run with `--all` or when a change
+  touches `tools/`, `.github/workflows/`, or a Rust source, `Cargo.toml` or `Cargo.lock` under
+  `packages/` or `experiments/`.
   With `--derive-private-names` it derives the private names from the machine it runs on,
   at each run and with no file: the OS account's short and full names, the host names (on
   macOS the computer and local host names too), git's global `user.name` and the local part

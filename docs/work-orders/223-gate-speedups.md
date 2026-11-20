@@ -277,4 +277,23 @@ last line.
 
 ## Record
 
-Not yet run.
+Run on 2026-11-20 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+Worker-2's first turn (14:01 to 14:20) built R1 to R5 and R7; the gate passed.
+`turn-verifier-2.turn.v1` (14:20 to 14:26) found four musts:
+- the warm cache could miss a path crate reached transitively from outside the workspace;
+- the lock was visible before its cleanup was registered;
+- SIGTERM could end a cached gate without releasing the lock;
+- the order's own cache probe, under `target/`, tripped `tools/set_names.py`.
+
+For the fourth, root widened the scope to `tools/set_names.py`, so that its test of the `target`
+component is relative to the repository root. The second turn (14:27 to 14:41) fixed all four,
+each with a regression that failed first. Both prescribed cache runs then passed, as did 135 tool
+tests, and the timeout test fell from 39 s to 12 s.
+
+`turn-reader-1.turn.v1` (14:42 to 14:47), the Claude reader, accepted it with two shoulds:
+- the `rust` job's comment no longer names the macOS jobs;
+- its second, unstaged deletions, was only the state of the reader's copy, since the merged
+  branch commits both.
+
+The gate's run on the squash is the coordinator's, at the merge. It runs under the old rows,
+since this change takes effect on the next merge.

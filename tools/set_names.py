@@ -169,7 +169,7 @@ def files(roots: list[str]) -> list[pathlib.Path]:
         if not base.exists():
             continue
         for p in sorted(base.rglob("*")):
-            if p.is_file() and p.suffix in TEXT_SUFFIXES and "target" not in p.parts:
+            if p.is_file() and p.suffix in TEXT_SUFFIXES and "target" not in p.relative_to(ROOT).parts:
                 out.append(p)
     return out
 

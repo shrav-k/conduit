@@ -25,7 +25,6 @@
     rules SCH-005, SCH-006, SCH-011, SCH-012, SCH-017, SCH-020 and SCH-021 apply unchanged. A
     sectioned value in the wire input `documents` of `register.v1` is rejected under SUB-005:
     the wire accepts framed documents only.
-  vectors: []
 
 - id: SCT-002
   layer: language
@@ -40,7 +39,6 @@
     An unknown version is rejected under OBJ-017. OBJ-024 applies to the effective version,
     including its prohibition on mixing versions' names. The manifest's version is not changed
     by translation.
-  vectors: []
 
 - id: SCT-003
   layer: language
@@ -59,7 +57,6 @@
     records and the wire show framed objects only; generated names remain visible.
     Registration starts no work, and installation registers nothing. SCT-014 locates
     diagnostics in the authored text.
-  vectors: []
 
 - id: SCT-004
   layer: language
@@ -77,7 +74,6 @@
     inside `config`, `arguments`, `implementation`, `controls`, canonical declared `conduits`,
     canonical `entries`, or requirement arguments is rewritten; OBJ-021 and SEC-001 still
     govern their values.
-  vectors: []
 
 - id: SCT-005
   layer: language
@@ -93,7 +89,6 @@
   observable: >-
     There is no `templates.fleets`. The same family-specific checks and input destinations
     apply as for a framed template. Every generated document carries SCT-002's version.
-  vectors: []
 
 - id: SCT-006
   layer: language
@@ -115,7 +110,6 @@
     Interface or Pool accepts none of these. `consumes` and `operator` make only what
     SCT-007 and SCT-009 state. Every instance still comes from a template, including
     one made in the same submission.
-  vectors: []
 
 - id: SCT-007
   layer: language
@@ -137,7 +131,6 @@
     inferred; the operations list may be empty. A local template reference such as
     `from: read` remains legal. Tools use `L.<export>` (IFC-012). A Pool has no `consumes`.
     SCT-008 applies before the documents are resolved.
-  vectors: []
 
 - id: SCT-008
   layer: language
@@ -154,7 +147,6 @@
     canonical checks. A referenced item cannot establish the bound by reading its template
     during translation (SCT-004), so a Conduit to `access` made from a template is written in
     `conduits`. There is no lookup of a package or a stored object to decide this syntax rule.
-  vectors: []
 
 - id: SCT-009
   layer: language
@@ -175,7 +167,6 @@
     `operator`, including null; its default Conduit is the engine's under FLEET-005. Removing
     `operator` changes only the translated documents; closing its Conduit takes an explicit
     request and follows ACC-024.
-  vectors: []
 
 - id: SCT-011
   layer: language
@@ -193,7 +184,6 @@
     one. Where several files state the same X, the project's translation makes that Fleet
     once. A separately authored document named X still clashes under NAM-027. No root Conduit
     is translated: FLEET-005 makes the default. A package accepts no `fleet` (MAN-011).
-  vectors: []
 
 
 - id: SCT-013
@@ -213,7 +203,6 @@
     requires, not DL15 choices. NAM-027 counts all translated documents and framed documents
     together; a collision names both authored places. Ordinary canonical nested member names
     retain OBJ-022's rule.
-  vectors: []
 
 - id: SCT-014
   layer: language
@@ -236,7 +225,6 @@
     with no emitted document has no translation property. Schema rejections cite SUB-005 and
     carry `keywordLocation`. OBJ-023 and OBJ-025 still decide invalid or conflict. No value at
     a place governed by a secret reference is echoed (SEC-003).
-  vectors: []
 
 - id: SCT-015
   layer: language
@@ -253,7 +241,6 @@
     authored locations in diagnostics. This is an equivalence of registration, not a procedure
     for changing an existing project. It supplies no implicit setup, opening, retirement,
     repeat or change of a pin. Names remain stable under SCT-004.
-  vectors: []
 
 - id: SCT-016
   layer: language
@@ -273,4 +260,3 @@
     form accepts may be written here, including one to `management` or one to `access` without
     a bound. Canonical authorization and root-consumer restrictions still apply. SCT-008
     restricts only `consumes`, never this section.
-  vectors: []

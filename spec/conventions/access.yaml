@@ -37,7 +37,6 @@
     the operation, under SEC-007: the only request for it that is dispatched is the engine's
     read of a secret, under SEC-010.
     The refusal carries ACC-056's diagnostic and follows its disclosure tiers.
-  vectors: []
 
 - id: ACC-002
   layer: convention
@@ -52,7 +51,6 @@
     request that the engine's decision does not permit has no record of invocation. A
     restriction that the implementation applies under IFC-019 is applied after that decision,
     and a reason the implementation then gives under IFC-026 ends the request as IFC-027 states.
-  vectors: []
 
 - id: ACC-003
   layer: convention
@@ -72,7 +70,6 @@
     under SEC-010, and the engine presents the consumer no tool for it, under IFC-012. From the
     moment its consumer is retired, an open Conduit permits less: only the requests of the
     consumer's retirement, under ACC-039.
-  vectors: []
 
 - id: ACC-005
   layer: convention
@@ -96,7 +93,6 @@
     Interface, the part reports refused. ACC-054 also applies where the declared consumer is
     root. A tombstone match gives conflict under LIF-041; the part opens nothing and OPS-022
     determines the setup outcome.
-  vectors: []
 
 - id: ACC-006
   layer: convention
@@ -129,7 +125,6 @@
     conflict, under CON-031: one whose target is retired is closed already, under CON-008.
     ACC-054 adds the condition where the consumer is root. LIF-041 gives conflict where a
     tombstone matches a Conduit that is not already open.
-  vectors: []
 
 - id: ACC-008
   layer: convention
@@ -162,7 +157,6 @@
     operation whose contract states no `effect`, that is not a control and whose contract is not
     marked `startsModelWork: true`, is dispatched as a new attempt, under OPS-024, so that its
     filters decide afresh.
-  vectors: []
 
 - id: ACC-009
   layer: convention
@@ -177,7 +171,6 @@
   observable: >-
     A request that the other Conduit's filter would forbid is permitted through this Conduit,
     unless one of the restrictions that do apply forbids it.
-  vectors: []
 
 - id: ACC-011
   layer: convention
@@ -201,7 +194,6 @@
     opened. A Conduit whose consumer is retired is not closed by that: CON-008 closes it once
     the consumer's shutdown is confirmed, or at once where the consumer is declared lost, and
     ACC-039 says what it permits until it is closed.
-  vectors: []
 
 - id: ACC-012
   layer: convention
@@ -224,7 +216,6 @@
     request that closed it is answered as OPS-009 and OPS-032 state: `close.v1` declares no
     outputs, so OPS-034 does not apply to it. Closing leaves a tombstone under LIF-040, except
     for an engine-made Conduit.
-  vectors: []
 
 - id: ACC-014
   layer: convention
@@ -240,7 +231,6 @@
     sent, it performs nothing and answers with the reason unavailable under IFC-026. In both
     cases the result names the restriction in `io.github.shrav-k.conduit/restriction`, as
     IFC-025 states.
-  vectors: []
 
 - id: ACC-015
   layer: convention
@@ -271,7 +261,6 @@
     core package, made of `management`, of `access` or of a Pool, that carries a filter under
     ACC-017 is not dispatched and reports unavailable, whatever the filter would have permitted:
     a restriction is never dropped because the implementation cannot apply it.
-  vectors: []
 
 - id: ACC-016
   layer: convention
@@ -287,7 +276,6 @@
     an instance that is not an actor and that names none reports refused. The request the engine
     then sends to the onward target names the instance's own Conduit in
     `io.github.shrav-k.conduit/conduit`.
-  vectors: []
 
 - id: ACC-017
   layer: convention
@@ -316,7 +304,6 @@
     none of them is retired, under ACC-039, which excepts the requests of that consumer's own
     retirement. The engine's read of a secret carries none of these filters: it is decided
     by the instance's own Conduit and the filters on it alone, under SEC-011.
-  vectors: []
 
 - id: ACC-018
   layer: convention
@@ -349,7 +336,6 @@
     a request for one of them that carries a filter under ACC-017 is not dispatched, and reports
     unavailable, under ACC-015. The `io.github.shrav-k.conduit/filters` that a hook is sent
     is therefore an empty list, under IFC-018.
-  vectors: []
 
 - id: ACC-019
   layer: convention
@@ -389,7 +375,6 @@
     not ended: IFC-016 says how its result is read, and until it ends its onward requests are
     decided under ACC-016 and ACC-017, like any other. A new attempt is dispatched only for a
     repeat that the caller makes, under IMP-007.
-  vectors: []
 
 - id: ACC-022
   layer: convention
@@ -405,7 +390,6 @@
     Conduit to `access` that has no bound is unlimited, under ACC-029, and ACC-030 says who may
     open or close another one. Its Conduit lists `lift.v1`, so root can lift any tombstone under
     ACC-053.
-  vectors: []
 
 - id: ACC-023
   layer: convention
@@ -417,7 +401,6 @@
   observable: >-
     Every request from the new Interface reports refused until an actor with the right to open
     opens a Conduit for it.
-  vectors: []
 
 - id: ACC-024
   layer: convention
@@ -433,7 +416,6 @@
     Root may close its own other Conduits on its own behalf. CON-008 still closes a Conduit
     whose target is retired. Root's unbounded Conduit to `access` stays open (ACC-022), so
     closing its own other Conduit cannot remove its ability to open another.
-  vectors: []
 
 - id: ACC-027
   layer: convention
@@ -458,7 +440,6 @@
     mediated (LIF-013, CTR-014). An Agent whose own tools are on and whose runtime provider
     does not confine it, as the engine's own runner does not, is a consumer that is not
     confined: it may reach by its own means what a target's implementation reaches.
-  vectors: []
 
 
 
@@ -472,7 +453,6 @@
   observable: >-
     A Pool is never a caller. An actor whose only open Conduit is to the Pool can use the Pool's
     own operations, and reports refused on every operation of the Resources the Pool owns.
-  vectors: []
 
 - id: ACC-029
   layer: convention
@@ -523,7 +503,6 @@
     its Pool in `pools` covers the replacement while that same Pool owns it. A Fleet named in
     `targets`
     covers that Fleet alone and none of its Agents.
-  vectors: []
 
 - id: ACC-030
   layer: convention
@@ -576,7 +555,6 @@
     request would carry it, under ACC-017, and an onward request to `management` that carries
     one reports unavailable, under ACC-015. The narrowing is the broker's and not the engine's:
     the broker's own Conduit to `management` is as wide as any.
-  vectors: []
 
 - id: ACC-032
   layer: convention
@@ -595,7 +573,6 @@
     its contract is marked `reservedToRoot: true`. Under CTR-009 only an operation of the core
     package is so marked. The five are declare-lost.v1, purge.v1, enroll-machine.v1,
     admit-machine.v1 and refuse-machine.v1 (ENR-001, ENR-006, ENR-008).
-  vectors: []
 
 - id: ACC-033
   layer: convention
@@ -683,7 +660,6 @@
     object's inventory is part of its inspection: no separate Conduit authorizes inspecting each
     Conduit shown there (LIF-013). Tombstone inspection follows LIF-040; listing never supplies
     additional inspection authority (OPS-036).
-  vectors: []
 
 
 
@@ -713,7 +689,6 @@
     onward request refused in the same way from the moment the consumer of that Conduit is
     retired, before the Conduit is closed, unless the invocation that the request serves belongs
     to that consumer's own retirement.
-  vectors: []
 
 
 
@@ -730,7 +705,6 @@
     the reverse holds once a Conduit that lists the operation is opened. Each request has its
     own record of an access decision under REC-001. No decision is kept to stand in for a later
     one.
-  vectors: []
 
 - id: ACC-037
   layer: convention
@@ -751,7 +725,6 @@
     request that cannot be read reports another reason, invalid. The same request made once
     the state can be established is decided as any other. Whether the engine reports at once
     or first waits, and for how long, is DL4 of the implementation-defined list.
-  vectors: []
 
 - id: ACC-038
   layer: convention
@@ -773,7 +746,6 @@
     to each request through a Conduit to `access`, under ACC-029. The address that names an
     implementation of a submitted project is the one its manifest states under MAN-015, as
     SUB-008 names the project's contracts outside its own documents.
-  vectors: []
 
 
 
@@ -814,7 +786,6 @@
     own retirement apart. The invocation itself runs to its end. A hook is not an onward
     request, and the stop of the consumer's run is a provider call, under PRV-005 and PRV-008,
     which is not a request and which no Conduit permits, under PRV-004.
-  vectors: []
 
 - id: ACC-044
   layer: convention
@@ -838,7 +809,6 @@
     record field. A Conduit with no `openedThrough` has no opening authority to name as closed.
     A snapshot is a fixture, and supplies no opening event from which provenance can be
     inferred.
-  vectors: []
 
 - id: ACC-053
   layer: convention
@@ -864,7 +834,6 @@
     A lift registers and opens nothing and names no revision (REV-012); it is recorded with its
     input and reconciled through `access` (ACC-033, ACC-055). ACC-056 states the disclosure
     tiers for the result.
-  vectors: []
 
 - id: ACC-054
   layer: convention
@@ -881,7 +850,6 @@
     ACC-005. With ACC-024, every requested opening, registration and closing of root's Conduits
     is root's own act. Engine-made first-start and default Conduits follow FST-002 and
     FLEET-005.
-  vectors: []
 
 - id: ACC-055
   layer: convention
@@ -906,7 +874,6 @@
     remains subject to these conditions. An unbounded Conduit to `access` and reconciliation
     through `management` have no additional condition under this promise. A Fleet is never a
     sender in this version (FLEET-004).
-  vectors: []
 
 - id: ACC-057
   layer: convention
@@ -921,7 +888,6 @@
     submission. Having both Conduits in ACC-033 row 1A is insufficient for another actor or
     an onward request serving root. A refused submission registers nothing. Root still needs
     the authorizing Conduits in ACC-033.
-  vectors: []
 
 - id: ACC-056
   layer: convention
@@ -1038,4 +1004,3 @@
     Where an unknown tool spelling cannot identify an operation or local Conduit name,
     named.tool and operation echo that spelling; the explanation states that no presented
     tool has it; no past tool list or hidden object is disclosed to reconstruct the name.
-  vectors: []

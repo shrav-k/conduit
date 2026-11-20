@@ -28,7 +28,6 @@
     Resolving yields one Conduit, with one consumer reference, one target reference and one
     capability. A document that supplies more or fewer of any of them is rejected with a
     diagnostic, and no Conduit is produced.
-  vectors: []
 
 - id: CON-002
   layer: language
@@ -41,7 +40,6 @@
   observable: >-
     The resolved objects contain the new instance and those Conduits, each naming the new
     instance as consumer.
-  vectors: []
 
 - id: CON-004
   layer: convention
@@ -67,7 +65,6 @@
     does not keep the setup from succeeding, and the setup reports it as not opened. These parts
     come first in a setup: the run is asked for, and the setup hook dispatched, only once each
     of them that is not marked optional has succeeded, under TPL-012.
-  vectors: []
 
 - id: CON-006
   layer: language
@@ -84,7 +81,6 @@
     that a client drives under IFC-042 or an instance reached only by `remote`, runs on none,
     whatever its placement: PLC-002 places it on `local` because it runs nothing, so comparing
     its node's hostname under PLC-013 would say nothing of where it runs.
-  vectors: []
 
 - id: CON-007
   layer: convention
@@ -97,7 +93,6 @@
     The Conduit stays open.
   observable: >-
     Inspecting the Conduit after it reports the state ready and the same operations as before.
-  vectors: []
 
 - id: CON-008
   layer: convention
@@ -138,7 +133,6 @@
     A Resource retirement sent by another instance may also raise a notice for each other
     Fleet whose Agents lose Conduits, under PND-007; no review or automatic closing beyond
     this rule is added.
-  vectors: []
 
 - id: CON-011
   layer: convention
@@ -150,7 +144,6 @@
   observable: >-
     Inspecting the consumer reports the state ready, and names the closed Conduit and the
     capability it carried as no longer reachable through it.
-  vectors: []
 
 # --- Conduits to live instances.
 
@@ -166,7 +159,6 @@
   observable: >-
     The resolved objects contain the new Conduit, naming both instances. The consumer's
     definition and revision are the same as before.
-  vectors: []
 
 - id: CON-013
   layer: convention
@@ -179,7 +171,6 @@
   observable: >-
     The consumer's status is unchanged across the open. A request through the new Conduit made
     after the open is permitted.
-  vectors: []
 
 - id: CON-014
   layer: convention
@@ -191,7 +182,6 @@
   observable: >-
     The consumer's lifecycle state is unchanged across the close. What its later requests
     through the closed Conduit report is ACC-011.
-  vectors: []
 
 # --- The Conduit template.
 
@@ -208,7 +198,6 @@
     A Conduit template with no `capability` is rejected. So is one that has no `operations` and
     no input whose destination is `/operations`. What is required of an `operations` that an
     input fills is INS-023.
-  vectors: []
 
 - id: CON-017
   layer: language
@@ -222,7 +211,6 @@
     An operation the capability does not include is rejected with a diagnostic naming it. A list
     that an input supplies is checked in the same way when the Conduit is instantiated, under
     INS-023.
-  vectors: []
 
 - id: CON-018
   layer: language
@@ -244,7 +232,6 @@
     `github.com/shrav-k/conduit/core#bound.v1`, which the engine applies to each request through
     that Conduit, under ACC-029. A filter is sent to the target's implementations under IFC-018,
     and they apply it under IFC-019; CON-022 says which of them must support it.
-  vectors: []
 
 - id: CON-020
   layer: language
@@ -258,7 +245,6 @@
     Resolving returns a diagnostic naming the key. A declared Conduit that names a consumer is
     rejected by `declared-conduit.v1`, under SUB-005: the consumer of a declared Conduit is
     always the instance being instantiated.
-  vectors: []
 
 - id: CON-021
   layer: language
@@ -269,7 +255,6 @@
     The Conduit is not instantiated.
   observable: >-
     Resolving returns a diagnostic naming the capability and the target's type.
-  vectors: []
 
 
 
@@ -301,7 +286,6 @@
     filter, under IFC-019, so the request reports unavailable and nothing is performed. A filter
     that an onward request or a hook carries is not counted here: ACC-015 checks it against the
     implementation that the request or the hook would be dispatched to.
-  vectors: []
 
 - id: CON-023
   layer: convention
@@ -316,7 +300,6 @@
     depend on the order in which objects are set up. A Conduit whose target is retired is
     already closed under CON-008, and is never opened. Nor is one whose consumer is retired,
     under CON-031.
-  vectors: []
 
 - id: CON-024
   layer: convention
@@ -336,7 +319,6 @@
     management verb. The same holds for requests authorized against a Fleet, and
     `fleet-management.v1` is also a management capability. Setting up an Agent through its Fleet
     is dispatched while the Fleet is registered.
-  vectors: []
 
 - id: CON-025
   layer: language
@@ -347,7 +329,6 @@
     The Conduit is not instantiated.
   observable: >-
     Resolving returns a diagnostic naming the retired instance.
-  vectors: []
 
 
 
@@ -363,7 +344,6 @@
   observable: >-
     Resolving returns a diagnostic naming the end and the kind that was given. A Pool or Fleet given as a
     consumer, and a Conduit given as either end, are each rejected in this way.
-  vectors: []
 
 
 
@@ -381,7 +361,6 @@
     Resolving returns a diagnostic naming the template or the Conduit, and each item of its
     `requirements` that applies `github.com/shrav-k/conduit/core#bound.v1`. A bound is carried
     only by a Conduit to `access`, and such a Conduit carries at most one.
-  vectors: []
 
 
 
@@ -407,4 +386,3 @@
     declared Conduit of a retired consumer does not arise, because a request to set up a retired
     instance reports conflict under LIF-015. Where the actor is not permitted, OPS-023 gives
     refused first.
-  vectors: []

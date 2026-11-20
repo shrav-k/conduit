@@ -19,7 +19,6 @@
     revision for its settings. A revision is an opaque non-empty string, compared only for
     equality, as an HTTP entity tag is: nothing is read from its form, neither the order of two
     revisions nor what changed between them.
-  vectors: []
 
 - id: REV-002
   layer: convention
@@ -31,7 +30,6 @@
   observable: >-
     The object's stored definition, configuration and revision are unchanged, and the
     implementation receives no call.
-  vectors: []
 
 - id: REV-003
   layer: convention
@@ -42,7 +40,6 @@
     Its revision advances.
   observable: >-
     The revision after the change differs from the revision before it.
-  vectors: []
 
 - id: REV-004
   layer: convention
@@ -54,7 +51,6 @@
   observable: >-
     A change that failed, a change whose outcome is unknown, and a control that succeeded with
     values equal to those already stored each leave the revision as it was.
-  vectors: []
 
 - id: REV-005
   layer: convention
@@ -65,7 +61,6 @@
     It takes a value the object has had before.
   observable: >-
     Changing a setting from one value to another and back yields three distinct revisions.
-  vectors: []
 
 - id: REV-006
   layer: convention
@@ -82,7 +77,6 @@
     of a control may be left out, whether or not the control's `inputSchema` lists it under
     `required`: the rule of OBJ-015 that an input `required` lists is not optional does not hold
     for a control, and the tool definition of IFC-033 lists `revision` alone as required.
-  vectors: []
 
 - id: REV-007
   layer: convention
@@ -106,7 +100,6 @@
     checked before the control is dispatched, under REV-015. A control that succeeds after its
     instance was retired, under PLC-017 or PLC-024, stores nothing, and the revision is
     unchanged, under REV-012.
-  vectors: []
 
 - id: REV-009
   layer: convention
@@ -121,7 +114,6 @@
     Inspection shows the earlier stored values, the earlier revision, and unknown against each
     setting the control addressed. Those settings stay reported unknown after reconciliation,
     under REV-010. Sending the control again requires the current revision under REV-002.
-  vectors: []
 
 
 
@@ -137,7 +129,6 @@
     the control addressed as unknown under REV-009. The request is authorized under ACC-033
     against the target that manages the instance, and ACC-055 limits reconciliation by
     holders other than root.
-  vectors: []
 
 - id: REV-011
   layer: convention
@@ -151,7 +142,6 @@
     implementation receives no call. No change is applied to whatever revision is current. The
     revision is named in `revision`, an input of the operation like any other, as `replace.v1`,
     `unregister.v1` and every control have it.
-  vectors: []
 
 - id: REV-012
   layer: convention
@@ -176,7 +166,6 @@
     its end, under ACC-034, and its outcome is recorded, but nothing is stored in the retired
     instance, under REV-007, and one that ends unknown is reconciled with nothing stored, under
     REV-010.
-  vectors: []
 
 
 
@@ -213,7 +202,6 @@
     `retire-with-agents.v1` similarly retires its Fleet and holds back other setups, retirements
     and changes of the Fleet until it ends; the Fleet retirement it dispatches under LIF-021 is
     part of it and is not held back by it.
-  vectors: []
 
 - id: REV-015
   layer: convention
@@ -233,4 +221,3 @@
     the `maximum` 15, requested with 20 for `limit`, reports invalid, and its diagnostic names
     this promise, under IFC-025. Where the actor is not permitted, OPS-023 gives refused first,
     and a request that also names a revision that is not current reports invalid, not conflict.
-  vectors: []

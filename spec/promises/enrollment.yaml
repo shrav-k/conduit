@@ -34,7 +34,6 @@
     minimum. The weaker-check flag is recorded on the enrollment and with its answer; the
     person's named flag is --accept-weaker-check. IFC-049 governs returning the two IDs when
     a secret-free URL is relayed; no subsequent client answer opens or closes the enrollment.
-  vectors: []
 
 - id: ENR-002
   layer: convention
@@ -58,7 +57,6 @@
     the machine's key where the provider offers one; the contract states how it derives it.
     The provider reports that id, enrollment and evidence under PRV-014. An action does not
     authorize any request, and joining makes no node (ENR-004, ENR-011).
-  vectors: []
 
 - id: ENR-003
   layer: interface
@@ -79,7 +77,6 @@
     pending machine's evidence (PND-008). A request without URL elicitation capability gets
     the two IDs at once, with no -32021; its action is shown only at the panel. Actions are
     held only until that join, answer or expiry (PND-004).
-  vectors: []
 
 - id: ENR-004
   layer: convention
@@ -99,7 +96,6 @@
     Evidence is rendered only by the engine at root's panel, never in tool results or
     notifications (PND-008). Nothing is granted by the join (ENR-011). Only a new enrollment
     and admission may make a node after refusal, expiry or retirement of its earlier node.
-  vectors: []
 
 - id: ENR-005
   layer: language
@@ -120,7 +116,6 @@
     evidence under PND-012, with disclosure limited by PND-004 and PND-008. No model's turn
     supplies evidence. Attestation never replaces ENR-006's fingerprint comparison outside
     the recorded headless exception.
-  vectors: []
 
 - id: ENR-006
   layer: convention
@@ -160,7 +155,6 @@
     no accept-machine.v1. Where all checks pass but the provider is not ready, the request
     reports unavailable with a diagnostic naming that cause under this rule. A machine
     that cannot be admitted can still be refused (ENR-008).
-  vectors: []
 
 - id: ENR-007
   layer: convention
@@ -187,7 +181,6 @@
     OPS-008 keeps as the invocation's own state, apart from records, covers it for matching
     repeats under OPS-009 and OPS-010; that digest is the only thing derived from the typed
     input the engine keeps. Recorded evidence is what the provider reported, not that input.
-  vectors: []
 
 - id: ENR-008
   layer: convention
@@ -217,7 +210,6 @@
     Closing an enrollment removes no machine that has not joined; expiry removes none
     (ENR-009). Answer records hold the evidence shown and any weaker-check flag (PND-012),
     never a join action or the typed fingerprint (ENR-003, ENR-007).
-  vectors: []
 
 - id: ENR-009
   layer: convention
@@ -234,7 +226,6 @@
     enrollment, grant nothing and permit no admission. Removal always needs root's request.
     Retiring or replacing the provider closes its open enrollments under PRV-013; a later
     report cannot reopen them. Expiry changes no invocation's outcome (PND-012).
-  vectors: []
 
 - id: ENR-010
   layer: convention
@@ -253,7 +244,6 @@
     changes a node's labels after it is made. Selectors read these fixed labels (PLC-007,
     PLC-013). A Linux environment inside another operating system, such as WSL2 on Windows,
     is a machine of its own and reports linux for kubernetes.io/os (PRV-014).
-  vectors: []
 
 - id: ENR-011
   layer: convention
@@ -266,7 +256,6 @@
     Admission makes only the node, no Conduit and no credential. Only what a request presents
     establishes who sent it (IFC-022, PRV-018). Only an open
     Conduit permits it (ACC-001). Sharing a network or a node gives no access (PLC-012).
-  vectors: []
 
 - id: ENR-012
   layer: convention
@@ -285,4 +274,3 @@
     A retired or replaced provider is never called and a new provider is never given the old
     id (ENR-008, PRV-013). A node that the engine made gets no tombstone (LIF-040), so a new
     admission can take its hostname again, under PLC-026.
-  vectors: []

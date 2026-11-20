@@ -296,7 +296,6 @@ A promise is a data record with these fields:
 | `when` | The situation. |
 | `then` | The single obligation. For `must not`, the thing that must not happen. |
 | `observable` | What can be checked to tell whether the promise was kept. What it says is made, returned, rejected or never done binds as `then` does. A comparison with another system, or a reason given, explains and binds nothing. Where `observable` and `then` differ, `then` governs. |
-| `vectors` | The conformance vectors that test it. See the dated coverage status above. |
 
 Rules for writing one:
 
@@ -304,7 +303,9 @@ Rules for writing one:
 2. Stated as something that can be checked. If nothing could tell, it is not a promise.
 3. No sentence of the form "this does not imply". State the correct behavior as its own promise.
 4. Every term is defined in [definitions.md](definitions.md).
-5. A promise with no vector is not yet testable and does not count as covered.
+5. A promise that no case's `promises` tag names, in the coverage index under `conformance/`,
+   is not yet testable and does not count as covered. Those tags are the one record of which
+   cases test a promise.
 
 The `layer` field lets coverage be counted by layer.
 

@@ -23,7 +23,6 @@
   observable: >-
     Resolving returns a diagnostic naming the document and the rule its name breaks, and
     produces no objects. A contract's name follows CTR-001 instead.
-  vectors: []
 
 - id: OBJ-002
   layer: language
@@ -39,7 +38,6 @@
     first start. Which reason the registration reports is OBJ-025. A name held by no existing
     object may still be held by a tombstone; LIF-041 then gives conflict. FLEET-006 also forbids
     a Pool and a Fleet from sharing a name.
-  vectors: []
 
 - id: OBJ-003
   layer: language
@@ -61,7 +59,6 @@
     Pool's entry that POOL-014 gives, whatever name was generated for it. The result of
     `register.v1` lists each instance the request made, with its name and its ID, and says of a
     nested instance which nested instantiation made it, so a generated name is learned there.
-  vectors: []
 
 - id: OBJ-004
   layer: language
@@ -76,7 +73,6 @@
     Resolving returns a diagnostic naming the field, and produces no objects. The rule is for
     the top-level keys of a document: inside `config` a key of one of those names is the
     author's, under OBJ-019. What the list `packages` holds is NAM-009.
-  vectors: []
 
 - id: OBJ-006
   layer: language
@@ -91,7 +87,6 @@
     in a field that accepts more than one kind is rejected with a diagnostic naming the field.
     Where a bare name is the argument of an input whose schema fixes the kind, INS-006 says
     what the input's destination receives.
-  vectors: []
 
 - id: OBJ-007
   layer: language
@@ -104,7 +99,6 @@
   observable: >-
     Resolving returns a diagnostic naming the field, the object found and which of the two was
     expected.
-  vectors: []
 
 - id: OBJ-008
   layer: language
@@ -116,7 +110,6 @@
   observable: >-
     The template exists after registration. The result of registration lists the unresolved
     name as a diagnostic that did not prevent it.
-  vectors: []
 
 - id: OBJ-009
   layer: language
@@ -135,7 +128,6 @@
     reference schema accepts it, so the stored configuration still satisfies the schema of the
     instance's type, and a submitted document that writes it is rejected with a diagnostic
     naming where it is written. What a request that writes it reports is LIF-031.
-  vectors: []
 
 - id: OBJ-010
   layer: language
@@ -153,7 +145,6 @@
     to the name resolves to that object, and the instance's own reference is not redirected to
     it. A nested instantiation that the instance holds, and from which a replacement is made
     under LIF-009, holds its references in the resolved form in the same way.
-  vectors: []
 
 - id: OBJ-011
   layer: language
@@ -170,7 +161,6 @@
     `metadata.name`: an object is known by another name only where another object is made under
     it. A name becomes free once its object no longer exists, which is why an instance holds the
     resolved form of each reference, under OBJ-009 and OBJ-010.
-  vectors: []
 
 # --- The shape of a document. The JSON Schemas of these shapes are the
 # --- Schema contracts under spec/schemas/.
@@ -187,7 +177,6 @@
     A template document with any other top-level key is rejected with a diagnostic naming the
     key. SCT-005 gives the other notation, a member of the sectioned document's `templates`
     section; its translation has this framed form.
-  vectors: []
 
 - id: OBJ-013
   layer: language
@@ -214,7 +203,6 @@
     `consumer` and `target` each state their kind under OBJ-006. A declared Conduit's local name
     stays its key; `as` is for a Conduit instantiated on its own. Without `as` its local name is
     its own name (IFC-012). What `from` may be is INS-025.
-  vectors: []
 
 - id: OBJ-014
   layer: language
@@ -233,7 +221,6 @@
     declared Conduit that carries `consumer`, and an entry that carries `owner`, `placement` or
     `runtime`, are each rejected. How an entry is placed, and what runs its Resource, is
     POOL-009 and POOL-016.
-  vectors: []
 
 - id: OBJ-015
   layer: language
@@ -259,7 +246,6 @@
     request leaves it out, before the request is checked against `inputSchema`, so it may be
     left out even where `required` lists it. An output that `outputSchema` does not list under
     `required` is one that a result may leave out.
-  vectors: []
 
 - id: OBJ-016
   layer: language
@@ -278,7 +264,6 @@
     `/config/model` as a destination means the `model` member of `config` in `spec`, and `/root`
     in an item's `environment` means the member `root` of the configuration. Which places an
     item's pointer may name is MAN-017.
-  vectors: []
 
 # --- Spelling and the envelope, following Kubernetes.
 
@@ -294,7 +279,6 @@
     A framed document with no `apiVersion`, or with one the engine does not know, is rejected
     with a diagnostic naming it. For this version the value is
     `github.com/shrav-k/conduit/v0`.
-  vectors: []
 
 - id: OBJ-018
   layer: language
@@ -310,7 +294,6 @@
     A template or a contract with no `name` is rejected. Two documents that differ only in
     `description` or `annotations` resolve to the same object. Any other key in `metadata` is
     rejected. An instance document may leave out `metadata` altogether, as OBJ-013 states.
-  vectors: []
 
 - id: OBJ-019
   layer: language
@@ -341,7 +324,6 @@
     as SCH-002 requires. Section maps, `templates` family maps and `consumes` have author-named members
     (SCT-001, SCT-005 to SCT-007, SCT-013). Their
     member bodies remain closed.
-  vectors: []
 
 
 
@@ -358,7 +340,6 @@
     A framed document with no `kind`, or one outside the eleven, is rejected with a diagnostic
     naming it. Outside the manifest, a map without `kind` is judged as a sectioned document
     under SCT-001, which rejects a frame missing its kind.
-  vectors: []
 
 - id: OBJ-021
   layer: language
@@ -387,7 +368,6 @@
     exactly as written, and is never rewritten. The core schema `secret-reference.v1` is a
     reference schema too, and a place it governs is under the narrower rule of SEC-001: it holds
     only a reference, never the secret itself.
-  vectors: []
 
 - id: OBJ-022
   layer: language
@@ -409,7 +389,6 @@
     names. The keys of a label selector under PLC-007 are labels and not names, and the schema
     `labels.v1` gives their form. SCT-013 further restricts sectioned names and local names;
     their generated names must fit OBJ-001 too.
-  vectors: []
 
 
 
@@ -426,7 +405,6 @@
     `structuredContent` as IFC-025 states, and nothing is registered, as SUB-003 states. A clash
     with an existing name reports conflict under OBJ-025. Where both causes are present, or the
     actor is not permitted, OPS-023 says which reason is reported.
-  vectors: []
 
 # --- The names a version assigns. They are defined once, in
 # --- spec/names.yaml.
@@ -445,7 +423,6 @@
     An engine that supports two versions loads a document written for either, and resolves the
     core package at the address the document's own version states. A document that uses one
     version (OBJ-017, SCT-002) with another version's core address is rejected.
-  vectors: []
 
 
 
@@ -462,4 +439,3 @@
     `structuredContent` as IFC-025 states, and nothing is registered, as SUB-003 states. Every
     other cause of rejection reports invalid under OBJ-023. Where both causes are present, or
     the actor is not permitted, OPS-023 says which reason is reported.
-  vectors: []

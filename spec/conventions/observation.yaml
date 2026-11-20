@@ -22,7 +22,6 @@
     The declared part of an inspection result is the same before and after any observation. It
     changes only by an operation that an actor requested and that changes it, as the convention
     on revisions states.
-  vectors: []
 
 - id: OBS-002
   layer: convention
@@ -35,7 +34,6 @@
     Every observation in an inspection result has both. An observation is reported as a
     condition of LIF-011, its time in `lastHeartbeatTime` and its source in `source`, a
     URI-reference that the engine names, as it names the `source` of a record under REC-005.
-  vectors: []
 
 - id: OBS-003
   layer: convention
@@ -50,7 +48,6 @@
     The earlier value is not shown as current. Where it was never observed, the inspection
     result says unknown with no time. When a machine is reported unreachable, this holds for
     every instance placed on its node, and instances on other nodes report as before.
-  vectors: []
 
 - id: OBS-004
   layer: convention
@@ -66,7 +63,6 @@
     PRV-010, and the engine dispatches nothing because of it. Once the engine has restarted, it
     runs a provider whose run ended with it again only when it must make a provider call to
     that provider, under PRV-026, and not because the run is seen to have stopped.
-  vectors: []
 
 - id: OBS-006
   layer: convention
@@ -79,4 +75,3 @@
     Inspecting leaves every instance's status and every Conduit as it was, and that actor's
     requests are permitted or refused exactly as before. That it starts no model work is
     IMP-002.
-  vectors: []

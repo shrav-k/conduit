@@ -24,7 +24,6 @@
     It has exactly one outcome: succeeded, failed or unknown.
   observable: >-
     The record of the invocation's end states one of those three values and no other.
-  vectors: []
 
 - id: OPS-002
   layer: convention
@@ -35,7 +34,6 @@
     The effect the operation's contract describes has occurred.
   observable: >-
     Inspecting what the effect changes shows the effect present.
-  vectors: []
 
 - id: OPS-003
   layer: convention
@@ -47,7 +45,6 @@
   observable: >-
     Inspecting what the effect changes shows no trace of the effect. Invoking the operation
     again cannot apply the effect a second time.
-  vectors: []
 
 - id: OPS-004
   layer: convention
@@ -59,7 +56,6 @@
     It reports the outcome unknown.
   observable: >-
     The record of the invocation's end states unknown in each of those three cases.
-  vectors: []
 
 - id: OPS-005
   layer: convention
@@ -89,7 +85,6 @@
     has the engine reject with an error of its own: where the engine could establish the
     instance that sent it, its reason is invalid and is in that error, under IFC-036. The
     protocol error also carries the explanation and deciding diagnostic.
-  vectors: []
 
 - id: OPS-006
   layer: convention
@@ -104,7 +99,6 @@
     of the three outcome values, in the key IFC-009 names, or the reason refused or unavailable,
     in the key IFC-026 names. An implementation marked `plain` states neither, and the outcome
     of its result is the one IFC-010 gives.
-  vectors: []
 
 - id: OPS-007
   layer: convention
@@ -144,7 +138,6 @@
     is not an error, and no `structuredContent`, for an operation with such an output has the
     outcome unknown. A result that states failed or unknown, and an error of a plain server,
     hold no outputs to validate, under IFC-009 and IFC-010.
-  vectors: []
 
 - id: OPS-008
   layer: convention
@@ -178,7 +171,6 @@
     after which a repeat reports conflict, under OPS-034, unless OPS-024 dispatches it. The kept
     state explicitly includes the instance that sent the request. For a hook, the sender used by
     ACC-055 is the sending instance of the setup or retirement within which the hook ran.
-  vectors: []
 
 - id: OPS-009
   layer: convention
@@ -243,7 +235,6 @@
     Conduit, and
     the access decision is made for it like any other, under ACC-036: a repeat sent through a
     Conduit that has been closed reports refused under ACC-001.
-  vectors: []
 
 - id: OPS-010
   layer: convention
@@ -258,7 +249,6 @@
   observable: >-
     The implementation receives no call for the second request. The invocation's state is
     unchanged.
-  vectors: []
 
 - id: OPS-011
   layer: convention
@@ -271,7 +261,6 @@
   observable: >-
     Two requests with identical contents and no idempotency key are two invocations, each with
     its own ID under IFC-006 and its own records, and the implementation receives two calls.
-  vectors: []
 
 - id: OPS-012
   layer: convention
@@ -309,7 +298,6 @@
     false as well, so the outcome is unknown there too, and not succeeded, since a late answer
     changes no outcome. An engine that does not keep a late answer counts that attempt as having
     none, with the same outcome.
-  vectors: []
 
 - id: OPS-013
   layer: convention
@@ -321,7 +309,6 @@
   observable: >-
     Asking for the invocation's state at any later time reports unknown, until a reconciliation
     of it under OPS-014 is recorded.
-  vectors: []
 
 - id: OPS-014
   layer: convention
@@ -364,7 +351,6 @@
     its end there, under OPS-027. A hook that did not run has its work done by hand and recorded,
     or its instance is replaced. ACC-055 further limits reconciliation through bounded access
     and through Pools or Fleets for holders other than root.
-  vectors: []
 
 - id: OPS-018
   layer: convention
@@ -378,7 +364,6 @@
   observable: >-
     Inspecting what the effect changes shows it applied at most once for that idempotency key,
     in every ordering of those events.
-  vectors: []
 
 
 
@@ -400,7 +385,6 @@
     Operation contract of the core package, such as `register.v1`, `set-up.v1`, `open.v1` and
     `install.v1`. Every Fleet offers `fleet-management.v1`, which is a management capability
     too; listing, lifting and retiring with Agents are management verbs.
-  vectors: []
 
 - id: OPS-020
   layer: convention
@@ -416,7 +400,6 @@
   observable: >-
     A control needs an open Conduit, whose target is the instance itself, that lists it. It has
     an outcome, and is not dispatched for the same reasons as any other operation.
-  vectors: []
 
 
 
@@ -439,7 +422,6 @@
     attempt under OPS-024, as OPS-028 states. The other parts of a further setup leave what is
     done already as it is: an open Conduit, a ready Resource and a running run are left as they
     are, under CON-004, POOL-013 and PRV-007.
-  vectors: []
 
 - id: OPS-022
   layer: convention
@@ -470,7 +452,6 @@
     dispatched again counts as failed. An account check that failed or ended unknown counts as
     succeeded only in the setup that dispatched it; a further setup checks the account again
     under TPL-012.
-  vectors: []
 
 - id: OPS-023
   layer: convention
@@ -494,7 +475,6 @@
     schema and also names a revision that is not current reports invalid. Unavailable for
     any other cause, such as a restriction that cannot be evaluated under ACC-014 or a
     target that is not ready under CON-024, is reported only where no other reason applies.
-  vectors: []
 
 - id: OPS-024
   layer: convention
@@ -536,7 +516,6 @@
     invocation runs has the effect that ACC-034 states. The same holds for a new attempt that
     OPS-012 dispatches. A repeat that is not dispatched, under OPS-009, OPS-032 or OPS-034,
     changes none of this.
-  vectors: []
 
 
 
@@ -559,7 +538,6 @@
     as if the earlier one had not been made: it may be dispatched, or may end with a reason
     again, and each has its own record. Nothing is applied twice, because the earlier request
     performed nothing.
-  vectors: []
 
 
 
@@ -585,7 +563,6 @@
     implementation receives `{depth: 1}`. A control applies no default to an input that is not
     supplied: such an input leaves its setting as stored, as REV-006 states. A value that is
     supplied to a control is filled as any supplied value is.
-  vectors: []
 
 - id: OPS-027
   layer: convention
@@ -627,7 +604,6 @@
     part's invocation ends when the cancellation is sent, with the outcome that this promise
     gives it, so an onward request that names it is refused from then on, under ACC-019. How
     long the engine waits for a result is DL3 and DL10 of the implementation-defined list.
-  vectors: []
 
 
 
@@ -667,7 +643,6 @@
     REC-002, and the records of earlier attempts keep theirs. An onward request that names the
     invocation, made by an earlier attempt still running on a machine that was cut off, is
     decided for the latest caller: a limit of this version.
-  vectors: []
 
 
 
@@ -713,7 +688,6 @@
     holder learns nothing of a missing Resource. `lift.v1` names a tombstone in `id`: where
     none has that ID, an unbounded holder reports invalid and a bounded holder reports
     refused under ACC-053.
-  vectors: []
 
 
 
@@ -735,7 +709,6 @@
     gave to no invocation reports invalid, under OPS-029. Where the actor is not permitted
     under OPS-014 or ACC-055, OPS-023 gives refused first. Invalid under OPS-014 or OPS-029
     also precedes this conflict.
-  vectors: []
 
 
 - id: OPS-032
@@ -759,7 +732,6 @@
     succeeded and neither OPS-009 nor OPS-024 answers it. A repeat is decided like any other
     request, under ACC-036: one sent through a Conduit that has been closed reports refused
     under ACC-001, which OPS-023 puts first.
-  vectors: []
 
 
 
@@ -780,7 +752,6 @@
     holds no part of it, under SEC-003. A value given to a control is checked against the
     type's schema too, under REV-015. Where the actor is not permitted, OPS-023 gives refused
     first.
-  vectors: []
 
 
 
@@ -824,7 +795,6 @@
     OPS-009, or dispatched  under OPS-024. A repeat is decided like any other
     request, under ACC-036: one sent through a Conduit that has been closed reports refused
     under ACC-001, which OPS-023 puts first.
-  vectors: []
 
 - id: OPS-036
   layer: convention
@@ -848,4 +818,3 @@
     that may inspect it through that Fleet. A retired owner's Conduits are closed; its remaining
     members are listed through `management` according to inspection authority there. Nothing is
     disclosed or counted about omitted items.
-  vectors: []

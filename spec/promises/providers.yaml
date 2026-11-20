@@ -38,7 +38,6 @@
     such as a Docker context: PRV-006 says how an instance names its runtime provider, PRV-013
     which machine provider and package-source providers serve, and SEC-005 what the type of a
     secret Resource is.
-  vectors: []
 
 - id: PRV-002
   layer: convention
@@ -61,7 +60,6 @@
     it first needs it, under PRV-026. A secret Resource is not among them: it is placed and run
     as any other Resource is, and where the engine's own runner runs it, its process too is
     reached over stdio and ends as that server does, and it is run again under PRV-026.
-  vectors: []
 
 - id: PRV-003
   layer: convention
@@ -97,7 +95,6 @@
     of PRV-014, and places every instance on `local`. A `fetch` with any other scheme that no
     provider claims is PKG-023. Its own machine provider enrolls no machine; enroll-machine.v1
     reports unavailable under ENR-001 until a registered machine provider is ready.
-  vectors: []
 
 - id: PRV-004
   layer: language
@@ -122,7 +119,6 @@
     under PRV-005, so no instance can run, stop or inspect a run, list or place machines, or
     fetch a package through a Conduit, and no consumer is presented a tool for one. A Conduit
     whose capability is `secret-provider.v1` is SEC-008 and SEC-009.
-  vectors: []
 
 - id: PRV-005
   layer: convention
@@ -164,7 +160,6 @@
     root's enrollment, admission or refusal invocation (ENR-001, ENR-007, ENR-008). No part of
     enroll.v1's action appears in its call's record, whatever the provider's records policy
     (ENR-003).
-  vectors: []
 
 - id: PRV-006
   layer: language
@@ -202,7 +197,6 @@
     configuration; CTR-014 declares none of them. This version reports the reach of an Agent's
     own tools as neither enforced nor mediated, whatever its runtime provider (CTR-014,
     LIF-013).
-  vectors: []
 
 - id: PRV-007
   layer: convention
@@ -270,7 +264,6 @@
     OPS-022. Under PRV-019 one run serves
     one instance; TPL-019 keeps a template to one item that is run. Each call is a provider call
     under PRV-005.
-  vectors: []
 
 - id: PRV-008
   layer: convention
@@ -300,7 +293,6 @@
     does with a stop that it cannot carry out now is PRV-021. For an instance for which no setup
     was ever dispatched, no stop is asked for, under LIF-025. The call is a provider call under
     PRV-005.
-  vectors: []
 
 - id: PRV-009
   layer: convention
@@ -321,7 +313,6 @@
     give `url`, the URL at which the run's server is reached now, where it has moved since the
     run began, and the engine then reaches the server there, under IFC-017. The condition never
     changes the lifecycle state, under LIF-011.
-  vectors: []
 
 - id: PRV-010
   layer: convention
@@ -340,7 +331,6 @@
     makes no read of a secret because of a restart, under
     SEC-014, and dispatches nothing because of it. Inspecting the instance shows the run's state
     as the provider last gave it, under PRV-009.
-  vectors: []
 
 - id: PRV-011
   layer: convention
@@ -364,7 +354,6 @@
     value is inside the domain of trust of the secret, as the machine that the engine runs on
     is, and so are the run's machine and its gate, for what the run serves. A restart under
     PRV-010 reuses the value it holds.
-  vectors: []
 
 - id: PRV-012
   layer: convention
@@ -384,7 +373,6 @@
     IFC-017, so a provider runs a `package` whose `transport` is of the `type` `stdio` only by
     bridging it behind its gate, under PRV-025, as ToolHive carries HTTP to a container's
     standard streams, and otherwise ends its run failed here.
-  vectors: []
 
 - id: PRV-013
   layer: convention
@@ -414,7 +402,6 @@
     it is instantiated keeps one provider to a scheme at any time. A runtime provider is not
     limited in this way: several may exist, owned by any Pool, and each instance names its own
     under PRV-006.
-  vectors: []
 
 - id: PRV-014
   layer: convention
@@ -455,7 +442,6 @@
     longer is configured with another, under PLC-026 and DL5. A machine joins pending, gets no
     node until admission, and is never a placement while pending (ENR-004). The provider's
     evidence reaches only root's panel and answer record (PND-008).
-  vectors: []
 
 - id: PRV-015
   layer: convention
@@ -494,7 +480,6 @@
     The returned id identifies a machine only within the provider Resource in force (ENR-002,
     PLC-026). Naming a pending or otherwise unrepresented id reports unavailable under this
     rule, with a diagnostic naming that cause.
-  vectors: []
 
 - id: PRV-016
   layer: language
@@ -520,7 +505,6 @@
     scheme. A scheme is added by registering another provider that claims it, and is moved by
     retiring the provider that claims it and then registering one that does, as the machine
     provider is changed under PRV-013.
-  vectors: []
 
 - id: PRV-017
   layer: convention
@@ -541,7 +525,6 @@
     request reports unavailable under PKG-024. A `fetch` carries no credential: a provider takes
     one by its scheme's own mechanism, as netrc and Docker's credential helpers give one. The
     call is a provider call under PRV-005, made before the request to install is dispatched.
-  vectors: []
 
 - id: PRV-018
   layer: convention
@@ -563,7 +546,6 @@
     the request came from. A runtime provider or a machine provider can so be swapped without
     changing who may reach what. Joining a network, acceptance there and node admission grant
     no access (ENR-011).
-  vectors: []
 
 
 
@@ -595,7 +577,6 @@
     provider places an instance under the selector of PLC-007, which, for one that has an item
     that is run and names no `runtime`, holds the hostname of the machine that `local`
     represents.
-  vectors: []
 
 - id: PRV-020
   layer: convention
@@ -620,7 +601,6 @@
     that uses it exists; this promise answers conflict instead, as PLC-011 does for a node.
     Within `retire-with-resources.v1` the Resources that name a runtime provider are retired
     before it, under LIF-021. Where the actor is not permitted, OPS-023 gives refused first.
-  vectors: []
 
 
 
@@ -662,7 +642,6 @@
     starting any run there. Under such a contract, a start under `run.v1` that finds a stop
     still owed fails, naming that stop, and may be retried once the stop is carried out
     (PRV-019). This is the provider's obligation under its contract, not an engine rule.
-  vectors: []
 
 - id: PRV-022
   layer: convention
@@ -734,7 +713,6 @@
     SPIFFE IDs in the domain that FST-007 fixes. `engine-id` holds
     `spiffe://<trust-domain>/conduit/engine`; `token` and `tls.crt` name the instance as
     `spiffe://<trust-domain>/conduit/instance/<id>`.
-  vectors: []
 
 - id: PRV-023
   layer: convention
@@ -770,7 +748,6 @@
     and login session are DL16 of the implementation-defined list.
     The runner also gives CONDUIT_STATE_DIR its own value under PRV-029; neither the
     inherited environment nor the pass list overrides it.
-  vectors: []
 
 
 
@@ -791,7 +768,6 @@
     the instance, under IFC-022, so whoever could read it could act as the instance through its
     Conduits. SEC-018 holds the value of a secret to the same rule, and the runtime provider
     keeps `identity` as it keeps such a value, under PRV-022.
-  vectors: []
 
 
 
@@ -865,7 +841,6 @@
     as the engine's operating-system user can read what the engine makes its proof with, under
     PRV-003, so the gate keeps out everything else, and not such a process. What `identity`
     holds, the gate may use for its means, under PRV-022.
-  vectors: []
 
 - id: PRV-026
   layer: convention
@@ -909,7 +884,6 @@
     and where its machine cannot be reached, no report arrives until the read succeeds. A
     further setup of the provider leaves a running run as it is,
     under PRV-007.
-  vectors: []
 
 - id: PRV-027
   layer: convention
@@ -930,7 +904,6 @@
     under PLC-008. The instance's node exists while the instance does, under PLC-011, so the
     call always has one to give. The record of the call names the instance in its `subject`,
     under REC-002.
-  vectors: []
 
 
 
@@ -960,7 +933,6 @@
     it, the engine sends nothing, and the part or the request reports unavailable, under
     IFC-017. The engine's own runner returns no `url`, and reaches its process over stdio,
     under PRV-003.
-  vectors: []
 
 - id: PRV-029
   layer: convention
@@ -981,7 +953,6 @@
     setup under a runner that gives none fails with an explicit diagnostic. Agent packages
     use it for the Agent's own home; their client-specific subdirectories and credential
     storage belong to their contracts.
-  vectors: []
 
 - id: PRV-030
   layer: convention
@@ -1009,4 +980,3 @@
     of the ID is running then, one restarted meanwhile included; whether it is carried out
     remains what the provider's contract states. A stop that cannot yet be carried out does not
     prevent the machine's restart policy from restarting the run meanwhile.
-  vectors: []

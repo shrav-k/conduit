@@ -26,7 +26,6 @@
   observable: >-
     Inspecting the instance shows one placement. A document that gives two, or a
     placement that is not a node, is rejected.
-  vectors: []
 
 - id: PLC-002
   layer: convention
@@ -52,7 +51,6 @@
     reported unreachable or gone makes it neither unavailable nor retired, under PLC-023 and
     PLC-024; PLC-007 checks no label of its type or its items against `local`, since a
     `nodeSelector` says where a workload runs and nothing of it runs.
-  vectors: []
 
 - id: PLC-005
   layer: language
@@ -70,7 +68,6 @@
     template may refer to a node in any other way, such as among the `targets` of a bound or
     in a place of `config` that a reference schema governs. A node offers no capability,
     under PLC-008, so no Conduit to one is instantiated, under CON-021.
-  vectors: []
 
 - id: PLC-006
   layer: language
@@ -81,7 +78,6 @@
     The document is rejected.
   observable: >-
     Resolving returns a diagnostic naming the document and the placement field.
-  vectors: []
 
 - id: PLC-007
   layer: language
@@ -113,7 +109,6 @@
     placed on it (ENR-010). A
     placement that the machine provider chose under PRV-015 is checked in the same way, and the
     provider is given this selector.
-  vectors: []
 
 - id: PLC-008
   layer: language
@@ -131,7 +126,6 @@
     Resource, its machine and the enrollment that admitted it. local represents the engine's
     hostname alone. node.v1 offers no capability and lists no control; no operation changes
     its binding or labels after it is made.
-  vectors: []
 
 - id: PLC-009
   layer: language
@@ -143,7 +137,6 @@
   observable: >-
     No operation changes the placement of an existing instance. Running it elsewhere means
     instantiating another instance.
-  vectors: []
 
 - id: PLC-011
   layer: convention
@@ -162,7 +155,6 @@
     unregistered. So a node is retired by a request only once every other instance placed on
     it has been removed or unregistered, and no instance whose shutdown is pending or unknown is
     left on a node that a request retired.
-  vectors: []
 
 - id: PLC-012
   layer: convention
@@ -174,7 +166,6 @@
   observable: >-
     A request between them reports refused unless an open Conduit lists the operation, exactly
     as for instances on different nodes.
-  vectors: []
 
 - id: PLC-013
   layer: language
@@ -193,7 +184,6 @@
     under PLC-009, so neither the opening of the Conduit nor a request through it is checked
     again. The requirement is applied by the engine itself and is never sent to an
     implementation.
-  vectors: []
 
 - id: PLC-015
   layer: language
@@ -206,7 +196,6 @@
   observable: >-
     Resolving the instance yields no Conduit whose target is its node. This is one of the
     three ways a node differs from other Resources; the others are PLC-008 and PLC-011.
-  vectors: []
 
 
 
@@ -243,7 +232,6 @@
     where the machine provider reports its machine gone, under PLC-024. If the provider still
     reports its machine other than gone, ENR-012 raises a machine-removal question at root;
     declaring lost removes nothing at the provider.
-  vectors: []
 
 - id: PLC-018
   layer: language
@@ -256,7 +244,6 @@
     Resolving returns a diagnostic naming the node and stating that it is retired. A
     node that is registered and not yet ready is accepted as a placement, and PLC-019 says
     what a request to set up the instance then reports.
-  vectors: []
 
 
 
@@ -271,7 +258,6 @@
   observable: >-
     The instance is in the state it had, and no implementation receives a call for its setup.
     Once the node is ready, a request to set up the instance is decided as any other.
-  vectors: []
 
 
 
@@ -289,7 +275,6 @@
     it or checks it against the machine the engine itself runs on or against any other node.
     An absolute path in the configuration of a Resource means that path on the machine of the
     Resource's node. That the engine joins no base to a relative path is INS-018.
-  vectors: []
 
 
 
@@ -336,7 +321,6 @@
     id under another hostname, or comes from another provider Resource does not represent that
     node: it counts as omitted and gets a condition naming the mismatch (PLC-026). Only a
     matching triple can report that node reachable again.
-  vectors: []
 
 - id: PLC-024
   layer: convention
@@ -363,7 +347,6 @@
     engine runs on that machine, so no first-start object and no provider other than a secret
     Resource is retired by a report. A further retirement of an instance left on the node
     dispatches no retire hook and asks for no run, under PLC-027.
-  vectors: []
 
 - id: PLC-025
   layer: language
@@ -380,7 +363,6 @@
     Where they agree, the selectors apply together under PLC-007, as Kubernetes merges the
     `scheduling.nodeSelector` of a RuntimeClass with a Pod's and rejects a Pod for which both
     name one label with different values.
-  vectors: []
 
 - id: PLC-026
   layer: convention
@@ -409,7 +391,6 @@
     engine that restarts on another machine or runs as several parts runs only on machines
     taking its hostname (DL17), so local and its node-tied values keep their meaning
     (PLC-020).
-  vectors: []
 
 
 
@@ -439,7 +420,6 @@
     LIF-017. A retirement in which no hook is to be dispatched, because the template selects
     none or the hook succeeded before, succeeds once the stop has succeeded, and the instance is
     then removed, under LIF-035.
-  vectors: []
 
 - id: PLC-028
   layer: language
@@ -456,4 +436,3 @@
     that template or through one of its own. A Pool's entry is made from a template too, so no
     entry makes a node either. The engine makes local at first start and every other node only
     on admission (ENR-007).
-  vectors: []

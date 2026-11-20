@@ -36,7 +36,6 @@
     over. Where several files are submitted without a directory, the manifest is the one among
     them that has that name, and where a registration hands the manifest over as a value, as the
     input `manifest` of `register.v1` does, that value is the manifest.
-  vectors: []
 
 - id: MAN-002
   layer: language
@@ -50,7 +49,6 @@
   observable: >-
     Resolving returns a diagnostic naming the files, and nothing is registered. A project has at
     most one manifest.
-  vectors: []
 
 - id: MAN-003
   layer: language
@@ -67,7 +65,6 @@
     document. The rules on syntax and on numbers of SCH-012, SCH-017, SCH-006, SCH-020 and
     SCH-021 apply to a manifest as to any document. A sectioned document that omits its own
     version takes this `apiVersion` under SCT-002. The manifest itself is never sectioned.
-  vectors: []
 
 - id: MAN-004
   layer: language
@@ -90,7 +87,6 @@
     because that address is not among its `packages`, the `operations` of a bound apart, which
     are compared as names under ACC-029. The address may not be the core package's, under
     NAM-021, nor one at which a package is installed, under MAN-016.
-  vectors: []
 
 - id: MAN-005
   layer: language
@@ -106,7 +102,6 @@
     diagnostic naming it. The form of an address is NAM-001, the form of a version is PKG-001
     and the form of a digest is PKG-004. An address written twice is a duplicate key, rejected
     under SCH-012.
-  vectors: []
 
 - id: MAN-006
   layer: language
@@ -134,7 +129,6 @@
     reference in the same way, and a request has no directory, so a relative one is rejected
     there too. An installation of an item whose `fetch` is relative gives `install.v1` the
     reference as resolved against the manifest's directory.
-  vectors: []
 
 - id: MAN-007
   layer: language
@@ -154,7 +148,6 @@
     `implementations` is what exports it, as PKG-019 states. A name written twice is rejected
     by `manifest.v1`, under SUB-005, and a name that an implementation also has under NAM-027.
     An export may name a template made by a sectioned document under SCT-005.
-  vectors: []
 
 - id: MAN-009
   layer: language
@@ -173,7 +166,6 @@
     of each other is PKG-020, which keys go with which way of reaching the implementation is
     MAN-010, and the name follows NAM-004. The one exception is the core package's own manifest,
     under MAN-012.
-  vectors: []
 
 - id: MAN-010
   layer: language
@@ -232,7 +224,6 @@
     is MAN-017, and which names `environment` may not bind is MAN-018. What a pointer to a
     place that `secret-reference.v1` governs yields is SEC-010 and SEC-013, and to which URL a
     header that carries a secret may go is SEC-024.
-  vectors: []
 
 - id: MAN-011
   layer: language
@@ -269,7 +260,6 @@
     `templates` and optional `apiVersion`: `fleet` and every instance section are rejected at
     install under this promise, even if empty. A sectioned project is translated before
     registration (SCT-003).
-  vectors: []
 
 - id: MAN-012
   layer: language
@@ -291,7 +281,6 @@
     provider capability: the engine's own runner, machine provider and fetching serve under
     PRV-003 without being selected as an implementation, and no engine serves `get-secret.v1`,
     under SEC-020.
-  vectors: []
 
 - id: MAN-013
   layer: language
@@ -307,7 +296,6 @@
     into an empty directory gives the project's directory as it was published. What the
     archive file itself must be is PKG-022, and which reason the installation reports is
     PKG-023.
-  vectors: []
 
 - id: MAN-014
   layer: language
@@ -321,7 +309,6 @@
     Installation returns a diagnostic naming the member, and nothing is written outside the
     place where the engine keeps the package. Which reason the installation reports is
     PKG-023.
-  vectors: []
 
 
 
@@ -342,7 +329,6 @@
     instances needs no address. The address follows NAM-001, and may be neither the core
     package's, under NAM-021, nor that of an installed package, under MAN-016.
     Two submissions may state one address, under SUB-008.
-  vectors: []
 
 - id: MAN-016
   layer: language
@@ -359,7 +345,6 @@
     installing a package at the address of a submitted project, reports conflict under PKG-029
     while a template or an instance holds a submission at that address.
     The core package's address is ruled out in the same way, under NAM-021.
-  vectors: []
 
 - id: MAN-017
   layer: language
@@ -393,7 +378,6 @@
     sent as a header under IFC-041, and a value at a place that `secret-reference.v1` governs is
     read under SEC-010 or SEC-013. The check is made when the template is registered, against
     the type's schema and the item as the template holds them under NAM-009.
-  vectors: []
 
 
 
@@ -426,4 +410,3 @@
     The state directory variable is reserved for the same reason: an item cannot redirect a
     run into another instance's login directory. It is compared without regard to case,
     including bindings under secrets.
-  vectors: []

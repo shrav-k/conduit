@@ -36,7 +36,6 @@
     `template.v1`, under SUB-005, as OBJ-019 requires: an instance's run is PRV-007, and its own
     work at setup and at retirement is a hook, under TPL-017 and TPL-018. A Fleet template
     instead holds `type` alone; only the core `fleet` template is accepted (FLEET-001).
-  vectors: []
 
 - id: TPL-002
   layer: language
@@ -49,7 +48,6 @@
   observable: >-
     A template with no `type`, with a type of another family, or a Conduit template that gives
     one, is rejected with a diagnostic.
-  vectors: []
 
 - id: TPL-003
   layer: language
@@ -71,7 +69,6 @@
     CTR-002. The map holds one selection for an operation; the same operation written twice is a
     duplicate key, rejected under SCH-012. `setup-hook.v1` and `retire-hook.v1` are selected
     here like any operation, under TPL-017 and TPL-018.
-  vectors: []
 
 - id: TPL-004
   layer: language
@@ -108,7 +105,6 @@
     implementation for the hook has none, so the hook is not dispatched, under TPL-017 and
     TPL-018, and the template is registered. Installation or resolving reports the default in a
     diagnostic that does not reject, when it reads the type, under CTR-004.
-  vectors: []
 
 - id: TPL-005
   layer: language
@@ -120,7 +116,6 @@
     The template is rejected.
   observable: >-
     Resolving returns a diagnostic naming the operation and the implementation.
-  vectors: []
 
 - id: TPL-008
   layer: language
@@ -136,7 +131,6 @@
     is made of the target that ACC-033 names. What a setup does is TPL-012, and what a
     retirement does is TPL-009. A Conduit is set up by an invocation of `open.v1` and retired by
     one of `close.v1`, and a request for `set-up.v1` or `retire.v1` that names one is LIF-032.
-  vectors: []
 
 - id: TPL-009
   layer: convention
@@ -169,7 +163,6 @@
     connection to a `remote` item for the instance ends when the retirement ends, under SEC-013.
     When the Conduits of which the instance is the consumer are closed, and what they permit
     meanwhile, is CON-008 and ACC-039.
-  vectors: []
 
 - id: TPL-010
   layer: language
@@ -185,7 +178,6 @@
     control the map does not list is not available on the template's instances, and TPL-013 says
     what a request for it reports. A template with no `controls` map makes every control of its
     type available. `inputs: {limit: {schema: {maximum: 50}}}` narrows the input `limit`.
-  vectors: []
 
 - id: TPL-011
   layer: convention
@@ -200,7 +192,6 @@
     A request whose value the contract would accept and the template's schema rejects leaves the
     configuration and the revision as they were, and no implementation receives a call. Where
     the actor is not permitted, OPS-023 gives refused first.
-  vectors: []
 
 - id: TPL-012
   layer: convention
@@ -247,7 +238,6 @@
     Resource and a running run as they are, under CON-004, POOL-013 and PRV-007, connects to
     each `remote` item again and reads again, under SEC-013, and dispatches the hook again only
     as OPS-021 and OPS-028 allow.
-  vectors: []
 
 
 
@@ -265,7 +255,6 @@
     call. A Conduit may list the control, because its capability includes it under CON-017, and
     the request reports invalid all the same. Where the actor is not permitted, OPS-023 gives
     refused first.
-  vectors: []
 
 
 
@@ -294,7 +283,6 @@
     type's default hook that is an item that is run counts with the template's other items under
     TPL-019. `setup-hook.v1` carries no mark of model work, so the hook starts none, under
     IMP-001, and neither does an onward request that serves it, under IMP-008.
-  vectors: []
 
 - id: TPL-018
   layer: convention
@@ -341,7 +329,6 @@
     that is run counts with the template's other items under TPL-019. `retire-hook.v1` carries
     no mark of model work, so the hook starts none, under IMP-001, and neither does an onward
     request that serves it, under IMP-008.
-  vectors: []
 
 - id: TPL-019
   layer: language
@@ -362,4 +349,3 @@
     does not count. An Interface or a Pool has no placement and no `runtime`, under PLC-006 and
     OBJ-013, so there is no machine on which to run an item for it, under PRV-019, or to give in
     `machine`, under PRV-007: its implementations are `engine` or reached by `remote`.
-  vectors: []

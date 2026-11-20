@@ -33,6 +33,14 @@ impl ServerHandler for Wrapper {
             tools.push(serde_json::from_value(json!({"name":"sign-out","description":"Sign the client out of this Agent's own home, keeping the home.","inputSchema":{"type":"object","properties":{},"additionalProperties":false}})).unwrap());
             tools.push(serde_json::from_value(json!({"name":"sign-in","description":"Start the client's browser login in this Agent's own home and give its URL.","inputSchema":{"type":"object","properties":{},"additionalProperties":false}})).unwrap());
         }
+        tools.push(
+            serde_json::from_value(json!({
+                "name": "new-conversation",
+                "description": "Explicitly end this Agent's conversation and start a new one. The next turn resumes no earlier conversation. Files in the Agent's directory and home stay. This starts no model work.",
+                "inputSchema": {"type": "object", "properties": {}, "additionalProperties": false},
+            }))
+            .unwrap(),
+        );
         Ok(ListToolsResult::with_all_items(tools))
     }
     async fn call_tool(
@@ -132,6 +140,33 @@ impl ServerHandler for Wrapper {
                     let mut result = serde_json::from_value::<CallToolResult>(
                         json!({"content":[{"type":"text","text":text}],"isError":false}),
                     )
+                    .unwrap();
+                    result.result_type = Some(ResultType::COMPLETE);
+                    result
+                }
+                Err(error) => CallToolResult::error(vec![ContentBlock::text(error.to_string())]),
+            };
+            return Ok(result.into());
+        }
+        if r.name == "new-conversation" {
+            if r.arguments.as_ref().is_some_and(|args| !args.is_empty()) {
+                return Err(ErrorData::invalid_params("expected no arguments", None));
+            }
+            let mut session = tokio::select! {
+                biased;
+                _ = context.ct.cancelled() => {
+                    return Err(ErrorData::internal_error("new conversation cancelled", None));
+                }
+                session = self.0.lock() => session,
+            };
+            // Once the call has the session, let the stop finish.
+            let result = match session.new_conversation().await {
+                Ok(value) => {
+                    let mut result = serde_json::from_value::<CallToolResult>(json!({
+                        "content": [{"type": "text", "text": value.to_string()}],
+                        "structuredContent": value,
+                        "isError": false,
+                    }))
                     .unwrap();
                     result.result_type = Some(ResultType::COMPLETE);
                     result

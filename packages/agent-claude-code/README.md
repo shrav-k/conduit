@@ -5,13 +5,13 @@ experiment 009. Work orders 023 and 024 tested this package with its scripted cl
 client closeout is still required. No client version command or model was run for this order.
 
 This standalone Rust crate has no dependency on another repository directory. Its lockfile
-and pinned toolchain travel with it. Its manifest exports two Agent Types, a conversation
-capability and the explicit `turn.v1` operation. The plain MCP wrapper exposes `turn`,
-and each `.v2` item also `retire`; the manifest maps each versioned operation or hook to its
-tool. In this package the `.v2` item also exposes `account` and `sign-out`, the
-[account and sign-out hooks](#the-v2-account-and-sign-out-hooks), and `sign-in`, the
-[sign-in hook](#the-v2-sign-in-hook), which `claude-code.v2` requires with its `signIn`. In
-`.v1`, both reach inputs are required booleans.
+and pinned toolchain travel with it. Its manifest exports two Agent Types and a conversation
+capability with two explicit operations, `turn.v1` and `new-conversation.v1`. The plain MCP wrapper
+exposes `turn` and `new-conversation`. The `.v2` item also exposes the hook tools `retire`, `account`,
+`sign-out` and `sign-in`. The manifest maps each versioned operation or hook to its tool. See the
+[account and sign-out hooks](#the-v2-account-and-sign-out-hooks) and the
+[sign-in hook](#the-v2-sign-in-hook), which `claude-code.v2` requires with its `signIn`.
+In `.v1`, both reach inputs are required booleans.
 Authors may omit `model`: the engine fills its empty-string default, leaving the native
 client's default in force. MAN-017 requires the bound scalar to be required in the resolved
 configuration, so the Type's required list includes model. This is the logged nearest sound
@@ -240,8 +240,9 @@ A failed call has `isError: true` and text
 `client turn K failed: CAUSE; session cannot restart implicitly`.
 A `.v2` failed call also holds the [failed turn's fields](#the-v2-failed-turns-fields).
 Later calls return `session failed at turn K: CAUSE; implicit restart refused`.
-K counts turns from 1 and continues across resumes. Active cancellation records
-`cancelled`; queued cancellation starts no turn. There is no implicit restart.
+K counts turns from 1 and continues across resumes. A
+[new conversation](#a-new-conversation-both-versions) counts from 1 again.
+Active cancellation records `cancelled`; queued cancellation starts no turn. There is no implicit restart.
 
 The fixed causes and their paths are:
 
@@ -446,7 +447,9 @@ and numbers and, on success, the account alone.
 
 1. The sign-out hook stops the client's process tree as a failed turn does. If a
    conversation's client was running, the hook ends that conversation. Every later turn
-   is refused with `session failed at turn K: client signed out; implicit restart refused`.
+   of that conversation is refused with
+   `session failed at turn K: client signed out; implicit restart refused`, until a
+   [new conversation](#a-new-conversation-both-versions) starts the next.
    If a process outlives the stop or the stop is unconfirmed, the hook fails with the stop's note.
 2. It checks the home as the account hook does.
 3. It runs `claude auth logout` as [the retire hook](#the-v2-retire-hook) does, including
@@ -584,3 +587,47 @@ before any part runs (PND-010, ruling 86, point 3), and the hook, asked for no l
 browser login. The hook discards the client's standard input and output, so it relays no
 code-page URL, and the login it starts takes no pasted code. Choosing the code-page login waits
 for a later release, whose keyed item gets the login's name (ruling 86, points 1 and 2).
+
+## A new conversation (both versions)
+
+From 0.2.1, `conversation.v1` includes the operation `new-conversation.v1`, which the wrapper
+exposes as `new-conversation`. It takes no input and starts no model work. A Conduit can grant
+either operation on its own or grant both.
+
+The call waits for a running turn or hook. It ends the conversation and stops the client as at
+a failed turn, including the whole process tree in `.v2`. It forgets the conversation's thread,
+failure and turn count. Client launch waits for the next `turn`, which resumes no earlier
+conversation.
+It launches a new Claude Code process. The wrapper runs Claude Code with
+`--no-session-persistence`, so the client keeps no ended conversation to resume.
+Files in the Agent's directory and home stay, including anything the client stores there. The
+Agent's run and the engine continue. After a failed turn, the wrapper keeps refusing turns in
+the ended conversation. An explicit `new-conversation` starts its successor.
+
+The reply has the shape
+`{"conversation":N,"ended":{"turns":T,"failed":F,"survivors":[...],"stopConfirmed":B}}`.
+N is the new conversation's number within this wrapper run. A run starts at 1. T counts the
+turns the ended conversation started. F tells whether a turn failed or was cancelled. The
+[failed turn's fields](#the-v2-failed-turns-fields) describe how the wrapper checks for survivors
+and confirms the stop. Here `stopConfirmed` is true when the stop was confirmed and no processes
+survived. In `.v1`, `survivors` is empty and `stopConfirmed` is true. If `survivors` is non-empty or
+`stopConfirmed` is false, end the Agent's run before sending another turn. Processes from the
+ended conversation may still be running.
+
+- An input returns invalid parameters with `expected no arguments`.
+- Invalid configuration returns the same `invalid configuration: ...` text as a turn.
+- A retired Agent returns `session retired; no new conversation starts`.
+- While a `.v2` sign-in runs, the login continues and the call returns
+  `new conversation refused: a sign-in is in progress in this Agent's own home; nothing was stopped; call again once the sign-in has ended`.
+
+Through a Conduit, the engine rejects an input as invalid with no outcome before calling the
+wrapper. The wrapper's configuration, retirement and sign-in refusals give an unknown outcome
+with the refusal text, as a turn failure does, because the contract states an effect and the item
+is plain (IFC-010).
+Use a fresh idempotency key to retry.
+
+The 0.2.1 contracts extend 0.2.0 only with NAM-024's additions. They add the operation to
+`conversation.v1`, its Operation contract and its default implementation in both Types.
+The same configuration and state directory
+select the same Agent home as in 0.2.0. The engine determines whether an installed Agent keeps
+its instance and sign-in when its pin moves to 0.2.1.

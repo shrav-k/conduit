@@ -308,7 +308,7 @@ async fn four_reach_combinations_exact_launch_and_same_conversation() {
     }
 }
 #[tokio::test]
-async fn stdio_exposes_only_turn_and_setup_never_launches_client() {
+async fn stdio_exposes_turn_and_new_conversation_and_setup_never_launches_client() {
     use rmcp::{ServiceExt, model::CallToolRequestParams};
     let parent = tempfile::tempdir().unwrap();
     let c = config(parent.path(), false, false);
@@ -332,8 +332,24 @@ async fn stdio_exposes_only_turn_and_setup_never_launches_client() {
             .await
             .unwrap();
     let tools = service.list_all_tools().await.unwrap();
-    assert_eq!(tools.len(), 1);
-    assert_eq!(tools[0].name, "turn");
+    let names: Vec<_> = tools.iter().map(|tool| tool.name.as_ref()).collect();
+    assert_eq!(names, ["turn", "new-conversation"]);
+    assert_eq!(
+        serde_json::to_value(tools.last().unwrap()).unwrap()["inputSchema"],
+        json!({"type":"object","properties":{},"additionalProperties":false})
+    );
+    assert!(!c.cwd.join("client-started").exists());
+    let invalid =
+        serde_json::from_value(json!({"name":"new-conversation","arguments":{"reset":true}}))
+            .unwrap();
+    assert!(service.call_tool(invalid).await.is_err());
+    let call = serde_json::from_value(json!({"name":"new-conversation","arguments":{}})).unwrap();
+    let reply = service.call_tool(call).await.unwrap();
+    assert_eq!(reply.is_error, Some(false));
+    assert_eq!(
+        reply.structured_content.unwrap(),
+        json!({"conversation":2,"ended":{"turns":0,"failed":false,"survivors":[],"stopConfirmed":true}})
+    );
     assert!(!c.cwd.join("client-started").exists());
     let invalid: CallToolRequestParams =
         serde_json::from_value(json!({"name":"other","arguments":{}})).unwrap();
@@ -1406,9 +1422,16 @@ async fn stdio_v2_defaults_and_invalid_configuration_remain_callable() {
         let tools = service.list_all_tools().await.unwrap();
         let names: Vec<_> = tools.iter().map(|tool| tool.name.as_ref()).collect();
         let expected_names: &[_] = if case == "v1" {
-            &["turn"]
+            &["turn", "new-conversation"]
         } else {
-            &["turn", "retire", "account", "sign-out", "sign-in"]
+            &[
+                "turn",
+                "retire",
+                "account",
+                "sign-out",
+                "sign-in",
+                "new-conversation",
+            ]
         };
         assert_eq!(names, expected_names);
         for _ in 0..2 {
@@ -1483,11 +1506,181 @@ async fn stdio_v2_defaults_and_invalid_configuration_remain_callable() {
                 }
             }
         }
+        if !expected.is_empty() {
+            let call =
+                serde_json::from_value(json!({"name":"new-conversation","arguments":{}})).unwrap();
+            let reply = service.call_tool(call).await.unwrap();
+            assert_eq!(reply.is_error, Some(true));
+            assert_eq!(
+                serde_json::to_value(reply).unwrap()["content"],
+                json!([{"type":"text","text":format!("invalid configuration: {expected}")}])
+            );
+        }
         service.cancel().await.unwrap();
         let output = child.wait_with_output().await.unwrap();
         assert!(output.status.success());
         assert!(output.stderr.is_empty());
     }
+}
+
+#[tokio::test]
+async fn new_conversation_shares_no_context_without_restart() {
+    use rmcp::{ServiceExt, model::CallToolResult};
+
+    for version in ["v1", "v2"] {
+        let parent = tempfile::tempdir().unwrap();
+        let c = config(parent.path(), false, false);
+        let mut command = tokio::process::Command::new(binary());
+        command
+            .args(["--client-program", env!("CARGO_BIN_EXE_scripted-client")])
+            .env_clear()
+            .envs(&c.env)
+            .env("AGENT_ACCOUNT_SERVICES", "false")
+            .current_dir(&c.cwd)
+            .kill_on_drop(true)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped());
+        if version == "v2" {
+            command
+                .env("AGENT_TURN_DEADLINE_SECONDS", "60")
+                .env("CONDUIT_STATE_DIR", c.state_dir.as_ref().unwrap());
+        } else {
+            command.env("AGENT_PEER_MESSAGING", "false");
+        }
+        let mut child = command.spawn().unwrap();
+        let pid = child.id().unwrap();
+        let transport = (child.stdout.take().unwrap(), child.stdin.take().unwrap());
+        let service = ().serve(transport).await.unwrap();
+        let mut call = async |name: &str, arguments: Value| {
+            let request =
+                serde_json::from_value(json!({"name":name,"arguments":arguments})).unwrap();
+            let reply = service.call_tool(request).await;
+            assert_eq!(child.id(), Some(pid));
+            assert!(child.try_wait().unwrap().is_none());
+            reply
+        };
+        let turn = |reply: CallToolResult| {
+            assert_eq!(reply.is_error, Some(false));
+            let structured = reply.structured_content.unwrap();
+            let evidence: Value =
+                serde_json::from_str(structured["text"].as_str().unwrap()).unwrap();
+            eprintln!(
+                "{version} turn number {} pid {}",
+                evidence["number"], evidence["pid"]
+            );
+            (structured, evidence)
+        };
+        let reset = |reply: CallToolResult, number, failed| {
+            let reply = serde_json::to_value(reply).unwrap();
+            eprintln!("{version} new-conversation: {reply}");
+            let expected = json!({
+                "conversation":number,
+                "ended":{"turns":2,"failed":failed,"survivors":[],"stopConfirmed":true}
+            });
+            assert_eq!(reply["isError"], false);
+            assert_eq!(reply["structuredContent"], expected);
+            let content = reply["content"].as_array().unwrap();
+            assert_eq!(content.len(), 1);
+            assert_eq!(content[0]["type"], "text");
+            assert_eq!(
+                serde_json::from_str::<Value>(content[0]["text"].as_str().unwrap()).unwrap(),
+                expected
+            );
+        };
+
+        let message = || json!({"message":"TEST"});
+        let (first, first_evidence) = turn(call("turn", message()).await.unwrap());
+        assert_eq!(first_evidence["number"], 1);
+
+        assert_eq!(first["clientTools"]["status"], "reported");
+
+        let (second, second_evidence) = turn(call("turn", message()).await.unwrap());
+        assert_eq!(second_evidence["number"], 2);
+        assert_eq!(second_evidence["pid"], first_evidence["pid"]);
+        assert_eq!(second["clientTools"]["status"], "unavailable");
+
+        reset(call("new-conversation", json!({})).await.unwrap(), 2, false);
+
+        let (fresh, fresh_evidence) = turn(call("turn", message()).await.unwrap());
+        assert_ne!(fresh_evidence["pid"], second_evidence["pid"]);
+        assert_eq!(fresh_evidence["number"], 1);
+        assert_eq!(fresh["clientTools"]["status"], "reported");
+        assert_eq!(
+            fresh["clientTools"]["observations"][0]["freshness"],
+            "current"
+        );
+
+        let failure = call(
+            "turn",
+            json!({"message":"FAIL:stream disconnected before completion"}),
+        )
+        .await
+        .unwrap();
+        assert_eq!(failure.is_error, Some(true));
+        assert_eq!(
+            serde_json::to_value(failure).unwrap()["content"][0]["text"],
+            "client turn 2 failed: client failure: network; session cannot restart implicitly"
+        );
+        let refused = call("turn", message()).await.unwrap();
+        assert_eq!(refused.is_error, Some(true));
+        assert_eq!(
+            serde_json::to_value(refused).unwrap()["content"],
+            json!([{"type":"text","text":"session failed at turn 2: client failure: network; implicit restart refused"}])
+        );
+        reset(call("new-conversation", json!({})).await.unwrap(), 3, true);
+        let (_, fresh_evidence) = turn(call("turn", message()).await.unwrap());
+        assert_eq!(fresh_evidence["number"], 1);
+
+        let invalid = call("new-conversation", json!({"reset":true}))
+            .await
+            .unwrap_err();
+        eprintln!("{version} invalid new-conversation: {invalid}");
+        assert!(invalid.to_string().contains("expected no arguments"));
+        let (_, evidence) = turn(call("turn", message()).await.unwrap());
+        assert_eq!(evidence["number"], 2);
+
+        service.cancel().await.unwrap();
+        let output = child.wait_with_output().await.unwrap();
+        assert!(output.status.success());
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        for sentinel in [
+            "sentinel-secret",
+            "synthetic-test-token",
+            "synthetic-anthropic-key",
+            "synthetic-openai-key",
+        ] {
+            assert!(!stderr.contains(sentinel));
+        }
+    }
+}
+
+#[test]
+fn v2_new_conversation_reports_survivors() {
+    let stop = agent_adapter::StopReport {
+        survivors: vec![42, 43],
+        unconfirmed: true,
+    };
+    assert_eq!(
+        stop.ended_conversation(2, true),
+        json!({"turns":2,"failed":true,"survivors":[42,43],"stopConfirmed":false})
+    );
+    let survivors = agent_adapter::StopReport {
+        survivors: vec![42],
+        unconfirmed: false,
+    };
+    assert_eq!(
+        survivors.ended_conversation(1, false),
+        json!({"turns":1,"failed":false,"survivors":[42],"stopConfirmed":false})
+    );
+    let unconfirmed = agent_adapter::StopReport {
+        survivors: vec![],
+        unconfirmed: true,
+    };
+    assert_eq!(
+        unconfirmed.ended_conversation(0, false),
+        json!({"turns":0,"failed":false,"survivors":[],"stopConfirmed":false})
+    );
 }
 
 #[tokio::test]
@@ -2157,7 +2350,17 @@ async fn v2_retire_tool_through_the_wrapper() {
         let service = ().serve_with_lifecycle(transport, lifecycle).await.unwrap();
         let tools = service.list_all_tools().await.unwrap();
         let names: Vec<_> = tools.iter().map(|tool| tool.name.as_ref()).collect();
-        assert_eq!(names, ["turn", "retire", "account", "sign-out", "sign-in"]);
+        assert_eq!(
+            names,
+            [
+                "turn",
+                "retire",
+                "account",
+                "sign-out",
+                "sign-in",
+                "new-conversation"
+            ]
+        );
         let invalid = service
             .call_tool(call("retire", json!({"extra": true})))
             .await
@@ -2194,6 +2397,15 @@ async fn v2_retire_tool_through_the_wrapper() {
                 "isError": logout_fails, "resultType": "complete",
                 "content": [{"type": "text", "text": expected_text}],
             })
+        );
+        let reset = service
+            .call_tool(call("new-conversation", json!({})))
+            .await
+            .unwrap();
+        assert_eq!(reset.is_error, Some(true));
+        assert_eq!(
+            serde_json::to_value(reset).unwrap()["content"],
+            json!([{"type":"text","text":"session retired; no new conversation starts"}])
         );
         let turn = service
             .call_tool(call("turn", json!({"message": "TEST"})))
@@ -2260,7 +2472,7 @@ async fn v2_retire_tool_through_the_wrapper() {
     let service = ().serve(transport).await.unwrap();
     let tools = service.list_all_tools().await.unwrap();
     let names: Vec<_> = tools.iter().map(|tool| tool.name.as_ref()).collect();
-    assert_eq!(names, ["turn"]);
+    assert_eq!(names, ["turn", "new-conversation"]);
     let invalid = service
         .call_tool(call("retire", json!({})))
         .await
@@ -2705,6 +2917,26 @@ async fn v2_sign_out_keeps_the_home_and_ends_a_running_conversation() {
 }
 
 #[tokio::test]
+async fn v2_new_conversation_after_sign_out_reports_no_failed_turn() {
+    let parent = tempfile::tempdir().unwrap();
+    let mut c = config(parent.path(), false, false);
+    c.v2 = true;
+    c.env.insert("MCP_TOOL_TIMEOUT".into(), "10000".into());
+    prepare(&c).unwrap();
+    let home = c.state_dir.as_ref().unwrap().join(HOME_NAME);
+    fs::DirBuilder::new().mode(0o700).create(&home).unwrap();
+    let mut session = Session::new(c.clone());
+    session.turn("HOME").await.unwrap();
+    write_signed_in_login(&home, Some(ACCOUNT));
+    assert_eq!(session.sign_out().await.unwrap(), SIGNED_OUT);
+    assert!(session.turn("TEST").await.is_err());
+    let ended = &session.new_conversation().await.unwrap()["ended"];
+    assert_eq!(ended["turns"], 1);
+    assert_eq!(ended["failed"], false);
+    session.shutdown().await;
+}
+
+#[tokio::test]
 async fn v2_sign_out_error_paths_hold_no_canary() {
     let unset = "client home (CLAUDE_CONFIG_DIR): CONDUIT_STATE_DIR is unset";
     let invalid_home = format!("invalid configuration: {unset}");
@@ -2862,7 +3094,17 @@ async fn v2_account_and_sign_out_tools_through_the_wrapper() {
     let service = ().serve_with_lifecycle(transport, lifecycle).await.unwrap();
     let tools = service.list_all_tools().await.unwrap();
     let names: Vec<_> = tools.iter().map(|tool| tool.name.as_ref()).collect();
-    assert_eq!(names, ["turn", "retire", "account", "sign-out", "sign-in"]);
+    assert_eq!(
+        names,
+        [
+            "turn",
+            "retire",
+            "account",
+            "sign-out",
+            "sign-in",
+            "new-conversation"
+        ]
+    );
 
     for name in ["account", "sign-out"] {
         let invalid = service
@@ -2992,7 +3234,7 @@ async fn v2_account_and_sign_out_tools_through_the_wrapper() {
     let service = ().serve(transport).await.unwrap();
     let tools = service.list_all_tools().await.unwrap();
     let names: Vec<_> = tools.iter().map(|tool| tool.name.as_ref()).collect();
-    assert_eq!(names, ["turn"]);
+    assert_eq!(names, ["turn", "new-conversation"]);
     for name in ["account", "sign-out"] {
         let invalid = service.call_tool(call(name, json!({}))).await.unwrap_err();
         assert_no_hook_canary(&invalid.to_string());
@@ -3216,6 +3458,57 @@ fn process_gone(pid: i32) -> bool {
         }
         gone
     })
+}
+
+#[tokio::test]
+async fn v2_new_conversation_keeps_a_sign_in_in_progress() {
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    use tokio::net::TcpStream;
+    use tokio::time::{sleep, timeout};
+
+    let parent = tempfile::tempdir().unwrap();
+    let (c, _, login) = sign_in_setup(parent.path());
+    let mut session = Session::new(c.clone());
+    let url = session.sign_in().await.unwrap();
+    let pid: i32 = fs::read_to_string(c.cwd.join("login.pid"))
+        .unwrap()
+        .parse()
+        .unwrap();
+
+    let refused = session.new_conversation().await.unwrap_err();
+    assert_eq!(
+        refused.to_string(),
+        "new conversation refused: a sign-in is in progress in this Agent's own home; nothing was stopped; call again once the sign-in has ended"
+    );
+    assert_eq!(unsafe { libc::kill(pid, 0) }, 0);
+
+    let port = redirect_port(&url);
+    let mut browser = TcpStream::connect(("127.0.0.1", port)).await.unwrap();
+    let pairs = parameters(&url).unwrap();
+    let state = &pairs.iter().find(|(name, _)| name == "state").unwrap().1;
+    let path = login["redirect"]["path"].as_str().unwrap();
+    let host = login["redirect"]["host"].as_str().unwrap();
+    let request = format!(
+        "GET {path}?code=synthetic-code&state={state} HTTP/1.1\r\nHost: {host}:{port}\r\nConnection: close\r\n\r\n"
+    );
+    browser.write_all(request.as_bytes()).await.unwrap();
+    let mut reply = Vec::new();
+    timeout(Duration::from_secs(10), browser.read_to_end(&mut reply))
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(reply.starts_with(b"HTTP/1.1 200 "));
+    timeout(Duration::from_secs(10), async {
+        while unsafe { libc::kill(pid, 0) } == 0 {
+            sleep(Duration::from_millis(20)).await;
+        }
+    })
+    .await
+    .expect("the scripted login did not exit");
+    let result = session.new_conversation().await.unwrap();
+    assert_eq!(result["conversation"], 2);
+    assert_eq!(result["ended"]["turns"], 0);
+    session.shutdown().await;
 }
 
 #[tokio::test]
@@ -3586,7 +3879,17 @@ async fn v2_sign_in_tool_through_the_wrapper() {
         .unwrap();
     let tools = service.list_all_tools().await.unwrap();
     let names: Vec<_> = tools.iter().map(|tool| tool.name.as_ref()).collect();
-    assert_eq!(names, ["turn", "retire", "account", "sign-out", "sign-in"]);
+    assert_eq!(
+        names,
+        [
+            "turn",
+            "retire",
+            "account",
+            "sign-out",
+            "sign-in",
+            "new-conversation"
+        ]
+    );
 
     let log = c.cwd.join("logins.jsonl");
     let Err(error) = service.call_tool_once(call(json!({"extra": true}))).await else {
@@ -3707,7 +4010,7 @@ async fn v2_sign_in_tool_through_the_wrapper() {
     let service = ().serve(transport).await.unwrap();
     let tools = service.list_all_tools().await.unwrap();
     let names: Vec<_> = tools.iter().map(|tool| tool.name.as_ref()).collect();
-    assert_eq!(names, ["turn"]);
+    assert_eq!(names, ["turn", "new-conversation"]);
     let Err(error) = service.call_tool_once(call(json!({}))).await else {
         panic!("the .v1 wrapper served the sign-in tool");
     };

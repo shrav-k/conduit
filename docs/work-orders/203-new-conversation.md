@@ -1000,3 +1000,125 @@ coordinator's, under the lever of ruling 89, point 2):
   declaration, then `tools/gate.py` against `origin/main`; and
 - have the reader read the rebase's resolutions and any amendment as new content (ruling 79,
   point 2), and write this order's Record.
+
+## Record
+
+Run on 2026-11-20, from about 02:48 to 03:11 UTC, on the Windows node (Linux x86_64) from
+`bd06d0d3`, the tip of order 050n's branch after its rebase onto order 214's merge, in one round
+([ruling 87](../proposals/ruling-87/README.md), point 1): the worker (1019 s) and a fresh Codex
+verifier (326 s). Dispatched before 050n merges, it was not paired: it falls in A77's pause (ruling
+89, point 6). The change is 37 files, all in Scope. Both packages append decision 1's Operation
+`new-conversation.v1` to `contracts.yaml`, add it to `conversation.v1` and to both Types' defaults,
+on the item that serves `turn.v1`, and release 0.2.1, serving it through their plain items (three in
+Codex, two in Claude Code; each `Cargo.lock` changes only the package's version). The session's
+`new_conversation` refuses after retirement and while a sign-in's login still runs, stops the
+client's tree, answers `{conversation, ended: {turns, failed, survivors, stopConfirmed}}` and starts
+the next conversation in the same wrapper; the stdio tool `new-conversation` takes no input and
+follows the existing tools. Each package gains `new_conversation_shares_no_context_without_restart`,
+`v2_new_conversation_reports_survivors` and `v2_new_conversation_keeps_a_sign_in_in_progress`, and
+renames the listing test to
+`stdio_exposes_turn_and_new_conversation_and_setup_never_launches_client`. Both READMEs take
+decision 6's section. The engine's copies, their archives, the pins and the three registration cases
+move to 0.2.1 (decision 7); `203-declared.yaml` declares 7 shapes (vector delta: 33 changes, 17
+fixture and 16 expectation; 0 flips; 0 undeclared; 0 errors), and `make_archives -- --check`
+verified the same 42 fixtures, the release `agents-0.2.0` and the TPL-005 package at their `BASE`
+bytes. The worker's totals: Codex lib 2, manifest 1, package 1, wrapper 34; Claude Code lib 2,
+package 1, wrapper 32; the shell `agents` target 2 passed, 2 ignored; the four registration cases
+passed; and the contract check accepted both packages' `.v1` and `.v2` Agents and both Conduits,
+refused `reset-conversation.v1` under NAM-028, and admitted 0.2.0 and 0.2.1 side by side in one
+store. Its own choices: a conversation counter beside the turn counter and
+`StopReport::ended_conversation` as the serializer, with `stopConfirmed` true only when the stop was
+confirmed and no process survived; the login checked without reaping it (Claude Code's
+`login_exited`, Codex's `waitid`); a handler of its own for the tool, in the hooks' locking pattern;
+and the 0.2.0 archive inputs kept by removing the new Operation from the parsed copies.
+
+The verifier found four musts and three shoulds. Musts: V1, Claude Code reports `ended.failed` true
+after a sign-out from a conversation whose turns all succeeded; V2, Codex forgets an earlier login
+whose stop failed in a later sign-in, so a reset can proceed while it runs; V3, a cancellation that
+lands after the lock's poll is ready still starts a reset; V4, the stdio caller cannot receive the
+`new conversation cancelled` error, since rmcp drops the response to a cancelled request. Shoulds:
+V5, the Codex README's `wrapper-v2-path` example leaves out `new-conversation.v1`; V6, the Claude
+Code README's sign-out step says every later turn is refused; V7, each survivor test sets both
+conditions at once.
+
+A fresh read-only Opus reader then read the order on the branch before its rebase, warm, in the
+worktree on the Mac and on the Linux node (ruling 79, point 2). It ran the order's Python checks
+(Errors: 0 each), `git diff --check`, the scope line, the protected paths and the historical
+fixtures (0 each), the eight comparisons of the copies (0 each), the archives' listings, the pin
+counts (1 per file per package), the path grep (0), `vector_delta.py` with the declaration and with
+`--declared-changed` (33 changes; 0 flips; 0 undeclared; 0 errors; exit 0), the contract and
+manifest check (as the order states, Codex with 3 items and Claude Code with 2), each package's fmt,
+clippy (clean) and `cargo test --release` (Codex lib 2/0, manifest 1/0, package 1/0, wrapper 34/0;
+Claude Code lib 2/0, package 1/0, wrapper 32/0), the conversation test with `--nocapture` (turn
+numbers 1, 2, then 1 after each reset, conversation 2 with turns 2 and failed false, conversation 3
+with turns 2 and failed true), the order's Codex mutation (removing `self.thread = None;` failed at
+the `v1` case's step 4, the assertion that the turn's `args` hold no `resume`; restored with `cp`,
+it passed and `cmp` was clean), `make_archives -- --check` (42 fixtures verified), the shell
+`agents` target (2 passed, 2 ignored,
+`live_s1_scripted_agents_call_engine_with_distinct_run_identities` among the passed), the four
+registration cases (PASS each), the engine's contract check under `env -i` (as the worker found),
+the Codex README's `wrapper-v2-path` map registered verbatim at 0.2.1 (refused, TPL-019 `invalid
+number of run items`) and with `new-conversation.v1` added (accepted), and `tools/gate.py --base
+bd06d0d3` (`Gate: PASS. 23 passed; not run: secrets, rust unreached`). It confirmed V1 as a must,
+raised V5 to a must and confirmed V6 and V7 as shoulds. It refuted V3: the handler is the same as
+`BASE`'s four hook handlers, and a cancellation that lands once the call holds the session is one
+decision 4 lets run to its end. It refuted V4 as a build defect: the handler returns the error the
+order specifies, and the transport sending no response after the client's cancellation is rmcp's and
+MCP's behaviour, shared at `BASE` by `turn cancelled` and every hook's cancellation. It kept V2 as a
+should for the coordinator, since its cause is `BASE`'s sign-in hook, which decision 8 forbids this
+order to change. Its findings:
+
+- R1 (must): in Claude Code, `ended.failed` is true after a successful turn followed by a sign-out,
+  since the sign-out sets `failed` whenever a stream is live, where decision 3 counts only a turn
+  that failed or was cancelled and Codex answers false.
+- R2 (must): under 0.2.1 the engine refuses the template that the Codex README says selects
+  `wrapper-v2-path` (TPL-019), and the paragraph before it names the defaults of `turn.v1` and the
+  four hooks alone.
+- R3: the Claude Code README's sign-out step says every later turn is refused, where an explicit new
+  conversation now lets turns go on in the next.
+- R4: the survivor test sets survivors and `unconfirmed` at once, so it cannot tell which of the two
+  `stopConfirmed` reads.
+- R5: if the sign-in hook's stop of an earlier login fails, Codex forgets that login, and
+  new-conversation's guard cannot see it; the cause is order 050m's hook.
+
+The fixer left the branch on `bd06d0d3`, for the coordinator to rebase onto 050n's squash, and
+applied each finding:
+
+- R1: Claude Code's `new_conversation` reports `ended.failed` as
+  `self.failed.as_ref().is_some_and(|(_, cause)| cause != sign_in::SIGNED_OUT_CAUSE)`; the sign-out
+  refusal in the ended conversation is unchanged. In
+  `v2_sign_out_keeps_the_home_and_ends_a_running_conversation`, the running case then calls
+  `new_conversation` and checks that `ended.turns` is 1 and `ended.failed` false.
+- R2: the Codex README now says "The defaults of `codex.v2` for `turn.v1`, `new-conversation.v1` and
+  its four hooks are still `wrapper-v2`.", and its map selects `wrapper-v2-path` for
+  `new-conversation.v1` right after `turn.v1`.
+- R3: the sign-out step now reads "Every later turn of that conversation is refused with `session
+  failed at turn K: client signed out; implicit restart refused`, until a [new
+  conversation](#a-new-conversation-both-versions) starts the next."
+- R4: `v2_new_conversation_reports_survivors` in both packages keeps the prescribed case and adds
+  two: survivors `[42]` with `unconfirmed` false, and no survivors with `unconfirmed` true, each
+  giving `stopConfirmed` false.
+- R5: no change in this order, as the reader's fix says. The coordinator records a follow-up: the
+  Codex sign-in hook keeps an earlier login in `self.login` until its stop is confirmed, so that
+  new-conversation's guard sees it.
+
+Each code fix taken out, R1's and R4's, failed its test, and each was restored with `cp` and checked with `cmp`: R1's
+`self.failed.is_some()` failed the sign-out test at the new `ended.failed` assertion; and in each
+package, `stopConfirmed` reading `unconfirmed` alone failed at the survivors case, and reading
+survivors alone at the unconfirmed case. The fixer then ran, warm in the worktree on the Mac with
+`RUST_TEST_THREADS=4`, in each package `cargo fmt --check` and `cargo clippy --all-targets -- -D
+warnings` (clean), `cargo test --release` (Codex lib 2/0, manifest 1/0, package 1/0, wrapper 34/0;
+Claude Code lib 2/0, package 1/0, wrapper 32/0) and `cargo run --release --bin package` (a host
+build's digest, not a pin); the conversation test with `--nocapture` (as the reader found); the
+order's Codex mutation again (it failed at the same assertion; restored, it passed and `cmp` was
+clean); and from the root `check_docs.py`, `check_private_paths.py`, `set_names.py --check` and
+`promise_standing.py --check` (Errors: 0 each), `vector_delta.py bd06d0d3 WORKTREE` with the
+declaration (33 changes; 0 flips; 0 undeclared; 0 errors; exit 0) and `git diff --check` (clean).
+The fixer changed no file the engine reads, so the engine's checks stand as the reader ran them. The
+rebase onto 050n's squash, the reruns the order lists after it, the gate's run on the squash and the
+merge, after the S1 rerun's pin, are the coordinator's.
+
+It landed after the pin (tag `s1-rerun-pin`), rebased onto main. The re-read's two shoulds are
+applied there: R1's three assertions now sit in a test of their own,
+`v2_new_conversation_after_sign_out_reports_no_failed_turn`, which passes, so the base test is
+unchanged; and the sentence on fixes taken out names the code fixes alone.

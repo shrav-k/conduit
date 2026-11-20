@@ -1464,6 +1464,16 @@ impl StopReport {
         unconfirmed: true,
     };
 
+    /// The ended conversation's summary, including whether its processes stopped.
+    pub fn ended_conversation(&self, turns: usize, failed: bool) -> Value {
+        json!({
+            "turns": turns,
+            "failed": failed,
+            "survivors": self.survivors,
+            "stopConfirmed": !self.unconfirmed && self.survivors.is_empty(),
+        })
+    }
+
     pub fn note(&self) -> Option<String> {
         let survivors = survivor_note(&self.survivors);
         if self.unconfirmed {
@@ -1646,6 +1656,33 @@ impl Login {
     fn is_running(&self) -> bool {
         self.outcome.lock().unwrap().is_none()
     }
+
+    fn client_is_running(&self) -> bool {
+        if !self.is_running() {
+            return false;
+        }
+        // The hook can still be cleaning up after its client exits. Observe that exit
+        // without reaping the child that the hook's task owns.
+        let pid = self.group.pid;
+        loop {
+            let mut info: libc::siginfo_t = unsafe { std::mem::zeroed() };
+            let result = unsafe {
+                libc::waitid(
+                    libc::P_PID,
+                    pid as libc::id_t,
+                    &mut info,
+                    libc::WEXITED | libc::WNOHANG | libc::WNOWAIT,
+                )
+            };
+            if result == 0 {
+                return unsafe { info.si_pid() } == 0;
+            }
+            let error = io::Error::last_os_error();
+            if error.kind() != io::ErrorKind::Interrupted {
+                return error.raw_os_error() != Some(libc::ECHILD);
+            }
+        }
+    }
 }
 
 #[derive(Clone)]
@@ -1774,6 +1811,7 @@ pub struct Session {
     thread: Option<String>,
     failed: Option<(usize, String)>,
     retired: bool,
+    conversation: usize,
     turns_started: usize,
     login: Option<Login>,
 }
@@ -1786,6 +1824,7 @@ impl Session {
             thread: None,
             failed: None,
             retired: false,
+            conversation: 1,
             turns_started: 0,
             login: None,
         }
@@ -1793,6 +1832,25 @@ impl Session {
     pub fn tree(&self) -> ClientTree {
         self.tree.clone()
     }
+    pub async fn new_conversation(&mut self) -> Result<Value> {
+        if let Some(error) = &self.config.configuration_error {
+            bail!("{error}");
+        }
+        ensure!(!self.retired, "session retired; no new conversation starts");
+        ensure!(
+            !self.login.as_ref().is_some_and(Login::client_is_running),
+            "new conversation refused: a sign-in is in progress in this Agent's own home; nothing was stopped; call again once the sign-in has ended"
+        );
+
+        let stop = self.shutdown().await;
+        let ended = stop.ended_conversation(self.turns_started, self.failed.is_some());
+        self.thread = None;
+        self.failed = None;
+        self.turns_started = 0;
+        self.conversation += 1;
+        Ok(json!({"conversation": self.conversation, "ended": ended}))
+    }
+
     pub async fn turn(&mut self, message: &str) -> Result<Value> {
         if let Some(error) = &self.config.configuration_error {
             bail!("{error}");

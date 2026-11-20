@@ -173,6 +173,16 @@ pub struct Login {
 }
 
 impl Login {
+    pub(crate) fn is_running(&self) -> bool {
+        if self.watch.is_finished() {
+            return false;
+        }
+        match login_exited(self.group) {
+            Ok(exited) => !exited,
+            Err(error) => error.raw_os_error() != Some(libc::ECHILD),
+        }
+    }
+
     fn stop(self) {
         if let Some(start) = self.start {
             signal_group(self.group, start, libc::SIGKILL, true);

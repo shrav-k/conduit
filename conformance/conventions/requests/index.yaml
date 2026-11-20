@@ -782,6 +782,15 @@
       "safety_rows": []
     },
     {
+      "id": "requests-sign-in-late-other-account",
+      "case": "conventions/requests/sign-in-late-other-account/case.yaml",
+      "promises": [
+        "PND-011",
+        "PND-010"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "requests-sign-in-login-plain-hook",
       "case": "conventions/requests/sign-in-login-plain-hook/case.yaml",
       "promises": [

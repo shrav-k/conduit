@@ -45,6 +45,8 @@ pub(crate) fn request_is_held_for_sign_in_undone(state: &State, target: &Value) 
     })
 }
 
+const SIGN_IN_UNDONE_HOLD: &str = "Requests to the instance other than the parts of sign-in.v1, of a setup and of its retirement report unavailable under PND-011 until an account check finds the expected account or none.";
+
 pub(crate) fn set_sign_in_undone_false(
     object: &mut Value,
     outcome: &str,
@@ -62,7 +64,7 @@ pub(crate) fn set_sign_in_undone_false(
         "status":"False",
         "reason":if outcome == "failed" {"SignOutFailed"} else {"SignOutUnknown"},
         "message":format!(
-            "The sign-out hook ended {outcome} after {check} found an account other than the expected one, so that account may still be signed in. Requests to the instance other than the parts of sign-in.v1, of a setup and of its retirement report unavailable under PND-011 until an account check finds the expected account or none."
+            "The sign-out hook ended {outcome} after {check} found an account other than the expected one, so that account may still be signed in. {SIGN_IN_UNDONE_HOLD}"
         ),
         "lastTransitionTime":time,
         "source":format!("urn:uuid:{}", hook.as_str().unwrap())
@@ -436,10 +438,29 @@ fn poll_answered(
                 "attempt":invocation["sign_in_wait"]["attempt"],
                 "ended":true
             });
+            let instance = t
+                .state
+                .objects
+                .iter_mut()
+                .find(|object| object["id"] == invocation["object"])
+                .ok_or("sign-in instance missing")?;
+            let check = part["id"].as_str().ok_or("account check has no ID")?;
+            let time = &a.evidence.time;
+            let condition = json!({
+                "type":"SignInUndone",
+                "status":"False",
+                "reason":"CheckAfterWait",
+                "message":format!(
+                    "An account check of sign-in.v1 reported another account after the sign-in's wait had ended, so no sign-out ran. {SIGN_IN_UNDONE_HOLD}"
+                ),
+                "lastTransitionTime":time,
+                "source":format!("urn:uuid:{check}")
+            });
+            write_undone_condition(instance, undone_condition(instance), condition, time);
             end_sign_in(t, a, c, i, "unknown", "PND-010", WAIT_ENDED)?;
             t.decisions.push(decision(
                 "sign-in-wait-ended",
-                &["PND-010", "IFC-049"],
+                &["PND-010", "IFC-049", "PND-011"],
                 &["DL18"],
                 facts,
                 vec![],
@@ -996,7 +1017,7 @@ pub(crate) fn relay_message(f: &RelayFacts<'_>) -> String {
             )
         }
         _ => format!(
-            "Nothing comes back through this Interface: complete the login on the node {node}'s machine, at it or over a connection Conduit manages, by remote desktop or by SSH, pasting the code or forwarding the port."
+            "Nothing comes back through this Interface: complete the login on the node {node}'s machine, at it or over a connection Conduit manages."
         ),
     };
     let check = check
@@ -2029,7 +2050,7 @@ mod tests {
             (
                 browser,
                 false,
-                "Sign in the Agent signed (Type signed-agent.v1, package example.org/sign-in-lapse) on the node local at example.org, as the account primary-account. Nothing comes back through this Interface: complete the login on the node local's machine, at it or over a connection Conduit manages, by remote desktop or by SSH, pasting the code or forwarding the port.",
+                "Sign in the Agent signed (Type signed-agent.v1, package example.org/sign-in-lapse) on the node local at example.org, as the account primary-account. Nothing comes back through this Interface: complete the login on the node local's machine, at it or over a connection Conduit manages.",
             ),
             (
                 &page,
@@ -3552,6 +3573,99 @@ mod tests {
             decision.facts,
             json!({"invocation":"w2","attempt":1,"ended":true})
         );
+    }
+
+    #[test]
+    fn sign_in_late_other_account_holds_instance() {
+        let (mut t, c) = account_part_fixture();
+        t.state.started = true;
+        let expires = "2026-11-09T13:10:00Z";
+        t.state.invocations[0]["sign_in"] = json!({
+            "phase":"poll-pending","poll":"k1","first_account":"first-account","parts":[]
+        });
+        t.state.invocations[0]["sign_in_wait"] = json!({
+            "attempt":1,"expires":expires,"login":"device","url":"https://example.org/device",
+            "plain":true
+        });
+
+        let work = c.qualified("work.v1");
+        let instance = &mut t.state.objects[1];
+        let held = &mut instance["held"];
+        for contracts in ["environment", "indexes"] {
+            let scope = if contracts == "environment" {
+                &mut held[contracts]["scopes"]["core"]["contracts"]
+            } else {
+                &mut held[contracts]["core"]
+            };
+            scope["work.v1"] = json!({"kind":"Operation","metadata":{"name":"work.v1"},
+                "spec":{"inputSchema":{"type":"object"},"startsModelWork":true}});
+            scope["capability.v1"] = json!({"kind":"Capability","spec":{"operations":[work]}});
+        }
+        instance["state"] = json!("ready");
+        instance["resolved_implementations"][&work] =
+            json!({"source":"project","item":{"command":["test"]}});
+        t.state.objects.push(json!({
+            "id":"management","kind":"Resource","from":c.qualified("management")
+        }));
+        t.state.objects.push(json!({
+            "kind":"Conduit","id":"r-s1","local_name":"signed","consumer":"r","target":"s1",
+            "state":"ready","open":true,"capability":c.qualified("capability.v1"),"operations":[work]
+        }));
+
+        let complete_poll = |account| {
+            let mut completed = transition(t.state.clone());
+            let mut evidence = unused_evidence(&completed);
+            evidence.time = expires.into();
+            requests::complete(
+                &mut completed,
+                &evidence,
+                "k1",
+                1,
+                requests::Completion::Result {
+                    result: account_result(&c, "succeeded", json!(account)),
+                },
+                &c,
+            )
+            .unwrap();
+            completed
+        };
+        let same = complete_poll("FIRST-ACCOUNT");
+        assert_eq!(same.state.invocations[0]["state"], "in-progress");
+        assert!(undone_condition(&same.state.objects[1]).is_none());
+        assert!(same.external_intents.is_empty());
+
+        let late = complete_poll("third-account");
+        let invocation = &late.state.invocations[0];
+        assert_eq!(invocation["state"], "unknown");
+        assert_eq!(invocation["cause"][0]["ruleId"], "PND-010");
+        assert!(late.external_intents.is_empty());
+        assert_eq!(late.state.pending_actions, t.state.pending_actions);
+        assert_eq!(late.state.sign_in_holds, t.state.sign_in_holds);
+        let condition = undone_condition(&late.state.objects[1]).expect("missing SignInUndone");
+        let condition = &late.state.objects[1]["status"]["conditions"][condition];
+        assert_eq!(condition["status"], "False");
+        assert_eq!(condition["reason"], "CheckAfterWait");
+
+        let mut evidence = unused_evidence(&late);
+        evidence.time = "2026-11-09T13:10:01Z".into();
+        let request = serde_json::from_value(json!({
+            "identity":{"kind":"instance","id":"r"},"tool":"signed.work.v1","arguments":{}
+        }))
+        .unwrap();
+        let input = crate::Input::Invoke {
+            evidence,
+            request,
+            key: None,
+            archive: None,
+        };
+        let held = crate::step(&late.state, input, &c).unwrap();
+        assert_eq!(held.reply["_meta"]["test/reason"], "unavailable");
+        let diagnostic = &held.reply["structuredContent"]["diagnostics"][0];
+        assert_eq!(diagnostic["ruleId"], "PND-011");
+        let text = diagnostic["message"]["text"].as_str().unwrap();
+        assert!(text.contains("SignInUndone is False"));
+        assert!(!text.contains("sign-out"));
+        assert!(held.external_intents.is_empty());
     }
 
     #[test]

@@ -1422,7 +1422,7 @@ fn invoke_inner(
             ));
             diagnostics.push(json!({
                 "ruleId":"PND-011","level":"error","message":{"text":format!(
-                    "{tool} reports unavailable under PND-011: SignInUndone is False for the instance, since a sign-out after an account check did not succeed, so the request was not dispatched; send it again once an account check within sign-in.v1 or setup finds the expected account or none."
+                    "{tool} reports unavailable under PND-011: SignInUndone is False for the instance, since an account check found an account other than the expected one that may still be signed in. The request was not dispatched. Send it again once an account check within sign-in.v1 or setup finds the expected account or none."
                 )}
             }));
         }

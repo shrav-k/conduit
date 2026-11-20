@@ -410,14 +410,16 @@ misrepresent evidence: the person compares the engine panel's own rendering. Vis
 action supplies no authority to answer it (PND-002, PND-009, PND-010).
 
 A missing login ends the request that encountered it; nothing is queued. After signing in,
-the caller sends a new request. A wrong account is undone, and a failed undo holds every request
-to that instance but the parts of sign-in, of a setup and of its retirement until a later
-account check in sign-in or setup clears it (PND-011). A sign-in action holds its instance until
-sign-in answers that it is signed in, whatever the action's expiry (PND-005). The state directory
-isolates client state by instance identity, but another process under the same
-operating-system user can read it: confinement remains the runtime provider's work (PRV-029,
-DL16). A5, the probe using the owner's second accounts, does not gate the S1 rerun; scripted
-vectors first prove the wrong-account undo, and A5 remains real-account evidence to obtain.
+the caller sends a new request. A wrong account is undone, and a failed undo, or an account other
+than the expected one and the one first found, reported by a check after the sign-in's wait has
+ended, holds every request to that instance but the parts of sign-in, of a setup and of its
+retirement until a later account check in sign-in or setup clears it (PND-011). A sign-in action
+holds its instance until sign-in answers that it is signed in, whatever the action's expiry
+(PND-005). The state directory isolates client state by instance identity, but another process
+under the same operating-system user can read it: confinement remains the runtime provider's
+work (PRV-029, DL16). A5, the probe using the owner's second accounts, does not gate the S1
+rerun; scripted vectors first prove the wrong-account undo, and A5 remains real-account
+evidence to obtain.
 
 An installed package holds the credential of every login it runs and could take it without
 any return through Conduit. The defense is choosing packages, pinned by digest (CTR-013).

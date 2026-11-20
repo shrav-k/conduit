@@ -40,7 +40,9 @@ and `conformance/`. It:
 - takes the two shoulds that the lanes carried here: the sign-in hook's failures that do not yet
   name PND-010 (order 050k's second verifier, carried here by its Record), and the Codex
   README's sentence on a system proxy (order 050m's second verifier, left open by its Record);
-  and brings Codex's login limit within DL18's wait, as the Claude package's already is;
+  brings Codex's login limit within DL18's wait, as the Claude package's already is; and restates
+  the Codex README's limit on the logout's exit in a home with no login, which the coordinator's
+  settlement in order 050h's Record overtook;
 - brings `engine/CONFORMANCE.md` and the accounts guide, `docs/guides/accounts.md`, to 0.2.0, the
   guide's half of the browser-opens limit included (order 050b left it here);
 - checks each `.v2` description sentence by sentence against Q1's answer (item 6 of both lists),
@@ -61,7 +63,8 @@ so after order 051b-2 as well as 048b-join, with the check's package keeping the
 items 1 and 2); A77's pairing is paused until this order merges (point 6); and the S1 rerun's pin
 comes at the first dogfood milestone, after this order and 051b-2 (point 7). This text was written
 ahead of those merges, from the lane tips `f1ede6a5` (Claude) and `34f4e662` (Codex), and the
-coordinator refreshes it at dispatch (below).
+coordinator refreshed it at dispatch (below), on `main` at `33140121`, with the Codex lane's tip at
+`1ee93ee0`, the commit that settles order 050h's logout exit.
 
 **This text is for a pass of the live check.** On a fail, `codex.v2` states no `signIn`, Codex
 Agents do not sign in yet, and the question returns to the owner with FR-118 (ruling 82, point
@@ -119,7 +122,7 @@ differs from what it says:
   `STACKED` in the start check to each order of the chain that has not merged at dispatch, as
   `ORDER=COMMIT` with that order's round-1 tip, or to `none`; until it does, the check stops the
   worker.
-- **The predecessors of the merge.** Orders 209 to 048b-join and 051b-2 merged; the
+- **The predecessors of the merge.** Orders 209 to 048b-join, 051b-2 and 214 merged; the
   live check's dated result merged with A5's row, as 027's pre-registration says, reading pass. The
   owner's slot sign-ins are not this order's predecessors.
 - **The pass.** The Codex step's result reads pass, under 027's "What the outcomes change", run as
@@ -142,19 +145,37 @@ differs from what it says:
   follows in the same sitting, and in the same result file, holds nothing here (ruling 89,
   point 5): its fail or fault goes to the owner before any Claude slot signs in, and does not hold
   this order.
-- **The lane tips.** If either lane moved past `f1ede6a5` or `34f4e662`, it reads the new
-  commits' Records for anything carried here, and sets the two SHAs of the start check.
+- **The lane tips.** If either lane moved past `f1ede6a5` or `1ee93ee0`, it reads the new
+  commits' Records for anything carried here, and sets the two SHAs of the start check. At this
+  dispatch the Claude lane's tip is `f1ede6a5`, and the Codex lane's moved from `34f4e662` to
+  `1ee93ee0` by the settlement below alone, which changes order 050h's Record and nothing in
+  `packages/`.
 - **What 209 to 048b-join built.** Each package README's account of the engine's sign-in (its
   refusal before any part, its relay, its going on after a failed check, DL18's end) is still what
   the engine on the base does; where it is not, the coordinator adds the change as a decision, in
   the promises' words. On a stacked base it checks this again after the rebase before the merge.
+  Order 214 (the sign-in hook's call names the baseline revision), which the coordinator's dry run
+  before the live check found needed (the coordinator's notes, private): the engine sends the
+  sign-in hook's call at the revision its legacy handshake negotiated, 2025-11-25, so the
+  package's own rmcp server refuses its URL request and the engine relays no URL. It may merge
+  after this dispatch; the coordinator then rebases this branch onto it before the gate, resolves
+  any conflict as on a stacked base (below), reruns there `make_archives`'s check,
+  `vector_delta.py`, `promise_standing.py --write` and the engine's whole suite, whose line the
+  reader cites in place of the worker's, and rechecks these lines.
 - **Order 050h's open limit.** Order 050h left to the coordinator, before this order or the first
   real retirement, what each client's logout exits with in a home that holds no login (050h's
   "Who decided what"). The coordinator records its settlement in order 050h's Record before
   dispatch, as a commit on the Codex lane, which moves that lane's tip and so the start check's
   SHA (the lane tips, above), in a paragraph that begins "The coordinator settled the logout's
   exit in a home with no login"; the start check reads it. Where the settlement changes a hook,
-  it adds a decision here.
+  it adds a decision here. Settled in `1ee93ee0`: Codex's logout exits 0 there, by its source at
+  the tag order 050g read, where the configuration loads and neither a machine-managed
+  configuration nor the home's `config.toml` sets up a cleanup that fails, such as a Bedrock provider's, and Claude Code's
+  pages state no exit, so the Claude limit stands; neither hook changes, and the one change is
+  decision 3's restatement of the Codex README's first limit. A run of `claude auth logout` in
+  an empty scratch home, which observes the Claude exit, stays owed by the coordinator before the
+  first real retirement of a Claude Agent that never signed in, such as one the dogfood registers
+  and does not sign in; this order neither makes nor waits for it.
 - **Order 050c's Linux run.** Order 050c's Record holds the coordinator's Linux run of
   `v2_client_home_refusals` (2026-11-18), as its S2 asked before this order's gate; the start
   check reads it.
@@ -213,7 +234,7 @@ git merge-base --is-ancestor d4343f71 HEAD; echo "floor $?"
 git cat-file -e origin/main:docs/work-orders/050n-agent-packages-joined.md; echo "order $?"
 test -e docs/work-orders/050n-declared.yaml; echo "declared $?"
 git status --short | wc -l
-STACKED='SET AT DISPATCH'
+STACKED='none'
 test "$STACKED" != 'SET AT DISPATCH'; echo "stacked set $?"
 echo "$STACKED" | tr ' ' '\n' | grep -v '^none$' | while read -r S; do git merge-base --is-ancestor "${S#*=}" HEAD; echo "${S%%=*} $?"; done
 grep -c 'fn sign_in_relays_through_the_interface' engine/crates/shell/src/server_tests.rs
@@ -221,11 +242,11 @@ for P in 050b 207 208 050i 050j 050k 050l 050m; do printf '%s ' $P; cat docs/wor
 grep -c '^The coordinator ran S2 on the Linux node' docs/work-orders/050c-*.md
 grep -c "^The coordinator settled the logout's exit in a home with no login" docs/work-orders/050h-*.md
 ls docs/work-orders/050j-a77.yaml docs/work-orders/050k-a77.yaml | wc -l
-PASS_LINE='SET AT DISPATCH'
+PASS_LINE='AHEAD'
 test "$PASS_LINE" != 'SET AT DISPATCH'; echo "pass set $?"
 test "$PASS_LINE" = AHEAD && echo ahead || git ls-tree --name-only origin/main experiments/027-a5-sign-in/ | grep '/results-.*-1-step-1\.md$' | while read -r F; do git show "origin/main:$F" | grep -qxF -- "$PASS_LINE" && echo "$F"; done | wc -l
 git diff --quiet f1ede6a5 HEAD -- packages/agent-claude-code; echo "claude lane $?"
-git diff --quiet 34f4e662 HEAD -- packages/agent-codex; echo "codex lane $?"
+git diff --quiet 1ee93ee0 HEAD -- packages/agent-codex; echo "codex lane $?"
 grep -c '^version: 0.2.0$' packages/agent-codex/conduit.yaml packages/agent-claude-code/conduit.yaml
 grep -c '^version: 0.1.1$' conformance/fixtures/agents/agent-codex/conduit.yaml conformance/fixtures/agents/agent-claude-code/conduit.yaml
 /usr/bin/python3 -c 'import sys, yaml
@@ -250,7 +271,7 @@ names.
 ## The decisions it applies
 
 Behavior is stated here, with the tests that show it. Write exactly only the texts this order
-quotes: diagnostics, and the one README sentence of decision 3. Everything else is yours to word,
+quotes: diagnostics, and the two README sentences of decision 3. Everything else is yours to word,
 in the terms of `spec/definitions.md`, and to report.
 
 1. **The packages stay as the lanes left them, but for decisions 2 and 3.** The two packages'
@@ -292,7 +313,7 @@ in the terms of `spec/definitions.md`, and to report.
    texts shows the new texts. Extending the change to the Codex hook is the
    coordinator's.
 
-3. **Two Codex changes: the proxy sentence and the login limit.**
+3. **Three Codex changes: the proxy sentence, the login limit and the logout limit.**
    - In `packages/agent-codex/README.md`, in the paragraph on a configured proxy and the refresh
      request, the sentence "The endpoint names no server, and TLS to it cannot be verified."
      states as certain what holds only where no proxy intercepts TLS (order 050m's second
@@ -309,6 +330,15 @@ in the terms of `spec/definitions.md`, and to report.
      (its "15 minutes" and "900 seconds") to it. A test in each package's `tests/wrapper.rs`,
      named as decision 2's are, shows that the package's login limit is at most 600 seconds.
      Nothing else in the login changes.
+   - In `packages/agent-codex/README.md`, the first item of its limits says "The logout's exit
+     status in a home with no login is unknown." The coordinator's settlement in order 050h's
+     Record overtakes that for Codex, from its source and not from a run. Replace that sentence
+     with the coordinator's words, exactly: "By Codex's source at the tag named in the read, the
+     logout exits 0 in a home with no login, where the configuration loads and neither a
+     machine-managed configuration nor the home's config.toml sets up a cleanup that fails; no
+     run of the client has observed it."
+     Leave the rest of the item as it is. If the old sentence is not there, change nothing and
+     report.
 
 4. **The engine's pins move to 0.2.0.** Each package's `conduit.yaml` and `contracts.yaml` are
    copied byte for byte to `conformance/fixtures/agents/<package>/`; each copy's
@@ -408,21 +438,23 @@ in the terms of `spec/definitions.md`, and to report.
    - `docs/guides/accounts.md`: replace its stale state (its paragraph "State on 2026-11-12", which
      says neither sign-in nor each Agent's home is built) with what holds once this merges, and
      bring each section to 0.2.0. It must say: each `.v2` Agent keeps its client's login in its own
-     home inside its state directory, and the person's own logins stay as they are; the person
-     signs an Agent in with `conduit sign-in` (order 051b-2, merged before this order) or through
-     root's Interface, and does so only for an Agent whose sign-in action is pending, never as a
-     check, since for a Codex Agent a check that fails goes on to the sign-in hook, and Codex's
-     login first signs that home out; after the engine restarts, `conduit pending` shows any Agent
-     whose account check failed at its setup; a Codex Agent left idle until its access token lapsed
-     may fail its check, since the check blocks the token's refresh, and is then asked to sign in
-     again, though a turn would have refreshed it (ruling 86, point 5); no login can be named in
-     0.2.0, so each Agent signs in with its client's default login, and the device code and
-     Claude's code-page login wait for later releases; on the engine's own runner Codex's browser
-     login may open the default browser of the engine user's graphical session, so the person
-     closes that window and keeps that browser free of an OpenAI session (review item 6 of the
-     Codex list; the specification's limit, which order 050b wrote); a Claude sign-in completes
-     only where the person's browser reaches the login's loopback port on the engine's machine
-     until order 050o's managed connection is built; the account check alone decides who signed in
+     home inside its state directory, and the person's own logins stay as they are; the person signs
+     an Agent in with `conduit sign-in` (order 051b-2, merged before this order) or through root's
+     Interface, and does so only for an Agent whose sign-in action is pending, never as a check,
+     since for a Codex Agent a check that fails goes on to the sign-in hook, and Codex's login first
+     signs that home out; after each command but `conduit pending`, the engine prints how many
+     pending actions at root are still unanswered, which during the first sign-ins the person reads
+     as the sign-ins still to do, not as an error; after the engine restarts, `conduit pending`
+     shows any Agent whose account check failed at its setup; a Codex Agent left idle until its
+     access token lapsed may fail its check, since the check blocks the token's refresh, and is then
+     asked to sign in again, though a turn would have refreshed it (ruling 86, point 5); no login
+     can be named in 0.2.0, so each Agent signs in with its client's default login, and the device
+     code and Claude's code-page login wait for later releases; on the engine's own runner Codex's
+     browser login may open the default browser of the engine user's graphical session, so the
+     person closes that window and keeps that browser free of an OpenAI session (review item 6 of
+     the Codex list; the specification's limit, which order 050b wrote); a Claude sign-in completes
+     only where the person's browser reaches the login's loopback port on the engine's machine until
+     order 050o's managed connection is built; the account check alone decides who signed in
      (PND-011); each client's logout at retirement revokes that home's own token at the vendor
      (order 050g's two outcome lines), and a login on a machine that is lost, which no logout
      reaches, stays until it is revoked at the vendor (D53); and a failed logout at retirement is
@@ -455,24 +487,25 @@ in the terms of `spec/definitions.md`, and to report.
 
 That 0.2.0 merges only after order 048b-join, and that `codex.v2` states `signIn` only on the live
 check's pass, is the owner's (ruling 82, points 1 and 3); that the items stay plain in 0.2.0, and
-that orders 207 and 209 land first, is the owner's (ruling 86, points 1, 3 and 4); that the
-packages are subscription-only is the owner's (ruling 83); that A77's pairing waits until this
-order merges, that the S1 rerun's pin comes at the first dogfood milestone, and that the Claude
-scratch sign-in joins the live check's sitting, are the owner's (ruling 89, points 5 to 7). The
-must-state items are the targeted review's, which the owner accepted with ruling 82. Everything
-else is the coordinator's, each open to the owner's strike ([ruling
-48](../proposals/ruling-48/README.md)): the split of 050 and this order's place last; this text
-written ahead and refreshed at dispatch; the join as the start describes it, on a stacked base and
-ahead of the live check's result where the coordinator so dispatches it (ruling 89, point 2, as the
-coordinator applies it); the reading that this order's own changes to the Codex package leave the
-pass standing, made at the merge; the reading of "joins the two sources again" (decision 1); option
-(b) for order 050k's carried should and its extension to the Codex hook (decision 2); IN_FORCE.md's
-sentence for the proxy should, and Codex's login limit at 600 seconds (decision 3); S1 kept on
-`.v1` (decision 4); carrying a schema alone where a fixture member cannot follow (decision 5); the
-choice of the four cases (decision 6); reporting the descriptions without changing them (decision
-7); the guide's content, its sentences on when to sign in and on an idle Codex Agent included
-(decision 8); and the reading that, on a dispatch ahead of the result, a temporary store that a
-test makes and removes is not an installation under the gate (decision 10). Apply them as written and report them under `decisions` as the coordinator's.
+that orders 207 and 209 land first, is the owner's (ruling 86, points 1, 3 and 4); that the packages
+are subscription-only is the owner's (ruling 83); that A77's pairing waits until this order merges,
+that the S1 rerun's pin comes at the first dogfood milestone, and that the Claude scratch sign-in
+joins the live check's sitting, are the owner's (ruling 89, points 5 to 7). The must-state items are
+the targeted review's, which the owner accepted with ruling 82. Everything else is the
+coordinator's, each open to the owner's strike ([ruling 48](../proposals/ruling-48/README.md)): the
+split of 050 and this order's place last; this text written ahead and refreshed at dispatch; the
+join as the start describes it, on a stacked base and ahead of the live check's result where the
+coordinator so dispatches it (ruling 89, point 2, as the coordinator applies it); the reading that
+this order's own changes to the Codex package leave the pass standing, made at the merge; the
+reading of "joins the two sources again" (decision 1); option (b) for order 050k's carried should
+and its extension to the Codex hook (decision 2); IN_FORCE.md's sentence for the proxy should,
+Codex's login limit at 600 seconds, and the restated logout limit (decision 3); S1 kept on `.v1`
+(decision 4); carrying a schema alone where a fixture member cannot follow (decision 5); the choice
+of the four cases (decision 6); reporting the descriptions without changing them (decision 7); the
+guide's content, its sentences on when to sign in and on an idle Codex Agent included (decision 8);
+and the reading that, on a dispatch ahead of the result, a temporary store that a test makes and
+removes is not an installation under the gate (decision 10). Apply them as written and report them
+under `decisions` as the coordinator's.
 
 ## Scope
 
@@ -545,6 +578,8 @@ tr '\n' ' ' < packages/agent-codex/README.md | tr -s ' ' | grep -c 'A system pro
 tr '\n' ' ' < packages/agent-codex/README.md | tr -s ' ' | grep -c 'TLS to it cannot be verified'   # 0
 grep -c '0\.1\.1' conformance/fixtures/agents/agent-codex/README.md conformance/fixtures/agents/agent-claude-code/README.md   # 0 and 0
 grep -cE '900 seconds|15 minutes' packages/agent-codex/README.md   # 0
+tr '\n' ' ' < packages/agent-codex/README.md | tr -s ' ' | grep -c 'home with no login is unknown'   # 0
+tr '\n' ' ' < packages/agent-codex/README.md | tr -s ' ' | grep -c 'the logout exits 0 in a home with no login, where the configuration loads'   # 1
 /usr/bin/python3 -c 'import json, yaml
 f = {d["metadata"]["name"]: d for d in json.load(open("conformance/fixtures/s1/packages/agents-0.2.0/contracts.json")) if d["kind"] == "Type"}
 for p in ("agent-codex", "agent-claude-code"):

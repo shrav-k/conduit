@@ -28,7 +28,7 @@ re-sends a key); and 7, everything is attributable (a reconciliation records wha
 nothing else). **Should this exist** (point 3): no existing tool writes Conduit's own binding text.
 
 **When it runs.** An order of A78's stage 2, sent through Conduit under
-[order 211's registration](211-a78-stage-2-registration.md) ("Stage 2's orders"), as ruling 92
+[order 211's registration](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/211-a78-stage-2-registration.md) ("Stage 2's orders"), as ruling 92
 point 4 reads it: one worker turn by `conduit` call, then the local gate, then one fresh read; the
 round has no verifier. It changes nothing under `experiments/028-a78-dogfood/`
 and not the harness. By [ruling 89](../proposals/ruling-89/README.md), each item says what must hold;

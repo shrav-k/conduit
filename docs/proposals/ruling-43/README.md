@@ -7,7 +7,7 @@ ruling. Where it and the specification differ, the specification governs.
 
 Ruling 42 left D5 and D20 open and asked for more research on how Conduit works across
 machines, looking ahead to what later versions need. The
-[research packet](../../research/MULTI_MACHINE.md) and the
+[research packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/MULTI_MACHINE.md) and the
 [multi-machine proposal](../multi-machine/README.md) answered it with D5, its second part, D20
 and five smaller questions, Q1 to Q5. The owner asked for more explanation of each, and whether
 any of it would add undue friction for systems on one machine or block the Model Context

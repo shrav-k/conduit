@@ -1,8 +1,0 @@
-# Checked at the merge of order 048a5, against main at 7eed5a4d: the work's vector delta matches these shapes.
-- name: requests-sign-in-refusals-before-parts
-  kind: added
-  cases: [requests-sign-in-refusals-before-parts]
-- name: sign-in.v1's conflict and stub steps declare URL elicitation, so that the capability's invalid does not answer them first
-  kind: input
-  cases: [requests-sign-in-lapse-and-conflict]
-  paths: ['/steps/3/input/request/clientCapabilities/*', '/steps/11/input/request/clientCapabilities/*', '/steps/28/input/request/clientCapabilities/*']

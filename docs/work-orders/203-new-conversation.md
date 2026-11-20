@@ -65,7 +65,7 @@ on either lane before 050n:
   [its verdicts](../proposals/review-signin-2026-11-16/verdicts.md#a-the-release-and-the-contracts-it-carries)
   and [its finding V32](../proposals/review-signin-2026-11-16/findings.md#v32-m06-defers). Adding
   the operation before 050n would change a member the review froze.
-- NAM-024, as [order 199](199-nam-024-which-additions-count.md) worded it, makes the addition one
+- NAM-024, as [order 199](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/199-nam-024-which-additions-count.md) worded it, makes the addition one
   a later release at the same address may make: "A further operation of a capability is one of
   them, and so is the default implementation of it that a Type whose earlier contract offers that
   capability adds to its `implementation`". So nothing is lost by waiting for the freeze.
@@ -160,7 +160,7 @@ provider session still opens with the legacy handshake; `new-conversation.v1` is
 operation, not a hook, and answers a complete `CallToolResult` as `turn` does, so the engine
 reaches it over that session as it reaches `turn`, and the new test's plain client (`().serve`)
 negotiates as `BASE`'s stdio tests do. [Ruling 91](../proposals/ruling-91/README.md)'s hold on a
-late answer of another account is spec pending, for [order 216](216-ruling-91-spec-and-engine.md),
+late answer of another account is spec pending, for [order 216](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/216-ruling-91-spec-and-engine.md),
 written ahead to run after milestone 1, which changes nothing under `packages/` and no wrapper. Ruling 90 changes only where this order's Record ends up, as above, and where
 the start check reads 050n's file.
 

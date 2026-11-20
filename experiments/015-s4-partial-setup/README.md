@@ -123,7 +123,7 @@ barriers. Their construction belongs to the implementation order; faults are not
 ## Measures
 
 **M0 — proposed, for the owner's acceptance**, lane coordinator's
-[decision 4](../../docs/work-orders/102-pre-b-s4-s5-s6-s9.md#the-decisions-it-applies): carry over
+[decision 4](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/102-pre-b-s4-s5-s6-s9.md#the-decisions-it-applies): carry over
 by reference the first build's [measure table](../../docs/implementation/FIRST_BUILD.md#measures)
 and three [counting rules](../../docs/implementation/FIRST_BUILD.md#counting-rules-added-after-the-baseline-ran):
 “Provider work apart”, “A client's concepts count” and “Requests and time without access”.
@@ -191,7 +191,7 @@ Packages: partial-effect/task server, deduplicating server, setup-hook fixture a
 ledger reader, using the built-in local runner. No external service account is required.
 E09's unchanged client key behavior and model recovery choices need a real-client replay. A6's lost-response trace
 comes from that replay if Q3 chooses one, and otherwise from the scripted E09 runs.
-[A71's results](../008-real-client/results-2026-11-09.md) showed Claude offering retry after
+[A71's results](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/experiments/008-real-client/results-2026-11-09.md) showed Claude offering retry after
 unknown and Codex labelling its item failed; neither showed actual retry or repeated effect.
 Q3 chooses whether to add one trial per matrix cell with a real client. Record wire receipt,
 client exposure and model's next action apart; unavailable exposure stays unshown. Owner time

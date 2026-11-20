@@ -82,7 +82,7 @@ as the test of each Agent's own subscription and of the model as a whole; they g
 orders no capacity outside Conduit.
 
 2026-11-16: order 190's desk check read each vendor's terms for two subscriptions
-([its results](../../../experiments/010-subscription-terms/results-2026-11-16.md)) and asked the
+([its results](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/experiments/010-subscription-terms/results-2026-11-16.md)) and asked the
 owner, among other things, how the second accounts stand against the wording it found: this
 ruling's point 2 and its later answers, [ruling 49](../ruling-49/README.md)'s A5 runs on them, and
 [ruling 75](../ruling-75/README.md)'s D2 and D4. The owner: "Proceed as ruled". The second accounts

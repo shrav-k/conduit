@@ -75,8 +75,8 @@ returns to the owner (ruling 86, point 5). It does three things:
 3. On the Linux node, it installs Codex 0.167.1, runs the probe against it with a fabricated login
    only, and writes dated results that state outcomes, never expectations (decisions 5 and 6).
 
-**The models.** [Order 195](195-a5-stage-0b-codex-browser.md) and [order
-197](197-a5-stage-1-step-1-codex-account-read.md) give the form: a pre-registration in 027's README
+**The models.** [Order 195](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/195-a5-stage-0b-codex-browser.md) and [order
+197](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/197-a5-stage-1-step-1-codex-account-read.md) give the form: a pre-registration in 027's README
 first, the tag `rust-v0.167.1` (commit `0a94398fa60c`) cloned with no history and read as data,
 dated results in the experiment's directory, and checks that keep every barred value out. Neither
 ran a client: both were source reads, on the Mac. No order has yet run `codex app-server` against a
@@ -131,7 +131,7 @@ coordinator's.
    - The run is never repeated to change an outcome. A second sitting runs only where decision 2's
      text says one runs, and is recorded beside the first.
 
-2. **The README pre-registers the probe** ([order 197](197-a5-stage-1-step-1-codex-account-read.md),
+2. **The README pre-registers the probe** ([order 197](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/197-a5-stage-1-step-1-codex-account-read.md),
    decision 2, for its form). In `experiments/027-a5-sign-in/README.md`, as on `main` at `c704275f`,
    make the two additions below and change nothing else: not a word of the text already there, its
    wrapping included. Write TODAY's date in place of each `TODAY`. `DATE`, where the text below has
@@ -387,7 +387,7 @@ coordinator's.
    writing it, compare the two quoted answers with ruling 86's row in the ledger. Where they differ,
    change no file and report the difference: the coordinator amends this order.
 
-3. **The source, and how it is read** ([order 197](197-a5-stage-1-step-1-codex-account-read.md),
+3. **The source, and how it is read** ([order 197](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/197-a5-stage-1-step-1-codex-account-read.md),
    decision 3, for the method).
    - **CX1, Codex's repository at the tag `rust-v0.167.1`**, the tag orders 195, 197 and 050g read.
      On 2026-11-16 the tag named the commit `0a94398fa60c4fac0e7659e4213a0a36e613dd46`. Clone the
@@ -516,7 +516,7 @@ coordinator's.
        `{"id":1,"method":"initialize","params":{"clientInfo":{"name":"agent-codex","version":"0.2.0"},"capabilities":{"experimentalApi":false}}}`,
        `{"method":"initialized"}` and
        `{"id":2,"method":"account/read","params":{"refreshToken":false}}`, as
-       [order 050l](050l-codex-account-hook.md), decision text at its lines 346-360, sends them; a
+       [order 050l](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/050l-codex-account-hook.md), decision text at its lines 346-360, sends them; a
        notification sent first is skipped and its method recorded.
      - `detects_rewrite_in_place`, `detects_rename_with_same_bytes`, `detects_mtime_only` and
        `detects_removal`: `wrote` is true for each.
@@ -620,7 +620,7 @@ coordinator's.
    - Nothing under `spec/`, `conformance/`, `engine/`, `packages/`, `tools/` or `docs/` changes but
      this order's Record. No promise or case changes, so rule 8 of
      [CONTRIBUTING.md](../../CONTRIBUTING.md) has nothing to apply to, and no declaration is written
-     ([order 174](174-vector-changes-declared.md)).
+     ([order 174](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/174-vector-changes-declared.md)).
    - No file in any home but the probe's scratch homes is read, listed or written.
 
 ## Scope

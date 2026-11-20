@@ -320,7 +320,7 @@ Run on 2026-11-12 on the Mac, from base c60825d: the worker (1,371 s) and a fres
 then a second worker round (392 s) and a fresh verifier (447 s). Round one's three musts were fixed
 in round two: a trace could take a barrier file's name; option values equal to `resume` were read
 as the subcommand; and unknown fields went unnamed. Round two's verifier left three musts, which
-[order 148](148-scr1-finish.md) finished: a trace name in another case still collided with a
+[order 148](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/148-scr1-finish.md) finished: a trace name in another case still collided with a
 barrier file on a case-insensitive file system; short redaction entries could corrupt an
 invalid-script report; and markers inside numbers escaped redaction, while a second pass could
 break the summary's JSON.

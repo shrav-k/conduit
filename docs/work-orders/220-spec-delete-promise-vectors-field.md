@@ -32,7 +32,7 @@ judged by, and the empty field said otherwise on 518 promises.
 promises. The change removes a field and builds nothing.
 
 **When it runs.** An order of A78's stage 2, sent through Conduit under
-[order 211's registration](211-a78-stage-2-registration.md) ("Stage 2's orders"). The round is one
+[order 211's registration](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/211-a78-stage-2-registration.md) ("Stage 2's orders"). The round is one
 Codex worker turn, then one Codex verifier turn under [the standing verifier order](verify.md),
 each by `conduit` call on the Mac. After them come the local gate and one fresh read (ruling 92
 point 4). The verifier turn departs from IN_FORCE.md's reading of 92 point 4 (the Codex round drops

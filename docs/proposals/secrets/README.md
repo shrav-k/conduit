@@ -9,7 +9,7 @@ the direction and asked for the secret type to be explored. Its first draft was 
 point 1 of [ruling 39](../ruling-39/README.md), and the owner asked for more research first: "I feel
 we need more research into how secrets are handled by cloud providers like AWS and in kubernetes
 before making a determination". This version was revised after that research, which is the [research
-packet on secrets](../../research/SECRETS.md), and again after a review of the revision, which found
+packet on secrets](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md), and again after a review of the revision, which found
 five topics the packet left thin and several faults in the proposal; the packet's second round
 covers the topics. A review of that second revision found more faults, among them a rule of the
 specification that stopped the main way a secret is read, and five more thin topics, which the
@@ -325,7 +325,7 @@ beyond what passes through the engine is a future, optional part.
 
 ## What existing systems do
 
-The [research packet](../../research/SECRETS.md) covers AWS Secrets Manager and Parameter Store,
+The [research packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md) covers AWS Secrets Manager and Parameter Store,
 how AWS delivers credentials to workloads, the Kubernetes Secret, the Kubernetes ecosystem (the
 Secrets Store CSI driver, the External Secrets Operator, Sealed Secrets, SOPS, Argo CD and Vault on
 Kubernetes), GCP Secret Manager, Azure Key Vault, HashiCorp Vault, and the configuration tools and
@@ -336,7 +336,7 @@ developer's machine, Parameter Store in depth, Sealed Secrets and SOPS in depth,
 MCP servers and their runners take a credential. Its third round adds a list of readers on the
 secret, what Kubernetes gives every container, an Agent's own model credential at the providers,
 processes of the same user on Linux and macOS, and delivery to an EC2 instance. Its twenty-five
-[patterns across the systems](../../research/SECRETS.md#patterns-across-the-systems) are, in short:
+[patterns across the systems](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#patterns-across-the-systems) are, in short:
 
 1. A secret is referred to by name and, where the store has them, a version or a stage; the current
    version is the default.
@@ -592,14 +592,14 @@ with its reason. "Stands" or "Changes" says how the recommendation compares with
 front of it: Parameter Store's pass-through, CloudFormation's dynamic references, ECS's `valueFrom`
 and the agent wrapper `asm-exec`. The pass-through "doesn't retain data or metadata about secrets"
 and honors the secret's own access policies
-([packet](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store)). Kubernetes has one
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-secrets-manager-and-parameter-store)). Kubernetes has one
 Secret kind for every secret, kept apart from ordinary configuration by kind (a Secret against a
 ConfigMap), with a `type` that names a convention for key names; the CSI driver and the External
 Secrets Operator put one reference kind in front of many outside stores
-([packet](../../research/SECRETS.md#the-kubernetes-secret),
-[ecosystem](../../research/SECRETS.md#the-kubernetes-ecosystem)). GCP, Azure and Vault each keep a
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-secret),
+[ecosystem](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-ecosystem)). GCP, Azure and Vault each keep a
 secret as a named object with versions, inside something that groups it: a project, a vault, a
-mount ([packet](../../research/SECRETS.md#gcp-azure-and-hashicorp-vault)). That grouping is what a
+mount ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#gcp-azure-and-hashicorp-vault)). That grouping is what a
 Pool's ownership gives.
 
 **Recommendation: A with A1. Stands.** A secret is a Resource of the core type `secret.v1`, owned
@@ -678,21 +678,21 @@ both show why a marked literal is not enough. CloudFormation "never stores the a
 value. Instead, it only stores the literal dynamic reference", and returns only the reference from
 its APIs; its display mark, `NoEcho`, only masks describe calls, and AWS recommends a reference to
 a store instead. ECS recommends against credentials in the plain `environment` parameter
-([packet](../../research/SECRETS.md#how-aws-delivers-to-workloads)). On EC2, AWS says "you should
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#how-aws-delivers-to-workloads)). On EC2, AWS says "you should
 not store sensitive data, such as passwords or long-lived encryption keys, as user data", which any
 software on the instance may read; a launch template's versions cannot be changed, only deleted,
 and the right to read them cannot be limited to one template; and CloudFormation recommends dynamic
 references over embedding a value in a template
-([packet](../../research/SECRETS.md#delivering-to-an-ec2-instance)). A Conduit document is kept in
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#delivering-to-an-ec2-instance)). A Conduit document is kept in
 Git and read by many, which is the same exposure. A Kubernetes manifest may
 carry the value in base64, which "provides no additional confidentiality over plain text", and the
 write-only field `stringData` is merged into `data` and returned there
-([packet](../../research/SECRETS.md#the-kubernetes-secret)). That is ruling 38's finding about
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-secret)). That is ruling 38's finding about
 `writeOnly`, seen in practice. Two other systems bear on the details. Azure App Service, when a
 reference cannot be resolved, puts "the reference string" in the setting, which is the failure a
 schema that rejects literals avoids. Claude Code quotes a `${VAR}` reference unexpanded in its
 warnings, "so it never shows a resolved value such as an API key", which is the rule on diagnostics
-([packet](../../research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)).
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)).
 
 **Recommendation: B, without the bare name, with the rule on diagnostics. Stands.** It uses only
 what exists: `$ref` to a Schema contract of the core package, the mechanism by which every other
@@ -705,7 +705,7 @@ declares, not a schema keyword, so it does not bring back option D; S8 says how 
 **What it cannot do.** It marks only what an author marks. A token written into a place that a
 plain `{type: string}` governs is data, and no rule can tell it from any other string. Parameter
 Store leaves the same choice to the author of a parameter's type
-([packet](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store)). See
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-secrets-manager-and-parameter-store)). See
 [S10](#s10-what-the-guarantee-covers).
 
 ### S3. How the value reaches the implementation that needs it
@@ -736,19 +736,19 @@ application then reads as files, or to the application reading an encrypted S3 o
 own role. That ranks a file, option D's other form, above a variable; it is not evidence for C.
 The evidence for C is elsewhere. AWS's own provider for the CSI driver says "Security conscious
 applications should use the native AWS APIs to fetch secrets"
-([packet](../../research/SECRETS.md#how-aws-delivers-to-workloads)). Among the alternatives to its
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#how-aws-delivers-to-workloads)). Among the alternatives to its
 Secret, Kubernetes names "a service that Pods access over HTTPS, that reveals a Secret if the
 client correctly authenticates", which is option C
-([packet](../../research/SECRETS.md#the-kubernetes-secret)). AWS's provider reads under the Pod's
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-secret)). AWS's provider reads under the Pod's
 own role, so reading through the instance's own Conduit is an adopted model, not an invention.
 Google says to read the API "whenever possible", and Argo CD "strongly caution[s]" against
 resolving secrets into rendered content, which is what option A does
-([packet](../../research/SECRETS.md#the-kubernetes-ecosystem)). On EC2, the Well-Architected
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-ecosystem)). On EC2, the Well-Architected
 pillar says to "integrate Secrets Manager into your code to retrieve third-party secrets at
 runtime", under the instance's role; AWS says its local provider's trust domain there is that of
 the instance's role, and that security-conscious applications "should consider using the
 language-specific AWS SDKs or caching solutions" instead
-([packet](../../research/SECRETS.md#delivering-to-an-ec2-instance)).
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#delivering-to-an-ec2-instance)).
 
 **What the engine may see.** Under C the value passes through the engine once per read: the engine
 is the server the implementation calls (IFC-012) and the client of the store's implementation. The
@@ -758,13 +758,13 @@ no retained content, no diagnostic, no observation and no inspection result hold
 the norm, not a weakness peculiar to Conduit: the CSI driver, the External Secrets Operator, which
 can "read and write to all secrets across all namespaces", and AWS's local provider all see each
 value they deliver. AWS names its provider's trust domain as "usually the entire host"
-([packet](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store)). The proposal states
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-secrets-manager-and-parameter-store)). The proposal states
 the same of the engine: the engine's host, and whoever can run code as the engine's
 operating-system user, are inside the trust domain of every secret the engine reads (S10).
 
 The Model Context Protocol aims for a credential collected by URL-mode elicitation to "never pass
 through the LLM context, MCP client or any intermediate MCP servers"
-([packet](../../research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)). Under C the engine
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)). Under C the engine
 is such an intermediate. The proposal states that divergence; it is acceptable for one developer on
 one machine. Delivery that the engine cannot read, by wrapping the value for its reader alone, stays
 left out of the first version.
@@ -816,13 +816,13 @@ still cannot evaluate it, and the read reports unavailable under ACC-014.
 credential, and the restrictions of whoever called the workload are not carried onto it. AWS's
 provider for the CSI driver "assumes the IAM role of the Pod", ECS reads for injection under the
 task execution role, and on EC2 every application reads under the one role of its instance
-([packet](../../research/SECRETS.md#how-aws-delivers-to-workloads),
-[EC2](../../research/SECRETS.md#delivering-to-an-ec2-instance)). Kubernetes lets a kubelet read the
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#how-aws-delivers-to-workloads),
+[EC2](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#delivering-to-an-ec2-instance)). Kubernetes lets a kubelet read the
 Secrets "related to pods bound to the kubelet's node"
-([packet](../../research/SECRETS.md#the-kubernetes-secret)). The one model read that carries the
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-secret)). The one model read that carries the
 person into the read is Vault Enterprise's on-behalf-of token, under which "Vault allows the request
 only if both the subject baseline and the OBO ceiling permit it"
-([packet](../../research/SECRETS.md#gcp-azure-and-hashicorp-vault)); it needs a store that
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#gcp-azure-and-hashicorp-vault)); it needs a store that
 evaluates both, which `engine` is not, and HashiCorp's pattern for agents still keeps the
 credential in the server that uses it.
 
@@ -896,23 +896,23 @@ Ruling 39, point 2, accepted B and D together, for the first version.
 authorized to create a Pod in a namespace can use that access to read any Secret in that
 namespace", even through a Deployment; "list and watch access also effectively allow for users to
 reveal the Secret contents"; and its mitigations only detect and limit
-([packet](../../research/SECRETS.md#the-kubernetes-secret)). AWS states the risk of option A for
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-secret)). AWS states the risk of option A for
 agents: an agent that can call `get-secret-value` will "receive plaintext secrets in their context
 window", and its answer blocks direct reads, through MCP tools among other channels. AWS also
 separates the role that manages and rotates a secret from the role that uses it, and calls the
 right to set up rotation "not appropriate for end users"
-([packet](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store)). Azure documents the
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-secrets-manager-and-parameter-store)). Azure documents the
 flaw that D avoids: under its older model, whoever may write a vault "can grant themselves data
 plane access"; its fix reserves granting to two roles
-([packet](../../research/SECRETS.md#gcp-azure-and-hashicorp-vault)). The External Secrets
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#gcp-azure-and-hashicorp-vault)). The External Secrets
 Operator's shared store shows why one Conduit per secret is worth its cost: with one store for all
 tenants, "Now all application developers have access to all the secrets"
-([packet](../../research/SECRETS.md#the-kubernetes-ecosystem)). GCP and Azure both make reading the
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-ecosystem)). GCP and Azure both make reading the
 value a right of its own, apart from seeing metadata: the same split as between inspecting a secret
 Resource, which shows its locator, and reading it with `reveal-secret.v1`. Parameter Store has the
 same split, and shows why the output mark should be generic: four of its operations return a value,
 each authorized on its own, and denying one leaves the others open
-([packet](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store)).
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-secrets-manager-and-parameter-store)).
 
 Who may arrange a read is, in both, a question apart from who may read. AWS makes attaching a role
 to a workload a permission of its own, `iam:PassRole`, scoped to named roles and to the service that
@@ -924,7 +924,7 @@ role grants, unless it is given the `bind` or `escalate` verb, which its good pr
 around that protection; the first grants come from a superuser. Kubernetes has no such check on a
 workload: "since Pods can run as any ServiceAccount, granting permission to create workloads also
 implicitly grants the API access levels of any service account in that namespace"
-([packet](../../research/SECRETS.md#who-may-give-a-workload-a-read)). D is the strict form of AWS's
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#who-may-give-a-workload-a-read)). D is the strict form of AWS's
 gate: opening a reading Conduit is a right apart from registering the Resource or setting it up, and
 in this version only the root Interface, in the place of Kubernetes's superuser, holds it.
 
@@ -954,9 +954,9 @@ new, item 4e.
 The research is plain about what point 4 then gives. The value sits in the Agent's own process.
 Claude Code "keeps the credentials for its own API calls" while the shells, hooks and stdio servers
 it starts inherit its environment unless it scrubs them
-([packet](../../research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)), and Google warns
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)), and Google warns
 of "dependencies that log process environment details"
-([packet](../../research/SECRETS.md#gcp-azure-and-hashicorp-vault)). So for an Agent, "never handed
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#gcp-azure-and-hashicorp-vault)). So for an Agent, "never handed
 over" means never presented as a tool, never in a result and never recorded; it does not mean that
 the Agent's model cannot read its own environment. That argues against a strict reading of point 2
 for Agents. The proposal does not overturn point 4: it states the limit in S10, and recommends a
@@ -973,7 +973,7 @@ For teams later, the paradigm is Kubernetes's rule against escalation together w
 named right to arrange, as its `bind` verb on a named role and AWS's PassRole on a named role are.
 The revision named Azure's Key Vault Data Access Administrator alone, but that role limits only
 which roles its holder assigns; limiting who receives them is an extra condition that must be
-added ([packet](../../research/SECRETS.md#who-may-give-a-workload-a-read)). Conduit already has
+added ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#who-may-give-a-workload-a-read)). Conduit already has
 both halves. A bound on a Conduit to `access` is a right to open that is apart from the right to
 use, since being the consumer of a Conduit to a target does not permit opening one (ACC-006). And
 a right to open passes on "only as it is or narrower" (ACC-030), which is Kubernetes's rule. So
@@ -991,7 +991,7 @@ to a bound that names secret Resources. If teams ever need a statement on the se
 as an owner of a Pool saying which team may arrange reads of it, AWS's rule across accounts is the
 paradigm, not its rule within one: both sides must allow, and an account passes on only what it was
 granted, "it cannot delegate more access than the account itself has been granted"
-([packet](../../research/SECRETS.md#a-list-of-readers-on-the-secret)). Such a statement would bound
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#a-list-of-readers-on-the-secret)). Such a statement would bound
 the opening of Conduits, and grant nothing; and AWS's guards would come with it: no broad entries,
 a check before it is attached that it locks no one out, and the right to edit it treated as a right
 to escalate.
@@ -999,7 +999,7 @@ to escalate.
 **A list of readers on the secret (item 4d).** New after the third review. The Conduit stays the
 only way a read is arranged. Neither `secret.v1`, nor a locator, nor a package carries a list of
 readers that acts as a grant. The research shows what the other choice brings
-([packet](../../research/SECRETS.md#a-list-of-readers-on-the-secret)). AWS lets a policy attached
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#a-list-of-readers-on-the-secret)). AWS lets a policy attached
 to a secret name who may read it. Within one account the two places are a union: "If either the
 identity-based policy or the resource-based policy within the same account allows the request and
 the other doesn't, the request is still allowed", and a grant there made directly to a user or a
@@ -1036,7 +1036,7 @@ forbids an implementation to forward Conduit's keys. The implementation uses the
 outside service it is for, and never puts it in a result, a diagnostic, the arguments or `_meta` of
 a request to the engine, or anything it sends an actor. Kubernetes puts the same duty on the
 application: it "must avoid logging the secret data in the clear or transmitting it to an untrusted
-party" ([packet](../../research/SECRETS.md#the-kubernetes-secret)).
+party" ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-secret)).
 
 The comparison with a handle is close. A handle is an opaque string that the engine passes back
 unchanged, and "holding one permits nothing" (IFC-011). A reference to a secret is the same: an
@@ -1058,7 +1058,7 @@ rules apply (S15).
 **What this cannot stop.** With D, the first draft's main limit narrows. An actor that registers a
 Resource with an implementation of its own choosing can no longer open a reading Conduit for it;
 only the root Interface can. The opening is the moment of trust, as `direnv allow` is for a new
-`.envrc` ([packet](../../research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)). Two
+`.envrc` ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)). Two
 things remain. The first is the root Interface's own choice: whoever wrote the implementation that
 the root Interface lets read a secret can recover its value, and the secret's locator, which
 whoever registered the secret wrote, decides what is read (S10). The second is any code the engine
@@ -1067,13 +1067,13 @@ operating-system user, and may be started before any invocation ([SEC-16](https:
 environment holds the values of its `environment` sources (S5), and the kernels let a process of
 the same user read it, on Linux where the engine is dumpable and on macOS in every case, and open
 the files the `file` sources name
-([packet](../../research/SECRETS.md#processes-of-the-same-user-on-linux-and-macos)). So an actor
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#processes-of-the-same-user-on-linux-and-macos)). So an actor
 that may register and set up a Resource, or install a package, whose implementation the engine
 starts can read every value of the engine's own sources with no Conduit at all (S10). The
 third revision said that only the root Interface's choice remained, which this does not support.
 The same will hold of a delegate later:
 AWS says of a delegate who may create users that "Maria effectively trusts Zhang" with the access
-those users get ([packet](../../research/SECRETS.md#who-may-give-a-workload-a-read)), so delegating
+those users get ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#who-may-give-a-workload-a-read)), so delegating
 the right to open a reading Conduit is, in effect, delegating the read.
 
 ### S5. Where the value is stored
@@ -1099,13 +1099,13 @@ the right to open a reading Conduit is, in effect, delegating the read.
 Secrets are "by default, stored unencrypted" in etcd; a local key "fails to protect against a host
 compromise"; envelope encryption needs a KMS plugin on each control-plane host, which keeps its own
 credentials and caches data keys in the clear; and encrypting what is already stored means
-rewriting every Secret ([packet](../../research/SECRETS.md#the-kubernetes-secret)). Kubernetes has
+rewriting every Secret ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-secret)). Kubernetes has
 moved its own service-account tokens out of that store, to short-lived tokens issued on request,
 and fetches registry credentials through plugins "as opposed to storing static credentials on
 disk". AWS's local provider serves, from a cache, values that live in Secrets Manager
-([packet](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store)). The CSI driver and
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-secrets-manager-and-parameter-store)). The CSI driver and
 the External Secrets Operator read outside stores; Docker Compose has exactly B1's two sources
-([packet](../../research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)). Pulumi is the one
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)). Pulumi is the one
 tool read that keeps secrets itself, encrypted in its state, and it needs key providers to do so.
 
 **Recommendation: B, with B1. Stands.** Keep the value in an existing store and read it there. This
@@ -1150,16 +1150,16 @@ These rules follow, each from the older design or the sources:
 - Where the store cannot be read (the file is missing, the keychain is locked, the manager refuses),
   the read has the outcome failed and no value, with no fallback to another source ("without silent
   plaintext fallback", [older text][pools]). Codex's `keyring` mode "fails if it is unavailable" in
-  the same way ([packet](../../research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)).
+  the same way ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)).
 - Nothing in the first version writes a secret's value. The developer writes it to the file, the
   shell profile or the keychain. A Resource that writes values (a password manager) can come later
   in a package, with the mark on inputs that it would need.
 - The engine's own environment holds the values of its `environment` sources. 1Password warns that
   "processes on your computer can access the environment of other processes run by the same user"
-  ([packet](../../research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)), and the
+  ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)), and the
   kernels say on what terms: on Linux, processes of the same user and groups, where the process is
   dumpable; on macOS, processes of the same user, unless the process's signature restricts it
-  ([packet](../../research/SECRETS.md#processes-of-the-same-user-on-linux-and-macos)). So no
+  ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#processes-of-the-same-user-on-linux-and-macos)). So no
   process that the engine starts inherits those variables (S18). The file source is the better of
   the two for a long-lived engine, though not because fewer processes can read it: a file that only
   its owner may read is open to every process of that user. It is better because it is inherited by
@@ -1167,8 +1167,8 @@ These rules follow, each from the older design or the sources:
   keeps its value until the engine is started again.
 - A command that prints a credential, as `kubectl`'s exec plugins and Claude Code's `apiKeyHelper`
   do, is an established third kind of store
-  ([packet](../../research/SECRETS.md#the-kubernetes-secret),
-  [tools](../../research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)). It is left to
+  ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-secret),
+  [tools](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)). It is left to
   packages, not to `engine`: a command that a package supplies is code that reads secrets, and the
   root Interface's opening of the reading Conduit is the moment it is trusted (S4). The second round
   supports leaving it there. No command format is general: AWS's `credential_process` prints only an
@@ -1177,18 +1177,18 @@ These rules follow, each from the older design or the sources:
   with no work. Both platforms treat a file that names a command as code that will run: "anyone with
   write access to your shared config file can change the command that is run", and kubectl's
   allowlist of plugins is kept in `kuberc`, apart from the kubeconfig that names them
-  ([packet](../../research/SECRETS.md#aws-and-kubernetes-on-a-developers-machine)). If a command
+  ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-and-kubernetes-on-a-developers-machine)). If a command
   store ever enters the core package, those are the precedents to adopt: ExecCredential v1 as the
   nearest format for one string with an expiry (a judgment, which no source states), and a list of
   allowed commands kept by the engine outside every document.
 - Evidence for experiment E10 on keychains: Claude Code falls back to a file "When the Keychain
   rejects the write, such as when it's locked in an SSH session"
-  ([packet](../../research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)). A keychain is not
+  ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)). A keychain is not
   reliably usable unattended, which keeps B2 out of the first version.
 
 **Ciphertext kept beside configuration.** New after the review. Sealed Secrets and SOPS keep
 encrypted values in Git beside the configuration that uses them
-([packet](../../research/SECRETS.md#ciphertext-kept-beside-configuration)). The paradigm has three
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#ciphertext-kept-beside-configuration)). The paradigm has three
 forms, which the proposal treats apart.
 
 | Form | Treatment | Why |
@@ -1221,14 +1221,14 @@ Conduit does.
 **What AWS and Kubernetes do.** AWS rotates in the store: a staged protocol ends by moving
 AWSCURRENT to the new version, and a reference with no version reads it. CloudFormation recommends
 references with no version, "This ensures your credentials are regularly updated without requiring
-template changes" ([packet](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store)).
+template changes" ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-secrets-manager-and-parameter-store)).
 Kubernetes changes a Secret in place, and its consumers see the change on their own terms:
 environment variables never without a restart, volumes eventually, `subPath` mounts never
-([packet](../../research/SECRETS.md#the-kubernetes-secret)). Revocation, in both, works at the
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-secret)). Revocation, in both, works at the
 verifier and never recalls a copy. AWS denies role sessions issued before a time; Kubernetes has
 "no specific mechanism to invalidate a token issued via TokenRequest" other than deleting the Pod;
 and only Vault, by revoking a lease, invalidates a credential it issued
-([packet](../../research/SECRETS.md#gcp-azure-and-hashicorp-vault)). AWS makes a deleted secret
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#gcp-azure-and-hashicorp-vault)). AWS makes a deleted secret
 unreadable at once, and keeps it recoverable in the store for at least seven days.
 
 **Recommendation: A. Stands.** Rotation happens in the store, where it already happens. Which
@@ -1236,16 +1236,16 @@ version a locator names is S11, what a cache in a package does is S12, and what 
 set in a process's environment is S19. The proposal recommends, as guidance to authors of
 implementations and not as a promise, reading at each use, or again after the outside service
 refuses a credential, rather than once at setup. That guidance is existing practice. `kubectl`
-fetches a credential again after a 401 ([packet](../../research/SECRETS.md#the-kubernetes-secret));
+fetches a credential again after a 401 ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-secret));
 Claude Code runs its `apiKeyHelper` again after a 401 or 403
-([packet](../../research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)); AWS answers the
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)); AWS answers the
 window of single-user rotation with "an appropriate retry strategy"
-([packet](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store)); and AWS's SDKs run
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-secrets-manager-and-parameter-store)); and AWS's SDKs run
 a `credential_process` again before its expiry, and do not cache what it prints
-([packet](../../research/SECRETS.md#aws-and-kubernetes-on-a-developers-machine)). Parameter Store
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-and-kubernetes-on-a-developers-machine)). Parameter Store
 itself rotates nothing: its parameter policies only delete a parameter or send a notice, and AWS
 points credentials that need rotating to Secrets Manager
-([packet](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store)). A read after such a
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-secrets-manager-and-parameter-store)). A read after such a
 deletion fails, and the package reports it so.
 
 **Revocation.**
@@ -1293,22 +1293,22 @@ should not be confused.
 **What AWS and Kubernetes do.** Both answer the first credential with identity, not a stored
 secret. AWS's central pattern for workloads is a role whose temporary credentials the platform
 delivers; on EKS a Pod's environment holds only a pointer and the path of a short-lived token file
-([packet](../../research/SECRETS.md#how-aws-delivers-to-workloads)). Kubernetes moved its own
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#how-aws-delivers-to-workloads)). Kubernetes moved its own
 service-account tokens out of Secret objects, because "any user with read access to those Secrets
 can authenticate as the service account", to short-lived, audience-bound tokens issued on request
-([packet](../../research/SECRETS.md#the-kubernetes-secret)). For the third, AWS sets a Lambda
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-secret)). For the third, AWS sets a Lambda
 function's own role keys in reserved environment variables at start
-([packet](../../research/SECRETS.md#how-aws-delivers-to-workloads)); the Anthropic SDK reads
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#how-aws-delivers-to-workloads)); the Anthropic SDK reads
 `ANTHROPIC_API_KEY` by default; Claude Code puts `ANTHROPIC_AUTH_TOKEN` and `ANTHROPIC_API_KEY`
 above its `apiKeyHelper` and its stored login; and `op run` and `doppler run` set a child's
 environment for its lifetime
-([packet](../../research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)). On a developer's
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)). On a developer's
 machine the AWS SDK for Rust reads the access-key variables first in its chain
-([packet](../../research/SECRETS.md#aws-and-kubernetes-on-a-developers-machine)). Against it, AWS
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-and-kubernetes-on-a-developers-machine)). Against it, AWS
 recommends for Lambda "AWS Secrets Manager instead of environment variables" for API keys
-([packet](../../research/SECRETS.md#how-aws-delivers-to-workloads)), and calls its own protection
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#how-aws-delivers-to-workloads)), and calls its own protection
 of agents "a best-effort defense, not a security boundary"
-([packet](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store)).
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-secrets-manager-and-parameter-store)).
 
 **Recommendation: D. Changes,** to follow point 4 of ruling 39; the first draft recommended B.
 
@@ -1324,7 +1324,7 @@ of agents "a best-effort defense, not a security boundary"
   packages needs to invent nothing. Such a token stops forged, relayed and
   off-host requests; it does not separate local processes of the same user, as AWS warns of its own
   credential helper served on 127.0.0.1
-  ([packet](../../research/SECRETS.md#aws-and-kubernetes-on-a-developers-machine)). Which instance a
+  ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-and-kubernetes-on-a-developers-machine)). Which instance a
   request comes from would still rest on who can read the token.
 - Outside credentials are exactly what the secret type is for, read as S3 describes.
 - An Agent's own provider credential is a secret Resource. The Agent's template declares a Conduit
@@ -1336,7 +1336,7 @@ of agents "a best-effort defense, not a security boundary"
   (item 4b).
 - **What a value set at start can carry (item 7c).** New after the third review. The providers'
   own forms differ in how long they live
-  ([packet](../../research/SECRETS.md#an-agents-own-model-credential)). A value set once serves a
+  ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#an-agents-own-model-credential)). A value set once serves a
   key or a token that outlives the process: an Anthropic API key, Claude Code's setup-token, which
   is "a one-year OAuth token" that "can only make model requests", a Bedrock long-term key, and a
   Bedrock short-term key for a process that ends within its 12 hours. It does not serve a federated
@@ -1362,7 +1362,7 @@ of agents "a best-effort defense, not a security boundary"
 - A shared login, the purpose's first example, is a Resource whose implementation reads the
   credential and calls the outside service on the caller's behalf, exposing operations and never the
   credential. HashiCorp's validated pattern for agents does the same, putting the credential in the
-  MCP server ([packet](../../research/SECRETS.md#gcp-azure-and-hashicorp-vault)). Its type belongs
+  MCP server ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#gcp-azure-and-hashicorp-vault)). Its type belongs
   in an ordinary package, built on `secret.v1`. Refreshing a login, OAuth flows and token exchange
   under RFC 8693 are left out of the first version; RFC 8693's delegation, with an `act` claim
   naming the agent, is the standard to adopt when they come in, and Conduit already records the
@@ -1380,10 +1380,10 @@ read, against "every permission is an open Conduit".
 written for this specification (PKG-020). It cannot make an onward request, because it does not
 know Conduit's keys (IFC-007). Many such servers run over stdio and take their credential from an
 environment variable, as the protocol tells them to: "retrieve credentials from the environment"
-([packet](../../research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)). Every server the
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)). Every server the
 packet checked that takes one token accepts it as a variable; how many of the servers in use accept
 only a variable was not checked
-([packet](../../research/SECRETS.md#delivering-a-credential-to-an-existing-mcp-server)).
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#delivering-a-credential-to-an-existing-mcp-server)).
 
 | Option | What it is | What it costs |
 | --- | --- | --- |
@@ -1402,20 +1402,20 @@ else, with its costs stated. ECS injects a secret named by `valueFrom` when the 
 "If the secret is subsequently updated or rotated, the container will not receive the updated value
 automatically", and "Applications that run on the container and container logs and debugging tools
 have access to the environment variables"
-([packet](../../research/SECRETS.md#how-aws-delivers-to-workloads)). Kubernetes sets a variable
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#how-aws-delivers-to-workloads)). Kubernetes sets a variable
 from `secretKeyRef` at container start, does not start the Pod while a required Secret is missing,
 and leaves restarts on change to third-party tools
-([packet](../../research/SECRETS.md#the-kubernetes-secret)). Cloud Run does not start an instance
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-secret)). Cloud Run does not start an instance
 whose secret cannot be retrieved, and Vault Agent's process supervisor waits until every variable
 has rendered before it starts the process; App Service, which passes the literal reference on
 instead, is the counter-example
-([packet](../../research/SECRETS.md#gcp-azure-and-hashicorp-vault)). On whose identity reads: ECS
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#gcp-azure-and-hashicorp-vault)). On whose identity reads: ECS
 uses a separate launcher role, while AWS's CSI provider, Cloud Run and App Service read under the
 workload's own identity. Reading through the instance's own Conduit is the second model, and keeps
 each read attributed and closable. On EC2, a boot script that calls AWS "must use an instance
 profile", and AWS notes that the script stays on disk after it runs and that its console output is
 logged; a value that CloudFormation resolves "may show up in the service whose resource it's being
-used in" ([packet](../../research/SECRETS.md#delivering-to-an-ec2-instance)). So the engine reads
+used in" ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#delivering-to-an-ec2-instance)). So the engine reads
 from the store at start and writes the value nowhere but the new process's environment.
 
 The servers and the runners of the Model Context Protocol agree. GitHub's server, this proposal's
@@ -1423,9 +1423,9 @@ own example, documents its token only as a variable. Brave's, Grafana's and a Gi
 accept a file named by a `_FILE` variable, and each accepts the variable as well. Docker's MCP
 catalog maps each secret a server declares to a variable, and ToolHive gives a stored secret to a
 server it runs as a variable
-([packet](../../research/SECRETS.md#delivering-a-credential-to-an-existing-mcp-server)). SOPS's
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#delivering-a-credential-to-an-existing-mcp-server)). SOPS's
 `exec-env` sets decrypted values in one child's environment and writes them nowhere
-([packet](../../research/SECRETS.md#ciphertext-kept-beside-configuration)). Whether a file should
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#ciphertext-kept-beside-configuration)). Whether a file should
 be offered beside the variable is S21.
 
 **Sub-question: whose read it is, and when.** New after the review. The revision tied the read to
@@ -1536,7 +1536,7 @@ place where the proposal adds a mechanism rather than a rule. The research refin
 - A package that also publishes the MCP registry's `server.json` declares the same variables there
   with `isSecret: true`. That flag tells a client to handle the value securely; `environment` says
   where Conduit takes it from. The two need not be merged in the first version
-  ([packet](../../research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)).
+  ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)).
 
 Remote plain servers, reached by `url`, would need the engine to present an `Authorization` header
 for them; that is left out (see below).
@@ -1554,9 +1554,9 @@ for them; that is left out (see below).
 the string: CloudFormation's "only supported value is `SecretString`", and its agent form "Must be
 SecretString". Kubernetes stores bytes, in base64, up to 1 MiB, a limit set to protect the API
 server's memory. Azure accepts and returns strings, up to 25 KB. Vault's KV store holds a map
-(packet: [AWS](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store),
-[Kubernetes](../../research/SECRETS.md#the-kubernetes-secret),
-[GCP, Azure and Vault](../../research/SECRETS.md#gcp-azure-and-hashicorp-vault)).
+(packet: [AWS](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-secrets-manager-and-parameter-store),
+[Kubernetes](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-secret),
+[GCP, Azure and Vault](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#gcp-azure-and-hashicorp-vault)).
 
 **Recommendation: A. Stands.** A token, a password and a PEM key are all text. The output's schema
 is `{type: string}`. [DL16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow), the proposed item of the implementation-defined list on how the engine
@@ -1575,19 +1575,19 @@ AWS: "You are responsible for maintaining control over your content"; a resolved
 in the service whose resource it's being used in"; its agent protection is "best-effort".
 Kubernetes: "your application must avoid logging the secret data in the clear or transmitting it to
 an untrusted party", and whoever can create a Pod can read its Secrets (packet:
-[AWS](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store),
-[Kubernetes](../../research/SECRETS.md#the-kubernetes-secret)). On EC2, AWS says that "all
+[AWS](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-secrets-manager-and-parameter-store),
+[Kubernetes](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-secret)). On EC2, AWS says that "all
 applications on the instance share the same role and permissions", and that its local provider's
 trust domain there is the role's
-([packet](../../research/SECRETS.md#delivering-to-an-ec2-instance)). Kubernetes can afford a
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#delivering-to-an-ec2-instance)). Kubernetes can afford a
 credential that every container receives by default because it makes that credential weak: bound to
 one Pod and one audience, an hour by default, and of low privilege
-([packet](../../research/SECRETS.md#what-kubernetes-gives-every-container)). The credentials a
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#what-kubernetes-gives-every-container)). The credentials a
 developer keeps in the engine's environment are usually not so (a judgment, which no source
 states), which is why the limits below name them.
 
 The kernels say who can read a process's environment, in place of 1Password's advice to "assume"
-it ([packet](../../research/SECRETS.md#processes-of-the-same-user-on-linux-and-macos)). On Linux,
+it ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#processes-of-the-same-user-on-linux-and-macos)). On Linux,
 `/proc/<pid>/environ` is guarded by ptrace's check in its READ mode: a reader with the same user
 and groups passes it where the process is dumpable and holds no capability the reader lacks, and
 so does a privileged reader; Yama's default does not restrict that mode, and `hidepid` guards only
@@ -1650,7 +1650,7 @@ And state what it does not cover:
   as it passes any variable that no secret Resource names.
 - Whatever a process the engine starts writes to its standard error. AWS tells authors of
   credential tools not to write secrets there
-  ([packet](../../research/SECRETS.md#aws-and-kubernetes-on-a-developers-machine)); an engine that
+  ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-and-kubernetes-on-a-developers-machine)); an engine that
   keeps what a started process writes there should treat it as possibly holding a value.
 - An Agent's own credential, once in its process. An Agent whose model can run commands can read
   it.
@@ -1705,10 +1705,10 @@ Store reads the latest version unless a version number or a label follows the na
 a version that does not exist is an error, "rather than falling back to the latest or default
 version"; it keeps 100 versions, so a pinned one can be dropped; and CloudFormation's rollback
 fails where a pinned version is gone. ASCP and CloudFormation both default to the latest (packet:
-[AWS](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store),
-[AWS delivery](../../research/SECRETS.md#how-aws-delivers-to-workloads),
-[Kubernetes](../../research/SECRETS.md#the-kubernetes-secret),
-[GCP, Azure and Vault](../../research/SECRETS.md#gcp-azure-and-hashicorp-vault)).
+[AWS](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-secrets-manager-and-parameter-store),
+[AWS delivery](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#how-aws-delivers-to-workloads),
+[Kubernetes](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-secret),
+[GCP, Azure and Vault](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#gcp-azure-and-hashicorp-vault)).
 
 **Recommendation: B.** `secret.v1` fixes no locator form. Each store's template states its own, and
 its default names the current version, as AWS and Azure do. What "current" means is each store's,
@@ -1744,10 +1744,10 @@ improves speed and reduces your costs", accepts staleness (300 seconds by defaul
 provider and its Lambda extension), and offers `refreshNow` to bypass the cache. Its store is
 eventually consistent, and `GetSecretValue` is limited to 10,000 requests per second per Region.
 Kubernetes serves volumes from a kubelet cache, and the CSI driver and the External Secrets
-Operator poll (packet: [AWS](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store),
-[AWS delivery](../../research/SECRETS.md#how-aws-delivers-to-workloads),
-[Kubernetes](../../research/SECRETS.md#the-kubernetes-secret),
-[ecosystem](../../research/SECRETS.md#the-kubernetes-ecosystem)).
+Operator poll (packet: [AWS](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-secrets-manager-and-parameter-store),
+[AWS delivery](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#how-aws-delivers-to-workloads),
+[Kubernetes](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-secret),
+[ecosystem](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-ecosystem)).
 
 **Recommendation: B.** A copy inside a package's implementation does not weaken the access
 guarantee: each read is still a request, decided against the Conduit and recorded, and closing the
@@ -1756,7 +1756,7 @@ itself keeps nothing, so the record never misses a read the engine served, which
 documents for its own local cache. The observable of [SEC-13](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) becomes one that every store can meet:
 with the engine's own file, a change between two reads is seen at the second. The engine's own
 variable keeps the value it had when the engine started, as a value in an environment does in
-every source read ([packet](../../research/SECRETS.md#patterns-across-the-systems), pattern 6); a
+every source read ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#patterns-across-the-systems), pattern 6); a
 new value there is seen once the engine is started again. A request
 input to force a fresh read, as AWS's `refreshNow`, is left out of the first version; the guidance
 of S6, to read again after a refusal, assumes a package that caches keeps its cache short.
@@ -1778,9 +1778,9 @@ access at the Metadata level ("requesting user, timestamp, resource, verb"), but
 operator configures a policy; GCP leaves its data-access logs off by default. Azure Key Vault's
 record has no field for the value. Vault writes a keyed hash of values, offers an endpoint to hash
 a known value, and "refuses to service the corresponding API request" when it cannot write its
-audit log (packet: [AWS](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store),
-[Kubernetes](../../research/SECRETS.md#the-kubernetes-secret),
-[GCP, Azure and Vault](../../research/SECRETS.md#gcp-azure-and-hashicorp-vault)).
+audit log (packet: [AWS](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-secrets-manager-and-parameter-store),
+[Kubernetes](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-secret),
+[GCP, Azure and Vault](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#gcp-azure-and-hashicorp-vault)).
 
 **Recommendation: A.** Conduit already records every request by default, which is stronger than
 Kubernetes's and GCP's defaults and the same as AWS's. The record of an onward read names the
@@ -1789,7 +1789,7 @@ read at process start under S8 has neither a caller nor a sending instance: its 
 instance whose process is started, whose Conduit the read went through, and says that the engine
 made the read for no actor at that start, as OBS-007's stop is recorded. A
 store that reports which version it served, as Parameter Store's `GetParameter` does
-([packet](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store)), would let the record
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-secrets-manager-and-parameter-store)), would let the record
 name it, never the value; that is left out of the first version. Refusing a read whose record cannot
 be kept is Vault's rule, kept to secret outputs: nothing else in this version needs it, and DL10
 leaves storage exhaustion otherwise to each engine. The keyed hash of B is left out of the first
@@ -1811,16 +1811,16 @@ rotation settings and the tags in the clear; Parameter Store encrypts only the v
 SecureString. Kubernetes stores values unencrypted by default, and its encryption at rest is a
 configuration with keys to manage; a KMS key's `key_id` is public and "must not contain any private
 data". Azure warns not to put sensitive information in identifiers (packet:
-[AWS](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store),
-[Kubernetes](../../research/SECRETS.md#the-kubernetes-secret),
-[GCP, Azure and Vault](../../research/SECRETS.md#gcp-azure-and-hashicorp-vault)).
+[AWS](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-secrets-manager-and-parameter-store),
+[Kubernetes](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-secret),
+[GCP, Azure and Vault](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#gcp-azure-and-hashicorp-vault)).
 
 **Recommendation: A.** Because the value stays in its store (S5) and the engine keeps no copy
 (S12), there is nothing secret for the engine to encrypt. Metadata in the clear is the industry's
 design, and the rule that a locator holds nothing secret ([SEC-12](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow), S2) is what makes that safe.
 Parameter Store shows it again: restricting decryption "doesn't hide the parameter's name,
 description, or other metadata", and a parameter's ARN appears in CloudTrail in plaintext as the
-encryption context ([packet](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store)).
+encryption context ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-secrets-manager-and-parameter-store)).
 The ciphertext kept beside configuration, which S5 advises against and no implementation reads,
 would have brought key management back had it been read.
 
@@ -1838,14 +1838,14 @@ short-lived, as an alternative to a stored secret.
 **What AWS and Kubernetes do.** Both prefer identity. AWS: "The most secure credential is one that
 you do not have to store, manage, or handle", and roles, STS, EKS service-account roles and Pod
 Identity replace stored keys for AWS's own APIs
-([packet](../../research/SECRETS.md#how-aws-delivers-to-workloads)). Kubernetes moved its own tokens
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#how-aws-delivers-to-workloads)). Kubernetes moved its own tokens
 to TokenRequest, short-lived and bound to a Pod
-([packet](../../research/SECRETS.md#the-kubernetes-secret)). GCP's Workload Identity and Azure's
-managed identities do the same ([packet](../../research/SECRETS.md#gcp-azure-and-hashicorp-vault)).
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-secret)). GCP's Workload Identity and Azure's
+managed identities do the same ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#gcp-azure-and-hashicorp-vault)).
 On a developer's machine AWS advises federation and temporary credentials over long-term keys, and
 IAM Roles Anywhere gives machines outside AWS temporary role credentials against a private key that
 can stay in a keychain or a TPM
-([packet](../../research/SECRETS.md#aws-and-kubernetes-on-a-developers-machine)). But each keeps a
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-and-kubernetes-on-a-developers-machine)). But each keeps a
 secret store for what identity cannot replace, such as a token for a service outside the platform.
 
 **Recommendation: A.** The first user's credentials are mostly static keys issued by outside
@@ -1853,8 +1853,8 @@ services: a code host's token, a model provider's key. The specification's READM
 `secret.v1` is for those, and that an identity is better where the outside service accepts one.
 When short-lived credentials come in, Terraform's ephemeral resources (opened, renewed where
 needed, closed) and Vault's leases are the shapes to adopt (packet:
-[tools](../../research/SECRETS.md#configuration-tools-mcp-and-agent-tooling),
-[Vault](../../research/SECRETS.md#gcp-azure-and-hashicorp-vault)).
+[tools](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#configuration-tools-mcp-and-agent-tooling),
+[Vault](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#gcp-azure-and-hashicorp-vault)).
 
 ### S16. A store's own credential
 
@@ -1882,18 +1882,18 @@ KMS, "stored and managed by the KMS plugin independently". AWS's own clients fin
 the platform: a role whose temporary credentials are delivered to the compute resource. Vault's AWS
 method needs no credential issued to the workload first, and its "Trusted Orchestrator" starts an
 application and gives it the means to authenticate (packet:
-[Kubernetes](../../research/SECRETS.md#the-kubernetes-secret),
-[AWS delivery](../../research/SECRETS.md#how-aws-delivers-to-workloads),
-[GCP, Azure and Vault](../../research/SECRETS.md#gcp-azure-and-hashicorp-vault)). On EC2 that
+[Kubernetes](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-secret),
+[AWS delivery](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#how-aws-delivers-to-workloads),
+[GCP, Azure and Vault](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#gcp-azure-and-hashicorp-vault)). On EC2 that
 identity is the instance profile, which a script that calls AWS "must use", and "all applications
 on the instance share the same role and permissions"
-([packet](../../research/SECRETS.md#delivering-to-an-ec2-instance)): a package's store client
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#delivering-to-an-ec2-instance)): a package's store client
 there finds the role with no key in any configuration, and so does every other process the engine
 starts.
 
 On a developer's machine, which is the first user's case, neither the AWS tools nor `kubectl` get
 credentials from a service; they find them by convention
-([packet](../../research/SECRETS.md#aws-and-kubernetes-on-a-developers-machine)). The AWS SDKs
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-and-kubernetes-on-a-developers-machine)). The AWS SDKs
 search an ordered chain and stop at the first source that works: the access-key variables, then the
 profile in the plaintext files `~/.aws/config` and `~/.aws/credentials`, found through `HOME` and
 chosen by `AWS_PROFILE`. That profile can hold static keys, assume a role, use IAM Identity Center,
@@ -1906,11 +1906,11 @@ file as their place. `kubectl` reads `KUBECONFIG` or `~/.kube/config`; on EKS it
 `aws eks get-token`, which uses the default AWS chain unless a role is named, so a Kubernetes
 credential ends in the same AWS chain. AWS's own local secret provider gets its credentials the same
 way, from the SDK's chain. In the [second round's
-survey](../../research/SECRETS.md#delivering-a-credential-to-an-existing-mcp-server), AWS's MCP
+survey](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#delivering-a-credential-to-an-existing-mcp-server), AWS's MCP
 server and the Kubernetes MCP server take their credentials just so: a named profile or boto3's
 chain, and a kubeconfig. SOPS finds its age key in a file under the user's configuration directory,
 or in `SOPS_AGE_KEY` or `SOPS_AGE_KEY_FILE`
-([packet](../../research/SECRETS.md#ciphertext-kept-beside-configuration)).
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#ciphertext-kept-beside-configuration)).
 
 **Recommendation: A for the first version; B left out; never C. Changes:** the revision recommended
 B where a store needs a stored key. Under A a package uses its store's own client unchanged, as an
@@ -1940,7 +1940,7 @@ Guidance, not promises, follows from the research:
   Store package, for instance, needs `ssm:GetParameter` on named parameters only, as AWS's advice
   to grant narrow access suggests, and `kms:Decrypt` on a customer managed key, which a condition
   on the parameter's ARN can limit to those parameters
-  ([packet](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store)). The store's own
+  ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-secrets-manager-and-parameter-store)). The store's own
   policy is then a second gate behind the Conduit.
 - **A file over a variable.** A store's own credential kept in a variable of the engine's
   environment, such as `AWS_ACCESS_KEY_ID` or `SOPS_AGE_KEY`, is passed to every process the engine
@@ -1951,7 +1951,7 @@ Guidance, not promises, follows from the research:
   secret is in another reads it only where both the secret's resource policy and the identity's
   own policy allow it, and where the secret is encrypted with a customer managed key whose key
   policy allows `kms:Decrypt`, since "you can't use the AWS managed key (aws/secretsmanager) for
-  cross-account access" ([packet](../../research/SECRETS.md#a-list-of-readers-on-the-secret)). The
+  cross-account access" ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#a-list-of-readers-on-the-secret)). The
   package's documentation should say so. Within one account, a resource policy on the secret can
   grant the package's identity a read by itself (S4).
 - **A session that has ended.** Identity Center needs a person to sign in, and a process the engine
@@ -1978,18 +1978,18 @@ object, such as a username and a password stored together.
 together, and its references take a `json-key`; its CSI provider maps keys to files with
 `jmesPath`. Kubernetes's `secretKeyRef` names a Secret and a key in it. The External Secrets
 Operator's `property` selects one key, and Vault's KV store holds a map (packet:
-[AWS](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store),
-[AWS delivery](../../research/SECRETS.md#how-aws-delivers-to-workloads),
-[Kubernetes](../../research/SECRETS.md#the-kubernetes-secret),
-[ecosystem](../../research/SECRETS.md#the-kubernetes-ecosystem),
-[GCP, Azure and Vault](../../research/SECRETS.md#gcp-azure-and-hashicorp-vault)).
+[AWS](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-secrets-manager-and-parameter-store),
+[AWS delivery](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#how-aws-delivers-to-workloads),
+[Kubernetes](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-secret),
+[ecosystem](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-ecosystem),
+[GCP, Azure and Vault](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#gcp-azure-and-hashicorp-vault)).
 
 Parameter Store's `GetParameter` documents two selectors after a colon, a version and a label, and
 none for a key; the same colon carries a Secrets Manager stage through its pass-through, as in
 `s1-secret:AWSCURRENT`
-([packet](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store)). SOPS selects one
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-secrets-manager-and-parameter-store)). SOPS selects one
 value with `--extract` and a path in its own syntax
-([packet](../../research/SECRETS.md#ciphertext-kept-beside-configuration)).
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#ciphertext-kept-beside-configuration)).
 
 **Recommendation: A.** It keeps S9's one string and invents no selector syntax: the AWS package
 uses `json-key`, a Vault package names a key of its map, a SOPS package uses SOPS's extract path,
@@ -2016,18 +2016,18 @@ grants each service its secrets explicitly. Claude Code runs a helper that a rep
 "without the credential variables from your environment". AWS warns that command-line parameters
 can be seen by "other utilities that work in the background", although its own agent wrapper puts
 values in a child's arguments (packet:
-[AWS delivery](../../research/SECRETS.md#how-aws-delivers-to-workloads),
-[AWS](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store),
-[tools](../../research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)). MongoDB's MCP server
+[AWS delivery](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#how-aws-delivers-to-workloads),
+[AWS](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-secrets-manager-and-parameter-store),
+[tools](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)). MongoDB's MCP server
 warns that "Command-line arguments are visible in process listings"
-([packet](../../research/SECRETS.md#delivering-a-credential-to-an-existing-mcp-server)). On a
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#delivering-a-credential-to-an-existing-mcp-server)). On a
 developer's machine a store's client finds its credential through `HOME`, `PATH` and pointers such
 as `AWS_PROFILE` and `KUBECONFIG`
-([packet](../../research/SECRETS.md#aws-and-kubernetes-on-a-developers-machine)), which C would
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-and-kubernetes-on-a-developers-machine)), which C would
 withhold.
 
 Kubernetes's own defaults are the closest case, and the research of the third round adds them
-([packet](../../research/SECRETS.md#what-kubernetes-gives-every-container)). Every container gets
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#what-kubernetes-gives-every-container)). Every container gets
 a ServiceAccount token it did not ask for, and variables for every Service in its namespace. The
 security checklist says "Service account tokens should not be mounted into pods that do not
 require them", and the RBAC good practices say "Kubernetes defaults to providing access which may
@@ -2048,7 +2048,7 @@ leftover credential variable shadow the intended source: Anthropic's SDK says "A
 set to an empty string can still occupy its slot in the credential precedence chain. Unset unused
 credential variables rather than blanking them", and Codex's federation variables, once present,
 take precedence over its keys, tokens and stored logins
-([packet](../../research/SECRETS.md#an-agents-own-model-credential)). B unsets a withheld
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#an-agents-own-model-credential)). B unsets a withheld
 variable; it never sets one to an empty string.
 
 **Recommendation: B.** The engine's secret variables are its own sources (S5), not something to
@@ -2096,10 +2096,10 @@ task or a forced deployment; Kubernetes leaves restarts on change to "third part
 CSI driver says "The pod needs to be restarted"; Cloud Run resolves at instance start; App Service
 fetches again every 24 hours, and when a change of configuration restarts the app. Vault Agent
 restarts the process (packet:
-[AWS delivery](../../research/SECRETS.md#how-aws-delivers-to-workloads),
-[Kubernetes](../../research/SECRETS.md#the-kubernetes-secret),
-[ecosystem](../../research/SECRETS.md#the-kubernetes-ecosystem),
-[GCP, Azure and Vault](../../research/SECRETS.md#gcp-azure-and-hashicorp-vault)).
+[AWS delivery](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#how-aws-delivers-to-workloads),
+[Kubernetes](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-secret),
+[ecosystem](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-ecosystem),
+[GCP, Azure and Vault](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#gcp-azure-and-hashicorp-vault)).
 
 **Recommendation: A.** The engine cannot see a change in a store without reading it, and an
 unrequested read is not a request any actor made. A new value reaches the instance when the engine
@@ -2118,9 +2118,9 @@ implementation item, and the number [DL16](https://github.com/shrav-k/conduit/bl
 They follow NAM-004 and the core package's naming. The research gives no reason to change them:
 Kubernetes's `Secret`, Compose's `secrets` and AWS's `GetSecretValue` all use the plain word, and
 Compose's `environment` names the same source (packet:
-[Kubernetes](../../research/SECRETS.md#the-kubernetes-secret),
-[AWS](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store),
-[tools](../../research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)).
+[Kubernetes](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#the-kubernetes-secret),
+[AWS](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#aws-secrets-manager-and-parameter-store),
+[tools](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#configuration-tools-mcp-and-agent-tooling)).
 
 ### S21. A file beside the variable
 
@@ -2128,11 +2128,11 @@ Compose's `environment` names the same source (packet:
 start as a file, for a server that can read one, and not only as a variable. The research's
 strongest guidance on delivery points that way: AWS's EKS best practices say "Use volume mounts
 instead of environment variables", because "The values of environment variables can
-unintentionally appear in logs" ([packet](../../research/SECRETS.md#how-aws-delivers-to-workloads)),
+unintentionally appear in logs" ([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#how-aws-delivers-to-workloads)),
 and Kubernetes's security checklist says "the environment variable method might be more prone to
 leakage due to crash dumps in logs and the non-confidential nature of environment variable in
 Linux, as opposed to the permission mechanism on files"
-([packet](../../research/SECRETS.md#what-kubernetes-gives-every-container)).
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#what-kubernetes-gives-every-container)).
 
 | Option | What it is | What it costs |
 | --- | --- | --- |
@@ -2153,10 +2153,10 @@ token only as a variable. The protocol says "the environment" and does not defin
 pages read for the two MCP runners surveyed, Docker's catalog and ToolHive, show delivery by
 variable; whether Docker's MCP gateway ever mounts a secret as a file was not established. The MCP
 registry can describe a path variable with `format: filepath`, apart from `isSecret`
-([packet](../../research/SECRETS.md#delivering-a-credential-to-an-existing-mcp-server)).
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#delivering-a-credential-to-an-existing-mcp-server)).
 
 On the first user's machine, the kernels decide who can read each form
-([packet](../../research/SECRETS.md#processes-of-the-same-user-on-linux-and-macos)). On Linux, a
+([packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/SECRETS.md#processes-of-the-same-user-on-linux-and-macos)). On Linux, a
 file that only its owner may read is open to every process of that user that can search its
 directory, while the environment of a process is open to the processes of the same user and groups
 where the process is dumpable; both are open to a privileged process. Read together, a file there

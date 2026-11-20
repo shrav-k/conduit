@@ -17,7 +17,7 @@ neither unbounded safety nor liveness or fairness.
 
 D10 places this living harness in its own crate, outside the engine workspace, so later orders
 can extend it without coupling it to the engine; it can move there later. Its sole dependency
-is Stateright `=0.31.0`, evaluated in [experiment 004](../004-stateright-evaluation/README.md).
+is Stateright `=0.31.0`, evaluated in [experiment 004](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/experiments/004-stateright-evaluation/README.md).
 Its lock file starts from 004's; its toolchain pins Rust `1.97.1`.
 CI already runs `cargo test --release` in each experiment. CI neither formats nor lints
 experiments, so every order changing this crate must run both checks below itself.

@@ -16,13 +16,13 @@ for word.
 The trial ran on three orders of the sign-in chain, which A77 does not pair. What each Record on
 `main` says:
 
-- **Order 048a-6** (#386, [its Record](../../work-orders/048a6-build-sign-in-return-not-taken.md#record))
+- **Order 048a-6** (#386, [its Record](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/048a6-build-sign-in-return-not-taken.md#record))
   ran two Codex rounds, since its first verifier found four musts. Round 2 changed the shell's two
   files alone, taking `server.rs`'s diff from 6 added lines to 123 added and 23 removed. The fresh
   Opus reader's only must came from that round: it "grew the shell well past decision 8, which
   decision 9 forbids". The fixer restored the two files as round 1 left them, and the reread found
   no must.
-- **Order 048a-5b** (#387, [its Record](../../work-orders/048a5b-build-sign-in-account-first.md#record))
+- **Order 048a-5b** (#387, [its Record](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/048a5b-build-sign-in-account-first.md#record))
   ran two Codex rounds, since its first verifier found seven musts. Round 2 departed from the
   order's prescribed text. The fresh readers found four musts, all from those departures, then one,
   then none. The coordinator accepted the departures as amendments to the order, each grounded in

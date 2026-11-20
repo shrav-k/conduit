@@ -1,4 +1,0 @@
-# Checked at the merge of order 047b, against main at f72c2bc3: the work's vector delta matches these shapes.
-- name: setup-action-by-scope
-  kind: added
-  cases: [setup-action-by-scope]

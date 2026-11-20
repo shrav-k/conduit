@@ -1,6 +1,0 @@
-- name: Type login schema case
-  kind: added
-  cases: [contracts-sign-in-logins]
-  paths: ['']
-  operation: add
-  after: conformance/language/contracts/sign-in-logins/case.yaml

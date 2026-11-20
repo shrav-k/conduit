@@ -23,7 +23,7 @@ operation identity), `secret-provider.v1` (was `secret-reveal.v1`), `get-secret.
 `reveal-secret.v1`) and source (was origin).
 
 Facts about other systems are stated, with the URL and the version or date of each page, in the
-[research packet on work across machines](../../research/MULTI_MACHINE.md). This proposal links
+[research packet on work across machines](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/MULTI_MACHINE.md). This proposal links
 the packet's sections, and links directly the pages that its main arguments rest on, listed
 under [sources](#sources). A sentence about another system is what its page states; the
 designs built on them are this proposal's own, and a sentence marked **inference** is reasoning.
@@ -214,7 +214,7 @@ proposal is in [Q1](#q1-forms-of-proof-and-the-names-in-identity). In short:
   them: PRV-022 lets a provider replace a file in place, but no provider operation gives it new
   content. Renewal comes in v1, on each machine under the machine's own identity, as the kubelet,
   the SPIRE agent and the Nomad client renew workload credentials under theirs
-  ([research, 6](../../research/MULTI_MACHINE.md#6-patterns-across-the-systems)). The engine's
+  ([research, 6](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/MULTI_MACHINE.md#6-patterns-across-the-systems)). The engine's
   own credential, which it mints for itself, may be short-lived at no cost.
 - **A trust bundle beside the credential**, so that a run can check who answers at the engine's
   address, as Kubernetes nodes get the cluster's root certificate ([control plane to
@@ -224,7 +224,7 @@ proposal is in [Q1](#q1-forms-of-proof-and-the-names-in-identity). In short:
   contract names the channel.
 - **Signed, so it can be checked without the engine.** v1's decision points check credentials
   against published keys, as outside parties check Kubernetes and Nomad tokens through a JWKS
-  ([research, 1.1 and 1.2](../../research/MULTI_MACHINE.md#11-kubernetes)).
+  ([research, 1.1 and 1.2](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/MULTI_MACHINE.md#11-kubernetes)).
 
 ### 1.5 The engine across a failover
 
@@ -274,7 +274,7 @@ in v0, and what v1 adds.
 - **v1.** The same documents. The proxy on M3 enforces, and M3's decision point decides requests
   to the tool server from its copy of the Conduits, so the decision is made on the receiving
   side, as Consul, ztunnel and Tailscale do
-  ([research, 3](../../research/MULTI_MACHINE.md#3-node-agents-and-local-enforcement)).
+  ([research, 3](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/MULTI_MACHINE.md#3-node-agents-and-local-enforcement)).
 
 ### S2. A secret store's server on M2, read by the engine on M1 for an instance on M3
 
@@ -300,7 +300,7 @@ in v0, and what v1 adds.
 - **Today.** It works by D17, but its endpoint is open, its credential is not tied to its ID, and
   it names an engine address that may not survive a failover.
 - **v0.** The Docker provider reaches M2's daemon over SSH or TLS, both of which Docker supports
-  ([research, 4.5](../../research/MULTI_MACHINE.md#45-tools-that-keep-a-server-off-the-network)).
+  ([research, 4.5](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/MULTI_MACHINE.md#45-tools-that-keep-a-server-off-the-network)).
   It runs the Agent's container with a gate, in one of two forms. Either ghostunnel runs in the
   container's own network namespace, with the server on loopback inside it. Or the provider runs
   the server with `docker run -i` over the daemon's SSH channel, as Docker MCP Gateway runs its
@@ -351,7 +351,7 @@ in v0, and what v1 adds.
 - **v1.** The decision point resumes its copy from its last version, or fetches it whole when
   that version is gone, as a Kubernetes client does after `410 Gone`. The proxy closes open
   streams that the new state no longer allows, as ztunnel does
-  ([research, 3.1 and 3.5](../../research/MULTI_MACHINE.md#35-istio-ambient-ztunnel)).
+  ([research, 3.1 and 3.5](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/MULTI_MACHINE.md#35-istio-ambient-ztunnel)).
   Credentials that lapsed while M2 was cut off are renewed there under M2's own identity.
 
 ### S7. M2 reported gone, then back
@@ -368,7 +368,7 @@ in v0, and what v1 adds.
 - **v1.** M2's decision point stopped allowing new requests at most one bound after the cut. On
   return it learns that its node is retired, and M2 must register as a new node, as SPIRE's
   `agent evict` takes a node's attestation away
-  ([research, 1.4](../../research/MULTI_MACHINE.md#14-spiffe-and-spire)).
+  ([research, 1.4](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/MULTI_MACHINE.md#14-spiffe-and-spire)).
 
 ### S8. The engine restarts, or fails over to M4
 
@@ -397,7 +397,7 @@ in v0, and what v1 adds.
   close or its lease lapses, so within the bound. Keeping the last configuration when cut off, as
   Envoy, OPA and Tailscale do, and extending caches, as Nomad and Consul do, leave a revocation
   with no bound, so they are not adopted
-  ([research, 3.9](../../research/MULTI_MACHINE.md#39-comparison)). Consul is the precedent for
+  ([research, 3.9](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/MULTI_MACHINE.md#39-comparison)). Consul is the precedent for
   stating the bound: its leaf certificate lifetime "is also the effective limit on how long a
   server outage can last" ([Consul CA][consul-ca]).
 
@@ -580,7 +580,7 @@ May the engine send a header that carries a secret to an `http` URL (IFC-041, SE
   is local. Its outbound connection to the engine can carry what the engine sends, as
   Konnectivity agents do ([control plane to node][k8s-cpn]).
 - Proof bound to the sender's key may be required: RFC 8705, DPoP or WIMSE
-  ([research, 1.7](../../research/MULTI_MACHINE.md#17-mcp-authorization-and-the-standards-it-uses)).
+  ([research, 1.7](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/MULTI_MACHINE.md#17-mcp-authorization-and-the-standards-it-uses)).
 
 ## 4. D20: packaged programs elsewhere
 
@@ -934,7 +934,7 @@ an enforcement point, a decision point or Δ.
 | Package-source provider | Unchanged; it serves installs, on the engine's side (PRV-002, PRV-017) | It may supply download places for the descriptor |
 | Secret provider (`secret-provider.v1`) | Unchanged in its package. Its run is gated like any run; a store reached by `remote` that takes Conduit's keys checks the engine's proof itself, or is used as `plain` | Nothing |
 | The engine's own runner | stdio meets the gate. It delivers `identity` as any provider does (PRV-003). Its processes run as DL16 says, usually as the engine's own user, and are then inside the engine's trust domain (Q5): an Agent that should not be trusted that far runs under a provider that isolates it | Nothing new |
-| Identity provider (`identity-provider.v1`, v1 only) | Not in v0: DL13's mechanism serves | Mints X.509 and JWT credentials for IDs the engine names, and serves the trust bundle, shaped on SPIRE's `MintX509SVID`, `MintJWTSVID` and bundle ([research, 1.4](../../research/MULTI_MACHINE.md#14-spiffe-and-spire)). Owned by `system`, at most one; the engine's own serves when none is registered, as under PRV-003. The name may collide with the user's sign-in provider, a point for the vocabulary |
+| Identity provider (`identity-provider.v1`, v1 only) | Not in v0: DL13's mechanism serves | Mints X.509 and JWT credentials for IDs the engine names, and serves the trust bundle, shaped on SPIRE's `MintX509SVID`, `MintJWTSVID` and bundle ([research, 1.4](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/MULTI_MACHINE.md#14-spiffe-and-spire)). Owned by `system`, at most one; the engine's own serves when none is registered, as under PRV-003. The name may collide with the user's sign-in provider, a point for the vocabulary |
 | Decision point on each machine (v1 only) | Not in v0 | Conduit's own: decides under Conduit's decision promises from the published copy, for a proxy that speaks Envoy's external authorization API |
 
 ## 9. The promises that change
@@ -973,12 +973,12 @@ promises on revisions; the promises on placement, PLC-009 above all; and the pro
 **Left to v1:** the enforcement point and the decision point on each machine, and Δ; a machine's
 own identity, with a bootstrap by one-time token and credentials issued only for instances placed
 there, as the kubelet bootstraps and the Node authorizer limits it
-([research, 1.1](../../research/MULTI_MACHINE.md#11-kubernetes)); renewal of credentials on each
+([research, 1.1](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/MULTI_MACHINE.md#11-kubernetes)); renewal of credentials on each
 machine; `identity-provider.v1`; short-lived credentials checked without the engine; proof bound
 to the sender's key; fetching packages; the engine serving archives; chain contexts between
 machines; tables of idempotency keys and records per machine; enforced restrictions; federation
 between two engines' trust domains, which SPIFFE's one-way federation allows
-([research, 1.4](../../research/MULTI_MACHINE.md#14-spiffe-and-spire)).
+([research, 1.4](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/MULTI_MACHINE.md#14-spiffe-and-spire)).
 
 **What v0 must not preclude, and what keeps each open:**
 
@@ -1067,7 +1067,7 @@ specification by an owner's ruling.
 
 ## Sources
 
-Every page was read on 2026-11-06. The [research packet](../../research/MULTI_MACHINE.md#8-sources)
+Every page was read on 2026-11-06. The [research packet](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/MULTI_MACHINE.md#8-sources)
 lists every page it uses; these are the ones this proposal links directly.
 
 | Label | URL | Version or date |
@@ -1204,7 +1204,7 @@ lists every page it uses; these are the ones this proposal links directly.
 [od-d20]:
   ../ruling-41/open-decisions.md#d20-programs-inside-a-package-under-another-runtime-provider
 [r-44]:
-  ../../research/MULTI_MACHINE.md#44-going-around-a-gateway-as-each-documents-it
+  https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/MULTI_MACHINE.md#44-going-around-a-gateway-as-each-documents-it
 [r-21]:
-  ../../research/MULTI_MACHINE.md#21-cri-and-containerd-the-runtime-pulls-by-reference-or-digest
-[r-14]: ../../research/MULTI_MACHINE.md#14-spiffe-and-spire
+  https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/MULTI_MACHINE.md#21-cri-and-containerd-the-runtime-pulls-by-reference-or-digest
+[r-14]: https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/MULTI_MACHINE.md#14-spiffe-and-spire

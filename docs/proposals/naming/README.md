@@ -6,7 +6,7 @@ Written as promises in the specification:
 [naming](../../../spec/promises/naming.yaml), NAM-001 to NAM-017 as first written; later
 rulings added more, and the comment at the head of that file lists them. This replaces decision
 PD1 of the [packages batch](../packages-and-start/README.md). The evidence is the
-[naming research](../../research/naming/README.md).
+[naming research](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/naming/README.md).
 
 This is the record of a ruling. The specification in [`spec/`](../../../spec/README.md) governs
 where they differ. Amended by:

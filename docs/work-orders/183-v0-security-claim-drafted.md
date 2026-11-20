@@ -298,7 +298,7 @@ differ, the verifier's corrections govern. Line numbers are those of `main` at `
 
     > D5/A20 closed on 2026-11-14 on v0's drafted security claim
     > ([ruling 78](../proposals/ruling-78/README.md), point 3.3). D8/A24's rule is in force since
-    > [order 163](../work-orders/163-a24-at-entry.md), as rule 8 of `CONTRIBUTING.md`; its state
+    > [order 163](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/163-a24-at-entry.md), as rule 8 of `CONTRIBUTING.md`; its state
     > is its row in the [tracker](../AUDIT.md#action-items). A7's method ran for Agents with
     > their own tools off, for files, in
     > [increment 3's closeout](../proposals/first-build/increment-3/closeout-results-2026-11-10.md#routes-around-the-engine-acc-027),

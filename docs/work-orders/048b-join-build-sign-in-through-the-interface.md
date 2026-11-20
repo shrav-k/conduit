@@ -380,9 +380,9 @@ stacked start and the rebase at the foot. Apply them as written and report them 
    (`spec/implementation-defined.yaml`); `sign-in.v1`, `sign-in-hook.v1` and `account-hook.v1` in
    `spec/core/operations.yaml`.
 2. Orders 048a-5d, 048a-5d2, 048a-5ef and 048a-5gh, whole, as merged to `main`, with their
-   Records where they have merged; the Records of orders 209, [048b-relay1](048b-relay1-build-input-required-relay.md) and
-   [048b-relay2](048b-relay2-build-url-elicitation-and-part-retry.md); order
-   [048a3](048a3-build-sign-in-hold.md) (decisions 1 and 6).
+   Records where they have merged; the Records of orders 209, [048b-relay1](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/048b-relay1-build-input-required-relay.md) and
+   [048b-relay2](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/048b-relay2-build-url-elicitation-and-part-retry.md); order
+   [048a3](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/048a3-build-sign-in-hold.md) (decisions 1 and 6).
 3. The cases `requests-sign-in-hold` and `requests-sign-in-plain-hook-part`, their `case.yaml` and
    the files their `files` member names.
 4. In `engine/crates/shell/src/`: `server.rs` (`call_tool`, `sign_in_members`, `record_rejection`),

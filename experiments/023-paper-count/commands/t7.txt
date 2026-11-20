@@ -1,2 +1,0 @@
-conduit apply --prune agent-a--project
-conduit apply --reopen agent-a/project

@@ -120,7 +120,7 @@ the carrier is the failed result's `content`, stated as such:
   (PND-005's first two triggers, PND-011). So for a lapse found in a turn,
   [IN_FORCE.md](../../IN_FORCE.md)'s "A lapsed login raises PND-005, and model work reports
   unavailable naming that action" waits for that check, a tension V28 and
-  [order 171b](171b-sign-in-return-and-holds.md) record as standing; the keyed alternative would
+  [order 171b](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/171b-sign-in-return-and-holds.md) record as standing; the keyed alternative would
   meet it. The coordinator puts this choice on
   [the owner's review list](../proposals/first-build/to-review-with-the-owner.md) with this order's
   Record, beside the keyed alternative and its `spec/` change.

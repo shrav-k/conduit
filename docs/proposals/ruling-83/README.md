@@ -154,12 +154,12 @@ comes before the route's design, is the coordinator's reading.
 3. **A grounded study runs before the route is designed** (the reply; the discussion's last
    recommendation). It reads three things: each client's gateway support at the versions Conduit
    pins, from their documentation and source, as [order
-   197](../../work-orders/197-a5-stage-1-step-1-codex-account-read.md) read Codex's source;
+   197](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/197-a5-stage-1-step-1-codex-account-read.md) read Codex's source;
    existing gateways, and the providers that run them; and the route's place in Conduit's model,
    under ruling 40's connection and access and NAM-024. It needs no client run and none of the
    owner's time. The terms that the discussion lists as not yet checked are the study's to note
    where its sources state them, by the coordinator's reading; so is the reading of [experiment
-   010](../../../experiments/010-subscription-terms/results-2026-11-10.md) that finding 4-02
+   010](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/experiments/010-subscription-terms/results-2026-11-10.md) that finding 4-02
    ([increment 4's log](../first-build/log-increment-4.md)) rests on, that a product running Claude
    Code may not remove or restrict an authentication method built into it, against packages that
    offer no key in 0.2.0. The study decides nothing; the route's design, with the study, comes to

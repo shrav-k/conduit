@@ -144,8 +144,8 @@ hint's text, its place on standard error once at the end, its source (the last r
    (`spec/core/operations.yaml`); `pending-action.v1` (`spec/core/results.yaml`); IFC-025's
    sentences on `pendingAction` and `unanswered` (`spec/interface/implementation.yaml`); the row
    "raised at" of `spec/definitions.md`.
-2. The Records of [order 047b](047b-build-actions-raised-by-scope.md) and
-   [order 047c](047c-build-stored-answers.md).
+2. The Records of [order 047b](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/047b-build-actions-raised-by-scope.md) and
+   [order 047c](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/047c-build-stored-answers.md).
 3. `engine/crates/shell/src/author.rs` and `main.rs` whole; `server.rs` from `pub async fn
    client`; `help.rs`.
 4. In `engine/crates/shell/tests/serve.rs`, the test

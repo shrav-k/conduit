@@ -735,7 +735,7 @@ additional context command is proposed here. Context data stays outside the proj
 
 This schedule uses the current engine context and the current project directory throughout.
 `conduit serve` is harness work and records that context before the tasks; it is excluded, as in
-[experiment 023](../../../experiments/023-paper-count/results-2026-11-11.md#the-counts).
+[experiment 023](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/experiments/023-paper-count/results-2026-11-11.md#the-counts).
 Init and install are listed only for accounting; their behavior is outside this reference,
 apart from the copy `conduit install` keeps in the package cache (O7).
 Plan is optional and absent from the task schedule. T3 reads declarations without a command;

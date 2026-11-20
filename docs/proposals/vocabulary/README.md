@@ -35,7 +35,7 @@ comparison: read `spec/definitions.md` for any word.
 It combines three inputs:
 
 - the [candidate research](https://github.com/shrav-k/conduit/blob/2890ef78c902f2e550fe193396ab464f2db3debc/docs/research/vocabulary/CANDIDATES.md) for topics V01 to V37;
-- the reviewer's [simplification pass](../../research/vocabulary/SIMPLIFICATION.md) and review of
+- the reviewer's [simplification pass](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/research/vocabulary/SIMPLIFICATION.md) and review of
   pull request 5, which proposes dropping about 20 terms;
 - the owner's rulings of 2026-11-05 on the [layers](../../AUDIT.md#layered-claim),
   [instantiation](../instantiation/README.md), [placement](../placement/README.md) and the

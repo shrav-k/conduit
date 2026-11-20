@@ -212,9 +212,9 @@ Apply them as written and report them under `decisions` as the coordinator's.
    overlapping fixed ports; `sign-in-login.v1` (`spec/schemas/contracts.yaml`); `sign-in.v1`'s
    description (`spec/core/operations.yaml`).
 2. [Order 048a2](048a2-build-sign-in-lapse-and-conflict.md), its decisions 5, 6 and 10 and its
-   Record; [order 048a4](048a4-build-sign-in-setup-account.md), its decisions 8 and 9;
-   [order 048a5](048a5-build-sign-in-refusals-before-parts.md), whole, with its Record;
-   [order 048a5b](048a5b-build-sign-in-account-first.md), its decisions 0, 1, 8, 9, 10 and 14 and its
+   Record; [order 048a4](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/048a4-build-sign-in-setup-account.md), its decisions 8 and 9;
+   [order 048a5](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/048a5-build-sign-in-refusals-before-parts.md), whole, with its Record;
+   [order 048a5b](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/048a5b-build-sign-in-account-first.md), its decisions 0, 1, 8, 9, 10 and 14 and its
    Record.
 3. The cases `requests-sign-in-lapse-and-conflict`, `requests-sign-in-refusals-before-parts` and
    `requests-sign-in-account-first`.

@@ -56,6 +56,22 @@ class RoadmapChecks(unittest.TestCase):
             f"| Experiment 012 | Sample | done: [results]({path}#mc1-dated-results-2026-11-11) | |",
         ]), (1, []))
 
+    def test_pinned_results_require_a_full_commit_sha(self):
+        base = "https://github.com/shrav-k/conduit/blob/"
+        commit = "0123456789abcdef0123456789abcdef01234567"
+        for path in ("experiments/007-sample/results-2026-11-09.md",
+                     "experiments/007-sample/README.md#probe-results-2026-11-09"):
+            for revision, passes in ((commit, True), (commit.upper(), True),
+                                     (commit[:8], False), ("main", False)):
+                with self.subTest(path=path, revision=revision):
+                    link = f"{base}{revision}/{path}"
+                    errors = [] if passes else [
+                        self.failure(5, "A70", f"{link} (not a local link)")
+                    ]
+                    self.assertEqual(self.run_rows([
+                        f"| A70 | Sample | done: [results]({link}) | |",
+                    ]), (1, errors))
+
     def test_done_row_without_dated_results_fails(self):
         readme = "experiments/012-sample/README.md"
         record = "docs/work-orders/104-sample.md#record"

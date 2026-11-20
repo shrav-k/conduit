@@ -30,7 +30,7 @@ Nothing under `spec/`, `conformance/`, `engine/`, `packages/`, `tools/` or `docs
 [Experiment 032](../../experiments/032-gateway-probe/README.md) (A85) asks what Claude Code 2.1.318
 and Codex 0.167.1 send to a gateway they are pointed at, and where else they try to go, with fake
 tokens, against a stub gateway, inside a network namespace that holds loopback alone, on the Linux
-node. [Order 205](205-gateway-probe.md) pre-registered it on 2026-11-18 and split the probe in
+node. [Order 205](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/205-gateway-probe.md) pre-registered it on 2026-11-18 and split the probe in
 three ([FR-264](../proposals/full-review/findings/P01-work-orders-lanes.md#fr-264)): the
 pre-registration (205, merged), the harness (this order) and the run (205c, written after this
 order merges). The README was amended on 2026-11-19, before this order was written, by the change

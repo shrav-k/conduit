@@ -32,7 +32,9 @@ first cell is `A` followed by digits, such as `A70`, or a link whose text is one
      a results-YYYY-MM-DD.md file (optionally suffixed before .md by a hyphen and lower-case
      letters, digits and hyphens), or a heading whose anchor is results-YYYY-MM-DD or ends in
      -results-YYYY-MM-DD, in a file directly inside experiments/NNN-name/. The date must be
-     a calendar date.
+     a calendar date. A link to the same path and anchor in a GitHub blob at a full
+     Conduit commit also counts. check_docs.py checks the pinned file and anchor at that
+     commit. This check does not read the pinned file.
 
 It reads text, and knows only the shape of a Markdown table: a table is a run of lines that
 begin with `|`, its first line is the header, and a column is found by its name in the header.
@@ -79,6 +81,7 @@ HELD = re.compile(r"experiments/((\d{3})-[A-Za-z0-9._-]*[A-Za-z0-9])")
 # must have no row until the line is removed, when that pull request merges.
 HELD_ITEMS = re.compile(r"Held for an open pull request: (A\d+(?:, A\d+)*)\.")
 LINK = re.compile(r"!?\[[^\]\n]*\]\((<[^>]+>|[^\s)]+)(?:\s+\"[^\"\n]*\")?\)")
+PINNED_RESULTS = re.compile(r"/shrav-k/conduit/blob/[0-9a-fA-F]{40}/(experiments/\d{3}-[^/]+/[^/]+)")
 
 
 def cells(line):
@@ -224,10 +227,16 @@ def done_without_results(register):
 
     def inspect_link(source, target):
         parsed = urlsplit(target)
-        if parsed.scheme or parsed.netloc:
+        pinned = (PINNED_RESULTS.fullmatch(parsed.path)
+                  if parsed.scheme == "https" and parsed.netloc == "github.com" and not parsed.query
+                  else None)
+        if pinned:
+            destination = ROOT / unquote(pinned[1])
+        elif parsed.scheme or parsed.netloc:
             return target, "not a local link"
-        destination = ((source.parent / unquote(parsed.path)).resolve()
-                       if parsed.path else source.resolve())
+        else:
+            destination = ((source.parent / unquote(parsed.path)).resolve()
+                           if parsed.path else source.resolve())
         anchor = unquote(parsed.fragment)
         try:
             shown = label(destination) + ("#" + anchor if anchor else "")
@@ -236,7 +245,7 @@ def done_without_results(register):
         if (destination.parent.parent != EXPERIMENTS
                 or not DIRECTORY.fullmatch(destination.parent.name)):
             return shown, "not in a directory experiments/NNN-name/"
-        if not destination.is_file():
+        if not pinned and not destination.is_file():
             return shown, "no such file"
         filename = re.fullmatch(r"results-(\d{4}-\d{2}-\d{2})(?:-[a-z0-9-]+)?\.md",
                                destination.name)
@@ -248,7 +257,7 @@ def done_without_results(register):
             date.fromisoformat(dated[1])
         except ValueError:
             return shown, "not a calendar date"
-        if not filename and anchor not in anchors(destination.read_text(encoding="utf-8")):
+        if not pinned and not filename and anchor not in anchors(destination.read_text(encoding="utf-8")):
             return shown, "no heading with this anchor"
         return shown, None
 

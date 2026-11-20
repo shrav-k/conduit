@@ -113,7 +113,7 @@ the retire hook: each `.v2` Agent signs out at retirement (D53)"):
   "D53's retire-hook sentence, with the login kept where the client keeps it for that directory and
   no store named". Sentences (i) and (ii) are order 050f's, (iii) is at `BASE`, (v) is 050m's and
   (vi) 050k's.
-- Item 8 of both lists, through [order 050g](050g-logout-revocation-read.md), merged: both outcome
+- Item 8 of both lists, through [order 050g](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/050g-logout-revocation-read.md), merged: both outcome
   lines pass, "a revocation scoped to that home's token alone", so the hook signs out with each
   client's own command, and item 8's fail branch (removing the credential without the client
   command) is taken for neither. 050g's Record leaves its reader's R2 to the coordinator before

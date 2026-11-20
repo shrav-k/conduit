@@ -48,13 +48,13 @@ since a runtime provider is the route by which a later one can confine what it r
 while this version reports every restriction mediated (ACC-027).
 
 **When it runs.** An order of A78's stage 2, sent through Conduit under
-[order 211's registration](211-a78-stage-2-registration.md) ("Stage 2's orders"): one Codex worker
+[order 211's registration](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/211-a78-stage-2-registration.md) ("Stage 2's orders"): one Codex worker
 turn, then one Codex verifier turn under [the standing verifier order](verify.md), each by
 `conduit` call on the Mac, then the local gate and one fresh read (ruling 92 point 4); the
 verifier turn is order 211's registered pair (the coordinator's dispatch, open to the owner's
 strike). It changes nothing under `experiments/028-a78-dogfood/` and not the harness. By the
 coordinator's reading, open to the owner's strike, the owner's answer brings 079 and 080 to `main`
-now, though `s3/m2` was to merge after the S1 rerun's pin ([order 120](120-plan-providers.md),
+now, though `s3/m2` was to merge after the S1 rerun's pin ([order 120](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/120-plan-providers.md),
 point 4). How you build what each decision says must hold is yours
 ([ruling 89](../proposals/ruling-89/README.md)).
 

@@ -177,7 +177,7 @@ author, each on local and isolated profiles, sequentially, from empty labs, doin
 The fresh author gets spec, tasks and shipped CLI format reference; author evidence stays apart.
 Each run uses one Claude Code Agent and one Codex Agent, primary subscription accounts used by
 A4/increment 3, one independently signed-in home per Agent. No API key authenticates an Agent.
-[A8](../010-subscription-terms/results-2026-11-10.md#what-this-establishes) found that a Codex login
+[A8](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/experiments/010-subscription-terms/results-2026-11-10.md#what-this-establishes) found that a Codex login
 cannot be shared between Agents: never copy its login file or run concurrent copies.
 
 Each run needs the Mac, test Linear workspace/key, packaged keychain store, service and both

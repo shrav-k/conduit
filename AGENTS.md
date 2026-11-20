@@ -86,7 +86,8 @@ new one. If you were asked to read or audit this repository cold, start at
 - **Code is Rust**, with a `Cargo.lock`, a pinned toolchain and ignored build output: a probe or an
   evaluation in its own directory under `experiments/`, a provider package under `packages/`, one
   crate per provider (ruling 40), and the first build in the workspace under [engine/](engine/README.md)
-  (ruling 46). The only exception is the Python checkers in `tools/`.
+  (ruling 46). The exceptions are the Python checkers in `tools/` and the Workflow tool's
+  JavaScript ([DEC-025](docs/decisions/log.md#dec-025-2026-11-20-the-engine-is-rust-no-private-code)).
 - **The owner makes the rulings.** When a choice changes behavior, present the options with a
   recommendation and wait; do not record your recommendation as accepted. Who else decides what is
   in [the tracker](docs/AUDIT.md#who-decides-what).

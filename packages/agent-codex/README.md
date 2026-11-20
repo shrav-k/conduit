@@ -6,10 +6,11 @@ the admin's [real-client closeout](../../docs/proposals/first-build/increment-3/
 and [increment 4 log](../../docs/proposals/first-build/log-increment-4.md) record subsequent trials on 2026-11-10.
 
 This standalone Rust crate has no dependency on another repository directory. Its lockfile
-and pinned toolchain travel with it. Its manifest exports two Agent Types, a conversation
-capability and the explicit `turn.v1` operation. The plain MCP wrapper exposes `turn`,
-and each `.v2` item also `retire`; the manifest maps each versioned operation or hook to its
-tool. In `.v1`, both reach inputs are required booleans.
+and pinned toolchain travel with it. Its manifest exports two Agent Types and a conversation
+capability with two explicit operations, `turn.v1` and `new-conversation.v1`. The plain MCP
+wrapper exposes `turn` and `new-conversation`. Each `.v2` item also exposes the hook tools
+`retire`, `account`, `sign-out` and `sign-in`. The manifest maps each versioned operation or
+hook to its tool. In `.v1`, both reach inputs are required booleans.
 Authors may omit `model`: the engine fills its empty-string default, leaving the native
 client's default in force. MAN-017 requires the bound scalar to be required in the resolved
 configuration, so the Type's required list includes model. This is the logged nearest sound
@@ -294,7 +295,7 @@ Limits:
 
 `wrapper-v2-path` is `wrapper-v2` with `command: [agent-codex]`. It binds the same inputs
 to the same variables, so everything this README says of `.v2` holds for it.
-The defaults of `codex.v2` for `turn.v1` and its four hooks are still `wrapper-v2`.
+The defaults of `codex.v2` for `turn.v1`, `new-conversation.v1` and its four hooks are still `wrapper-v2`.
 
 `bin/agent-codex` is a relative path, a file of the archive on the engine's machine
 (MAN-010). The engine asks no runtime provider but its own runner to run such an item
@@ -314,7 +315,7 @@ them. MAN-010 publishes a server meant to run on another machine as a pinned `pa
 This item is a shortcut that stands in for one, and is not one.
 
 A template selects it by writing
-`implementation: {example.org/conduit/agent-codex#turn.v1: example.org/conduit/agent-codex#wrapper-v2-path, github.com/shrav-k/conduit/core#retire-hook.v1: example.org/conduit/agent-codex#wrapper-v2-path, github.com/shrav-k/conduit/core#account-hook.v1: example.org/conduit/agent-codex#wrapper-v2-path, github.com/shrav-k/conduit/core#sign-out-hook.v1: example.org/conduit/agent-codex#wrapper-v2-path, github.com/shrav-k/conduit/core#sign-in-hook.v1: example.org/conduit/agent-codex#wrapper-v2-path}`
+`implementation: {example.org/conduit/agent-codex#turn.v1: example.org/conduit/agent-codex#wrapper-v2-path, example.org/conduit/agent-codex#new-conversation.v1: example.org/conduit/agent-codex#wrapper-v2-path, github.com/shrav-k/conduit/core#retire-hook.v1: example.org/conduit/agent-codex#wrapper-v2-path, github.com/shrav-k/conduit/core#account-hook.v1: example.org/conduit/agent-codex#wrapper-v2-path, github.com/shrav-k/conduit/core#sign-out-hook.v1: example.org/conduit/agent-codex#wrapper-v2-path, github.com/shrav-k/conduit/core#sign-in-hook.v1: example.org/conduit/agent-codex#wrapper-v2-path}`
 beside its `type` and `config`. A template that selects it for some of them alone takes `wrapper-v2`
 for the others by default, two items that are run, and is rejected (TPL-019).
 An instance of it names its runtime provider in `runtime`
@@ -343,8 +344,9 @@ A failed call has `isError: true` and text
 `client turn K failed: CAUSE; session cannot restart implicitly`.
 A `.v2` failed call also holds the [failed turn's fields](#the-v2-failed-turns-fields).
 Later calls return `session failed at turn K: CAUSE; implicit restart refused`.
-K counts turns from 1 and continues across resumes. Active cancellation records
-`cancelled`; queued cancellation starts no turn. There is no implicit restart.
+K counts turns from 1 and continues across resumes. A
+[new conversation](#a-new-conversation-both-versions) counts from 1 again.
+Active cancellation records `cancelled`; queued cancellation starts no turn. There is no implicit restart.
 
 The fixed causes and their paths are:
 
@@ -771,3 +773,46 @@ Only A5's stage 1, step 1 observes the hook against Codex. The source read cover
 The fixed scope, originator and flow flags the hook accepts were read at rust-v0.167.1
 (`codex-rs/login/src/server.rs:580-623`, `codex-rs/login/src/auth/default_client.rs:42`); a bump
 of the Codex version reads them again, since a changed value fails the hook with no login URL.
+
+## A new conversation (both versions)
+
+From 0.2.1, `conversation.v1` includes the operation `new-conversation.v1`, which the wrapper
+exposes as `new-conversation`. It takes no input and starts no model work. A Conduit can grant
+either operation on its own or grant both.
+
+The call waits for a running turn or hook. It ends the conversation and stops the client as at
+a failed turn, including the whole process tree in `.v2`. It forgets the conversation's thread,
+failure and turn count. Client launch waits for the next `turn`, which resumes no earlier
+conversation.
+It launches Codex without `resume`, so Codex starts a new thread.
+Files in the Agent's directory and home stay, including anything the client stores there. The
+Agent's run and the engine continue. After a failed turn, the wrapper keeps refusing turns in
+the ended conversation. An explicit `new-conversation` starts its successor.
+
+The reply has the shape
+`{"conversation":N,"ended":{"turns":T,"failed":F,"survivors":[...],"stopConfirmed":B}}`.
+N is the new conversation's number within this wrapper run. A run starts at 1. T counts the
+turns the ended conversation started. F tells whether a turn failed or was cancelled. The
+[failed turn's fields](#the-v2-failed-turns-fields) describe how the wrapper checks for survivors
+and confirms the stop. Here `stopConfirmed` is true when the stop was confirmed and no processes
+survived. In `.v1`, `survivors` is empty and `stopConfirmed` is true. If `survivors` is non-empty or
+`stopConfirmed` is false, end the Agent's run before sending another turn. Processes from the
+ended conversation may still be running.
+
+- An input returns invalid parameters with `expected no arguments`.
+- Invalid configuration returns the same `invalid configuration: ...` text as a turn.
+- A retired Agent returns `session retired; no new conversation starts`.
+- While a `.v2` sign-in runs, the login continues and the call returns
+  `new conversation refused: a sign-in is in progress in this Agent's own home; nothing was stopped; call again once the sign-in has ended`.
+
+Through a Conduit, the engine rejects an input as invalid with no outcome before calling the
+wrapper. The wrapper's configuration, retirement and sign-in refusals give an unknown outcome
+with the refusal text, as a turn failure does, because the contract states an effect and the item
+is plain (IFC-010).
+Use a fresh idempotency key to retry.
+
+The 0.2.1 contracts extend 0.2.0 only with NAM-024's additions. They add the operation to
+`conversation.v1`, its Operation contract and its default implementation in both Types.
+The same configuration and state directory
+select the same Agent home as in 0.2.0. The engine determines whether an installed Agent keeps
+its instance and sign-in when its pin moves to 0.2.1.

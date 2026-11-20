@@ -3,6 +3,9 @@ use flate2::{Compression, GzBuilder};
 use serde_json::{Value, json};
 use std::{collections::BTreeMap, fs, io::Write, path::Path};
 
+const NEW_CONVERSATION: &str = "new-conversation.v1";
+const NEW_CONVERSATION_REF: &str = "#new-conversation.v1";
+
 fn write_fixture(path: &Path, bytes: &[u8], check: bool) {
     if check {
         assert_eq!(fs::read(path).unwrap(), bytes, "{}", path.display());
@@ -23,6 +26,31 @@ fn json_bytes(value: &Value) -> Vec<u8> {
     bytes.push(b'\n');
     bytes
 }
+
+// Keep the historical release's conversation surface when reading the current copies.
+fn agent_contracts_v020(path: &Path) -> Vec<Value> {
+    let mut docs = documents(path);
+    docs.retain(|d| d["kind"] != "Operation" || d["metadata"]["name"] != NEW_CONVERSATION);
+    for doc in &mut docs {
+        match doc["kind"].as_str() {
+            Some("Capability") if doc["metadata"]["name"] == "conversation.v1" => {
+                doc["spec"]["operations"]
+                    .as_array_mut()
+                    .unwrap()
+                    .retain(|op| op != NEW_CONVERSATION_REF);
+            }
+            Some("Type") => {
+                doc["spec"]["implementation"]
+                    .as_object_mut()
+                    .unwrap()
+                    .remove(NEW_CONVERSATION_REF);
+            }
+            _ => {}
+        }
+    }
+    docs
+}
+
 fn agent_fixtures(root: &Path, check: bool, generated: &mut BTreeMap<String, Vec<u8>>) {
     let fixtures = root.join("conformance/fixtures/agents");
     for name in ["agent-claude-code", "agent-codex"] {
@@ -43,6 +71,11 @@ fn agent_fixtures(root: &Path, check: bool, generated: &mut BTreeMap<String, Vec
     let codex = fixtures.join("agent-codex");
     let mut manifest = documents(&codex.join("conduit.yaml")).remove(0);
     manifest["address"] = json!("example.org/conformance/codex-no-account-hook");
+    manifest["version"] = json!("0.2.0");
+    manifest["exports"]
+        .as_array_mut()
+        .unwrap()
+        .retain(|op| op != NEW_CONVERSATION);
     let mut wrapper = manifest["implementations"]["wrapper-v2"].take();
     let account = wrapper["implements"]
         .as_array()
@@ -56,10 +89,12 @@ fn agent_fixtures(root: &Path, check: bool, generated: &mut BTreeMap<String, Vec
     wrapper["implements"]
         .as_array_mut()
         .unwrap()
-        .retain(|op| op != &account);
-    wrapper["tools"].as_object_mut().unwrap().remove(&account);
+        .retain(|op| op != &account && op != NEW_CONVERSATION_REF);
+    let tools = wrapper["tools"].as_object_mut().unwrap();
+    tools.remove(&account);
+    tools.remove(NEW_CONVERSATION_REF);
     manifest["implementations"] = json!({"wrapper-v2": wrapper});
-    let mut contracts = documents(&codex.join("contracts.yaml"));
+    let mut contracts = agent_contracts_v020(&codex.join("contracts.yaml"));
     let v1 = contracts
         .iter_mut()
         .find(|d| d["kind"] == "Type" && d["metadata"]["name"] == "codex.v1")
@@ -131,9 +166,11 @@ fn release_fixtures(root: &Path, check: bool, generated: &mut BTreeMap<String, V
     }
     // Reuse the native fixture's conversation contracts; no implementation is run.
     docs.extend(
-        documents(&root.join("conformance/fixtures/agents/agent-claude-code/contracts.yaml"))
-            .into_iter()
-            .filter(|d| d["kind"] != "Type"),
+        agent_contracts_v020(
+            &root.join("conformance/fixtures/agents/agent-claude-code/contracts.yaml"),
+        )
+        .into_iter()
+        .filter(|d| d["kind"] != "Type"),
     );
     docs.push(json!({"apiVersion":manifest["apiVersion"],"kind":"Conduit","metadata":{"name":"turn"},"spec":{"capability":"#conversation.v1","operations":["#turn.v1"]}}));
     manifest["exports"].as_array_mut().unwrap().extend([

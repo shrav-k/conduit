@@ -22,6 +22,7 @@ spec:
   requires: []
   implementation:
     '#turn.v1': '#wrapper'
+    '#new-conversation.v1': '#wrapper'
   records:
     inputs: false
     outputs: false
@@ -31,7 +32,7 @@ kind: Capability
 metadata:
   name: conversation.v1
 spec:
-  operations: ['#turn.v1']
+  operations: ['#turn.v1', '#new-conversation.v1']
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
@@ -140,8 +141,43 @@ spec:
   - 'github.com/shrav-k/conduit/core#retire-hook.v1'
   implementation:
     '#turn.v1': '#wrapper-v2'
+    '#new-conversation.v1': '#wrapper-v2'
     'github.com/shrav-k/conduit/core#retire-hook.v1': '#wrapper-v2'
     'github.com/shrav-k/conduit/core#account-hook.v1': '#wrapper-v2'
     'github.com/shrav-k/conduit/core#sign-out-hook.v1': '#wrapper-v2'
     'github.com/shrav-k/conduit/core#sign-in-hook.v1': '#wrapper-v2'
   records: {inputs: false, outputs: false}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: new-conversation.v1
+spec:
+  effect: >-
+    Ends the Agent's conversation and stops its client, as a failed turn does, and starts a new
+    one: the next turn.v1 starts the client with no conversation of the turns before it: it
+    resumes no thread or session. Files in the Agent's directory and home stay. The Agent's run
+    goes on.
+  startsModelWork: false
+  destructiveHint: true
+  inputSchema:
+    type: object
+    properties: {}
+    additionalProperties: false
+  outputSchema:
+    type: object
+    properties:
+      conversation: {type: integer, minimum: 2}
+      ended:
+        type: object
+        properties:
+          turns: {type: integer, minimum: 0}
+          failed: {type: boolean}
+          survivors:
+            type: array
+            items: {type: integer}
+          stopConfirmed: {type: boolean}
+        required: [turns, failed, survivors, stopConfirmed]
+        additionalProperties: false
+    required: [conversation, ended]
+    additionalProperties: false

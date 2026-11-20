@@ -941,6 +941,16 @@ impl StopReport {
         unconfirmed: true,
     };
 
+    /// The ended conversation's summary, including whether its processes stopped.
+    pub fn ended_conversation(&self, turns: usize, failed: bool) -> Value {
+        json!({
+            "turns": turns,
+            "failed": failed,
+            "survivors": self.survivors,
+            "stopConfirmed": !self.unconfirmed && self.survivors.is_empty(),
+        })
+    }
+
     pub fn note(&self) -> Option<String> {
         let survivors = survivor_note(&self.survivors);
         if self.unconfirmed {
@@ -1117,6 +1127,7 @@ pub struct Session {
     thread: Option<String>,
     failed: Option<(usize, String)>,
     retired: bool,
+    conversation: usize,
     turns_started: usize,
     login: Option<sign_in::Login>,
 }
@@ -1129,6 +1140,7 @@ impl Session {
             thread: None,
             failed: None,
             retired: false,
+            conversation: 1,
             turns_started: 0,
             login: None,
         }
@@ -1136,6 +1148,30 @@ impl Session {
     pub fn tree(&self) -> ClientTree {
         self.tree.clone()
     }
+    pub async fn new_conversation(&mut self) -> Result<Value> {
+        if let Some(error) = &self.config.configuration_error {
+            bail!("{error}");
+        }
+        ensure!(!self.retired, "session retired; no new conversation starts");
+        ensure!(
+            !self.login.as_ref().is_some_and(sign_in::Login::is_running),
+            "new conversation refused: a sign-in is in progress in this Agent's own home; nothing was stopped; call again once the sign-in has ended"
+        );
+
+        let stop = self.shutdown().await;
+        let ended = stop.ended_conversation(
+            self.turns_started,
+            self.failed
+                .as_ref()
+                .is_some_and(|(_, cause)| cause != sign_in::SIGNED_OUT_CAUSE),
+        );
+        self.thread = None;
+        self.failed = None;
+        self.turns_started = 0;
+        self.conversation += 1;
+        Ok(json!({"conversation": self.conversation, "ended": ended}))
+    }
+
     pub async fn turn(&mut self, message: &str) -> Result<Value> {
         if let Some(error) = &self.config.configuration_error {
             bail!("{error}");

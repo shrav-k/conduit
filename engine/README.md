@@ -213,6 +213,8 @@ lines with `step` and `outcome` after the result lines, including the failed ste
 successful steps persist; inspect and resume explicitly through `call`.
 
 `conduit --help` and `conduit COMMAND --help` describe arguments and examples without a store.
+`conduit --version` prints the crate version and build commit without a store. Uncommitted changes
+are omitted.
 `tools --as NAME` also accepts `KIND/NAME`, distinguishes absent instances from instances
 without a client identity, and explains setup/opening when no tools are presented.
 Client initialization waits up to 10 seconds per attempt, with three attempts. Errors name
@@ -695,9 +697,10 @@ example instead pins portable metadata-only archives for the registration vector
 
 Setup starts wrappers only. `conduit call --store DIR turn-a.turn.v1 '{"message":"..."}'`
 and the corresponding turn-b tool are explicit model-work requests through authorizing
-Conduits. No real client was run by order 023. Its default release tests build both standalone
-packages, exercise unmodified archives through the CLI, then install test archives with the
-explicit scripted-client argument and run S1's two Agents through the actual runner/HTTP
+Conduits. The same request can use `conduit call --store DIR turn-a.turn.v1 --arguments-file PATH`,
+with `-` for standard input. No real client was run by order 023. Its default release tests build
+both standalone packages, exercise unmodified archives through the CLI, then install test archives
+with the explicit scripted-client argument and run S1's two Agents through the actual runner/HTTP
 server. A scripted filesystem replaces npm in this test; each Agent makes an engine-recorded
 request with its own run identity. This needs only crates and loopback networking.
 
@@ -727,21 +730,27 @@ These commands are requests of `conduit serve`, as the root Interface. Keep it r
 another terminal. `register` remains the command for first registration; `submit` adds a
 project to the serving store and explicitly opens its new root Conduits and sets up its new
 instances. Each request prints one JSON result line, including revision inspections.
+After startup setup and listener binding, `serve` prints one ready line of the form
+`{"ready":{"store":"STORE","url":"http://127.0.0.1:3000/mcp"}}`, where STORE is the store's
+canonical path; parse it as JSON, since the order of its keys is not fixed.
 A failed startup setup leaves `serve` listening so a missing Conduit can be submitted and the
 instance set up through it with `call`.
 
 `conduit inspect --store DIR` works while serving as root MCP inspection requests, and locally
-when the store is not held. Its instance rows include a CLI-only `consumedConduits` list beside
-`result`: declared and standalone Conduits with name, target and open boolean, projected from
-the authorized `inspect.v1` result's `inventory.consumes` (LIF-013). The inventory also returns
-incoming Conduits, opening provenance and visible Conduit tombstones, with scope for Interfaces
+when the store is not held. `conduit inspect --store DIR --setup` shows each instance's last setup
+outcome and any parts that did not succeed. The full instance rows include a CLI-only
+`consumedConduits` list beside `result`: declared and standalone Conduits with name, target and
+open boolean, projected from the authorized `inspect.v1` result's `inventory.consumes` (LIF-013).
+The inventory also returns incoming Conduits, opening provenance and visible Conduit tombstones,
+with scope for Interfaces
 and Agents and administrators for Pools. Templates and Conduits have no inventory. Enumeration
 and route selection use a read-only snapshot, and each request rechecks authority; inspection
 across multiple objects is not atomic with concurrent changes.
 
 `conduit pending --store DIR` lists, through `serve`, the pending actions raised at root,
 one JSON line each, as `list.v1`'s `pending` output gives them, and prints nothing on
-standard output when none is raised. `conduit answer --store DIR ACTION ANSWER` answers
+standard output when none is raised. `conduit pending --store DIR --agent NAME` limits the list
+to actions naming that Agent. `conduit answer --store DIR ACTION ANSWER` answers
 one of them through root's Conduit to the target that authorizes inspection of its
 subject (PND-009): a setup action takes `dismissed`. It answers only an action it finds
 raised at root, and only of the setup kind in this build; for any other it sends nothing

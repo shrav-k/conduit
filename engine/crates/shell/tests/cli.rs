@@ -436,6 +436,167 @@ fn help_describes_every_command_without_store_access() {
 }
 
 #[test]
+fn version_names_the_crate_version_and_the_commit() {
+    let repository = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+    let commit = Command::new("git")
+        .args(["rev-parse", "HEAD"])
+        .current_dir(repository)
+        .output()
+        .ok()
+        .filter(|output| output.status.success())
+        .and_then(|output| String::from_utf8(output.stdout).ok())
+        .unwrap_or_else(|| "unknown".into());
+    let output = Command::new(env!("CARGO_BIN_EXE_conduit"))
+        .arg("--version")
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert!(output.stderr.is_empty());
+    assert_eq!(
+        String::from_utf8(output.stdout).unwrap(),
+        format!(
+            "conduit {} (commit {})\n",
+            env!("CARGO_PKG_VERSION"),
+            commit.trim()
+        )
+    );
+}
+
+fn stamp_command(command: &mut Command) -> String {
+    let output = command.output().unwrap();
+    assert!(
+        output.status.success(),
+        "{command:?}: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    String::from_utf8(output.stdout).unwrap().trim().into()
+}
+
+fn stamp_git(repository: &Path, args: &[&str]) -> String {
+    stamp_command(Command::new("git").current_dir(repository).args(args))
+}
+
+fn stamp_fixture(repository: &Path) -> (String, String) {
+    use std::fs::{create_dir, write};
+
+    write(
+        repository.join("Cargo.toml"),
+        "[package]\nname = \"stamp-probe\"\nversion = \"0.0.0\"\nedition = \"2024\"\n",
+    )
+    .unwrap();
+    write(repository.join("build.rs"), include_str!("../build.rs")).unwrap();
+    create_dir(repository.join("src")).unwrap();
+    write(
+        repository.join("src/main.rs"),
+        "fn main() { println!(\"{}\", env!(\"CLI_GIT_COMMIT\")); }\n",
+    )
+    .unwrap();
+
+    // Write two commit objects while leaving HEAD and the branches untouched.
+    write(repository.join("object"), "").unwrap();
+    let tree = stamp_git(repository, &["hash-object", "-w", "-t", "tree", "object"]);
+    let commit = |message| {
+        let identity = "Stamp Probe <probe@example.invalid> 1000000000 +0000";
+        write(
+            repository.join("object"),
+            format!("tree {tree}\nauthor {identity}\ncommitter {identity}\n\n{message}\n"),
+        )
+        .unwrap();
+        stamp_git(repository, &["hash-object", "-w", "-t", "commit", "object"])
+    };
+    let commits = (commit("first"), commit("second"));
+    std::fs::remove_file(repository.join("object")).unwrap();
+    commits
+}
+
+fn build_stamp(repository: &Path) -> String {
+    stamp_command(Command::new(env!("CARGO")).current_dir(repository).args([
+        "build",
+        "--offline",
+        "--target-dir",
+        "target",
+    ]));
+    stamp_command(&mut Command::new(
+        repository
+            .join("target/debug/stamp-probe")
+            .with_extension(std::env::consts::EXE_EXTENSION),
+    ))
+}
+
+#[test]
+fn version_refreshes_when_an_intermediate_symbolic_ref_changes() {
+    let parent = tempfile::tempdir().unwrap();
+    let repository = parent.path().join("repository");
+    stamp_command(Command::new("git").current_dir(parent.path()).args([
+        "init",
+        "--quiet",
+        "--template=",
+        "--object-format=sha1",
+        "--initial-branch=entry",
+        "--separate-git-dir=git",
+        "repository",
+    ]));
+    let (first, second) = stamp_fixture(&repository);
+    stamp_git(&repository, &["update-ref", "refs/heads/first", &first]);
+    stamp_git(&repository, &["update-ref", "refs/heads/second", &second]);
+    stamp_git(
+        &repository,
+        &["symbolic-ref", "refs/heads/entry", "refs/heads/bridge"],
+    );
+    stamp_git(
+        &repository,
+        &["symbolic-ref", "refs/heads/bridge", "refs/heads/first"],
+    );
+    assert_eq!(build_stamp(&repository), first);
+
+    stamp_git(
+        &repository,
+        &["symbolic-ref", "refs/heads/bridge", "refs/heads/second"],
+    );
+    assert_eq!(stamp_git(&repository, &["rev-parse", "HEAD"]), second);
+    assert_eq!(build_stamp(&repository), second);
+}
+
+#[test]
+fn version_refreshes_when_a_reftable_branch_moves() {
+    let repository = tempfile::tempdir().unwrap();
+    let repository = repository.path();
+    let init = Command::new("git")
+        .current_dir(repository)
+        .args([
+            "init",
+            "--quiet",
+            "--template=",
+            "--object-format=sha1",
+            "--initial-branch=entry",
+            "--ref-format=reftable",
+        ])
+        .output()
+        .unwrap();
+    let stderr = String::from_utf8_lossy(&init.stderr);
+    if !init.status.success() && stderr.contains("unknown option") && stderr.contains("ref-format")
+    {
+        return;
+    }
+    assert!(init.status.success(), "{stderr}");
+    assert_eq!(
+        stamp_git(repository, &["rev-parse", "--show-ref-format"]),
+        "reftable"
+    );
+    let (first, second) = stamp_fixture(repository);
+    stamp_git(repository, &["update-ref", "refs/heads/entry", &first]);
+    assert_eq!(build_stamp(repository), first);
+
+    stamp_git(repository, &["update-ref", "refs/heads/entry", &second]);
+    assert_eq!(stamp_git(repository, &["rev-parse", "HEAD"]), second);
+    assert_eq!(build_stamp(repository), second);
+}
+
+#[test]
 fn registration_does_not_install_s1_packages() {
     let parent = tempfile::tempdir().unwrap();
     let store = parent.path().join("store");

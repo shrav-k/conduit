@@ -91,6 +91,44 @@ pub fn inspection_row(_objects: &[Value], object: &Value, reply: Value) -> Value
     }
     row
 }
+
+pub fn inspection_objects(objects: &[Value], setup: bool) -> impl Iterator<Item = &Value> {
+    objects.iter().filter(move |object| {
+        !setup
+            || (object.get("spec").is_none()
+                && matches!(
+                    object["kind"].as_str(),
+                    Some("Interface" | "Pool" | "Fleet" | "Resource" | "Agent")
+                ))
+    })
+}
+
+pub fn print_inspection_row(objects: &[Value], object: &Value, reply: Value, setup: bool) {
+    let row = if setup {
+        let object = json!({"kind":object["kind"],"name":object["name"]});
+        if succeeded(&reply) {
+            let status = &reply["structuredContent"]["status"];
+            let setup = status["setup"].as_object().map(|setup| {
+                let not_succeeded: Vec<_> = setup
+                    .get("parts")
+                    .and_then(Value::as_array)
+                    .into_iter()
+                    .flatten()
+                    .filter(|part| part["outcome"] != "succeeded")
+                    .map(|part| json!({"name":part["name"],"outcome":part["outcome"]}))
+                    .collect();
+                json!({"outcome":setup.get("outcome"),"invocation":setup.get("invocation"),"notSucceeded":not_succeeded})
+            });
+            json!({"object":object,"state":status["state"],"setup":setup})
+        } else {
+            json!({"object":object,"result":reply})
+        }
+    } else {
+        inspection_row(objects, object, reply)
+    };
+    println!("{row}");
+}
+
 pub(crate) fn named(argument: &str) -> Result<Value> {
     let (kind, name) = argument.split_once('/').ok_or_else(|| {
         format!(
@@ -135,6 +173,15 @@ fn requires_directory(value: &Value) -> bool {
 pub(crate) fn route(directory: &Path, object: &Value, operation: &str) -> Result<String> {
     let state = state(directory)?;
     let objects = state["objects"].as_array().ok_or("missing objects")?;
+    route_from_snapshot(objects, object, operation)
+}
+
+pub fn setup_inspection_tool(objects: &[Value], object: &Value) -> String {
+    route_from_snapshot(objects, object, "inspect.v1")
+        .unwrap_or_else(|_| "management.inspect.v1".into())
+}
+
+fn route_from_snapshot(objects: &[Value], object: &Value, operation: &str) -> Result<String> {
     let target = objects
         .iter()
         .find(|o| o["kind"] == object["kind"] && o["name"] == object["name"]);
@@ -180,20 +227,41 @@ async fn call(directory: &Path, tool: &str, args: Value) -> Result<Value> {
     ensure_success(&reply, &format!("request to {tool}"))?;
     Ok(reply)
 }
-async fn list_pending(directory: &Path) -> Result<Vec<Value>> {
+async fn list_pending(directory: &Path, agent: Option<&str>) -> Result<Vec<Value>> {
     let mut reply = server::client(directory, None, Some("management.list.v1"), json!({})).await?;
     if !succeeded(&reply) {
         println!("{reply}");
         return Err("listing root's pending actions through management.list.v1 did not succeed; see the printed result".into());
     }
-    match reply
+    if let Some(name) = agent
+        && !reply["structuredContent"]["objects"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .any(|object| {
+                object["kind"] == "Agent" && object["name"] == name && object["template"] == false
+            })
+    {
+        return Err(format!("root sees no Agent named {name:?}"));
+    }
+    let mut actions = match reply
         .get_mut("structuredContent")
         .and_then(|content| content.get_mut("pending"))
         .map(Value::take)
     {
-        Some(Value::Array(actions)) => Ok(actions),
-        _ => Ok(Vec::new()),
+        Some(Value::Array(actions)) => actions,
+        _ => Vec::new(),
+    };
+    if let Some(name) = agent {
+        actions.retain(|action| {
+            action["subject"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .any(|subject| subject["kind"] == "Agent" && subject["name"] == name)
+        });
     }
+    Ok(actions)
 }
 
 fn answer_subject(action: &Value) -> Result<Value> {
@@ -222,11 +290,18 @@ async fn revision(directory: &Path, object: &Value) -> Result<Value> {
         .ok_or("inspection omitted revision".into())
 }
 
+#[derive(Default)]
+pub struct Options<'a> {
+    pub agent: Option<&'a str>,
+    pub setup: bool,
+}
+
 pub async fn run(
     command: &str,
     directory: &Path,
     args: &[String],
     repository: &Path,
+    options: Options<'_>,
 ) -> Result<()> {
     let expected = match command {
         "inspect" | "pending" => 0,
@@ -265,9 +340,13 @@ pub async fn run(
         .map_err(|e| format!("conduit serve must hold this store: {e}"))?;
     match command {
         "pending" => {
-            let actions = list_pending(directory).await?;
+            let actions = list_pending(directory, options.agent).await?;
             if actions.is_empty() {
-                eprintln!("conduit pending: no pending action is raised at root");
+                if let Some(name) = options.agent {
+                    eprintln!("conduit pending: no pending action names Agent {name:?}");
+                } else {
+                    eprintln!("conduit pending: no pending action is raised at root");
+                }
             }
             for action in actions {
                 println!("{action}");
@@ -275,7 +354,7 @@ pub async fn run(
         }
         "answer" => {
             let id = &args[0];
-            let actions = list_pending(directory).await?;
+            let actions = list_pending(directory, None).await?;
             let action = actions.iter().find(|action| action["id"] == id.as_str()).ok_or_else(|| {
                 format!(
                     "no action {id} is raised at root now: it is unknown, already answered or expired; nothing was sent. Run conduit pending to list the raised actions, or conduit call to ask the engine itself"
@@ -289,15 +368,19 @@ pub async fn run(
             let current = state(directory)?;
             let objects = current["objects"].as_array().ok_or("missing objects")?;
             let mut success = true;
-            for object in objects {
+            for object in inspection_objects(objects, options.setup) {
                 let reference = json!({"kind":object["kind"],"name":object["name"]});
-                let tool = route(directory, &reference, "inspect.v1")
-                    .unwrap_or_else(|_| "management.inspect.v1".into());
+                let tool = if options.setup {
+                    setup_inspection_tool(objects, &reference)
+                } else {
+                    route(directory, &reference, "inspect.v1")
+                        .unwrap_or_else(|_| "management.inspect.v1".into())
+                };
                 let reply =
                     server::client(directory, None, Some(&tool), json!({"object":reference}))
                         .await?;
                 success &= succeeded(&reply);
-                println!("{}", inspection_row(objects, object, reply));
+                print_inspection_row(objects, object, reply, options.setup);
             }
             if !success {
                 return Err("inspect: one or more objects could not be inspected; see their results and check root's management Conduits".into());

@@ -951,6 +951,16 @@ pub async fn serve(
     executor: Arc<ServingExecutor>,
     shutdown: CancellationToken,
 ) -> Result<()> {
+    serve_with_ready(shell, executor, shutdown, || {}).await
+}
+
+/// Reports readiness after binding the listener and constructing the HTTP router.
+pub async fn serve_with_ready(
+    shell: Arc<Shell>,
+    executor: Arc<ServingExecutor>,
+    shutdown: CancellationToken,
+    ready: impl FnOnce(),
+) -> Result<()> {
     preflight(&shell)?;
     let url = url::Url::parse(&shell.config.engine_url).map_err(|_| "invalid engine address")?;
     if url.path() != "/mcp" || url.query().is_some() {
@@ -993,6 +1003,9 @@ pub async fn serve(
         // The MCP middleware records requests and refusals. This route shares
         // only its credential and Origin checks.
         .route("/records", any(records).with_state(shell.clone()));
+    if !shutdown.is_cancelled() {
+        ready();
+    }
     axum::serve(listener, router)
         .with_graceful_shutdown(shutdown.cancelled_owned())
         .await

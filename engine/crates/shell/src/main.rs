@@ -2,6 +2,7 @@ mod help;
 use conduit_shell::{Config, MissingExecutor, Result, Shell, boundary, runner::Runner};
 use serde_json::{Value, json};
 use std::collections::BTreeMap;
+use std::io::{self, Read, Write};
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -10,13 +11,24 @@ fn run() -> Result<()> {
     if raw.is_empty() || raw[0] == "--help" {
         return help::print(None);
     }
+    if raw == ["--version"] {
+        println!(
+            "conduit {} (commit {})",
+            env!("CARGO_PKG_VERSION"),
+            env!("CLI_GIT_COMMIT")
+        );
+        return Ok(());
+    }
     let help_requested = if raw[0] == "answer" {
         raw[1..] == ["--help"]
-    } else if raw[0] == "sign-in" {
-        // A `--help` given as `--login`'s value is the login's name, not a request for help.
-        (1..raw.len()).any(|i| raw[i] == "--help" && raw[i - 1] != "--login")
     } else {
-        raw.iter().any(|arg| arg == "--help")
+        (1..raw.len()).any(|i| {
+            raw[i] == "--help"
+                && !matches!(
+                    (raw[0].as_str(), raw[i - 1].as_str()),
+                    ("sign-in", "--login") | ("call", "--arguments-file") | ("pending", "--agent")
+                )
+        })
     };
     if help_requested {
         return help::print(Some(&raw[0]));
@@ -34,6 +46,9 @@ fn run() -> Result<()> {
     let mut positional = Vec::new();
     let mut as_instance = None;
     let mut login = None;
+    let mut arguments_file = None;
+    let mut agent = None;
+    let mut setup = false;
     while let Some(arg) = args.next() {
         // ANSWER is passed as given, even where it looks like an option; ACTION is an
         // engine-issued ID and goes through the normal match.
@@ -77,6 +92,13 @@ fn run() -> Result<()> {
             "--login" if command == "sign-in" => {
                 login = Some(args.next().ok_or("--login needs NAME")?)
             }
+            "--arguments-file" if command == "call" => {
+                arguments_file = Some(args.next().ok_or("--arguments-file needs PATH or -")?)
+            }
+            "--agent" if command == "pending" => {
+                agent = Some(args.next().ok_or("--agent needs NAME")?)
+            }
+            "--setup" if command == "inspect" => setup = true,
             _ if [
                 "call",
                 "install",
@@ -168,6 +190,10 @@ fn run() -> Result<()> {
             &store,
             &positional,
             &repository,
+            conduit_shell::author::Options {
+                agent: agent.as_deref(),
+                ..Default::default()
+            },
         ));
     }
 
@@ -186,13 +212,17 @@ fn run() -> Result<()> {
 
     if command == "call" || command == "tools" {
         if command == "call" && !(1..=2).contains(&positional.len()) {
-            return Err("call needs TOOL [ARGUMENTS-JSON]".into());
+            return Err("call needs TOOL [ARGUMENTS-JSON | --arguments-file PATH|-]".into());
         }
-        let arguments = positional
-            .get(1)
-            .map(|s| serde_json::from_str(s).map_err(|_| "invalid arguments JSON".to_string()))
-            .transpose()?
-            .unwrap_or(json!({}));
+        let arguments = if let Some(path) = arguments_file.as_deref() {
+            read_arguments(path, positional.get(1).is_some())?
+        } else {
+            positional
+                .get(1)
+                .map(|s| serde_json::from_str(s).map_err(|_| "invalid arguments JSON".to_string()))
+                .transpose()?
+                .unwrap_or(json!({}))
+        };
         let runtime = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
         let result = runtime.block_on(conduit_shell::server::client(
             &store,
@@ -220,6 +250,10 @@ fn run() -> Result<()> {
                 &store,
                 &[],
                 &repository,
+                conduit_shell::author::Options {
+                    setup,
+                    ..Default::default()
+                },
             ));
         }
         Err(error) if command == "records" && error == "store already has an active shell" => {
@@ -231,6 +265,10 @@ fn run() -> Result<()> {
     };
     if command == "serve" {
         conduit_shell::server::preflight(&shell)?;
+        let directory = store
+            .canonicalize()
+            .map_err(|error| format!("cannot resolve store path: {error}"))?;
+        let ready = json!({"ready":{"url":shell.config.engine_url,"store":directory}});
         // DL2/DL13: token subjects come from the shared last-commit snapshot.
         shell.issue_client_token(&object_id(shell.state()?.as_ref(), "root")?)?;
         let runner = Runner::new(&shell, std::env::current_exe().map_err(|e| e.to_string())?)?;
@@ -267,7 +305,12 @@ fn run() -> Result<()> {
             .await
             .map_err(|_| "startup setup failed")??;
             if !shutdown.is_cancelled() {
-                conduit_shell::server::serve(shell.clone(), executor.clone(), shutdown).await?;
+                conduit_shell::server::serve_with_ready(shell.clone(), executor.clone(), shutdown, || {
+                    let mut stdout = io::stdout().lock();
+                    if let Err(error) = writeln!(stdout, "{ready}").and_then(|()| stdout.flush()) {
+                        let _ = writeln!(io::stderr().lock(), "conduit serve: cannot write ready line: {error}");
+                    }
+                }).await?;
             }
             if setup_succeeded { Ok(()) } else { Err("serve: one or more startup setups failed; see setup diagnostics (the engine continued serving for repair)".into()) }
         });
@@ -300,24 +343,25 @@ fn run() -> Result<()> {
         "inspect" => {
             let state = shell.state()?;
             let root = object_id(&state, "root")?;
-            for object in &state.objects {
-                let route = state.objects.iter().find(|v| {
-                    v["kind"] == "Conduit"
-                        && reference_id(&v["consumer"]) == &json!(root)
-                        && reference_id(&v["target"]) == reference_id(&object["owner"])
-                        && v["open"] == true
-                });
-                let tool = route
-                    .and_then(local_name)
-                    .map(|name| format!("{name}.inspect.v1"))
-                    .unwrap_or_else(|| "management.inspect.v1".into());
+            for object in conduit_shell::author::inspection_objects(&state.objects, setup) {
                 let reference = json!({"kind":object["kind"],"name":object["name"]});
+                let tool = if setup {
+                    conduit_shell::author::setup_inspection_tool(&state.objects, &reference)
+                } else {
+                    let route = state.objects.iter().find(|v| {
+                        v["kind"] == "Conduit"
+                            && reference_id(&v["consumer"]) == &json!(root)
+                            && reference_id(&v["target"]) == reference_id(&object["owner"])
+                            && v["open"] == true
+                    });
+                    route
+                        .and_then(local_name)
+                        .map(|name| format!("{name}.inspect.v1"))
+                        .unwrap_or_else(|| "management.inspect.v1".into())
+                };
                 let reply = shell.submit(json!({"kind":"invoke","request":{"identity":{"kind":"instance","id":root},"tool":tool,"arguments":{"object":reference}}}), &MissingExecutor)?;
                 success &= conduit_shell::author::succeeded(&reply);
-                println!(
-                    "{}",
-                    conduit_shell::author::inspection_row(&state.objects, object, reply)
-                );
+                conduit_shell::author::print_inspection_row(&state.objects, object, reply, setup);
             }
         }
         "register" => {
@@ -374,6 +418,33 @@ fn run() -> Result<()> {
         ))
     }
 }
+fn read_arguments(path: &str, has_inline: bool) -> Result<Value> {
+    let source = if path == "-" {
+        "standard input".to_string()
+    } else {
+        format!("{path:?}")
+    };
+    if has_inline {
+        return Err(format!(
+            "cannot combine inline ARGUMENTS-JSON with --arguments-file from {source}"
+        ));
+    }
+    let bytes = if path == "-" {
+        let mut bytes = Vec::new();
+        io::stdin().read_to_end(&mut bytes).map(|_| bytes)
+    } else {
+        std::fs::read(path)
+    }
+    .map_err(|error| format!("cannot read arguments from {source}: {error}"))?;
+    serde_json::from_slice(&bytes).map_err(|error| {
+        format!(
+            "invalid arguments JSON from {source} at line {}, column {}",
+            error.line(),
+            error.column()
+        )
+    })
+}
+
 fn print_records(export: Value) -> Result<()> {
     for record in export["records"]
         .as_array()

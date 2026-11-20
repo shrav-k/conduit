@@ -34,8 +34,8 @@ const COMMANDS: [(&str, &str, &str); 15] = [
         "KIND/NAME",
         "unregister --store /tmp/conduit Resource/directory",
     ),
-    ("inspect", "", "inspect --store /tmp/conduit"),
-    ("pending", "", "pending --store /tmp/conduit"),
+    ("inspect", "[--setup]", "inspect --store /tmp/conduit"),
+    ("pending", "[--agent NAME]", "pending --store /tmp/conduit"),
     (
         "answer",
         "ACTION ANSWER",
@@ -55,7 +55,7 @@ const COMMANDS: [(&str, &str, &str); 15] = [
     ),
     (
         "call",
-        "TOOL [ARGUMENTS-JSON]",
+        "TOOL [ARGUMENTS-JSON | --arguments-file PATH|-]",
         "call --store /tmp/conduit management.inspect.v1 '{\"object\":{\"kind\":\"Interface\",\"name\":\"root\"}}'",
     ),
 ];
@@ -67,14 +67,14 @@ const DESCRIPTIONS: [&str; 15] = [
     "Install an archive through serve. SHA256 is the archive's digest (optional sha256: prefix). Install dependencies first.",
     "Retire an instance through serve, routing Resources through their owning Pool.",
     "Unregister an object through serve using its current revision; retire live instances first.",
-    "Inspect every object as root, one JSON line each. Uses serve if the store is active. Refused inspections also cause a nonzero exit.",
-    "List the pending actions raised at root through serve, one JSON line each as list.v1 gives them; prints nothing when none is raised.",
+    "Inspect every object as root, one JSON line each. --setup shows each instance's last setup. Uses serve if the store is active. Refused inspections also cause a nonzero exit.",
+    "List the pending actions raised at root through serve, one JSON line each as list.v1 gives them. --agent NAME selects actions naming that Agent. Prints nothing when none is raised.",
     "Answer a setup action raised at root through serve, through root's Conduit to the target that authorizes inspection of its subject; a setup takes dismissed. Sends nothing for an action not raised at root or of another kind.",
     "Sign in an Agent or Resource through serve and root's Conduit to its owner: shows the engine's message and the full URL, opens the browser only after you type y, and retries each time you press Enter until the engine answers. --login asks for one of the Type's stated logins; the engine refuses it where the sign-in hook is plain, as in the 0.2.0 Agent packages. Carries no return from another machine.",
     "Export ordered CloudEvents as JSON lines. Uses serve while it holds the store. Gaps cause a nonzero exit.",
-    "Hold the store, set up registered instances and serve MCP on its fixed loopback URL. SIGTERM or Ctrl-C ends runs.",
+    "Hold the store, set up registered instances and serve MCP on its fixed loopback URL. Prints one JSON ready line after binding. SIGTERM or Ctrl-C ends runs.",
     "List tools presented to root or a named instance. Set up the instance first and open its Conduits if its list is empty.",
-    "Call a presented root tool once through serve. ARGUMENTS-JSON must be an object (default {}). Failed or unknown outcomes cause a nonzero exit.",
+    "Call a presented root tool once through serve. Arguments must be a JSON object (default {}). --arguments-file - reads standard input to its end. Failed or unknown outcomes cause a nonzero exit.",
 ];
 pub fn print(command: Option<&str>) -> Result<(), String> {
     if let Some(name) = command {
@@ -85,6 +85,9 @@ pub fn print(command: Option<&str>) -> Result<(), String> {
         }
     } else {
         println!("Conduit author commands. Usage: conduit COMMAND --store DIR [ARGUMENTS]\n");
+        println!(
+            "conduit --version\n  Show the crate version and build commit without opening a store. Uncommitted changes are omitted.\n"
+        );
     }
     for (i, (name, arguments, example)) in COMMANDS.iter().enumerate() {
         if command.is_none_or(|c| c == *name) {
@@ -95,7 +98,7 @@ pub fn print(command: Option<&str>) -> Result<(), String> {
         }
     }
     println!(
-        "--store DIR: initialized private store (required except for help).\n--help: show usage without opening a store.\nRunner/store options for init, register and serve:\n  --url URL: fixed loopback /mcp address (default http://127.0.0.1:3000/mcp).\n  --output-cap-bytes N: retained output cap (default 67108864).\n  --output-age-seconds N: retained output age (default 604800).\n  --initialize-timeout-seconds N: provider initialization wait (default 30).\n  --call-timeout-seconds N: provider call wait (default 120).\n  --pass-environment NAME: allow an environment name into provider runs; repeatable.\nServing commands use the URL fixed in the store. Any printed failed result causes exit 1."
+        "--store DIR: initialized private store (required except for help and version).\n--help: show usage without opening a store.\nRunner/store options for init, register and serve:\n  --url URL: fixed loopback /mcp address (default http://127.0.0.1:3000/mcp).\n  --output-cap-bytes N: retained output cap (default 67108864).\n  --output-age-seconds N: retained output age (default 604800).\n  --initialize-timeout-seconds N: provider initialization wait (default 30).\n  --call-timeout-seconds N: provider call wait (default 120).\n  --pass-environment NAME: allow an environment name into provider runs; repeatable.\nServing commands use the URL fixed in the store. Any printed failed result causes exit 1."
     );
     Ok(())
 }

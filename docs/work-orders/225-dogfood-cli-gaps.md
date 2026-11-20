@@ -310,4 +310,11 @@ fresh, read-only Claude reader read the diff
 
 ## Record
 
-Not yet run.
+Run on 2026-11-20 through Conduit itself, by the dogfood's own Agents, in Pacific time. Worker-2's
+first turn (14:48 to 15:12) built it: its five new tests failed on the unchanged shell for the
+expected reasons and pass, and the one whole engine run passed 418. `turn-verifier-2.turn.v1`
+(15:15 to 15:20) found two musts in the build's commit stamp: it missed a retargeted
+intermediate symbolic ref and a reftable repository's moves. The second turn (15:21 to 15:25)
+fixed both, each with a regression that failed first. `turn-reader-1.turn.v1` (15:30 to 15:34),
+the Claude reader, accepted it with one nit: the README's ready-line example now shows the bytes
+serve prints. The gate's run on the squash is the coordinator's, at the merge.

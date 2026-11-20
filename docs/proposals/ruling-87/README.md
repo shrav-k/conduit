@@ -1,6 +1,6 @@
 # Ruling 87: every work order runs one Codex round, the Opus reader judges the verifier's musts, and the one-round trial is closed
 
-Status: in force (ruled by the owner on 2026-11-19, as the coordinator's notes date the answer). Holds now: [IN_FORCE.md](../../../IN_FORCE.md), topic 15 (points 1 to 4), and the coordinator's row and the section on dispatch and checking in [work orders](../../implementation/WORK_ORDERS.md#roles). This record says why.
+Status: in force; amended by 92 (point 4: point 1's round keeps its worker and drops its verifier, and point 2 falls, the coordinator's reading) (ruled by the owner on 2026-11-19, as the coordinator's notes date the answer). Holds now: [IN_FORCE.md](../../../IN_FORCE.md), topic 15 (points 1 to 4), and the coordinator's row and the section on dispatch and checking in [work orders](../../implementation/WORK_ORDERS.md#roles). This record says why.
 
 [Ruling 85](../ruling-85/README.md), point 3, set a trial: "On three engine orders that A77 does
 not pair, Codex runs one round when its first verifier finds no must. The coordinator compares the

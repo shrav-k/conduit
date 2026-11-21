@@ -1,0 +1,15 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "address": "example.org/vectors/secret-store-other-capability",
+  "implementations": {
+    "store-exec": {
+      "implements": [
+        "github.com/shrav-k/conduit/core#get-secret.v1",
+        "#list.v1"
+      ],
+      "command": [
+        "/fixture/store"
+      ]
+    }
+  }
+}

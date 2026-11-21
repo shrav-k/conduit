@@ -40,7 +40,7 @@ SCH-019-default-that-is-not-a-duration.yaml named invalid SCH-019
 SCH-019-default-that-is-not-a-uuid.yaml named invalid SCH-019
 SCH-019-input-default-fails-its-schema.yaml named invalid SCH-019
 SEC-001-secret-reference-beside-a-string.yaml error error -
-SEC-022-type-of-a-secret-resource-that-offers-another-capability.yaml accepted succeeded -
+SEC-022-type-of-a-secret-resource-that-offers-another-capability.yaml named invalid SEC-022
 SEC-024-secret-header-to-http.yaml error error -
 TPL-003-template-selects-an-operation-of-the-engine.yaml named invalid TPL-003
 TPL-004-offered-operation-without-an-implementation.yaml named invalid TPL-004

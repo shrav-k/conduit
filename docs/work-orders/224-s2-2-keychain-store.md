@@ -263,4 +263,34 @@ check's last line. Stage nothing. The coordinator runs the gate, has the diff re
 
 ## Record
 
-Not yet run.
+Run on 2026-11-20 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+Worker-1's first turn stopped before editing, correctly: root's message forbade the order's
+read-only setting queries. Root then allowed exactly `list-keychains -d user` and
+`default-keychain -d user`, never with `-s`, with their output never printed. The second turn
+(14:34 to 14:58) built the package, and the one whole engine run passed 414.
+
+`turn-verifier-1.turn.v1` (14:58 to 15:02) found two musts:
+- the tests' `security` mutations could raise a dialog;
+- the provider could open any keychain it was named.
+
+The owner chose "A: dedicated only": the store always refuses the login keychain and the user's
+default keychain. The third turn (15:16 to 15:24) moved the mutations in-process with
+interaction off and added that refusal. It dropped the partition-list test, which has no
+in-process call in the cached crates.
+
+`turn-reader-1.turn.v1` (15:25 to 15:30), the Claude reader, accepted it with three shoulds and a
+nit, which worker-2 applied (15:30 to 15:38):
+- the default keychain is compared by file identity as well as by path;
+- the default comparison is a pure function, unit-tested on stand-in paths, and no test passes
+  the user's real default keychain path to the provider;
+- the README asks for an owner-only directory, and a re-stat after the read drops the value on a
+  mismatch.
+
+Amended Done-when expectations, by root, for the reader's third should:
+- the forbidden-pattern grep now matches the login-name refusal literals and the hard-link
+  fixture's name, by design of the owner's decision;
+- the command-name grep prints `"default-keychain" "list-keychains"` alone;
+- the partition-list test is dropped.
+
+The search list and default keychain matched before and after every native test. The gate's run
+on the squash is the coordinator's, at the merge.

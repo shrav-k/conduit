@@ -78,6 +78,7 @@ OWN_PATHS_ONLY = {
 # directory, path read, evidence file within the directory, literal evidence in that file.
 RUST_READS = (
     ('packages/provider-file', 'spec/', 'tests/schema_drift.rs', '"../../spec'),
+    ('packages/provider-keychain', 'spec/', 'tests/schema_drift.rs', '"../../spec'),
     ('packages/provider-local-directory', 'spec/', 'tests/schema_drift.rs', '"../../spec'),
     ('packages/provider-local-machine', 'spec/', 'tests/schema_drift.rs', '"../../spec'),
     ('packages/provider-local-process', 'spec/', 'tests/package.rs', '"../../spec'),

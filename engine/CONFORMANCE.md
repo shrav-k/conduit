@@ -300,6 +300,9 @@ in the row "DL16: executor coverage". The engine reads secrets from the
 Each run receives fresh reads through its own open Conduits, and each read is recorded
 without its value. Runtime-provider runs, remote connections (SEC-013 and SEC-023)
 and other stores have no qualification here.
+From order 224, installation and submission refuse a secret store's Type that lists a
+control or offers another capability (SEC-005, SEC-022), and
+[`packages/provider-keychain`](../packages/provider-keychain/README.md) is tested as a package alone.
 
 `unregister.v1` checks the current revision and retirement state, asks once more for the stop
 of a selected run, then removes the instance whatever that stop returned. A template is removed

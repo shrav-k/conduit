@@ -19,3 +19,14 @@ condition = "AND"
 paths = ['''(?:^|/)packages/scenario\-s2\-linear/tests/mcp\.rs$''']
 regexTarget = "line"
 regexes = ['''(?m)^[ \t]*\.env\("S2_LINEAR_API_KEY",\ "SYNTHETIC\-EOF\-PROBE\-0001"\)$''']
+
+# A fake PEM block (three bytes, AQID) in the test that the https roots parser refuses a private
+# key; not a key.
+[[rules]]
+id = "private-key"
+
+[[rules.allowlists]]
+condition = "AND"
+paths = ['''(?:^|/)engine/crates/shell/src/https_tests\.rs$''']
+regexTarget = "line"
+regexes = ['''(?m)^[ \t]*"-----BEGIN PRIVATE KEY-----\\nAQID\\n-----END PRIVATE KEY-----",$''']

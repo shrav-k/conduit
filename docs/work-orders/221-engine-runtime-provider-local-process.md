@@ -220,4 +220,18 @@ Order 226, once this merges: the rest of R-1, with R-2 and R-3 and the findings 
 
 ## Record
 
-Not yet run.
+Run on 2026-11-20 through Conduit itself, by the dogfood's own Agents, in Pacific time. Root
+gave worker-1's directory the five side-branch commits. `turn-worker-1.turn.v1` (15:25 to 15:51)
+carried orders 079 and 080 onto main and fixed 080's three bridge musts, each with a regression
+that failed first. The one whole engine run passed 451 across 31 targets, and the lockfile holds
+neither crate that the cache lacks.
+
+`turn-verifier-1.turn.v1` (15:52 to 15:57) found three more musts:
+- the https address check accepted the loopback name `localhost.`;
+- URL normalization could erase empty user information before the bridge checked it;
+- the bridge's header extraction applied a JSON depth limit to the whole request.
+
+The second turn (15:57 to 16:04) fixed all three, each with a regression that failed first.
+`turn-reader-1.turn.v1` (16:04 to 16:09), the Claude reader, accepted it with one cosmetic nit
+(a blank line in `engine/crates/shell/Cargo.toml`), now fixed. Order 226 holds the rest of R-1.
+The gate's run on the squash is the coordinator's, at the merge.

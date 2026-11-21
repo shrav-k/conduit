@@ -234,8 +234,20 @@ struct Handler {
     sessions: Arc<Mutex<BTreeMap<String, String>>>,
     session_manager: Arc<LocalSessionManager>,
     relay: Arc<Mutex<relay::States>>,
+    https: bool,
 }
 impl Handler {
+    fn address(&self) -> &str {
+        if self.https {
+            self.shell
+                .config
+                .engine_https_url
+                .as_deref()
+                .expect("https listener has an address")
+        } else {
+            &self.shell.config.engine_url
+        }
+    }
     fn identity(
         &self,
         context: &RequestContext<RoleServer>,
@@ -670,7 +682,11 @@ fn unauthorized() -> Response {
     )
         .into_response()
 }
-async fn verified_instance(shell: &Arc<Shell>, headers: &HeaderMap) -> Result<Option<String>> {
+async fn verified_instance(
+    shell: &Arc<Shell>,
+    headers: &HeaderMap,
+    https: bool,
+) -> Result<Option<String>> {
     let token = headers
         .get("authorization")
         .and_then(|v| v.to_str().ok())
@@ -678,9 +694,16 @@ async fn verified_instance(shell: &Arc<Shell>, headers: &HeaderMap) -> Result<Op
         .map(str::to_owned);
     // Verification reads the committed state under the writer mutex.
     let shell = shell.clone();
-    let identity = tokio::task::spawn_blocking(move || shell.verify_token(token.as_deref()))
-        .await
-        .map_err(|_| "token verification task failed")??;
+    // IFC-042: the listener selects the token audience.
+    let identity = tokio::task::spawn_blocking(move || {
+        if https {
+            shell.verify_https_token(token.as_deref())
+        } else {
+            shell.verify_token(token.as_deref())
+        }
+    })
+    .await
+    .map_err(|_| "token verification task failed")??;
     Ok(match identity {
         Identity::Instance { id } => Some(id),
         _ => None,
@@ -703,7 +726,7 @@ async fn records(State(shell): State<Arc<Shell>>, method: Method, headers: Heade
     if !origin_allowed(&headers, &shell.config.engine_url) {
         return StatusCode::FORBIDDEN.into_response();
     }
-    let identity = match verified_instance(&shell, &headers).await {
+    let identity = match verified_instance(&shell, &headers, false).await {
         Ok(Some(id)) => id,
         Ok(None) => return unauthorized(),
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
@@ -730,7 +753,7 @@ async fn records(State(shell): State<Arc<Shell>>, method: Method, headers: Heade
 }
 async fn authenticate(State(handler): State<Handler>, request: Request, next: Next) -> Response {
     let (mut parts, body) = request.into_parts();
-    let identity = match verified_instance(&handler.shell, &parts.headers).await {
+    let identity = match verified_instance(&handler.shell, &parts.headers, handler.https).await {
         Ok(identity) => identity,
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
@@ -747,7 +770,7 @@ async fn authenticate(State(handler): State<Handler>, request: Request, next: Ne
         }
     };
     let value: Value = serde_json::from_slice(&bytes).unwrap_or(Value::Null);
-    if !origin_allowed(&parts.headers, &handler.shell.config.engine_url) {
+    if !origin_allowed(&parts.headers, handler.address()) {
         if record_rejection(&handler, identity.as_deref(), &value, false)
             .await
             .is_err()
@@ -766,11 +789,15 @@ async fn authenticate(State(handler): State<Handler>, request: Request, next: Ne
                 }))
             )
         {
-            // IFC-036: rmcp owns malformed-protocol responses. With no established
-            // identity there is no request record, and no tool handler can be reached.
-            return next
-                .run(Request::from_parts(parts, Body::from(bytes)))
-                .await;
+            // IFC-036: rmcp owns malformed-protocol responses at /mcp. IFC-042:
+            // unmatched paths still require valid credentials before the fallback.
+            // With no established identity, an unreadable call has no record.
+            return if parts.uri.path() == "/mcp" {
+                next.run(Request::from_parts(parts, Body::from(bytes)))
+                    .await
+            } else {
+                unauthorized()
+            };
         }
         if value["method"] == "tools/call"
             && record_rejection(&handler, None, &value, true)
@@ -850,6 +877,8 @@ async fn authenticate(State(handler): State<Handler>, request: Request, next: Ne
             Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
         };
         let error: Value = serde_json::from_slice(&bytes).unwrap_or(Value::Null);
+        // IFC-036/OPS-023: transport failures (including fallback 404s) remain
+        // unreadable requests, recorded as invalid on both listeners.
         if error["error"]["code"] != json!(ErrorCode::UNSUPPORTED_PROTOCOL_VERSION)
             && audit.0.swap(2, Ordering::SeqCst) == 0
             && record_rejection(&handler, Some(&identity), &value, false)
@@ -945,7 +974,53 @@ fn session_manager(config: &crate::Config) -> LocalSessionManager {
     manager
 }
 
-/// Binds only the fixed loopback endpoint. The caller owns executor lifetime/setup.
+/// Each listener owns its Handler, session map and session manager.
+fn listener_router(
+    shell: Arc<Shell>,
+    executor: Arc<ServingExecutor>,
+    shutdown: CancellationToken,
+    https: bool,
+) -> Router {
+    // 074: a session outlives the calls it carries (call_timeout plus 60 seconds).
+    let session_manager = Arc::new(session_manager(&shell.config));
+    let handler = Handler {
+        shell: shell.clone(),
+        executor,
+        shutdown: shutdown.clone(),
+        sessions: Arc::default(),
+        session_manager,
+        relay: Arc::default(),
+        https,
+    };
+    let mut config = StreamableHttpServerConfig::default();
+    config.cancellation_token = shutdown;
+    if https {
+        // DL13/IFC-042: preserve the HTTPS authority; no loopback Host entry.
+        let url = url::Url::parse(handler.address()).expect("checked https address");
+        config.allowed_hosts =
+            vec![url[url::Position::BeforeHost..url::Position::AfterPort].into()];
+    }
+    let service = StreamableHttpService::new(
+        {
+            let handler = handler.clone();
+            move || Ok(handler.clone())
+        },
+        handler.session_manager.clone(),
+        config,
+    );
+    let router = Router::new()
+        .route_service("/mcp", service)
+        // IFC-042: authentication also wraps fallback paths on both listeners.
+        .layer(middleware::from_fn_with_state(handler, authenticate));
+    if https {
+        router
+    } else {
+        // Order 219 serves root's snapshot on the original listener.
+        router.route("/records", any(records).with_state(shell))
+    }
+}
+
+/// Binds only loopback endpoints. The caller owns executor lifetime/setup.
 pub async fn serve(
     shell: Arc<Shell>,
     executor: Arc<ServingExecutor>,
@@ -962,6 +1037,7 @@ pub async fn serve_with_ready(
     ready: impl FnOnce(),
 ) -> Result<()> {
     preflight(&shell)?;
+    shell.config.validate_serve()?;
     let url = url::Url::parse(&shell.config.engine_url).map_err(|_| "invalid engine address")?;
     if url.path() != "/mcp" || url.query().is_some() {
         return Err("engine address must have path /mcp and no query".into());
@@ -976,40 +1052,46 @@ pub async fn serve_with_ready(
     if port == 0 {
         return Err("engine needs a fixed nonzero port".into());
     }
-    let listener = TcpListener::bind((ip, port))
+    let first_address = std::net::SocketAddr::new(ip, port);
+    let listener = TcpListener::bind(first_address)
         .await
-        .map_err(|e| e.to_string())?;
-    let handler = Handler {
-        shell: shell.clone(),
-        executor: executor.clone(),
-        shutdown: shutdown.clone(),
-        sessions: Arc::default(),
-        session_manager: Arc::new(session_manager(&shell.config)),
-        relay: Arc::default(),
+        .map_err(|e| format!("cannot bind {first_address}: {e}"))?;
+    // DL13: bind both before serving either; validate_serve checked loopback/nonzero.
+    let second = if shell.config.engine_https_url.is_some() {
+        let address = shell.config.https_listen.expect("checked https listener");
+        Some(
+            TcpListener::bind(address)
+                .await
+                .map_err(|e| format!("cannot bind {address}: {e}"))?,
+        )
+    } else {
+        None
     };
-    let mut config = StreamableHttpServerConfig::default();
-    config.cancellation_token = shutdown.clone();
-    let service = StreamableHttpService::new(
-        {
-            let handler = handler.clone();
-            move || Ok(handler.clone())
-        },
-        handler.session_manager.clone(),
-        config,
-    );
-    let router = Router::new()
-        .route_service("/mcp", service)
-        .layer(middleware::from_fn_with_state(handler, authenticate))
-        // The MCP middleware records requests and refusals. This route shares
-        // only its credential and Origin checks.
-        .route("/records", any(records).with_state(shell.clone()));
+    let run = |listener, https| {
+        let router = listener_router(shell.clone(), executor.clone(), shutdown.clone(), https);
+        let shutdown = shutdown.clone();
+        async move {
+            let result = axum::serve(listener, router)
+                .with_graceful_shutdown(shutdown.clone().cancelled_owned())
+                .await;
+            if result.is_err() {
+                shutdown.cancel();
+            }
+            result.map_err(|e| e.to_string())
+        }
+    };
     if !shutdown.is_cancelled() {
         ready();
     }
-    axum::serve(listener, router)
-        .with_graceful_shutdown(shutdown.cancelled_owned())
-        .await
-        .map_err(|e| e.to_string())?;
+    let (first, second) = tokio::join!(run(listener, false), async {
+        if let Some(listener) = second {
+            run(listener, true).await
+        } else {
+            Ok(())
+        }
+    });
+    first?;
+    second?;
     tokio::task::spawn_blocking(move || shell.submit(json!({"kind":"recover"}), executor.as_ref()))
         .await
         .map_err(|_| "shutdown recovery failed")??;

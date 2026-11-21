@@ -49,6 +49,7 @@ async fn connect(
     token: &str,
     changes: Arc<AtomicUsize>,
 ) -> RunningService<RoleClient, Consumer> {
+    conduit_shell::install_crypto_provider();
     Consumer(changes)
         .serve(StreamableHttpClientTransport::with_client(
             reqwest::Client::new(),
@@ -127,6 +128,7 @@ async fn changed(changes: &AtomicUsize, target: usize) {
 
 #[test]
 fn real_npm_serve_s1_tokens_access_t7_and_shutdown() {
+    conduit_shell::install_crypto_provider();
     if std::env::var_os("CONDUIT_TEST_NPM").is_none() {
         return;
     }

@@ -1260,6 +1260,8 @@ fn changes_schemes(control: &Value) -> bool {
         .any(|pointer| pointers_reach(pointer, "/schemes"))
 }
 
+// SEC-024: "The URL is compared as the Remote writes it".
+// Url::host() would read 127.1 as 127.0.0.1.
 fn secret_transport(url: &str) -> bool {
     let Some((scheme, rest)) = url.split_once("://") else {
         return false;
@@ -1855,6 +1857,27 @@ mod tests {
             "http://example.test\\@localhost/mcp",
         ] {
             assert!(!super::secret_transport(refused));
+        }
+    }
+
+    #[test]
+    fn sec_024_reads_the_host_as_written() {
+        for url in [
+            "http://127.1:8080/mcp",
+            "http://0x7f000001/mcp",
+            "http://2130706433/mcp",
+            "http://0177.0.0.1/mcp",
+            "http://127.000.000.001/mcp",
+        ] {
+            assert!(!super::secret_transport(url), "unexpectedly accepted {url}");
+        }
+        for url in [
+            "http://127.0.0.1:8080/mcp",
+            "http://127.255.255.254/mcp",
+            "http://localhost:8080/mcp",
+            "http://[::1]:8080/mcp",
+        ] {
+            assert!(super::secret_transport(url), "unexpectedly refused {url}");
         }
     }
 

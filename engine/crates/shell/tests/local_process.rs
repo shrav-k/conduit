@@ -244,7 +244,11 @@ impl Fixture {
                 }
                 "agent" => doc["spec"]["config"] = json!({"observations":temp.path().join("a")}),
                 "provider-template" => {
-                    doc["spec"]["type"] = json!(format!("{PACKAGE}#local-process.v1"))
+                    doc["spec"]["type"] = json!(format!("{PACKAGE}#local-process.v1"));
+                    let durable = temp.path().join("durable");
+                    fs::create_dir(&durable).unwrap();
+                    fs::set_permissions(&durable, fs::Permissions::from_mode(0o700)).unwrap();
+                    doc["spec"]["config"]["durableDir"] = json!(durable);
                 }
                 _ => {}
             }

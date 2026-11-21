@@ -18,19 +18,23 @@ fn main() {
 }
 
 #[cfg(unix)]
-fn serve() -> Result<(), &'static str> {
-    use provider_local_process::{FileStore, LocalBackend, configuration};
+fn serve() -> Result<(), String> {
+    use provider_local_process::{DURABLE_DIR_VARIABLE, FileStore, LocalBackend, configuration};
     use runtime_provider_kit::{RuntimeServer, gate::TlsGate, names};
     use std::{path::Path, sync::Arc};
     let state = std::env::var_os(names::STATE_DIR_VARIABLE)
         .filter(|p| !p.is_empty())
         .ok_or("provider-local-process needs CONDUIT_STATE_DIR (stateDirVariable) to start")?;
+    let durable = std::env::var_os(DURABLE_DIR_VARIABLE)
+        .filter(|p| !p.is_empty())
+        .ok_or("provider-local-process needs durableDir (LOCAL_PROCESS_DURABLE_DIR) to start")?;
     let binary = std::env::current_exe().map_err(|_| "cannot locate provider executable")?;
-    let backend = Arc::new(
-        LocalBackend::new(Path::new(&state), &binary)
-            .map_err(|_| "cannot open private provider state directory")?,
-    );
-    let store = Arc::new(FileStore::new(Path::new(&state)));
+    let backend = Arc::new(LocalBackend::new(
+        Path::new(&state),
+        Path::new(&durable),
+        &binary,
+    )?);
+    let store = Arc::new(FileStore::new(backend.durable_directory()));
     let (gate, options) =
         configuration().map_err(|_| "invalid local-process startup configuration")?;
     tokio::runtime::Runtime::new()
@@ -42,6 +46,6 @@ fn serve() -> Result<(), &'static str> {
             server
                 .serve_stdio()
                 .await
-                .map_err(|_| "provider transport or cleanup failed")
+                .map_err(|_| "provider transport or cleanup failed".into())
         })
 }

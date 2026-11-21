@@ -107,11 +107,8 @@ fn package_documents_validate_against_repository_schemas() {
     );
     for pointer in item["environment"].as_object().unwrap().values() {
         let field = pointer.as_str().unwrap().strip_prefix('/').unwrap();
-        assert!(
-            contract["spec"]["schema"]["properties"][field]
-                .get("default")
-                .is_some()
-        );
+        let property = &contract["spec"]["schema"]["properties"][field];
+        assert_eq!(property.get("default").is_some(), field != "durableDir");
     }
 }
 #[test]
@@ -183,7 +180,9 @@ fn exported_type_template_passes_semantic_registration_rules() {
     // Reuse the repository's semantic resolver: document schemas alone cannot catch
     // MAN-017. A script file also preserves the checker's interpreter fallback.
     let script = tempfile::NamedTempFile::new().unwrap();
-    fs::write(script.path(), r#"
+    fs::write(
+        script.path(),
+        r#"
 import copy, pathlib, sys
 sys.path.insert(0, str(pathlib.Path(sys.argv[1]) / 'tools'))
 import check_schemas as checker
@@ -200,20 +199,26 @@ for path in (checker.ROOT / 'spec/core').glob('*.yaml'):
 template = {'apiVersion': manifest['apiVersion'], 'kind': 'Resource',
             'metadata': {'name': 'local-runtime'},
             'spec': {'type': address + '#local-process.v1'},
-            'config': {k: v['default'] for k, v in contract['spec']['schema']['properties'].items()}}
+            'config': {k: v['default'] for k, v in contract['spec']['schema']['properties'].items()
+                       if 'default' in v}}
+template['config']['durableDir'] = str(root / 'fixture-durable')
 def rules(type_doc):
     return checker.apply_rules([template], False, core,
         {core: core_docs, address: {'local-process.v1': type_doc}},
         items={address: manifest['implementations']})
+bindings = manifest['implementations']['provider']['environment']
+assert bindings.get('LOCAL_PROCESS_DURABLE_DIR') == '/durableDir', 'durableDir binding is missing'
 assert not rules(contract), 'exported Type template rejected'
-for pointer in manifest['implementations']['provider']['environment'].values():
+for pointer in bindings.values():
     field = pointer[1:]
     broken = copy.deepcopy(contract)
     broken['spec']['schema']['required'].remove(field)
     assert any(rule == 'item-place-required' and pointer in message
                for rule, message in rules(broken)), 'MAN-017 mutation was not rejected'
 print('template semantic validation passed')
-"#).unwrap();
+"#,
+    )
+    .unwrap();
     let result = Command::new("python3")
         .arg(script.path())
         .arg(repo)

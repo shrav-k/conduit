@@ -282,4 +282,25 @@ engine test's `changes.v1` result; how git is kept off root's configuration and 
 
 ## Record
 
-Not yet run.
+Run on 2026-11-20 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+Worker-2's first turn stopped before any change, correctly: the engine sent keyed calls to
+non-plain implementations without IFC-037's declaration. That became order 231, now merged. The
+second turn (18:26 to 18:59) built the slice: a Pool-owned working copy, its read and read-write
+Conduits, a patch that applies to a fresh clone, and removal at retirement. 11 package tests
+passed, and the one whole engine run passed 467.
+
+`turn-verifier-2.turn.v1` (19:00 to 19:07) found four musts:
+- base attributes could change the patch's bytes;
+- the local fetch ran `upload-pack` against the source and read its config;
+- patch generation and retirement reopened paths after validating them.
+
+The third turn (19:07 to 19:18) fixed all four, each with a regression that failed first. The
+copy now imports objects without running Git in the source, and a change Git cannot reproduce
+exactly fails with no patch.
+
+`turn-reader-1.turn.v1` (19:19 to 19:25), the Claude reader, accepted it with one should, which
+root applied: an entry's executable state is compared on the owner's execute bit alone, as Git
+records it. The package's 16 tests pass with the change, and it has no regression of its own for
+a differing umask. The dogfood's own use of the package, with a copy per worker, a read Conduit
+for the verifier and root applying the patch, is later work. The gate's run on the squash is the
+coordinator's, at the merge.

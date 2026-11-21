@@ -1,0 +1,149 @@
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: working-copy.v1
+  description: A local Git working copy. Its runner must supply CONDUIT_STATE_DIR.
+spec:
+  family: Resource
+  offers: ['#copy.v1']
+  requires: [github.com/shrav-k/conduit/core#setup-hook.v1, github.com/shrav-k/conduit/core#retire-hook.v1]
+  implementation:
+    github.com/shrav-k/conduit/core#setup-hook.v1: '#server'
+    github.com/shrav-k/conduit/core#retire-hook.v1: '#server'
+    '#file.read.v1': '#server'
+    '#directory.list.v1': '#server'
+    '#file.write.v1': '#server'
+    '#changes.v1': '#server'
+  records: {inputs: true, outputs: false}
+  schema:
+    type: object
+    properties:
+      repository: {type: string, pattern: '^/'}
+      commit: {type: string, pattern: '^[0-9a-f]{40}$'}
+      root: {type: string, pattern: '^/'}
+    required: [repository, commit, root]
+    additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Capability
+metadata:
+  name: copy.v1
+  description: Read, list, write, and take a patch from a local Git working copy.
+spec:
+  operations: ['#file.read.v1', '#directory.list.v1', '#file.write.v1', '#changes.v1']
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: file.read.v1
+  description: Read up to 8 MiB of UTF-8 from a regular file in the copy.
+spec:
+  inputSchema:
+    type: object
+    properties:
+      path:
+        type: string
+        anyOf:
+        - const: '.'
+        - pattern: '^[^/]+(/[^/]+)*$'
+          not: {pattern: '(^|/)([.]{1,2}|[.][gG][iI][tT])(/|$)'}
+    required: [path]
+    additionalProperties: false
+  outputSchema:
+    type: object
+    properties:
+      content: {type: string}
+    required: [content]
+    additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: directory.list.v1
+  description: List the immediate entries of a directory in byte order by name.
+spec:
+  inputSchema:
+    type: object
+    properties:
+      path:
+        type: string
+        anyOf:
+        - const: '.'
+        - pattern: '^[^/]+(/[^/]+)*$'
+          not: {pattern: '(^|/)([.]{1,2}|[.][gG][iI][tT])(/|$)'}
+    required: [path]
+    additionalProperties: false
+  outputSchema:
+    type: object
+    properties:
+      entries:
+        type: array
+        items:
+          type: object
+          properties:
+            name: {type: string}
+            kind: {enum: [file, directory, symlink, other]}
+          required: [name, kind]
+          additionalProperties: false
+    required: [entries]
+    additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: file.write.v1
+  description: Write up to 8 MiB of UTF-8 to a regular file in the copy.
+spec:
+  inputSchema:
+    type: object
+    properties:
+      path:
+        type: string
+        anyOf:
+        - const: '.'
+        - pattern: '^[^/]+(/[^/]+)*$'
+          not: {pattern: '(^|/)([.]{1,2}|[.][gG][iI][tT])(/|$)'}
+      content: {type: string}
+    required: [path, content]
+    additionalProperties: false
+  effect: Creates or replaces the file at path in the copy.
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: changes.v1
+  description: Return the changes to the copy against its checked-out base.
+spec:
+  inputSchema: {type: object, additionalProperties: false}
+  outputSchema:
+    type: object
+    properties:
+      base: {type: string, pattern: '^[0-9a-f]{40}$'}
+      files:
+        type: array
+        items:
+          type: object
+          properties:
+            path: {type: string}
+            change: {enum: [added, modified, deleted]}
+          required: [path, change]
+          additionalProperties: false
+      patch: {type: string}
+    required: [base, files, patch]
+    additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: read
+spec:
+  capability: '#copy.v1'
+  operations: ['#file.read.v1', '#directory.list.v1', '#changes.v1']
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: read-write
+spec:
+  capability: '#copy.v1'
+  operations: ['#file.read.v1', '#directory.list.v1', '#changes.v1', '#file.write.v1']

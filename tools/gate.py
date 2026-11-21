@@ -63,9 +63,9 @@ TOOL_TESTS_WHY = ('the branch changes nothing under tools/ or .github/workflows/
                   'Cargo.toml or Cargo.lock under packages/ or experiments/. ' + PYTHON_REASON)
 RUST_WHY = 'rust discovery did not pass, so no Rust directory or engine gate was chosen'
 ENGINE_PREFIXES = ('engine/', 'spec/', 'conformance/', 'packages/agent-claude-code/',
-                   'packages/agent-codex/', 'packages/provider-file/')
+                   'packages/agent-codex/', 'packages/provider-file/', 'packages/git/')
 ENGINE_WHY = ('the branch changes nothing under engine/, spec/, conformance/, '
-              'packages/agent-claude-code/, packages/agent-codex/ or packages/provider-file/')
+              'packages/agent-claude-code/, packages/agent-codex/, packages/provider-file/ or packages/git/')
 UNREACHED_WHY = ('the branch changes nothing in these, in a directory they depend on by path, '
                  'or in a path they read: ')
 NOT_BUILT_WHY = ('listed in macos_only of checks.yml, which CI does not build; '
@@ -77,6 +77,7 @@ OWN_PATHS_ONLY = {
 }
 # directory, path read, evidence file within the directory, literal evidence in that file.
 RUST_READS = (
+    ('packages/git', 'spec/', 'tests/schema_drift.rs', '"../../spec'),
     ('packages/provider-file', 'spec/', 'tests/schema_drift.rs', '"../../spec'),
     ('packages/provider-keychain', 'spec/', 'tests/schema_drift.rs', '"../../spec'),
     ('packages/provider-local-directory', 'spec/', 'tests/schema_drift.rs', '"../../spec'),

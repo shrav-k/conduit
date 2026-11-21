@@ -2,7 +2,7 @@
 
 Not binding. The specification in [spec/](../../spec/README.md) alone binds. This page says how
 the coordinator's session and Codex sessions divide the work on Conduit, as
-[ruling 48](../proposals/ruling-48/README.md) asks, what the first rounds taught, and the record
+[ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md) asks, what the first rounds taught, and the record
 of merged orders. Who decides and who merges, lanes included (ruling 71), is in
 [IN_FORCE.md, section 15](../../IN_FORCE.md#15-how-the-work-is-governed).
 
@@ -11,7 +11,7 @@ of merged orders. Who decides and who merges, lanes included (ruling 71), is in
 | Who | Does | Does not |
 | --- | --- | --- |
 | The owner | Rules on behavior, on what Conduit is for and on the order of the work. Can strike any decision of the coordinator | |
-| The admin session, the coordinator (Claude Code) | Plans the work and writes each order: what it applies, its scope, its done-when, its report. Makes the decisions an order applies, under rulings 37, 38 and 46, point 4, each logged and strikeable. Reviews what comes back, runs the checks, commits, and opens the pull request. Merges it where the order's fresh read found a must, or where its last Codex verifier reported one ([ruling 87](../proposals/ruling-87/README.md), point 2, as the coordinator reads it); an order whose fresh read found none, and whose last verifier reported none, merges on the local gate's pass without waiting, and the coordinator reviews that merge after it ([ruling 85](../proposals/ruling-85/README.md), point 1). By the coordinator's reading of that point, an order whose first read found a must is its to merge even after a clean reread, and an order whose clean read leaves shoulds merges once their diff-only reread finds no must. Puts to the owner what is the owner's | Spend its own session on work that an order can state |
+| The admin session, the coordinator (Claude Code) | Plans the work and writes each order: what it applies, its scope, its done-when, its report. Makes the decisions an order applies, under rulings 37, 38 and 46, point 4, each logged and strikeable. Reviews what comes back, runs the checks, commits, and opens the pull request. Merges it where the order's fresh read found a must, or where its last Codex verifier reported one ([ruling 87](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-87/README.md), point 2, as the coordinator reads it); an order whose fresh read found none, and whose last verifier reported none, merges on the local gate's pass without waiting, and the coordinator reviews that merge after it ([ruling 85](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-85/README.md), point 1). By the coordinator's reading of that point, an order whose first read found a must is its to merge even after a clean reread, and an order whose clean read leaves shoulds merges once their diff-only reread finds no must. Puts to the owner what is the owner's | Spend its own session on work that an order can state |
 | A Codex worker | Carries out one order in a working tree of its own: a build increment, an experiment, a sweep of the promises, a verification of another order's result, or a fresh read | Commit, push or open a pull request. Decide what the order leaves to the admin: it reports instead |
 
 Codex gets work whose result the admin can check: a done-when that the checks show, counts that
@@ -45,8 +45,8 @@ an experiment. It holds:
 ## Dispatch and checking
 
 How an order is dispatched, run in one Codex round, a worker and a fresh Codex verifier
-([ruling 87](../proposals/ruling-87/README.md), point 1; A77's paired orders keep a second, point
-3), read by a fresh Opus reader before it merges ([ruling 79](../proposals/ruling-79/README.md)),
+([ruling 87](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-87/README.md), point 1; A77's paired orders keep a second, point
+3), read by a fresh Opus reader before it merges ([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md)),
 which confirms or refutes each finding of a verifier that reported a must (ruling 87, point 2),
 and merged, with each command and the fault each part of the dispatch answers, is in
 [the method as run](METHOD_AS_RUN.md). Until a later order brings that page to ruling 87, it
@@ -121,23 +121,23 @@ stays with the engine rather than going to any worker.
 ## A77's measures, registered before the first paired read
 
 Registered on 2026-11-16 by work order 179, before the first paired read
-([ruling 45](../proposals/ruling-45/README.md)). [A77](../../ROADMAP.md#experiments-and-probes)
+([ruling 45](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-45/README.md)). [A77](../../ROADMAP.md#experiments-and-probes)
 keeps ruling 48's question: when Codex workers carry out the work under the admin session's
 orders, is the work as good, and does the admin session spend less? It measures
-[the method as run](METHOD_AS_RUN.md) under [ruling 79](../proposals/ruling-79/README.md), a
+[the method as run](METHOD_AS_RUN.md) under [ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md), a
 fresh Codex verifier in each round and a fresh, read-only Claude Opus reader once the checks
 pass, and adds one step, the paired read below. It applies
-[FR-498](../proposals/full-review/findings/G4-who-verifies.md#fr-498) and
-[FR-272](../proposals/full-review/findings/P01-work-orders-lanes.md#fr-272) as their verifiers
-corrected them, [FR-497](../proposals/full-review/findings/G4-who-verifies.md#fr-497),
-[FR-501](../proposals/full-review/findings/G4-who-verifies.md#fr-501), D3 and D9 of
-[the review's decisions](../proposals/full-review/decisions.md). The owner's
-[ruling 80](../proposals/ruling-80/README.md), point 6, pairs the readers at round 1, keeps A77's
+[FR-498](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G4-who-verifies.md#fr-498) and
+[FR-272](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/P01-work-orders-lanes.md#fr-272) as their verifiers
+corrected them, [FR-497](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G4-who-verifies.md#fr-497),
+[FR-501](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G4-who-verifies.md#fr-501), D3 and D9 of
+[the review's decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md). The owner's
+[ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md), point 6, pairs the readers at round 1, keeps A77's
 question whole and the 20-order counting rule, records the coordinator's spend per order only as
 a baseline, with no comparison, and leaves what the paired reads change to the owner. Its point
 10 has each merge wait for a local gate and no longer for CI, so claim 1 counts the reds that
 come after a merge. The other choices here are the coordinator's, each open to the owner's strike
-([ruling 48](../proposals/ruling-48/README.md)). It changes only by a dated amendment, merged
+([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)). It changes only by a dated amendment, merged
 before the first order it changes is dispatched.
 
 ### Claim
@@ -357,7 +357,7 @@ for those and says that the chain's orders had no paired read.
 
 ### Note of 2026-11-19: one Codex round
 
-Noted on 2026-11-19 by the coordinator, on [ruling 87](../proposals/ruling-87/README.md). From
+Noted on 2026-11-19 by the coordinator, on [ruling 87](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-87/README.md). From
 ruling 87's merge, A77's orders that are not paired run one Codex round, a worker and a fresh
 verifier (point 1), and a paired order keeps the round 2 that the paired read prescribes (point 3).
 The baseline's orders ran up to two Codex rounds; the result gives the rounds of each of A77's
@@ -368,7 +368,7 @@ owner's strike.
 ### Amendment of 2026-11-19: pairing paused until 050n merges
 
 Amended on 2026-11-19 by the coordinator, on the owner's choice quoted below, which
-[ruling 89](../proposals/ruling-89/README.md), point 6, records. On 2026-11-19 the owner was asked:
+[ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), point 6, records. On 2026-11-19 the owner was asked:
 "A77's paired reads add a blind Opus read, my judging, and a second Codex round to each paired
 order. Pause pairing until 050n merges, to save time and Claude allowance on the dogfood path?"
 The owner chose "Pause until 050n (Recommended)".
@@ -409,8 +409,8 @@ Below each Record, the order's decisions are condensed to a line or a phrase eac
 own bolded words where it had them. They say what the order asked, not what ran or passed. Their
 full text is in [this page's last full version](https://github.com/shrav-k/conduit/blob/d8440de34f0e7c5e564dee298e424d2956e8ac40/docs/implementation/WORK_ORDERS.md#the-record).
 What they settled holds in `spec/`, the
-[settlements register](../proposals/first-build/README.md#settlements-register), the
-[log of increment 4](../proposals/first-build/log-increment-4.md),
+[settlements register](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/README.md#settlements-register), the
+[log of increment 4](first-build/log-increment-4.md),
 [CONFORMANCE.md](../../engine/CONFORMANCE.md) and the packages' READMEs, as each line says.
 
 An order keeps its Record in its own file, to avoid parallel edits here. When a condensation
@@ -495,7 +495,7 @@ Decisions, the coordinator's under ruling 46, point 4, unless they say ruling 48
 - **E. The note on Codex's token is wrong**: Codex 0.167.0 reads headers from
   `mcp_servers.<id>.http_headers_helper`, as Claude Code does from `headersHelper`, so no adapter
   is counted in advance. Its 401 question and its note on a missing plain tool are answered in
-  [noted for later increments](../proposals/first-build/README.md#noted-for-later-increments);
+  [noted for later increments](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/README.md#noted-for-later-increments);
   experiments 008 and 009 showed Codex reaching an engine at a loopback address.
 - **F. What an Agent reaches by its own means is outside the documents**; confining it is a
   runtime provider's (PRV-006), and every restriction is reported as mediated (ACC-027). Now in
@@ -532,7 +532,7 @@ its own:
 
 - **Worker**: 17 minutes; the plan, the drafts of S1 and a test; six decisions for the admin, two candidate findings, nine proposed orders
 - **Verifier**: 4 minutes; two `must`, a promise's strength misstated and a safety case's refusal misdefined, and one `should`, a weak case
-- **What the admin changed**: Sent the worker back once with the findings, which it fixed in 5 minutes; [decided](../proposals/first-build/increment-2/decisions.md) the six points and the two findings
+- **What the admin changed**: Sent the worker back once with the findings, which it fixed in 5 minutes; [decided](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-2/decisions.md) the six points and the two findings
 - **State**: done on 2026-11-09
 
 Decisions: (1) the order is a reading and decides nothing, setting out options with a
@@ -540,7 +540,7 @@ recommendation; (2) nothing under `spec/` changes; (3) **`plan.md`**, the worker
 documents, with an existing tool for the history (ruling 40), the promises and safety cases S1
 touches, a format for the vectors (A39), a pure core with time and IDs passed in, where the text
 does not decide, and a sequence of orders; (4) **`s1/`**, the drafts; (5) **one test** that the
-loader accepts them. The admin's [decisions](../proposals/first-build/increment-2/decisions.md)
+loader accepts them. The admin's [decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-2/decisions.md)
 on the plan hold.
 
 ### Order 004
@@ -840,7 +840,7 @@ Decisions:
    other contents report conflict (OPS-032, OPS-034).
 3. **F1, by decision 5**: a succeeded `plain` invocation's content is given again on a repeat
    while DL10 keeps outputs, then a repeat reports conflict (OPS-034). Now finding 2-04.
-4. **Plain results**, by [decision 8a](../proposals/first-build/increment-2/decisions.md) on
+4. **Plain results**, by [decision 8a](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-2/decisions.md) on
    order 018's check: `-32602` from a `plain` server is `failed` only for an operation with no
    effect, not a control and starting no model work, `unknown` otherwise; after `-32020` a call is
    sent again only for an operation with no effect or declared safe to repeat; a rejection before
@@ -927,7 +927,7 @@ admin when it merged the order, on 2026-11-09:
 - **Verifier**: 3 minutes. One `must`: the report gave `failed` to the engine's own rejection
   before dispatch, which has a reason and no outcome (OPS-005).
 - **Admin**: fixed that sentence, and decided the two readings as decision 8a of
-  [increment 2's decisions](../proposals/first-build/increment-2/decisions.md), which order
+  [increment 2's decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-2/decisions.md), which order
   015 applies.
 
 Decisions: (1) only the new file, nothing under `spec/`; (2) **the protocol's text** on -32602
@@ -935,7 +935,7 @@ and -32020 in each named revision; (3) **what servers do**: whether a handler in
 SDKs can answer with either code after acting; (4) **the reference servers**: whether the
 filesystem server at 2.1.0 and 2.2.0 does; (5) **write** the check, with options and a
 recommendation, deciding nothing. It is now
-[the evidence for decision 8a](../proposals/first-build/increment-2/decisions.md#evidence-for-decision-8a).
+[the evidence for decision 8a](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-2/decisions.md#evidence-for-decision-8a).
 
 ### Order 019
 
@@ -970,7 +970,7 @@ a waiting caller could be given an earlier success instead of the core's refusal
 forever; outputs held under a pending repeat escaped the retention cap; and tokens carried no
 `exp`. The third was the admin's: this order said "no exp", against DL13 and JWT-SVID
 section 3.3. The admin settled it for an `exp` 100 years ahead, logged as finding 3-01 in the
-[log of increment 3](../proposals/first-build/README.md#settlements-register), and sent the worker back
+[log of increment 3](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/README.md#settlements-register), and sent the worker back
 once with all three. The second round added `request_replies` to the core's `Transition`, so
 the shell delivers the core's own reply, made `expire-outputs` reach outputs held in previous
 snapshots, and issued and checked the `exp`. The core's decisions did not change; every vector
@@ -989,7 +989,7 @@ Decisions, each choice now in [CONFORMANCE.md](../../engine/CONFORMANCE.md):
 4. **Evidence** from the shell: clock, random UUIDs, revision values and suffix candidates.
 5. **Recovery**: nothing dispatched before a crash is sent again (IMP-007), shown by crash tests.
 6. **Retention of outputs (DL10)**, as the owner asked in the
-   [first review](../proposals/first-build/to-review-with-the-owner.md#the-first-review-2026-11-10):
+   [first review](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/to-review-with-the-owner.md#the-first-review-2026-11-10):
    expiry through the core, oldest first, past a size cap or an age; invocation state never goes.
 7. **Identities (DL13)**: one signing key per store, never in state, records or logs; per instance
    a JWT-SVID with `jwks.json` and `ca.crt` in a per-run directory; verification asks whether the
@@ -1090,7 +1090,7 @@ target directory. The admin sent the worker back once with all six. The admin al
 `AGENTS.md` and `CONTRIBUTING.md`, which this order's scope left out, to say the names check
 covers `packages/`. The admin reran every check: 136 Rust tests in `reference-model/` and six
 in each package pass, and clippy, fmt and the five repository checks are clean. No real client
-ran; the [closeout plan](../proposals/first-build/increment-3/closeout-results-2026-11-10.md#how-to-run-the-open-checks) is for the admin.
+ran; the [closeout plan](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md#how-to-run-the-open-checks) is for the admin.
 
 Decisions, each now in the packages' READMEs,
 [Claude Code](../../packages/agent-claude-code/README.md) and
@@ -1129,7 +1129,7 @@ Decisions:
    with **no** `outputSchema`, and its results carry **no** `structuredContent` (IFC-025,
    IFC-033), because the protocol makes the schema optional, a client that sees one may prefer the
    structured result, and an empty map would hide the content. Item 11 of
-   [the review list](../proposals/first-build/to-review-with-the-owner.md).
+   [the review list](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/to-review-with-the-owner.md).
 2. **Finding 3-04, Claude Code's wrapper**: `--setting-sources ""`.
 3. **Finding 3-05, Codex's wrapper**: every feature 3-05 names disabled, and
    `project_doc_max_bytes=0`; `accountServices` enables `apps` alone.
@@ -1212,7 +1212,7 @@ Decisions:
    run; record a run started for the hook as a part of the retirement, with its effect; where the
    run's state is unknown, do not dispatch the hook, and record its part unavailable, with no
    effectful part invented (TPL-018, OPS-022). Item 19 of
-   [the review list](../proposals/first-build/to-review-with-the-owner.md).
+   [the review list](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/to-review-with-the-owner.md).
 2. **Finding 4-05, the runner test**: wait for the PID file's contents, not its existence.
 3. **Finding 4-07, a store that cannot be repaired**: `conduit serve` starts even where a
    registered instance's setup fails, so that the commands can repair it.
@@ -1349,7 +1349,7 @@ Decisions: (1) no promise, schema, expected outcome, fixture or digest changes; 
 directory** with `git mv`, crate and binary names kept; (3) **every path that names it** follows;
 (4) **the live documents' word**: "the engine", or "the reference engine" in ruling 47's sense,
 and "core" where ruling 46's pure core is meant; (5) **records keep their words**; (6) **find what
-is left**; (7) [ruling 64](../proposals/ruling-64/README.md), point 4: the rename, because ruling
+is left**; (7) [ruling 64](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-64/README.md), point 4: the rename, because ruling
 47 makes v0 the reference engine, which that directory holds.
 
 ### Order 034
@@ -1553,7 +1553,7 @@ of them. The shell's loopback tests could not run in the sandbox; no code change
 
 Decisions 1 and 3 to 6 are as [order 060](#order-060) sets them out. Decision 1 adds that lean
 vectors go under A39 (034-F1). Decision 2, **extract first** (E6 to E10, E12, E13): the [settlements
-register](../proposals/first-build/README.md#settlements-register), D19's caveat verbatim; "How to
+register](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/README.md#settlements-register), D19's caveat verbatim; "How to
 run the open checks", the sentinel method verbatim; "The core's boundary", rebuilt from the code;
 `conformance/README.md`'s "Planned work".
 
@@ -1575,7 +1575,7 @@ Decisions 1 and 3 to 6 are as [order 060](#order-060) sets them out. Decision 1 
 form's `synthesis.md` and `critic.md` for spec order 037. Decision 2, **extract first**: E21 into
 the simplification's record ("Rejected, and why" verbatim, the load-bearing guarantees, the
 v1-candidate reductions with their costs); E22 into the short form's synthesis; E23's provenance
-quotes and synthesis decisions into the [Projects brief](../proposals/projects/brief.md), where
+quotes and synthesis decisions into the [Projects brief](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/projects/brief.md), where
 missing.
 
 ### Order 065

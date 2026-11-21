@@ -28,7 +28,7 @@ under `spec/`, `conformance/`, `engine/` or `packages/` changes.
 ## What and why
 
 Order 050l's account hook, on the Codex lane, learns which ChatGPT account a home is signed in to by
-asking Codex itself, as [ruling 82](../proposals/ruling-82/README.md), point 1, rules: it starts
+asking Codex itself, as [ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md), point 1, rules: it starts
 `codex app-server` in the Agent's own home and asks `account/read` with `refreshToken` false, and
 never opens the login file. `refreshToken` false stops only the caller's refresh. Order 197's read
 of Codex 0.167.1
@@ -89,7 +89,7 @@ workspace discovery and the token endpoint from plain-http stubs on loopback
 `codex-rs/app-server/tests/common/auth_fixtures.rs`).
 
 **Who decided what.** Every decision below is the coordinator's, each open to the owner's strike
-([ruling 48](../proposals/ruling-48/README.md)): the Linux node rather than the Mac; the namespace
+([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)): the Linux node rather than the Mac; the namespace
 and its self-test; the three cases, P3 (an access token already expired) included beside the two
 triggers; the two arms, and the control that reaches the stub through the login's own issuer, with
 its fallback; three repetitions; the hold of 10 s after the answer; the fabricated values, the email
@@ -547,7 +547,7 @@ coordinator's.
    run block on the node itself and writes decision 6's files under this order, saying so in the
    Record.
 
-6. **The results files** (027's README; [ruling 52](../proposals/ruling-52/README.md): each reading
+6. **The results files** (027's README; [ruling 52](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-52/README.md): each reading
    as explicit as it can be).
    - `experiments/027-a5-sign-in/results-TODAY-refresh-probe.json`, as the probe wrote it, and
      `results-TODAY-refresh-probe-2.json` only where decision 2's text runs a second sitting.
@@ -753,12 +753,12 @@ sitting, the `Outcome:` line, and every fault. Quote no token, port or absolute 
 The coordinator then does the following:
 
 1. A fresh Codex verifier reads each round, and a fresh read-only Opus reader reads the result
-   before it merges ([ruling 79](../proposals/ruling-79/README.md), point 2). Both check that the
+   before it merges ([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md), point 2). Both check that the
    README's additions are decision 2's text and nothing else; that the crate holds no code copied
    from CX1 and its tests pass on the Mac too; that the JSON and the Markdown agree run by run; that
    the outcome follows decision 2's rules; and that nothing barred by "What is never recorded"
    appears. The reader reruns the crate's tests on the Mac and reads the JSON; it runs no client.
-2. The merge waits on the local gate ([ruling 80](../proposals/ruling-80/README.md), point 10), on
+2. The merge waits on the local gate ([ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md), point 10), on
    the Mac, whose run of the crate's tests uses the fake app-server alone.
 3. Under D78, the pull request that merges this order also brings A5's State in `ROADMAP.md` and
    027's Current evidence cell in `experiments/README.md` up to date with the outcome.

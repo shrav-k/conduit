@@ -28,5 +28,5 @@ most anything in these tests can reach is one empty vault and one empty Linear w
    the engine reads it from there through the service account; neither Agent is ever given it.
 
 Linear also runs its own MCP server, signed in through OAuth in a browser. That is the third kind
-of sign-in of [ruling 49](../proposals/sign-in/README.md#three-kinds-of-sign-in), and a later
+of sign-in of [ruling 49](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/sign-in/README.md#three-kinds-of-sign-in), and a later
 test may use it in place of the key.

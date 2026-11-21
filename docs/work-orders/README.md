@@ -2,7 +2,7 @@
 
 Not binding. The admin writes each order before dispatch, as
 [work orders](../implementation/WORK_ORDERS.md) describes under
-[ruling 48](../proposals/ruling-48/README.md). Merged orders 001 to 036k and 060 to 066
+[ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md). Merged orders 001 to 036k and 060 to 066
 have left the tree; their results, decisions and observations are in
 [the record](../implementation/WORK_ORDERS.md#the-record).
 

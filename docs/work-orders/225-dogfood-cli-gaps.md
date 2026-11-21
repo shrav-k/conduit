@@ -14,7 +14,7 @@ against a store outside a test, `codex`, `claude` or the dogfood harness, and si
 
 ## What and why
 
-**The gaps** (the dogfood-gaps stream, steps G-2 and G-3; [ruling 92](../proposals/ruling-92/README.md),
+**The gaps** (the dogfood-gaps stream, steps G-2 and G-3; [ruling 92](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-92/README.md),
 point 9; the owner approved the stream's list as written,
 [DEC-027](../decisions/log.md#dec-027-2026-11-20-conduit-builds-conduit-directly-through-conduit)).
 The dogfood runs Conduit's own work orders by `conduit call --store DIR TOOL ARGS-JSON` of root's
@@ -62,7 +62,7 @@ these up afterwards, by the coordinator, not here.
 
 ## The decisions it applies
 
-By [ruling 89](../proposals/ruling-89/README.md), each decision says what must hold; how the
+By [ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), each decision says what must hold; how the
 shell does it is yours. The names and line forms are the coordinator's, open to the owner's strike.
 
 1. **Arguments from a file.** `conduit call --store DIR TOOL --arguments-file PATH` reads the
@@ -306,7 +306,7 @@ Your report gives:
 
 The verifier's turn follows; the coordinator then runs `tools/gate.py`, has a
 fresh, read-only Claude reader read the diff
-([ruling 79](../proposals/ruling-79/README.md); ruling 92 point 4), and merges.
+([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md); ruling 92 point 4), and merges.
 
 ## Record
 

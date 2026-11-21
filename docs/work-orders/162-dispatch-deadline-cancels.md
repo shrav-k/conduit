@@ -12,11 +12,11 @@ or any credential.
 
 ## What and why
 
-The full review of 2026-11-14 (order 14 of [its orders](../proposals/full-review/orders.md))
+The full review of 2026-11-14 (order 14 of [its orders](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/orders.md))
 found that when a call to a run outlives the shell's call deadline, the runner reports the call
 missing and never tells the server to stop
-([FR-335](../proposals/full-review/findings/P06-dogfooding.md#fr-335), the engine part;
-[FR-336](../proposals/full-review/findings/P06-dogfooding.md#fr-336), step 3). In
+([FR-335](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/P06-dogfooding.md#fr-335), the engine part;
+[FR-336](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/P06-dogfooding.md#fr-336), step 3). In
 `Inner::dispatch_later` (`engine/crates/shell/src/runner.rs:1114-1170`), `tokio::time::timeout`
 drops the waiting call when `Config.call_timeout` passes. Lines 1149-1151 then forget the
 request's ID and its response slot, and `shell.complete` reports `{"kind":"missing"}`. The server
@@ -25,14 +25,14 @@ deadline. MCP's lifecycle asks a sender whose request has timed out to send a ca
 notification for it and stop waiting, as a gRPC client cancels a call whose deadline has passed.
 The runner already sends that notification when a caller cancels (`notify_cancel`,
 `runner.rs:1104-1112`). The coordinator's D55
-([decisions](../proposals/full-review/decisions.md)) has the dogfood engine's faults fixed before
+([decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md)) has the dogfood engine's faults fixed before
 the rerun, this one among them; FR-336 puts the fix before the dogfood engine is re-pinned, and
-[finding 4-26](../proposals/first-build/log-increment-4.md) names this order. Order 156 changed
+[finding 4-26](../implementation/first-build/log-increment-4.md) names this order. Order 156 changed
 the same file: build on `runner.rs` as it is on `main`.
 
 How long a call may run does not change. A deadline per turn set by the caller stays the owner's,
 with finding 4-12, and no deadline is raised as the answer to a long turn (D57).
-[Ruling 78](../proposals/ruling-78/README.md), point 7, has a later order change the core so that
+[Ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md), point 7, has a later order change the core so that
 a call that changes nothing ends failed when no answer comes. This order changes no outcome: the
 shell still completes with `missing`, and the core decides what that means.
 

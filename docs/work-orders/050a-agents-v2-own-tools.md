@@ -11,7 +11,7 @@ replays your launch arguments against the real clients, with probes that sign in
 
 ## What and why
 
-[Ruling 70](../proposals/ruling-70/README.md)
+[Ruling 70](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-70/README.md)
 ([IN_FORCE.md, topic 9](../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach))
 says that Agents run code. The first build's `codex.v1` and `claude-code.v1` turn the clients'
 own shell, code execution and file tools off. So an Agent that Conduit starts cannot build or test
@@ -29,7 +29,7 @@ Turns longer than about five minutes also need order 074's fix in the engine. Th
 order's concern.
 
 This order is the first part of spec batch 1's order 050 (P2), split off as 050a
-([the plan](../proposals/spec-batch-1/README.md): C12 at line 315 and order 050 at line 620).
+([the plan](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/spec-batch-1/README.md): C12 at line 315 and order 050 at line 620).
 The plan does not list this order's inputs yet; the admin amends it. This order states them in
 full. Where the plan differs, follow this order. The order is about 1.2 to 1.6k lines with the
 tests and the two READMEs. About half of that is the second package's copy, since each package
@@ -51,7 +51,7 @@ The decisions. Apply them, and do not reopen them:
    so plainly.
 3. **One input turns them off** (point 3). `ownTools: false` gives exactly `.v1`'s tools and
    sandbox.
-   - The switch is temporary ([ruling 74](../proposals/ruling-74/README.md), point 3). A more
+   - The switch is temporary ([ruling 74](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-74/README.md), point 3). A more
      durable way to state and bound this reach is to be put to the owner.
    - Order 075 (S70), which the admin is preparing, may let a Type declare the switch, as a member
      that names `/ownTools`. Once 075 merges, such a member may be added on this branch before 050.

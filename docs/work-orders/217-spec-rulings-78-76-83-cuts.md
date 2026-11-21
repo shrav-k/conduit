@@ -31,7 +31,7 @@ nothing else). **Should this exist** (point 3): no existing tool writes Conduit'
 [order 211's registration](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/211-a78-stage-2-registration.md) ("Stage 2's orders"), as ruling 92
 point 4 reads it: one worker turn by `conduit` call, then the local gate, then one fresh read; the
 round has no verifier. It changes nothing under `experiments/028-a78-dogfood/`
-and not the harness. By [ruling 89](../proposals/ruling-89/README.md), each item says what must hold;
+and not the harness. By [ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), each item says what must hold;
 how you write it is yours, in the terms of [spec/definitions.md](../../spec/definitions.md).
 
 **Stop rule.** Where an item needs a choice that its ruling does not make, stop there, change
@@ -55,7 +55,7 @@ the changed case that records `occurred: false`.
 
 ## The items
 
-1. **Handles are cut** ([78 point 16](../proposals/ruling-78/README.md), its list of what goes and
+1. **Handles are cut** ([78 point 16](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md), its list of what goes and
    changes). IFC-011, `handle.v1` (`spec/core/conduit.yaml`) and its schema keyword
    (`spec/schemas/contracts.yaml`) go; CTR-002, CTR-012 and IFC-033 change, so that an
    implementation's ID is a plain string; the rows "handle" and "hold (a handle)" in
@@ -103,7 +103,7 @@ the changed case that records `occurred: false`.
    reconciliation. For a setup or an open, IN_FORCE says LIF-003, LIF-028, ACC-044 and
    `reconcile.v1` hold the point already (order 172b): check that, and report anything left.
    IN_FORCE: the bullet "A reconciliation records the outcome and what was checked."
-5. **The S1 example is replaced** (78 point 2; [83 point 1](../proposals/ruling-83/README.md):
+5. **The S1 example is replaced** (78 point 2; [83 point 1](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-83/README.md):
    no `apiKey`). `spec/schemas/examples/valid/sectioned-project/s1.yaml`, which is S1 itself, is
    replaced by another flow-style short-form project in the same directory, with its
    `conduit.yaml` pins made to match. Its shape is yours, within the ruling's constraints, as the
@@ -118,7 +118,7 @@ the changed case that records `occurred: false`.
    stays, since `spec/README.md` and `spec/schemas/README.md` link it. IN_FORCE: in topic 13, the
    sentence "*Spec pending, ruling 78*: the short-form example in `spec/` that is S1 itself is
    replaced by another (78 point 2)."
-6. **Closing a dropped Conduit takes no flag** ([76 point 1](../proposals/ruling-76/README.md)).
+6. **Closing a dropped Conduit takes no flag** ([76 point 1](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-76/README.md)).
    `--prune` stays for removing another object, since 76 amends ruling 53 point 4 "for removal
    only". In `spec/README.md`, "What the short form's meaning covers", the sentence "Narrowing never
    waits." becomes, as set wording: "Narrowing never waits and never needs a flag: a Conduit the
@@ -220,7 +220,7 @@ the promises changed and removed, the cases added, removed or changed and why, a
 you worded yourself (under `own_choices`); the vector delta's counts; each binding text you left
 that still quotes a removed item, with why; each document that does not bind that does; and every
 check's last line. Stage nothing. The coordinator runs `tools/gate.py`, then has a fresh, read-only
-Opus reader read the diff ([ruling 79](../proposals/ruling-79/README.md); ruling 92 point 4), and
+Opus reader read the diff ([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md); ruling 92 point 4), and
 merges.
 
 ## Record

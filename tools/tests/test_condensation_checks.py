@@ -188,6 +188,25 @@ class CondensationChecks(unittest.TestCase):
             self.assertTrue(any("missing mentioned path docs/missing.md" in e for e in errors))
             self.assertTrue(any("missing mentioned path conformance/missing.yaml" in e for e in errors))
 
+    def test_path_mentions_allow_exact_retired_directory_names(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "tools").mkdir()
+            (root / "conformance").mkdir()
+            (root / "conformance/manifest.yaml").touch()
+            (root / "tools/decision.py").write_text(
+                "# Refuse docs/proposals and docs/proposals/\n"
+                "# docs/proposals/missing.md\n"
+                "# tools/call\n")
+            output = io.StringIO()
+            with patch.object(docs, "ROOT", root), contextlib.redirect_stdout(output):
+                errors = docs.path_mentions()
+            self.assertEqual(errors, [
+                "tools/decision.py:2: missing mentioned path docs/proposals/missing.md",
+            ])
+            self.assertIn("protocol method names: 1", output.getvalue())
+            self.assertIn("retired paths: 2", output.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()

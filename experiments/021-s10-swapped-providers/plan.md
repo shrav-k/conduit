@@ -30,7 +30,7 @@
 > - **Admin question A1:** approve the six vectors' placements.
 > - **Owner:** ruling 77’s `tailscale serve` setup after the Mac’s tailnet rename, with ADDR and DSP, gates Docker T3/T5 and R2; D4’s reading was confirmed on 2026-11-12.
 > - **Admin question A3:** sequence DSP/PSD/SEC-D/FLT-D merges and the selected second store.
-> - **Admin A4:** answered by the owner on 2026-11-16 ([ruling 80](../../docs/proposals/ruling-80/README.md), point 9): the file store whenever A73 has not reported by the time S10 runs.
+> - **Admin A4:** answered by the owner on 2026-11-16 ([ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md), point 9): the file store whenever A73 has not reported by the time S10 runs.
 
 ## Status
 
@@ -90,6 +90,8 @@ Repository checks mean `check_docs.py`, `check_rulings.py`, `set_names.py --chec
 `check_schemas.py`, `check_roadmap.py` under `tools/`, checker unittests and `git diff --check`.
 Rust checks mean `cargo test --release`, `cargo clippy --all-targets -- -D warnings` and
 `cargo fmt --check` in each changed crate. The paper order builds none.
+
+Note of 2026-11-21: `check_rulings.py` left the tree under work order 235 with the records it read; this check is not run.
 
 | ID | Kind | What it does | Promises | Depends on | Size | Who | Starts |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -224,7 +226,7 @@ No S10 core/shell order is added; EV uses manifest pieces after its engine prere
   matrix keeps the built-ins as its first configuration. No built-in adapter is planned.
 - **A1 — vector placement:** approve the six unique vector owners above with 117/120; their fixing
   increments absorb dependent cases and split scopes above L. Fresh skeptic first.
-- **A2 — D4:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed this reading on 2026-11-12 ([ruling 75's later answers](../../docs/proposals/ruling-75/README.md#later-answers)).
+- **A2 — D4:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed this reading on 2026-11-12 ([ruling 75's later answers](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md#later-answers)).
 - **A3 — merge/store order:** use S4's single proposed hot-file sequence and name the frozen
   second store before H2b comparison. **Recommendation:** keep all engine dependencies free
   of lane packages; use the named P3 reports rather than a generic “P3 reports” gate.
@@ -233,7 +235,7 @@ No S10 core/shell order is added; EV uses manifest pieces after its engine prere
   the former for scheduling, with the choice recorded before freeze. This is the plan's reading
   for admin confirmation. Provisional until the owner confirms. No changed ruling
   or automatic late-probe fallback is recorded here. The owner confirmed the former on 2026-11-16
-  ([ruling 80](../../docs/proposals/ruling-80/README.md), point 9): S10 never waits on A73, and
+  ([ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md), point 9): S10 never waits on A73, and
   uses 1Password only if A73 has already reported that it works.
 
 ## For the owner

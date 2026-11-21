@@ -11,25 +11,25 @@ and never read or print a key, a token or any credential.
 
 ## What and why
 
-The full review of 2026-11-14 (order 38 of [its orders](../proposals/full-review/orders.md))
+The full review of 2026-11-14 (order 38 of [its orders](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/orders.md))
 found that v0 has no security claim that a user can read
-([FR-480](../proposals/full-review/findings/G3-native-probes.md#fr-480), as its verifier
-corrected it). [Ruling 47](../proposals/ruling-47/README.md) (lines 46 and 47) writes every route
+([FR-480](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G3-native-probes.md#fr-480), as its verifier
+corrected it). [Ruling 47](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-47/README.md) (lines 46 and 47) writes every route
 around the engine that A7 finds into v0's public claim. But the claim's parts are scattered:
 promises (IFC-022, ACC-027, CTR-014, LIF-013, PRV-006, PRV-025, PRV-029), the limits sections of
 `spec/README.md`, two passages of `engine/CONFORMANCE.md` (lines 203 to 211 and 361 to 371), and
-dated results. [Ruling 78](../proposals/ruling-78/README.md), point 3.3 (lines 79 to 86), made the
+dated results. [Ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md), point 3.3 (lines 79 to 86), made the
 review's corrected draft the draft for publication, to grow with each route A7 finds. It closed
 A20 and the plan audit's D5 on that draft, on the coordinator's map of A20's three questions
-([FR-482](../proposals/full-review/findings/G3-native-probes.md#fr-482), as corrected).
+([FR-482](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G3-native-probes.md#fr-482), as corrected).
 
 This order writes that draft as a new section at the end of `engine/CONFORMANCE.md`, where DL16's
 choices already stand, as FR-480's verifier advised. It adds what no result under one
 operating-system user can show
-([FR-422](../proposals/full-review/findings/E04-signin-isolation.md#fr-422); the coordinator's D60
-in [decisions](../proposals/full-review/decisions.md)). It also corrects the readiness
+([FR-422](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/E04-signin-isolation.md#fr-422); the coordinator's D60
+in [decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md)). It also corrects the readiness
 assessment's stale "the bypass probe A7 has not run"
-([FR-489](../proposals/full-review/findings/G3-native-probes.md#fr-489), point 2, as corrected).
+([FR-489](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G3-native-probes.md#fr-489), point 2, as corrected).
 The section binds nothing and decides no behavior: no promise, case, package or code changes. It
 states the first build as built on `main`, including the core's purity that
 [order 176](176-core-purity-enforced.md) enforced and the cancellation at a dispatch's deadline
@@ -102,7 +102,7 @@ differ, the verifier's corrections govern. Line numbers are those of `main` at `
       outcome such a call ends with, which ruling 78, point 7 changes for a call that changes
       nothing. Shown by the third run of increment 3's closeout: 42 requests with 42 access
       decisions and 42 ends, and T7's close and explicit restoration
-      ([its section "Results of the third run"](../proposals/first-build/increment-3/closeout-results-2026-11-10.md#results-of-the-third-run)).
+      ([its section "Results of the third run"](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md#results-of-the-third-run)).
    2. A login that a Pool owns stays with its Resource and is never handed to an Agent through
       Conduit (`IN_FORCE.md`, topic 1; POOL-001, ACC-003, SEC-007, SEC-019). Not shown: the
       first build serves no secret, S1 has no credential, and S2 has not run.
@@ -160,12 +160,12 @@ differ, the verifier's corrections govern. Line numbers are those of `main` at `
    12. Until Agents are confined, a package that keeps a Resource's login is to run where no
        unconfined Agent runs. The engine does not check that placement in v0 (ruling 75, C1;
        `spec/README.md`, "Pending actions, sign-in and the network";
-       [FR-197](../proposals/full-review/findings/X04-stated-limits.md#fr-197)).
+       [FR-197](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/X04-stated-limits.md#fr-197)).
    13. Root's token lapses 100 years after it is issued (the row "DL13: instance proof"). The
        only revocation is the check on every request that the instance still exists (IFC-022,
        IFC-032, DL13), and no request retires or unregisters root (LIF-034). So once a copy of
        root's token is taken, only a new engine store ends it
-       ([FR-196](../proposals/full-review/findings/X04-stated-limits.md#fr-196); fix F93 in
+       ([FR-196](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/X04-stated-limits.md#fr-196); fix F93 in
        decisions).
    14. Once sign-in is built (order 048a), a model-driven console could fill `signInReturn`,
        and the engine cannot tell its source (PND-013; `spec/README.md`, "Pending actions,
@@ -202,7 +202,7 @@ differ, the verifier's corrections govern. Line numbers are those of `main` at `
 7. **`### Routes around the engine found so far`** (ruling 47): bullets.
    - The own tools on: all of statement 5. By the coordinator's account, two cases were seen in
      the dogfood: `claude-code.v2` wrote inside its slot's `.git` and asked for no permission
-     (row 4-22 of [increment 4's log](../proposals/first-build/log-increment-4.md)), and Codex's
+     (row 4-22 of [increment 4's log](../implementation/first-build/log-increment-4.md)), and Codex's
      terminal children outlived the kill of the run's process group (row 4-23). Next to them,
      say what is built: the runner neither stops nor sees a process that has left the run's
      group (the rows "DL16: run state and restart" and "DL16: executor coverage"). Add nothing
@@ -213,7 +213,7 @@ differ, the verifier's corrections govern. Line numbers are those of `main` at `
      (order 050; the I3-04 section; the closeout's row "The login").
    - With its own tools off, Codex keeps three: its request for user input, `apply_patch` in a
      read-only sandbox, and its code-mode host
-     ([the closeout's "Routes around the engine (ACC-027)"](../proposals/first-build/increment-3/closeout-results-2026-11-10.md#routes-around-the-engine-acc-027);
+     ([the closeout's "Routes around the engine (ACC-027)"](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md#routes-around-the-engine-acc-027);
      the I3-04 section).
    - Path containment is the server's own check of its root, not the engine's (the same closeout
      section).
@@ -237,7 +237,7 @@ differ, the verifier's corrections govern. Line numbers are those of `main` at `
    5 (row 4-27).
 9. **`### Not shown yet`**. A7's rows still run, as observation (ruling 78, point 3.3). Each
    bullet says "not shown". The first four are the closeout's
-   [section "What is not shown"](../proposals/first-build/increment-3/closeout-results-2026-11-10.md#what-is-not-shown):
+   [section "What is not shown"](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md#what-is-not-shown):
    - that account services are off when the input is false. No connector or app read was
      attempted, so this rests on the flags alone;
    - Claude Code's refusal of an incoming cross-session message;
@@ -247,7 +247,7 @@ differ, the verifier's corrections govern. Line numbers are those of `main` at `
      row "User settings" and its last line);
    - that a Pool's credential is never reachable by an Agent. This waits for a secret provider
      and for S2's measure D20
-     ([the G3 verifier's list](../proposals/full-review/findings/G3-native-probes.md#what-the-verifier-says-the-analyst-missed));
+     ([the G3 verifier's list](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G3-native-probes.md#what-the-verifier-says-the-analyst-missed));
    - interactive use, where a person can approve what a headless run refuses. Every run so far
      was headless.
 10. **`### How to get more`**: give the Agent a runtime provider whose contract confines its
@@ -297,11 +297,11 @@ differ, the verifier's corrections govern. Line numbers are those of `main` at `
     it" and the dated paragraph below the table (lines 136 to 138) stay.
 
     > D5/A20 closed on 2026-11-14 on v0's drafted security claim
-    > ([ruling 78](../proposals/ruling-78/README.md), point 3.3). D8/A24's rule is in force since
+    > ([ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md), point 3.3). D8/A24's rule is in force since
     > [order 163](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/163-a24-at-entry.md), as rule 8 of `CONTRIBUTING.md`; its state
     > is its row in the [tracker](../AUDIT.md#action-items). A7's method ran for Agents with
     > their own tools off, for files, in
-    > [increment 3's closeout](../proposals/first-build/increment-3/closeout-results-2026-11-10.md#routes-around-the-engine-acc-027),
+    > [increment 3's closeout](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md#routes-around-the-engine-acc-027),
     > and its other rows run as observation. Ruling 78 put the native probes (A5, A6, A7, A10,
     > A22 and A73) outside G8's scope. The
     > [probe register](../../ROADMAP.md#experiments-and-probes) also records A4, A8 and A71 done,
@@ -367,7 +367,7 @@ It must print a `missing` line for each of the eight IDs, which are the review r
 yourself as your own. Give the section's line count, the eight `missing` lines and the last line
 of every check. A fresh Codex verifier checks each statement against the sources it cites. A
 fresh read-only Opus reader then reads the result before it merges
-([ruling 79](../proposals/ruling-79/README.md), point 2).
+([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md), point 2).
 
 ## Record
 

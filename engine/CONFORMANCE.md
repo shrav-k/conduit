@@ -2,7 +2,7 @@
 
 Not binding. The [specification](../spec/README.md) alone binds. This document states the choices
 implemented in increment 2, under the admin's
-[decisions](../docs/proposals/first-build/increment-2/decisions.md), and in the shell orders that
+[decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-2/decisions.md), and in the shell orders that
 followed it from [order 020](../docs/implementation/WORK_ORDERS.md#order-020) on, and distinguishes
 them from choices the shell must still make. It is not a declaration of whole-language conformance.
 The section [v0's security claim, drafted](#v0s-security-claim-drafted) is the draft of v0's
@@ -76,9 +76,9 @@ prints these measurements; they are not a persistence format or compaction polic
 DL11 and DL14 are removed identifiers, not unanswered choices. The
 [increment 3 handoff](README.md#the-cores-boundary) assigns the next
 shell work. Any choices still pending must be documented and evidenced before the build
-claims their behavior. The [increment 2 log](../docs/proposals/first-build/README.md#settlements-register)
+claims their behavior. The [increment 2 log](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/README.md#settlements-register)
 records its accepted implementation choices and language findings separately; the
-[increment 3 log](../docs/proposals/first-build/README.md#settlements-register) records this worker's
+[increment 3 log](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/README.md#settlements-register) records this worker's
 choices for coordinator review.
 
 ## Consumer server (order 022)
@@ -174,7 +174,7 @@ is demonstrated by these tests.
 
 The Agent packages on `main` are 0.2.0. They export the original `.v1` Types unchanged and
 the `.v2` Types with each Agent's own home, `signIn` and the account, sign-out, sign-in and
-retire hooks. The items are plain ([ruling 86](../docs/proposals/ruling-86/README.md), point 1).
+retire hooks. The items are plain ([ruling 86](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-86/README.md), point 1).
 The package reads use Claude Code 2.1.318 and Codex 0.167.1 for sign-in, account and logout.
 Codex turns still launch against the 0.167.0 baseline. The sign-in and account hooks were
 built against scripted clients. A5's Codex check and the Claude Code scratch sign-in are
@@ -336,7 +336,7 @@ semantics for relative values. Before sending registration, it checks the manife
 for relative `fetch` values and relative programs (a first `command` entry containing `/` that
 is not absolute). It refuses them with a nonzero exit and explains that a submission through
 the serving engine takes absolute values only. Bare program names still use PATH, under
-MAN-010. [Ruling 52, point 3](../docs/proposals/ruling-52/README.md#the-points-and-the-answers)
+MAN-010. [Ruling 52, point 3](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-52/README.md#the-points-and-the-answers)
 settled finding 4-03 under SUB-010's existing rule: relative values are resolved only when the
 engine is handed a directory; a request carrying values rejects them. Uploading a directory
 waits until remote clients exist; the specification is unchanged.
@@ -399,7 +399,7 @@ collaboration tools. This metadata and the argument tests do not establish their
 a real client; no native Agent client or model work ran in order 027's tests.
 
 Finding 4-06 was settled by the admin on 2026-11-10 in the
-[increment 4 log](../docs/proposals/first-build/log-increment-4.md). Codex 0.167.0 keeps all six
+[increment 4 log](../docs/implementation/first-build/log-increment-4.md). Codex 0.167.0 keeps all six
 tools, `collaboration.spawn_agent`, `collaboration.send_message`, `collaboration.list_agents`,
 `collaboration.wait_agent`, `collaboration.interrupt_agent` and `collaboration.followup_task`,
 under every switch tried: `multi_agent`, `multi_agent_v2`, `multi_agent_v2_dynamic_tools`,
@@ -526,7 +526,7 @@ what a statement says changes the statement ([order 183][wo183]).
 7. A second machine joined through the SSH runtime provider runs every run as one user: any run can
    read every other run's identity files and environment, and the secrets of later runs, so
    PRV-025's isolation is unmet ([SSH runtime provider](../packages/provider-ssh-runtime/README.md),
-   "Runs execute as"; [ruling 77](../docs/proposals/ruling-77/README.md), point 2). The engine has
+   "Runs execute as"; [ruling 77](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-77/README.md), point 2). The engine has
    yet to run with that provider (row "DL16: executor coverage").
 8. Restrictions bound what any instruction can make an Agent do through Conduit. They do not filter
    content, and content read through a shared Resource can carry instructions. (ACC-001, ACC-027).
@@ -695,29 +695,29 @@ index](../docs/archive/README.md#removed-from-the-tree); [FR-482][fr482]; ruling
   engine's domain of trust, and PRV-029's "isolation is mediated" will be reworded, affecting
   statements 5 and 6 and "Under one operating-system user" (ruling 78, point 14).
 
-[r78]: ../docs/proposals/ruling-78/README.md
-[r47]: ../docs/proposals/ruling-47/README.md
-[r70]: ../docs/proposals/ruling-70/README.md
-[r75]: ../docs/proposals/ruling-75/README.md
-[r84]: ../docs/proposals/ruling-84/README.md
-[fr480]: ../docs/proposals/full-review/findings/G3-native-probes.md#fr-480
-[fr482]: ../docs/proposals/full-review/findings/G3-native-probes.md#fr-482
-[fr422]: ../docs/proposals/full-review/findings/E04-signin-isolation.md#fr-422
-[fr196]: ../docs/proposals/full-review/findings/X04-stated-limits.md#fr-196
-[fr197]: ../docs/proposals/full-review/findings/X04-stated-limits.md#fr-197
-[g3missed]: ../docs/proposals/full-review/findings/G3-native-probes.md#what-the-verifier-says-the-analyst-missed
+[r78]: https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md
+[r47]: https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-47/README.md
+[r70]: https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-70/README.md
+[r75]: https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md
+[r84]: https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-84/README.md
+[fr480]: https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G3-native-probes.md#fr-480
+[fr482]: https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G3-native-probes.md#fr-482
+[fr422]: https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/E04-signin-isolation.md#fr-422
+[fr196]: https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/X04-stated-limits.md#fr-196
+[fr197]: https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/X04-stated-limits.md#fr-197
+[g3missed]: https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G3-native-probes.md#what-the-verifier-says-the-analyst-missed
 [history]: ../docs/archive/plan-audit-history.md
 [wo183]: ../docs/work-orders/183-v0-security-claim-drafted.md
 [wo176]: ../docs/work-orders/176-core-purity-enforced.md
 [wo162]: ../docs/work-orders/162-dispatch-deadline-cancels.md
 [orders]: ../docs/implementation/WORK_ORDERS.md#running-the-orders-through-conduit
 [limits]: ../spec/README.md#limits-of-this-version
-[closeout]: ../docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md#results-of-the-third-run
-[notshown]: ../docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md#what-is-not-shown
-[routes027]: ../docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md#routes-around-the-engine-acc-027
-[decisions]: ../docs/proposals/full-review/decisions.md
+[closeout]: https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md#results-of-the-third-run
+[notshown]: https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md#what-is-not-shown
+[routes027]: https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md#routes-around-the-engine-acc-027
+[decisions]: https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md
 [keychain]: ../experiments/005-macos-keychain/README.md
-[log4]: ../docs/proposals/first-build/log-increment-4.md
+[log4]: ../docs/implementation/first-build/log-increment-4.md
 [claude]: ../packages/agent-claude-code/README.md
 [baseline]: ../experiments/007-s1-baseline/results-2026-11-09.md
 

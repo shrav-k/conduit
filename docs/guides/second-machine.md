@@ -2,21 +2,21 @@
 
 For S3, where S1 and S2 run across two machines with a partition and a lost machine, and A74,
 its probe without an engine. The second machine is the owner's Windows computer, running
-Ubuntu-24.04 under WSL2 ([ruling 72](../proposals/ruling-72/README.md#later-answers),
-[ruling 77](../proposals/ruling-77/README.md)): the engine stops the programs it runs by process
+Ubuntu-24.04 under WSL2 ([ruling 72](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-72/README.md#later-answers),
+[ruling 77](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-77/README.md)): the engine stops the programs it runs by process
 group, which Linux has and Windows does not. A native Windows build can come later.
 
-**For testing only** ([ruling 50](../proposals/ruling-50/README.md)): adding a machine is to be
-done through Conduit. [Ruling 51](../proposals/ruling-51/README.md) accepts two modes for a
+**For testing only** ([ruling 50](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-50/README.md)): adding a machine is to be
+done through Conduit. [Ruling 51](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-51/README.md) accepts two modes for a
 machine the owner controls: managed, enrolled as a node, or peer, running its own engine.
 Another party's machine is only ever a peer. Network membership grants no access; root reaches
 remote Agents through Conduits. How a person checks a joining machine is
-[ruling 56](../proposals/ruling-56/README.md)'s, amended by ruling 68 (point 9). Enrollment is in
+[ruling 56](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-56/README.md)'s, amended by ruling 68 (point 9). Enrollment is in
 `spec/` ([enrollment.yaml](../../spec/promises/enrollment.yaml), order 038b); its core, order
 049a1, for the side branch `s3/m2`, is checkpointed unmerged after five rounds on 2026-11-12,
 not yet on `main`. Until the computer is a node, this manual setup serves A74 and
 S3's preparation, and work-order workers run on it over SSH, as on the Mac
-([ruling 76](../proposals/ruling-76/README.md), point 6).
+([ruling 76](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-76/README.md), point 6).
 
 The first setup below ran on 2026-11-11, and workers have run there since. Ruling 77's setup is the
 owner's. On 2026-11-12 its steps 1 to 5 were done, but for three parts, which can run now (at the
@@ -27,7 +27,7 @@ three. Tell the coordinator where a step differs.
 
 ## How the computer joins
 
-[Ruling 77](../proposals/ruling-77/README.md) settles it for now
+[Ruling 77](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-77/README.md) settles it for now
 ([IN_FORCE.md, topic 10](../../IN_FORCE.md#10-placement-nodes-machines-identity-and-enrollment));
 the owner may revisit any point.
 
@@ -50,7 +50,7 @@ the owner may revisit any point.
   there until the owner's "resume". The owner then stops the distro with
   `wsl --terminate Ubuntu-24.04`; `wsl --shutdown` would stop every distro, Docker Desktop's too.
 - **Capacity:** WSL keeps its default memory limit, 15 GB on this computer; M2-7 needed no ruling
-  ([ruling 77, its other questions](../proposals/ruling-77/README.md#the-other-questions)). Five
+  ([ruling 77, its other questions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-77/README.md#the-other-questions)). Five
   orders reached 12 GB, and before order 070 the shell's test binaries took 5 to 8 GB each and ran
   it out of memory once. The coordinator saw these figures up to 2026-11-12, and no measurement of
   them is in the repository. The method as run gives [the load
@@ -124,7 +124,7 @@ the owner may revisit any point.
 The machine's tailnet name or address and its SSH host key, which the provider pins, and the
 result of each step's check. Read the host key at the Windows computer, in Ubuntu-24.04's own
 terminal there, never over SSH: a key read through the connection it is meant to check proves
-nothing. [Ruling 68](../proposals/ruling-68/README.md#the-decisions), R2, asks the same of admitting
+nothing. [Ruling 68](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md#the-decisions), R2, asks the same of admitting
 a machine: the fingerprint the person read on it. There, `cat /etc/ssh/ssh_host_ed25519_key.pub`
 prints the key and `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` its fingerprint. Where
 the coordinator already holds a key for the machine that was not read there, the owner reads
@@ -135,7 +135,7 @@ Never a password, a sign-in link or a device code.
 
 ## How S3 cuts the network
 
-Answered on 2026-11-14 by [ruling 78](../proposals/ruling-78/README.md), point 4: option (E), the
+Answered on 2026-11-14 by [ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md), point 4: option (E), the
 Mac's own firewall, run by the coordinator's locked-down script under one administrator rule the
 owner adds once. S3's plan gets its dated amendment with the review's orders; the text below is
 as it stood when the question was put.

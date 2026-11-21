@@ -1,7 +1,7 @@
 # Conformance cases
 
 Not binding. The [specification](../spec/README.md) alone binds. This is a portable convention
-of the first build's runner, adopted by the admin's [decisions 3, 4 and 7](../docs/proposals/first-build/increment-2/decisions.md).
+of the first build's runner, adopted by the admin's [decisions 3, 4 and 7](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-2/decisions.md).
 The [case schema](case.schema.json), with its pieces under `case-schema/`, describes the
 current executable subset. Later orders extend it alongside their cases as described in
 [the pieces section](#the-coverage-index-and-the-case-schema-in-pieces); an unknown input or
@@ -128,7 +128,7 @@ never as a pass. Every discovered case runs; there is no layer filter that could
 conventions. The workspace test runs the same suite. Broken fixtures and unsupported inputs fail
 as harness errors, never invented Conduit reasons. An undecidable language case is stopped and
 logged for the admin in
-[the open increment's log](../docs/proposals/first-build/log-increment-4.md).
+[the open increment's log](../docs/implementation/first-build/log-increment-4.md).
 
 The runner uses `std::thread::available_parallelism()` workers unless
 `CONDUIT_VECTOR_THREADS` supplies a positive integer. `1` runs cases one after another.

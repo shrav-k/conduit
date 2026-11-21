@@ -12,7 +12,7 @@ print a credential.
 
 ## What and why
 
-[Ruling 75](../proposals/ruling-75/README.md), point A1, answers finding MC2-001 of work order 105.
+[Ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), point A1, answers finding MC2-001 of work order 105.
 Model checking found that OPS-014 and OPS-024 together break OPS-018 on a plain implementation, in
 seven actions. In short:
 
@@ -599,7 +599,7 @@ answer before the original reconcile. On the rebased tree all 446 vectors pass, 
 shows 123 declared changes and none undeclared, and the repository checks pass.
 
 Added on 2026-11-15 by work order 191 ([FR-525, row
-7](../proposals/full-review/findings/G6-outside-the-tree.md#fr-525)), the evidence at merge. `main`
+7](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G6-outside-the-tree.md#fr-525)), the evidence at merge. `main`
 at `575a1bcd` (#263) holds 446 cases: from the repository root, `git ls-tree -r --name-only 575a1bcd
 conformance | grep -c '/case.yaml$'` prints 446. The pull request's one CI run, [run
 43279956068](https://github.com/shrav-k/conduit/actions/runs/43279956068) on its head `edb0160e`,

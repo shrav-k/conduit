@@ -43,7 +43,7 @@ served the provider calls and a bridge to each run (two rounds, checkpointed as 
 engine's side, calling a provider and reaching its run, is Conduit's by PRV-005, PRV-007 and
 IFC-017; the run itself is the provider's, behind the contract. TLS is rustls's, MCP is rmcp's,
 and an existing tool terminates TLS at the engine's `https` address (`tailscale serve`,
-[ruling 77](../proposals/ruling-77/README.md), point 3).
+[ruling 77](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-77/README.md), point 3).
 
 **Preservation tests served** ([the tests](../AUDIT.md#preservation-tests); ruling 92 point 1): 2,
 since the gate makes a Conduit binding on a server the engine does not run itself (PRV-025); and
@@ -56,7 +56,7 @@ the whole suite (AGENTS.md's work-order rules, DEC-033). It changes nothing unde
 `experiments/028-a78-dogfood/` and not the harness. By the coordinator's reading, open to the
 owner's strike, the owner's answer brings 079 and 080 to `main` now, though `s3/m2` was to merge
 after the S1 rerun's pin ([order 120](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/120-plan-providers.md), point 4). How you build what each
-decision says must hold is yours ([ruling 89](../proposals/ruling-89/README.md)).
+decision says must hold is yours ([ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md)).
 
 **Stop rule.** Where a promise's wording needs a choice that `spec/` does not make, stop there,
 change nothing further, and report the promise, the choice and the options. Do not choose. Stop
@@ -212,7 +212,7 @@ Your report gives, per decision, what changed; where you adapted 079 or 080 to `
 regression's failing line before its fix; the crates the lockfile gained and how each was found
 offline; each choice you made yourself, under `own_choices`; and every check's last line. Stage
 nothing. The coordinator runs `tools/gate.py`, has a fresh, read-only Opus reader read the diff
-([ruling 79](../proposals/ruling-79/README.md); ruling 92 point 4), and merges.
+([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md); ruling 92 point 4), and merges.
 
 ## What follows
 

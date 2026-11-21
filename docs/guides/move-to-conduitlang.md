@@ -1,7 +1,7 @@
 # Moving to ConduitLang
 
 Not binding. The [specification](../../spec/README.md) alone binds. The steps to move the project to
-its public name, ConduitLang ([ruling 65](../proposals/ruling-65/README.md)), in the order to take
+its public name, ConduitLang ([ruling 65](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-65/README.md)), in the order to take
 them. Steps 1 to 3 need the owner's own accounts; steps 4 to 7 are the coordinator's once those
 exist. Availability was checked on 2026-11-10 and can change: do step 1 first, since it is free and
 fixes the names everything else depends on. Never paste a password or token into a chat with an

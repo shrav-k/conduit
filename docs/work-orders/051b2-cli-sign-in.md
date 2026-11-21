@@ -21,16 +21,16 @@ person whose browser is a list.
 commands `pending`, `sign-in` and `answer`. M. After 047 and 048b-join." Spec batch 1's plan adds
 the client's URL elicitation: "show the URL and the message, ask consent, open the browser". The
 coordinator cut 051b into three, each holding one behavior
-([FR-264](../proposals/full-review/findings/P01-work-orders-lanes.md#fr-264); the coordinator's
+([FR-264](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/P01-work-orders-lanes.md#fr-264); the coordinator's
 split, open to the owner's strike): [051b](051b-cli-pending-and-answer.md), `conduit pending`,
 `conduit answer` and the unanswered hint, merged (#372); **051b-2, this order**, `conduit
 sign-in`; and [051b-3](051b3-cli-pasted-return.md), the carried return from the command line.
 On 2026-11-19 the owner chose the dogfood path's shape, in two answers that
-[ruling 88](../proposals/ruling-88/README.md) records with the owner's words. The first,
+[ruling 88](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-88/README.md) records with the owner's words. The first,
 "Defer 7 and 8 (Recommended)", moves orders 048a-7 and 048a-8 (the carried return: PND-013's checks,
 and a page login's code or a redirect return passed to the hook on the retry) and 051b-3 off 0.2.0's
 path and the dogfood path, to after dogfood, beside the keyed release: under
-[ruling 86](../proposals/ruling-86/README.md), point 1, nothing is keyed in 0.2.0, so PND-013's
+[ruling 86](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-86/README.md), point 1, nothing is keyed in 0.2.0, so PND-013's
 first check fails for every 0.2.0 package and the return has no 0.2.0 user, and a Mac browser login
 needs no return. 048b-join then follows 048a-5gh directly and joins the URL relay and polling only.
 The second, "Pairs: 5e+5f, 5g+5h (Recommended)", batches the rest of the sign-in chain: 048a-5ef,
@@ -40,8 +40,8 @@ part, and DL18's end. The path to the Mac dogfood is order 209, 048a-5d, 048a-5d
 048a-5gh, 048b-join, then **this order**; 050n, the 0.2.0 packages joined to `main`, follows
 048b-join and A5's live check, whose client this command is. A dogfood slot on the Mac signs in
 through `conduit sign-in` with its client's default login (ruling 86, point 1;
-[ruling 85](../proposals/ruling-85/README.md), point 5). This order is the last link of that path:
-under [ruling 89](../proposals/ruling-89/README.md), point 3, the first dogfood milestone, the
+[ruling 85](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-85/README.md), point 5). This order is the last link of that path:
+under [ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), point 3, the first dogfood milestone, the
 Agents of the owner's primary Claude and Codex accounts signed in through Conduit on the Mac,
 comes after 050n and this order, and the owner signs each of its slots in with this command; A5's
 live check and the Claude scratch-home sign-in of its sitting use it as their client
@@ -57,7 +57,7 @@ not yet on `main`, of order 209 and the refreshed 048a-5d, and the owner's two a
 texts of 048a-5d2, 048a-5ef, 048a-5gh and the refreshed 048b-join, none of them merged, so each
 assumption that rests on them is named below and the start check stops where one is missing. Every
 change below is the coordinator's, open to the owner's strike
-([ruling 48](../proposals/ruling-48/README.md)):
+([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)):
 
 - the predecessors are now 048b-join, as refreshed to join the URL relay and polling only, and
   through it orders 209, 048a-5d, 048a-5d2, 048a-5ef and 048a-5gh; 048a-7, 048a-8 and 051b-3 are
@@ -81,7 +81,7 @@ change below is the coordinator's, open to the owner's strike
   plain store, the 0.2.0 packages' shape: a stated login refused before any part, then the default
   login signed in by polling;
 - every cited line, name and count is rechecked against `c097ec81`;
-- the order runs one Codex round ([ruling 87](../proposals/ruling-87/README.md), below), and A77's
+- the order runs one Codex round ([ruling 87](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-87/README.md), below), and A77's
   amendment may pair it (ruling 89, point 6, has since paused the pairing: see below).
 
 **Its dispatch refresh.** The coordinator refreshed it again on 2026-11-19, for its stacked
@@ -90,10 +90,10 @@ carrying `_meta`), the texts of 048a-5d, 048a-5d2 and 048a-5ef have merged refre
 #411) and ruling 88's and ruling 89's records have merged, and against 048b-join's text refreshed
 beside it; 048a-5d has since merged (#414), and none of 048a-5d2 to 048b-join had merged as built.
 Every change below is the coordinator's, open to the owner's strike
-([ruling 48](../proposals/ruling-48/README.md)):
+([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)):
 
 - under the owner's choice on 2026-11-19 of the lever "Pipeline the chain", as the coordinator
-  applies it ([ruling 89](../proposals/ruling-89/README.md), point 2, open to the owner's strike),
+  applies it ([ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), point 2, open to the owner's strike),
   this order may start from 048b-join's round-1 branch, before 048b-join merges, with orders
   048a-5d, 048a-5d2, 048a-5ef and 048a-5gh each merged or on its own round-1 branch below it: the
   start check accepts either base, tells them apart by the predecessors' Records and says that the
@@ -123,7 +123,7 @@ Every change below is the coordinator's, open to the owner's strike
   would stay lost, so the command stops and says where the sign-in may stand. 027's amendment,
   item 4, rests its reason for `--call-timeout-seconds 1200` on a session that `conduit sign-in`
   holds through the owner's login, which this reading finds absent: the coordinator rewords that
-  reason before the sitting ([ruling 45](../proposals/ruling-45/README.md)), keeping the flag,
+  reason before the sitting ([ruling 45](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-45/README.md)), keeping the flag,
   once decision 11's finding confirms the reading, or keeps it where the finding says the client
   holds a session. The decisions are otherwise unchanged: decision 4 gains the text for a failed
   retry and a sentence on resending, and decision 11 two
@@ -150,7 +150,7 @@ Every change below is the coordinator's, open to the owner's strike
 
 **Why it is needed now.** `server.rs`'s `client`, behind `conduit call`, uses rmcp's `call_tool`
 with no elicitation handler, so it cannot answer an `input_required` result (order 048b-join's
-findings). [Ruling 82](../proposals/ruling-82/README.md#the-decisions), point 1, has the owner
+findings). [Ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md#the-decisions), point 1, has the owner
 sign a scratch home in "through Conduit's sign-in flow", and point 3, as ruling 85, point 5,
 narrows it, has a dogfood slot on the Mac sign in after this order. The coordinator's plan makes
 this order's command the client of A5's live check
@@ -176,7 +176,7 @@ changes: the engine does all of this once 048b-join merges; the command line onl
 what it answers and carries the person's answer back.
 
 **Ruling 83, which this order follows.** The owner decided on 2026-11-18
-([ruling 83](../proposals/ruling-83/README.md)) that the Agent packages 0.2.0 are
+([ruling 83](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-83/README.md)) that the Agent packages 0.2.0 are
 subscription-only, with no `apiKey` in `.v2`. Nothing in this order reads, sets or names `apiKey`,
 and the command offers no key route.
 
@@ -438,7 +438,7 @@ and ruling 85, point 5, decide that a dogfood slot on the Mac signs in through `
 with its client's default login; the owner's first answer of 2026-11-19 moves 051b-3 after
 dogfood; ruling 89, point 3, places the first dogfood milestone after 050n and this order, and
 its point 2 gives the levers that the dispatch refresh applies. Everything else here is the
-coordinator's, each open to the owner's strike ([ruling 48](../proposals/ruling-48/README.md)):
+coordinator's, each open to the owner's strike ([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)):
 the split of 051b and this part's place after 048b-join and 051b; the refreshes' changes listed
 above, the stacked dispatch on 048b-join's round-1 branch and the choice for the readiness review's
 B2 among them; that this command is the client of A5's live check; the command's name, its
@@ -950,14 +950,14 @@ functions, the negative control's failure message, and the findings of decision 
 
 `git diff --check` and `check_private_paths.py` read tracked files only, so the admin then stages
 the new file and runs `python3 tools/check_private_paths.py` and `git diff --cached --check`. Before
-the merge the admin runs the local gate that [ruling 80](../proposals/ruling-80/README.md), point
+the merge the admin runs the local gate that [ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md), point
 10, has each merge wait on, `tools/gate.py`; CI runs on the pull request as well, and the merge does
-not wait for it. Under [ruling 87](../proposals/ruling-87/README.md) this order runs one Codex
+not wait for it. Under [ruling 87](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-87/README.md) this order runs one Codex
 round: a fresh Codex verifier reads round 1 and no second Codex round follows; a fresh read-only
 Opus reader reads the result itself, and the verifier's report where it holds a must
-([ruling 79](../proposals/ruling-79/README.md), point 2, as ruling 87 amends it), and confirms or
+([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md), point 2, as ruling 87 amends it), and confirms or
 refutes each of the verifier's musts, and an Opus fixer applies the musts it confirms. A77's
-pairing is paused until 050n merges ([ruling 89](../proposals/ruling-89/README.md), point 6), so
+pairing is paused until 050n merges ([ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), point 6), so
 this order is not paired. The admin writes this order's Record below when it merges.
 
 Where the coordinator dispatched this order stacked on 048b-join's round-1 branch, the result is

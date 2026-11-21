@@ -191,9 +191,14 @@ class Permalinks:
         return None
 
 
-# Only these protocol method names resemble repository paths. Templates and glob patterns
-# are handled below; concrete missing historical paths are still reported for the admin.
-PATH_EXCEPTIONS = {"tools/call": "JSON-RPC method", "tools/list": "JSON-RPC method"}
+# These protocol methods resemble paths, and check_decisions.py refuses the retired
+# directory's return. Concrete descendants of that directory still need to exist.
+PATH_EXCEPTIONS = {
+    "tools/call": "JSON-RPC method",
+    "tools/list": "JSON-RPC method",
+    "docs/proposals": "retired path",
+    "docs/proposals/": "retired path",
+}
 PATH_MENTION = re.compile(
     r"(?<![\w/.:{\-])(?:(?:docs|spec|conformance|engine|packages|experiments|tools)/"
     r"[A-Za-z0-9_.{}*?\[\]/-]+|(?:AGENTS|CONTRIBUTING|README|ROADMAP)\.md)(?![\w.-])")
@@ -239,8 +244,10 @@ def path_mentions():
                 if not exists:
                     errors.append(f"{source.relative_to(ROOT)}:{line}: missing mentioned path {name}")
     print(f"Checked {count} repository path mentions in {len(sources)} source files.")
+    protocol = sum(PATH_EXCEPTIONS[name] == "JSON-RPC method" for name in exceptions)
     print(f"Notice: skipped {len(templates)} dynamic/example path patterns; "
-          f"{len(exceptions)} protocol method names are allow-listed.")
+          f"allow-listed protocol method names: {protocol}, "
+          f"retired paths: {len(exceptions) - protocol}.")
     return errors
 
 

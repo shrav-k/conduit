@@ -19,8 +19,8 @@ nowhere.
 ## What and why
 
 The full review of 2026-11-14 puts a sign-in model ahead of the sign-in build: order 24 of
-[its orders](../proposals/full-review/orders.md), row 2 of
-[FR-446](../proposals/full-review/findings/G1a-model-checking-register.md#fr-446) as its verifier
+[its orders](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/orders.md), row 2 of
+[FR-446](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G1a-model-checking-register.md#fr-446) as its verifier
 corrected it. [Order 201](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/201-mc9a-pending-actions-sign-in-registered.md) registered that model,
 MC9a, in [experiment 012's README](../../experiments/012-model-checking/README.md), section
 "MC9a — pending actions and sign-in as written: pre-registration": its texts and their commits,
@@ -39,7 +39,7 @@ another account found after the instance's retirement has been dispatched raises
 run reports what the model shows for both (decision 11), and settles neither: the owner does.
 
 **Who decided what.** Every decision below is the coordinator's, each open to the owner's strike
-([ruling 48](../proposals/ruling-48/README.md)): that MC9a runs as registered, by the
+([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)): that MC9a runs as registered, by the
 registration's own rule, with its dated amendment of 2026-11-19 (decision 2); the module's names,
 tests and output lines; the Linux node's bounds; the policy on differences, corrections and a
 truncated run; the form of the README's record; and leaving the model-checking account, `G5.md`
@@ -137,7 +137,7 @@ it reads, and decision 2 checks the quotations against the present text.
      promise text, and MC9a's actions script never removes B or reuses its name.
    - `280a7fcc` and `3c761dd9`: order 047d written and built. MC9a's PND-007 row calls it "not
      yet written"; PND-007 is not modelled, and its text did not change.
-   - `b1cc554e`, [ruling 84](../proposals/ruling-84/README.md): the full review's
+   - `b1cc554e`, [ruling 84](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-84/README.md): the full review's
      `experiments.md` gained a note in the last cell of row A22, the keychain unattended. MC9a
      reads nothing from that row: from that file it reads only the section "Experiment 012: the
      runs, each registered before it runs", which did not change. By the registration's rule the
@@ -638,8 +638,8 @@ coordinator can decide before the gate: the merge's local gate runs this crate's
 `cargo test --release` again on the Mac with 4 test threads, where a run near the bound may be
 truncated. The admin then has a fresh
 Codex verifier and a fresh read-only Opus reader read the result before it merges
-([ruling 79](../proposals/ruling-79/README.md), point 2), and the merge waits on the local gate
-([ruling 80](../proposals/ruling-80/README.md), point 10). The admin writes this order's Record at
+([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md), point 2), and the merge waits on the local gate
+([ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md), point 10). The admin writes this order's Record at
 the foot of this file when it merges.
 
 ## Record

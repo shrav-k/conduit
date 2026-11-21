@@ -18,14 +18,14 @@ kind of pending action, PND-005, SignInUndone. L. After 047, 047b, 047c and 048a
 [order 048a1](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/048a1-build-sign-in-type-checks.md) (merged as #352) moved IFC-016's detection here,
 "which raises PND-005, its other half" (its decision 9 and Record). The targeted review of the
 sign-in surface puts two must-state items on 048a-2
-([its section 6, 048a-2](../proposals/review-signin-2026-11-16/README.md#048a-2)), which the owner
-accepted with their carrier ([ruling 82](../proposals/ruling-82/README.md#the-decisions), point 6,
+([its section 6, 048a-2](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#048a-2)), which the owner
+accepted with their carrier ([ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md#the-decisions), point 6,
 o1 and o4), and `IN_FORCE.md`, topic 9, holds both as spec pending for this order. Built whole,
 that entry is spec batch 1's E7a less 048a-1: the sign-in kind, PND-005's raise and hold,
 SignInUndone, setup's account check, `sign-in.v1` itself with IFC-049's relay, and the returns of
 PND-013 and PND-014, about 0.8 to 1.1k lines and 18 vectors by the plan. That is several
 behaviors, and an order holds one and stays small
-([FR-264](../proposals/full-review/findings/P01-work-orders-lanes.md#fr-264)). So the coordinator
+([FR-264](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/P01-work-orders-lanes.md#fr-264)). So the coordinator
 cuts it, keeping the name 048a-2 for the first part (see "Who decided what"):
 
 - **048a-2, this order:** what the review's section 6 puts on 048a-2, each with its vector, and
@@ -46,7 +46,7 @@ cuts it, keeping the name 048a-2 for the first part (see "Who decided what"):
 reports a lapsed login by ending the call failed or unknown with a diagnostic naming PND-005; a
 plain one, only by a URL request (IFC-016). Done when PND-005 states both and a vector with a
 scripted lapse shows a keyed call ending with that diagnostic." F84, the coordinator's fix
-([decisions](../proposals/full-review/decisions.md#secrets-pending-actions-and-sign-in)): "A lapsed
+([decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md#secrets-pending-actions-and-sign-in)): "A lapsed
 login takes a form the engine can see. An implementation that carries Conduit's keys ends the call
 failed or unknown, as it can tell, with an error diagnostic naming PND-005. A plain implementation
 shows it only by asking for a URL (IFC-016)." PND-005 then raises "a sign-in action ... for the
@@ -165,7 +165,7 @@ whichever lands second keeps both changes and writes `engine/STANDING.md` again 
 action is, when it is raised, what it reports and in which order. The review's two items, F84's
 words and the conflict's reason are the owner's, accepted with their carrier (ruling 82, point 6,
 o1 and o4). Everything else here is the coordinator's, each open to the owner's strike ([ruling
-48](../proposals/ruling-48/README.md)): the cut of 048a-2 above (FR-264), as this order's writer
+48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)): the cut of 048a-2 above (FR-264), as this order's writer
 proposed it, into this order and four after it, each after the one before: 048a-3, the hold
 (PND-005's `then`: held requests unavailable with `META/pendingAction` and a PND-005 diagnostic,
 expiry lifting nothing, a new action on the next held request); 048a-4, setup's account check in
@@ -208,8 +208,8 @@ under `decisions` as the coordinator's.
 2. Orders [047](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/047-build-setup-action.md), [047b](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/047b-build-actions-raised-by-scope.md) and
    [047c](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/047c-build-stored-answers.md), whole, and their Records; [order
    048a1](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/048a1-build-sign-in-type-checks.md), its decisions 5 and 9 and its Record.
-3. The review's [section 6](../proposals/review-signin-2026-11-16/README.md#6-must-state-lists),
-   048a-2's items, and V21 and V28 in [its findings](../proposals/review-signin-2026-11-16/findings.md).
+3. The review's [section 6](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#6-must-state-lists),
+   048a-2's items, and V21 and V28 in [its findings](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/findings.md).
 4. The cases `setup-action-answers`, `e4-reconcile-setup-action-open`, `explain-outcome-causes`
    and `contracts-sign-in-resolution`, and `conformance/conventions/inventory/e4/`'s
    `manifest.json` and `documents.json`.
@@ -833,11 +833,11 @@ by which a call's result reaches `complete` outside decision 5's arm.
 
 `git diff --check` and `check_private_paths.py` read tracked files only, so the admin then stages
 the new files and runs `python3 tools/check_private_paths.py` and `git diff --cached --check`.
-Before the merge the admin runs the local gate that [ruling 80](../proposals/ruling-80/README.md),
+Before the merge the admin runs the local gate that [ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md),
 point 10, has each merge wait on, `tools/gate.py`; CI runs on the pull request as well, and its
 `docs` job reads `048a2-declared.yaml` through `--declared-changed`, and the merge does not wait
 for it. A fresh Codex verifier and a fresh read-only Opus reader read the result before it merges
-([ruling 79](../proposals/ruling-79/README.md), point 2). The admin writes this order's Record at
+([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md), point 2). The admin writes this order's Record at
 the foot of this file when it merges.
 
 ## Record

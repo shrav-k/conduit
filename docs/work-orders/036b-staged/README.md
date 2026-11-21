@@ -1,6 +1,6 @@
 # Core contracts staged by 036b
 
-C25 of the [batch plan](../../proposals/spec-batch-1/README.md#the-order-of-the-edits)
+C25 of the [batch plan](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/spec-batch-1/README.md#the-order-of-the-edits)
 keeps edits that require a later build out of the active core. The patches contain exact
 target paths and final text. Orders 039, 040 and 041a applied their staged edits.
 Do not copy a whole old file over a later order's changes: apply the relevant hunks after

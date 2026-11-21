@@ -25,7 +25,7 @@
 ## Status
 
 Pre-registered on 2026-11-11 by work order 102. Accepted by the owner on 2026-11-11 under
-[ruling 75](../../docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
+[ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
 counting rules and planned vectors, with the answers under "Open for the owner" applied. Ruling
 45 fixes what an experiment must show before it runs. No result is recorded here.
 
@@ -41,9 +41,9 @@ actually confirms.
 
 ## What it must show
 
-1. **P1 — ruled**, [ruling 47](../../docs/proposals/ruling-47/README.md#when-to-publish):
+1. **P1 — ruled**, [ruling 47](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-47/README.md#when-to-publish):
    S6 runs end to end on the reference engine with its vectors passing, including every
-   safety vector it adds ([ruling 68, point 2](../../docs/proposals/ruling-68/README.md)). Judge
+   safety vector it adds ([ruling 68, point 2](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md)). Judge
    by task transcripts, independent state checks and vector verdicts. Missing cases are
    missing evidence, never passes.
 2. **P2 — proposed, for the owner's acceptance**: after a Conduit closes, new requests, repeats
@@ -128,8 +128,8 @@ sleep intervals. Providers and harness fault controls are prepared before author
 by reference the first build's [measure table](../../docs/implementation/FIRST_BUILD.md#measures)
 and three [counting rules](../../docs/implementation/FIRST_BUILD.md#counting-rules-added-after-the-baseline-ran):
 “Provider work apart”, “A client's concepts count” and “Requests and time without access”.
-**Ruled counting rules**: [ruling 63](../../docs/proposals/ruling-63/README.md)'s lines,
-[ruling 68 R1](../../docs/proposals/ruling-68/README.md)'s panel actions apart, and
+**Ruled counting rules**: [ruling 63](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-63/README.md)'s lines,
+[ruling 68 R1](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md)'s panel actions apart, and
 [IN_FORCE.md topic 13](../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement)'s
 per-run rules, except S1's local name `project`. S1's A70 comparison/bar, T3's reach-around rule
 and T4/T5's better-baseline rules do not carry over. No numeric bar or comparison is proposed;
@@ -226,14 +226,14 @@ sign-in only for an optional replay. No account or network is used by this paper
 - **Q3:** Which client should exercise cases that need real-client behavior: the owner's subscription, a second subscription account signed in through Conduit's own sign-in flow, or none (scripted clients only)?
   **Recommendation:** none: use scripted clients here.
   If a replay is chosen, a second account signs in through Conduit as in
-  [ruling 72](../../docs/proposals/ruling-72/README.md)'s S3/S10 replays; that requirement is not
+  [ruling 72](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-72/README.md)'s S3/S10 replays; that requirement is not
   ruled for S6. Freeze client/trial choices before running.
 - **Q4:** Should S6 include unordered and cyclic retirements once the engine documents DL1?
   Options: include both after implementation, or start with dependency-only evidence and list
   the missing branches. **Recommendation:** include both, awaiting the engine's documented
   choice; partial runs must not be reported as the completed S6 gate.
 
-**Answers, under [ruling 75](../../docs/proposals/ruling-75/README.md), D (2026-11-11):**
+**Answers, under [ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D (2026-11-11):**
 
 - Q1: accepted.
 - Q2: written twice, by the coordinator and by a fresh Codex author, with scripted clients (D3).
@@ -250,18 +250,18 @@ load benchmark or A40's model checking. No run, result, promise or vector is wri
 ## Amendments since acceptance
 
 The text above keeps what the owner accepted on 2026-11-11 under
-[ruling 75](../../docs/proposals/ruling-75/README.md), D. Each line below is dated and says
+[ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D. Each line below is dated and says
 whose it is. A line from a ruling amends the text above as that ruling says. A line marked
 the coordinator's is open to the owner's strike: it changes no pass condition above, and what
 it adds to a run is reported apart from the counted result.
-[Ruling 78](../../docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
+[Ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
 changes in the table under question 4 of
-[the full review's questions](../../docs/proposals/full-review/questions.md); the decisions
+[the full review's questions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/questions.md); the decisions
 that these lines cite are in
-[the full review's decisions](../../docs/proposals/full-review/decisions.md).
+[the full review's decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md).
 
 - **2026-11-14, the coordinator's (decision D69,
-  [FR-397](../../docs/proposals/full-review/findings/E02-s5-s6-s7.md#fr-397)):** M1's count of
+  [FR-397](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/E02-s5-s6-s7.md#fr-397)):** M1's count of
   forbidden dispatches after a close or a retirement is expected to be zero; M2's retained-data
   checks are a fixed list, written before the runs; the plan's "T4 restart case", which S6-T4
   above does not have, is removed with its dependency on S9's shell order; S6 keeps to one local
@@ -270,7 +270,7 @@ that these lines cite are in
   022's runtime-provider suite; and the fixture's ledger is kept outside the state directory
   that removal deletes.
 - **2026-11-14, the coordinator's
-  ([FR-404](../../docs/proposals/full-review/findings/E02-s5-s6-s7.md#fr-404)):** "What it needs
+  ([FR-404](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/E02-s5-s6-s7.md#fr-404)):** "What it needs
   first" says that the conformance document leaves `retire-with-resources.v1` and DL1's order
   unfinished. Both are implemented: DL1's row in
   [engine/CONFORMANCE.md](../../engine/CONFORMANCE.md) states the order, independent members in

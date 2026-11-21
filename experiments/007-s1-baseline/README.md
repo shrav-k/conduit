@@ -4,7 +4,7 @@ Status: pre-registered on 2026-11-09, and run the same day with Claude Code and 
 task, T1 to T7, done and counted, in the [results of 2026-11-09](results-2026-11-09.md). This
 is action item A70 of the
 [roadmap](../../ROADMAP.md#experiments-and-probes), which ruling 45 accepted from X3 of pull
-request 10, from `allocmemory`. [Ruling 46](../../docs/proposals/ruling-46/README.md) made its
+request 10, from `allocmemory`. [Ruling 46](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-46/README.md) made its
 comparison one of the success criteria of the first build. Under ruling 45's rule, this page
 states what the experiment must show and how each measure is counted before anything runs.
 

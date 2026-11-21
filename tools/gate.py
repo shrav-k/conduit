@@ -52,7 +52,6 @@ PYTHON_GATES = (
     ('names', ('tools/set_names.py', '--check')),
     ('schemas', ('tools/check_schemas.py',)),
     ('roadmap', ('tools/check_roadmap.py',)),
-    ('rulings', ('tools/check_rulings.py',)),
     ('model account', ('tools/check_model_account.py', '--history')),
     ('promise standing', ('tools/promise_standing.py', '--check')),
     ('private paths', ('tools/check_private_paths.py',)),

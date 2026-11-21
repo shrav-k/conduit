@@ -62,7 +62,7 @@ as item 7 states.
 
 ## Why
 
-[Ruling 83](../../docs/proposals/ruling-83/README.md), point 2, sets a direction: an Agent never
+[Ruling 83](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-83/README.md), point 2, sets a direction: an Agent never
 holds a model service's API key, and model API access comes later as a declared route, a
 credential-injecting gateway that a provider runs, to which the Agent's client is pointed instead
 of the vendor. Its point 3 has a grounded study read each client's gateway support before the route

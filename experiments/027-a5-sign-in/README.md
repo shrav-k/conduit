@@ -1,6 +1,6 @@
 # 027 — A5: sign-in and isolation
 
-Every result of this experiment is obtained under one operating-system user. Under one user, an Agent that runs code can read, use or replace another Agent's login and act as root's Interface. So no result here shows Agents kept apart. No dedicated macOS user is planned: isolation is to come later from a sandbox method, Docker first, and whether a result obtained inside one shows Agents kept apart is that design's to state ([ruling 84](../../docs/proposals/ruling-84/README.md), point 1). Stage 0 runs no Agent at all.
+Every result of this experiment is obtained under one operating-system user. Under one user, an Agent that runs code can read, use or replace another Agent's login and act as root's Interface. So no result here shows Agents kept apart. No dedicated macOS user is planned: isolation is to come later from a sandbox method, Docker first, and whether a result obtained inside one shows Agents kept apart is that design's to state ([ruling 84](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-84/README.md), point 1). Stage 0 runs no Agent at all.
 
 Stage 0 pre-registered on 2026-11-15 by work order 159; run twice, on 2026-11-15 and 2026-11-16: [results](results-2026-11-16.md).
 
@@ -12,19 +12,19 @@ Stage 1's first step pre-registered on 2026-11-17 by work order 197, [below](#st
 
 The refresh-blocked probe pre-registered on 2026-11-19 by work order 208, [below](#stage-1-before-step-1-the-refresh-blocked-probe), before order 050m relies on its route: whether Codex 0.167.1's `account/read`, with refresh blocked for the check's process alone, ever writes the home's auth.json; run under the same order, on the Linux node, with a fabricated login, [results](results-2026-11-19-refresh-probe.md).
 
-Amended on 2026-11-19 by the coordinator's change for [ruling 84](../../docs/proposals/ruling-84/README.md), point 1: the opening's last clause on isolation, which read "before or after the owner's dedicated macOS user (ruling 75 B3)", now says that no dedicated user is planned and that a sandbox method comes later. No step, record, pass condition or outcome changes, and each dated result keeps its opening as written.
+Amended on 2026-11-19 by the coordinator's change for [ruling 84](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-84/README.md), point 1: the opening's last clause on isolation, which read "before or after the owner's dedicated macOS user (ruling 75 B3)", now says that no dedicated user is planned and that a sandbox method comes later. No step, record, pass condition or outcome changes, and each dated result keeps its opening as written.
 
-Amended on 2026-11-19, before stage 1's first step ran, by the coordinator's change for [ruling 89](../../docs/proposals/ruling-89/README.md), [below](#amendment-of-2026-11-19-the-live-check-as-it-runs): by the coordinator's application of the readiness review's findings (ruling 89, point 1), open to the owner's strike, the check's Type keeps the name `codex.v2`, its client is `conduit sign-in`, a second browser tab is expected, and the engine runs with a call timeout of 1200 seconds; and, for ruling 89, point 5, a Claude scratch-home sign-in follows in the same sitting (through `conduit sign-in` and outside A5's gate by the coordinator's reading in ruling 89, open to the owner's strike).
+Amended on 2026-11-19, before stage 1's first step ran, by the coordinator's change for [ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), [below](#amendment-of-2026-11-19-the-live-check-as-it-runs): by the coordinator's application of the readiness review's findings (ruling 89, point 1), open to the owner's strike, the check's Type keeps the name `codex.v2`, its client is `conduit sign-in`, a second browser tab is expected, and the engine runs with a call timeout of 1200 seconds; and, for ruling 89, point 5, a Claude scratch-home sign-in follows in the same sitting (through `conduit sign-in` and outside A5's gate by the coordinator's reading in ruling 89, open to the owner's strike).
 
 ## Four stages
 
 - **0:** Before order 050 is written: two facts about the real clients, primary accounts only, no engine, nothing signed in; no owner time unless a window opens. The coordinator tells the owner first.
 - **0b:** A follow-up to stage 0, before order 050 is written: how Codex's browser login opens a browser past the shim, what stops it, and whether Codex's status can name the account. Part A reads Codex's public source and documentation and runs no client; part B is a watched start of Codex's login in a scratch home, cancelled before any sign-in, at a time the owner picks. [Pre-registered below](#stage-0b).
-- **1:** On the first build with sign-in, as the S1 rerun's rehearsal: one checked sign-in on a primary account; the package's account hook asks Codex itself, through its app-server's `account/read`, in its own home, never opening the login file, and never the coordinator. Its first step, after order 048b-join merges and before 0.2.0 merges, is the live check of [ruling 82](../../docs/proposals/ruling-82/README.md), point 1, [pre-registered below](#stage-1-step-1-the-account-check); the rest of stage 1 is pre-registered before it runs. About five owner minutes.
+- **1:** On the first build with sign-in, as the S1 rerun's rehearsal: one checked sign-in on a primary account; the package's account hook asks Codex itself, through its app-server's `account/read`, in its own home, never opening the login file, and never the coordinator. Its first step, after order 048b-join merges and before 0.2.0 merges, is the live check of [ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md), point 1, [pre-registered below](#stage-1-step-1-the-account-check); the rest of stage 1 is pre-registered before it runs. About five owner minutes.
 - **2:** After the rerun's pin: the second accounts' first sign-ins, four Agents and four homes, wrong then right accounts, checks after sign-in, undo and retirement, forced lapse, shared directory and history, reach and robustness cases, retirement and fresh sign-in. Needs the Windows computer on; about 30 to 40 owner minutes. If a scenario's owner step comes first, its first second-account sign-ins run under P1 to P7.
 - **3:** After stage 2: a 48-hour soak of small scripted turns; no owner time planned.
 
-Stages 1 to 3 use [the full review's P1 to P8](../../docs/proposals/full-review/experiments.md#a5-stages-and-pass-conditions).
+Stages 1 to 3 use [the full review's P1 to P8](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/experiments.md#a5-stages-and-pass-conditions).
 Each later stage is pre-registered in this README before it runs. A5 gates one thing: `codex.v2`
 states `signIn` only if stage 1's first step passes (ruling 82, point 1). It gates nothing else,
 and no Agent doing Conduit's own orders names a second account until the owner says so.
@@ -40,14 +40,14 @@ learns an account the service attests. Status is the first route; Codex's ID tok
 and then wait? For Claude, does it still give a listening loopback redirect, or fall back to a
 code page that a login with carried: false cannot complete?
 
-The [FR-427 verifier's correction](../../docs/proposals/full-review/findings/E04-signin-isolation.md#fr-427)
+The [FR-427 verifier's correction](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/E04-signin-isolation.md#fr-427)
 governs: the old closeout recorded methods, not proof of account naming or no-terminal login.
-[FR-490 as corrected](../../docs/proposals/full-review/findings/G3-native-probes.md#fr-490),
+[FR-490 as corrected](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G3-native-probes.md#fr-490),
 D18 and D80 put these two facts alone before order 050. This is A5 stage 0, not a completed sign-in.
 
 ## Steps
 
-The commands are those [the sign-in proposal](../../docs/proposals/sign-in/README.md#what-the-clients-offer-read-on-2026-11-10) records.
+The commands are those [the sign-in proposal](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/sign-in/README.md#what-the-clients-offer-read-on-2026-11-10) records.
 
 - For each client, Claude Code first and then Codex, the probe runs these steps in order:
   1. version: `claude --version`, or `codex --version`;
@@ -199,7 +199,7 @@ For each client, both of these hold:
 - Codex's status names no account: order 050 writes Codex's account hook as O3 has it. The
   hook reads the status first and, if that names no account, the email claim of the ID token
   in the home's auth.json
-  ([refusals and identity](../../docs/proposals/spec-batch-1/areas/refusals-and-identity.md), D2 and
+  ([refusals and identity](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/spec-batch-1/areas/refusals-and-identity.md), D2 and
   O3). Only the package's hook tries that second route, in its own signed-in home at stage 1,
   never the coordinator. If both routes fail, the owner chooses among O3's three answers.
 - Claude's status names no account: this goes to the owner under ruling 75 C7.
@@ -469,7 +469,7 @@ wanted, a later amendment pre-registers it before it runs.
 ## Stage 1, step 1: the account check
 
 Pre-registered on 2026-11-17 by work order 197, before any of it ran, under
-[ruling 82](../../docs/proposals/ruling-82/README.md), point 1, the owner's answer of 2026-11-16
+[ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md), point 1, the owner's answer of 2026-11-16
 ("Ask Codex itself"). Stage 0 found that Codex's everyday status names no account
 ([results](results-2026-11-16.md)), and stage 0b's source read found no status message that names
 one ([results](results-2026-11-16-0b-source.md)). CTR-013 lets a Type state `signIn` only where its
@@ -521,7 +521,7 @@ point 1), and this step runs only as a later amendment here says.
   owner signs in there with the account the check expects, a browser window opens for that, and
   the home is signed out and removed afterwards. It runs only once order 050's report records
   its read of what `codex logout` revokes
-  ([section 6](../../docs/proposals/review-signin-2026-11-16/README.md#050-codexv2), item 8).
+  ([section 6](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#050-codexv2), item 8).
 - **The client.** Before the step the coordinator runs `codex --version`. The step runs only with
   Codex at a version that a source read for `account/read` covers: 0.167.1, by work order 197. At
   another version it waits until a later amendment here records a read at that version.
@@ -678,7 +678,7 @@ coordinator stages it and reruns the private-path check, which must pass.
 ### Amendment of 2026-11-19: the live check as it runs
 
 Amended on 2026-11-19, before any of this step ran, by the coordinator's change for
-[ruling 89](../../docs/proposals/ruling-89/README.md), as ruling 45 asks: each run pre-registered
+[ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), as ruling 45 asks: each run pre-registered
 before it runs. Items 1 to 5 are the coordinator's application of the readiness review's findings
 (ruling 89, point 1), each open to the owner's strike; item 6 is for ruling 89, point 5, and its
 client, its place outside the gate and its steps are the coordinator's, open to the owner's
@@ -731,7 +731,7 @@ fail and fault conditions do not change, except where this says.
 5. **Codex's warning.** A release Codex may refuse its helper aliases for a home under the system's
    temporary directory and print a warning on standard error, then go on (order 197's read, R4;
    order 050c). That warning is expected and, as client output, not recorded.
-6. **A Claude scratch-home sign-in follows** ([ruling 89](../../docs/proposals/ruling-89/README.md),
+6. **A Claude scratch-home sign-in follows** ([ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md),
    point 5). After step 8, in the same sitting, unless the step stopped because the everyday status
    changed, the owner signs a scratch Claude home in once through `conduit sign-in`. By the
    coordinator's reading in ruling 89, it is not part of this step's gate or of A5's: it decides

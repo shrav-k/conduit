@@ -4,12 +4,12 @@ Not binding. The specification in spec/ alone binds.
 
 This is the proposed CLI reference for spec batch 1, K3, with hand-written golden cases.
 It describes tooling, not additional language promises or engine behavior. Its five approval
-and command readings follow [ruling 76, points 1–5](../../proposals/ruling-76/README.md).
+and command readings follow [ruling 76, points 1–5](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-76/README.md).
 A builder follows the specification where this reference and it differ. No program has produced
 these expected plans. The remaining cases are listed under
 [Safety cases for 052a's convergence check](#safety-cases-for-052as-convergence-check).
 What ships to the rerun's fresh author is the rerun preparation's decision, not this reference
-([ruling 53, point 9](../../proposals/ruling-53/README.md)).
+([ruling 53, point 9](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-53/README.md)).
 
 ## Commands
 
@@ -23,15 +23,15 @@ Approval flags in this table are repeatable, each with one generated object name
 | `conduit apply [PROJECT_DIR] [--store DIR] [--reopen OBJECT] [--recreate OBJECT] [--prune OBJECT] [--replace OBJECT] [--adopt OBJECT] [--with-resources OBJECT] [--with-agents OBJECT]` | `conduit apply --replace shared` | Compute, print and record the plan, then send its requests as root without a prompt. |
 
 PROJECT_DIR defaults to the current directory. A bare `conduit apply` carries no author-chosen
-value ([ruling 63, point 1](../../proposals/ruling-63/README.md)). `conduit serve` records the
+value ([ruling 63, point 1](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-63/README.md)). `conduit serve` records the
 engine it serves as the person's current engine context; commands use that context unless
-`--store DIR` overrides it ([ruling 76, point 3](../../proposals/ruling-76/README.md)).
+`--store DIR` overrides it ([ruling 76, point 3](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-76/README.md)).
 This is proposed help, not today's parser. No separate context-selection command is defined.
 If no context or override is available, stop with status 2; context persistence and discovery
 are implementation work for order 052a (O8 below).
 `conduit plan` is available and never required: apply computes its own plan, with no prior plan
-invocation or saved-plan prerequisite ([ruling 76, point 5](../../proposals/ruling-76/README.md)).
-`--withhold` belongs to batch 2 ([ruling 61, B11](../../proposals/ruling-61/README.md)).
+invocation or saved-plan prerequisite ([ruling 76, point 5](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-76/README.md)).
+`--withhold` belongs to batch 2 ([ruling 61, B11](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-61/README.md)).
 This reference does not define install, render, init, sign-in, answer, pending, list or fleet
 commands, apart from the copy `conduit install` keeps in the package cache (O7). Installation
 happens beforehand; plan reads installed release identities with `list.v1`, and each release's
@@ -41,7 +41,7 @@ Both commands are requests of a serving engine, `conduit serve`, as root, like
 [today's author commands](../../../engine/README.md#change-a-serving-project). Neither starts
 an engine or installs a package. Their wire documents are framed (SCT-001, SCT-003); they use
 only [core operations](../../../spec/core/operations.yaml), adding no operation or promise
-([ruling 53, point 4](../../proposals/ruling-53/README.md), SCT-015 and the head comment of
+([ruling 53, point 4](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-53/README.md), SCT-015 and the head comment of
 [sections.yaml](../../../spec/promises/sections.yaml)).
 
 ## Read, compare, print, keep, send
@@ -89,10 +89,10 @@ only [core operations](../../../spec/core/operations.yaml), adding no operation 
    result stops execution. Print `not sent N..M` for the remaining steps, if any. No rollback.
    When a successful set-up raises sign-ins, continue apply and print each returned pending
    action ID as `panel action ID: sign-in required`, apart from authored lines. Answer none
-   ([ruling 76, point 4](../../proposals/ruling-76/README.md); TPL-012, PND-005, PND-011).
+   ([ruling 76, point 4](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-76/README.md); TPL-012, PND-005, PND-011).
 
 The command is the approval; there is no prompt and nothing runs automatically or later
-([ruling 55, A4](../../proposals/ruling-55/README.md),
+([ruling 55, A4](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-55/README.md),
 [specification limits](../../../spec/README.md#what-the-short-forms-meaning-covers)).
 Initial reads precede printing and are not step lines. Reads after printing, including inspection
 of newly registered objects before open or setup, are steps, printed and keyed like other requests.
@@ -171,8 +171,8 @@ retained-pin `difference` line and case 07's `remains ready` line, are printed a
 ## Approval and command readings under ruling 76
 
 Each actual approval flag use is printed once under `flags`, recorded with the plan and counted when used
-([ruling 55, A4](../../proposals/ruling-55/README.md),
-[ruling 59, A3](../../proposals/ruling-59/README.md)). Unused, ambiguous and contradictory
+([ruling 55, A4](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-55/README.md),
+[ruling 59, A3](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-59/README.md)). Unused, ambiguous and contradictory
 operands stop planning; one permission never means all objects.
 
 | Point | Ruled reading | Source |
@@ -219,9 +219,9 @@ Cases 05 and 06 replace `shared--t` at step 1 and retire `shared` at step 2.
 Root defaults added during registration count as added access and must follow all narrowings.
 The one-time Conduit that a cascade flag permits is the one stated exception to both narrowing
 before widening and the subset rule: the plan prints its opening, use and closure
-([ruling 59 A3](../../proposals/ruling-59/README.md)).
+([ruling 59 A3](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-59/README.md)).
 This is our ordering choice, from "It narrows before it widens" in the
-[accepted simplification, point 4](../../proposals/simplification/README.md).
+[accepted simplification, point 4](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/simplification/README.md).
 That proposal's make-before-retire replacement was reversed by ruling 55 A3.
 
 Our choice on an incomplete approval: print the whole stopped plan and send no part, including
@@ -259,7 +259,7 @@ A standalone replacement keeps kind and name (SCT-004; ruling 55 A3). Print and 
    shutdown and removes without another request (LIF-024, LIF-035 and `retire.v1`). Until then
    the name is occupied; OBJ-002 rejects another document of that kind and name.
 3. Lift every matching tombstone this same apply caused, without another flag (LIF-041,
-   ACC-053; [the interplay note](../../proposals/spec-batch-1/areas/additions.md)). Read fresh
+   ACC-053; [the interplay note](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/spec-batch-1/areas/additions.md)). Read fresh
    tombstones with list after removal, and verify their cause before lifting; do not guess IDs.
 4. Register under the same name, taking each new ID from the result.
 5. Inspect, verify, then explicitly open or set up, using those returned IDs.
@@ -313,7 +313,7 @@ the named flag.
   naming the object to be made. This includes an outside tombstone and one this apply leaves by closing a dropped
   Conduit or by `--prune`, including Conduits a pruned instance's retirement closes under
   CON-008. Reopening still takes a flag
-  ([ruling 76, What it amends](../../proposals/ruling-76/README.md#what-it-amends)).
+  ([ruling 76, What it amends](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-76/README.md#what-it-amends)).
 
 A Conduit renamed in the file that keeps its consumer, target and capability is a flag-free
 close of OLD and a new Conduit whose registration matches OLD's tombstone (LIF-041). The plan
@@ -369,7 +369,7 @@ reverted by this planner, under any flag. No control call is inferred from a fil
 An author's edit to a setting is a replacement under `--replace`, and while the instance is
 ready its stop names a control that covers the setting (rows 23 and 25). Whether apply may
 send the control instead is the owner's, asked with finding 4-01 after the S1 rerun
-([decision D67](../../proposals/full-review/decisions.md#the-experiments-documents-and-the-register)).
+([decision D67](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md#the-experiments-documents-and-the-register)).
 
 Dropping a Pool/Fleet that still owns members stops unless the appropriate cascade flag names it
 (LIF-020). Each cascade is one command, counted under that one flag (ruling 59 A3, plan C8/C13).
@@ -633,9 +633,9 @@ these quotes or the cases under docs; maintain them explicitly when the assigned
 Order 069b was K3b and wrote none of these cases. The 18 safety cases below, a cascade case
 and cases for `--adopt`, `--recreate` and `--prune` have no case file and no order. They are to
 be fixed inputs of the convergence check that is order 052a's done-when
-([decision D26](../../proposals/full-review/decisions.md#the-s1-rerun-and-its-report)).
+([decision D26](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md#the-s1-rerun-and-its-report)).
 
-Adapted from the [synthesis cases 1–18](../../proposals/language-shape/short-form/synthesis.md#golden-plan-safety-cases).
+Adapted from the [synthesis cases 1–18](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/language-shape/short-form/synthesis.md#golden-plan-safety-cases).
 These are specified outcomes, not results from an implementation. No interactive confirmation
 or catch-all approval or control-takeover flag is part of batch 1.
 
@@ -674,7 +674,7 @@ O2: Open. LIF-037 pins identity, not definition/lifecycle revision for open/setu
 possible but cannot promise atomic validation against a concurrent same-ID change. The reference
 stops on detected drift, and makes no stronger engine promise.
 
-O3: Answered by [ruling 59 A3](../../proposals/ruling-59/README.md). A cascade takes a flag that
+O3: Answered by [ruling 59 A3](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-59/README.md). A cascade takes a flag that
 opens, uses and closes a one-time Conduit, printed in the plan. That Conduit is the one stated
 exception to narrowing before widening and to the subset rule.
 
@@ -683,7 +683,7 @@ A later close.v1 would name a removed object and be invalid (LIF-035). Printing 
 cascade under `affects` instead of sending another close is the reading under CON-008.
 `spec/README.md` still lists "close the Conduit" among the cascade's requests, contradicting
 CON-008; the next specification order corrects it
-([decision D86](../../proposals/full-review/decisions.md#the-state-of-the-documents)).
+([decision D86](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md#the-state-of-the-documents)).
 The specification is not amended here.
 
 O5: Decided. Check every place governed by `secret-reference.v1` locally during translation and
@@ -765,7 +765,7 @@ text, but not its line count. Narrowing B at T4 removes one named flag use, whil
 still makes that command count. Bare T7 revocation carries no author-chosen value.
 
 Primary counts only commands carrying an author-chosen value; strict command counts include
-every scheduled command ([ruling 63, point 1](../../proposals/ruling-63/README.md)).
+every scheduled command ([ruling 63, point 1](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-63/README.md)).
 The file hunk costs below come from experiment 023's flow states, not the compact serialization
 inside these cases. Install-written pins and copied digests are listed apart in that experiment.
 The task's strict total also includes panel actions, following its counting method.
@@ -785,7 +785,7 @@ The total primary sequence `21, 5, 0, 3, 2, 2, 2` agrees with experiment 023's r
 "No store + K3 A's omitted narrowing flags" and ruling 76's forecast. Strict remains
 `25, 6, 0, 3, 2, 2, 3`: omitting values or flags removes no scheduled command or panel action.
 The two T1 panel actions are sign-in for A and B, listed apart from authored lines
-([ruling 68 R1](../../proposals/ruling-68/README.md)). Apply continues through both pending
+([ruling 68 R1](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md)). Apply continues through both pending
 sign-ins, without a follow-up apply or an answer. A returned pendingAction is a list of IDs,
 never evidence or a prompt, under `io.github.shrav-k.conduit/pendingAction` (IFC-025).
 These actions are prospective for real Agent packages; fixture agents 0.2.0 raise none.

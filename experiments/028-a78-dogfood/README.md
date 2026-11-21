@@ -3,8 +3,8 @@ Not binding.
 
 This is A78's directory in the [roadmap's register](../../ROADMAP.md#experiments-and-probes).
 Stage 1 is orders 1 to 3, which root sends through turns on Agents of the `conduit-core` Fleet
-([ruling 70](../../docs/proposals/ruling-70/README.md);
-[ruling 61, B12](../../docs/proposals/ruling-61/README.md)). A78's claim, pass conditions and
+([ruling 70](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-70/README.md);
+[ruling 61, B12](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-61/README.md)). A78's claim, pass conditions and
 measures for orders 2 and 3 are
 [registered below](#orders-2-and-3-registered-before-order-2-runs), before order 2 runs; those
 for orders 4 and 5 are registered before order 4 runs.
@@ -60,7 +60,7 @@ its sequence is:
 
 ## The plan
 
-[The plan](inputs/plan.md) is what [ruling 74's record](../../docs/proposals/ruling-74/README.md)
+[The plan](inputs/plan.md) is what [ruling 74's record](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-74/README.md)
 cites as “The coordinator's plan for A78 under ruling 70”. It plans “one order at a time” on
 fixed slots, with root dispatching orders 1 to 3 and a coordinator Agent dispatching orders
 4 and 5 after appointment. It plans the Agent packages, the session idle-limit fix, smoke
@@ -102,14 +102,14 @@ The raw export leaves at the next condensation; the results then link its last v
 ## What it cannot show
 
 Every result here is obtained with every Agent under one operating-system user, the owner's
-([ruling 84](../../docs/proposals/ruling-84/README.md), point 2). No dedicated macOS user is
-planned: ruling 84, point 1, amends [ruling 75 B3](../../docs/proposals/ruling-75/README.md), and
+([ruling 84](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-84/README.md), point 2). No dedicated macOS user is
+planned: ruling 84, point 1, amends [ruling 75 B3](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), and
 isolation is to come later from a sandbox method, whose design states whether a result obtained
 inside one shows Agents kept apart. Under one user, an Agent that runs code can read, use or
 replace another Agent's login and act as root's Interface, so no result here shows Agents kept
-apart ([the full review's D60](../../docs/proposals/full-review/decisions.md)). A guard that held is
+apart ([the full review's D60](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md)). A guard that held is
 not proof either: the guards read a slot that the Agents they check can write
-([finding 4-22](../../docs/proposals/first-build/log-increment-4.md)).
+([finding 4-22](../../docs/implementation/first-build/log-increment-4.md)).
 
 The records say which requests were made, by whom, and how each ended. They say no more.
 What an Agent did in its slot with its own tools is not a Conduit request, so it is not in
@@ -121,16 +121,16 @@ and verifier are not in this directory.
 ## Orders 2 and 3: registered before order 2 runs
 
 Registered on 2026-11-15 by work order 170, before order 2 runs through Conduit
-([ruling 45](../../docs/proposals/ruling-45/README.md)). It holds for orders 2 and 3, which root
+([ruling 45](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-45/README.md)). It holds for orders 2 and 3, which root
 sends. Orders 4 and 5, which a coordinator Agent sends, are registered before order 4 runs, once
 the owner has answered what they test (D59). This text changes only by a dated amendment, made
 before the first order it changes runs. Its choices, and the D-numbers it cites from
-[the full review's decisions](../../docs/proposals/full-review/decisions.md), are the
+[the full review's decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md), are the
 coordinator's, each open to the owner's strike
-([ruling 48](../../docs/proposals/ruling-48/README.md)).
+([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)).
 
 Amended on 2026-11-19, before order 2 runs through Conduit, by the coordinator's change for
-[ruling 84](../../docs/proposals/ruling-84/README.md), point 1. Under "The Claude verifier slot",
+[ruling 84](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-84/README.md), point 1. Under "The Claude verifier slot",
 the slot was to be added "only after D58's guards and A22's open case have run (D61)"; it is now
 added once D58's guards are in place, since A22 no longer runs before any Claude Agent becomes a
 dogfood slot. Above this registration, "What it cannot show" no longer names the dedicated macOS
@@ -141,14 +141,14 @@ measure or pass condition, and the same holds for experiment 027's amendment of 
 ### Claim
 
 Running a work order through Conduit's Agents, as
-[ruling 70](../../docs/proposals/ruling-70/README.md) asks, costs a bounded set-up time per turn,
+[ruling 70](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-70/README.md) asks, costs a bounded set-up time per turn,
 loses no turn that the plain runner would have kept, and leaves in the engine's own records which
 turns were asked for, by whom and how each ended.
 
 It claims nothing about access (D57), nothing about Agents kept apart (D60) and nothing about how
 long an order takes: no condition is set on its speed (D54), and no order is paired with an order
 on the plain runner
-([FR-275's verifier](../../docs/proposals/full-review/findings/P01-work-orders-lanes.md#fr-275)).
+([FR-275's verifier](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/P01-work-orders-lanes.md#fr-275)).
 
 ### Setup, recorded before order 2's first turn
 
@@ -156,10 +156,10 @@ The coordinator records each of these in this section, by a dated amendment merg
 2's first turn, and order 2's result repeats each, with the command that shows it where one does:
 
 - the commit of `main` that the dogfood engine is re-pinned to from `38c0b4f`, now that
-  [ruling 78](../../docs/proposals/ruling-78/README.md) has ended the hold on the re-pin, and that
+  [ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md) has ended the hold on the re-pin, and that
   it holds orders 156 and 162, which
-  [FR-336](../../docs/proposals/full-review/findings/P06-dogfooding.md#fr-336) and the settlement
-  of [finding 4-23](../../docs/proposals/first-build/log-increment-4.md) put before the re-pin:
+  [FR-336](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/P06-dogfooding.md#fr-336) and the settlement
+  of [finding 4-23](../../docs/implementation/first-build/log-increment-4.md) put before the re-pin:
   `git merge-base --is-ancestor b1f6f8ca <commit>` and the same for `60126251` each exit 0. Until
   the later order of ruling 78, point 6, removes it, that commit still lets `reconcile.v1` record
   a fenced turn as not having occurred; condition 5 forbids it;
@@ -218,7 +218,7 @@ Per order:
   recorded it as having occurred, with what was checked; a repeat under the same key (a later
   attempt of the same invocation); a new turn request; or nothing. Whether any field of the
   records links a new request to the turn it replaced is reported, not judged
-  ([FR-531's verifier](../../docs/proposals/full-review/findings/G6-outside-the-tree.md#fr-531));
+  ([FR-531's verifier](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G6-outside-the-tree.md#fr-531));
 - the harness's interventions, each kind counted: repair turns; restarts, one for each fresh
   conversation and any other apart, with its reason; the processes the harness's sweep listed,
   and those it stopped; watchdog fires; turns run again on the plain runner (D54); and the
@@ -234,7 +234,7 @@ Per order:
   The time each commit takes is not measured: the engine does not write it yet.
 
 Observed, and never counted as shown, while every Agent runs as one operating-system user (D60;
-[FR-337's verifier](../../docs/proposals/full-review/findings/P06-dogfooding.md#fr-337)). A guard
+[FR-337's verifier](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/P06-dogfooding.md#fr-337)). A guard
 that held shows nothing; a guard that answers broken still fails condition 4:
 
 - the writes outside the slot, and the writes by the verifier, that the guards and the sweep
@@ -277,7 +277,7 @@ pass.
 5. **No turn is recorded as not having occurred** (ruling 78, point 6): no `invocation-ended`
    record whose `reconciled` is true and whose `outcome` is `failed` names a turn of the order.
 6. **Each friction is in the first build's open log, now
-   [increment 4's](../../docs/proposals/first-build/log-increment-4.md), before the next order
+   [increment 4's](../../docs/implementation/first-build/log-increment-4.md), before the next order
    goes out through Conduit** (D54), as a new row or in the row of the same finding, and the
    result names the rows. A friction is each lost turn, each repair turn, each guard broken or
    unknown, each intervention but the one restart for each fresh conversation, and each fault
@@ -315,9 +315,9 @@ pass.
 
 At order 050's re-initialization of the store, a verifier slot that is a Claude Code Agent on
 Claude Opus, the coordinator's model under
-[ruling 79](../../docs/proposals/ruling-79/README.md), is added beside `verifier-1`, which stays
+[ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md), is added beside `verifier-1`, which stays
 for A77's paired reads
-([FR-499](../../docs/proposals/full-review/findings/G4-who-verifies.md#fr-499), as its verifier
+([FR-499](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G4-who-verifies.md#fr-499), as its verifier
 corrected it). It is added only once D58's guards are in place (D61, as ruling 84, point 1,
 amends it), and its reach over the worker's tree waits for the owner's answer on what orders 4
 and 5 test (D59). Its turns draw on the owner's primary Claude allowance. They are measured as a
@@ -330,7 +330,7 @@ are judged, and each result says which verifier read each pass.
   coordinator's model (FR-499), and any order after order 3 that root sends if batch 2 is late,
   which is the owner's.
 - The probes of A78 in
-  [the review](../../docs/proposals/full-review/experiments.md#a78-the-conditions-per-order): P1,
+  [the review](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/experiments.md#a78-the-conditions-per-order): P1,
   cuts of the network under the `.v2` wrapper and under a plain launch, and P2, a lost caller,
   before order 5; each is registered before it runs. P3, the process tree, the review moved to
   experiment 022 and A7, and P4, upgrading a signed-in Agent's package, it did not register.
@@ -340,9 +340,9 @@ are judged, and each result says which verifier read each pass.
 Written on 2026-11-19 by work order 210, before order 050n merges the Agent packages 0.2.0. It
 registers nothing: no order has run in stage 2, and the claim, the measures and the pass
 conditions of stage 2's orders are registered by a dated amendment, merged before the first of
-them runs ([ruling 45](../../docs/proposals/ruling-45/README.md)). Its choices are the
+them runs ([ruling 45](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-45/README.md)). Its choices are the
 coordinator's, each open to the owner's strike
-([ruling 48](../../docs/proposals/ruling-48/README.md)).
+([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)).
 
 Stage 2 runs on the store that is initialized again once 0.2.0 merges. The `conduit-core` Fleet's
 documents for it are [its manifest](stage-2/fleet/conduit.yaml),
@@ -361,13 +361,13 @@ submits the copy, it checks that the copy reads back to the values it was given.
 | `reader-1` | `claude-code.v2` | `<slot-r>` | 3600 s | `turn-reader-1` |
 
 - Every Agent has effort `high` and its account services off
-  ([ruling 48](../../docs/proposals/ruling-48/README.md), point 1), and `reader-1` has the model
+  ([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md), point 1), and `reader-1` has the model
   `opus` and peer messaging off. Each names a directory, so its client's own tools are on and
-  nothing confines them in v0 ([ruling 70](../../docs/proposals/ruling-70/README.md)).
+  nothing confines them in v0 ([ruling 70](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-70/README.md)).
 - Each keeps its client's login in a home of its own inside its state directory
   ([order 050c](../../docs/work-orders/050c-agents-v2-client-home.md)), which keeps the accounts
   apart for the clients but is no wall against an Agent that runs code
-  ([ruling 84](../../docs/proposals/ruling-84/README.md), point 2). Each names in `account` the
+  ([ruling 84](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-84/README.md), point 2). Each names in `account` the
   owner's primary account of its client, and no Agent names a second account until the owner says
   so (ruling 84, point 3).
 - Two pairs of a worker and a verifier, each pair in a slot clone of its own: the coordinator
@@ -375,7 +375,7 @@ submits the copy, it checks that the copy reads back to the values it was given.
   sign-in. A third pair is four more documents and two more sign-ins.
 - `reader-1` is [the Claude verifier slot](#the-claude-verifier-slot) of stage 1's registration:
   the fresh read on Claude Opus before each merge
-  ([ruling 79](../../docs/proposals/ruling-79/README.md)). It works in a clone of its own, into
+  ([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md)). It works in a clone of its own, into
   which the harness brings each order's branch, so no Conduit and no directory of its names a
   worker's slot. The coordinator proposes to read the reach over the worker's tree that waits for
   D59 as a Conduit or a directory naming that tree, which `reader-1` does not have; order 211's
@@ -407,14 +407,14 @@ Before stage 2's first turn:
    reader's clone, but reads each with the harness's own git directory and the slot or clone only
    as the working tree, or by plain file reads; and each of its guards answers held, broken or
    unknown, an unknown checked again before the next turn
-   ([D58](../../docs/proposals/full-review/decisions.md);
+   ([D58](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md);
    [IN_FORCE.md, topic 15](../../IN_FORCE.md#15-how-the-work-is-governed)). A22 no longer runs
-   first ([ruling 84](../../docs/proposals/ruling-84/README.md), point 1).
+   first ([ruling 84](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-84/README.md), point 1).
    Until then the harness may submit these documents without `reader-1` and `turn-reader-1`,
    and stage 2 begins with its Codex slots (ruling 89, point 5).
 3. The owner has signed each of the five Agents in once, on the Mac, through `conduit sign-in`
    ([order 051b-2](../../docs/work-orders/051b2-cli-sign-in.md);
-   [ruling 85](../../docs/proposals/ruling-85/README.md), point 5), one Agent at a time: Codex's
+   [ruling 85](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-85/README.md), point 5), one Agent at a time: Codex's
    browser login listens on fixed ports, and a sign-in that may share one with another in
    progress reports unavailable
    ([order 048a-5c](../../docs/work-orders/048a5c-build-sign-in-fixed-port.md)).
@@ -432,7 +432,7 @@ Every Agent of stage 2 runs under the owner's operating-system user too, so
 ## Stage 2: registered before its first turn
 
 Registered on 2026-11-19 by work order 211, before stage 2's first turn
-([ruling 45](../../docs/proposals/ruling-45/README.md)), after the section above wrote stage 2's
+([ruling 45](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-45/README.md)), after the section above wrote stage 2's
 documents. It holds for every order of stage 2: an order that root dispatches to go through
 Conduit on the store initialized again with the Agent packages 0.2.0, or 0.2.1 if it is first
 initialized with them, one turn at a time either way, fixed as stage 2's at its dispatch. Stage 2
@@ -441,14 +441,14 @@ another is in flight is not stage 2's. An upgrade of the store's Agent packages,
 initialization, ends stage 2 unless a dated amendment merged before it says otherwise. This text
 changes only by a dated amendment, merged before the first turn it changes. Its choices are the
 coordinator's, each open to the owner's strike
-([ruling 48](../../docs/proposals/ruling-48/README.md)).
+([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)).
 
 ### Stage 2's orders
 
 Root sends each order through the turn Conduits of
 [stage 2's instances](stage-2/fleet/instances.yaml): the worker and the verifier of one pair work
 in that pair's slot clone, and `reader-1` gives the order its fresh read on Claude Opus before it
-merges ([ruling 79](../../docs/proposals/ruling-79/README.md)), in a clone of its own. Each Agent
+merges ([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md)), in a clone of its own. Each Agent
 keeps the login that the owner gave it once, through `conduit sign-in`, in a home of its own.
 
 - If order 2 or 3 has not run when stage 2 starts, stage 2's first orders are those orders. They
@@ -456,7 +456,7 @@ keeps the login that the owner gave it once, through `conduit sign-in`, in a hom
   [their registration](#orders-2-and-3-registered-before-order-2-runs), and stage 2's, under this
   section's nine. The setup recorded below serves as theirs, and their conditions are read as
   stage 2's conditions 1 to 7 are read below.
-- [Ruling 89](../../docs/proposals/ruling-89/README.md), point 3, sets the first dogfood
+- [Ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), point 3, sets the first dogfood
   milestone: the Agents of the owner's primary accounts, signed in through Conduit on the Mac, run
   Conduit's work orders one turn at a time. The coordinator reads it as the owner's word for an
   order after order 3 to go through Conduit before
@@ -475,7 +475,7 @@ keeps the login that the owner gave it once, through `conduit sign-in`, in a hom
 ### `reader-1`, D58, D59 and A77
 
 - `reader-1` is signed in and sent turns only once D58's guard is in the harness, as the setup
-  below records it ([ruling 89](../../docs/proposals/ruling-89/README.md), point 5), and after the
+  below records it ([ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), point 5), and after the
   Claude scratch-home sign-in of
   [027's amendment](../027-a5-sign-in/README.md#amendment-of-2026-11-19-the-live-check-as-it-runs)
   has passed; if that sign-in failed or ended a fault, only once the owner, told of it, has
@@ -671,11 +671,11 @@ run outside Conduit as the method runs the fresh read, so that nothing merges un
 
 Each Agent keeps its client's login in a home of its own, which keeps the accounts apart for the
 clients but is no wall against an Agent that runs code
-([ruling 84](../../docs/proposals/ruling-84/README.md), point 2): under one user, any Agent of
+([ruling 84](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-84/README.md), point 2): under one user, any Agent of
 stage 2, `reader-1` among them, can read or use another's login, and each one's own tools reach
 every slot. Each can also read what the owner's environment and shell profile hold, an API-key
 variable among them, a reach the owner accepts for the dogfood
-([ruling 89](../../docs/proposals/ruling-89/README.md), point 4), and stage 2 shows nothing about
+([ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), point 4), and stage 2 shows nothing about
 whether an Agent used it. A sign-in that carried the stage shows that it did so on this store,
 for this stage's length, not across a package's upgrade or the install of 0.2.1 (A78's P4, not
 registered). An account check that answered the named account shows what the client said, not
@@ -692,7 +692,7 @@ about how well it reads.
   and waits it removes, both pairs at once, and whether a store of 0.2.0 takes the Agents of
   0.2.1 without new sign-ins (A78's P4).
 - A third pair, a second account, which comes after the S1 rerun's pin and only on the owner's
-  word ([ruling 84](../../docs/proposals/ruling-84/README.md), point 3; ruling 89, point 7), the
+  word ([ruling 84](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-84/README.md), point 3; ruling 89, point 7), the
   Linux node as a node of the Fleet, and a tree granted through the Pool (orders 4 and 5, D59):
   each by its own registration or amendment, before the first turn it changes.
 
@@ -762,9 +762,15 @@ gate and the fresh read ran there.
   in Conduit itself or the owner decides otherwise; stop rule 1 has no guard to answer it. Pass
   condition 9 is read from Conduit's records of the restart or `new-conversation.v1` before the
   turn, and is not shown where they do not show it.
-- `reader-1`'s turns. [Ruling 89](../../docs/proposals/ruling-89/README.md), point 5, tied the
+- `reader-1`'s turns. [Ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), point 5, tied the
   Claude reader slot to D58's guard in the harness. *Coordinator's*: `reader-1`, though signed
   in, takes no turn until a guard exists in Conduit itself or the owner decides otherwise; each
   fresh read runs outside Conduit, and stage 2's claim 2 is not shown.
 - The steps done by hand, each a gap in the coordinator's notes (private), to be ordered as
-  engine and package work ([ruling 92](../../docs/proposals/ruling-92/README.md), points 2, 9).
+  engine and package work ([ruling 92](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-92/README.md), points 2, 9).
+
+## Amendment of 2026-11-21: links after work order 235
+
+The coordinator, outside every turn, pointed this directory's links into `docs/proposals/` at
+`077fa47e`, and the open log's at its new place, since a stage-2 order may not change this
+directory. No other text changed.

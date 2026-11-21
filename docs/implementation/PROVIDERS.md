@@ -60,7 +60,7 @@ probes) stopped here; nothing of the lane runs, and every unfinished branch is o
   7. model checking: MC4's P1 registered again, and the models of orders 109, 110, 112 and 113
      reviewed against order 081's promises, now that 077 has merged (#263); the MC2 rerun,
      likewise unblocked; MC9 after batch 2; SV1 after 071.
-- **Answered by [ruling 78](../proposals/ruling-78/README.md), point 4:** S3-OF by option (E),
+- **Answered by [ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md), point 4:** S3-OF by option (E),
   the Mac's own firewall under one administrator rule the owner adds once
   ([S3's plan](../../experiments/014-s3-two-machines/plan.md)); S2's plain Linear server is the
   coordinator's choice, to the requirements in
@@ -99,8 +99,8 @@ No additional language is proposed here. A new missing behavior must be reported
 
 | Core capability | First / second implementation and existing tool | Exercise / engine prerequisite |
 | --- | --- | --- |
-| `runtime-provider.v1` | A63-RP local process on OS process groups; A63-DR on Docker CLI/daemon. SSH-R is a third, on OpenSSH/systemd. | S2 D20, S3 isolated consumers, S10 T3/T5: ADDR and DSP, and `tailscale serve` set up after the Mac's tailnet rename ([ruling 77](../proposals/ruling-77/README.md)) for engine use; container Agents also need 050. |
-| `machine-provider.v1` | A63-MP on local OS machine reports; SSH-M on OpenSSH, the second-host provider that [ruling 77](../proposals/ruling-77/README.md) selects. A Tailscale provider is a later candidate. | S3 supplies machines’ second-implementation evidence: 049a-1, 049b, DSP, 051c and proposed A63-MDIS; see admin C. |
+| `runtime-provider.v1` | A63-RP local process on OS process groups; A63-DR on Docker CLI/daemon. SSH-R is a third, on OpenSSH/systemd. | S2 D20, S3 isolated consumers, S10 T3/T5: ADDR and DSP, and `tailscale serve` set up after the Mac's tailnet rename ([ruling 77](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-77/README.md)) for engine use; container Agents also need 050. |
+| `machine-provider.v1` | A63-MP on local OS machine reports; SSH-M on OpenSSH, the second-host provider that [ruling 77](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-77/README.md) selects. A Tailscale provider is a later candidate. | S3 supplies machines’ second-implementation evidence: 049a-1, 049b, DSP, 051c and proposed A63-MDIS; see admin C. |
 | `package-source.v1` | A63-PS on filesystem directory reads, claiming `file`; A63-GS on Git, claiming `git+https`. | S10 T4 (S7 only if fetching HTTPS archives): PSD, immutable claims and fresh caches. Unclaimed `file`/`https` remain engine fetches. |
 | `secret-provider.v1` | S2/S10 first: A63-KC on macOS Security APIs; shipped A63-FS on filesystem files. S10 second: A63-1P on 1Password CLI after A73, else A63-FS. | S2, S3 and S10 T2/T5: SEC-D; B2-S/C/H before scenarios depend on driven-Agent restrictions. File/keychain also pass the same suite. |
 
@@ -347,7 +347,7 @@ slot too. Provider/harness crates stay outside those engine hot files and outsid
   dispatch. Withhold full paired evidence until the same suite passes both; 049b is only a fixture.
 - **D — decided by the admin, 2026-11-11:** SSH-R and SSH-M are separate provider crates
   (`packages/provider-ssh-runtime/` and `packages/provider-ssh-machine/`), under ruling 40.
-  SSH-R reuses A63-RK by path, not RP or H. Both are unblocked: [ruling 77](../proposals/ruling-77/README.md)
+  SSH-R reuses A63-RK by path, not RP or H. Both are unblocked: [ruling 77](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-77/README.md)
   selects both for the Windows computer, and SSH-R's runs use one account, `conduit-run`, without sudo;
   its contract states that PRV-025's isolation is unmet until each Agent has its own user.
   SSH-R’s external stop-drainer helper survives server retirement and retries SSH to stop the
@@ -357,15 +357,15 @@ slot too. Provider/harness crates stay outside those engine hot files and outsid
   built the drainer, at most one per instance, kept alive by the provider. Order 147's sweep of
   retired providers' keys is still to come. Channel lifetime and the configured bound
   remain backstops; stop success cancels an in-flight start and permits no restart (081).
-- **E — admin's decision, 2026-11-11:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed it on 2026-11-12 ([ruling 75's later answer](../proposals/ruling-75/README.md#later-answers)).
+- **E — admin's decision, 2026-11-11:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed it on 2026-11-12 ([ruling 75's later answer](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md#later-answers)).
 - **Uncovered dispatch, proposed:** accept A63-MDIS for place/list-machines beyond 051c's report
   loop, or assign that scope to an existing admin order. **Recommendation:** its own M order,
   with PRV-015 safety cases and an explicit slot in S4's canonical merge sequence.
 
 ## For the owner
 
-On 2026-11-12 the owner answered the M2 questions: M2-1 to M2-4 in [ruling 77](../proposals/ruling-77/README.md), M2-5 in
-[ruling 72's later answer](../proposals/ruling-72/README.md#later-answers), and M2-7 needed no ruling (WSL keeps its default
+On 2026-11-12 the owner answered the M2 questions: M2-1 to M2-4 in [ruling 77](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-77/README.md), M2-5 in
+[ruling 72's later answer](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-72/README.md#later-answers), and M2-7 needed no ruling (WSL keeps its default
 memory limit). M2-5 is on demand, whenever the computer is on and the owner has not paused it.
 M2-1: SSH-M and SSH-R, with Tailscale the network.
 A Tailscale provider is a later candidate. M2-2: one run user,

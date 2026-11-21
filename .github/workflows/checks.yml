@@ -129,9 +129,6 @@ jobs:
       - name: python3 tools/check_roadmap.py
         if: ${{ !cancelled() }}
         run: python3 tools/check_roadmap.py
-      - name: python3 tools/check_rulings.py
-        if: ${{ !cancelled() }}
-        run: python3 tools/check_rulings.py
       - name: python3 tools/check_model_account.py --history
         if: ${{ !cancelled() }}
         run: python3 tools/check_model_account.py --history

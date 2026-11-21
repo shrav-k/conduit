@@ -15,7 +15,7 @@ nowhere.
 
 ## What and why
 
-**The gap** (the dogfood-gaps stream, step G-1; [ruling 92](../proposals/ruling-92/README.md),
+**The gap** (the dogfood-gaps stream, step G-1; [ruling 92](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-92/README.md),
 point 9). `conduit records --store DIR` opens the store itself (`Shell::open` in
 `engine/crates/shell/src/main.rs`), and while `conduit serve` holds the store the lease refuses
 it with "store already has an active shell"; its help says "stop serve first". So the dogfood
@@ -52,7 +52,7 @@ until this merges, and the coordinator changes that step afterwards, not here.
 
 ## The decisions it applies
 
-By [ruling 89](../proposals/ruling-89/README.md), each decision says what must hold; how the
+By [ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), each decision says what must hold; how the
 shell does it is yours.
 
 1. **The command.** Where no process holds the store, `conduit records --store DIR` is unchanged:
@@ -204,7 +204,7 @@ share their printing; which instance's token the third test refuses and how it s
 stderr says; every
 choice you made yourself, under `own_choices`; and every check's last line. Stage nothing. The
 verifier's turn follows; the coordinator then runs `tools/gate.py`, has a fresh, read-only Opus
-reader read the diff ([ruling 79](../proposals/ruling-79/README.md); ruling 92 point 4), and
+reader read the diff ([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md); ruling 92 point 4), and
 merges.
 
 ## Record

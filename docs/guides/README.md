@@ -21,9 +21,9 @@ Menu names and commands in the setup guides are as the coordinator understood th
 was written, from 2026-11-10; where one has moved or fails, say so. The second-machine guide's
 first setup ran on 2026-11-11, and part 1 of ruling 77's setup on 2026-11-12; no other guide's
 steps are recorded as tried. The accounts guide
-describes the sign-in of [ruling 49](../proposals/ruling-49/README.md), which is in `spec/`
+describes the sign-in of [ruling 49](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-49/README.md), which is in `spec/`
 (orders 038a and 038c) but not yet built; the first build still uses shared logins, as its
-[closeout](../proposals/first-build/increment-3/closeout-results-2026-11-10.md) records.
+[closeout](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md) records.
 Rulings 50 to 52 accept enrollment's direction and managed and peer modes, and ruling 56, as
 ruling 68 point 9 amends it, how a person checks a joining machine. Enrollment is in `spec/`
 (order 038b); its core, order 049a1, is not yet merged, so the second-machine guide remains a

@@ -2,8 +2,8 @@
 
 Maintainer: the Conduit project's owner. Native-client launch baseline: Codex 0.167.0, from
 experiment 009. Work orders 023 and 024 tested this package with its scripted client only;
-the admin's [real-client closeout](../../docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)
-and [increment 4 log](../../docs/proposals/first-build/log-increment-4.md) record subsequent trials on 2026-11-10.
+the admin's [real-client closeout](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)
+and [increment 4 log](../../docs/implementation/first-build/log-increment-4.md) record subsequent trials on 2026-11-10.
 
 This standalone Rust crate has no dependency on another repository directory. Its lockfile
 and pinned toolchain travel with it. Its manifest exports two Agent Types and a conversation
@@ -120,7 +120,7 @@ flags, a spawned sub-agent had no shell, could not read outside its sandbox and 
 `apply_patch` write refused by the read-only sandbox. Its requests of the engine carry the
 parent Agent's credential, so it reaches only what that Agent may. This is a route to more
 parallel model work within the Agent's own access, not around it. What offers the tools is
-still not found; the [log](../../docs/proposals/first-build/log-increment-4.md) records the
+still not found; the [log](../../docs/implementation/first-build/log-increment-4.md) records the
 trial and settlement.
 
 ## The .v2 Agent

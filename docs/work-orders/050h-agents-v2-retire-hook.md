@@ -66,7 +66,7 @@ claude-code.v2 True {'type': ['string', 'null']} False False {'directory': '/dir
 ```
 
 (`account` required, a string or null with no default, no `apiKey` and no `oneOf`, under
-[ruling 83](../proposals/ruling-83/README.md); `toolsDirectory`; and still no `requires` and one
+[ruling 83](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-83/README.md); `toolsDirectory`; and still no `requires` and one
 default). These two greps and this Python line, and not a Record, are what check order 050f's
 work: its Record is written only after its reader, so this order may start from 050f's verified
 branch before that Record, and no line above asks for it.
@@ -88,19 +88,19 @@ entry).
 It carries, from [the coordinator's plan of 050](117-plan-s2-s3.md) (order 117's 050 entry: "050h,
 the retire hook: each `.v2` Agent signs out at retirement (D53)"):
 
-- [D53](../proposals/full-review/decisions.md), the full review's decision: "In 050 each Agent
+- [D53](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md), the full review's decision: "In 050 each Agent
   package's retire hook signs its client out and empties its home, and its contract says so", which
-  answers [FR-431](../proposals/full-review/findings/E04-signin-isolation.md#fr-431): "No operation
+  answers [FR-431](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/E04-signin-isolation.md#fr-431): "No operation
   signs an Agent out [...] It can only be the package's own retire hook", "as `docker logout` and
   `gh auth logout` remove one stored credential". The review's verdict M54
-  ([verdicts.md](../proposals/review-signin-2026-11-16/verdicts.md)) gives the form: "listed under
+  ([verdicts.md](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/verdicts.md)) gives the form: "listed under
   `requires` with a default pointing at the wrapper, signing the client out and emptying its home".
-- From the targeted review's [section 6](../proposals/review-signin-2026-11-16/README.md#6-must-state-lists),
-  which the owner accepted with [ruling 82](../proposals/ruling-82/README.md):
-  [`claude-code.v2`](../proposals/review-signin-2026-11-16/README.md#050-claude-codev2)'s item 1,
+- From the targeted review's [section 6](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#6-must-state-lists),
+  which the owner accepted with [ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md):
+  [`claude-code.v2`](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#050-claude-codev2)'s item 1,
   its `retire-hook.v1` part ("`requires` lists [...] `retire-hook.v1`, each with a default in
   `implementation`"; its three sign-in hooks are orders 050i and 050j's), and
-  [`codex.v2`](../proposals/review-signin-2026-11-16/README.md#050-codexv2)'s item 1 in the shape
+  [`codex.v2`](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#050-codexv2)'s item 1 in the shape
   common to both outcomes of the live check ("`requires` holds `retire-hook.v1` alone with its
   default" on its fail; orders 050l and 050m add the rest on a pass); item 4's done-when, its
   retirement part ("a marker in a synthetic default home stays untouched after an undo, a
@@ -109,7 +109,7 @@ the retire hook: each `.v2` Agent signs out at retirement (D53)"):
   resolves outside it"; item 5, for the retire hook's error paths ("a fake home with a canary
   token and claims driven through every error path, each canary absent from every result,
   diagnostic, record and log"); and item 6, for Q1 (iv).
-- Q1 (iv), as [ruling 82](../proposals/ruling-82/README.md#the-decisions), point 5, accepts it:
+- Q1 (iv), as [ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md#the-decisions), point 5, accepts it:
   "D53's retire-hook sentence, with the login kept where the client keeps it for that directory and
   no store named". Sentences (i) and (ii) are order 050f's, (iii) is at `BASE`, (v) is 050m's and
   (vi) 050k's.
@@ -534,7 +534,7 @@ two files are one source; line 18's `CLAUDE` selects the client) and `src/main.r
 
 10. **What this order does not do.** No `signIn`, no sign-in, account or sign-out hook and no login,
     which are orders 050i to 050m's; no input added or changed, and nothing about `apiKey`, which
-    [ruling 83](../proposals/ruling-83/README.md) leaves out of `.v2`; no description sentence but
+    [ruling 83](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-83/README.md) leaves out of `.v2`; no description sentence but
     S; no change to `.v1`, to `turn.v1`, to `conversation.v1`, to the `wrapper` item, or to
     `Cargo.toml`, `Cargo.lock`, `src/bin/package.rs`, `tests/package.rs`, `tests/manifest.rs` or
     Claude Code's `tests/fixtures/stale-init.json`; no wording of an existing refusal changed; and
@@ -556,7 +556,7 @@ The sign-out at retirement and the emptied home are D53, the full review's decis
 coordinator's, open to the owner's strike; the review's item 1 (`requires` and a default), item 4's
 retirement marker, item 5's canaries and item 6 are the review's must-state lists, which the owner
 accepted with ruling 82; Q1 (iv) is the owner's (ruling 82, point 5, answer 7); and the hooks' plain
-items are ruling 82's o1. [Ruling 83](../proposals/ruling-83/README.md) (the owner's, 2026-11-18)
+items are ruling 82's o1. [Ruling 83](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-83/README.md) (the owner's, 2026-11-18)
 gives the inputs that `BASE` holds. Order 050g's two outcome lines are its read under item 8;
 reading Claude Code's line, with its reader's R2, as a pass by silence that still runs the client's
 logout is the coordinator's; so is taking that logout as scoped to the Agent's home although order
@@ -569,7 +569,7 @@ null) rests on what each client's logout exits with there, which no order has re
 settles it, from Codex's `run_logout` at the tag order 050g read and from Claude Code's pages,
 before order 050n or the first real retirement, whichever comes first. The split of order 050 into
 050b to 050o, this order's place on `wo/050-agents-0.2.0` after 050f and 050g, and its base are the
-coordinator's, open to the owner's strike ([ruling 48](../proposals/ruling-48/README.md)).
+coordinator's, open to the owner's strike ([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)).
 Everything else here is the coordinator's too, each open to the owner's strike: the default being
 the turn item, with the tool `retire`; the logout's arguments, with Codex's file store on its logout
 too; the stop before the logout, and a survivor failing the hook; the state directory read first, so
@@ -716,8 +716,8 @@ The admin then runs `python3 tools/check_private_paths.py` and `git diff --cache
 staged change. This order is a checkpoint on `wo/050-agents-0.2.0`: it does not merge alone, and its
 Record is written at the foot of this file on that branch, as orders 050c's to 050f's are. A fresh
 Codex verifier and a fresh read-only Opus reader read the result before the checkpoint stands
-([ruling 79](../proposals/ruling-79/README.md), point 2). The local gate that
-[ruling 80](../proposals/ruling-80/README.md) has a merge wait on, `tools/gate.py`, runs at order
+([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md), point 2). The local gate that
+[ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md) has a merge wait on, `tools/gate.py`, runs at order
 050n's merge, read with the expected engine failure known.
 
 ## Record

@@ -204,7 +204,7 @@ rename (ruling 77). S3-OF’s answer gates all four runs. Pin inputs before timi
 checks are README P1–P6 and M0/M1/M2, including actual outage/stop/effect evidence.
 From the start of each run's fresh lab to the end of its last phase, the second machine carries
 no work-order worker, neither one the coordinator starts over SSH
-([ruling 76](../../docs/proposals/ruling-76/README.md#the-decisions), point 6) nor one Conduit
+([ruling 76](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-76/README.md#the-decisions), point 6) nor one Conduit
 runs (A78): workers run as `conduit-run` beside the runs and the rootless Docker daemon, and
 each loss phase stops the distro with every process in it.
 
@@ -256,7 +256,7 @@ against SEC-D1/FLT-D1 in core, and RET2 against SEC-D2/D3 and FLT-D2 in shell.
 - **A1, split/merge:** one machine increment or the proposed separate loss/return/relay orders.
   **Recommendation:** separate them; serialize requests.rs/lifecycle.rs merges, then shell
   lib.rs/runner.rs/CLI-table merges against DSP/051c. Reserve manifest pieces via 071.
-- **A3, D4:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed this reading on 2026-11-12 ([ruling 75's later answers](../../docs/proposals/ruling-75/README.md#later-answers)).
+- **A3, D4:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed this reading on 2026-11-12 ([ruling 75's later answers](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md#later-answers)).
 
 - **A4, providers:** extend A63-DR qualification to the second machine, or defer its profile.
   **Recommendation:** coordinate that qualification with order 120; S3's isolated runs wait.
@@ -274,12 +274,12 @@ against SEC-D1/FLT-D1 in core, and RET2 against SEC-D2/D3 and FLT-D2 in shell.
 - **Ruling 77:** SSH-M/SSH-R, the run user `conduit-run` with no sudo, `tailscale serve`
   after the Mac’s tailnet rename, and the distro locked down answer M2-1 to M2-4. O2 and
   affected live work wait for setup; O1/A741/A742’s stage-0 work does not. MC4-002 is not held:
-  under [ruling 42's later answer](../../docs/proposals/ruling-42/README.md#later-answers) of
+  under [ruling 42's later answer](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-42/README.md#later-answers) of
   2026-11-12 ([IN_FORCE.md, topic 11][topic-11]), every runtime provider Conduit ships, SSH-R among
   them, carries out a stop it owes on a machine before it starts any run there, and a run whose stop
   did not succeed may run beside a later instance, a limit stated in `spec/` (LIF-009, LIF-036,
   PRV-021).
-- **S3-OF, answered on 2026-11-14:** [ruling 78](../../docs/proposals/ruling-78/README.md),
+- **S3-OF, answered on 2026-11-14:** [ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md),
   point 4, chose option (E): the Mac's own firewall cuts the network, run by the
   coordinator's locked-down script under one administrator rule that the owner adds once;
   two test cuts decide whether it works, and a path it misses gets a relay on the Mac. The
@@ -339,5 +339,5 @@ On the second machine Docker runs rootless as `conduit-run`, and its socket belo
 user, so the isolated profile keeps runs apart only while no unconfined run and no work-order
 worker runs as `conduit-run` beside it (the full review's D51).
 
-[D51]: ../../docs/proposals/full-review/decisions.md#the-providers-and-the-second-machine
+[D51]: https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md#the-providers-and-the-second-machine
 [topic-11]: ../../IN_FORCE.md#11-the-implementation-interface-providers-hooks-and-items

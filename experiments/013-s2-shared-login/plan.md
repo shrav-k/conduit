@@ -119,8 +119,8 @@ restriction, calling the service's GraphQL itself; it offers `issue-reading.v1` 
 list, since TPL-004 needs both). S7's README reads an adapter as new code around unchanged
 upstream code. **The two readings are one definition (the admin's decision, 2026-11-12, logged for
 the owner to strike):** the rulings use "adapter" for the glue an author writes to put an existing
-tool or service behind Conduit, as in [ruling 44](../../docs/proposals/ruling-44/README.md#what-follows)'s
-"the adapters written" and [ruling 75](../../docs/proposals/ruling-75/README.md#the-decisions)'s
+tool or service behind Conduit, as in [ruling 44](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-44/README.md#what-follows)'s
+"the adapters written" and [ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md#the-decisions)'s
 "SQLite search behind counted adapters" for S8, where the existing thing is SQLite; for S2 the
 existing thing is Linear's API, so the adapter calls its GraphQL itself, and for S7 it is upstream
 code, so the adapter wraps it. Each
@@ -213,7 +213,7 @@ the isolated profile also needs A63-DR, ADDR and DSP, and `tailscale serve` set 
 keep fresh-author/coordinator evidence apart. No production edits; checks are README P1–P6 and M0/M1.
 
 **The plain server for the runs** is chosen before them by the coordinator, and
-logged for the owner to strike ([ruling 78](../../docs/proposals/ruling-78/README.md),
+logged for the owner to strike ([ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md),
 point 4, 2026-11-14). It runs under the owner's account against the test
 workspace, unconfined on the Mac as the engine's own runner starts it (the
 admin's requirements, 2026-11-12). It must have an OSI-approved license; be pinned
@@ -282,7 +282,7 @@ A82, in [the roadmap's register](../../ROADMAP.md#experiments-and-probes), besid
 - A6 discovery/invocation traces come from T1/T4, refresh from T5's key rotation; S4 supplies
   the lost response. These are recorded during engine runs, not a new proxy probe.
 
-Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed this reading on 2026-11-12 ([ruling 75's later answers](../../docs/proposals/ruling-75/README.md#later-answers)).
+Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed this reading on 2026-11-12 ([ruling 75's later answers](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md#later-answers)).
 
 ## The order of the work
 

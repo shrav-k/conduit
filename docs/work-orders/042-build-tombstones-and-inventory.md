@@ -9,7 +9,7 @@ bind a loopback port; use it for nothing else. Never print a whole large file or
 
 ## What and why
 
-The fifth build order of spec batch 1 ([the plan](../proposals/spec-batch-1/README.md), its order
+The fifth build order of spec batch 1 ([the plan](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/spec-batch-1/README.md), its order
 042, E4): ruling 53's engine-enforced tombstones and inventory, ruling 55 A7's lift, ruling 54's
 provenance (ACC-044), and ruling 62 C2 with ruling 66 point 4's reconcile limits (ACC-055). Read the
 plan's order 042 and its conflicts C18, C26 and C27, the promises LIF-040, LIF-041, ACC-044, ACC-053,
@@ -62,7 +62,7 @@ ID only (ruling 71). Kept for later work: the inventory-reading vector does not 
 holder, and node-requests' readmission injects the expected node instead of testing readmission.
 
 Added on 2026-11-15 by work order 191 ([FR-525, row
-7](../proposals/full-review/findings/G6-outside-the-tree.md#fr-525)), the evidence at merge. `main`
+7](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G6-outside-the-tree.md#fr-525)), the evidence at merge. `main`
 at `57813f06` (#264) holds 494 cases: from the repository root, `git ls-tree -r --name-only 57813f06
 conformance | grep -c '/case.yaml$'` prints 494. The 491 above matches the tree before order 077's
 three cases reached `main`: 443 cases at `575a1bcd^`, and this order's 48. [The

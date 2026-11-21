@@ -28,7 +28,7 @@
 ## Status
 
 Pre-registered on 2026-11-11 by work order 102. Accepted by the owner on 2026-11-11 under
-[ruling 75](../../docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
+[ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
 counting rules and planned vectors, with the answers under "Open for the owner" applied. Ruling
 45 fixes what an experiment must show before it runs. No result is recorded here.
 
@@ -39,14 +39,14 @@ What has changed since acceptance is listed in the last section, "Amendments sin
 
 Can a setup that fails partway, is retried and loses a response be understood and recovered
 without repeating an effect? [S4's roadmap row](../../ROADMAP.md#scenarios) covers setup parts
-and the setup hook that replaced graphs ([ruling 41](../../docs/proposals/ruling-41/README.md),
+and the setup hook that replaced graphs ([ruling 41](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-41/README.md),
 item 1), the outcome model and recovery.
 
 ## What it must show
 
-1. **P1 — ruled**, [ruling 47](../../docs/proposals/ruling-47/README.md#when-to-publish):
+1. **P1 — ruled**, [ruling 47](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-47/README.md#when-to-publish):
    S4 runs end to end on the reference engine with its vectors passing, including every
-   safety vector it adds ([ruling 68, point 2](../../docs/proposals/ruling-68/README.md)). Judge
+   safety vector it adds ([ruling 68, point 2](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md)). Judge
    by task transcripts, independent state checks and vector verdicts. Missing cases are
    missing evidence, never passes.
 2. **P2 — proposed, for the owner's acceptance**: the user resolves uncertainty without guessing
@@ -68,7 +68,7 @@ item 1), the outcome model and recovery.
 
 [Round 6's roadmap allocation](../../ROADMAP.md#round-6s-evidence-and-measurements) assigns S4
 E01, E09, E18, E19 and E20; D02 and D10. The
-[critique](../../docs/proposals/reaudit/round-6/design-critique.md#proposed-evidence-for-the-next-stage)
+[critique](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/reaudit/round-6/design-critique.md#proposed-evidence-for-the-next-stage)
 is evidence planning, not binding behavior. E03/E04/E10/E16 belong to S5.
 
 Promise IDs, in today's files:
@@ -127,8 +127,8 @@ barriers. Their construction belongs to the implementation order; faults are not
 by reference the first build's [measure table](../../docs/implementation/FIRST_BUILD.md#measures)
 and three [counting rules](../../docs/implementation/FIRST_BUILD.md#counting-rules-added-after-the-baseline-ran):
 “Provider work apart”, “A client's concepts count” and “Requests and time without access”.
-**Ruled counting rules**: [ruling 63](../../docs/proposals/ruling-63/README.md)'s lines,
-[ruling 68 R1](../../docs/proposals/ruling-68/README.md)'s panel actions apart, and
+**Ruled counting rules**: [ruling 63](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-63/README.md)'s lines,
+[ruling 68 R1](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md)'s panel actions apart, and
 [IN_FORCE.md topic 13](../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement)'s
 per-run rules, except S1's local name `project`. S1's A70 comparison/bar, T3's reach-around rule
 and T4/T5's better-baseline rules do not carry over. No numeric bar or comparison is proposed;
@@ -210,7 +210,7 @@ accepts Q1–Q5 and supplies an account/sign-in only if a replay is chosen. This
 ## What `spec/` does not yet decide
 
 - **G1:** OPS-004/014/022 give no generic representation for reconciling only part of an effect
-  as done; this overlaps [4-12](../../docs/proposals/first-build/log-increment-4.md). T2 leaves
+  as done; this overlaps [4-12](../../docs/implementation/first-build/log-increment-4.md). T2 leaves
   genuinely partial effects unknown. A contract's explicit repair must be specified before use.
 - **G2:** E18's extant Resource under a retired owner has no demonstrated public preparation:
   LIF-020 blocks owner retirement before members' confirmed shutdown; LIF-035 removes confirmed
@@ -231,7 +231,7 @@ OPS-028's latest-caller attribution is decided, not a new gap; E20 preserves it 
   **Recommendation:** two separate author runs as above; this introduces no S1 numeric bar.
 - **Q3:** Which client should exercise cases that need real-client behavior: the owner's subscription, a second subscription account signed in through Conduit's own sign-in flow, or none (scripted clients only)?
   **Recommendation:** second subscription replay for E09 through Conduit's sign-in flow,
-  as [ruling 72](../../docs/proposals/ruling-72/README.md) chose for S3/S10. That ruling does
+  as [ruling 72](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-72/README.md) chose for S3/S10. That ruling does
   not require this for S4. With no replay, A6's lost-response trace comes from the scripted E09 runs.
 - **Q4:** How should E18's surviving Resource under a retired Pool be prepared? Options: first
   prove a legal public path, accept a boundary fixture plus the reachable removal path, or
@@ -240,7 +240,7 @@ OPS-028's latest-caller attribution is decided, not a new gap; E20 preserves it 
   open? Options: keep it unknown and inspect, or first specify a contract's explicit repair.
   **Recommendation:** leave it unknown, without whole-effect assertions from partial evidence.
 
-**Answers, under [ruling 75](../../docs/proposals/ruling-75/README.md), D (2026-11-11):**
+**Answers, under [ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D (2026-11-11):**
 
 - Q1: accepted.
 - Q2: written twice, by the coordinator and by a fresh Codex author, with scripted clients (D3).
@@ -260,15 +260,15 @@ promise or vector.
 ## Amendments since acceptance
 
 The text above keeps what the owner accepted on 2026-11-11 under
-[ruling 75](../../docs/proposals/ruling-75/README.md), D. Each line below is dated and says
+[ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D. Each line below is dated and says
 whose it is. A line from a ruling amends the text above as that ruling says. A line marked
 the coordinator's is open to the owner's strike: it changes no pass condition above, and what
 it adds to a run is reported apart from the counted result.
-[Ruling 78](../../docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
+[Ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
 changes in the table under question 4 of
-[the full review's questions](../../docs/proposals/full-review/questions.md); the decisions
+[the full review's questions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/questions.md); the decisions
 that these lines cite are in
-[the full review's decisions](../../docs/proposals/full-review/decisions.md).
+[the full review's decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md).
 
 - **2026-11-14, the coordinator's (decision D67):** measure D02 is written as a twelve-row
   table; M2 gets a rubric, applied by a judge who has not seen the harness; the lifecycle model
@@ -277,15 +277,15 @@ that these lines cite are in
   second account stays. Beside S4 and not part of it, a small stub like experiment 008's takes a
   lost response and a call never answered, three runs of each per client (A6's twelve runs), on
   the primary accounts, with the owner told first, after the pin
-  ([ruling 78](../../docs/proposals/ruling-78/README.md), point 1).
+  ([ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md), point 1).
 - **2026-11-14, the coordinator's (decision D67,
-  [FR-296](../../docs/proposals/full-review/findings/P03-plan-apply.md#fr-296)):** T1's repair
+  [FR-296](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/P03-plan-apply.md#fr-296)):** T1's repair
   cannot be a control call. After the blocked setup the hook's instance is not ready, and a
   request to an instance that is not ready is not dispatched unless it is a management verb,
   which a control is not (CON-024). So the author corrects the file and replaces the instance.
   This changes the plan's two logged decisions on T1, "T1's blocked part" and "How M2 counts
   T1's repair", which order 50 of
-  [the full review's orders](../../docs/proposals/full-review/orders.md) rewrites. Whether apply
+  [the full review's orders](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/orders.md) rewrites. Whether apply
   ever calls a control is the owner's, asked with finding 4-01 after the S1 rerun.
 - **2026-11-15, the coordinator's (ruling 78, point 6):** no actor records that an unknown effect
   did not occur, so S4-T6's reconciliation of the hook's lost reply as failed, and the hook server's

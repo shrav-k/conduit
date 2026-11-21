@@ -28,7 +28,7 @@
 ## Status
 
 Pre-registered on 2026-11-11 by work order 101. Accepted by the owner on 2026-11-11 under
-[ruling 75](../../docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
+[ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
 counting rules and planned vectors, with the answers under "Open for the owner" applied. Ruling
 45 fixes what an experiment must show before it runs. No result is recorded here.
 
@@ -44,14 +44,14 @@ Requirements, Conduits, shared authentication and dependent calls, as
 ## What it must show
 
 1. **P1 — ruled:** S2 runs end to end on the reference engine, its vectors passing, including
-   every safety vector it adds ([ruling 47](../../docs/proposals/ruling-47/README.md#when-to-publish),
-   [ruling 68, point 2](../../docs/proposals/ruling-68/README.md#the-decisions)).
+   every safety vector it adds ([ruling 47](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-47/README.md#when-to-publish),
+   [ruling 68, point 2](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md#the-decisions)).
 2. **P2 — ruled:** Claude Code and Codex, run by the engine as Agents, carry out the tasks
    through it; match every request to its record. Simulated clients alone do not pass, and
    two Claude Code instances cannot substitute (rulings 47 and 68, point 4).
 3. **P3 — accepted by the owner:** restrictions differ as intended without copying the shared
    service credential to the Agents ([IN_FORCE topic 13](../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement),
-   [ruling 46, point 3](../../docs/proposals/ruling-46/README.md#the-points-and-the-answers)).
+   [ruling 46, point 3](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-46/README.md#the-points-and-the-answers)).
    Judge by allowed/denied calls, service effects and the credential delivery trace.
 4. **P4 — proposed, for the owner's acceptance:** E02's keyed successful read is dispatched
    again after its filter deadline, refused without retained output; E07's separate bound
@@ -69,7 +69,7 @@ Requirements, Conduits, shared authentication and dependent calls, as
 
 The [round-6 allocation](../../ROADMAP.md#round-6s-evidence-and-measurements) gives S2 E02, E07,
 E13 and E17, and D01, D05, D09 and D20. Their definitions are in the
-[critique](../../docs/proposals/reaudit/round-6/design-critique.md#proposed-evidence-for-the-next-stage).
+[critique](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/reaudit/round-6/design-critique.md#proposed-evidence-for-the-next-stage).
 E15 belongs to S3; its D20 reuses this definition under partition.
 
 Promise IDs exercised, by file, as written today:
@@ -129,11 +129,11 @@ Use synthetic secret markers for leak checks; never expose the live key to a che
 carry by reference the first build's [table of measures](../../docs/implementation/FIRST_BUILD.md#measures)
 and only its [counting rules](../../docs/implementation/FIRST_BUILD.md#counting-rules-added-after-the-baseline-ran)
 “Provider work apart”, “A client's concepts count”, and “Requests and time without access”.
-Carry [ruling 63's line count](../../docs/proposals/first-build/increment-4/measurement-plan.md#the-s1-rerun),
+Carry [ruling 63's line count](../../docs/implementation/first-build/measurement-plan.md#the-s1-rerun),
 with panel actions apart (**ruled**, ruling 68 R1), and
 [topic 13's per-run rules](../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement)
 (**ruled**, their cited rulings). The original table/rules retain their recorded standing;
-their extension to S2 is M0. Use the [counted-run model](../../docs/proposals/first-build/increment-4/measurement-plan.md).
+their extension to S2 is M0. Use the [counted-run model](../../docs/implementation/first-build/measurement-plan.md).
 Do not carry A70's comparison/bar, T3's reach rule, T4/T5's better-baseline rules, or `project`.
 No numeric bar applies; observed time and mistakes precede any target (**ruled**, ruling 46.3).
 
@@ -152,7 +152,7 @@ Each following measure and its counting rules is **proposed, for the owner's acc
 Each name and assertion below is **proposed, for the owner's acceptance**. Use a local Linear
 stub and synthetic secrets, with no account or network. Safety means failure is
 [unsafe](../../docs/AUDIT.md#how-to-use-this-document); each safety vector names its safety promise
-([ruling 68.2](../../docs/proposals/ruling-68/README.md#the-decisions)). No vector is written here.
+([ruling 68.2](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md#the-decisions)). No vector is written here.
 
 | ID / proposed name | Promises and intended assertion | Safety / safety promise |
 | --- | --- | --- |
@@ -243,7 +243,7 @@ homes/login choices and own-tool controls are package/engine prerequisites, incl
   Options: logged-in session only, or daemon as well after A22 evidence. **Recommendation:**
   logged-in only initially; do not claim a daemon result until A22 tests it.
 
-**Answers, under [ruling 75](../../docs/proposals/ruling-75/README.md), D (2026-11-11):**
+**Answers, under [ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D (2026-11-11):**
 
 - O1: accepted.
 - O2: S2 uses the primary Claude Code and Codex accounts, as ruled. Every account has its own
@@ -265,17 +265,17 @@ A73, S8's general search/derived-content case, nor proof over every client versi
 ## Amendments since acceptance
 
 The text above keeps what the owner accepted on 2026-11-11 under
-[ruling 75](../../docs/proposals/ruling-75/README.md), D. Each line below is dated and says
+[ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D. Each line below is dated and says
 whose it is. A line from a ruling amends the text above as that ruling says. A line marked
 the coordinator's is open to the owner's strike: it changes no pass condition above, and what
 it adds to a run is reported apart from the counted result.
-[Ruling 78](../../docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
+[Ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
 changes in the table under question 4 of
-[the full review's questions](../../docs/proposals/full-review/questions.md); the decisions
+[the full review's questions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/questions.md); the decisions
 that these lines cite are in
-[the full review's decisions](../../docs/proposals/full-review/decisions.md).
+[the full review's decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md).
 
-- **2026-11-14, [ruling 78](../../docs/proposals/ruling-78/README.md), point 4 (the owner):**
+- **2026-11-14, [ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md), point 4 (the owner):**
   the coordinator, not the owner, chooses the plain server for S2's runs: a pinned open-source
   server that meets the requirements under "The plain server for the runs" in
   [the plan](../../experiments/013-s2-shared-login/plan.md), logged for the owner to strike.
@@ -291,7 +291,7 @@ that these lines cite are in
   prompts are fixed before the runs; and one E17 case is added and reported apart: a call in
   flight while its Conduit closes.
 - **2026-11-14, the coordinator's
-  ([FR-390](../../docs/proposals/full-review/findings/E01-s2-s3-s4.md#fr-390)):** two decisions
+  ([FR-390](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/E01-s2-s3-s4.md#fr-390)):** two decisions
   logged in [the plan](../../experiments/013-s2-shared-login/plan.md) change how this text
   reads, and each is open to the owner's strike there: what "adapter" means for D01's middle
   row (under "S2-L2"), and that the plain row runs only in the owner's runs, against the test

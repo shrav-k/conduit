@@ -11,24 +11,24 @@ key, a token or any credential.
 
 ## What and why
 
-The full review of 2026-11-14 (order 6 of [its orders](../proposals/full-review/orders.md)) found
+The full review of 2026-11-14 (order 6 of [its orders](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/orders.md)) found
 that nothing ties a promise to the model run that holds it
-([FR-449](../proposals/full-review/findings/G1a-model-checking-register.md#fr-449)). G5's account
+([FR-449](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G1a-model-checking-register.md#fr-449)). G5's account
 is a paper table, and no test reads `spec/` against it. Since the text the models read,
 specification orders have changed 49 of its 217 rows, 17 of them holds, and no row moved
-([FR-448](../proposals/full-review/findings/G1a-model-checking-register.md#fr-448) as its verifier
-corrected it; [FR-446](../proposals/full-review/findings/G1a-model-checking-register.md#fr-446) row
+([FR-448](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G1a-model-checking-register.md#fr-448) as its verifier
+corrected it; [FR-446](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G1a-model-checking-register.md#fr-446) row
 0). Reading four of the nine models, the review also found that 28 of their 33 holds rows rest on a
 property that cannot fail or says less than the promise
-([FR-456](../proposals/full-review/findings/G1b-model-properties.md#fr-456),
-[FR-469](../proposals/full-review/findings/G1b-model-properties.md#fr-469)).
+([FR-456](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G1b-model-properties.md#fr-456),
+[FR-469](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G1b-model-properties.md#fr-469)).
 
 This order makes the account a data file with a row for every convention-layer promise, and marks
 in it what changed and what was graded. It adds a check, run by CI, that fails when a promise has
 no row or when a row stands on text its model did not read, so that a specification order cannot
-leave the account stale (D29 and D31 of [the coordinator's decisions](../proposals/full-review/decisions.md)).
+leave the account stale (D29 and D31 of [the coordinator's decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md)).
 The readiness gate's G5 row is next assessed from the counts the check prints
-([FR-453](../proposals/full-review/findings/G1a-model-checking-register.md#fr-453)), and the reruns,
+([FR-453](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G1a-model-checking-register.md#fr-453)), and the reruns,
 MC2's first, record their results in the file.
 
 ## The decisions it applies
@@ -45,7 +45,7 @@ MC2's first, record their results in the file.
    - Two comment lines at the head of the file say that it is not binding, that it is G5's account,
      and that `tools/check_model_account.py` checks it.
    - Write the file with a script that you run and do not commit.
-   ([FR-449](../proposals/full-review/findings/G1a-model-checking-register.md#fr-449) part 1.)
+   ([FR-449](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G1a-model-checking-register.md#fr-449) part 1.)
 2. **A row's class comes from the safety catalogue.** In `docs/implementation/SAFETY_CATALOGUE.md`:
    - `safety` where the ID is a table row under "## Safety promises";
    - `not safety` where it is a table row under "## The others";
@@ -54,9 +54,9 @@ MC2's first, record their results in the file.
    Today that gives 217, 14 and 14. The 14 uncatalogued are ENR-001, ENR-002, ENR-004, ENR-006 to
    ENR-012, PKG-032, PND-008, PND-013 and PRV-030. Only a safety row has a `standing` and a `note`,
    and a safety row must have both. Classing the 14 is the review's order 41, not this one
-   ([FR-448](../proposals/full-review/findings/G1a-model-checking-register.md#fr-448); D30).
+   ([FR-448](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G1a-model-checking-register.md#fr-448); D30).
 3. **A closed list of standings** (D31;
-   [FR-469](../proposals/full-review/findings/G1b-model-properties.md#fr-469) as its verifier
+   [FR-469](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G1b-model-properties.md#fr-469) as its verifier
    advised):
    - The model-run standings, each with `model`, `read` and `digest` required:
      - `searched`: the property relates events of different steps, so an order of events or a
@@ -91,7 +91,7 @@ MC2's first, record their results in the file.
      it. The older commit is kept for every model so that no change is missed: a row it flags
      wrongly is cleared by a rerun, never by moving `read`. This follows the corrections of
      FR-448's verifier and of
-     [FR-446](../proposals/full-review/findings/G1a-model-checking-register.md#fr-446) row 0.
+     [FR-446](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G1a-model-checking-register.md#fr-446) row 0.
    - `digest` is the SHA-256, in lowercase hexadecimal, of the UTF-8 bytes of
      `json.dumps({"level": L, "observable": O, "then": T, "when": W}, sort_keys=True, ensure_ascii=False, separators=(",", ":"))`.
      Each value is the promise's field as PyYAML's `safe_load` gives it, or `null` where the field
@@ -99,9 +99,9 @@ MC2's first, record their results in the file.
      promise's text at `read`, in whichever of the three directories the promise sat then. Level
      is included because FR-448's comparison includes it.
 5. **The 33 rows already graded**
-   ([FR-456](../proposals/full-review/findings/G1b-model-properties.md#fr-456) as its verifier
-   corrected it; [FR-458](../proposals/full-review/findings/G1b-model-properties.md#fr-458) to
-   [FR-461](../proposals/full-review/findings/G1b-model-properties.md#fr-461)). Append
+   ([FR-456](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G1b-model-properties.md#fr-456) as its verifier
+   corrected it; [FR-458](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G1b-model-properties.md#fr-458) to
+   [FR-461](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G1b-model-properties.md#fr-461)). Append
    "Graded from holds by FR-NNN." to the note of each row this decision moves. FR-NNN is the
    finding for the row's module: FR-458 for records, FR-459 for gates, FR-460 for secrets and
    FR-461 for revisions. Any sentence given below follows it.
@@ -129,7 +129,7 @@ MC2's first, record their results in the file.
    OPS-024 and OPS-028 as "holds under ruling 75 A1; refuted as written: MC2-001". They become
    `contradiction: MC2-001`, with this appended to the note: "Held only under ruling 75 A1's
    fence, which ruling 78 point 6 withdrew."
-   ([Ruling 78](../proposals/ruling-78/README.md#the-decisions), point 6.) Every other standing
+   ([Ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md#the-decisions), point 6.) Every other standing
    stays as G5 gives it.
 7. **Changed text is marked, not hidden.** After decisions 5 and 6, every row with a model-run
    standing whose promise's present text has a different digest becomes `text changed, not

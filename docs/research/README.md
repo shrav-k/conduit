@@ -6,7 +6,7 @@ identifies removed packets and the contracts they inform.
 
 | Research | What remains |
 | --- | --- |
-| [Model access through a gateway](model-access-gateways.md) | The study that [ruling 83](../proposals/ruling-83/README.md), point 3, asked for: each client's gateway settings at the pinned versions, existing gateways, and the route's place in the specification, read from documentation and source on 2026-11-18; experiment 032 (work order 205) is to check the clients' part. |
+| [Model access through a gateway](model-access-gateways.md) | The study that [ruling 83](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-83/README.md), point 3, asked for: each client's gateway settings at the pinned versions, existing gateways, and the route's place in the specification, read from documentation and source on 2026-11-18; experiment 032 (work order 205) is to check the clients' part. |
 
 The removed packets predate the specification. Their recommendations keep their dated
 context and source-system terms; they do not supply missing specification promises.

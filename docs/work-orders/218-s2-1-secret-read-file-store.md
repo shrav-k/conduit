@@ -58,7 +58,7 @@ rule on driven Agents (013's G1).
 **When it runs.** Through Conduit's dogfood: a worker turn and a verifier turn by `conduit
 call`, then the local gate and a fresh read. Keep out of `engine/crates/shell/src/main.rs` and
 `server.rs` (order 219's) unless the read needs them, and say why. By
-[ruling 89](../proposals/ruling-89/README.md), each item says what must hold; how you build it is
+[ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), each item says what must hold; how you build it is
 yours.
 
 **Stop rule.** Change nothing under `spec/`. Where a promise named here needs a choice that
@@ -277,7 +277,7 @@ you built, the cases and the tests that show it, and each choice you made yourse
 `own_choices`), the route the value takes inside the engine among them; the vector delta's
 counts; the corrected list of what this leaves; and every check's last line. Stage nothing. The
 coordinator runs `tools/gate.py`, then has a fresh, read-only Opus reader read the diff
-([ruling 79](../proposals/ruling-79/README.md); ruling 92 point 4), and merges.
+([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md); ruling 92 point 4), and merges.
 
 ## Record
 

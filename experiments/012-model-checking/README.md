@@ -6987,14 +6987,14 @@ before any MC9a run. The scripts, predicates, witnesses and expected verdicts be
 them.
 
 MC9a is row 2 of
-[FR-446](../../docs/proposals/full-review/findings/G1a-model-checking-register.md#fr-446),
+[FR-446](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G1a-model-checking-register.md#fr-446),
 as its verifier corrected it, with PND-008 and PND-013 from
-[FR-448](../../docs/proposals/full-review/findings/G1a-model-checking-register.md#fr-448)
+[FR-448](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G1a-model-checking-register.md#fr-448)
 and the two sign-ins of one instance at once of
-[FR-433](../../docs/proposals/full-review/findings/E04-signin-isolation.md#fr-433).
+[FR-433](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/E04-signin-isolation.md#fr-433).
 It registers order 048a-2's `conflict` for a second `sign-in.v1` of one instance, as
-[the targeted review's section 6](../../docs/proposals/review-signin-2026-11-16/README.md#048a-2),
-048a-2 item 1, and [ruling 82](../../docs/proposals/ruling-82/README.md), point 6, o4, ask,
+[the targeted review's section 6](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#048a-2),
+048a-2 item 1, and [ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md), point 6, o4, ask,
 before 048a-2 is dispatched. Its accounting is the thirteen rows that G5 leaves to MC9: the ten
 pending-action rows, PND-008, PND-013 and PND-014. MC9b, for grants, keep, withhold and
 appointment, waits for batch 2's text.
@@ -7064,7 +7064,7 @@ removal; each purge; and each crash and recovery. An action that an ending raise
 logged before that ending's result. Safety and the protocol's reach predicates read only the ledger
 and recompute what the text requires from the stimuli and earlier entries there. They use no node
 data, queues, fault counters or values written for a property's own use, as the full review's
-[step for experiment 012](../../docs/proposals/full-review/experiments.md#experiment-012-the-runs-each-registered-before-it-runs)
+[step for experiment 012](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/experiments.md#experiment-012-the-runs-each-registered-before-it-runs)
 forbids. The test replays every first refutation after erasing every node and queue. Quiescence
 is a harness-only reach check of script completion and empty queues.
 
@@ -7563,7 +7563,7 @@ setup. Its unit helper tests cover live sign-in and retirement states.
 The two future portable vectors are `requests-sign-in-during-sign-in-conflict` for a second
 sign-in of one instance and `requests-sign-in-during-retirement-conflict` for sign-in during
 retirement of the instance. When MC9a's results merge under
-[full review order 24](../../docs/proposals/full-review/orders.md), the account
+[full review order 24](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/orders.md), the account
 names the vector or its writing order for each "one step" clause.
 
 ### MC9a findings registered before execution
@@ -7618,9 +7618,9 @@ local choice of E's clock, not elapsed time.
 
 Amended 2026-11-19 by the coordinator, before any MC9a code and before any MC9a run, under the
 rule above (D29). One text MC9a reads changed after `f72c2bc3`, the commit at which it reads
-`spec/`: the full review's [experiments.md](../../docs/proposals/full-review/experiments.md),
+`spec/`: the full review's [experiments.md](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/experiments.md),
 whose step for experiment 012 the registration cites and quotes. Commit `b1cc554e`
-([ruling 84](../../docs/proposals/ruling-84/README.md), #370) added a note to the last cell of
+([ruling 84](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-84/README.md), #370) added a note to the last cell of
 that file's row A22, the keychain unattended, among its register rows. The note names ruling 84,
 point 1, ruled on 2026-11-18, and goes on: “No dedicated user is planned; by the
 coordinator's reading, A22 is narrowed: the dedicated user over SSH, and the case of where a
@@ -7629,7 +7629,7 @@ login, without the dedicated user; your own session's case stays; both are optio
 gates no Agent's becoming a dogfood slot, nor batch 2”. No other line of the file changed.
 
 MC9a reads nothing from that row. From experiments.md it reads only the section
-[Experiment 012: the runs, each registered before it runs](../../docs/proposals/full-review/experiments.md#experiment-012-the-runs-each-registered-before-it-runs):
+[Experiment 012: the runs, each registered before it runs](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/experiments.md#experiment-012-the-runs-each-registered-before-it-runs):
 its rule that no property reads a value the model copied from its own expectation, which the
 ledger rule of the nodes and scripts above applies, and its mutant run “with every fault switched
 off”, which is Base and the test of "one step" above. That section reads as it did at

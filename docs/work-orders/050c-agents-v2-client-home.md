@@ -66,16 +66,16 @@ state it. The one departure from PRV-029's observable is that the explicit diagn
 each turn rather than at setup. That stays open for the coordinator.
 
 It carries, from the targeted review of the 0.2.0 sign-in surface,
-[section 6](../proposals/review-signin-2026-11-16/README.md#6-must-state-lists),
-[`claude-code.v2` item 4](../proposals/review-signin-2026-11-16/README.md#050-claude-codev2) and
-the launch half of [`codex.v2` item 4](../proposals/review-signin-2026-11-16/README.md#050-codexv2)
+[section 6](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#6-must-state-lists),
+[`claude-code.v2` item 4](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#050-claude-codev2) and
+the launch half of [`codex.v2` item 4](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#050-codexv2)
 (its verdicts M57, M59 to M62 and M88; V02, V15, V26 and V27 in
-[its findings](../proposals/review-signin-2026-11-16/findings.md)). Of item 4's done-when it
+[its findings](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/findings.md)). Of item 4's done-when it
 carries the turn part of the marker test and the `.v1` test; the undo and retirement parts come
 with the hooks, in orders 050h, 050i and 050l. Of `codex.v2` item 4 it carries the setting on
 every launch, stated in the README; the setting on `codex login` comes with the login, in order
 050m, which uses the constant this order adds (decision 4). D53
-([the full review's decisions](../proposals/full-review/decisions.md#the-providers-and-the-second-machine))
+([the full review's decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md#the-providers-and-the-second-machine))
 decided the refusal; [IN_FORCE.md, topic 9](../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach)
 keeps the refusal out of the Types' descriptions (82 point 5). The descriptions are unchanged
 here because Q1's sentences belong to 050f and later, and the home's location is README matter by
@@ -398,9 +398,9 @@ engine user's default home. What this order and its tests expect of that bootstr
 ## Who decided what
 
 The carrier, the items and their done-whens are the review's must-state lists, which the owner
-accepted with [ruling 82](../proposals/ruling-82/README.md). The split of order 050 into 050b to
+accepted with [ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md). The split of order 050 into 050b to
 050o, this order's place on `wo/050-agents-0.2.0` and its base are the coordinator's, open to the
-owner's strike ([ruling 48](../proposals/ruling-48/README.md)). The decision on G11 (decision 5) is
+owner's strike ([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)). The decision on G11 (decision 5) is
 the coordinator's, which the review left open, open to the owner's strike. So is the refusal of a
 Codex home that holds a `.env` (decision 3): a key that a `.env` there set would be the ruling-70
 reach of an Agent's own tools, not a switch by Conduit, which 82 point 1 bars, and the coordinator
@@ -480,8 +480,8 @@ The admin then stages any new file and runs `python3 tools/check_private_paths.p
 `git diff --cached --check`. This order is a checkpoint on `wo/050-agents-0.2.0`: it does not merge
 alone, and its Record is written at the foot of this file. A fresh Codex verifier and a fresh
 read-only Opus reader read the result before the checkpoint stands
-([ruling 79](../proposals/ruling-79/README.md), point 2). The local gate that
-[ruling 80](../proposals/ruling-80/README.md) has a merge wait on, `tools/gate.py`, runs at order
+([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md), point 2). The local gate that
+[ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md) has a merge wait on, `tools/gate.py`, runs at order
 050n's merge, read with the expected engine failure known.
 
 ## Record

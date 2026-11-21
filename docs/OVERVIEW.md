@@ -3,11 +3,11 @@
 Not binding. This is a short tour of the language in ordinary words, written from
 [spec/README.md](../spec/README.md) and [spec/definitions.md](../spec/definitions.md). It was
 last read against the specification on 2026-11-07, as
-[ruling 44](proposals/ruling-44/README.md) left it, which settled
-[round 6](proposals/reaudit/round-6/README.md) of the re-audit after
-[ruling 43](proposals/ruling-43/README.md) and the fixes of
-[round 5](proposals/reaudit/round-5/DECISIONS.md): with the names that
-[ruling 42](proposals/ruling-42/README.md) accepted from the vocabulary audit (among them node,
+[ruling 44](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-44/README.md) left it, which settled
+[round 6](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/reaudit/round-6/README.md) of the re-audit after
+[ruling 43](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-43/README.md) and the fixes of
+[round 5](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/reaudit/round-5/DECISIONS.md): with the names that
+[ruling 42](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-42/README.md) accepted from the vocabulary audit (among them node,
 machine provider, `nodeSelector`, idempotency key, source and conformance document) and its
 [editorial fixes](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/vocabulary-audit/README.md#editorial-fixes), and with ruling 43's answer on work across machines, which
 [its own section](#work-across-machines) tells. The
@@ -25,7 +25,7 @@ their configuration says. An agent decides for itself what to do. So Conduit dec
 surrounds the agent: what it may reach, under which limits, and who answers for what it did.
 
 Conduit innovates only on that: connection and access
-([ruling 40](proposals/ruling-40/README.md)). Everything else, such as what runs a program,
+([ruling 40](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-40/README.md)). Everything else, such as what runs a program,
 the machines it runs on, where packages come from and where secrets are kept, is a provider
 behind a contract that any existing tool can implement, and the user picks it. See
 [Providers](#providers).
@@ -34,19 +34,19 @@ An author writes documents. An engine is a running program that implements the s
 As of 2026-11-10, the [first build](../engine/README.md) has a strict loader, a pure
 core, conformance vectors and a runnable shell. The shell ran real Claude
 Code and Codex as Agents on S1 through shared files, message history, and closing and explicitly
-restoring access ([dated results](proposals/first-build/increment-3/closeout-results-2026-11-10.md)).
+restoring access ([dated results](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)).
 It is a partial implementation; its [conformance document](../engine/CONFORMANCE.md)
 states its choices and limits. This tour describes the language, including parts the build
 does not yet implement. The build-state statements were updated on 2026-11-10; the date above
 records the last full read of the tour against the specification.
 
-As of 2026-11-10, both increment 4 [author runs](proposals/first-build/README.md#increments-and-settlements)
+As of 2026-11-10, both increment 4 [author runs](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/README.md#increments-and-settlements)
 completed T1 to T7 with real clients but failed the owner's bar for authoring work. Rulings
 49 to 54 are accepted, with changes still to be written into the specification, as its
 [status](../spec/README.md) lists: sign-ins and pending actions at the root Interface,
 enrollment and managed or peer machines, explicit refusals, simplification and Projects.
-The [language's shape](proposals/language-shape/README.md) is being settled first, so each
-change is written once. The owner's [Project direction](proposals/owner-direction/2026-11-10-projects.md)
+The [language's shape](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/language-shape/README.md) is being settled first, so each
+change is written once. The owner's [Project direction](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/owner-direction/2026-11-10-projects.md)
 has Projects own Agents as Pools own Resources, while Pools stay independent and Projects
 hold Conduits; this is the basis of an investigation, not a sixth family already in `spec/`.
 The five families and rules below describe the current specification.
@@ -565,7 +565,7 @@ carry the engine's proof, and the value crosses to the engine confidential and u
 (PRV-025, IFC-017).
 
 One contract serves every store. Five are foreseen, each a package that implements it
-([section 4 of the principles review](proposals/principles-review/README.md#4-secrets-reduced)):
+([section 4 of the principles review](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/principles-review/README.md#4-secrets-reduced)):
 Bitwarden (`bws secret get`), 1Password (`op read`), the macOS keychain
 (`security find-generic-password`, which fails while the keychain is locked), AWS Secrets
 Manager (`GetSecretValue`), and a file store in the standard library beside the reference
@@ -579,8 +579,8 @@ Rules: [providers](../spec/promises/providers.yaml), the
 [implementation interface](../spec/interface/implementation.yaml),
 [secrets](../spec/promises/secrets.yaml) and item DL17 of the
 [implementation-defined list](../spec/implementation-defined.yaml).
-[Ruling 43](proposals/ruling-43/README.md) decided this part, from the
-[proposal on work across machines](proposals/multi-machine/README.md).
+[Ruling 43](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-43/README.md) decided this part, from the
+[proposal on work across machines](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/multi-machine/README.md).
 
 **One engine decides.** In this version the engine decides every request, wherever the
 instances run, and every request passes through it on its way to a server (ACC-002, PRV-025).
@@ -648,7 +648,7 @@ instances on it report unavailable once it is reported unreachable, and nothing 
 (PLC-023); work already sent there may run on until its gate notices the cut (OPS-027). How a
 later version may let each machine enforce access itself, and keep working for a bounded time
 when cut off, is recorded with the
-[proposal](proposals/multi-machine/README.md#q4-the-shape-of-v1-recorded-in-a65); none of it is
+[proposal](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/multi-machine/README.md#q4-the-shape-of-v1-recorded-in-a65); none of it is
 part of this version.
 
 ## Three layers, and what is outside them

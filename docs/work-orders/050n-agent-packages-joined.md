@@ -48,15 +48,15 @@ and `conformance/`. It:
 - checks each `.v2` description sentence by sentence against Q1's answer (item 6 of both lists),
   and reports, changing none.
 
-**Why it waited.** The owner's [ruling 82](../proposals/ruling-82/README.md), point 3, merges the
+**Why it waited.** The owner's [ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md), point 3, merges the
 Agent packages 0.2.0 only after order 048b-join, onto an engine that runs the account check, and
 point 1 lets `codex.v2` state `signIn` only if A5's live check passes
 ([experiment 027](../../experiments/027-a5-sign-in/README.md#stage-1-step-1-the-account-check),
-stage 1, step 1). The owner's [ruling 86](../proposals/ruling-86/README.md), points 3 and 4, has
+stage 1, step 1). The owner's [ruling 86](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-86/README.md), points 3 and 4, has
 orders 207 and 209 land first, so that both READMEs' statements of the refusal of a named login
 before any part and of the going on after a failed check hold on `main`; and order 208's probe
 had to report no write before the Codex lane relied on the account check's route. Under the
-owner's [ruling 89](../proposals/ruling-89/README.md), the live check runs through `conduit sign-in`,
+owner's [ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), the live check runs through `conduit sign-in`,
 so after order 051b-2 as well as 048b-join, with the check's package keeping the Type's name
 `codex.v2` at a scratch address
 ([027's amendment of 2026-11-19](../../experiments/027-a5-sign-in/README.md#amendment-of-2026-11-19-the-live-check-as-it-runs),
@@ -87,7 +87,7 @@ tree to its tip, `HEAD`:
    - `main` at a commit that holds order 048b-join's merge, and so the merges of orders 209 to
      048a-5gh before it; or
    - stacked, under the owner's lever "Pipeline the chain" as the coordinator applies it
-     ([ruling 89](../proposals/ruling-89/README.md), point 2, open to the owner's strike): 048b-join's
+     ([ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), point 2, open to the owner's strike): 048b-join's
      round-1 branch, or 051b-2's where 051b-2 was dispatched on it, with each order from 209 to
      048a-5gh merged or on its own round-1 branch below it. This lets the build run before the live
      check, so that after the owner's sitting only the result's merge, a rebase and the gate remain
@@ -206,11 +206,11 @@ differs from what it says:
   [050j](050j-claude-sign-in-redirect-login.md), [050l](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/050l-codex-account-hook.md) and
   [050m](050m-codex-sign-in-hook.md), each "What this order does not do", for what each left to
   this order (`grep -n '050n'` finds each place).
-- [The targeted review's section 6](../proposals/review-signin-2026-11-16/README.md#6-must-state-lists),
+- [The targeted review's section 6](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#6-must-state-lists),
   the lists "048a-1", "050, `claude-code.v2`" and "050, `codex.v2`": items 1, 6 and 7 of both 050
   lists, and 048a-1's item 2. Item 3 of both lists is replaced by ruling 86, point 1: the items
   stay plain in 0.2.0.
-- [Q1](../proposals/review-signin-2026-11-16/README.md#q1-the-v2-descriptions-as-020-freezes-them)
+- [Q1](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#q1-the-v2-descriptions-as-020-freezes-them)
   and the line of [IN_FORCE.md](../../IN_FORCE.md) that begins "*Spec pending, order 050*: the
   two `.v2` descriptions hold six sentences", which gives the owner's answer.
 - The promises CTR-013, MAN-017, TPL-005, TPL-019, PKG-020, IFC-025, PND-010 and NAM-024, in
@@ -430,7 +430,7 @@ in the terms of `spec/definitions.md`, and to report.
      against a real Claude Code
      ([027's amendment of 2026-11-19](../../experiments/027-a5-sign-in/README.md#amendment-of-2026-11-19-the-live-check-as-it-runs),
      item 6), while the `.v2` Types' turns have also run against the real clients in the dogfood
-     ([ruling 70](../proposals/ruling-70/README.md)); the coordinator adds each one's result at the
+     ([ruling 70](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-70/README.md)); the coordinator adds each one's result at the
      merge. Rows on the engine's own
      sign-in stay as the engine's orders left them,
      and dated increment records, such as I4-02's line that the Codex package remains 0.1.1, stay
@@ -492,7 +492,7 @@ are subscription-only is the owner's (ruling 83); that A77's pairing waits until
 that the S1 rerun's pin comes at the first dogfood milestone, and that the Claude scratch sign-in
 joins the live check's sitting, are the owner's (ruling 89, points 5 to 7). The must-state items are
 the targeted review's, which the owner accepted with ruling 82. Everything else is the
-coordinator's, each open to the owner's strike ([ruling 48](../proposals/ruling-48/README.md)): the
+coordinator's, each open to the owner's strike ([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)): the
 split of 050 and this order's place last; this text written ahead and refreshed at dispatch; the
 join as the start describes it, on a stacked base and ahead of the live check's result where the
 coordinator so dispatches it (ruling 89, point 2, as the coordinator applies it); the reading that
@@ -613,10 +613,10 @@ that stops a client's process tree, such as `v2_client_tree_stop_leaves_no_survi
 with the stop's note: name each such test and its counts, and the reader reruns them on the Mac.
 
 This order runs one Codex round, a worker and a fresh Codex verifier ([ruling
-87](../proposals/ruling-87/README.md), point 1). It is not paired: A77's pairing is paused until
-this order merges ([ruling 89](../proposals/ruling-89/README.md), point 6), and its record says so.
+87](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-87/README.md), point 1). It is not paired: A77's pairing is paused until
+this order merges ([ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), point 6), and its record says so.
 A fresh read-only Opus reader then reads the result, warm and targeted, citing your last
-whole-suite line ([ruling 79](../proposals/ruling-79/README.md), point 2; ruling 89, point 2).
+whole-suite line ([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md), point 2; ruling 89, point 2).
 Where the coordinator dispatched this order on a stacked base, the result is read there, with
 `tools/gate.py --base` set to the base's commit, the predecessor's round-1 tip under the lanes'
 commits, and it merges only once every predecessor of the merge above has merged and the pass is
@@ -626,7 +626,7 @@ conflict where a predecessor's verifier or fixer changed what this order changes
 (`engine/CONFORMANCE.md`, `engine/STANDING.md`, `make_archives.rs`, `agents.rs` and the fixtures),
 and reruns `make_archives`'s check, `vector_delta.py` and the engine's whole suite on the rebased
 tree. The coordinator runs `tools/gate.py` on the squash before the merge ([ruling
-80](../proposals/ruling-80/README.md)), with no other cargo running on the Mac and no failure
+80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md)), with no other cargo running on the Mac and no failure
 expected, checks every commit's author and committer, and fills the `merged` and `ci` fields of
 orders 050j's and 050k's A77 records after the merge's checks on `main`. Once this merges, the
 coordinator turns IN_FORCE.md's *Spec pending, order 050* lines into pointers to the packages,
@@ -638,7 +638,7 @@ written at its foot at the merge.
 
 Run on 2026-11-20, from about 00:08 to 00:41 UTC, on the Mac from `4d57724b`, the tip of the
 coordinator's join of the Codex and Claude Code lanes, in one round ([ruling
-87](../proposals/ruling-87/README.md), point 1): the worker (1584 s) and a fresh Codex verifier
+87](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-87/README.md), point 1): the worker (1584 s) and a fresh Codex verifier
 (350 s). It was not paired: A77's pairing is paused until this order merges (ruling 89, point 6).
 The change is 51 files, all in Scope. Both packages' sign-in hooks append ` (PND-010)` to a start
 failure that lacks it, after any stop note, and their tests check the shared configuration and home

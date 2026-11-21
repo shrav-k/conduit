@@ -1,7 +1,7 @@
 # Short form translation on S1 (A79)
 
 Not binding. The [specification](../../spec/README.md) alone binds. Work order 031,
-under [ruling 55](../../docs/proposals/ruling-55/README.md), authorized this spike.
+under [ruling 55](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-55/README.md), authorized this spike.
 The [roadmap](../../ROADMAP.md#experiments-and-probes) registers it.
 
 ## What this must show
@@ -13,7 +13,7 @@ state, equal translations between styles, intended access lists, and stable name
 across T5 and T6. Hash the retained package archives against the manifest pins.
 No live client, provider, directory or network service is run.
 
-The translator follows the [grammar's translation table](../../docs/proposals/language-shape/short-form/synthesis.md#grammar)
+The translator follows the [grammar's translation table](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/language-shape/short-form/synthesis.md#grammar)
 with ruling 55's amendments: kind-bearing references, reusable Conduit templates,
 fully qualified operations, optional frame, and the manifest's version.
 The loader and core continue to consume canonical documents.
@@ -73,7 +73,7 @@ no such exclusion.
 Fresh registration re-resolves every reference; a real update must preserve pins
 held by unchanged objects and recreate incoming Conduits after retirement.
 A paper count is not a run or evidence that the owner's authoring bar is met
-([ruling 45](../../docs/proposals/ruling-45/README.md)).
+([ruling 45](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-45/README.md)).
 
 ## Reproduce
 

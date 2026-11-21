@@ -11,9 +11,9 @@ and never read or print a key, a token or any credential.
 
 ## What and why
 
-The full review of 2026-11-14 (order 33 of [its orders](../proposals/full-review/orders.md))
+The full review of 2026-11-14 (order 33 of [its orders](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/orders.md))
 found that the core is pure but that nothing keeps it that way
-([FR-355](../proposals/full-review/findings/P07-engine-build.md#fr-355)). The core's module
+([FR-355](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/P07-engine-build.md#fr-355)). The core's module
 comment (`engine/crates/core/src/lib.rs:1`) rules out the file system, the clock, the network and
 processes. The review's grep found no access to a file, the network, a process, the environment,
 a thread or a clock, and found `BTreeMap` used throughout. But the engine has no Clippy
@@ -50,7 +50,7 @@ the list refuses only what the core does not do today. Line numbers are those of
    `disallowed-macros`. Each entry is one line, `{ path = "PATH", reason = "REASON" }`, and its
    reason is the one given for its group below. In each array, each group's entries come after a
    one-line comment that names the group. Clippy prints the reason under each refusal, so each
-   reason says what the core does instead ([ruling 52](../proposals/ruling-52/README.md)). Where a
+   reason says what the core does instead ([ruling 52](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-52/README.md)). Where a
    line below gives a prefix and then names, each path is the prefix, then `::`, then the name.
    Within each array, the groups come in this order:
 

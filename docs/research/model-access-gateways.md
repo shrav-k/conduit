@@ -1,7 +1,7 @@
 # Model access through a gateway: the two clients, existing gateways and the route
 
 > Research; it does not bind. Written on 2026-11-18 as the record of the grounded study that
-> [ruling 83](../proposals/ruling-83/README.md#the-decisions), point 3, has run before a
+> [ruling 83](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-83/README.md#the-decisions), point 3, has run before a
 > model-access route is designed. It condenses the coordinator's study of that day.
 
 Ruling 83, point 2, sets a direction: an Agent never holds a model service's API key; model API

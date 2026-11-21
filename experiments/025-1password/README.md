@@ -7,7 +7,7 @@ with no prompt answered, by a service account and through the desktop app's sess
 ## Stage 1: the desk check
 
 Registered on 2026-11-16 by work order 190 before any page was read, following
-[FR-487](../../docs/proposals/full-review/findings/G3-native-probes.md#fr-487): 1Password's
+[FR-487](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G3-native-probes.md#fr-487): 1Password's
 published documentation, read on one date, with quotations; no account, no vault, no run and no
 1Password command. Each question is answered separately for the service account and for the
 desktop app's integration with 1Password CLI. Where the documentation names an SDK reading
@@ -36,7 +36,7 @@ The desktop case runs only if stage 1 shows that a read can succeed while the ap
 and only after the owner approves it; otherwise, as FR-487 has it, the desktop case is recorded
 from the documentation as a store that needs a person present. If the owner strikes the plan's
 reading that “or else” allows the file store whenever A73 is late, stage 2 runs before S10's
-freeze ([the review's experiments](../../docs/proposals/full-review/experiments.md), A73's row).
+freeze ([the review's experiments](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/experiments.md), A73's row).
 Stage 2 is pre-registered in this README before it runs.
 
 Results: [results-2026-11-16.md](results-2026-11-16.md).

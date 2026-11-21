@@ -89,7 +89,7 @@ did not run.
 
 Where it reads otherwise than the specification, and why no verdict here depends on it. The
 strict loader in engine/ follows the specification in each, and the first build's log
-of increment 1 (docs/proposals/first-build/README.md#1-09) lists them. Where the two
+of increment 1 (https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/README.md#1-09) lists them. Where the two
 differ, this tool is not the reference, and no example may rely on a difference listed here.
 
   - `pattern` uses SCH-016's interoperable tokens, checked by a tokenizer. Python's `re`
@@ -214,7 +214,7 @@ SECRET_PLACES = ("properties", "additionalProperties", "items", "$defs")
 # that `run.v1` holds exactly the files of `identity`, and requires every one but the
 # certificate and its key.
 # Round 5 of the re-audit (M86) reads the key x509BundleFile of spec/names.yaml, which was
-# trustBundleFile. Its integration (docs/proposals/reaudit/round-5/log-fixes.md) added
+# trustBundleFile. Its integration (https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/reaudit/round-5/log-fixes.md) added
 # remote-provider (PKG-030, M25), and made item-place-required reject a place whose schema does
 # not confine its value to a string, a number, a boolean or null (MAN-017, M30).
 # Round 6 of the re-audit, under ruling 44 (2026-11-07; log
@@ -227,7 +227,7 @@ SECRET_PLACES = ("properties", "additionalProperties", "items", "$defs")
 # lists; and added engine-selected (TPL-003), for a template or a Type whose `implementation`
 # map selects an implementation for such an operation.
 # The coordinator's decision on finding 1-03 of the first build's log of increment 1
-# (docs/proposals/first-build/README.md#1-03) added ecma-pattern (SCH-016), for a pattern
+# (https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/README.md#1-03) added ecma-pattern (SCH-016), for a pattern
 # that a schema of a document writes and that is not a regular expression of ECMA-262.
 RULES = {
     "one-name": "NAM-027",

@@ -47,28 +47,28 @@ build. As of 2026-11-12:
   [coverage manifest](../../conformance/manifest.yaml) and the build's
   [conformance document](../../engine/CONFORMANCE.md) for current coverage and
   implementation limits. A missing implementation is distinct from an undecided language rule.
-- The [build logs](../proposals/first-build/README.md) record decisions since round 6. For
+- The [build logs](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/README.md) record decisions since round 6. For
   example, increment 2 settled the reserved root `$defs` copy-key question and the two plain
   protocol-error cases. Check the settlement before raising the old question again.
-- The [real-client closeout](../proposals/first-build/increment-3/closeout-results-2026-11-10.md)
+- The [real-client closeout](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)
   records T1, T2 and T7 and carries unshown checks forward. Access is mediated, and Codex's home
   instructions still leak (finding 3-07). The sign-in flow of
-  [ruling 49](../proposals/ruling-49/README.md) is in `spec/` (orders 038a and 038c), but neither
+  [ruling 49](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-49/README.md) is in `spec/` (orders 038a and 038c), but neither
   it nor each Agent's separate home is built: their orders, 050, 048a, 048b and 051b, are not yet
   written. A ruling is not evidence that its specification or implementation changes have been
   made.
 - [IN_FORCE.md](../../IN_FORCE.md) lists a decision as *spec pending*, naming its batch or
   order, until it is written into the specification. Batch 1 (orders 036a to 038c) wrote the
   short form, the Fleet family, refusals, pending actions, sign-in and enrollment, after the
-  [language-shape investigation](../proposals/language-shape/README.md) and the owner's
-  [Project direction](../proposals/owner-direction/2026-11-10-projects.md); batch 2 is not
+  [language-shape investigation](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/language-shape/README.md) and the owner's
+  [Project direction](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/owner-direction/2026-11-10-projects.md); batch 2 is not
   on `main`. Do not read a proposal that `spec/` does not hold as an existing rule, nor a written
   promise as built: the [contents](../../spec/README.md#contents) show which files have no
   vectors yet, among them `sections.yaml` and `pending.yaml`.
-- The [increment 4 log](../proposals/first-build/log-increment-4.md) distinguishes the fixes
+- The [increment 4 log](../implementation/first-build/log-increment-4.md) distinguishes the fixes
   from orders 025 to 028 from open findings. In particular, 4-06 is settled as parallel model
   work within the parent Agent's access; 4-03 retains SUB-010's submission rule, and relative
-  values stay ([ruling 52's later answer](../proposals/ruling-52/README.md#later-answers),
+  values stay ([ruling 52's later answer](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-52/README.md#later-answers),
   2026-11-12); 4-08's explicit refusals are promises (ACC-056, IFC-050, OPS-023). Turn deadlines
   (4-12) closed on 2026-11-12, and order 070 removed the whole-state copies of 4-18 except
   registration's four, to which order 042 then added two. The form of ended conditions (4-17)
@@ -173,9 +173,8 @@ against that copy.
 
 ## How to report a finding
 
-Prepare one report per reader for `docs/proposals/reaudit/round-7/`, the next directory after
-[round 6](../proposals/reaudit/round-6/README.md). Hand the local report to the coordinator;
-do not publish it. Use [round 6's reader report](../proposals/reaudit/round-6/reader-1.md) as
+Give the coordinator one dated report per reader and keep it outside the tree.
+Use [round 6's reader report](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/reaudit/round-6/reader-1.md) as
 the example of the form. At the top, give your date, commit ID, scope and what you did and did
 not check. For each finding give:
 
@@ -187,8 +186,9 @@ not check. For each finding give:
 
 Report unclear entry text as well as defects in promises. Separate observed results from
 reasoning and proposed tests. Keep recommendations pending: the owner rules, or the
-coordinator decides under ruling 37, and the decision is logged beside the report. Round 6's
-[decisions](../proposals/reaudit/round-6/DECISIONS.md) show that separate step.
+coordinator decides under ruling 37. Findings go to `spec/` with `spec/CHANGES.md` entries,
+the decision log, ROADMAP.md or work orders. Round 6's
+[decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/reaudit/round-6/DECISIONS.md) show that separate step.
 
 ## What not to do
 

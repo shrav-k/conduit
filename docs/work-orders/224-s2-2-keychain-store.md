@@ -52,7 +52,7 @@ interaction off, which that tool cannot do (005), behind the existing `secret-pr
 **When it runs.** Through Conduit's dogfood: one Codex worker turn (a 4-hour limit; aim for
 under 2 hours), a Codex verifier and a Claude reader, then the gate
 ([DEC-033](../decisions/log.md#dec-033-2026-11-20-the-testing-audit)). By
-[ruling 89](../proposals/ruling-89/README.md), each decision says what must hold; how is yours.
+[ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), each decision says what must hold; how is yours.
 
 **Stop rule.** Change nothing under `spec/`. Where a promise needs a choice `spec/` does not
 make, stop, change nothing further, and report the promise, the choice and the options. Stop and

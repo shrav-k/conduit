@@ -15,11 +15,11 @@ run `claude`, `codex` or any client, and sign in nowhere.
 
 **Where it sits.** [Order 117](117-plan-s2-s3.md)'s batch 1 gives "051b: the pending-action
 commands `pending`, `sign-in` and `answer`. M. After 047 and 048b-join." [Spec batch 1's
-plan](../proposals/spec-batch-1/README.md) adds to it the client's URL elicitation (show the URL
+plan](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/spec-batch-1/README.md) adds to it the client's URL elicitation (show the URL
 and the message, ask consent, open the browser) and the unanswered hint, and the full review's
 D53 adds the paste of a carried return where the command line runs on the node's machine and the
 browser is elsewhere. That is three behaviors, so the coordinator cuts 051b into three, each
-holding one ([FR-264](../proposals/full-review/findings/P01-work-orders-lanes.md#fr-264): an
+holding one ([FR-264](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/P01-work-orders-lanes.md#fr-264): an
 order holds one behavior and stays small; the coordinator's split, open to the owner's strike):
 
 - **051b, this order**: the person sees and answers root's pending actions from the command
@@ -35,11 +35,11 @@ order holds one behavior and stays small; the coordinator's split, open to the o
   (D53, ruling 75 C4's case), the loopback listener only where it knows it does not run there,
   and `conduit call` refusing to set `signInReturn`. After 051b-2, and so after 048a-8, whose
   redirect return it carries. The targeted review's
-  [section 6](../proposals/review-signin-2026-11-16/README.md#6-must-state-lists) says that this
+  [section 6](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#6-must-state-lists) says that this
   paste is the `carried: true` route and serves no Claude Agent's sign-in; 051b-3 carries that
   sentence.
 
-[Ruling 82](../proposals/ruling-82/README.md), point 3, has each dogfood slot's sign-in follow
+[Ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md), point 3, has each dogfood slot's sign-in follow
 051b; with the split, that is its last part, 051b-3, so a slot's sign-in follows all three parts
 and the cut narrows nothing. [Order 117](117-plan-s2-s3.md) records the cut, and 050o follows
 051b-3. This order builds no sign-in, no URL elicitation and no return.
@@ -53,7 +53,7 @@ nonzero." PND-009: `answer.v1` "is dispatched only on the Interface's own behalf
 Conduit listing it to the target that authorizes inspection of the subject (ACC-033): the owning
 Pool for a Resource, the owning Fleet for an Agent or a notice's Fleet, and management
 otherwise, with the inspection fallback for a retired owner." [Ruling
-50](../proposals/ruling-50/README.md), point 3, makes the Interface a control panel where every
+50](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-50/README.md), point 3, makes the Interface a control panel where every
 action waiting on a person is raised; the batch plan gives 051b the commands `pending` and `answer`
 and the unanswered hint; the engine's own panel is 051c's. Reading `conduit pending` as ruling 50's
 control panel on the command line is the coordinator's. The engine already does all of this; the command line only asks it and prints what
@@ -126,7 +126,7 @@ IFC-025's `unanswered` key decide what is raised at root, what counts it and thr
 target an answer goes; ruling 50, point 3, makes the Interface a control panel. Rulings 80 to
 83 and the targeted review's section 6 put nothing on this part (ruling 83 touches only the Agent
 packages and their `apiKey`): section 6 says "Nothing from this review changes 051b". Everything else here is the coordinator's, each open to the owner's
-strike ([ruling 48](../proposals/ruling-48/README.md)): the split into 051b, 051b-2 and 051b-3,
+strike ([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)): the split into 051b, 051b-2 and 051b-3,
 and this part's start after 047c alone; reading `conduit pending` as ruling 50's control panel on
 the command line; the commands' names and arguments, which the batch plan
 gives; printing each action as one JSON line, unchanged from `list.v1`; finding the action
@@ -429,10 +429,10 @@ steps 5, 6 and 9 of the test, and the findings of decision 10.
 
 `git diff --check` and `check_private_paths.py` read tracked files only, so the admin then stages
 the new files and runs `python3 tools/check_private_paths.py` and `git diff --cached --check`.
-Before the merge the admin runs the local gate that [ruling 80](../proposals/ruling-80/README.md),
+Before the merge the admin runs the local gate that [ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md),
 point 10, has each merge wait on, `tools/gate.py`; CI runs on the pull request as well, and the
 merge does not wait for it. A fresh Codex verifier and a fresh read-only Opus reader read the
-result before it merges ([ruling 79](../proposals/ruling-79/README.md), point 2). The admin writes
+result before it merges ([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md), point 2). The admin writes
 this order's Record at the foot of this file when it merges.
 
 ## Record

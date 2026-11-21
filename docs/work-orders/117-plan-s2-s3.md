@@ -9,8 +9,8 @@ schema the orders share. This is a paper order: it builds no Rust and writes no 
 
 ## What and why
 
-An order of the scenarios lane under [ruling 71](../proposals/ruling-71/README.md). The owner
-accepted the pre-registrations of S2 to S10 under [ruling 75](../proposals/ruling-75/README.md),
+An order of the scenarios lane under [ruling 71](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-71/README.md). The owner
+accepted the pre-registrations of S2 to S10 under [ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md),
 D. Each says what its scenario must show and, in its section "What it needs first", what must
 exist before it runs. None says which work orders build that, in what order, or what can start
 today. This order writes that plan for S2, one service login shared by two Agents, and for S3, S1
@@ -30,7 +30,7 @@ Read:
 - [ROADMAP.md](../../ROADMAP.md): [the order of the work](../../ROADMAP.md#the-order-of-the-work),
   [the scenarios](../../ROADMAP.md#scenarios), and the register's rows A6, A22, A73, A74 and A81;
   A63's row in [docs/AUDIT.md](../AUDIT.md);
-- [batch 1's plan](../proposals/spec-batch-1/README.md), its section "The work orders", which
+- [batch 1's plan](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/spec-batch-1/README.md), its section "The work orders", which
   ends with the critical path: the numbers, contents, sizes and dependencies of orders 042 to 053;
 - the order files under `docs/work-orders/` for work that is written but not all merged: 042,
   049a1, 050a, 070 to 072, 075 to 082 and 038c. Order 049a1's section "What and why" and order
@@ -43,10 +43,10 @@ Read:
   [G5's account](../../experiments/012-model-checking/G5.md), for which promises are safety
   promises and which are static (to be shown by vectors);
 - [IN_FORCE.md](../../IN_FORCE.md), topics 9 to 13 and 15; rulings
-  [46](../proposals/ruling-46/README.md), [47](../proposals/ruling-47/README.md),
-  [61](../proposals/ruling-61/README.md) (batch 2), [68](../proposals/ruling-68/README.md),
-  [72](../proposals/ruling-72/README.md), [75](../proposals/ruling-75/README.md) and
-  [76](../proposals/ruling-76/README.md), with its later answers;
+  [46](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-46/README.md), [47](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-47/README.md),
+  [61](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-61/README.md) (batch 2), [68](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md),
+  [72](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-72/README.md), [75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md) and
+  [76](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-76/README.md), with its later answers;
 - `packages/agent-codex/`: the form of a package crate (`Cargo.toml`, `conduit.yaml`,
   `contracts.yaml`, `README.md`, `tests/`);
 - the guides [1Password and Linear](../guides/1password-and-linear.md),

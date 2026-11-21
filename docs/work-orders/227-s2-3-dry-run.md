@@ -49,7 +49,7 @@ order adds tests, not a tool. P1 and ruling 92 point 8 make it Conduit's.
 **When it runs.** Through Conduit's dogfood: one Codex worker turn (a 4-hour limit; aim for
 under 2 hours), a Codex verifier and a Claude reader, who run only what settles a doubt, and the
 gate ([DEC-033](../decisions/log.md#dec-033-2026-11-20-the-testing-audit)). By
-[ruling 89](../proposals/ruling-89/README.md), each decision says what must hold; how is yours.
+[ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), each decision says what must hold; how is yours.
 
 **Stop rule.** Change nothing under `spec/`. Where a test needs a choice that `spec/` does not
 make, or a fix beyond decision 4, stop on that test alone: leave it out, change nothing for it,
@@ -300,7 +300,7 @@ and test; SEC-016's result, with any gap and its options; every gap or departure
 last line.
 
 The verifier's turn follows. The coordinator then runs `tools/gate.py`, has a fresh Claude
-reader read the diff ([ruling 79](../proposals/ruling-79/README.md); ruling 92 point 4), and
+reader read the diff ([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md); ruling 92 point 4), and
 merges.
 
 ## Record

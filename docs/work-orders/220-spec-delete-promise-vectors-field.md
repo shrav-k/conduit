@@ -14,7 +14,7 @@ and sign in nowhere.
 ## What and why
 
 Every promise under `spec/promises/`, `spec/conventions/` and `spec/interface/` ends with a
-`vectors` field. It is empty on 518 of the 520 promises. [Ruling 78](../proposals/ruling-78/README.md),
+`vectors` field. It is empty on 518 of the 520 promises. [Ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md),
 point 17 (F124 and F127), made the `promises` tags of the cases in the coverage index under
 `conformance/` the one record of which cases test a promise, and left the field to be reworded.
 
@@ -167,7 +167,7 @@ removed and the files they were removed from, and the start check's line for ite
 sentence you worded yourself (under `own_choices`), the vector delta's counts, the documents that
 do not bind that name the field, and every check's last line. Stage nothing. The coordinator runs
 `tools/gate.py`, then has a fresh, read-only Opus reader read the diff
-([ruling 79](../proposals/ruling-79/README.md); ruling 92 point 4), and merges.
+([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md); ruling 92 point 4), and merges.
 
 ## Record
 

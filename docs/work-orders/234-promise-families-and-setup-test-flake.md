@@ -33,7 +33,7 @@ repository name.
    read. `pending_agent_lists_that_agents_actions_alone` uses the same fixture.
 
 **Preservation tests** ([the tests](../AUDIT.md#preservation-tests);
-[ruling 92](../proposals/ruling-92/README.md), point 1): none at risk, and no promise, case or
+[ruling 92](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-92/README.md), point 1): none at risk, and no promise, case or
 engine code changes. Order 225's `inspect --setup` and `pending --agent` serve 2 (every access
 can be inspected) and 7 (everything is attributable); their tests should fail only when those
 break. The checker keeps each `spec/` change tied to an owner's decision
@@ -53,7 +53,7 @@ break. The checker keeps each `spec/` change tied to an owner's decision
 
 **When it runs.** Through Conduit's dogfood: one Codex worker turn (a 4-hour limit; aim for
 under 2 hours), a Codex verifier and a Claude reader, who run only what settles a doubt, and the
-gate, which runs everything (DEC-033). By [ruling 89](../proposals/ruling-89/README.md), each
+gate, which runs everything (DEC-033). By [ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), each
 decision says what must hold; how is yours. The test names and the stress run's size are the
 coordinator's, open to the owner's strike.
 
@@ -246,7 +246,7 @@ only `serve.rs` among the engine's files changes. Your report gives:
 - every check's last line.
 
 The verifier's turn follows; the coordinator then runs `tools/gate.py`, has a fresh, read-only
-Claude reader read the diff ([ruling 79](../proposals/ruling-79/README.md); ruling 92 point 4),
+Claude reader read the diff ([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md); ruling 92 point 4),
 and merges.
 
 ## Record

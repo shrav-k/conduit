@@ -277,7 +277,7 @@ package/harness preparation can proceed alongside it without concurrent requests
 - **B — shared fixes and PIN:** preserve batch 1's pin; changes to starting vectors/root tools/
   S1 work on main wait PIN, unless the admin assigns a side branch. No order file counts as
   completed 077/081/082 work. Admin owns runner/shared-manifest integration.
-- **C — D4:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed this reading on 2026-11-12 ([ruling 75's later answers](../../docs/proposals/ruling-75/README.md#later-answers)).
+- **C — D4:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed this reading on 2026-11-12 ([ruling 75's later answers](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md#later-answers)).
 - **D — E09 URL, for admin as 050's owner:** can the Agent package point its engine URL at
   S4-H's loopback response-dropping proxy, or does 050 need an explicit lab-only endpoint
   override while preserving token audience/Host/proof checks? **Recommendation:** expose the

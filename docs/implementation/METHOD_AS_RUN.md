@@ -6,10 +6,10 @@ This page gives the steps by which the coordinator writes, dispatches, checks an
 as run on 2026-11-15, with each command. The runners are scripts outside the tree, beside [the
 private handoff note](HANDOVER.md), which holds every private value. The tree keeps this page
 because a copy that does not run would drift and the tree's code is Rust
-([D62](../proposals/full-review/decisions.md), logged for the owner to strike). A merge changing how
+([D62](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md), logged for the owner to strike). A merge changing how
 orders are dispatched or checked updates this page in the same pull request
-([D13](../proposals/full-review/decisions.md)). Until the S1 rerun's pin, one coordinator runs it
-([ruling 78, point 1](../proposals/ruling-78/README.md)); the lane uses the same runners when it
+([D13](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md)). Until the S1 rerun's pin, one coordinator runs it
+([ruling 78, point 1](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md)); the lane uses the same runners when it
 restarts at the pin ([Restarting the lane
 coordinator](HANDOVER.md#restarting-the-lane-coordinator)).
 
@@ -240,9 +240,9 @@ second machine](HANDOVER.md#the-second-machine) for the owner's pause and resume
 ## 6. The Opus reader and fixes by hand
 
 Once checks pass, a fresh read-only Claude Opus reader verifies each order before merge, and each
-coordinator's fix the same way ([ruling 79, points 2 and 4](../proposals/ruling-79/README.md)). When
+coordinator's fix the same way ([ruling 79, points 2 and 4](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md)). When
 the Claude allowance runs low, A77's paired reads stop first and dispatch next
-([ruling 80](../proposals/ruling-80/README.md), point 6), nothing merges unread, and the owner is
+([ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md), point 6), nothing merges unread, and the owner is
 told.
 Each reader starts with no memory of the work and gives a structured verdict and findings.
 
@@ -267,9 +267,9 @@ order and `<FINDINGS_FILE>`, applies every must and should within the scope, add
 not push, rebase, switch branches or touch any other worktree. `<FIXER_REPORT>` is its report.
 
 A coordinator's last-finding fix rests on the admin's leave under [ruling
-48](../proposals/ruling-48/README.md), "the admin finishes the work itself", formerly in
+48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md), "the admin finishes the work itself", formerly in
 WORK_ORDERS.md and now held here under D5; a fresh Opus reader reads the fix. [Ruling 71 point
-4](../proposals/ruling-71/README.md) is a different leave: settle a small finding that adds a
+4](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-71/README.md) is a different leave: settle a small finding that adds a
 feature and log it for the owner to strike. Until the S1 rerun it excludes anything that could move
 S1's author counts: CLI flags, short-form keys, templates and defaults ([IN_FORCE.md, topic
 15](../../IN_FORCE.md#15-how-the-work-is-governed)). The handover's former step 9 cited that point
@@ -286,7 +286,7 @@ git diff --name-only HEAD^ HEAD
 The squash commits with the checkpoints' identity, not the handover's plain `git commit`.
 Check the second command's files against scope; shared remote refs can move between
 commands. Then, on the Mac, with the tree clean, run the gate
-([ruling 80](../proposals/ruling-80/README.md), point 10 and its later answers), which
+([ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md), point 10 and its later answers), which
 derives the private names from the Mac at each run:
 ```sh
 python3 tools/gate.py --derive-private-names
@@ -367,7 +367,7 @@ uses [156's Record](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f9032
 Each round's checkpoint is a local commit on `wo/NNN-name`. For an order run on the Windows
 computer, it is also on the `win/` ref fetched to the Mac. Only the squash is pushed at merge, so
 the round-by-round diffs are discarded after the merge, and only the Records describe the rounds
-([D63](../proposals/full-review/decisions.md)). An order stopped unmerged is pushed with its
+([D63](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md)). An order stopped unmerged is pushed with its
 checkpoints, as 049a1, 080 and 144 are.
 
 ## Load
@@ -380,7 +380,7 @@ is the one-minute load. Under load, rerun timing-sensitive shell tests with `RUS
 ## Failure modes
 
 - Two orders started at once raced for Git's configuration; the runner now uses `--no-track`
-  ([FR-525](../proposals/full-review/findings/G6-outside-the-tree.md#fr-525)).
+  ([FR-525](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G6-outside-the-tree.md#fr-525)).
 - The Windows checkpoint lacked a git identity ([069b's
   Record](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/069b-spec-plan-apply-ruling-76.md#record)); the wrapper now sets it.
 - Rustup could not write its Windows sandbox directory ([075's
@@ -390,7 +390,7 @@ is the one-minute load. Under load, rerun timing-sensitive shell tests with `RUS
   ([079's Record](../work-orders/079-shell-https-address.md#record), which does not name the missing
   command). A remedy is not recorded in the runner.
 - Two of 081's dispatches failed at once: missing `SCHEMA` and a leftover branch
-  ([FR-532](../proposals/full-review/findings/G6-outside-the-tree.md#fr-532)). A schema precheck is
+  ([FR-532](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/G6-outside-the-tree.md#fr-532)). A schema precheck is
   not recorded in the runner; a leftover branch still fails the worktree add and stops dispatch.
 - The read-only Codex verifier reruns no build or test
   ([156](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/156-runner-stopped-after-end.md#record),

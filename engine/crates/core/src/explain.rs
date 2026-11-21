@@ -863,6 +863,14 @@ pub const OUTCOME_CAUSES: &[(&str, &str)] = &[
         "The implementation gave no valid result establishing the outcome.",
     ),
     (
+        "OPS-024",
+        "The implementation answered this attempt as failed after an earlier attempt succeeded.",
+    ),
+    (
+        "OPS-012",
+        "The implementation answered this attempt as failed after an earlier attempt succeeded or had no answer.",
+    ),
+    (
         "OPS-027",
         "The invocation was cancelled without confirmation that nothing was done.",
     ),

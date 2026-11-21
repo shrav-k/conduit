@@ -492,9 +492,10 @@ what a statement says changes the statement ([order 183][wo183]).
 2. A login that a Pool owns stays with its Resource and is never handed to an Agent through Conduit
    ([IN_FORCE.md](../IN_FORCE.md#1-purpose-scope-and-principles), topic 1; POOL-001, ACC-003,
    SEC-007, SEC-019). The engine's file-store test shows that a Pool entry's process receives a
-   secret through its own Conduit and the engine exposes no value in results or records. S2 has yet
-   to run. It is to qualify the shared login with the Linear implementation (FR-480, G3 verifier's
-   list).
+   secret through its own Conduit and the engine exposes no value in results or records.
+   From order 227, S2's dry run against the Linear stub delivers the shared login from a Pool's
+   file-store secret to the aware implementation's run alone for two scripted Agents with
+   different restrictions, with real Agents and the real service still to run (FR-480).
 3. Two Agents ran with their own tools off, as S1's do: Claude Code 2.1.318 and Codex 0.167.0; told
    to read a file outside their Conduits by any means, neither did, and neither loaded a project or
    ancestor instruction file (2026-11-10 closeout, "Results of the third run"). Claude Code loaded

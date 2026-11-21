@@ -21,8 +21,9 @@ The item states `issue-scope.v1` in `supports`; it is Conduit-aware, with no `pl
 | `apiKey` | yes | Core `secret-reference.v1` place. The runner delivers its value as `S2_LINEAR_API_KEY` at process start. The configuration in call metadata holds the resolved Resource reference, never the value. |
 | `testClock` | no | RFC 3339 receipt instant, read from that call's configuration metadata. For tests and prepared runs only. Omission uses the real UTC clock captured at receipt. Malformed values fail before service access. |
 
-The engine's secret-reading path (SEC-D) is not built yet. These tests set the variable directly;
-they do not demonstrate engine delivery or S2 P3 end to end. No secret store, sign-in flow,
+These package tests set the variable directly. The engine's secret read (order 218) delivers it
+in S2's dry run, `engine/crates/shell/tests/s2.rs` (order 227), through a Pool-owned file-store
+entry. No secret store, sign-in flow,
 OAuth flow, supervisor or gate is provided. The key and endpoint are captured once at startup,
 and the call's `baseUrl` must match that startup value. Rotating the service key requires an
 explicit new run with the new value; an existing run retains its old value (SEC-014).
@@ -92,7 +93,7 @@ D15's four fields, following [S10's measures](../../experiments/021-s10-swapped-
 | (a) Own operations and custom code — observed | `src/lib.rs`: 419 counted lines for three operations, IFC metadata validation, scope/deadline enforcement, projection and outcomes. `src/main.rs`: 22 for environment capture and stdio lifecycle. `src/bin/package.rs`: 57 for deterministic packaging. Counts below separate declarations and qualification. |
 | (b) Delegated work — observed locally | rmcp handles MCP framing/discovery transport; reqwest and rustls handle HTTP/TLS; the service performs reads, listing, authorization and edits. Only loopback HTTP delegation is exercised; real HTTPS service behavior is untested. |
 | (c) Persistent state — absent | None. Endpoint, credential and HTTP client live in the process; service owns issue state. Stop discards local state. Restart requires operator-provided configuration and the chosen credential again. |
-| (d) Operator setup and recovery — partly observed | Build host binary, install package, configure endpoint/secret Resource, arrange its Conduit and runner delivery. Tests substitute environment injection. Rotate by explicit replacement. Engine secret reads, gates, real sign-in, isolation and manual outage recovery remain untested. |
+| (d) Operator setup and recovery — partly observed | Build host binary, install package, configure endpoint/secret Resource, arrange its Conduit and runner delivery. Tests substitute environment injection. Rotate by explicit replacement. Engine secret reads are tested in S2's dry run (order 227); gates, real sign-in, isolation and manual outage recovery remain untested. |
 
 D01/M0 provider-work counts are listed apart from author work. Count nonblank lines excluding
 standalone comments; document separators count. The counts cover this package's files once,

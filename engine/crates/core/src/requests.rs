@@ -36,6 +36,17 @@ fn response_ends_call(result: &Value) -> bool {
         .is_none_or(|kind| kind == "complete")
 }
 
+fn earlier_attempt_may_have_succeeded(previous: &Value) -> bool {
+    previous["state"] == "succeeded" || previous["unanswered_or_succeeded"] == true
+}
+
+fn awaiting_implementation(v: &Value) -> bool {
+    v["implementation"]["source"]
+        .as_str()
+        .is_some_and(|source| source != "engine")
+        && v["discovery"] != "pending"
+}
+
 // Required extensions are nested under the protocol's `extensions` capability map.
 // An unidentified error does not establish that nothing was performed, even for an aware server.
 fn capability_error(data: &Value, c: &Context) -> Option<bool> {
@@ -175,15 +186,10 @@ impl RecordInputs<'_> {
                 return Ok(());
             }
             if r == "#" || r.starts_with("#/") {
-                // schema_reference also decodes URI escapes; keep the original root
-                // so local references inside the selected fragment retain their scope.
-                let (_, sub) = self
-                    .env
-                    .schema_reference(scope, root, r, &self.c.core_package)?;
-                // Give the selected fragment the original definitions for local refs.
-                let mut selected = root.clone();
-                selected["$record"] = sub;
-                self.redact(scope, &selected, "/$record", value, at, result, depth + 1)?;
+                // Keep the referenced branch at a schema position so conditional
+                // validation resolves both its local and contract references.
+                let pointer = schemas::unfragment(&r[1..])?;
+                self.redact(scope, root, &pointer, value, at, result, depth + 1)?;
             } else {
                 let (scope, sub) =
                     self.env
@@ -1856,7 +1862,11 @@ pub(crate) fn finish(
             v["setup_cause"] = json!(cause);
         }
     }
-    v.as_object_mut().unwrap().remove("previous");
+    if let Some(previous) = v.as_object_mut().unwrap().remove("previous")
+        && earlier_attempt_may_have_succeeded(&previous)
+    {
+        v["unanswered_or_succeeded"] = json!(true);
+    }
     v.as_object_mut().unwrap().remove("hook_input");
     if let Some(w) = v.get_mut("sign_in_wait").and_then(Value::as_object_mut) {
         w.remove("url");
@@ -1976,6 +1986,11 @@ pub(crate) fn complete(
     let mut outcome = "unknown";
     let mut rule = Some(if plain { "IFC-010" } else { "OPS-007" });
     let mut lapse = None;
+    let answered = match &completion {
+        Completion::Missing => false,
+        Completion::Result { result } => response_ends_call(result),
+        _ => true,
+    };
     match completion {
         Completion::ProtocolError { code: -32020, .. } if v["wire_retried"] != true && readonly => {
             t.state.invocations[i]["wire_retried"] = json!(true);
@@ -2131,6 +2146,18 @@ pub(crate) fn complete(
         }
         _ => {}
     }
+    if outcome == "failed" && earlier_attempt_may_have_succeeded(&v["previous"]) {
+        // OPS-012 / OPS-024: a later failure does not rule out an earlier effect.
+        outcome = "unknown";
+        rule = Some(if v["previous"]["state"] == "succeeded" {
+            "OPS-024"
+        } else {
+            "OPS-012"
+        });
+    }
+    if !answered {
+        t.state.invocations[i]["unanswered_or_succeeded"] = json!(true);
+    }
     if let Some(trigger) = lapse {
         finish_login_lapse(t, &mut a, c, i, &v, outcome, trigger)?;
     } else {
@@ -2153,6 +2180,9 @@ fn restore_or_remove_invocation(state: &mut State, i: usize, v: &Value) {
             invocation["retained"] = retained.clone();
         }
         let fields = invocation.as_object_mut().unwrap();
+        if let Some(history) = previous.get("unanswered_or_succeeded") {
+            fields.insert("unanswered_or_succeeded".into(), history.clone());
+        }
         if let Some(cause) = previous.get("cause") {
             fields.insert("cause".into(), cause.clone());
         } else {
@@ -2398,6 +2428,13 @@ pub(crate) fn cancel(
                 && r["_meta"][mark(c, "outcome")] == "failed"
                 && r["_meta"].get(mark(c, "reason")).is_none()
         });
+    if confirmation
+        .as_ref()
+        .is_none_or(|reply| !response_ends_call(reply))
+        && awaiting_implementation(&t.state.invocations[i])
+    {
+        t.state.invocations[i]["unanswered_or_succeeded"] = json!(true);
+    }
     let cause = if failed {
         None
     } else {
@@ -2490,6 +2527,9 @@ pub(crate) fn recover(t: &mut Transition, evidence: &Evidence, c: &Context) -> R
             continue;
         }
         if t.state.invocations[i]["state"] == "in-progress" {
+            if awaiting_implementation(&t.state.invocations[i]) {
+                t.state.invocations[i]["unanswered_or_succeeded"] = json!(true);
+            }
             if let Some(id) = t.state.invocations[i].get("retirement_of")
                 && let Some(o) = t.state.objects.iter_mut().find(|o| o["id"] == *id)
             {
@@ -3760,6 +3800,79 @@ mod tests {
     }
 
     #[test]
+    fn ops_012_failed_retries_keep_unanswered_attempts_distinct_from_explicit_unknown() {
+        let (mut state, c, request) = repeat_fixture(false);
+        let operation = c.qualified("reserved.v1");
+        let published = &mut state.objects[3]["schema_environment"]["scopes"]["core"]["contracts"]
+            ["reserved.v1"];
+        published["spec"]["deduplicates"] = json!(true);
+        assert_eq!(published["kind"], "Operation");
+        let first = invoke_repeat(&state, &c, &request);
+        let stated = |outcome: &str| Completion::Result {
+            result: json!({"_meta":{"test/outcome":outcome},"isError":true}),
+        };
+        for (completion, want) in [
+            (Completion::Missing, "unknown"),
+            (stated("unknown"), "failed"),
+        ] {
+            let ended = answer(&first, &c, completion);
+            assert_eq!(ended.reply["_meta"]["test/outcome"], "unknown");
+            let second = invoke_repeat(&ended.state, &c, &request);
+            assert_eq!(second.reply["attempt"], 2);
+            let answered = answer(&second, &c, stated("unknown"));
+            let third = invoke_repeat(&answered.state, &c, &request);
+            assert_eq!(third.reply["attempt"], 3);
+            let failed = answer(&third, &c, stated("failed"));
+            assert_eq!(failed.state.invocations[0]["operation"], operation);
+            assert_eq!(failed.reply["_meta"]["test/outcome"], want);
+            assert_eq!(failed.state.invocations[0]["state"], want);
+        }
+    }
+
+    #[test]
+    fn ops_024_failed_filtered_repeat_after_success_ends_unknown() {
+        let (state, c, request) = repeat_fixture(true);
+        let first = invoke_repeat(&state, &c, &request);
+        let succeeded = answer(
+            &first,
+            &c,
+            Completion::Result {
+                result: json!({"_meta":{"test/outcome":"succeeded"},"isError":false}),
+            },
+        );
+        assert_eq!(succeeded.state.invocations[0]["state"], "succeeded");
+        let repeat = invoke_repeat(&succeeded.state, &c, &request);
+        assert_eq!(repeat.reply["attempt"], 2);
+        let ended = answer(
+            &repeat,
+            &c,
+            Completion::Result {
+                result: json!({"_meta":{"test/outcome":"failed"},"isError":true}),
+            },
+        );
+        assert_eq!(ended.reply["_meta"]["test/outcome"], "unknown");
+        assert_eq!(ended.state.invocations[0]["state"], "unknown");
+        assert!(ended.state.invocations[0].get("retained").is_none());
+        assert!(
+            ended
+                .records
+                .iter()
+                .any(|record| record["type"] == "invocation-ended"
+                    && record["data"]["attempt"] == 2
+                    && record["data"]["outcome"] == "unknown")
+        );
+        assert!(
+            ended
+                .state
+                .records
+                .iter()
+                .any(|record| record["type"] == "invocation-ended"
+                    && record["data"]["attempt"] == 1
+                    && record["data"]["outcome"] == "succeeded")
+        );
+    }
+
+    #[test]
     fn filtered_redispatch_restores_failed_outcome_diagnostic() {
         let (state, c, request) = repeat_fixture(true);
         let pending = invoke_repeat(&state, &c, &request);
@@ -4070,6 +4183,36 @@ mod tests {
         assert_eq!(data["inputsExcluded"][0]["ruleId"], "SEC-004");
         assert!(!data.to_string().contains("synthetic-name"));
     }
+    #[test]
+    fn sch_015_record_branches_keep_the_original_local_reference_scope() {
+        let (mut t, mut c) = recording_fixture(
+            "read.v1",
+            json!({
+                "properties":{"credential":{"$ref":"#/$defs/branch%20value"}},
+                "$defs":{"branch value":{"anyOf":[
+                    {"type":"integer"},
+                    {"$ref":"#secret-alias.v1"}
+                ]}}
+            }),
+            json!({"credential":{"kind":"Resource","name":"unresolved"}}),
+        );
+        c.core_environment
+            .scopes
+            .get_mut("core")
+            .unwrap()
+            .contracts
+            .insert(
+                "secret-reference.v1".into(),
+                json!({"kind":"Schema","spec":{"type":"object"}}),
+            );
+        t.state.invocations[0]["held_target"]["schema_environment"] = json!(c.core_environment);
+        let mut data = json!({"invocation":"invocation-id"});
+        record_content(&t, &c, &mut data).unwrap();
+        assert_eq!(data["inputs"], json!({}));
+        assert_eq!(data["inputsExcluded"][0]["path"], "/credential");
+        assert_eq!(data["inputsExcluded"][0]["ruleId"], "SEC-004");
+    }
+
     #[test]
     fn required_capabilities_distinguish_extension_and_unidentified_errors() {
         let (_, c) = recording_fixture("read.v1", json!({"type":"object"}), json!({}));

@@ -1295,6 +1295,9 @@ class GateTests(unittest.TestCase):
                  ('conformance/x', set(), True), ('packages/agent-claude-code/x', set(), True),
                  ('packages/agent-codex/x', set(), True), ('packages/provider-file/x', set(), True),
                  ('packages/git/x', set(), True),
+                 ('packages/scenario-s2-linear/x', set(), True),
+                 ('packages/scenario-s2-linear-restrictions/x', set(), True),
+                 ('experiments/013-s2-shared-login/linear-stub/x', set(), True),
                  ('docs/x.md', set(), False),
                  ('tools/x.py', set(), False)]
         with mock.patch.object(gate, 'RUST_READS', reads):

@@ -3,12 +3,18 @@
 
     python3 tools/check_docs.py
     python3 tools/check_docs.py --walk
+    python3 tools/check_docs.py --work-orders
 
 It checks, in every Markdown file, that each local link leads to a path that exists, that each
 anchor is a heading or an `id` of the file it points into, that each reference link is defined
 once, and that each code fence is closed. Repository GitHub permalinks are checked against
 local Git objects; other external links are not followed. Literal repository path mentions
 in tools, the conformance manifest and engine sources are checked too.
+
+Each work order's first line gives its ID and index entry. The check validates those
+lines and rejects table rows in the work-order README that link to the order files.
+With `--work-orders`, it prints the Markdown index in file-name order or reports invalid
+first lines. It can be combined with `--walk`, and the index is the same either way.
 
 It finds the Markdown files in one of two ways, and its first line of output says which:
 
@@ -20,7 +26,7 @@ It finds the Markdown files in one of two ways, and its first line of output say
     names: a line with no wildcard and no `!`. `--walk` asks for this way in a Git working
     tree too.
 
-The last line of output is "Errors: N", and the exit status is 1 when N is not 0.
+The check's last line is "Errors: N", and either mode exits 1 when it finds errors.
 """
 
 import json
@@ -29,10 +35,19 @@ from pathlib import Path
 import re
 import subprocess
 import sys
-from urllib.parse import unquote, urlsplit
+from urllib.parse import quote, unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 SKIPPED = (".git", "target")           # never walked, whatever .gitignore says
+WORK_ORDERS = Path("docs/work-orders")
+ORDER_HEADING = re.compile(r"# Work order ([0-9][^\s:]*)(?: \([^()]+\))?: ([^|]+)")
+INLINE_LINK = re.compile(r'!?\[[^\]\n]*\]\((?P<target><[^>]+>|[^\s)]+)(?:\s+"[^"\n]*")?\)')
+TABLE_REFERENCE_TOKEN = re.compile(
+    r"\\[^\w\s]|(?P<ticks>`+)(?!`).*?(?<!`)(?P=ticks)(?!`)|" + INLINE_LINK.pattern
+    + r"|!?\[(?P<text>[^\]]+)\](?:\[(?P<label>[^\]]*)\])?"
+)
+TABLE_BLOCK_START = re.compile(
+    r"^(?: {4}|\t| {0,3}(?:#{1,6}(?:\s|$)|>|(?:[-+*]|\d{1,9}[.)])\s|\[[^\]]+\]:))")
 
 
 def from_git():
@@ -251,6 +266,95 @@ def path_mentions():
     return errors
 
 
+def work_orders():
+    return sorted(path for path in (ROOT / WORK_ORDERS).glob("[0-9]*.md") if path.is_file())
+
+
+def work_order_entries(files):
+    entries, errors, seen = [], [], {}
+    for path in files:
+        with path.open(encoding="utf-8") as stream:
+            heading = ORDER_HEADING.fullmatch(stream.readline().rstrip("\n"))
+        label = path.relative_to(ROOT).as_posix()
+        if not heading or not heading[2].strip():
+            errors.append(f"{label}:1: expected a work order heading with a nonempty title and no pipe")
+            continue
+        ident, what = heading.groups()
+        if not path.name.startswith(ident + "-"):
+            errors.append(f"{label}:1: work order ID {ident} must match the file name")
+        elif ident in seen:
+            errors.append(f"{label}:1: duplicate work order ID {ident}, first used in {seen[ident]}")
+        else:
+            seen[ident] = label
+            entries.append((path.name, ident, what))
+    return entries, errors
+
+
+def print_work_orders():
+    entries, errors = work_order_entries(work_orders())
+    if errors:
+        for error in errors:
+            print(error, file=sys.stderr)
+        return 1
+    print("| Order | What |")
+    print("| --- | --- |")
+    for name, ident, what in entries:
+        label = re.sub(r"([\\\[\]|])", r"\\\1", ident)
+        print(f"| [{label}]({quote(name)}) | {what} |")
+    return 0
+
+
+def table_cells(line):
+    line = line.strip()
+    pipes = [match.start() for match in re.finditer(r"\\.|\|", line) if match[0] == "|"]
+    bounds = [-1, *pipes, len(line)]
+    cells = [line[start + 1:end].strip() for start, end in zip(bounds, bounds[1:])]
+    if pipes and pipes[0] == 0:
+        cells.pop(0)
+    if pipes and pipes[-1] == len(line) - 1:
+        cells.pop()
+    return cells, bool(pipes)
+
+
+def table_lines(body):
+    """Identify header and body rows of tables with a matching separator."""
+    header, header_has_pipe = [], False
+    in_table = False
+    for number, line in enumerate(body.splitlines(), 1):
+        if not line.strip() or TABLE_BLOCK_START.match(line):
+            in_table = False
+            header, header_has_pipe = [], False
+            continue
+        if in_table:
+            yield number
+            continue
+        cells, has_pipe = table_cells(line)
+        if ((header_has_pipe or has_pipe) and len(header) == len(cells) and cells
+                and all(re.fullmatch(r":?-+:?", cell) for cell in cells)):
+            yield number - 1
+            in_table = True
+        header, header_has_pipe = cells, has_pipe
+
+
+def table_link_targets(row, definitions):
+    """Find inline links and resolve full, collapsed and shortcut references."""
+    cells, _ = table_cells(row)
+    for cell in cells:
+        for match in TABLE_REFERENCE_TOKEN.finditer(cell):
+            if match["target"] is not None:
+                yield match["target"]
+            elif match["text"] is not None:
+                ident = " ".join((match["label"] or match["text"]).lower().split())
+                if ident in definitions:
+                    yield definitions[ident]
+
+
+def local_destination(path, parsed):
+    if parsed.path.startswith("/"):
+        return (ROOT / unquote(parsed.path).lstrip("/")).resolve()
+    return (path.parent / unquote(parsed.path)).resolve() if parsed.path else path.resolve()
+
+
 def check(walk=False):
     found, why = (None, "--walk was given") if walk else from_git()
     if found is None:
@@ -260,13 +364,18 @@ def check(walk=False):
     else:
         print("Files: listed by Git (tracked, and untracked but not ignored).")
     files = sorted(path for path in found if path.is_file())
-    errors, count, cache = [], 0, {}
+    order_files = work_orders()
+    _, errors = work_order_entries(order_files)
+    order_files = {path.resolve() for path in order_files}
+    count, cache = 0, {}
     permalinks = Permalinks()
     for path in files:
         body, fence = prose(path.read_text(encoding="utf-8"))
         label = path.relative_to(ROOT).as_posix()
         if fence:
             errors.append(f"{label}:{fence[2]}: unclosed code fence")
+        order_rows = set(table_lines(body)) if path == ROOT / WORK_ORDERS / "README.md" else set()
+        linked_orders = []
         definitions = {}
         targets = []
         target_spans = set()
@@ -281,7 +390,7 @@ def check(walk=False):
             ident = " ".join((match[2] or match[1]).lower().split())
             if ident not in definitions:
                 errors.append(f"{label}: undefined reference [{ident}]")
-        for match in re.finditer(r'!?\[[^\]\n]*\]\((<[^>]+>|[^\s)]+)(?:\s+"[^"\n]*")?\)', body):
+        for match in INLINE_LINK.finditer(body):
             targets.append((match[1], body[:match.start()].count("\n") + 1))
             target_spans.add(match.span(1))
         for match in re.finditer(r"<https?://[^<>\s]+>", body):
@@ -296,9 +405,7 @@ def check(walk=False):
                     errors.append(f"{label}:{line}: {error} {target}")
                 continue
             count += 1
-            destination = ((ROOT / unquote(parsed.path).lstrip("/")) if parsed.path.startswith("/")
-                           else (path.parent / unquote(parsed.path))) if parsed.path else path
-            destination = destination.resolve()
+            destination = local_destination(path, parsed)
             if not destination.exists():
                 errors.append(f"{label}:{line}: missing path {target}")
             elif parsed.fragment and destination.suffix == ".md":
@@ -306,6 +413,15 @@ def check(walk=False):
                     cache[destination] = anchors(destination.read_text(encoding="utf-8"))
                 if unquote(parsed.fragment) not in cache[destination]:
                     errors.append(f"{label}:{line}: missing anchor {target}")
+        if order_rows:
+            for line, row in enumerate(body.splitlines(), 1):
+                if line in order_rows:
+                    for raw in table_link_targets(row, definitions):
+                        parsed = urlsplit(raw.strip("<>"))
+                        if not (parsed.scheme or parsed.netloc) and local_destination(path, parsed) in order_files:
+                            linked_orders.append(line)
+        if linked_orders:
+            errors.append(f"{label}:{min(linked_orders)}: generate work order rows with --work-orders")
     print(f"Checked {len(files)} Markdown files and {count} local links (offline).")
     print(f"Checked {permalinks.checked} repository permalinks against local Git history.")
     errors.extend(path_mentions())
@@ -315,7 +431,14 @@ def check(walk=False):
     return bool(errors)
 
 
+def main(argv):
+    if set(argv) - {"--walk", "--work-orders"}:
+        print("usage: python3 tools/check_docs.py [--walk] [--work-orders]", file=sys.stderr)
+        return 1
+    if "--work-orders" in argv:
+        return print_work_orders()
+    return int(check(walk="--walk" in argv))
+
+
 if __name__ == "__main__":
-    if set(sys.argv[1:]) - {"--walk"}:
-        sys.exit("usage: python3 tools/check_docs.py [--walk]")
-    sys.exit(check(walk="--walk" in sys.argv[1:]))
+    sys.exit(main(sys.argv[1:]))

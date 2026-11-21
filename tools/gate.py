@@ -8,8 +8,9 @@ from datetime import datetime, timezone
 import importlib.util
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import platform
+import posixpath
 import re
 import select
 import shlex
@@ -61,18 +62,7 @@ PYTHON_REASON = "CI's docs job runs it on each pull request"
 TOOL_TESTS_WHY = ('the branch changes nothing under tools/ or .github/workflows/, and no .rs, '
                   'Cargo.toml or Cargo.lock under packages/ or experiments/. ' + PYTHON_REASON)
 RUST_WHY = 'rust discovery did not pass, so no Rust directory or engine gate was chosen'
-ENGINE_PREFIXES = ('engine/', 'spec/', 'conformance/',
-                   'experiments/013-s2-shared-login/linear-stub/', 'packages/agent-claude-code/',
-                   'packages/agent-codex/', 'packages/git/', 'packages/github/',
-                   'packages/provider-file/', 'packages/provider-local-process/',
-                   'packages/runtime-provider-kit/', 'packages/scenario-s2-linear-restrictions/',
-                   'packages/scenario-s2-linear/', 'packages/scenario-s4-effect/')
-ENGINE_WHY = ('the branch changes nothing under engine/, spec/, conformance/, '
-              'experiments/013-s2-shared-login/linear-stub/, packages/agent-claude-code/, '
-              'packages/agent-codex/, packages/git/, packages/github/, packages/provider-file/, '
-              'packages/provider-local-process/, packages/runtime-provider-kit/, '
-              'packages/scenario-s2-linear-restrictions/, packages/scenario-s2-linear/ or '
-              'packages/scenario-s4-effect/')
+ENGINE_ROOTS = ('engine/', 'spec/', 'conformance/')
 UNREACHED_WHY = ('the branch changes nothing in these, in a directory they depend on by path, '
                  'or in a path they read: ')
 NOT_BUILT_WHY = ('listed in macos_only of checks.yml, which CI does not build; '
@@ -265,6 +255,109 @@ def discover_rust(root, manifests, query, *, target_cache=False):
     return directories, dependencies
 
 
+# Skip comments and character literals while finding ordinary and raw strings.
+RUST_SOURCE_TOKEN = re.compile(
+    r'//[^\n]*|/\*|\b(?:b|c)?r(?P<hashes>\#{0,255})"(?P<raw>.*?)"(?P=hashes)'
+    r'|"(?P<string>(?:[^"\\]|\\.)*)"|\'(?:[^\'\\\n]|\\(?:x..|u\{[^}]*\}|.))\'',
+    re.DOTALL,
+)
+RUST_BLOCK_MARKER = re.compile(r'/\*|\*/')
+RUST_ESCAPE = re.compile(
+    r'\\(?:\n[ \t\n\r]*|x[0-9a-fA-F]{2}|u\{[0-9a-fA-F][0-9a-fA-F_]*\}|.)', re.DOTALL)
+RUST_SIMPLE_ESCAPES = {'\\': '\\', '"': '"', "'": "'", 'n': '\n', 't': '\t', 'r': '\r', '0': '\0'}
+
+
+def decode_rust_string(text, match, source):
+    def replace(escape):
+        code = escape[0][1:]
+        if code in RUST_SIMPLE_ESCAPES:
+            return RUST_SIMPLE_ESCAPES[code]
+        if code.startswith('\n'):
+            return ''  # Rust discards whitespace after a string continuation.
+        if len(code) == 3 and code.startswith('x'):
+            return chr(int(code[1:], 16))
+        if code.startswith('u{'):
+            digits = code[2:-1].replace('_', '')
+            if len(digits) <= 6:
+                scalar = int(digits, 16)
+                if scalar <= 0x10ffff and not 0xd800 <= scalar <= 0xdfff:
+                    return chr(scalar)
+        line = text.count('\n', 0, match.start('string') + escape.start()) + 1
+        raise DiscoveryError(f'{source}:{line}: cannot decode Rust string escape')
+
+    return RUST_ESCAPE.sub(replace, match['string'])
+
+
+def rust_string_literals(text, source):
+    offset = 0
+    while match := RUST_SOURCE_TOKEN.search(text, offset):
+        offset = match.end()
+        if match[0] == '/*':
+            depth = 1
+            for marker in RUST_BLOCK_MARKER.finditer(text, offset):
+                depth += 1 if marker[0] == '/*' else -1
+                if depth == 0:
+                    offset = marker.end()
+                    break
+            else:
+                return
+        elif match['raw'] is not None:
+            yield match['raw']
+        elif match['string'] is not None:
+            yield decode_rust_string(text, match, source)
+
+
+def engine_paths(root, dependencies, sources):
+    """Find the directories the engine's Rust sources read and their path dependencies."""
+    areas = ('packages', 'experiments')
+    package_names = {path.name for path in (root / 'packages').glob('*') if path.is_dir()}
+    reads = set()
+    for source in sources:
+        source_path = root / source
+        try:
+            text = source_path.read_text(encoding='utf-8')
+        except (OSError, UnicodeError) as error:
+            if isinstance(error, FileNotFoundError) and not os.path.lexists(source_path):
+                continue  # A tracked source may have been removed in the working tree.
+            raise DiscoveryError(f'could not read engine source: {source}') from None
+        literals = set(rust_string_literals(text, source))
+        if 'packages' in literals:
+            reads.update('packages/' + name for name in package_names & literals)
+        for literal in literals:
+            parts = literal.split('/')
+            for index, area in enumerate(parts[:-1]):
+                if area not in areas:
+                    continue
+                path = PurePosixPath(posixpath.normpath('/'.join(parts[index:])))
+                if len(path.parts) < 2 or path.parts[0] != area:
+                    continue
+                top = PurePosixPath(*path.parts[:2])
+                if not (root / top).is_dir():
+                    continue
+                candidates = [part.as_posix() for part in (path, *path.parents) if len(part.parts) > 1]
+                owners = dependencies.keys() & candidates
+                if owners:
+                    reads.update(owners)
+                elif area == 'packages':
+                    reads.add(top.as_posix())
+                else:
+                    directory = next((part for part in candidates if (root / part).is_dir()), None)
+                    if directory is not None:
+                        reads.add(directory)
+
+    pending = list(reads)
+    for directory in pending:
+        added = dependencies.get(directory, set()) - reads
+        pending.extend(added)
+        reads.update(added)
+    reads.discard('engine')
+    return ENGINE_ROOTS + tuple(sorted((path + '/' for path in reads), key=os.fsencode))
+
+
+def engine_why(prefixes):
+    return 'the branch changes nothing under ' + ', '.join(prefixes[:-1]) + ' or ' + prefixes[-1]
+
+
 def selects_path(path, entry):
     return path.startswith(entry) if entry.endswith('/') else path == entry
 
@@ -276,7 +369,7 @@ def tool_tests_reached(changed):
                for path in changed)
 
 
-def select_rust(directories, dependencies, changed, all_directories):
+def select_rust(directories, dependencies, changed, all_directories, engine_prefixes):
     paths = [os.fsdecode(path) for path in changed]
     holders = [entry.path for entry in directories] + ['engine']
     direct = {directory: sum(path.startswith(directory + '/') for path in paths)
@@ -318,7 +411,7 @@ def select_rust(directories, dependencies, changed, all_directories):
             reason = '--all was given'
         if reason:
             selected[directory] = reason
-    prefixes = [prefix for prefix in ENGINE_PREFIXES if any(path.startswith(prefix) for path in paths)]
+    prefixes = [prefix for prefix in engine_prefixes if any(path.startswith(prefix) for path in paths)]
     engine_reason = None
     if prefixes:
         count = sum(any(path.startswith(prefix) for prefix in prefixes) for path in paths)
@@ -1059,6 +1152,13 @@ def run_gate(root, argv, run, machine, cleanup):
                 try:
                     directories, dependencies = discover_rust(
                         root, manifests, query, target_cache=target_cache is not None)
+                    files = git(root, environment, 'ls-files', '--cached', '--others',
+                                '--exclude-standard', '-z', '--', 'engine')
+                    if files.returncode:
+                        raise DiscoveryError('git ls-files could not list the engine sources')
+                    sources = {os.fsdecode(path) for path in files.stdout.split(b'\0')
+                               if path.endswith(b'.rs')}
+                    engine_prefixes = engine_paths(root, dependencies, sorted(sources, key=os.fsencode))
                     discovery.update(result='PASS', exit=0)
                 except DiscoveryError as fault:
                     discovery.update(result='FAIL',
@@ -1231,7 +1331,7 @@ def run_gate(root, argv, run, machine, cleanup):
             finish(gate_row('rust and engine', None, required=False, why=RUST_WHY))
         else:
             selected, skipped_own_paths, engine_reason = select_rust(
-                directories, dependencies, changed, options.all)
+                directories, dependencies, changed, options.all, engine_prefixes)
             prepared = set()
 
             def rust_command(name, directory, arguments, reason):
@@ -1343,7 +1443,7 @@ def run_gate(root, argv, run, machine, cleanup):
                                           ('test', ['test', '--release'])):
                     rust_command('engine ' + suffix, 'engine', arguments, engine_reason)
             else:
-                finish(gate_row('engine', None, required=False, why=ENGINE_WHY))
+                finish(gate_row('engine', None, required=False, why=engine_why(engine_prefixes)))
     except KeyboardInterrupt:
         print(redact_output(f'Gate: interrupted during {current}; its process group was ended, '
                             'and the record says incomplete.', private_names))

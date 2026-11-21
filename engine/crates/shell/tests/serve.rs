@@ -347,39 +347,59 @@ fn real_npm_serve_s1_tokens_access_t7_and_shutdown() {
     stop_server(&mut server, &store, &groups);
 }
 fn start_server(store: &Path, port: u16) -> Server {
-    let mut server = spawn_server(store, Stdio::null());
-    wait_for_listener(&mut server, store, port);
+    let mut server = spawn_server(store, Stdio::piped());
+    let ready = server_output_event(server.0.stdout.take().unwrap(), |_| true);
+    let line = ready
+        .recv_timeout(Duration::from_secs(600))
+        .expect("server startup timed out")
+        .expect("cannot read the server ready line")
+        .unwrap_or_else(|| {
+            panic!(
+                "server exited before printing its ready line: {}",
+                fs::read_to_string(store.join("serve.stderr")).unwrap()
+            )
+        });
+    assert_eq!(
+        serde_json::from_str::<Value>(&line).unwrap(),
+        json!({"ready":{"url":format!("http://127.0.0.1:{port}/mcp"),"store":store.canonicalize().unwrap()}})
+    );
     server
 }
 
-fn wait_for_listener(server: &mut Server, store: &Path, port: u16) {
-    let start = Instant::now();
-    while std::net::TcpStream::connect(("127.0.0.1", port)).is_err() {
-        assert!(
-            server.0.try_wait().unwrap().is_none(),
-            "server exited: {}",
-            fs::read_to_string(store.join("serve.stderr")).unwrap()
-        );
-        assert!(
-            start.elapsed() < Duration::from_secs(600),
-            "server startup timed out"
-        );
-        std::thread::sleep(Duration::from_millis(20));
-    }
+fn server_output_event(
+    stream: impl Read + Send + 'static,
+    matches: fn(&str) -> bool,
+) -> mpsc::Receiver<std::io::Result<Option<String>>> {
+    let (send, receive) = mpsc::channel();
+    std::thread::spawn(move || {
+        let mut stream = BufReader::new(stream);
+        let event = stream
+            .by_ref()
+            .lines()
+            .find(|line| line.as_ref().is_err() || line.as_ref().is_ok_and(|line| matches(line)))
+            .transpose();
+        let _ = send.send(event);
+        // Keep the child's output open until it exits.
+        let _ = std::io::copy(&mut stream, &mut std::io::sink());
+    });
+    receive
 }
 
 fn spawn_server(store: &Path, stdout: Stdio) -> Server {
     let stderr = fs::File::create(store.join("serve.stderr")).unwrap();
     Server(
-        Command::new(env!("CARGO_BIN_EXE_conduit"))
-            .arg("serve")
-            .arg("--store")
-            .arg(store)
+        server_command(store)
             .stdout(stdout)
             .stderr(stderr)
             .spawn()
             .unwrap(),
     )
+}
+
+fn server_command(store: &Path) -> Command {
+    let mut command = Command::new(env!("CARGO_BIN_EXE_conduit"));
+    command.arg("serve").arg("--store").arg(store);
+    command
 }
 fn run_groups(store: &Path, server: &Server) -> Vec<i32> {
     // Read the runner's private historical group diagnostics, avoiding ps (which
@@ -843,14 +863,18 @@ fn serve_failed_setups(parent: &Path, store: &Path) -> Server {
     fs::write(project.join("conduit.json"), manifest.to_string()).unwrap();
     fs::write(project.join("documents.json"), documents.to_string()).unwrap();
     let submitted = cli_output(store, "submit", &[project.to_str().unwrap()]);
-    assert!(!submitted.status.success());
+    let submit_stdout = String::from_utf8_lossy(&submitted.stdout);
+    let submit_stderr = String::from_utf8_lossy(&submitted.stderr);
+    assert!(
+        !submitted.status.success(),
+        "submit unexpectedly succeeded\nstdout:\n{submit_stdout}\nstderr:\n{submit_stderr}"
+    );
     assert!(
         record_lines(&submitted.stdout).iter().any(|step| {
             step["step"] == "setup Resource/failing"
                 && matches!(step["outcome"].as_str(), Some("failed" | "unknown"))
         }),
-        "{}",
-        String::from_utf8_lossy(&submitted.stderr)
+        "submit omitted the failed Resource setup\nstdout:\n{submit_stdout}\nstderr:\n{submit_stderr}"
     );
     let worker = cli_output(
         store,
@@ -860,13 +884,29 @@ fn serve_failed_setups(parent: &Path, store: &Path) -> Server {
             r#"{"instance":{"kind":"Agent","name":"worker"}}"#,
         ],
     );
-    assert!(!worker.status.success());
+    let worker_stdout = String::from_utf8_lossy(&worker.stdout);
+    let worker_stderr = String::from_utf8_lossy(&worker.stderr);
+    assert!(
+        !worker.status.success(),
+        "Agent setup unexpectedly succeeded\nstdout:\n{worker_stdout}\nstderr:\n{worker_stderr}"
+    );
     assert!(
         !worker.stdout.is_empty(),
-        "{}",
-        String::from_utf8_lossy(&worker.stderr)
+        "Agent setup omitted its result\nstdout:\n{worker_stdout}\nstderr:\n{worker_stderr}"
     );
     server
+}
+
+#[test]
+#[should_panic(expected = "server exited before printing its ready line")]
+fn failed_setups_fixture_forced_cause() {
+    let temp = tempfile::tempdir().unwrap();
+    let store = temp.path().join("store");
+    let other = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = other.local_addr().unwrap().port();
+    let address = format!("http://127.0.0.1:{port}/mcp");
+    cli(&store, "init", &["--url", &address]);
+    let _server = start_server(&store, port);
 }
 
 #[test]
@@ -1076,15 +1116,26 @@ fn serve_prints_one_ready_line_once_it_answers() {
 
     let (read, write) = std::io::pipe().unwrap();
     drop(read);
-    let mut broken = spawn_server(&store, write.into());
-    wait_for_listener(&mut broken, &store, port);
+    let mut broken = Server(
+        server_command(&store)
+            .stdout(write)
+            .stderr(Stdio::piped())
+            .spawn()
+            .unwrap(),
+    );
+    let diagnostic = server_output_event(broken.0.stderr.take().unwrap(), |line| {
+        line.contains("cannot write ready line")
+    });
+    assert!(
+        diagnostic
+            .recv_timeout(Duration::from_secs(600))
+            .expect("server startup timed out")
+            .expect("cannot read the server startup diagnostic")
+            .is_some(),
+        "server exited without reporting that it cannot write its ready line"
+    );
     assert!(cli_output(&store, "tools", &[]).status.success());
     terminate_server(&mut broken);
-    assert!(
-        fs::read_to_string(store.join("serve.stderr"))
-            .unwrap()
-            .contains("cannot write ready line")
-    );
 
     let _occupied = std::net::TcpListener::bind(("127.0.0.1", port)).unwrap();
     let failed = cli_output(&store, "serve", &[]);

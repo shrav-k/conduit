@@ -215,6 +215,43 @@ class DecisionTests(unittest.TestCase):
         self.standing(no_case=0, keep_b=False)
         self.assertNotIn(": CHANGES lines:", self.run_main())
 
+    def test_changes_line_reads_ids_only_in_standing_families(self):
+        algorithms = "SHA-256, SHA-512, AES-256 and ISO-639"
+        cases = (
+            (f"{algorithms} in spec/README.md#overview", None),
+            (algorithms, "expected a spec anchor or a backticked definitions term"),
+            ("ACC-999", "unexpected promise standing for ACC-999"),
+        )
+        for subject, finding in cases:
+            with self.subTest(subject=subject):
+                self.write(decision.CHANGES, DRAFT + UNRELEASED
+                           + f"- Changed: {subject} (DEC-001).\n")
+                output = self.run_main(int(finding is not None))
+                if finding is None:
+                    self.assertNotIn(": CHANGES lines:", output)
+                else:
+                    self.assertIn(finding, output)
+                if subject == algorithms:
+                    self.assertNotIn("unexpected promise standing", output)
+
+    def test_changes_line_takes_families_from_before_and_after(self):
+        self.standing(no_case=0, keep_b=False)
+        self.append(decision.STANDING,
+                    "| ZZZ-001 | convention | must | 1 | 0 | cases | shell | case passes |\n")
+        for kind, ref, valid in (
+            ("Removed", "OPS-002", True),
+            ("Removed", "OPS-999", False),
+            ("Added", "ZZZ-001", True),
+            ("Added", "ZZZ-002", False),
+        ):
+            with self.subTest(kind=kind, ref=ref):
+                self.write(decision.CHANGES, DRAFT + UNRELEASED + f"- {kind}: {ref} (DEC-001).\n")
+                output = self.run_main(int(not valid))
+                if valid:
+                    self.assertNotIn(": CHANGES lines:", output)
+                else:
+                    self.assertIn(f"unexpected promise standing for {ref}", output)
+
     def test_changes_line_checks_additions_but_not_released_movement(self):
         self.append(decision.CHANGES, "- Older wording.\n")
         self.base = self.commit()
@@ -413,6 +450,13 @@ class DecisionTests(unittest.TestCase):
         self.assertNotIn("dormant decision: DEC-002", output)
         self.base = self.commit()
         self.assertIn("Not-done ratchet: base 1, head 1", self.run_main())
+
+    def test_not_done_reads_ids_only_in_standing_families(self):
+        self.append(decision.CHANGES,
+                    "- Changed: SHA-256 in spec/README.md#overview (DEC-001).\n")
+        output = self.run_main()
+        self.assertIn("Not-done ratchet: base 0, head 0", output)
+        self.assertNotIn("dormant decision: DEC-001", output)
 
     def test_not_done_lost_case_fails_even_for_released_item(self):
         self.append(decision.CHANGES, "\n## [0.1.0]\n- Added: ACC-001 (DEC-001).\n")

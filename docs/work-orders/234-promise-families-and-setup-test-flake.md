@@ -251,4 +251,20 @@ and merges.
 
 ## Record
 
-Not yet run.
+Run on 2026-11-20 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+Worker-1's first turn (20:09 to 20:20) fixed the promise families: a token counts as a promise ID
+only when its family appears in BEFORE's or AFTER's `engine/STANDING.md`, with three regressions.
+The setup-view failure did not recur in 20 stress runs, so the turn added stdout and stderr
+diagnostics instead of a fix.
+
+`turn-verifier-1.turn.v1` (20:21 to 20:23) found no must. It judged the records test that failed
+in the worker's final run to be pre-existing timing. Its should: the serve fixture's readiness
+helper accepted any listener on the port. Root asked for the fix, and the second turn (20:24 to
+20:34) made the helper wait for the spawned child's own ready line and fail at once if that
+child exits. Three standalone serve runs and a combined shell run passed.
+
+`turn-reader-1.turn.v1` (20:35 to 20:40), the Claude reader, accepted it with one should, recorded
+here. `failed_setups_fixture_forced_cause` shows the readiness defect, a foreign listener taken
+for this serve, and not the cause of the reported failure in which `submit` exited 0. A stolen
+port cannot produce that. So that path stays unexplained, and the new diagnostics are kept to
+catch it if it recurs. The gate's run on the squash is the coordinator's, at the merge.

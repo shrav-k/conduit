@@ -221,8 +221,9 @@ def valid_citation(group, entries):
             and all(1 <= int(ref) <= 92 for ref in rulings))
 
 
-def promise_ids(text):
-    return {ref for ref in PROMISE.findall(text) if not ref.startswith("DEC-")}
+def promise_ids(text, families):
+    return {ref for ref in PROMISE.findall(text)
+            if not ref.startswith("DEC-") and ref.split("-")[0] in families}
 
 
 def term_cells(text):
@@ -362,11 +363,11 @@ def standing(tree):
     return promises, int(totals[0]) if len(totals) == 1 else None
 
 
-def language_decisions(items, promises):
+def language_decisions(items, promises, families):
     done = {}
     for item in items:
         group = citation(item.text.removesuffix("."))
-        ids = promise_ids(item.text)
+        ids = promise_ids(item.text, families)
         complete = item.text.startswith("- Removed: ") or all(
             promises.get(ref) == "case passes" for ref in ids)
         for identifier in DECISION.findall(group):
@@ -415,7 +416,7 @@ class Check:
         else:
             print("Framework: in force.")
 
-    def changes(self, old, new, base_promises, head_promises, decisions):
+    def changes(self, old, new, base_promises, head_promises, decisions, families):
         if not self.has_base("CHANGES lines", CHANGES):
             return
         for item in added_items(old, new):
@@ -423,7 +424,7 @@ class Check:
             if not kind or not valid_citation(citation(item.text[:-1]), decisions):
                 self.finding("CHANGES lines", CHANGES, "expected '- Kind: … (decisions).'", item.line)
                 continue
-            ids = promise_ids(item.text)
+            ids = promise_ids(item.text, families)
             if kind[1] == "Removed":
                 if ids and self.has_base("Removed promises", STANDING):
                     bad = (ids - base_promises.keys()) | (ids & head_promises.keys())
@@ -550,7 +551,7 @@ class Check:
                 self.finding("cap", LOG, f"{entry.identifier} is {entry.size} bytes, above 1536", entry.line,
                              fail=base.get(entry.identifier, 0) <= 1536)
 
-    def ratchets(self, base_entries, head_entries, old, new, base_standing, head_standing):
+    def ratchets(self, base_entries, head_entries, old, new, base_standing, head_standing, families):
         base_promises, base_count = base_standing
         head_promises, head_count = head_standing
         if self.has_base("no-case ratchet", STANDING):
@@ -564,8 +565,8 @@ class Check:
                 print(f"No-case ratchet: base {base_count}, head {head_count}.")
                 if head_count > base_count:
                     self.finding("no-case ratchet", STANDING, "no case, no reason total rose")
-        base = language_decisions(old, base_promises)
-        head = language_decisions(new, head_promises)
+        base = language_decisions(old, base_promises, families)
+        head = language_decisions(new, head_promises, families)
         if all([self.has_base("not-done ratchet", path) for path in (CHANGES, LOG, STANDING)]):
             base_count = sum(e.dated < self.cutoff and base.get(e.identifier) is False for e in base_entries)
             head_count = sum(e.dated < self.cutoff and head.get(e.identifier) is False for e in head_entries)
@@ -598,13 +599,14 @@ class Check:
                                lambda line, msg: self.finding("numbering", LOG, msg, line))
         decisions = {entry.identifier for entry in head_entries}
         base_standing, head_standing = standing(self.before), standing(self.after)
-        self.changes(old, new, base_standing[0], head_standing[0], decisions)
+        families = {ref.split("-")[0] for ref in base_standing[0].keys() | head_standing[0].keys()}
+        self.changes(old, new, base_standing[0], head_standing[0], decisions, families)
         self.append_only(base_entries, head_entries)
         self.paths()
         self.coupling(old, new)
         self.work_form(decisions)
         self.caps(base_entries, head_entries)
-        self.ratchets(base_entries, head_entries, old, new, base_standing, head_standing)
+        self.ratchets(base_entries, head_entries, old, new, base_standing, head_standing, families)
         self.ratio()
 
 

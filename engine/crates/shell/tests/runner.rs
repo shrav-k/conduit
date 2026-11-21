@@ -108,6 +108,10 @@ fn register(shell: &Shell, parent: &Path, real: bool, mode: &str) {
             "--nocapture"
         ]);
         implementation["environment"] = json!({"TEST_ROOT":"/root"});
+        if mode.starts_with("discovery-") {
+            implementation["plain"] = json!(false);
+            implementation.as_object_mut().unwrap().remove("tools");
+        }
     }
     if mode == "unsupported-registry" || mode == "hash-mismatch" {
         let item = &mut snapshots
@@ -277,6 +281,12 @@ fn scripted_server() {
             "initialize" => {
                 json!({"protocolVersion":value["params"]["protocolVersion"],"serverInfo":{"name":"test","version":"1"},"capabilities":{"tools":{}}})
             }
+            "server/discover" if mode == "discovery-v0" => {
+                json!({"capabilities":{"extensions":{
+                    "io.github.shrav-k.conduit/implementation-interface":{"revision":"v0"}
+                }}})
+            }
+            "server/discover" => json!({"capabilities":{"tools":{}}}),
             "tools/list" if mode == "repair-list-hang" => continue,
             "tools/list" if mode == "repair-list-error" => {
                 println!(
@@ -330,7 +340,12 @@ fn scripted_server() {
                         "requestState": "impl-state-1"
                     })
                 } else {
-                    json!({"content":[{"type":"text","text":"test result"}],"isError":false})
+                    let mut response =
+                        json!({"content":[{"type":"text","text":"test result"}],"isError":false});
+                    if mode == "discovery-v0" {
+                        response["_meta"]["io.github.shrav-k.conduit/outcome"] = json!("succeeded");
+                    }
+                    response
                 }
             }
             "notifications/cancelled" if mode == "cancel" => {
@@ -853,6 +868,78 @@ fn serve_signal_during_setup_ends_run_and_starts_no_later_part() {
             .iter()
             .all(|v| v["state"] != "in-progress")
     );
+}
+
+#[test]
+fn keyed_commands_read_discovery_once_per_run_and_withhold_undeclared_calls() {
+    let extension = "io.github.shrav-k.conduit/implementation-interface";
+    for (mode, advertised) in [("discovery-v0", true), ("discovery-missing", false)] {
+        let parent = tempfile::tempdir().unwrap();
+        let shell = open(parent.path(), Config::default());
+        register(&shell, parent.path(), false, mode);
+        let runner = new_runner(&shell);
+        establish(&shell, &runner);
+
+        for _ in 0..2 {
+            let reply = invoke(
+                &shell,
+                &runner,
+                "agent-b",
+                "project.file.read.v1",
+                json!({"path":"hello.txt"}),
+            );
+            if advertised {
+                assert_eq!(outcome(&shell, &reply), "succeeded", "{reply}");
+            } else {
+                assert_eq!(
+                    reply["_meta"]["io.github.shrav-k.conduit/reason"],
+                    "unavailable"
+                );
+            }
+        }
+        let wire = lines(&parent.path().join("shared/wire.jsonl"));
+        let traffic: Vec<_> = wire
+            .iter()
+            .filter(|v| matches!(v["method"].as_str(), Some("server/discover" | "tools/call")))
+            .collect();
+        assert_eq!(traffic[0]["method"], "server/discover");
+        assert_eq!(traffic.len(), if advertised { 3 } else { 1 });
+        for call in &traffic[1..] {
+            assert_eq!(call["method"], "tools/call");
+            assert_eq!(
+                call["params"]["_meta"]["io.modelcontextprotocol/clientCapabilities"]["extensions"]
+                    [extension]["revision"],
+                "v0"
+            );
+        }
+        if !advertised {
+            let state = shell.state().unwrap();
+            let retained: Vec<_> = state
+                .records
+                .iter()
+                .filter(|record| {
+                    record["data"]["operation"]
+                        .as_str()
+                        .is_some_and(|op| op.ends_with("#file.read.v1"))
+                })
+                .collect();
+            assert!(
+                !retained
+                    .iter()
+                    .any(|record| record["type"] == "invocation-dispatched")
+            );
+            assert_eq!(
+                retained
+                    .iter()
+                    .filter(|record| {
+                        record["type"] == "request-ended"
+                            && record["data"]["missingExtension"] == extension
+                    })
+                    .count(),
+                2
+            );
+        }
+    }
 }
 
 #[test]

@@ -1,0 +1,220 @@
+# Script IFC-037 negotiation. Positional flips reflect the inserted steps.
+- name: Script IFC-037 discovery before each affected call
+  kind: input
+  cases:
+  - change-retirement-hook-failed
+  - change-retirement-hook-failed-remote
+  - records-broker
+  - records-broker-filtered
+  - records-input-reference
+  - records-purge
+  - records-purge-succeeded
+  - requests-aware-capability-extension
+  - requests-aware-capability-undeclared
+  - requests-aware-failed
+  - requests-aware-headers-no-repair
+  - requests-aware-malformed
+  - requests-aware-unknown
+  - requests-cancel-confirmed
+  - requests-metadata-failed-reason-array
+  - requests-metadata-failed-reason-null
+  - requests-metadata-failed-reason-number
+  - requests-metadata-failed-reason-object
+  - requests-metadata-outcome-null
+  - requests-metadata-outcome-number
+  - requests-metadata-succeeded-reason-array
+  - requests-metadata-succeeded-reason-null
+  - requests-metadata-succeeded-reason-number
+  - requests-metadata-succeeded-reason-object
+  - requests-repeat-failed-earlier-answered
+  - requests-repeat-failed-earlier-succeeded
+  - requests-repeat-failed-earlier-unanswered
+  - requests-sign-in-account-first
+  - requests-sign-in-fixed-port
+  - requests-sign-in-hold
+  - requests-sign-in-hook-part
+  - requests-sign-in-lapse-and-conflict
+  - requests-sign-in-late-other-account
+  - requests-sign-in-other-account-undone
+  - requests-sign-in-polling
+  - requests-sign-in-refusals-before-parts
+  - requests-sign-in-return-not-taken
+  - requests-sign-in-setup-account
+  - requests-sign-in-setup-check-failed
+  - requests-sign-in-setup-check-failed-hook
+  - requests-sign-in-url-match
+  - requests-sign-in-url-relayed
+  - secret-reads-retire-run
+  - setup-hook-failed
+  - setup-hook-succeeded
+  - setup-hook-unknown
+  - setup-review-hook-refused
+  - setup-review-hook-refused-no-effect
+  - setup-review-hook-unavailable
+  - setup-review-hook-unavailable-no-effect
+  paths:
+  - /steps/*
+- name: Keep existing assertions at their wire step and assert discovery and v0
+  kind: expectation
+  cases:
+  - change-retirement-hook-failed
+  - change-retirement-hook-failed-remote
+  - records-broker
+  - records-broker-filtered
+  - records-input-reference
+  - records-purge
+  - records-purge-succeeded
+  - requests-aware-capability-extension
+  - requests-aware-capability-undeclared
+  - requests-aware-failed
+  - requests-aware-headers-no-repair
+  - requests-aware-malformed
+  - requests-aware-unknown
+  - requests-cancel-confirmed
+  - requests-metadata-failed-reason-array
+  - requests-metadata-failed-reason-null
+  - requests-metadata-failed-reason-number
+  - requests-metadata-failed-reason-object
+  - requests-metadata-outcome-null
+  - requests-metadata-outcome-number
+  - requests-metadata-succeeded-reason-array
+  - requests-metadata-succeeded-reason-null
+  - requests-metadata-succeeded-reason-number
+  - requests-metadata-succeeded-reason-object
+  - requests-repeat-failed-earlier-answered
+  - requests-repeat-failed-earlier-succeeded
+  - requests-repeat-failed-earlier-unanswered
+  - requests-sign-in-account-first
+  - requests-sign-in-fixed-port
+  - requests-sign-in-hold
+  - requests-sign-in-hook-part
+  - requests-sign-in-lapse-and-conflict
+  - requests-sign-in-late-other-account
+  - requests-sign-in-other-account-undone
+  - requests-sign-in-polling
+  - requests-sign-in-refusals-before-parts
+  - requests-sign-in-return-not-taken
+  - requests-sign-in-setup-account
+  - requests-sign-in-setup-check-failed
+  - requests-sign-in-setup-check-failed-hook
+  - requests-sign-in-url-match
+  - requests-sign-in-url-relayed
+  - secret-reads-retire-run
+  - setup-hook-failed
+  - setup-hook-succeeded
+  - setup-hook-unknown
+  - setup-review-hook-refused
+  - setup-review-hook-refused-no-effect
+  - setup-review-hook-unavailable
+  - setup-review-hook-unavailable-no-effect
+  paths:
+  - /steps/*
+- name: IFC-037 step insertions shift the unchanged outcome assertions
+  kind: flip
+  cases:
+  - records-broker-filtered
+  paths:
+  - /steps/3/expect/stateUnchanged
+  - /steps/4/expect/stateUnchanged
+- name: IFC-037 step insertions shift the unchanged outcome assertions
+  kind: flip
+  cases:
+  - records-purge-succeeded
+  paths:
+  - /steps/6/expect/stateUnchanged
+  - /steps/7/expect/stateUnchanged
+- name: IFC-037 step insertions shift the unchanged outcome assertions
+  kind: flip
+  cases:
+  - requests-aware-failed
+  paths:
+  - /steps/2/expect/stateUnchanged
+  - /steps/3/expect/stateUnchanged
+- name: IFC-037 step insertions shift the unchanged outcome assertions
+  kind: flip
+  cases:
+  - requests-aware-headers-no-repair
+  paths:
+  - /steps/2/expect/stateUnchanged
+  - /steps/3/expect/stateUnchanged
+- name: IFC-037 step insertions shift the unchanged outcome assertions
+  kind: flip
+  cases:
+  - requests-aware-malformed
+  paths:
+  - /steps/2/expect/stateUnchanged
+  - /steps/3/expect/stateUnchanged
+- name: IFC-037 step insertions shift the unchanged outcome assertions
+  kind: flip
+  cases:
+  - requests-aware-unknown
+  paths:
+  - /steps/2/expect/stateUnchanged
+  - /steps/3/expect/stateUnchanged
+- name: IFC-037 step insertions shift the unchanged outcome assertions
+  kind: flip
+  cases:
+  - requests-repeat-failed-earlier-answered
+  paths:
+  - /steps/2/expect/stateUnchanged
+  - /steps/3/expect/stateUnchanged
+  - /steps/4/expect/stateUnchanged
+  - /steps/6/expect/stateUnchanged
+- name: IFC-037 step insertions shift the unchanged outcome assertions
+  kind: flip
+  cases:
+  - requests-repeat-failed-earlier-succeeded
+  paths:
+  - /steps/2/expect/stateUnchanged
+  - /steps/3/expect/stateUnchanged
+  - /steps/5/expect/stateUnchanged
+  - /steps/7/expect/stateUnchanged
+- name: IFC-037 step insertions shift the unchanged outcome assertions
+  kind: flip
+  cases:
+  - requests-repeat-failed-earlier-unanswered
+  paths:
+  - /steps/2/expect/stateUnchanged
+  - /steps/3/expect/stateUnchanged
+  - /steps/4/expect/stateUnchanged
+  - /steps/6/expect/stateUnchanged
+- name: Report confirmed provider discovery before each modeled provider call
+  kind: input
+  cases:
+  - setup-review-conditions-provider
+  - setup-review-provider-records
+  - setup-review-relative-provider
+  paths:
+  - /steps/*
+- name: Assert provider calls are recorded as made only after discovery
+  kind: expectation
+  cases:
+  - setup-review-conditions-provider
+  - setup-review-provider-records
+  - setup-review-relative-provider
+  paths:
+  - /steps/*
+- name: Assert the six runtime-condition provider dispatch acknowledgments
+  kind: flip
+  cases:
+  - setup-review-conditions-provider
+  paths:
+  - /steps/3/expect/reply/accepted
+  - /steps/5/expect/reply/accepted
+  - /steps/8/expect/reply/accepted
+  - /steps/10/expect/reply/accepted
+  - /steps/13/expect/reply/accepted
+  - /steps/16/expect/reply/accepted
+- name: Assert both provider dispatch acknowledgments before auditing their records
+  kind: flip
+  cases:
+  - setup-review-provider-records
+  paths:
+  - /steps/3/expect/reply/accepted
+  - /steps/5/expect/reply/accepted
+- name: Assert the relative-run provider dispatch acknowledgment
+  kind: flip
+  cases:
+  - setup-review-relative-provider
+  paths:
+  - /steps/2/expect/reply/accepted

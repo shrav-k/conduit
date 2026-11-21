@@ -33,7 +33,7 @@ use tokio::{
     io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader},
     process::{Child, ChildStdin, ChildStdout},
     runtime::{Handle, Runtime},
-    sync::Mutex as AsyncMutex,
+    sync::{Mutex as AsyncMutex, OnceCell},
 };
 use uuid::Uuid;
 
@@ -183,10 +183,10 @@ struct Run {
     service: RunningService<RoleClient, ()>,
     group: Arc<ProcessGroup>,
     responses: Responses,
+    discovery: OnceCell<Value>,
     setup: String,
     provider: Option<ProviderLaunch>,
     url: Option<String>,
-    discovered: AsyncMutex<Option<bool>>,
 }
 
 struct ProviderLaunch {
@@ -223,6 +223,7 @@ struct Inner {
     directory: PathBuf,
     handle: Handle,
     runs: Mutex<BTreeMap<String, Arc<Run>>>,
+    discovered_dispatches: Mutex<BTreeMap<Attempt, Arc<Run>>>,
     pending_groups: Mutex<BTreeMap<String, Vec<Arc<ProcessGroup>>>>,
     cancelled_setups: Mutex<BTreeSet<String>>,
     requests: Mutex<BTreeMap<Attempt, (Peer<RoleClient>, RequestId)>>,
@@ -265,6 +266,7 @@ impl Runner {
                 directory,
                 handle: runtime.handle().clone(),
                 runs: Mutex::new(BTreeMap::new()),
+                discovered_dispatches: Mutex::new(BTreeMap::new()),
                 pending_groups: Mutex::new(BTreeMap::new()),
                 cancelled_setups: Mutex::new(BTreeSet::new()),
                 requests: Mutex::new(BTreeMap::new()),
@@ -746,13 +748,13 @@ impl Inner {
             service,
             group,
             responses,
+            discovery: OnceCell::new(),
             setup,
             provider: observe.then(|| ProviderLaunch {
                 subject: subject.clone(),
                 end: Mutex::new(None),
             }),
             url: None,
-            discovered: AsyncMutex::new(None),
         });
         if let Some(previous) = self.runs.lock().unwrap().insert(subject, run.clone()) {
             previous.group.stop();
@@ -1282,25 +1284,34 @@ async fn notify_cancel(peer: &Peer<RoleClient>, id: RequestId, reason: Option<&s
 impl Inner {
     fn dispatch_later(self: &Arc<Self>, intent: &Value, refresh: bool) -> Result<Execution> {
         let key = attempt(intent)?;
-        let run = self
-            .runs
-            .lock()
-            .unwrap()
-            .get(string(intent, "target")?)
-            .cloned();
+        let target = string(intent, "target")?;
+        if intent["call"]["method"] == "server/discover" {
+            return self.discover_later(key, target.to_owned(), intent["call"].clone());
+        }
+        let pinned = self.discovered_dispatches.lock().unwrap().remove(&key);
+        let run = pinned.or_else(|| self.runs.lock().unwrap().get(target).cloned());
         let Some(run) = run else {
             return Ok(Execution::Missing);
         };
-        let timeout = self
-            .shell
-            .upgrade()
-            .ok_or("shell stopped")?
-            .config
-            .call_timeout;
+        let shell = self.shell.upgrade().ok_or("shell stopped")?;
+        let timeout = shell.config.call_timeout;
+        let extension = format!("{}implementation-interface", shell.context.meta_prefix);
         let intent = intent.clone();
         let this = self.clone();
         self.handle.spawn(async move {
             let completion = tokio::time::timeout(timeout, async {
+                let call = &intent["call"];
+                const CAPABILITIES: &str = "io.modelcontextprotocol/clientCapabilities";
+                if call["params"]["_meta"][CAPABILITIES]["extensions"][&extension]["revision"]
+                    == "v0"
+                    && !run.discovery.get().is_some_and(|answer| {
+                        answer["result"]["capabilities"]["extensions"][&extension]["revision"]
+                            == "v0"
+                    })
+                {
+                    // A new run may have replaced the session whose result the core read.
+                    return Err("run has no matching discovery result".into());
+                }
                 if refresh {
                     let refreshed = this
                         .call(&run, &key, json!({"method":"tools/list","params":{}}))
@@ -1309,7 +1320,7 @@ impl Inner {
                         return Err("tool refresh failed".into());
                     }
                 }
-                this.call(&run, &key, intent["call"].clone()).await
+                this.call(&run, &key, call.clone()).await
             })
             .await;
             let request = this.requests.lock().unwrap().remove(&key);
@@ -1356,6 +1367,116 @@ impl Inner {
                 )
             {
                 this.errors.lock().unwrap().push(e);
+            }
+        });
+        Ok(Execution::Deferred)
+    }
+    async fn read_discovery(&self, run: &Run, key: &Attempt, call: &Value) -> Result<Value> {
+        run.discovery
+            .get_or_try_init(|| async {
+                let answer = self.call(run, key, call.clone()).await?;
+                if answer["kind"] != "result" {
+                    return Err("implementation discovery did not return a result".into());
+                }
+                Ok(answer)
+            })
+            .await
+            .cloned()
+    }
+
+    fn discover_later(
+        self: &Arc<Self>,
+        key: Attempt,
+        target: String,
+        call: Value,
+    ) -> Result<Execution> {
+        let timeout = self
+            .shell
+            .upgrade()
+            .ok_or("shell stopped")?
+            .config
+            .call_timeout;
+        let this = self.clone();
+        self.handle.spawn(async move {
+            let deadline = tokio::time::Instant::now() + timeout;
+            let executor = this
+                .completion_executor
+                .lock()
+                .unwrap()
+                .as_ref()
+                .and_then(Weak::upgrade);
+            let result = async {
+                loop {
+                    let run = this.runs.lock().unwrap().get(&target).cloned();
+                    let mut completion = json!({"kind":"missing"});
+                    if let Some(run) = &run {
+                        let reply = tokio::time::timeout_at(
+                            deadline,
+                            this.read_discovery(run, &key, &call),
+                        )
+                        .await;
+                        let request = this.requests.lock().unwrap().remove(&key);
+                        if let Some((peer, id)) = request {
+                            run.responses.lock().unwrap().remove(&id);
+                            if reply.is_err() {
+                                let _ = tokio::time::timeout(
+                                    DEADLINE_CANCEL_TIMEOUT,
+                                    notify_cancel(&peer, id, Some("discovery deadline exceeded")),
+                                )
+                                .await;
+                            }
+                        }
+                        if let Ok(Ok(answer)) = reply {
+                            completion = answer;
+                        }
+                    }
+                    let shell = this.shell.upgrade().ok_or("shell stopped")?;
+                    let committed = {
+                        // Prevent replacement between checking the session and recording dispatch.
+                        // Drive the committed intents after unlocking, with the chosen session pinned.
+                        let runs = this.runs.lock().unwrap();
+                        let current = runs.get(&target);
+                        let same = match (run.as_ref(), current) {
+                            (Some(a), Some(b)) => Arc::ptr_eq(a, b),
+                            (None, None) => true,
+                            _ => false,
+                        };
+                        if !same && tokio::time::Instant::now() < deadline {
+                            continue;
+                        }
+                        if !same {
+                            completion = json!({"kind":"missing"});
+                        }
+                        let committed = shell
+                            .commit(json!({"kind":"complete","invocation":key.0,
+                            "attempt":key.1,"completion":completion}))?;
+                        if let Some(run) = run
+                            && committed.intents.iter().any(|intent| {
+                                intent.descriptor["kind"] == "dispatch"
+                                    && intent.descriptor["call"]["method"] == "tools/call"
+                                    && intent.descriptor["invocation"] == key.0
+                                    && intent.descriptor["attempt"] == key.1
+                            })
+                        {
+                            this.discovered_dispatches
+                                .lock()
+                                .unwrap()
+                                .insert(key.clone(), run);
+                        }
+                        committed
+                    };
+                    let result = shell.drive(
+                        committed.intents,
+                        committed.notifications,
+                        executor.as_deref().unwrap_or(&this),
+                    );
+                    this.discovered_dispatches.lock().unwrap().remove(&key);
+                    return result;
+                }
+            }
+            .await;
+            if let Err(error) = result {
+                this.errors.lock().unwrap().push(error);
             }
         });
         Ok(Execution::Deferred)
@@ -1434,6 +1555,7 @@ mod provider {
     #[derive(Debug, PartialEq)]
     enum ProviderReply {
         NotSent,
+        DiscoveryUnavailable,
         Nothing,
         Succeeded(Value),
         Failed,
@@ -1528,7 +1650,7 @@ mod provider {
                 .unwrap()
                 .get(intent["provider"].as_str().unwrap_or(""))
                 .cloned();
-            let Some(run) = run.filter(|r| r.live() && r.url.is_none()) else {
+            let Some(mut run) = run.filter(|r| r.live() && r.url.is_none()) else {
                 self.provider_diagnostic(operation, "provider has no live own-runner session");
                 return ProviderReply::NotSent;
             };
@@ -1559,7 +1681,6 @@ mod provider {
                 })
                 .unwrap_or_else(|| json!({}));
             let timeout = shell.config.call_timeout;
-            drop(shell);
             // Core request invocation IDs are UUIDs; this namespace can never be an attempt.
             let key = (format!("provider:{}", Uuid::new_v4()), 0);
             let called = AtomicBool::new(false);
@@ -1575,29 +1696,54 @@ mod provider {
                     }),
                 ),
             ]);
+            let discover = json!({"method":"server/discover","params":{"_meta":settings}});
+            let extension = format!("{prefix}implementation-interface");
+            let invocation = intent["invocation"].as_str();
             let completion = tokio::time::timeout(timeout, async {
-            let mut discovered = run.discovered.lock().await;
-            if discovered.is_none() {
-                let discovery = self.call(&run, &key, json!({"method":"server/discover","params":{"_meta":settings}})).await;
-                *discovered = Some(discovery.is_ok_and(|v| v["kind"] == "result" && v["result"]["capabilities"]["extensions"][format!("{prefix}implementation-interface")]["revision"] == "v0"));
-            }
-            if *discovered != Some(true) {
-                self.provider_diagnostic(operation, "provider discovery lacks Conduit's implementation-interface extension at v0");
-                return Ok(ProviderReply::NotSent);
-            }
-            drop(discovered);
-            if self.cancelled_setups.lock().unwrap().contains(intent["invocation"].as_str().unwrap_or("")) || self.stopping.load(Ordering::SeqCst) {
-                return Ok(ProviderReply::NotSent);
-            }
-            let mut meta = settings;
-            meta.insert(format!("{prefix}instance"), intent["provider"].clone());
-            for field in ["operation", "config", "revision", "invocation", "caller"] {
-                if let Some(value) = intent.get(field) { meta.insert(format!("{prefix}{field}"), value.clone()); }
-            }
-            called.store(true, Ordering::SeqCst);
-            self.call(&run, &key, json!({"method":"tools/call","params":{"name":operation.rsplit('#').next().unwrap_or(""),"arguments":inputs,"_meta":meta}}))
-                .await.map(|v| provider_result(v, &prefix, &schema))
-        }).await;
+                loop {
+                    let discovery = self.read_discovery(&run, &key, &discover).await;
+                    if self.cancelled_setups.lock().unwrap().contains(invocation.unwrap_or(""))
+                        || self.stopping.load(Ordering::SeqCst)
+                    {
+                        return Ok(ProviderReply::NotSent);
+                    }
+                    let replacement = {
+                        let runs = self.runs.lock().unwrap();
+                        let current = runs.get(intent["provider"].as_str().unwrap_or(""));
+                        if !current.is_some_and(|current| Arc::ptr_eq(current, &run)) {
+                            current.cloned()
+                        } else {
+                            if discovery?["result"]["capabilities"]["extensions"][&extension]["revision"] != "v0" {
+                                self.provider_diagnostic(operation, "provider discovery lacks Conduit's implementation-interface extension at v0");
+                                return Ok(ProviderReply::DiscoveryUnavailable);
+                            }
+                            if let Some(invocation) = invocation {
+                                let reply = shell.setup_report(invocation,
+                                    json!({"kind":"provider-call-ready","operation":operation}),
+                                    &crate::MissingExecutor)?.try_reply()?;
+                                if !reply.is_some_and(|r| r["accepted"] == true) {
+                                    return Ok(ProviderReply::NotSent);
+                                }
+                            }
+                            break;
+                        }
+                    };
+                    let Some(current) = replacement.filter(|r| r.live() && r.url.is_none()) else {
+                        return Ok(ProviderReply::NotSent);
+                    };
+                    run = current;
+                }
+                let mut meta = settings;
+                meta.insert(format!("{prefix}instance"), intent["provider"].clone());
+                for field in ["operation", "config", "revision", "invocation", "caller"] {
+                    if let Some(value) = intent.get(field) {
+                        meta.insert(format!("{prefix}{field}"), value.clone());
+                    }
+                }
+                called.store(true, Ordering::SeqCst);
+                self.call(&run, &key, json!({"method":"tools/call","params":{"name":operation.rsplit('#').next().unwrap_or(""),"arguments":inputs,"_meta":meta}}))
+                    .await.map(|v| provider_result(v, &prefix, &schema))
+            }).await;
             if let Some((_, id)) = self.requests.lock().unwrap().remove(&key) {
                 run.responses.lock().unwrap().remove(&id);
             }
@@ -1647,7 +1793,9 @@ mod provider {
                 this.provider_diagnostic(operation, "provider run has no https engine address");
                 ProviderReply::NotSent
             } else { this.provider_operation(&intent, inputs).await };
-            let report = if operation.ends_with("#run.v1") {
+            let report = if reply == ProviderReply::DiscoveryUnavailable {
+                json!({"kind":"provider-discovery-unavailable","operation":operation})
+            } else if operation.ends_with("#run.v1") {
                 match reply {
                     ProviderReply::Succeeded(outputs) => {
                         let url = outputs["url"].as_str().unwrap_or("");
@@ -1791,10 +1939,10 @@ mod provider {
                     service,
                     group,
                     responses,
+                    discovery: OnceCell::new(),
                     setup: setup.into(),
                     url: Some(url.into()),
                     provider: None,
-                    discovered: AsyncMutex::new(None),
                 });
                 if let Some(old) = self
                     .runs
@@ -1955,7 +2103,13 @@ mod provider {
                         json!({"protocolVersion":value["params"]["protocolVersion"],"capabilities":{},"serverInfo":{"name":"generic-provider","version":"1"}})
                     }
                     "server/discover" => {
-                        json!({"supportedVersions":["2026-07-28"],"serverInfo":{"name":"generic-provider","version":"1"},"capabilities":{"extensions":{"io.github.shrav-k.conduit/implementation-interface":{"revision":"v0"}}}})
+                        wait_for(|| !path.with_extension("wait").exists());
+                        let extensions = if path.with_extension("missing").exists() {
+                            json!({})
+                        } else {
+                            json!({"io.github.shrav-k.conduit/implementation-interface":{"revision":"v0"}})
+                        };
+                        json!({"supportedVersions":["2026-07-28"],"serverInfo":{"name":"generic-provider","version":"1"},"capabilities":{"extensions":extensions}})
                     }
                     "tools/call" => {
                         json!({"content":[],"structuredContent":{"machines":[]},"_meta":{"io.github.shrav-k.conduit/outcome":"succeeded"}})
@@ -1969,6 +2123,96 @@ mod provider {
                 std::io::stdout().flush().unwrap();
             }
         }
+        fn wait_for(condition: impl Fn() -> bool) {
+            let start = Instant::now();
+            while !condition() {
+                assert!(
+                    start.elapsed() < Duration::from_secs(20),
+                    "fixture timed out"
+                );
+                std::thread::sleep(Duration::from_millis(5));
+            }
+        }
+
+        #[test]
+        fn replacement_discovery_withholds_the_call_before_a_dispatch_is_recorded() {
+            let temp = tempfile::tempdir().unwrap();
+            let shell = Arc::new(crate::tests::filtered_shell(&temp.path().join("store")));
+            let current = std::env::current_exe().unwrap();
+            let runner = Runner::new(
+                &shell,
+                current.parent().unwrap().parent().unwrap().join("conduit"),
+            )
+            .unwrap();
+            let state = shell.state().unwrap();
+            let object = |name| {
+                state
+                    .objects
+                    .iter()
+                    .find(|o| o["name"] == name && o.get("spec").is_none())
+                    .unwrap()["id"]
+                    .as_str()
+                    .unwrap()
+                    .to_string()
+            };
+            let target = object("shared");
+            let other = object("history");
+            let first = temp.path().join("old-wire");
+            let second = temp.path().join("replacement-wire");
+            fs::write(first.with_extension("wait"), "").unwrap();
+            fs::write(second.with_extension("missing"), "").unwrap();
+            let start = |subject: &str, path: &Path| {
+                json!({"subject":subject,"invocation":Uuid::new_v4().to_string(),
+                    "inputs":{"item":{"command":[current,"--exact",
+                        "runner::provider::generic_provider_tests::scripted_generic_provider",
+                        "--ignored","--nocapture"]},"environment":{"TEST_GENERIC_LOG":path}}})
+            };
+            for (subject, path) in [(&target, &first), (&other, &second)] {
+                runner
+                    ._runtime
+                    .block_on(runner.inner.start(start(subject, path), BTreeMap::new()))
+                    .unwrap();
+            }
+            let ticket = shell
+                .begin(crate::tests::filtered_read(&shell, "replacement"), &runner)
+                .unwrap();
+            let invocation = ticket.invocation().unwrap();
+            let saw = |path: &Path, method: &str| {
+                fs::read_to_string(path)
+                    .unwrap_or_default()
+                    .lines()
+                    .filter_map(|l| serde_json::from_str::<Value>(l).ok())
+                    .any(|message| message["method"] == method)
+            };
+            wait_for(|| saw(&first, "server/discover"));
+            let old = {
+                // Let the old session answer while holding the run-table lock.
+                // Its successful discovery cannot authorize the replacement.
+                let mut runs = runner.inner.runs.lock().unwrap();
+                let old = runs.get(&target).unwrap().clone();
+                fs::remove_file(first.with_extension("wait")).unwrap();
+                wait_for(|| old.discovery.get().is_some());
+                let replacement = runs.remove(&other).unwrap();
+                runs.insert(target.clone(), replacement);
+                old
+            };
+            wait_for(|| ticket.try_reply().unwrap().is_some());
+            old.group.stop();
+            let reply = ticket.try_reply().unwrap().unwrap();
+            let prefix = &shell.context.meta_prefix;
+            assert_eq!(reply["_meta"][format!("{prefix}reason")], "unavailable");
+            assert!(saw(&second, "server/discover"));
+            assert!(!saw(&first, "tools/call") && !saw(&second, "tools/call"));
+            let records = &shell.state().unwrap().records;
+            assert!(
+                !records.iter().any(|r| r["type"] == "invocation-dispatched"
+                    && r["data"]["invocation"] == invocation)
+            );
+            assert!(records.iter().any(|r| r["type"] == "request-ended"
+                && r["data"]["idempotencyKey"] == "replacement"
+                && r["data"]["missingExtension"] == format!("{prefix}implementation-interface")));
+        }
+
         #[test]
         fn generic_provider_call_lists_machines_with_provider_keys_and_discovers_each_run() {
             let temp = tempfile::tempdir().unwrap();

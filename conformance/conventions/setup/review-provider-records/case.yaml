@@ -629,6 +629,35 @@
             "caller": "00000000-0000-4000-8000-000000000005"
           }
         ],
+        "state": {
+          "started": true
+        }
+      },
+      "capture": {
+        "poolSetup": "/reply/invocation",
+        "entrySetup": "/external_intents/0/invocation"
+      }
+    },
+    {
+      "input": {
+        "kind": "setup-report",
+        "evidence": {
+          "time": "2026-11-09T12:30:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000231043"
+          ]
+        },
+        "invocation": "$entrySetup",
+        "report": {
+          "kind": "provider-call-ready",
+          "operation": "@core#inspect-run.v1"
+        }
+      },
+      "expect": {
+        "reply": {
+          "accepted": true
+        },
+        "external_intents": [],
         "record_facts": [
           {
             "type": "provider-call",
@@ -638,27 +667,21 @@
               "caller": "00000000-0000-4000-8000-000000000005",
               "inputs": {
                 "instance": "00000000-0000-4000-8000-000000000119"
-              }
+              },
+              "phase": "made"
             },
             "subject": "00000000-0000-4000-8000-000000000119"
           }
         ],
-        "state": {
-          "started": true
-        },
         "absent": [
-          "/records/4/data/idempotencyKey",
-          "/records/4/data/consumer",
-          "/records/4/data/conduit",
-          "/records/4/data/serving",
-          "/records/4/data/filters",
-          "/records/4/data/inputs/identity",
-          "/records/4/data/inputs/secrets"
+          "/records/0/data/idempotencyKey",
+          "/records/0/data/consumer",
+          "/records/0/data/conduit",
+          "/records/0/data/serving",
+          "/records/0/data/filters",
+          "/records/0/data/inputs/identity",
+          "/records/0/data/inputs/secrets"
         ]
-      },
-      "capture": {
-        "poolSetup": "/reply/invocation",
-        "entrySetup": "/external_intents/0/invocation"
       }
     },
     {
@@ -763,7 +786,34 @@
               "outcome": "succeeded",
               "invocation": "$entrySetup"
             }
-          },
+          }
+        ],
+        "state": {
+          "started": true
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "setup-report",
+        "evidence": {
+          "time": "2026-11-09T12:30:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000231044"
+          ]
+        },
+        "invocation": "$entrySetup",
+        "report": {
+          "kind": "provider-call-ready",
+          "operation": "@core#run.v1"
+        }
+      },
+      "expect": {
+        "reply": {
+          "accepted": true
+        },
+        "external_intents": [],
+        "record_facts": [
           {
             "type": "provider-call",
             "data": {
@@ -776,22 +826,20 @@
                 "packageArguments": {
                   "root": "/tmp/conduit-s1/shared"
                 }
-              }
+              },
+              "phase": "made"
             },
             "subject": "00000000-0000-4000-8000-000000000119"
           }
         ],
-        "state": {
-          "started": true
-        },
         "absent": [
-          "/records/2/data/idempotencyKey",
-          "/records/2/data/consumer",
-          "/records/2/data/conduit",
-          "/records/2/data/serving",
-          "/records/2/data/filters",
-          "/records/2/data/inputs/identity",
-          "/records/2/data/inputs/secrets"
+          "/records/0/data/idempotencyKey",
+          "/records/0/data/consumer",
+          "/records/0/data/conduit",
+          "/records/0/data/serving",
+          "/records/0/data/filters",
+          "/records/0/data/inputs/identity",
+          "/records/0/data/inputs/secrets"
         ]
       }
     },

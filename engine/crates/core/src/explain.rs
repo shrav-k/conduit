@@ -1597,8 +1597,22 @@ pub(crate) mod tests {
         fresh
             .ids
             .retain(|id| !pending.state.allocated_ids.contains(id));
-        let ended = crate::step(
+        let ready = crate::step(
             &pending.state,
+            crate::Input::Complete {
+                evidence: fresh.clone(),
+                invocation: pending.reply["hook"].as_str().unwrap().into(),
+                attempt: 1,
+                completion: crate::requests::advertised_extension(&c),
+            },
+            &c,
+        )
+        .unwrap();
+        fresh
+            .ids
+            .retain(|id| !ready.state.allocated_ids.contains(id));
+        let ended = crate::step(
+            &ready.state,
             crate::Input::Complete {
                 evidence: fresh,
                 invocation: pending.reply["hook"].as_str().unwrap().into(),

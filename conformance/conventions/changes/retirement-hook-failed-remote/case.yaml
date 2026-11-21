@@ -517,21 +517,90 @@
             "target": "00000000-0000-4000-8000-000000000119",
             "attempt": 1,
             "call": {
+              "method": "server/discover",
+              "params": {
+                "_meta": {
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  },
+                  "io.modelcontextprotocol/protocolVersion": "2026-07-28"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "capture": {
+        "hook": "/reply/hook"
+      }
+    },
+    {
+      "input": {
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "capabilities": {
+              "extensions": {
+                "io.github.shrav-k.conduit/implementation-interface": {
+                  "revision": "v0"
+                }
+              }
+            }
+          }
+        },
+        "evidence": {
+          "ids": [
+            "cd772cd6-3bb3-5aa4-8a66-e166f78946b0"
+          ],
+          "time": "2026-11-12T12:00:00Z"
+        },
+        "invocation": "$hook",
+        "kind": "complete"
+      },
+      "expect": {
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "target": "00000000-0000-4000-8000-000000000119",
+            "attempt": 1,
+            "call": {
               "params": {
                 "_meta": {
                   "io.github.shrav-k.conduit/operation": "@core#retire-hook.v1",
-                  "io.github.shrav-k.conduit/caller": "00000000-0000-4000-8000-000000000005"
+                  "io.github.shrav-k.conduit/caller": "00000000-0000-4000-8000-000000000005",
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  }
                 }
-              }
+              },
+              "method": "tools/call"
+            }
+          }
+        ],
+        "required_promises": [
+          "IFC-037"
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "invocation": "$hook",
+              "attempt": 1
             }
           }
         ],
         "absent": [
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1conduit"
         ]
-      },
-      "capture": {
-        "hook": "/reply/hook"
       }
     },
     {

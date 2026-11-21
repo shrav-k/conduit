@@ -26,6 +26,12 @@ pub enum Report {
         part: String,
         outcome: String,
     },
+    ProviderCallReady {
+        operation: String,
+    },
+    ProviderDiscoveryUnavailable {
+        operation: String,
+    },
 }
 pub(crate) fn handles(op: &str, c: &Context) -> bool {
     [
@@ -829,7 +835,7 @@ fn advance(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) ->
                 part(t, i, "run", "unavailable", true, false, Value::Null);
                 t.state.invocations[i]["setup"]["run_phase"] = json!("ended");
             } else {
-                emit(t, a, c, i, "inspect-run.v1", json!({}))?;
+                emit(t, c, i, "inspect-run.v1", json!({}))?;
             }
         }
         for remote in remotes {
@@ -919,7 +925,6 @@ fn dispatch_sign_in_part(
 }
 pub(crate) fn emit(
     t: &mut Transition,
-    a: &mut Allocation<'_>,
     c: &Context,
     i: usize,
     operation: &str,
@@ -943,13 +948,17 @@ pub(crate) fn emit(
         intent["provider"] = runtime["id"].clone();
         intent["config"] = runtime["config"].clone();
         intent["revision"] = runtime["revision"].clone();
-        requests::record(
-            t,
-            a,
-            c,
-            "provider-call",
-            json!({"phase":"made","target":runtime["id"],"subject":o["id"],"operation":c.qualified(operation),"invocation":v["id"],"caller":v["caller"],"arguments":intent["inputs"]}),
-        )?;
+        let mut arguments = intent["inputs"].as_object().unwrap().clone();
+        // The engine's identity materialization stays in the runner.
+        arguments.remove("identity");
+        arguments.remove("secrets");
+        let mut facts = json!({
+            "target":runtime["id"],"subject":o["id"],"operation":c.qualified(operation),
+            "caller":v["caller"],"arguments":arguments
+        });
+        requests::record_content(t, c, &mut facts)?;
+        facts["invocation"] = v["id"].clone();
+        t.state.invocations[i]["provider_call"] = facts;
     }
     t.external_intents.push(intent);
     t.reply = json!({"pending":true,"invocation":v["id"]});
@@ -1047,6 +1056,68 @@ pub(crate) fn report(
         evidence,
         cursor: 0,
     };
+    if let Report::ProviderCallReady { operation }
+    | Report::ProviderDiscoveryUnavailable { operation } = &report
+    {
+        let mut facts = v["provider_call"].clone();
+        if facts["operation"] != *operation || facts["made"] == true || v["cancelled"] == true {
+            t.reply = json!({"ignored":true});
+            return Ok(());
+        }
+        if matches!(report, Report::ProviderCallReady { .. }) {
+            facts["phase"] = json!("made");
+            requests::record(t, &mut a, c, "provider-call", facts)?;
+            t.state.invocations[i]["provider_call"]["made"] = json!(true);
+            t.reply = json!({"accepted":true});
+            return Ok(());
+        }
+        facts.as_object_mut().unwrap().remove("inputs");
+        facts["phase"] = json!("ended");
+        facts["reason"] = json!("unavailable");
+        facts["ruleId"] = json!("IFC-037");
+        facts["missingExtension"] = json!(format!("{}implementation-interface", c.meta_prefix));
+        facts["extensionRevision"] = json!("v0");
+        requests::record(t, &mut a, c, "provider-call", facts)?;
+        t.state.invocations[i]
+            .as_object_mut()
+            .unwrap()
+            .remove("provider_call");
+        cite(
+            t,
+            "withhold-provider-call-without-extension",
+            &["IFC-037", "PRV-005"],
+            &v["object"],
+        );
+        return if v.get("retirement").is_some() {
+            crate::retirement::provider_unavailable(t, &mut a, c, i)
+        } else {
+            run_unavailable(t, &mut a, c, i)
+        };
+    }
+    let provider_outcome = match &report {
+        Report::InspectRun { state } => {
+            Some(("inspect-run.v1", "succeeded", json!({"state":state})))
+        }
+        Report::Run { outcome, url } => Some(("run.v1", outcome.as_str(), json!({"url":url}))),
+        Report::Stop { outcome } => Some(("stop.v1", outcome.as_str(), json!({}))),
+        _ => None,
+    };
+    if let Some((operation, outcome, outputs)) = provider_outcome
+        && v["provider_call"]["operation"] == c.qualified(operation)
+    {
+        let mut facts = t.state.invocations[i]
+            .as_object_mut()
+            .unwrap()
+            .remove("provider_call")
+            .unwrap();
+        if facts.as_object_mut().unwrap().remove("made") == Some(json!(true)) {
+            facts.as_object_mut().unwrap().remove("inputs");
+            facts["phase"] = json!("ended");
+            facts["outcome"] = json!(outcome);
+            facts["outputs"] = outputs;
+            requests::record(t, &mut a, c, "provider-call", facts)?;
+        }
+    }
     if crate::secrets::lifecycle_report(t, &mut a, c, i, &report)? {
         return Ok(());
     }
@@ -1061,30 +1132,8 @@ pub(crate) fn report(
         Report::Run { outcome, .. } => json!({"operation":c.qualified("run.v1"),"outcome":outcome}),
         Report::Stop { .. } => return Err("stop report for setup".into()),
         Report::Connected { part, outcome } => json!({"part":part,"outcome":outcome}),
+        _ => unreachable!("provider discovery is handled before setup parts"),
     };
-    if (phase == "inspect-run" && matches!(&report, Report::InspectRun { .. })
-        || phase == "run" && matches!(&report, Report::Run { .. }))
-        && let Some(o) = access::object(&t.state, &v["object"])
-        && let Some(runtime) = o.get("runtime").and_then(|r| access::object(&t.state, r))
-    {
-        let outcome = match &report {
-            Report::InspectRun { .. } => "succeeded",
-            Report::Run { outcome, .. } => outcome.as_str(),
-            _ => unreachable!(),
-        };
-        let outputs = match &report {
-            Report::InspectRun { state } => json!({"state":state}),
-            Report::Run { url, .. } => json!({"url":url}),
-            _ => unreachable!(),
-        };
-        requests::record(
-            t,
-            &mut a,
-            c,
-            "provider-call",
-            json!({"target":runtime["id"],"subject":o["id"],"operation":report_facts["operation"],"invocation":v["id"],"caller":v["caller"],"phase":"ended","outcome":outcome,"outputs":outputs}),
-        )?;
-    }
     let mut change_facts = report_facts;
     if let Some(op) = change_facts.as_object_mut().unwrap().remove("operation") {
         change_facts["partOperation"] = op;

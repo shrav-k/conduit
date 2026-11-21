@@ -649,6 +649,14 @@ impl Executor for HookBoundary {
         ))
     }
     fn dispatch(&self, intent: &Value) -> Result<Execution> {
+        if intent["call"]["method"] == "server/discover" {
+            return Ok(Execution::Complete(
+                json!({"kind":"result","result":{"capabilities":{
+                    "extensions":intent["call"]["params"]["_meta"]
+                        ["io.modelcontextprotocol/clientCapabilities"]["extensions"]
+                }}}),
+            ));
+        }
         self.intents.lock().unwrap().push(intent.clone());
         Ok(Execution::Complete(
             json!({"kind":"result","result":{"isError":true,"_meta":{format!("{}outcome", boundary::context(&repo())?.meta_prefix):"failed"}}}),

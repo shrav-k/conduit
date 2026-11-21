@@ -922,6 +922,41 @@ steps:
     - kind: dispatch
       target: $consumer
       call:
+        method: server/discover
+        params:
+          _meta:
+            io.modelcontextprotocol/clientCapabilities:
+              extensions:
+                io.github.shrav-k.conduit/implementation-interface:
+                  revision: v0
+            io.modelcontextprotocol/protocolVersion: '2026-07-28'
+    absent:
+    - text: scripted-value-for-run-two
+      under:
+      - /reply
+      - /records
+      - /state
+      - /external_intents
+- input:
+    attempt: 1
+    completion:
+      kind: result
+      result:
+        capabilities:
+          extensions:
+            io.github.shrav-k.conduit/implementation-interface:
+              revision: v0
+    evidence:
+      ids:
+      - 00000000-0000-4000-8000-000000000791
+      time: '2026-11-09T12:13:00Z'
+    invocation: 00000000-0000-4000-8000-000000000790
+    kind: complete
+  expect:
+    external_intents:
+    - kind: dispatch
+      target: $consumer
+      call:
         method: tools/call
         params:
           name: retire-hook.v1
@@ -930,6 +965,15 @@ steps:
               source:
                 kind: Resource
                 id: $provider
+            io.modelcontextprotocol/clientCapabilities:
+              extensions:
+                io.github.shrav-k.conduit/implementation-interface:
+                  revision: v0
+    record_facts:
+    - type: invocation-dispatched
+      data:
+        invocation: 00000000-0000-4000-8000-000000000790
+        attempt: 1
     absent:
     - text: scripted-value-for-run-two
       under:
@@ -938,7 +982,7 @@ steps:
       - /state
       - /external_intents
   capture:
-    hook: /records/1/data/invocation
+    hook: /records/0/data/invocation
 - input:
     kind: complete
     invocation: $hook

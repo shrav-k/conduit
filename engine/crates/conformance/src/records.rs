@@ -149,12 +149,19 @@ pub(super) fn transition(
                 }
             }
             if r["type"] == "invocation-dispatched" && v["hook"] != true {
-                let access = records[..position].iter().find(|r| {
+                let permitted = |r: &Value| {
                     r["type"] == "access-decision"
                         && r["data"]["invocation"] == v["id"]
                         && r["data"]["permitted"] == true
-                });
-                if access.is_none() {
+                };
+                let earlier = |r: &Value| {
+                    permitted(r)
+                        && data["attempt"].as_u64().is_some()
+                        && data["attempt"] == v["attempt"]
+                        && r["data"]["attempt"] == data["attempt"]
+                };
+                if !records[..position].iter().any(permitted) && !before.records.iter().any(earlier)
+                {
                     return Err(
                         "ACC-002 / REC-001: dispatch has no preceding permitted access record"
                             .into(),
@@ -379,6 +386,32 @@ mod tests {
         }
         let reversed = json!({"records":[valid["records"][1],valid["records"][0]],"reply":{}});
         assert!(transition(&reversed, &State::default(), &state, &context(), None).is_err());
+    }
+
+    #[test]
+    fn discovery_can_separate_access_and_dispatch_for_the_same_attempt() {
+        let mut before = State::default();
+        before.invocations.push(json!({"id":"call","attempt":2}));
+        before.records.push(
+            json!({"source":"urn:test","id":"access","type":"access-decision",
+            "data":{"invocation":"call","attempt":2,"permitted":true}}),
+        );
+        let dispatch = json!({"records":[{"source":"urn:test","id":"dispatch","type":"invocation-dispatched",
+            "data":{"invocation":"call","attempt":2}}],"reply":{}});
+        assert!(transition(&dispatch, &before, &before, &context(), None).is_ok());
+        for (field, invalid) in [
+            ("invocation", json!("another")),
+            ("attempt", json!(1)),
+            ("permitted", json!(false)),
+        ] {
+            let mut unrelated = before.clone();
+            unrelated.records[0]["data"][field] = invalid;
+            assert!(transition(&dispatch, &unrelated, &before, &context(), None).is_err());
+        }
+        let mut stale_dispatch = dispatch.clone();
+        stale_dispatch["records"][0]["data"]["attempt"] = json!(1);
+        before.records[0]["data"]["attempt"] = json!(1);
+        assert!(transition(&stale_dispatch, &before, &before, &context(), None).is_err());
     }
 
     #[test]

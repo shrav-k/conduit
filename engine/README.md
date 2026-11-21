@@ -242,8 +242,9 @@ completions through the shell. The engine reads secrets from the
 The shell calls a runtime provider's `run.v1`, `stop.v1` and `inspect-run.v1` through its
 run on the engine's own runner. A private bridge reaches the instance at the returned HTTPS
 URL using the store's root. The tests use a stand-in provider. Until order 226, an unproved
-URL or missing extension reports unknown or failed, a provider ended at restart is not run
-again, and the engine has run no shipped runtime provider. Remote connections, secrets for
+URL reports unknown or failed, a provider ended at restart is not run again, and the engine
+has run no shipped runtime provider. From order 231, a provider whose discovery lacks Conduit's
+extension is sent no call, and its part reports unavailable with the extension named. Remote connections, secrets for
 runs on providers, and the engine's own inspections remain unserved. The base S1 fixture
 used above has no executable
 Agent; [live S1](examples/s1/README.md) supplies the real-client wrappers instead.

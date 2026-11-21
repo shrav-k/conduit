@@ -1472,12 +1472,17 @@
             "attempt": 1,
             "target": "00000000-0000-4000-8000-000000000119",
             "call": {
-              "method": "tools/call",
+              "method": "server/discover",
               "params": {
-                "name": "file.write.v1",
-                "arguments": {
-                  "path": "hello.txt",
-                  "content": "post"
+                "_meta": {
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  },
+                  "io.modelcontextprotocol/protocolVersion": "2026-07-28"
                 }
               }
             }
@@ -1503,7 +1508,69 @@
             "data": {
               "target": "00000000-0000-4000-8000-000000000119"
             }
-          },
+          }
+        ]
+      },
+      "capture": {
+        "i": "/reply/invocation"
+      }
+    },
+    {
+      "input": {
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "capabilities": {
+              "extensions": {
+                "io.github.shrav-k.conduit/implementation-interface": {
+                  "revision": "v0"
+                }
+              }
+            }
+          }
+        },
+        "evidence": {
+          "ids": [
+            "00000000-0000-4000-8000-000000010002"
+          ],
+          "time": "2026-11-09T12:30:00Z"
+        },
+        "invocation": "00000000-0000-4000-8000-000000010001",
+        "kind": "complete"
+      },
+      "expect": {
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "invocation": "00000000-0000-4000-8000-000000010001",
+            "attempt": 1,
+            "target": "00000000-0000-4000-8000-000000000119",
+            "call": {
+              "method": "tools/call",
+              "params": {
+                "name": "file.write.v1",
+                "arguments": {
+                  "path": "hello.txt",
+                  "content": "post"
+                },
+                "_meta": {
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "required_promises": [
+          "IFC-037"
+        ],
+        "records": [
           {
             "id": "00000000-0000-4000-8000-000000010002",
             "specversion": "1.0",
@@ -1515,9 +1582,6 @@
             }
           }
         ]
-      },
-      "capture": {
-        "i": "/reply/invocation"
       }
     },
     {
@@ -1619,16 +1683,17 @@
             "attempt": 2,
             "target": "00000000-0000-4000-8000-000000000119",
             "call": {
-              "method": "tools/call",
+              "method": "server/discover",
               "params": {
-                "name": "file.write.v1",
-                "arguments": {
-                  "path": "hello.txt",
-                  "content": "post"
-                },
                 "_meta": {
-                  "io.github.shrav-k.conduit/invocation": "$i",
-                  "io.github.shrav-k.conduit/idempotencyKey": "key"
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  },
+                  "io.modelcontextprotocol/protocolVersion": "2026-07-28"
                 }
               }
             }
@@ -1654,7 +1719,68 @@
             "data": {
               "target": "00000000-0000-4000-8000-000000000119"
             }
-          },
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "attempt": 2,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "capabilities": {
+              "extensions": {
+                "io.github.shrav-k.conduit/implementation-interface": {
+                  "revision": "v0"
+                }
+              }
+            }
+          }
+        },
+        "evidence": {
+          "ids": [
+            "00000000-0000-4000-8000-000000010021"
+          ],
+          "time": "2026-11-09T12:30:00Z"
+        },
+        "invocation": "$i",
+        "kind": "complete"
+      },
+      "expect": {
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "invocation": "$i",
+            "attempt": 2,
+            "target": "00000000-0000-4000-8000-000000000119",
+            "call": {
+              "method": "tools/call",
+              "params": {
+                "name": "file.write.v1",
+                "arguments": {
+                  "path": "hello.txt",
+                  "content": "post"
+                },
+                "_meta": {
+                  "io.github.shrav-k.conduit/invocation": "$i",
+                  "io.github.shrav-k.conduit/idempotencyKey": "key",
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "required_promises": [
+          "IFC-037"
+        ],
+        "records": [
           {
             "id": "00000000-0000-4000-8000-000000010021",
             "specversion": "1.0",

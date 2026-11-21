@@ -353,3 +353,46 @@ Lands in: the packages' addresses under `example.org/conduit/` until first publi
 each package ships for, at first publish
 
 Status: accepted, not done (first publish)
+
+## DEC-036, 2026-11-20, the keychain store's scope
+
+Owner's words: which keychains may the store read -> "Discuss"; after the comparison -> "A:
+dedicated only (Rec.)"
+
+Lands in: order 224 (the keychain store reads a dedicated keychain only, and always refuses the
+login keychain and the default keychain)
+
+Status: done (order 224)
+
+## DEC-037, 2026-11-21, the post-dogfood review
+
+Owner's words: when -> "Tomorrow, 11-22 (Recommended)"; format -> "Yes, as proposed
+(Recommended)"
+
+Lands in: a Fable review of the language and system on 2026-11-22, its report handed to the
+coordinator outside the tree; experiment 028's stage 2 ends by the owner's word once orders
+236 to 239 are in
+
+Status: accepted, not done (the review)
+
+## DEC-038, 2026-11-21, the S1 rerun waits for the simplification chain
+
+Owner's words: the pin lacks the simplification the rerun measures -> "Hold it; write the chain
+now (Recommended)"
+
+Lands in: ROADMAP step 3 (the rerun's build is a new pin from main, after the chain); work
+orders 240 to 250; the pin `s1-rerun-pin` is not the rerun's build
+
+Status: accepted, not done (orders 240 to 250, the new pin)
+
+## DEC-039, 2026-11-21, the chain's scope
+
+Owner's words: 051a after the pin, its cascades as apply's flags, render dropped, the pin waits
+for 249 -> "Yes, as written (Recommended)"; the S1 sectioned-package example -> "Replace with a
+non-S1 package (Recommended)"; init's skeleton and install's pin rule -> "Decide at tomorrow's
+review"
+
+Lands in: cites DEC-004 and DEC-008; work orders 240 (the example replaced), 249 and 251; order
+243 waits for the review's answer
+
+Status: accepted, not done (orders 240, 249, 251)

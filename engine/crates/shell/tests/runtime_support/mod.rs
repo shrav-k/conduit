@@ -5,6 +5,7 @@ use rustls::pki_types::{CertificateDer, PrivateKeyDer, pem::PemObject};
 use serde_json::{Value, json};
 use std::{
     collections::BTreeMap,
+    net::SocketAddr,
     sync::{
         Arc, Mutex,
         atomic::{AtomicBool, Ordering},
@@ -13,7 +14,7 @@ use std::{
 };
 use tokio::{
     io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader},
-    net::TcpListener,
+    net::TcpSocket,
 };
 
 pub struct TestAuthority {
@@ -73,6 +74,7 @@ impl Drop for Gate {
         self.task.abort();
     }
 }
+#[derive(Clone)]
 pub struct GateOptions {
     pub cert: String,
     pub key: String,
@@ -89,6 +91,19 @@ pub struct GateOptions {
 }
 impl Gate {
     pub async fn start(options: GateOptions) -> Self {
+        Self::start_on(options, "127.0.0.1:0".parse().unwrap(), false).await
+    }
+
+    pub async fn shutdown(mut self) {
+        self.task.abort();
+        let _ = (&mut self.task).await;
+    }
+
+    pub async fn start_on(
+        options: GateOptions,
+        address: SocketAddr,
+        fail_initialize: bool,
+    ) -> Self {
         conduit_shell::install_crypto_provider();
         let cert = CertificateDer::pem_slice_iter(options.cert.as_bytes())
             .collect::<Result<Vec<_>, _>>()
@@ -110,7 +125,10 @@ impl Gate {
         };
         let acceptor =
             tokio_rustls::TlsAcceptor::from(Arc::new(config.with_single_cert(cert, key).unwrap()));
-        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let socket = TcpSocket::new_v4().unwrap();
+        socket.set_reuseaddr(true).unwrap();
+        socket.bind(address).unwrap();
+        let listener = socket.listen(128).unwrap();
         let url = format!("https://{}/mcp", listener.local_addr().unwrap());
         let received = Arc::new(Mutex::new(Vec::new()));
         let ended = Arc::new(AtomicBool::new(false));
@@ -250,6 +268,12 @@ impl Gate {
                         } else if let Some(target) = &options.redirect {
                             extra = format!("Location: {target}\r\n");
                             ("307 Temporary Redirect", "application/json", String::new())
+                        } else if initialize && fail_initialize {
+                            (
+                                "500 Internal Server Error",
+                                "application/json",
+                                String::new(),
+                            )
                         } else if initialize {
                             let fresh = uuid::Uuid::new_v4().to_string();
                             *session.lock().unwrap() = fresh.clone();

@@ -26,11 +26,12 @@ use tokio::{
     sync::mpsc,
     task::JoinSet,
 };
-use tokio_rustls::TlsConnector;
+use tokio_rustls::{TlsConnector, client::TlsStream};
 use url::Url;
 
 /// Reserved for rejection of the server's proof, including a non-TLS URL.
 pub const PROOF_REFUSED: i32 = 78;
+pub(crate) const PROOF_MARKER: &str = "peer-proved";
 
 #[derive(Debug)]
 struct InstanceVerifier {
@@ -144,12 +145,15 @@ struct ToolCallParams {
 
 impl Bridge {
     async fn request(&self, method: Method, line: Option<String>) -> Result<Response<Body>, ()> {
-        let host = match self.url.host().ok_or(())? {
-            url::Host::Ipv6(ip) => ip.to_string(),
-            host => host.to_string(),
-        };
-        let server_name = ServerName::try_from(host.clone()).map_err(|_| ())?;
-        let port = self.url.port_or_known_default().ok_or(())?;
+        self.request_with_proof(method, line, None).await
+    }
+
+    async fn request_with_proof(
+        &self,
+        method: Method,
+        line: Option<String>,
+        proof_marker: Option<&Path>,
+    ) -> Result<Response<Body>, ()> {
         let mut request = Request::builder()
             .method(method)
             .uri(&self.url[url::Position::BeforePath..url::Position::AfterQuery])
@@ -186,14 +190,10 @@ impl Bridge {
         // Establish the authenticated TLS connection before handing any HTTP
         // request bytes to Hyper. Each stream drives its own connection.
         let (mut sender, connection) = tokio::time::timeout(Duration::from_secs(10), async {
-            let socket = TcpStream::connect((host.as_str(), port))
-                .await
-                .map_err(|_| ())?;
-            let stream = self
-                .tls
-                .connect(server_name, socket)
-                .await
-                .map_err(|_| ())?;
+            let stream = connect(&self.url, &self.tls).await?;
+            if let Some(marker) = proof_marker {
+                std::fs::write(marker, []).map_err(|_| ())?;
+            }
             hyper::client::conn::http1::handshake(TokioIo::new(stream))
                 .await
                 .map_err(|_| ())
@@ -362,11 +362,23 @@ fn mcp_name(name: &str) -> String {
     }
 }
 
-fn client(directory: &Path, refused: Arc<AtomicBool>) -> Result<(TlsConnector, HeaderValue), ()> {
+async fn connect(url: &Url, tls: &TlsConnector) -> Result<TlsStream<TcpStream>, ()> {
+    let host = match url.host().ok_or(())? {
+        url::Host::Ipv6(ip) => ip.to_string(),
+        host => host.to_string(),
+    };
+    let server_name = ServerName::try_from(host.clone()).map_err(|_| ())?;
+    let port = url.port_or_known_default().ok_or(())?;
+    let socket = TcpStream::connect((host.as_str(), port))
+        .await
+        .map_err(|_| ())?;
+    tls.connect(server_name, socket).await.map_err(|_| ())
+}
+
+fn client(directory: &Path, refused: Arc<AtomicBool>) -> Result<TlsConnector, ()> {
     // Read exactly once. The runner removes this directory after initialization.
     let root = std::fs::read(directory.join("root.pem")).map_err(|_| ())?;
     let expected = std::fs::read_to_string(directory.join("peer-id")).map_err(|_| ())?;
-    let token = std::fs::read_to_string(directory.join("bearer")).map_err(|_| ())?;
     let cert = std::fs::read(directory.join("client.pem")).map_err(|_| ())?;
     let key = std::fs::read(directory.join("client.key")).map_err(|_| ())?;
     let mut roots = RootCertStore::empty();
@@ -389,13 +401,12 @@ fn client(directory: &Path, refused: Arc<AtomicBool>) -> Result<(TlsConnector, H
         }))
         .with_client_auth_cert(certs, key)
         .map_err(|_| ())?;
-    let client = TlsConnector::from(Arc::new(config));
+    Ok(TlsConnector::from(Arc::new(config)))
+}
+async fn run(url: Url, directory: &Path, tls: TlsConnector) -> Result<(), ()> {
+    let token = std::fs::read_to_string(directory.join("bearer")).map_err(|_| ())?;
     let mut token = HeaderValue::from_str(&format!("Bearer {token}")).map_err(|_| ())?;
     token.set_sensitive(true);
-    Ok((client, token))
-}
-async fn run(url: Url, directory: &Path, refused: Arc<AtomicBool>) -> Result<(), ()> {
-    let (tls, token) = client(directory, refused)?;
     let (output, mut lines) = mpsc::unbounded_channel::<Vec<u8>>();
     let writer = tokio::spawn(async move {
         let mut stdout = tokio::io::stdout();
@@ -422,7 +433,8 @@ async fn run(url: Url, directory: &Path, refused: Arc<AtomicBool>) -> Result<(),
         let mut pending = Vec::new();
         let initialized = {
             let response = async {
-                let response = bridge.request(Method::POST, Some(first)).await?;
+                let marker = directory.join(PROOF_MARKER);
+                let response = bridge.request_with_proof(Method::POST, Some(first), Some(&marker)).await?;
                 session = response.headers().get("mcp-session-id").cloned();
                 bridge.response(response, true, false).await
             };
@@ -504,7 +516,15 @@ pub fn main_entry() -> i32 {
         .build();
     let result = match runtime {
         Ok(runtime) => {
-            let result = runtime.block_on(run(url, Path::new(&directory), refused.clone()));
+            let directory = Path::new(&directory);
+            let result = runtime.block_on(async {
+                let tls = client(directory, refused.clone())?;
+                if std::env::args().nth(3).as_deref() == Some("--prove-only") {
+                    connect(&url, &tls).await.map(|_| ())
+                } else {
+                    run(url, directory, tls).await
+                }
+            });
             // Tokio's stdin read uses a blocking worker. A fatal HTTP response must
             // exit even while the engine still holds stdin open; runtime Drop would
             // otherwise wait for that read forever. main immediately exits the process.

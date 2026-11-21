@@ -324,7 +324,7 @@ pub(crate) fn execute(
         {
             t.state.invocations[i]["setup"] = json!({"item":implementation});
             t.state.invocations[i]["retirement"]["phase"] = json!("inspect-run");
-            return lifecycle::emit(t, c, i, "inspect-run.v1", json!({}));
+            return lifecycle::emit(t, a, c, i, "inspect-run.v1", json!({}), None);
         }
         if implementation["item"].get("remote").is_some() {
             t.state.invocations[i]["retirement"]["phase"] = json!("connect");
@@ -369,7 +369,7 @@ fn stop(
 ) -> Result<()> {
     if run(o).is_some() {
         t.state.invocations[i]["retirement"]["phase"] = json!("stop");
-        return lifecycle::emit(t, c, i, "stop.v1", json!({}));
+        return lifecycle::emit(t, a, c, i, "stop.v1", json!({}), None);
     }
     settle(t, a, c, i, o)
 }
@@ -387,9 +387,10 @@ fn settle(
         || parts.iter().all(|p| p["outcome"] == "succeeded")
     {
         "succeeded"
-    } else if parts
-        .iter()
-        .any(|p| p["effect"] == true && (p["outcome"] == "succeeded" || p["outcome"] == "unknown"))
+    } else if v["retirement"]["run_effect_observed"] == true
+        || parts.iter().any(|p| {
+            p["effect"] == true && (p["outcome"] == "succeeded" || p["outcome"] == "unknown")
+        })
     {
         "unknown"
     } else {
@@ -503,22 +504,36 @@ pub(crate) fn provider_unavailable(
     a: &mut Allocation<'_>,
     c: &Context,
     i: usize,
+    diagnostic: Value,
 ) -> Result<()> {
     let v = &t.state.invocations[i];
     let o = access::object(&t.state, &v["object"])
         .ok_or("retirement object disappeared")?
         .clone();
+    let run_effect = v["retirement"]["run_effect_observed"] == true;
+    let unavailable = |t: &mut Transition, name: &str| {
+        add(t, i, name, "unavailable");
+        let part = t.state.invocations[i]["retirement"]["parts"]
+            .as_array_mut()
+            .unwrap()
+            .last_mut()
+            .unwrap();
+        if name == "hook-run" && run_effect {
+            part["effect"] = json!(true);
+        }
+        part["diagnostics"] = json!([diagnostic]);
+    };
     match v["retirement"]["phase"].as_str() {
         Some("stop") => {
-            add(t, i, "stop", "unavailable");
+            unavailable(t, "stop");
             settle(t, a, c, i, &o)
         }
         Some("inspect-run") => {
-            add(t, i, "hook", "unavailable");
+            unavailable(t, "hook");
             stop(t, a, c, i, &o)
         }
         Some("run") => {
-            add(t, i, "hook-run", "unavailable");
+            unavailable(t, "hook-run");
             add(t, i, "hook", "unavailable");
             stop(t, a, c, i, &o)
         }

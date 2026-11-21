@@ -186,6 +186,7 @@ fn scripted_runtime_provider() {
     let prefix = "io.github.shrav-k.conduit/";
     let mut gate: Option<Gate> = None;
     let mut last_auth: Option<(String, String, Value)> = None;
+    let mut last_gate_options = None;
     for line in std::io::stdin().lock().lines() {
         let Ok(value) = serde_json::from_str::<Value>(&line.unwrap()) else {
             continue;
@@ -249,6 +250,7 @@ fn scripted_runtime_provider() {
                 prime_events: false,
                 hold_initialize_body: false,
             };
+            last_gate_options = Some(options.clone());
             gate = Some(runtime.block_on(Gate::start(options)));
             recorded["params"]["arguments"]["identity"]["environment"] = json!(
                 identity["environment"]
@@ -285,6 +287,28 @@ fn scripted_runtime_provider() {
                 let mut error = false;
                 match name {
                     "inspect-run.v1" => {
+                        if matches!(mode.as_str(), "reused-unproved" | "failed-mcp-initialize") {
+                            let old = gate.take().unwrap();
+                            let url = url::Url::parse(&old.url).unwrap();
+                            let previous_address =
+                                (std::net::Ipv4Addr::LOCALHOST, url.port().unwrap()).into();
+                            runtime.block_on(old.shutdown());
+                            let mut options = last_gate_options.clone().unwrap();
+                            options.count_file = Some(directory.join("replacement-count"));
+                            let fail_initialize = mode == "failed-mcp-initialize";
+                            let address = if fail_initialize {
+                                "127.0.0.1:0".parse().unwrap()
+                            } else {
+                                (options.cert, options.key) =
+                                    TestAuthority::self_signed(&last_auth.as_ref().unwrap().1);
+                                previous_address
+                            };
+                            gate = Some(runtime.block_on(Gate::start_on(
+                                options,
+                                address,
+                                fail_initialize,
+                            )));
+                        }
                         if mode == "bad-inspect" {
                             let (cert, key) =
                                 TestAuthority::self_signed(&last_auth.as_ref().unwrap().1);
@@ -524,6 +548,20 @@ fn runtime_provider_failures_discovery_and_tls_refusal_map_reports() {
             assert!(!messages.iter().any(|m| m["params"]["name"] == "run.v1"));
         }
         if mode == "self-signed" {
+            let state = fixture.shell.state().unwrap();
+            let agent = state
+                .objects
+                .iter()
+                .find(|o| o["id"] == id(&fixture.shell, "a"))
+                .unwrap();
+            let part = agent["status"]["setup"]["parts"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|part| part["name"] == "run")
+                .unwrap();
+            assert_eq!(part["outcome"], "unavailable");
+            assert_eq!(part["diagnostics"][0]["ruleId"], "PRV-028");
             assert!(
                 fixture
                     .runner
@@ -537,6 +575,38 @@ fn runtime_provider_failures_discovery_and_tls_refusal_map_reports() {
             );
         }
     }
+}
+
+#[test]
+fn runtime_provider_unproved_url_reports_the_part_unavailable() {
+    let fixture = Fixture::new("self-signed");
+    fixture.setup();
+    assert_eq!(
+        fs::read_to_string(fixture.temp.path().join("gate-count")).unwrap(),
+        "0"
+    );
+    let subject = id(&fixture.shell, "a");
+    let state = fixture.shell.state().unwrap();
+    let agent = state.objects.iter().find(|o| o["id"] == subject).unwrap();
+    let part = agent["status"]["setup"]["parts"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|p| p["name"] == "run")
+        .unwrap();
+    assert_eq!(part["outcome"], "unavailable");
+    let diagnostic = &part["diagnostics"][0];
+    assert_eq!(diagnostic["ruleId"], "PRV-028");
+    let message = diagnostic["message"]["text"].as_str().unwrap();
+    assert!(message.contains(&subject));
+    assert!(!message.contains("://"));
+    assert!(
+        agent["status"]["conditions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|c| c["type"] == "Running" && c["status"] == "True")
+    );
 }
 
 fn groups(fixture: &Fixture) -> Vec<i32> {
@@ -643,12 +713,20 @@ fn runtime_provider_inspection_repairs_ended_session_and_refuses_changed_unprove
         .iter()
         .find(|o| o["id"] == id(&fixture.shell, "a"))
         .unwrap();
+    let part = object["status"]["setup"]["parts"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|part| part["name"] == "run")
+        .unwrap();
+    assert_eq!(part["outcome"], "unavailable");
+    assert_eq!(part["diagnostics"][0]["ruleId"], "PRV-028");
     assert!(
         object["status"]["conditions"]
             .as_array()
             .unwrap()
             .iter()
-            .any(|c| c["type"] == "Running" && c["status"] == "Unknown")
+            .any(|c| c["type"] == "Running" && c["status"] == "True")
     );
     assert_private(&fixture);
     let records = serde_json::to_string(&fixture.shell.state().unwrap()).unwrap();
@@ -658,6 +736,83 @@ fn runtime_provider_inspection_repairs_ended_session_and_refuses_changed_unprove
             && !records.contains("eyJhbGci")
     );
 }
+fn provider_status(fixture: &Fixture) -> Value {
+    let subject = id(&fixture.shell, "a");
+    fixture
+        .shell
+        .state()
+        .unwrap()
+        .objects
+        .iter()
+        .find(|o| o["id"] == subject)
+        .unwrap()["status"]
+        .clone()
+}
+
+fn running(status: &Value) -> &Value {
+    status["conditions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|condition| condition["type"] == "Running")
+        .unwrap()
+}
+
+fn run_part(status: &Value) -> &Value {
+    status["setup"]["parts"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|part| part["name"] == "run")
+        .unwrap()
+}
+
+#[test]
+fn runtime_provider_reproves_an_explicitly_repeated_url() {
+    let fixture = Fixture::new("success");
+    assert_eq!(outcome(&fixture.shell, &fixture.setup()), "succeeded");
+    assert_eq!(outcome(&fixture.shell, &fixture.call()), "succeeded");
+    assert_eq!(fixture.runner.running_count(), 2);
+
+    fs::write(fixture.temp.path().join("mode"), "reused-unproved").unwrap();
+    fixture.setup();
+
+    let status = provider_status(&fixture);
+    assert_eq!(run_part(&status)["outcome"], "unavailable");
+    assert_eq!(run_part(&status)["diagnostics"][0]["ruleId"], "PRV-028");
+    assert_eq!(running(&status)["status"], "True");
+    assert!(!fixture.temp.path().join("replacement-count").exists());
+    deadline(|| fixture.runner.running_count() == 1);
+}
+
+#[test]
+fn runtime_provider_preserves_running_when_proved_endpoint_fails_initialize() {
+    let fixture = Fixture::new("success");
+    assert_eq!(outcome(&fixture.shell, &fixture.setup()), "succeeded");
+    let before = provider_status(&fixture);
+    fs::write(fixture.temp.path().join("mode"), "failed-mcp-initialize").unwrap();
+    fixture.setup();
+
+    let status = provider_status(&fixture);
+    assert_eq!(running(&status)["status"], "True");
+    assert_eq!(
+        running(&status)["lastTransitionTime"],
+        running(&before)["lastTransitionTime"]
+    );
+    assert!(
+        running(&status)["lastHeartbeatTime"].as_str()
+            > running(&before)["lastHeartbeatTime"].as_str()
+    );
+    assert_eq!(run_part(&status)["outcome"], "unavailable");
+    let diagnostic = &run_part(&status)["diagnostics"][0];
+    assert_eq!(diagnostic["ruleId"], "IFC-017");
+    let message = diagnostic["message"]["text"].as_str().unwrap();
+    assert!(message.contains("MCP session could not be initialized"));
+    assert!(!message.contains("https://"));
+    assert!(fixture.temp.path().join("replacement-count").exists());
+    deadline(|| fixture.runner.running_count() == 1);
+}
+
 #[test]
 fn runtime_provider_cancelled_setup_sends_nothing_and_starts_no_bridge() {
     let fixture = Fixture::new("success");

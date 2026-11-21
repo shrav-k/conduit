@@ -25,7 +25,7 @@ pub(crate) fn prepare_run(
         return unavailable(t, a, c, i);
     }
     if resources.is_empty() {
-        return emit_run(t, c, i);
+        return emit_run(t, a, c, i);
     }
     let v = &mut t.state.invocations[i];
     if v.get("retirement").is_some() {
@@ -37,27 +37,33 @@ pub(crate) fn prepare_run(
     advance(t, a, c, i)
 }
 
-fn emit_run(t: &mut Transition, c: &Context, i: usize) -> Result<()> {
+pub(crate) fn is_own_runner_provider(object: &Value, c: &Context) -> bool {
+    object.get("runtime").is_none()
+        && [
+            "get-secret.v1",
+            "run.v1",
+            "list-machines.v1",
+            "fetch-package.v1",
+        ]
+        .into_iter()
+        .any(|operation| {
+            object["resolved_implementations"]
+                .get(c.qualified(operation))
+                .is_some()
+        })
+}
+
+fn emit_run(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) -> Result<()> {
     let v = t.state.invocations[i].clone();
     let object = access::object(&t.state, &v["object"]).ok_or("run subject missing")?;
     let (inputs, mut bindings) = lifecycle::run_inputs(object, &v, c)?;
-    let secret_provider = object.get("runtime").is_none()
-        && object["resolved_implementations"]
-            .get(c.qualified("get-secret.v1"))
-            .is_some();
+    let provider = is_own_runner_provider(object, c);
     for map in bindings.as_object_mut().unwrap().values_mut() {
         for target in map.as_object_mut().unwrap().values_mut() {
             *target = v["secret_reads"]["reads"][target.as_str().unwrap()].clone();
         }
     }
-    let intent_index = t.external_intents.len();
-    lifecycle::emit(t, c, i, "run.v1", inputs)?;
-    if secret_provider {
-        t.external_intents[intent_index]["observeProviderExit"] = json!(true);
-    }
-    if v.get("secret_reads").is_some() {
-        t.external_intents[intent_index]["secretBindings"] = bindings;
-    }
+    let secret_bindings = v.get("secret_reads").map(|_| bindings);
     let stored = &mut t.state.invocations[i];
     stored.as_object_mut().unwrap().remove("secret_reads");
     if v.get("provider_restart").is_some() {
@@ -66,11 +72,12 @@ fn emit_run(t: &mut Transition, c: &Context, i: usize) -> Result<()> {
         stored["retirement"]["phase"] = json!("run");
     } else {
         stored["setup"]["run_phase"] = json!("run");
-        if secret_provider {
+        if provider {
+            // Keep the run ledger keys written by 218 readable after upgrading.
             stored["secret_provider_run"] = json!("asked");
         }
     }
-    Ok(())
+    lifecycle::emit(t, a, c, i, "run.v1", inputs, secret_bindings)
 }
 
 fn unavailable(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) -> Result<()> {
@@ -99,7 +106,7 @@ fn advance(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) ->
             .state
             .invocations
             .iter()
-            .any(|read| read["state"] == "in-progress" && read["secret_read"]["restart"] == v["id"])
+            .any(|waiter| awaiting_restart(waiter, &v["id"]))
     {
         return unavailable(t, a, c, i);
     }
@@ -113,7 +120,7 @@ fn advance(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) ->
                 .is_none()
         })
     else {
-        return emit_run(t, c, i);
+        return emit_run(t, a, c, i);
     };
     let id = a.next(&mut t.state)?;
     let serving = v["provider_restart"].get("setup").unwrap_or(&v["id"]);
@@ -178,7 +185,7 @@ fn decide(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) -> 
         record_decision(t, a, c, i, Some((reason, rule)))?;
         return end(t, a, c, i, reason, Some(rule), None);
     }
-    if v["secret_read"]["phase"] != "discovered" && restart_if_needed(t, a, c, i)? {
+    if v["secret_read"]["phase"] != "discovered" && restart_if_needed(t, a, c, i, None)? {
         return Ok(());
     }
     let path = path.unwrap();
@@ -444,19 +451,67 @@ fn end(
     }
 }
 
-fn restart_if_needed(
+fn awaiting_restart(waiter: &Value, restart: &Value) -> bool {
+    waiter["state"] == "in-progress"
+        && waiter["cancelled"] != true
+        && (waiter["secret_read"]["restart"] == *restart
+            || waiter["provider_wait"]["restart"] == *restart)
+}
+
+fn wait_for_restart(waiter: &mut Value, restart: &Value, call: Option<&Value>) {
+    if let Some(call) = call {
+        waiter["provider_wait"] = json!({"restart":restart,"intent":call});
+    } else {
+        waiter["secret_read"]["restart"] = restart.clone();
+    }
+}
+
+pub(crate) fn provider_setup_has_ambiguous_end(
+    state: &crate::State,
+    c: &Context,
+    provider: &Value,
+) -> bool {
+    if access::object(state, provider)
+        .is_none_or(|object| object["state"] == "retired" || !is_own_runner_provider(object, c))
+    {
+        return false;
+    }
+    // Before runtime providers had a ledger, shutdown could report that a
+    // process group was absent without observing when or why its run ended.
+    state
+        .invocations
+        .iter()
+        .rev()
+        .filter(|setup| setup["object"] == *provider)
+        .find(|setup| {
+            setup.get("secret_provider_run").is_some()
+                || setup["setup"]["parts"].as_array().is_some_and(|parts| {
+                    parts
+                        .iter()
+                        .any(|part| part["name"] == "run" && part["outcome"] == "succeeded")
+                })
+        })
+        .is_some_and(|setup| setup.get("secret_provider_run").is_none())
+}
+
+pub(crate) fn restart_if_needed(
     t: &mut Transition,
     a: &mut Allocation<'_>,
     c: &Context,
-    read: usize,
+    waiter: usize,
+    call: Option<&Value>,
 ) -> Result<bool> {
-    let v = t.state.invocations[read].clone();
+    let v = t.state.invocations[waiter].clone();
+    let provider = call.map_or(&v["target"], |intent| &intent["provider"]);
+    if access::object(&t.state, provider).is_none_or(|object| object["state"] == "retired") {
+        return Ok(false);
+    }
     let Some(setup) = t
         .state
         .invocations
         .iter()
         .rev()
-        .find(|p| p["object"] == v["target"] && p.get("secret_provider_run").is_some())
+        .find(|p| p["object"] == *provider && p.get("secret_provider_run").is_some())
         .cloned()
     else {
         return Ok(false);
@@ -470,34 +525,45 @@ fn restart_if_needed(
         });
     if let Some(i) = active {
         // A provider whose own run depends on itself cannot be made available.
-        let mut run = v["secret_read"]["run"].clone();
-        loop {
-            let parent = &t.state.invocations[find(t, &run)?];
-            if parent["id"] == t.state.invocations[i]["id"] {
-                record_decision(t, a, c, read, Some(("unavailable", "PRV-026")))?;
-                end(t, a, c, read, "unavailable", Some("PRV-026"), None)?;
-                return Ok(true);
+        if call.is_none() {
+            let mut run = v["secret_read"]["run"].clone();
+            loop {
+                let parent = &t.state.invocations[find(t, &run)?];
+                if parent["id"] == t.state.invocations[i]["id"] {
+                    record_decision(t, a, c, waiter, Some(("unavailable", "PRV-026")))?;
+                    end(t, a, c, waiter, "unavailable", Some("PRV-026"), None)?;
+                    return Ok(true);
+                }
+                let Some(read) = parent["provider_restart"]["first_read"].as_str() else {
+                    break;
+                };
+                run = t.state.invocations[find(t, &json!(read))?]["secret_read"]["run"].clone();
             }
-            let Some(waiter) = parent["provider_restart"]["first_read"].as_str() else {
-                break;
-            };
-            run = t.state.invocations[find(t, &json!(waiter))?]["secret_read"]["run"].clone();
         }
-        t.state.invocations[read]["secret_read"]["restart"] = t.state.invocations[i]["id"].clone();
+        let restart = t.state.invocations[i]["id"].clone();
+        wait_for_restart(&mut t.state.invocations[waiter], &restart, call);
         return Ok(true);
     }
     let id = a.next(&mut t.state)?;
-    t.state.invocations[read]["secret_read"]["restart"] = json!(id);
+    wait_for_restart(&mut t.state.invocations[waiter], &json!(id), call);
+    let mut restart = json!({"setup":setup["id"],"phase":"prepare"});
+    if call.is_none() {
+        restart["first_read"] = v["id"].clone();
+    }
     t.state.invocations.push(json!({
-        "id":id,"attempt":1,"state":"in-progress","object":v["target"],"caller":setup["caller"],
+        "id":id,"attempt":1,"state":"in-progress","object":provider,"caller":setup["caller"],
         "setup":{"item":setup["setup"]["item"]},
-        "provider_restart":{"setup":setup["id"],"first_read":v["id"],"phase":"prepare"}
+        "provider_restart":restart
     }));
     t.decisions.push(decision(
-        "restart-secret-provider-for-read",
+        if call.is_some() {
+            "restart-provider-for-call"
+        } else {
+            "restart-secret-provider-for-read"
+        },
         &["PRV-026", "OBS-004"],
         &[],
-        json!({"provider":v["target"],"setup":setup["id"],"invocation":id}),
+        json!({"provider":provider,"setup":setup["id"],"invocation":id}),
         vec![],
     ));
     prepare_run(t, a, c, t.state.invocations.len() - 1)?;
@@ -536,16 +602,33 @@ fn restart_ended(
         .invocations
         .iter()
         .enumerate()
-        .filter(|(_, r)| r["state"] == "in-progress" && r["secret_read"]["restart"] == id)
+        .filter(|(_, waiter)| awaiting_restart(waiter, &id))
         .map(|(i, _)| i)
         .collect();
-    for read in waiting {
-        let parent = find(t, &t.state.invocations[read]["secret_read"]["run"])?;
+    for waiter in waiting {
+        if !awaiting_restart(&t.state.invocations[waiter], &id) {
+            continue;
+        }
+        if let Some(call) = t.state.invocations[waiter]
+            .as_object_mut()
+            .unwrap()
+            .remove("provider_wait")
+        {
+            if outcome == "succeeded"
+                && access::object(&t.state, &subject).is_some_and(|o| o["state"] != "retired")
+            {
+                t.external_intents.push(call["intent"].clone());
+            } else {
+                lifecycle::provider_restart_failed(t, a, c, waiter)?;
+            }
+            continue;
+        }
+        let parent = find(t, &t.state.invocations[waiter]["secret_read"]["run"])?;
         if t.state.invocations[parent]["state"] != "in-progress" || outcome != "succeeded" {
-            record_decision(t, a, c, read, Some(("unavailable", "PRV-026")))?;
-            end(t, a, c, read, "unavailable", Some("PRV-026"), None)?;
+            record_decision(t, a, c, waiter, Some(("unavailable", "PRV-026")))?;
+            end(t, a, c, waiter, "unavailable", Some("PRV-026"), None)?;
         } else {
-            decide(t, a, c, read)?;
+            decide(t, a, c, waiter)?;
         }
     }
     Ok(())
@@ -645,6 +728,7 @@ pub(crate) fn recover(
 ) -> Result<bool> {
     let v = &mut t.state.invocations[i];
     v.as_object_mut().unwrap().remove("secret_reads");
+    v.as_object_mut().unwrap().remove("provider_wait");
     if v["secret_provider_run"] == "asked" {
         v["secret_provider_run"] = json!("restart-needed");
     }
@@ -675,6 +759,7 @@ pub(crate) fn cancel(
 ) -> Result<()> {
     let owner = &mut t.state.invocations[i];
     owner.as_object_mut().unwrap().remove("secret_reads");
+    owner.as_object_mut().unwrap().remove("provider_wait");
     let run = owner["id"].clone();
     let mut cancelled = Vec::new();
     for v in &mut t.state.invocations {

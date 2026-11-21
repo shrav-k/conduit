@@ -64,12 +64,13 @@ TOOL_TESTS_WHY = ('the branch changes nothing under tools/ or .github/workflows/
 RUST_WHY = 'rust discovery did not pass, so no Rust directory or engine gate was chosen'
 ENGINE_PREFIXES = ('engine/', 'spec/', 'conformance/', 'packages/agent-claude-code/',
                    'packages/agent-codex/', 'packages/provider-file/', 'packages/git/',
+                   'packages/provider-local-process/', 'packages/runtime-provider-kit/',
                    'packages/scenario-s2-linear/', 'packages/scenario-s2-linear-restrictions/',
                    'experiments/013-s2-shared-login/linear-stub/')
 ENGINE_WHY = ('the branch changes nothing under engine/, spec/, conformance/, '
               'packages/agent-claude-code/, packages/agent-codex/, packages/provider-file/, '
-              'packages/git/, packages/scenario-s2-linear/, '
-              'packages/scenario-s2-linear-restrictions/ '
+              'packages/git/, packages/provider-local-process/, packages/runtime-provider-kit/, '
+              'packages/scenario-s2-linear/, packages/scenario-s2-linear-restrictions/ '
               'or experiments/013-s2-shared-login/linear-stub/')
 UNREACHED_WHY = ('the branch changes nothing in these, in a directory they depend on by path, '
                  'or in a path they read: ')

@@ -32,6 +32,15 @@ pub enum Report {
     ProviderDiscoveryUnavailable {
         operation: String,
     },
+    ProviderCallUnavailable {
+        operation: String,
+    },
+    ProviderRunUnproved {
+        operation: String,
+    },
+    ProviderBridgeUninitialized {
+        operation: String,
+    },
 }
 pub(crate) fn handles(op: &str, c: &Context) -> bool {
     [
@@ -412,9 +421,10 @@ fn settle(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) -> 
             || p["outcome"] == "succeeded"
             || (p["name"] == "account" && v["setup"]["accountCounted"].is_string())
     });
-    let effect = parts
-        .iter()
-        .any(|p| p["effect"] == true && (p["outcome"] == "succeeded" || p["outcome"] == "unknown"));
+    let effect = v["setup"]["run_effect_observed"] == true
+        || parts.iter().any(|p| {
+            p["effect"] == true && (p["outcome"] == "succeeded" || p["outcome"] == "unknown")
+        });
     let outcome = if all {
         "succeeded"
     } else if effect {
@@ -835,7 +845,10 @@ fn advance(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) ->
                 part(t, i, "run", "unavailable", true, false, Value::Null);
                 t.state.invocations[i]["setup"]["run_phase"] = json!("ended");
             } else {
-                emit(t, c, i, "inspect-run.v1", json!({}))?;
+                emit(t, a, c, i, "inspect-run.v1", json!({}), None)?;
+                if t.state.invocations[i]["state"] != "in-progress" {
+                    return Ok(());
+                }
             }
         }
         for remote in remotes {
@@ -925,10 +938,12 @@ fn dispatch_sign_in_part(
 }
 pub(crate) fn emit(
     t: &mut Transition,
+    a: &mut Allocation<'_>,
     c: &Context,
     i: usize,
     operation: &str,
     extra: Value,
+    secret_bindings: Option<Value>,
 ) -> Result<()> {
     let v = t.state.invocations[i].clone();
     let o = access::object(&t.state, &v["object"])
@@ -944,6 +959,12 @@ pub(crate) fn emit(
         .extend(extra.as_object().unwrap().clone());
     let runtime = o.get("runtime").and_then(|r| access::object(&t.state, r));
     let mut intent = json!({"kind":if runtime.is_some(){"provider-call"}else{"builtin-runner"},"operation":c.qualified(operation),"invocation":v["id"],"caller":v["caller"],"subject":o["id"],"inputs":inputs});
+    if operation == "run.v1" && crate::secrets::is_own_runner_provider(&o, c) {
+        intent["observeProviderExit"] = json!(true);
+    }
+    if let Some(bindings) = secret_bindings {
+        intent["secretBindings"] = bindings;
+    }
     if let Some(runtime) = runtime {
         intent["provider"] = runtime["id"].clone();
         intent["config"] = runtime["config"].clone();
@@ -960,8 +981,13 @@ pub(crate) fn emit(
         facts["invocation"] = v["id"].clone();
         t.state.invocations[i]["provider_call"] = facts;
     }
-    t.external_intents.push(intent);
-    t.reply = json!({"pending":true,"invocation":v["id"]});
+    let provider_call = intent["kind"] == "provider-call";
+    if !provider_call || !crate::secrets::restart_if_needed(t, a, c, i, Some(&intent))? {
+        t.external_intents.push(intent);
+    }
+    if t.state.invocations[i]["state"] == "in-progress" {
+        t.reply = json!({"pending":true,"invocation":v["id"]});
+    }
     cite(
         t,
         "setup-runner-intent",
@@ -1028,6 +1054,118 @@ pub(crate) fn run_inputs(o: &Value, v: &Value, c: &Context) -> Result<(Value, Va
         secrets,
     ))
 }
+enum ProviderRefusal {
+    Discovery,
+    NotReached,
+    Restart,
+}
+
+fn withhold_provider_call(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    operation: &str,
+    failure: ProviderRefusal,
+) -> Result<()> {
+    let v = &t.state.invocations[i];
+    let mut facts = v["provider_call"].clone();
+    if facts["operation"] != operation || facts["made"] == true || v["cancelled"] == true {
+        t.reply = json!({"ignored":true});
+        return Ok(());
+    }
+    let subject = v["object"].clone();
+    let provider = facts["target"]
+        .as_str()
+        .ok_or("provider call has no target")?;
+    let (rule, message) = match failure {
+        ProviderRefusal::Discovery => {
+            let extension = format!("{}implementation-interface", c.meta_prefix);
+            let message = format!(
+                "Provider {provider} did not advertise {extension} at v0, so the call for instance {subject} was not sent."
+            );
+            facts["missingExtension"] = json!(extension);
+            facts["extensionRevision"] = json!("v0");
+            ("IFC-037", message)
+        }
+        ProviderRefusal::NotReached
+            if crate::secrets::provider_setup_has_ambiguous_end(&t.state, c, &facts["target"]) =>
+        {
+            (
+                "PRV-026",
+                format!(
+                    "Provider {provider} needs explicit setup before a call for instance {subject}. The stored history cannot establish that its run ended at engine shutdown."
+                ),
+            )
+        }
+        ProviderRefusal::NotReached => (
+            "PRV-026",
+            format!(
+                "The engine could not reach provider {provider} for instance {subject}, so the call was not sent."
+            ),
+        ),
+        ProviderRefusal::Restart => (
+            "PRV-026",
+            format!(
+                "The engine could not restart provider {provider} for instance {subject}: a required secret read or the provider's run did not succeed. The call was not sent."
+            ),
+        ),
+    };
+    facts.as_object_mut().unwrap().remove("inputs");
+    facts["phase"] = json!("ended");
+    facts["reason"] = json!("unavailable");
+    facts["ruleId"] = json!(rule);
+    requests::record(t, a, c, "provider-call", facts)?;
+    t.state.invocations[i]
+        .as_object_mut()
+        .unwrap()
+        .remove("provider_call");
+    cite(
+        t,
+        "withhold-unavailable-provider-call",
+        &[rule, "PRV-005"],
+        &subject,
+    );
+    provider_part_unavailable(
+        t,
+        a,
+        c,
+        i,
+        json!({"ruleId":rule,"level":"error","message":{"text":message}}),
+    )
+}
+
+pub(crate) fn provider_restart_failed(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+) -> Result<()> {
+    let operation = t.state.invocations[i]["provider_call"]["operation"].clone();
+    withhold_provider_call(
+        t,
+        a,
+        c,
+        i,
+        operation.as_str().ok_or("provider call has no operation")?,
+        ProviderRefusal::Restart,
+    )
+}
+
+fn provider_part_unavailable(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    diagnostic: Value,
+) -> Result<()> {
+    if t.state.invocations[i].get("retirement").is_some() {
+        crate::retirement::provider_unavailable(t, a, c, i, diagnostic)
+    } else {
+        finish_unavailable_run(t, a, c, i, Some(diagnostic))
+    }
+}
+
 pub(crate) fn report(
     t: &mut Transition,
     evidence: &Evidence,
@@ -1056,43 +1194,44 @@ pub(crate) fn report(
         evidence,
         cursor: 0,
     };
-    if let Report::ProviderCallReady { operation }
-    | Report::ProviderDiscoveryUnavailable { operation } = &report
-    {
+    if let Report::ProviderCallReady { operation } = &report {
         let mut facts = v["provider_call"].clone();
         if facts["operation"] != *operation || facts["made"] == true || v["cancelled"] == true {
             t.reply = json!({"ignored":true});
             return Ok(());
         }
-        if matches!(report, Report::ProviderCallReady { .. }) {
-            facts["phase"] = json!("made");
-            requests::record(t, &mut a, c, "provider-call", facts)?;
-            t.state.invocations[i]["provider_call"]["made"] = json!(true);
-            t.reply = json!({"accepted":true});
-            return Ok(());
-        }
-        facts.as_object_mut().unwrap().remove("inputs");
-        facts["phase"] = json!("ended");
-        facts["reason"] = json!("unavailable");
-        facts["ruleId"] = json!("IFC-037");
-        facts["missingExtension"] = json!(format!("{}implementation-interface", c.meta_prefix));
-        facts["extensionRevision"] = json!("v0");
+        facts["phase"] = json!("made");
         requests::record(t, &mut a, c, "provider-call", facts)?;
-        t.state.invocations[i]
-            .as_object_mut()
-            .unwrap()
-            .remove("provider_call");
-        cite(
-            t,
-            "withhold-provider-call-without-extension",
-            &["IFC-037", "PRV-005"],
-            &v["object"],
-        );
-        return if v.get("retirement").is_some() {
-            crate::retirement::provider_unavailable(t, &mut a, c, i)
-        } else {
-            run_unavailable(t, &mut a, c, i)
-        };
+        t.state.invocations[i]["provider_call"]["made"] = json!(true);
+        t.reply = json!({"accepted":true});
+        return Ok(());
+    }
+    if let Report::ProviderDiscoveryUnavailable { operation } = &report {
+        return withhold_provider_call(t, &mut a, c, i, operation, ProviderRefusal::Discovery);
+    }
+    if let Report::ProviderCallUnavailable { operation } = &report {
+        return withhold_provider_call(t, &mut a, c, i, operation, ProviderRefusal::NotReached);
+    }
+    let bridge_failure = match &report {
+        Report::ProviderRunUnproved { operation } => Some((
+            operation,
+            "PRV-028",
+            "the server did not prove that instance under PRV-028 and IFC-017.",
+        )),
+        Report::ProviderBridgeUninitialized { operation } => Some((
+            operation,
+            "IFC-017",
+            "the bridge's MCP session could not be initialized.",
+        )),
+        _ => None,
+    };
+    if let Some((operation, _, _)) = bridge_failure
+        && (v["provider_call"]["operation"] != *operation
+            || v["provider_call"]["made"] != true
+            || v["cancelled"] == true)
+    {
+        t.reply = json!({"ignored":true});
+        return Ok(());
     }
     let provider_outcome = match &report {
         Report::InspectRun { state } => {
@@ -1100,6 +1239,16 @@ pub(crate) fn report(
         }
         Report::Run { outcome, url } => Some(("run.v1", outcome.as_str(), json!({"url":url}))),
         Report::Stop { outcome } => Some(("stop.v1", outcome.as_str(), json!({}))),
+        Report::ProviderRunUnproved { operation }
+        | Report::ProviderBridgeUninitialized { operation } => {
+            if *operation == c.qualified("inspect-run.v1") {
+                Some(("inspect-run.v1", "succeeded", json!({"state":"running"})))
+            } else if *operation == c.qualified("run.v1") {
+                Some(("run.v1", "succeeded", json!({})))
+            } else {
+                return Err("a provider bridge report requires run.v1 or inspect-run.v1".into());
+            }
+        }
         _ => None,
     };
     if let Some((operation, outcome, outputs)) = provider_outcome
@@ -1117,6 +1266,55 @@ pub(crate) fn report(
             facts["outputs"] = outputs;
             requests::record(t, &mut a, c, "provider-call", facts)?;
         }
+    }
+    if let Some((operation, rule, message)) = bridge_failure {
+        let object = t
+            .state
+            .objects
+            .iter_mut()
+            .find(|o| o["id"] == v["object"])
+            .ok_or("run subject missing")?;
+        observe_run(object, "running", &evidence.time)?;
+        // The run succeeded even though the engine cannot use its endpoint.
+        // OPS-022 still counts that effect when settling the enclosing change.
+        if *operation == c.qualified("run.v1") {
+            let part = if v.get("retirement").is_some() {
+                "retirement"
+            } else {
+                "setup"
+            };
+            t.state.invocations[i][part]["run_effect_observed"] = json!(true);
+        }
+        if v.get("retirement").is_none() {
+            change(
+                t,
+                &mut a,
+                c,
+                i,
+                &v["object"],
+                "setup-part-reported",
+                json!({"partOperation":operation,"outcome":"unavailable","runState":"running","ruleId":rule}),
+            )?;
+        }
+        if rule == "PRV-028" {
+            cite(
+                t,
+                "refuse-unproved-provider-run",
+                &["PRV-028", "IFC-017", "PRV-009"],
+                &v["object"],
+            );
+        } else {
+            cite(
+                t,
+                "report-uninitialized-provider-bridge",
+                &["IFC-017", "PRV-009"],
+                &v["object"],
+            );
+        }
+        let diagnostic = json!({"ruleId":rule,"level":"error","message":{
+            "text":format!("The runtime provider reported a running process for instance {}, but {message}",v["object"].as_str().unwrap())
+        }});
+        return provider_part_unavailable(t, &mut a, c, i, diagnostic);
     }
     if crate::secrets::lifecycle_report(t, &mut a, c, i, &report)? {
         return Ok(());
@@ -1270,7 +1468,25 @@ pub(crate) fn run_unavailable(
     c: &Context,
     i: usize,
 ) -> Result<()> {
-    part(t, i, "run", "unavailable", false, false, Value::Null);
+    finish_unavailable_run(t, a, c, i, None)
+}
+
+fn finish_unavailable_run(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    diagnostic: Option<Value>,
+) -> Result<()> {
+    let effect = t.state.invocations[i]["setup"]["run_effect_observed"] == true;
+    part(t, i, "run", "unavailable", effect, false, Value::Null);
+    if let Some(diagnostic) = diagnostic {
+        t.state.invocations[i]["setup"]["parts"]
+            .as_array_mut()
+            .unwrap()
+            .last_mut()
+            .unwrap()["diagnostics"] = json!([diagnostic]);
+    }
     t.state.invocations[i]["setup"]["run_phase"] = json!("ended");
     advance(t, a, c, i)?;
     if t.state.invocations[i]["state"] != "in-progress" {

@@ -28,6 +28,10 @@ use tokio::{
 };
 use tokio_util::sync::CancellationToken;
 
+fn canonical_hostname(host: &str) -> String {
+    host.trim().to_lowercase()
+}
+
 pub fn hostname() -> Result<String> {
     let mut bytes = [0u8; 1024];
     // SAFETY: writable buffer with its exact length; a truncated name is refused.
@@ -35,7 +39,10 @@ pub fn hostname() -> Result<String> {
         return Err(Unavailable);
     }
     let end = bytes.iter().position(|b| *b == 0).ok_or(Unavailable)?;
-    String::from_utf8(bytes[..end].to_vec()).map_err(|_| Unavailable)
+    // The kit compares its declaration's selector to the node's hostname.
+    String::from_utf8(bytes[..end].to_vec())
+        .map(|host| canonical_hostname(&host))
+        .map_err(|_| Unavailable)
 }
 
 /// Injectable only through the library constructor. The shipped binary always uses StopPipe.
@@ -137,7 +144,7 @@ impl LocalBackend {
         self.root.join(area).join(instance_key(instance))
     }
     fn local(&self, context: &CallContext) -> Result<()> {
-        if context.machine.hostname == self.hostname {
+        if canonical_hostname(&context.machine.hostname) == canonical_hostname(&self.hostname) {
             Ok(())
         } else {
             Err(Unavailable)
@@ -180,7 +187,7 @@ impl RuntimeBackend for LocalBackend {
             transports: vec![],
             command: true,
             machines: vec![MachineSelector {
-                hostname: Some(self.hostname.clone()),
+                hostname: Some(canonical_hostname(&self.hostname)),
                 labels: BTreeMap::new(),
             }],
         }
@@ -445,5 +452,54 @@ impl AsyncWrite for ProcessChannel {
     }
     fn poll_shutdown(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<std::io::Result<()>> {
         Pin::new(&mut self.stdin).poll_shutdown(cx)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::os::unix::fs::PermissionsExt;
+
+    #[test]
+    fn local_backend_accepts_the_canonical_spelling_of_its_hostname() {
+        let state = tempfile::tempdir().unwrap();
+        fs::set_permissions(state.path(), fs::Permissions::from_mode(0o700)).unwrap();
+        let mut backend = LocalBackend::new(state.path(), Path::new("/unused")).unwrap();
+        assert_eq!(backend.hostname, backend.hostname.to_ascii_lowercase());
+        backend.hostname = "Mixed-Case.Example".into();
+        let mut context = CallContext {
+            config: serde_json::json!({}),
+            revision: "r1".into(),
+            machine: Machine {
+                hostname: "mixed-case.example".into(),
+                labels: BTreeMap::new(),
+            },
+        };
+        assert!(backend.local(&context).is_ok());
+        context.machine.hostname = "other.example".into();
+        assert!(backend.local(&context).is_err());
+    }
+
+    #[test]
+    fn local_backend_advertises_and_compares_canonical_hostnames() {
+        let state = tempfile::tempdir().unwrap();
+        fs::set_permissions(state.path(), fs::Permissions::from_mode(0o700)).unwrap();
+        let mut backend = LocalBackend::new(state.path(), Path::new("/unused")).unwrap();
+        backend.hostname = " Mixed.Äxample ".into();
+        assert_eq!(
+            backend.declaration().machines[0].hostname.as_deref(),
+            Some("mixed.äxample")
+        );
+        let mut context = CallContext {
+            config: serde_json::json!({}),
+            revision: "r1".into(),
+            machine: Machine {
+                hostname: "\tMIXED.äXAMPLE ".into(),
+                labels: BTreeMap::new(),
+            },
+        };
+        assert!(backend.local(&context).is_ok());
+        context.machine.hostname = "mixed.example".into();
+        assert!(backend.local(&context).is_err());
     }
 }

@@ -1,0 +1,41 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Interface",
+    "metadata": {
+      "name": "auditor"
+    },
+    "from": "basis"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "auditor--catalog--t"
+    },
+    "spec": {
+      "capability": "github.com/shrav-k/conduit/core#pool-management.v1",
+      "operations": [
+        "github.com/shrav-k/conduit/core#list.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "auditor--catalog",
+      "description": "Catalog access"
+    },
+    "consumer": {
+      "kind": "Interface",
+      "name": "auditor"
+    },
+    "target": {
+      "kind": "Pool",
+      "name": "library"
+    },
+    "from": "auditor--catalog--t",
+    "as": "catalog"
+  }
+]

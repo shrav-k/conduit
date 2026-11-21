@@ -1,0 +1,148 @@
+{
+  "id": "sectioned-archive-install",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-003",
+    "SCT-005",
+    "SCT-011",
+    "MAN-011",
+    "PKG-023"
+  ],
+  "title": "A sectioned package exports templates but cannot contain Fleet or instance sections",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fleet.json": "fleet.json",
+    "agents.json": "agents.json",
+    "templates.json": "templates.json",
+    "sectioned-fleet.tar.gz": "../../../fixtures/install-archives/sectioned-fleet.tar.gz",
+    "sectioned-agents.tar.gz": "../../../fixtures/install-archives/sectioned-agents.tar.gz",
+    "sectioned-templates.tar.gz": "../../../fixtures/install-archives/sectioned-templates.tar.gz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "fleet.json"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "MAN-011",
+              "level": "error",
+              "properties": {
+                "file": "sections.yaml",
+                "document": 1
+              },
+              "locations": [
+                {
+                  "logicalLocations": [
+                    {
+                      "fullyQualifiedName": "/fleet"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "stateUnchanged": true,
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "MAN-011",
+          "PKG-023"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "agents.json"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "MAN-011",
+              "level": "error",
+              "properties": {
+                "file": "sections.yaml",
+                "document": 1
+              },
+              "locations": [
+                {
+                  "logicalLocations": [
+                    {
+                      "fullyQualifiedName": "/agents"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "stateUnchanged": true,
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "MAN-011",
+          "PKG-023"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "templates.json"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "outcome": "succeeded",
+          "diagnostics": [],
+          "package": {
+            "address": "example.org/conformance/sectioned-templates",
+            "project": {
+              "manifest": {
+                "exports": [
+                  "catalog"
+                ]
+              },
+              "documents": [
+                {
+                  "apiVersion": "github.com/shrav-k/conduit/v0",
+                  "kind": "Pool",
+                  "metadata": {
+                    "name": "catalog"
+                  },
+                  "spec": {
+                    "type": "github.com/shrav-k/conduit/core#pool.v1"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "state": {
+          "started": false
+        },
+        "record_facts": [],
+        "external_intents": [],
+        "required_promises": [
+          "MAN-011",
+          "PKG-023"
+        ]
+      }
+    }
+  ]
+}

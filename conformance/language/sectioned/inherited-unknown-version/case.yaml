@@ -1,0 +1,68 @@
+{
+  "id": "sectioned-inherited-unknown-version",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-002",
+    "SCT-014",
+    "MAN-003",
+    "OBJ-017",
+    "SUB-005"
+  ],
+  "title": "An inherited unknown version points only to its manifest",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "conduit.json": "conduit.json",
+    "authored.json": "authored.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json",
+          "conduit.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "file": "conduit.json",
+              "document": 1
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/apiVersion"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "api-version.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "const",
+            "contract": "api-version.v1",
+            "pointer": "/const",
+            "root_schema": "manifest.v1"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "id": "sectioned-pool-operator",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-009",
+    "SUB-005"
+  ],
+  "title": "A Pool accepts no operator, including null",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "operator.json": "operator.json",
+    "null.json": "null.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "operator.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "file": "operator.json",
+              "document": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "null.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "file": "null.json",
+              "document": 1
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

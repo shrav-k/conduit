@@ -1,0 +1,11 @@
+{
+  "name": "sectioned-templates.tar.gz",
+  "address": "example.org/conformance/sectioned-templates",
+  "version": "0.1.0",
+  "digest": "sha256:c1b8d1567ef45b69c7d056698fefc904c05f572ec77e05b8df12f915db2bbe31",
+  "directory": null,
+  "completion": {
+    "status": "complete",
+    "file": "sectioned-templates.tar.gz"
+  }
+}

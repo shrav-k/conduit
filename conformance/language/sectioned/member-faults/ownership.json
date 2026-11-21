@@ -1,0 +1,11 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "fleet": "maintainers",
+  "agents": {
+    "broken": null,
+    "reviewer": {
+      "from": "basis",
+      "owner": "outside"
+    }
+  }
+}

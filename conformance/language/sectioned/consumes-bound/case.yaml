@@ -1,0 +1,51 @@
+{
+  "id": "sectioned-consumes-bound",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-008",
+    "SCT-007"
+  ],
+  "title": "An explicitly written core bound permits inline consumes to access",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.json": "authored.json",
+    "framed.json": "framed.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "framed": "framed.json",
+        "translations": [
+          {
+            "kind": "Conduit",
+            "name": "auditor--bounded",
+            "rule": "SCT-007"
+          },
+          {
+            "kind": "Conduit",
+            "name": "auditor--bounded--t",
+            "rule": "SCT-007"
+          },
+          {
+            "kind": "Interface",
+            "name": "auditor",
+            "rule": "SCT-006"
+          }
+        ]
+      }
+    }
+  ]
+}

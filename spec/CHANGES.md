@@ -16,3 +16,5 @@ the tree at their freeze and are then cited by links pinned to their last commit
 then they are under `docs/proposals/`.
 
 ## [Unreleased]
+
+- Changed: SCT-002 (DEC-007).

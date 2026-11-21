@@ -1,0 +1,64 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "templates": {
+    "interfaces": {
+      "reader-template": {
+        "type": "github.com/shrav-k/conduit/core#interface.v1",
+        "inputs": {
+          "limit": {
+            "schema": {
+              "type": "integer"
+            },
+            "default": 3,
+            "to": [
+              "/config/limit"
+            ]
+          }
+        },
+        "description": "Interface",
+        "annotations": {
+          "origin": "short-form"
+        }
+      }
+    },
+    "agents": {
+      "worker-template": {
+        "type": "#worker.v1",
+        "description": "Agent",
+        "annotations": {
+          "origin": "short-form"
+        }
+      }
+    },
+    "resources": {
+      "storage-template": {
+        "type": "#storage.v1",
+        "description": "Resource",
+        "annotations": {
+          "origin": "short-form"
+        }
+      }
+    },
+    "pools": {
+      "library-template": {
+        "type": "github.com/shrav-k/conduit/core#pool.v1",
+        "description": "Pool",
+        "annotations": {
+          "origin": "short-form"
+        }
+      }
+    },
+    "conduits": {
+      "list-template": {
+        "capability": "github.com/shrav-k/conduit/core#pool-management.v1",
+        "operations": [
+          "github.com/shrav-k/conduit/core#list.v1"
+        ],
+        "description": "Conduit",
+        "annotations": {
+          "origin": "short-form"
+        }
+      }
+    }
+  }
+}

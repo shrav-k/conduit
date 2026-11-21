@@ -1,0 +1,53 @@
+{
+  "id": "sectioned-fleet-duplicate-key",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-011",
+    "SCT-014"
+  ],
+  "title": "A second Fleet declaration in one file cites both declarations",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.json": "authored.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SCT-011",
+            "level": "error",
+            "properties": {
+              "file": "authored.json",
+              "document": 2
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/fleet"
+                  }
+                ]
+              }
+            ],
+            "message": {
+              "text": "a second fleet reviewers in the file; the first fleet maintainers is in document 1 at /fleet"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

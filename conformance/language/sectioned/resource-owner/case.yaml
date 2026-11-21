@@ -1,0 +1,49 @@
+{
+  "id": "sectioned-resource-owner",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-006",
+    "SUB-005"
+  ],
+  "title": "A Resource definition must name its Pool owner",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.json": "authored.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "file": "authored.json",
+              "document": 1
+            }
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sectioned-resource.v1"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

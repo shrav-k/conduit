@@ -1,0 +1,50 @@
+{
+  "id": "sectioned-operator-inline",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-009"
+  ],
+  "title": "An inline operator Conduit is consumed by root and targets its definition",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.json": "authored.json",
+    "framed.json": "framed.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "framed": "framed.json",
+        "translations": [
+          {
+            "kind": "Conduit",
+            "name": "auditor--operator",
+            "rule": "SCT-009"
+          },
+          {
+            "kind": "Conduit",
+            "name": "auditor--operator--t",
+            "rule": "SCT-009"
+          },
+          {
+            "kind": "Interface",
+            "name": "auditor",
+            "rule": "SCT-006"
+          }
+        ]
+      }
+    }
+  ]
+}

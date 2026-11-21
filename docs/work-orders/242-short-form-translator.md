@@ -282,4 +282,39 @@ the S1 inventory's SCT rows and DEC-007. Orders 245 and 250 read through this lo
 
 ## Record
 
-Not yet run.
+Run on 2026-11-21 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+
+**Worker-1 stopped twice at the start**, as the stop rule says.
+- First (12:57 to 12:58), SCT-002 named OBJ-017 where SUB-005 names itself for a document a
+  Schema contract rejects. Root's reading, open to the owner's strike, was the framed case's:
+  a stated unknown version is reported under SUB-005 at the authored place, with OBJ-017 the
+  promise the schema encodes. SCT-002's observable is reworded to say so; `spec/CHANGES.md`
+  gives it as a change under DEC-007.
+- Second (13:00 to 13:11), the wire refused a sectioned value in `register.v1` under OPS-033
+  where SCT-001 says SUB-005. Root's decision, open to the owner's strike, was a narrow core
+  change: only that case moves to SUB-005, and every independent input-schema failure keeps
+  OPS-033.
+
+**Worker-1 then built the translator** (13:12 to 13:45): 38 sectioned cases, and the whole
+engine suite once (501 passed, 0 failed, 9 ignored).
+
+**`turn-verifier-1.turn.v1`** (13:45 to 13:50) confirmed:
+- the translation, its determinism and the wire;
+- that `manages` is refused.
+
+It found four musts, which worker-1 fixed (13:52 to 13:59):
+- a missing version is SCT-002;
+- SUB-005 no longer masks sibling OPS-033 failures;
+- schema failures are collected, not cut at the first;
+- the Fleet scan runs across the file.
+
+**The Claude reader** (14:06 to 14:12) found one must: a schema fault in one member hid its
+siblings' translation faults. Worker-1 fixed it, checking per member (14:13 to 14:20). It also
+applied the reader's should: an inherited version is reported once, at the manifest. 41
+sectioned cases and 139 loader and conformance tests pass.
+
+The reader's other should asked for the CHANGES line to name the coordinator's reading. Its
+wording failed the file's form, so root gave it in the form, under DEC-007, and the reading is
+recorded here.
+
+The gate's run on the squash is the coordinator's, at the merge.

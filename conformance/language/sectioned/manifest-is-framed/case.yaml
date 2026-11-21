@@ -1,0 +1,50 @@
+{
+  "id": "sectioned-manifest-is-framed",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-001",
+    "MAN-001",
+    "SUB-005"
+  ],
+  "title": "A manifest with a section is rejected by the manifest schema",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "conduit.json": "conduit.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "conduit.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "file": "conduit.json",
+              "document": 1
+            }
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "manifest.v1"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

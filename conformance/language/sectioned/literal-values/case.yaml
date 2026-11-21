@@ -1,0 +1,51 @@
+{
+  "id": "sectioned-literal-values",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-004",
+    "SCH-007"
+  ],
+  "title": "References in config and arguments survive translation unchanged",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.json": "authored.json",
+    "framed.json": "framed.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "framed": "framed.json",
+        "translations": [
+          {
+            "kind": "Resource",
+            "name": "caller",
+            "rule": "SCT-006"
+          },
+          {
+            "kind": "Resource",
+            "name": "vault-client",
+            "rule": "SCT-006"
+          },
+          {
+            "kind": "Resource",
+            "name": "vault-client--t",
+            "rule": "SCT-006"
+          }
+        ]
+      }
+    }
+  ]
+}

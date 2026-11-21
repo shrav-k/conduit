@@ -1,0 +1,60 @@
+{
+  "id": "sectioned-template-families",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-005"
+  ],
+  "title": "All five template families keep canonical bodies, inputs and template metadata",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.json": "authored.json",
+    "framed.json": "framed.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "framed": "framed.json",
+        "translations": [
+          {
+            "kind": "Agent",
+            "name": "worker-template",
+            "rule": "SCT-005"
+          },
+          {
+            "kind": "Conduit",
+            "name": "list-template",
+            "rule": "SCT-005"
+          },
+          {
+            "kind": "Interface",
+            "name": "reader-template",
+            "rule": "SCT-005"
+          },
+          {
+            "kind": "Pool",
+            "name": "library-template",
+            "rule": "SCT-005"
+          },
+          {
+            "kind": "Resource",
+            "name": "storage-template",
+            "rule": "SCT-005"
+          }
+        ]
+      }
+    }
+  ]
+}

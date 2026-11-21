@@ -1,0 +1,7 @@
+{
+  "pools": {
+    "library": {
+      "type": "github.com/shrav-k/conduit/core#pool.v1"
+    }
+  }
+}

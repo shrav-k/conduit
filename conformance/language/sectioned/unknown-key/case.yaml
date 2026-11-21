@@ -1,0 +1,64 @@
+{
+  "id": "sectioned-unknown-key",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-001",
+    "SCT-014",
+    "SUB-005"
+  ],
+  "title": "A foreign top-level key points to its authored member",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.json": "authored.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "file": "authored.json",
+              "document": 1
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/grants"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sectioned"
+            ],
+            "keyword_location": true,
+            "keyword": "additionalProperties",
+            "contract": "sectioned.v1",
+            "pointer": "/additionalProperties",
+            "root_schema": "sectioned.v1"
+          }
+        ]
+      }
+    }
+  ]
+}

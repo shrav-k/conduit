@@ -1,0 +1,214 @@
+{
+  "id": "sectioned-member-faults",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-008",
+    "SCT-011",
+    "SCT-013",
+    "SCT-014",
+    "SUB-005"
+  ],
+  "title": "An invalid member cannot hide a valid sibling's translation fault",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "definitions.json": "definitions.json",
+    "consumes.json": "consumes.json",
+    "length.json": "length.json",
+    "ownership.json": "ownership.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "definitions.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "file": "definitions.json",
+              "document": 1
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/interfaces/bad"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "ruleId": "SCT-008",
+            "level": "error",
+            "properties": {
+              "file": "definitions.json",
+              "document": 1
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/interfaces/bad-extra/consumes/reserved"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "consumes.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "file": "consumes.json",
+              "document": 1
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/interfaces/auditor/consumes/bad"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "ruleId": "SCT-008",
+            "level": "error",
+            "properties": {
+              "file": "consumes.json",
+              "document": 1
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/interfaces/auditor/consumes/bad-extra"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "length.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "file": "length.json",
+              "document": 1
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/pools/broken"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "ruleId": "SCT-013",
+            "level": "error",
+            "properties": {
+              "file": "length.json",
+              "document": 1
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/pools/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "ownership.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "file": "ownership.json",
+              "document": 1
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/agents/broken"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "ruleId": "SCT-011",
+            "level": "error",
+            "properties": {
+              "file": "ownership.json",
+              "document": 1
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/agents/reviewer/owner"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

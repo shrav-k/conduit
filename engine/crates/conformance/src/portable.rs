@@ -158,6 +158,7 @@ impl Controls {
                 "list-tools",
                 "export-records",
                 "load",
+                "translate",
                 "read",
             ];
             let special = ["lifecycle-fixture", "request-fixture"].contains(&kind)
@@ -404,6 +405,7 @@ mod tests {
             "list-tools",
             "export-records",
             "load",
+            "translate",
             "read",
         ] {
             controls.check_case(&case(kind)).unwrap();

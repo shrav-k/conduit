@@ -1,0 +1,11 @@
+{
+  "name": "sectioned-fleet.tar.gz",
+  "address": "example.org/conformance/sectioned-fleet",
+  "version": "0.1.0",
+  "digest": "sha256:9ba2e17de3ab3435c5587b789c482cf9b3558727be94ccd114fa1d73016fa6d8",
+  "directory": null,
+  "completion": {
+    "status": "complete",
+    "file": "sectioned-fleet.tar.gz"
+  }
+}

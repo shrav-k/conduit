@@ -1,0 +1,42 @@
+{
+  "id": "sectioned-mixed-json",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-001",
+    "SCT-003",
+    "SCH-013"
+  ],
+  "title": "A JSON array holds framed and sectioned documents in one set",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.json": "authored.json",
+    "framed.json": "framed.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "framed": "framed.json",
+        "translations": [
+          {
+            "kind": "Pool",
+            "name": "library",
+            "rule": "SCT-006"
+          }
+        ]
+      }
+    }
+  ]
+}

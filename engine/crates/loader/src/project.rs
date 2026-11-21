@@ -23,6 +23,7 @@ use crate::diagnostic::{Diagnostic, Diagnostics};
 use crate::read::{Document, Syntax, content_of, documents_of};
 use crate::rules::{MAN_001, MAN_002, SUB_010};
 use crate::schemas::{Role, Specification};
+use crate::sectioned::{self, Translation};
 
 /// The names a manifest may have (MAN-001).
 pub const MANIFEST_NAMES: [&str; 3] = ["conduit.yaml", "conduit.yml", "conduit.json"];
@@ -64,6 +65,14 @@ pub struct Project {
     /// Every other document, in the order of the files' names and then as written. The order
     /// has no meaning (SUB-001).
     pub documents: Vec<Document>,
+    translations: Vec<Option<Translation>>,
+}
+
+impl Project {
+    /// Authored provenance for each entry of documents, in the same order.
+    pub fn translations(&self) -> &[Option<Translation>] {
+        &self.translations
+    }
 }
 
 /// Files, each by its name and its bytes.
@@ -72,13 +81,13 @@ pub(crate) type Named = Vec<(String, Vec<u8>)>;
 /// The files of a project, read strictly and not yet validated.
 pub(crate) struct Files {
     pub manifest: Option<Document>,
-    pub documents: Vec<Document>,
+    pub documents: Vec<Vec<Document>>,
 }
 
 /// Read a project's directory and validate what it holds (SUB-010). Reads the file system.
 pub fn read_project(directory: &Path, spec: &Specification) -> Result<Project, Diagnostics> {
     let (files, unread) = directory_files(directory)?;
-    load(&files, unread, Some(directory), spec)
+    load(&files, unread, Some(directory), spec, false)
 }
 
 /// Read files that are handed over together without a directory, each given by its name and
@@ -88,7 +97,15 @@ pub fn read_submitted_files(
     files: &[(String, Vec<u8>)],
     spec: &Specification,
 ) -> Result<Project, Diagnostics> {
-    load(files, Vec::new(), None, spec)
+    load(files, Vec::new(), None, spec, false)
+}
+
+/// Read files from a package archive, applying MAN-011 to their sectioned keys.
+pub fn read_archive_files(
+    files: &[(String, Vec<u8>)],
+    spec: &Specification,
+) -> Result<Project, Diagnostics> {
+    load(files, Vec::new(), None, spec, true)
 }
 
 /// Read and validate the files of a project, beside the faults of those that could not be
@@ -98,6 +115,7 @@ fn load(
     mut faults: Vec<Diagnostic>,
     directory: Option<&Path>,
     spec: &Specification,
+    archive: bool,
 ) -> Result<Project, Diagnostics> {
     let (read, read_faults) = read_files(files, directory);
     faults.extend(read_faults);
@@ -106,7 +124,14 @@ fn load(
     {
         faults.extend(found.0);
     }
-    for document in &read.documents {
+    let (documents, translations) = sectioned::translate(
+        read.documents,
+        read.manifest.as_ref(),
+        spec,
+        archive,
+        &mut faults,
+    );
+    for document in &documents {
         if let Err(found) = spec.check(document, Role::Document) {
             faults.extend(found.0);
         }
@@ -117,7 +142,8 @@ fn load(
     Ok(Project {
         directory: directory.map(Path::to_path_buf),
         manifest: read.manifest,
-        documents: read.documents,
+        documents,
+        translations,
     })
 }
 
@@ -229,9 +255,7 @@ pub(crate) fn read_files(
             }
             FileRole::Documents(syntax) => match content_of(syntax, bytes) {
                 Err(found) => faults.extend(found.in_file(&file).0),
-                Ok(content) => read
-                    .documents
-                    .extend(documents_of(&file, content.documents)),
+                Ok(content) => read.documents.push(documents_of(&file, content.documents)),
             },
         }
     }

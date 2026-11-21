@@ -1,0 +1,193 @@
+{
+  "id": "sectioned-unknown-version",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-002",
+    "SCT-014",
+    "OBJ-017",
+    "SUB-005"
+  ],
+  "title": "An unknown version has schema attribution at apiVersion",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.json": "authored.json",
+    "independent-faults.json": "independent-faults.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "file": "authored.json",
+              "document": 1
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/apiVersion"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "api-version.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "const",
+            "contract": "api-version.v1",
+            "pointer": "/const",
+            "root_schema": "sectioned.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "independent-faults.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "file": "independent-faults.json",
+              "document": 1
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/apiVersion"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "file": "independent-faults.json",
+              "document": 1
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/extra"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "file": "independent-faults.json",
+              "document": 1
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/grants"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "file": "independent-faults.json",
+              "document": 1
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/pools"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "api-version.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "const",
+            "contract": "api-version.v1",
+            "pointer": "/const",
+            "root_schema": "sectioned.v1"
+          },
+          {
+            "index": 1,
+            "message_contains": [
+              "extra"
+            ],
+            "keyword_location": true,
+            "keyword": "additionalProperties",
+            "contract": "sectioned.v1",
+            "pointer": "/additionalProperties",
+            "root_schema": "sectioned.v1"
+          },
+          {
+            "index": 2,
+            "message_contains": [
+              "grants"
+            ],
+            "keyword_location": true,
+            "keyword": "additionalProperties",
+            "contract": "sectioned.v1",
+            "pointer": "/additionalProperties",
+            "root_schema": "sectioned.v1"
+          },
+          {
+            "index": 3,
+            "message_contains": [
+              "sectioned.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "type",
+            "contract": "sectioned.v1",
+            "pointer": "/properties/pools/type",
+            "root_schema": "sectioned.v1"
+          }
+        ]
+      }
+    }
+  ]
+}

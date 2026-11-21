@@ -1,0 +1,58 @@
+{
+  "id": "sectioned-missing-version",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-002",
+    "SCT-014"
+  ],
+  "title": "A sectioned document with no effective version is rejected under SCT-002 at apiVersion",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.json": "authored.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SCT-002",
+            "level": "error",
+            "properties": {
+              "file": "authored.json",
+              "document": 1
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/apiVersion"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "apiVersion is required"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

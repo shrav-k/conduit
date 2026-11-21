@@ -1,0 +1,348 @@
+{
+  "cases": [
+    {
+      "id": "sectioned-archive-install",
+      "case": "language/sectioned/archive-install/case.yaml",
+      "promises": [
+        "SCT-003",
+        "SCT-005",
+        "SCT-011",
+        "MAN-011",
+        "PKG-023"
+      ]
+    },
+    {
+      "id": "sectioned-atomic-set",
+      "case": "language/sectioned/atomic-set/case.yaml",
+      "promises": [
+        "SCT-003",
+        "SUB-003"
+      ]
+    },
+    {
+      "id": "sectioned-conduits",
+      "case": "language/sectioned/conduits/case.yaml",
+      "promises": [
+        "SCT-016",
+        "SCT-008"
+      ]
+    },
+    {
+      "id": "sectioned-consumes-bound",
+      "case": "language/sectioned/consumes-bound/case.yaml",
+      "promises": [
+        "SCT-008",
+        "SCT-007"
+      ]
+    },
+    {
+      "id": "sectioned-consumes-forms",
+      "case": "language/sectioned/consumes-forms/case.yaml",
+      "promises": [
+        "SCT-007",
+        "SUB-005"
+      ]
+    },
+    {
+      "id": "sectioned-consumes-inline",
+      "case": "language/sectioned/consumes-inline/case.yaml",
+      "promises": [
+        "SCT-007"
+      ]
+    },
+    {
+      "id": "sectioned-consumes-referenced",
+      "case": "language/sectioned/consumes-referenced/case.yaml",
+      "promises": [
+        "SCT-007",
+        "SCT-004"
+      ]
+    },
+    {
+      "id": "sectioned-consumes-reserved",
+      "case": "language/sectioned/consumes-reserved/case.yaml",
+      "promises": [
+        "SCT-008",
+        "SCT-014"
+      ]
+    },
+    {
+      "id": "sectioned-definition-forms",
+      "case": "language/sectioned/definition-forms/case.yaml",
+      "promises": [
+        "SCT-006",
+        "SUB-005"
+      ]
+    },
+    {
+      "id": "sectioned-fleet-conflict",
+      "case": "language/sectioned/fleet-conflict/case.yaml",
+      "promises": [
+        "SCT-011",
+        "SCT-014"
+      ]
+    },
+    {
+      "id": "sectioned-fleet-duplicate-key",
+      "case": "language/sectioned/fleet-duplicate-key/case.yaml",
+      "promises": [
+        "SCT-011",
+        "SCT-014"
+      ]
+    },
+    {
+      "id": "sectioned-fleet-file-boundary",
+      "case": "language/sectioned/fleet-file-boundary/case.yaml",
+      "promises": [
+        "SCT-011",
+        "FLEET-002",
+        "SUB-005"
+      ]
+    },
+    {
+      "id": "sectioned-fleet-framed",
+      "case": "language/sectioned/fleet-framed/case.yaml",
+      "promises": [
+        "SCT-011",
+        "FLEET-002"
+      ]
+    },
+    {
+      "id": "sectioned-fleet-shared",
+      "case": "language/sectioned/fleet-shared/case.yaml",
+      "promises": [
+        "SCT-011",
+        "SCT-004"
+      ]
+    },
+    {
+      "id": "sectioned-fleet-with-schema-fault",
+      "case": "language/sectioned/fleet-with-schema-fault/case.yaml",
+      "promises": [
+        "SCT-011",
+        "SCT-014",
+        "SUB-005"
+      ]
+    },
+    {
+      "id": "sectioned-inherited-unknown-version",
+      "case": "language/sectioned/inherited-unknown-version/case.yaml",
+      "promises": [
+        "SCT-002",
+        "SCT-014",
+        "MAN-003",
+        "OBJ-017",
+        "SUB-005"
+      ]
+    },
+    {
+      "id": "sectioned-inline-equivalence",
+      "case": "language/sectioned/inline-equivalence/case.yaml",
+      "promises": [
+        "SCT-003",
+        "SCT-006",
+        "SCT-011",
+        "SCT-015"
+      ]
+    },
+    {
+      "id": "sectioned-instance-metadata",
+      "case": "language/sectioned/instance-metadata/case.yaml",
+      "promises": [
+        "SCT-006"
+      ]
+    },
+    {
+      "id": "sectioned-literal-values",
+      "case": "language/sectioned/literal-values/case.yaml",
+      "promises": [
+        "SCT-004",
+        "SCH-007"
+      ]
+    },
+    {
+      "id": "sectioned-manifest-is-framed",
+      "case": "language/sectioned/manifest-is-framed/case.yaml",
+      "promises": [
+        "SCT-001",
+        "MAN-001",
+        "SUB-005"
+      ]
+    },
+    {
+      "id": "sectioned-manifest-version",
+      "case": "language/sectioned/manifest-version/case.yaml",
+      "promises": [
+        "SCT-002",
+        "MAN-003"
+      ]
+    },
+    {
+      "id": "sectioned-member-faults",
+      "case": "language/sectioned/member-faults/case.yaml",
+      "promises": [
+        "SCT-008",
+        "SCT-011",
+        "SCT-013",
+        "SCT-014",
+        "SUB-005"
+      ]
+    },
+    {
+      "id": "sectioned-missing-kind",
+      "case": "language/sectioned/missing-kind/case.yaml",
+      "promises": [
+        "SCT-001",
+        "SUB-005"
+      ]
+    },
+    {
+      "id": "sectioned-missing-version",
+      "case": "language/sectioned/missing-version/case.yaml",
+      "promises": [
+        "SCT-002",
+        "SCT-014"
+      ]
+    },
+    {
+      "id": "sectioned-mixed-json",
+      "case": "language/sectioned/mixed-json/case.yaml",
+      "promises": [
+        "SCT-001",
+        "SCT-003",
+        "SCH-013"
+      ]
+    },
+    {
+      "id": "sectioned-name-collision",
+      "case": "language/sectioned/name-collision/case.yaml",
+      "promises": [
+        "SCT-003",
+        "NAM-027"
+      ]
+    },
+    {
+      "id": "sectioned-names",
+      "case": "language/sectioned/names/case.yaml",
+      "promises": [
+        "SCT-013",
+        "SCT-014",
+        "SUB-005"
+      ]
+    },
+    {
+      "id": "sectioned-no-fleet-template",
+      "case": "language/sectioned/no-fleet-template/case.yaml",
+      "promises": [
+        "SCT-005",
+        "SUB-005"
+      ]
+    },
+    {
+      "id": "sectioned-operator-inline",
+      "case": "language/sectioned/operator-inline/case.yaml",
+      "promises": [
+        "SCT-009"
+      ]
+    },
+    {
+      "id": "sectioned-operator-referenced",
+      "case": "language/sectioned/operator-referenced/case.yaml",
+      "promises": [
+        "SCT-009"
+      ]
+    },
+    {
+      "id": "sectioned-pool-inline",
+      "case": "language/sectioned/pool-inline/case.yaml",
+      "promises": [
+        "SCT-001",
+        "SCT-006",
+        "SCT-015"
+      ]
+    },
+    {
+      "id": "sectioned-pool-operator",
+      "case": "language/sectioned/pool-operator/case.yaml",
+      "promises": [
+        "SCT-009",
+        "SUB-005"
+      ]
+    },
+    {
+      "id": "sectioned-pure-order",
+      "case": "language/sectioned/pure-order/case.yaml",
+      "promises": [
+        "SCT-004",
+        "SCH-007",
+        "SUB-001"
+      ]
+    },
+    {
+      "id": "sectioned-reference-forms",
+      "case": "language/sectioned/reference-forms/case.yaml",
+      "promises": [
+        "SCT-006",
+        "INS-025"
+      ]
+    },
+    {
+      "id": "sectioned-resource-owner",
+      "case": "language/sectioned/resource-owner/case.yaml",
+      "promises": [
+        "SCT-006",
+        "SUB-005"
+      ]
+    },
+    {
+      "id": "sectioned-stated-version",
+      "case": "language/sectioned/stated-version/case.yaml",
+      "promises": [
+        "SCT-002"
+      ]
+    },
+    {
+      "id": "sectioned-template-families",
+      "case": "language/sectioned/template-families/case.yaml",
+      "promises": [
+        "SCT-005"
+      ]
+    },
+    {
+      "id": "sectioned-unknown-key",
+      "case": "language/sectioned/unknown-key/case.yaml",
+      "promises": [
+        "SCT-001",
+        "SCT-014",
+        "SUB-005"
+      ]
+    },
+    {
+      "id": "sectioned-unknown-version",
+      "case": "language/sectioned/unknown-version/case.yaml",
+      "promises": [
+        "SCT-002",
+        "SCT-014",
+        "OBJ-017",
+        "SUB-005"
+      ]
+    },
+    {
+      "id": "sectioned-version-only",
+      "case": "language/sectioned/version-only/case.yaml",
+      "promises": [
+        "SCT-001",
+        "SUB-005"
+      ]
+    },
+    {
+      "id": "sectioned-wire-framed-only",
+      "case": "language/sectioned/wire-framed-only/case.yaml",
+      "promises": [
+        "SCT-001",
+        "SUB-005",
+        "OPS-033"
+      ]
+    }
+  ]
+}

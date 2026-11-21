@@ -26,13 +26,17 @@ mod project;
 mod read;
 pub mod rules;
 mod schemas;
+mod sectioned;
 mod value;
 mod yaml;
 
 pub use diagnostic::{Diagnostic, Diagnostics, Position, SchemaLocation};
-pub use project::{FileRole, MANIFEST_NAMES, Project, read_project, read_submitted_files};
+pub use project::{
+    FileRole, MANIFEST_NAMES, Project, read_archive_files, read_project, read_submitted_files,
+};
 pub use read::{Document, Syntax, read_bytes, read_file, read_text};
 pub use schemas::{Names, Role, Specification, compile};
+pub use sectioned::{Translation, TranslationSource};
 pub use value::{LARGEST_WHOLE, Node, Value};
 
 /// How deeply the values of a document may nest: a map or a list inside another counts one

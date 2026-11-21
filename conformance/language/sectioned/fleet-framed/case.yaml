@@ -1,0 +1,73 @@
+{
+  "id": "sectioned-fleet-framed",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-011",
+    "FLEET-002"
+  ],
+  "title": "A framed Agent receives its file's Fleet owner and SCT-011 translation provenance",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.json": "authored.json",
+    "framed.json": "framed.json",
+    "unnamed.json": "unnamed.json",
+    "unnamed-framed.json": "unnamed-framed.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "framed": "framed.json",
+        "translations": [
+          {
+            "kind": "Agent",
+            "name": "worker",
+            "rule": "SCT-011"
+          },
+          {
+            "kind": "Fleet",
+            "name": "maintainers",
+            "rule": "SCT-011"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "unnamed.json"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "framed": "unnamed-framed.json",
+        "translations": [
+          {
+            "kind": "Agent",
+            "name": null,
+            "rule": "SCT-011"
+          },
+          {
+            "kind": "Fleet",
+            "name": "maintainers",
+            "rule": "SCT-011"
+          }
+        ]
+      }
+    }
+  ]
+}

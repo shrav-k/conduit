@@ -1,0 +1,44 @@
+{
+  "id": "sectioned-fleet-file-boundary",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-011",
+    "FLEET-002",
+    "SUB-005"
+  ],
+  "title": "An Agent in another file stays subject to the canonical owner check",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fleet.json": "fleet.json",
+    "worker.json": "worker.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "fleet.json",
+          "worker.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "file": "worker.json",
+              "document": 1
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

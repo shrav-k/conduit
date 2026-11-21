@@ -410,6 +410,10 @@ fn redirected(mut pointer: String, redirects: &BTreeMap<String, String>) -> Stri
 /// Standalone validation has no package resolver. First check every schema-position $ref
 /// is a local fragment and resolves in the supplied definition, then compile with the loader.
 pub fn standalone_valid(schema: &Value, value: &Value) -> Result<bool> {
+    Ok(standalone_validator(schema, value)?.is_valid(value))
+}
+
+pub(crate) fn standalone_validator(schema: &Value, value: &Value) -> Result<jsonschema::Validator> {
     let mut checked = schema.clone();
     walk(&mut checked, "", &mut |map, _| {
         if let Some(reference) = map.get("$ref").and_then(Value::as_str) {
@@ -424,9 +428,7 @@ pub fn standalone_valid(schema: &Value, value: &Value) -> Result<bool> {
         Ok(())
     })?;
     let (schema, _) = specialize(schema, value, "")?;
-    Ok(conduit_loader::compile(&schema)
-        .map_err(|e| e.to_string())?
-        .is_valid(value))
+    conduit_loader::compile(&schema).map_err(|e| e.to_string())
 }
 
 impl Environment {

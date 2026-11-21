@@ -1,0 +1,10 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "fleet": "maintainers",
+  "agents": {
+    "worker": {
+      "from": "basis",
+      "owner": "outside"
+    }
+  }
+}

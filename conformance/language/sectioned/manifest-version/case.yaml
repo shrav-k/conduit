@@ -1,0 +1,48 @@
+{
+  "id": "sectioned-manifest-version",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-002",
+    "MAN-003"
+  ],
+  "title": "The manifest supplies the version of each generated frame",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "conduit.json": "conduit.json",
+    "authored.json": "authored.json",
+    "framed.json": "framed.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json",
+          "conduit.json"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "framed": "framed.json",
+        "translations": [
+          {
+            "kind": "Pool",
+            "name": "library",
+            "rule": "SCT-006"
+          },
+          {
+            "kind": "Pool",
+            "name": "library--t",
+            "rule": "SCT-006"
+          }
+        ]
+      }
+    }
+  ]
+}

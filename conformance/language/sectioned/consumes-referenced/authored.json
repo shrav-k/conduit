@@ -1,0 +1,31 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "interfaces": {
+    "auditor": {
+      "from": "basis",
+      "consumes": {
+        "scope": {
+          "to": {
+            "kind": "Pool",
+            "name": "library"
+          },
+          "from": "github.com/shrav-k/conduit/core#pool-view"
+        },
+        "files": {
+          "to": {
+            "kind": "Resource",
+            "name": "files"
+          },
+          "from": "example.org/s1/filesystem#read"
+        },
+        "local": {
+          "to": {
+            "kind": "Pool",
+            "name": "library"
+          },
+          "from": "read-local"
+        }
+      }
+    }
+  }
+}

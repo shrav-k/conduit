@@ -455,6 +455,13 @@ local submitted `from` and object references remain the later registration order
 
 ## Registration vectors
 
+The `translate` step reads named files as one project, like `load`. A successful case
+names an independently authored `framed` file for exact document-set comparison under SCH-007
+and lists `translations` by kind and name, with the SCT rule for each generated document.
+`register-project` can name an `equivalent` framed project fixture. The runner registers both
+from the same state with the same request and evidence, comparing replies, state and records.
+It compares diagnostic rule IDs and levels under SCT-015.
+
 I2-04 adds `register-project`: the same ordinary-file fixture as `resolve-project`, plus a
 request and allocation evidence. It runs the loader, then atomically registers and resolves
 on the core. Evidence lists object IDs followed by record IDs, one revision per object and

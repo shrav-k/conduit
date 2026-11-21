@@ -1,0 +1,50 @@
+{
+  "id": "sectioned-consumes-inline",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-007"
+  ],
+  "title": "Inline consumes makes the template and standalone Conduit with its authored local name",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.json": "authored.json",
+    "framed.json": "framed.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "framed": "framed.json",
+        "translations": [
+          {
+            "kind": "Conduit",
+            "name": "auditor--catalog",
+            "rule": "SCT-007"
+          },
+          {
+            "kind": "Conduit",
+            "name": "auditor--catalog--t",
+            "rule": "SCT-007"
+          },
+          {
+            "kind": "Interface",
+            "name": "auditor",
+            "rule": "SCT-006"
+          }
+        ]
+      }
+    }
+  ]
+}

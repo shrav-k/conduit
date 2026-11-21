@@ -355,13 +355,24 @@ to the translation apart from IDs, held package pins and configuration values ch
 controls (INS-013, NAM-010, REV-007).
 An existing closed Conduit stays closed until an explicit permitted opening.
 
-Plan and apply are tooling composed of existing requests. The plan is printed and recorded;
-nothing runs automatically. In v0 the command is the approval. Every dangerous act needs a
-named flag, recorded with the plan when used: `--reopen`, `--recreate`, `--prune`,
-`--replace`, `--adopt`, and the cascade flags `--with-resources` and `--with-agents`. Each
-cascade is one command under one flag, printed and recorded with the plan: register its
-Conduit, open it, call the cascade operation,
-close the Conduit, then root lifts its own tombstone. The `--withhold` flag belongs
+Plan and apply are tooling composed of existing requests. The plan is printed, and apply
+records it; nothing runs automatically. `conduit apply` computes and prints its own plan,
+records it when it has a request to send, and then sends its requests; `conduit plan`
+prints the same plan, sends none of its requests and records no plan; the reads it makes to
+compute the plan are inspections, which change nothing and are recorded as any request is
+(REC-001). Plan is available and never required.
+In v0 the command is the approval. Every dangerous act needs a named flag, recorded with
+the plan when used: `--reopen`, `--recreate`, `--prune`, `--replace`, `--adopt`, and the
+cascade flags `--with-resources` and `--with-agents`. Each flag names one object by its
+name, the generated name where the short form makes one (SCT-013), such as
+`--reopen auditor--catalog`. Each cascade is one command under one flag, printed and
+recorded with the plan: register a one-time Conduit to the Pool or Fleet, open it, and call
+the cascade operation through it. The target's retirement closes and removes that Conduit
+(CON-008, LIF-035), so apply sends no close; root then lifts the Conduit's tombstone
+(LIF-040, ACC-053). A cascade that does not succeed stops apply as any failure does, and
+its one-time Conduit may already be removed: a later apply under the same flag closes it
+only if inspection finds that same Conduit, and lifts only the tombstone that retains its
+ID. The `--withhold` flag belongs
 with the withhold behavior in batch 2. Narrowing never waits and never needs a flag: a Conduit the file no longer names is closed on apply,
 and so is a narrowing of a Conduit's operations, and the plan prints and records each closing;
 `--prune` is for removing another object the file no longer names. A plan prints and records every
@@ -371,6 +382,14 @@ the plan still checks the operations that actually resolve. A plan prints, besid
 it registers or replaces, the `ownTools` member that inspection would show (CTR-014, LIF-013).
 Beside each Conduit it opens whose target is an Agent and that lists an operation marked
 `startsModelWork: true`, it prints the target's `ownTools` member.
+
+A command that talks to a serving engine finds it through the person's current engine
+context, as kubectl's and Docker's commands do: `conduit serve` records the engine it serves
+as current, and `--store` on a command overrides the context for that command. When a set-up
+that apply sends raises pending sign-in actions (IFC-025, PND-005), apply goes on to its
+next step: a sign-in never stops it. It prints each as the person's action at the panel,
+listed apart from authored lines, and answers none. A set-up that does not succeed stops
+apply as any failure does, and any sign-in it raised is still printed.
 
 Replacement keeps names stable (SCT-004, SCT-013): retire and remove the old instance before
 making its replacement under the same name, lifting its tombstone wherever necessary

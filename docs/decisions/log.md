@@ -92,7 +92,7 @@ Owner's words: prose decisions -> "Done by spec text alone (Rec.)"; and rulings 
 Lands in: `spec/README.md` "What the short form's meaning covers"; ruling 76's points 1 to 5,
 through order 217 and a new spec order
 
-Status: accepted, not done (ruling 76's wording)
+Status: done (ruling 76 point 1 by order 217, #453; points 2 to 5 by order 240)
 
 ## DEC-009, 2026-11-20, operations and unknown outcomes
 

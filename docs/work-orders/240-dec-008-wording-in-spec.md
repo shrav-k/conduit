@@ -290,4 +290,34 @@ These are not in this order:
 
 ## Record
 
-Not yet run.
+Run on 2026-11-21 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+
+**Worker-2's turn** (14:20 to 14:25) did four things:
+- wrote ruling 76's points 2 to 5 into `spec/README.md`;
+- aligned the cascade sentence to CON-008, so retirement closes and removes the one-time
+  Conduit, apply sends no close, and root lifts its tombstone;
+- replaced the S1-derived sectioned-package example with a ticket-queue package;
+- updated `CHANGES.md`, IN_FORCE.md and DEC-008's status.
+
+The engine suite passed once: 498 passed, 0 failed, 9 ignored.
+
+On the example, decision 6 was applied on the owner's answer in DEC-039 ("Replace with a non-S1
+package"). The start check's literal `^Answer: replace\.$` did not match the answer line, which
+quotes the owner.
+
+**`turn-verifier-2.turn.v1`** (14:26 to 14:29) confirmed points 2 and 3, the cascade wording and
+the example. It found two musts in the wording this order prescribed, which root fixed:
+- a sign-in never stops apply, and a set-up that does not succeed stops it as any failure does;
+- `conduit plan` sends none of its requests.
+
+**The Claude reader** (14:30 to 14:33) approved with one should and three nits. Root applied:
+- the should: `conduit plan` "records no plan", and its reads are recorded as any request is
+  (REC-001);
+- the CHANGES citation of DEC-039.
+
+IN_FORCE topic 4's "printed and recorded" sentence is left for order 250, which updates that
+topic.
+
+At the rebase onto order 242, the gate's engine row failed once: 242's new loader test expected the old example's `read` and `read-write` templates. Root changed that one expectation to the new example's `resolve` and `triage`.
+
+The gate's run on the squash is the coordinator's, at the merge.

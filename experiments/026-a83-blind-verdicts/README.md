@@ -3,10 +3,10 @@
 A83 asks whether a reader given only `spec/` and the first-build profile gives the engine's
 verdicts, names the deciding promise and places each promise in the layer that LD1's test gives.
 Its four parts are V, verdicts; R, resolving by hand; L, layers; and E, the specification's
-examples, scored apart, as [the review's A83 section](../../docs/proposals/full-review/experiments.md#a83-the-blind-verdict-test)
-and D81 of [its decisions](../../docs/proposals/full-review/decisions.md) state. Parts V, R and L,
+examples, scored apart, as [the review's A83 section](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/experiments.md#a83-the-blind-verdict-test)
+and D81 of [its decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md) state. Parts V, R and L,
 and Part E's readers, run after SO-A and SO-B merge and the S1 rerun's pin, under
-[ruling 78, point 1](../../docs/proposals/ruling-78/README.md#the-decisions). Each is
+[ruling 78, point 1](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md#the-decisions). Each is
 pre-registered here before it runs; this first registration covers only Part E's engine run.
 
 ## Part E's engine run
@@ -54,7 +54,7 @@ The dated result is [results-2026-11-15.md](results-2026-11-15.md).
 
 Two changes to the review's Part E text are fixed before the run: `valid/project` is excluded
 because its missing harness and relative commands prevent this public registration, and `named`
-requires reason `invalid`, as [FR-357's verifier](../../docs/proposals/full-review/findings/P07-engine-build.md#fr-357)
+requires reason `invalid`, as [FR-357's verifier](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/P07-engine-build.md#fr-357)
 requires. This checks the rule's refusal reason as well as a diagnostic's rule ID.
 
 The review's expectation, before the run: the files of CTR-009, PLC-028, PRV-001, PRV-004,

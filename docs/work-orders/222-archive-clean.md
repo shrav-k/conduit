@@ -22,7 +22,7 @@ notes, private). Group A is the finished work orders, `docs/implementation/`, `d
 **Why.** 147 of the 194 order files are finished and leave, and one, 213, is superseded: 4.6 MB
 of the 15.6 MB tracked under `docs/` (ruling 92, point 5).
 
-**Preservation tests** ([ruling 92](../proposals/ruling-92/README.md), point 1): none served and
+**Preservation tests** ([ruling 92](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-92/README.md), point 1): none served and
 none at risk. The order changes no promise, engine code, package or case.
 
 **Should this exist** (point 3). Yes: removing a file and linking its last version is ruling 57's

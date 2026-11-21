@@ -14,7 +14,7 @@ that a test made.
 Your tree is order 079's branch, not `main`. Both orders are built on the side branch `s3/m2`,
 which holds the engine work for running Agents on a second machine through Conduit, under the plan
 that the owner let the coordinator adopt on 2026-11-11
-([ruling 76, later answers](../proposals/ruling-76/README.md#later-answers)). Nothing on `s3/m2`
+([ruling 76, later answers](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-76/README.md#later-answers)). Nothing on `s3/m2`
 merges to `main` before the S1 rerun's pin. Order 079 (ADDR) gives the engine a second address, an
 `https` URL, and makes `CONDUIT_URL` and each run's token follow the runner: the loopback address
 for the engine's own runner, the `https` one for a run that a runtime provider makes. Both orders
@@ -226,7 +226,7 @@ is tested against a scripted local provider and a loopback TLS gate only.
      names a runtime provider (`core/src/lib.rs`:363-372).
    - **Diagnostics** are fixed texts that name the operation and what happened, such as a provider
      with no run, a discovery result without Conduit's extension, or a certificate that did not
-     prove the instance ([ruling 52](../proposals/ruling-52/README.md), point 2). They hold no
+     prove the instance ([ruling 52](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-52/README.md), point 2). They hold no
      argument, identity value or result content (`runner.rs`:190).
 
 5. **The bridge, `conduit __http-bridge <url>`.**

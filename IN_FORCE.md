@@ -2,13 +2,13 @@
 
 Not binding. The specification alone binds.
 
-This file says what has been decided beyond `spec/` and still holds. `spec/` says what Conduit does. The ledger, `docs/proposals/ruling-log.md`, says what was ruled, when, in the owner's words, and each ruling's status. A ruling's record says why (ruling 67, point 1). Where a line here and `spec/` differ, `spec/` governs. Where a line here and the owner's words in a ruling differ, the owner's words govern until the line is fixed.
+This file says what has been decided beyond `spec/` and still holds. `spec/` says what Conduit does. The [ledger](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-log.md), [archived](AGENTS.md#what-holds), says what was ruled, when, in the owner's words, and each ruling's status. A ruling's record says why (ruling 67, point 1). Where a line here and `spec/` differ, `spec/` governs. Where a line here and the owner's words in a ruling differ, the owner's words govern until the line is fixed.
 
 How to read a line:
 
 - A citation such as "59 A3" means ruling 59, point A3. Promise IDs are the IDs used in `spec/`.
 - A line headed **In spec/** points to the promises that already hold a decision. It does not restate them.
-- *Spec pending* marks a decision that is ruled but not yet written in `spec/`. Its batch is named where a ruling or the [Fleet brief](docs/proposals/projects/brief.md) sets one. Where the line names a promise, that promise says otherwise today. Builds and vectors follow `spec/` until the change is written.
+- *Spec pending* marks a decision that is ruled but not yet written in `spec/`. Its batch is named where a ruling or the [Fleet brief](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/projects/brief.md) sets one. Where the line names a promise, that promise says otherwise today. Builds and vectors follow `spec/` until the change is written.
 - *Open* marks a question the owner holds open, which no session settles.
 - *Coordinator's* marks a decision the coordinator logged that the owner may still strike.
 
@@ -350,7 +350,7 @@ How to read a line:
 
 ## 14. Publication and organization
 
-- Publication starts only after v0 passes and the owner, judging the complete evidence, finds that Conduit works and is worth publishing (47; A75). Dated results, the method as run, the prompts and the counted artifacts stay in the tree as v0's evidence. Raw runs leave it, with links to them (58 point 5).
+- Publication starts only after v0 passes and the owner, judging the complete evidence, finds that Conduit works and is worth publishing (47; A75). Dated results, the method as run, the prompts and the counted artifacts stay as v0's evidence, in the tree or at the commit a removal pins (DEC-031; *Coordinator's*, open to the owner's strike: the freeze also ended 58 point 5's keeping of increment 4's runs until the S1 rerun). Raw runs leave it, with links to them (58 point 5).
 - Stewardship is independent and open source, and the license is Apache-2.0. The owner has final authority over the language's direction, designates official packages and appoints their maintainers (47).
 - The repositories (47; A76):
   - The main repository owns the specification, the package format and its contracts, the conformance cases, the engine and its CLI, the roadmap, and the site.

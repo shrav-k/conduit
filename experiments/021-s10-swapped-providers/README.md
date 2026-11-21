@@ -24,7 +24,7 @@
 ## Status
 
 Pre-registered on 2026-11-11 by work order 103. Accepted by the owner on 2026-11-11 under
-[ruling 75](../../docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
+[ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
 counting rules and planned vectors, with the answers under "Open for the owner" applied. Ruling
 45 fixes what an experiment must show before it runs. No result is recorded here.
 
@@ -39,11 +39,11 @@ Do S1 and S2 still work with another secret store, runtime and package source, a
 ## What it must show
 
 1. **P1 — ruled:** S10 runs end to end on the reference engine with its vectors passing;
-   judge task evidence and the vector report ([ruling 47](../../docs/proposals/ruling-47/README.md)).
+   judge task evidence and the vector report ([ruling 47](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-47/README.md)).
 2. **P2 — ruled:** every safety vector added here passes and names its safety promise
-   ([ruling 68, point 2](../../docs/proposals/ruling-68/README.md)).
+   ([ruling 68, point 2](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md)).
 3. **P3 — ruled:** each swapped provider contract has two implementations on different existing
-   tools passing the same contract vectors ([ruling 40](../../docs/proposals/ruling-40/README.md),
+   tools passing the same contract vectors ([ruling 40](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-40/README.md),
    [IN_FORCE.md topic 13](../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement), A63).
    Keep a per-implementation vector report and tool/version identity; simulations alone do not
    establish this. The machines contract's second implementation is S3's evidence.
@@ -108,10 +108,10 @@ The provider suite's digest mismatch, gate and secret fixtures are prepared, not
   “Provider work apart”, “A client's concepts count” and “Requests and time without access” from
   [its counting rules](../../docs/implementation/FIRST_BUILD.md#counting-rules-added-after-the-baseline-ran).
   Count per replay task and provider-change task; maintain distinct ledgers to avoid counting an
-  edit twice in a total. Use [increment 4's plan](../../docs/proposals/first-build/increment-4/measurement-plan.md)
+  edit twice in a total. Use [increment 4's plan](../../docs/implementation/first-build/measurement-plan.md)
   as the counted-run model.
-- **Ruled counting:** carry [ruling 63's line count](../../docs/proposals/ruling-63/README.md),
-  [ruling 68 R1's panel actions apart](../../docs/proposals/ruling-68/README.md) and
+- **Ruled counting:** carry [ruling 63's line count](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-63/README.md),
+  [ruling 68 R1's panel actions apart](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md) and
   [IN_FORCE.md topic 13's per-run rules](../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement).
   Source rules hold; M0's extension is proposed. No A70 comparison/bar, S1 T3 reach-around
   counting rule, T4/T5 better-baseline rule or prescribed local name `project` is carried.
@@ -198,8 +198,8 @@ Use one Mac with Node/npm, Git, Docker and both clients. Record versions, pins, 
 
 **Ruled accounts:** both the S1 replay and the S2 replay need the owner's **second Claude
 subscription account and second Codex subscription account**, each client as its corresponding
-Agent, each signed in through Conduit's flow ([ruling 49](../../docs/proposals/ruling-49/README.md),
-[ruling 72 point 2](../../docs/proposals/ruling-72/README.md)); no API key substitutes for either.
+Agent, each signed in through Conduit's flow ([ruling 49](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-49/README.md),
+[ruling 72 point 2](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-72/README.md)); no API key substitutes for either.
 Each new Agent home signs in through that flow, on its own (ruling 75 D2). A Claude Agent signs
 in with a browser on its own machine (C3). Codex uses its browser login, with the device code an
 option where the account has it on (C5). S2 additionally uses its isolated service account/
@@ -251,7 +251,7 @@ No promise requires live migration. Log any new missing behavior as a gap before
 - **Q3:** accept the proposed criteria, measures, vectors and comparison/run plan, or amend them?
   **Recommendation:** accept the five-configuration matrix after providers and S2's D09 are ready.
 
-**Answers, under [ruling 75](../../docs/proposals/ruling-75/README.md), D (2026-11-11):**
+**Answers, under [ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D (2026-11-11):**
 
 - Q1: the second subscription accounts. Every account has its own label, and every Agent home
   signs in on its own (D2). A Claude Agent signs in with a browser on its own machine (C3); Codex
@@ -269,25 +269,25 @@ A73's unattended behavior, scaling and S1's A70 bar remain separate. Access is m
 ## Amendments since acceptance
 
 The text above keeps what the owner accepted on 2026-11-11 under
-[ruling 75](../../docs/proposals/ruling-75/README.md), D. Each line below is dated and says
+[ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D. Each line below is dated and says
 whose it is. A line from a ruling amends the text above as that ruling says. A line marked
 the coordinator's is open to the owner's strike: it changes no pass condition above, and what
 it adds to a run is reported apart from the counted result.
-[Ruling 78](../../docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
+[Ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
 changes in the table under question 4 of
-[the full review's questions](../../docs/proposals/full-review/questions.md); the decisions
+[the full review's questions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/questions.md); the decisions
 that these lines cite are in
-[the full review's decisions](../../docs/proposals/full-review/decisions.md).
+[the full review's decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md).
 
 - **2026-11-14, the coordinator's (decision D73):** a predicted set of edits for each swap,
   written from a paper count before the run, is reported beside measure D16 and is not a pass
   list, so an unlisted edit stays a deviation; D16's ledger records each edited document's kind
   and counts `lift.v1` requests; D15 names its six implementations; a ledger lists the behavior
   that differs across a swap; stage R's conditions 2 to 6 in
-  [FR-410](../../docs/proposals/full-review/findings/E03-s8-s9-s10.md#fr-410) are run as checks
+  [FR-410](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/E03-s8-s9-s10.md#fr-410) are run as checks
   of the invariants D16 states; and the plan's reading of A73's "or else", its item A4 for the
   admin, is the coordinator's and open to the owner's strike.
-- **2026-11-16, [ruling 80](../../docs/proposals/ruling-80/README.md), point 9 (the owner): the
+- **2026-11-16, [ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md), point 9 (the owner): the
   second store.** Q2's "or else" is settled: S10 uses the file store whenever A73 has not reported
   by the time it runs, and 1Password only if A73 has already reported that it works, so S10 never
   waits on A73. The plan's reading of it, item A4 under decision D73 above, is no longer the

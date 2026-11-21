@@ -73,13 +73,11 @@ A75's evidence index keeps the limits of each run with its results:
 - [010: subscription-terms reading of 2026-11-10](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/experiments/010-subscription-terms/results-2026-11-10.md),
   for A8, with its [second reading of 2026-11-16](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/experiments/010-subscription-terms/results-2026-11-16.md)
   for two subscriptions with each vendor; to be read again before v0 is published.
-- The first build's [increment-3 closeout results](../docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)
-  and increment 4's [measurement plan](../docs/proposals/first-build/increment-4/measurement-plan.md),
-  [coordinator report](../docs/proposals/first-build/increment-4/coordinator-run-2026-11-10.md)
-  and [fresh-author report](../docs/proposals/first-build/increment-4/fresh-author-run-2026-11-10.md).
-  These real-engine runs stay beside their first-build records. Their raw runs stay until the
-  S1 rerun on the simplified language; counted project files and scripts stay as evidence
-  afterward.
+- The first build's [increment-3 closeout results](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)
+  and increment 4's [measurement plan](../docs/implementation/first-build/measurement-plan.md),
+  [coordinator report](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-4/coordinator-run-2026-11-10.md)
+  and [fresh-author report](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-4/fresh-author-run-2026-11-10.md).
+  The results and two reports left the tree under work order 235; the plan moved beside FIRST_BUILD.md.
 
 ## Keeping evidence
 

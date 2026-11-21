@@ -64,7 +64,7 @@ as a process of its own.
    Sources: [Docker's rootless mode](https://docs.docker.com/engine/security/rootless/) and
    [the full review's D51][D51], a decision of the coordinator's, open to the owner's strike.
 
-   [D51]: ../proposals/full-review/decisions.md#the-providers-and-the-second-machine
+   [D51]: https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md#the-providers-and-the-second-machine
    [ssh-r-setup]: ../../packages/provider-ssh-runtime/README.md#the-owners-ruling-77-setup
 3. **Tell the coordinator** which you installed and its version.
 

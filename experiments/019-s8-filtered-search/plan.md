@@ -74,6 +74,8 @@ Repository checks mean `check_docs.py`, `check_rulings.py`, `set_names.py --chec
 Rust checks mean `cargo test --release`, `cargo clippy --all-targets -- -D warnings` and
 `cargo fmt --check` in each changed crate; this paper order builds none.
 
+Note of 2026-11-21: `check_rulings.py` left the tree under work order 235 with the records it read; this check is not run.
+
 | ID | Kind | What it does | Promises | Depends on | Size | Who | Starts |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | S8-C | server | One contracts-only package pinned by both adapters | CTR-002/004/005, IFC-019 | — | M, 350–550 lines | lane 8 | now |
@@ -184,7 +186,7 @@ pieces. S8 adds no separate engine order. No PSD/Docker/A22/A73/batch-2 prerequi
   failing case into its actual engine fix. **Recommendation:** the split above, with no harness
   or package dependency for engine/vector fixes and at most L per fixing order. S4 holds the
   common merge sequence; runner/shared-manifest changes remain admin's.
-- **A2 — D4:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed this reading on 2026-11-12 ([ruling 75's later answers](../../docs/proposals/ruling-75/README.md#later-answers)).
+- **A2 — D4:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed this reading on 2026-11-12 ([ruling 75's later answers](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md#later-answers)).
 
 ## For the owner
 

@@ -24,7 +24,7 @@
 ## Status
 
 Pre-registered on 2026-11-11 by work order 103. Accepted by the owner on 2026-11-11 under
-[ruling 75](../../docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
+[ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
 counting rules and planned vectors, with the answers under "Open for the owner" applied. Ruling
 45 fixes what an experiment must show before it runs. No result is recorded here.
 
@@ -40,9 +40,9 @@ implementation of the selected filter contracts, as well as propagation through 
 ## What it must show
 
 1. **P1 — ruled:** S8 runs end to end on the reference engine with its vectors passing;
-   judge by task evidence and the vector report ([ruling 47](../../docs/proposals/ruling-47/README.md)).
+   judge by task evidence and the vector report ([ruling 47](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-47/README.md)).
 2. **P2 — ruled:** every safety vector added here passes and names its safety promise
-   ([ruling 68, point 2](../../docs/proposals/ruling-68/README.md)).
+   ([ruling 68, point 2](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md)).
 3. **P3 — proposed, for the owner's acceptance:** for the fixed queries, each caller gets exactly
    the expected visible document IDs and text, including empty results. Judge against an oracle
    computed independently from the fixture's permissions, never from the implementation's answer.
@@ -64,7 +64,7 @@ implementation of the selected filter contracts, as well as propagation through 
 
 - S8 has **no row** in [round 6's allocation](../../ROADMAP.md#round-6s-evidence-and-measurements).
   No E case or D measure is assigned to it. Its filter questions overlap the critique's
-  [D05](../../docs/proposals/reaudit/round-6/design-critique.md#d05--a-filter-contract-must-explain-meaning-not-just-advertise-support);
+  [D05](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/reaudit/round-6/design-critique.md#d05--a-filter-contract-must-explain-meaning-not-just-advertise-support);
   this does not redefine or claim S2's D05 evidence.
 - [contracts.yaml](../../spec/promises/contracts.yaml): CTR-002, CTR-004, CTR-005 — operation,
   Type and Requirement contracts; [schemas.yaml](../../spec/promises/schemas.yaml): SCH-001,
@@ -115,9 +115,9 @@ author responds. No real personal data, credential or live organizational index 
   work apart”, “A client's concepts count” and “Requests and time without access” from its
   [counting rules](../../docs/implementation/FIRST_BUILD.md#counting-rules-added-after-the-baseline-ran).
   Apply per S8 task; show filter/adapter implementation work separately. Follow the
-  [increment-4 ledger model](../../docs/proposals/first-build/increment-4/measurement-plan.md).
-- **Ruled counting:** carry [ruling 63's line count](../../docs/proposals/ruling-63/README.md),
-  [ruling 68 R1's panel actions apart](../../docs/proposals/ruling-68/README.md), and
+  [increment-4 ledger model](../../docs/implementation/first-build/measurement-plan.md).
+- **Ruled counting:** carry [ruling 63's line count](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-63/README.md),
+  [ruling 68 R1's panel actions apart](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md), and
   [IN_FORCE.md topic 13's per-run rules](../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement).
   The source rules hold; M0's extension is proposed. Do not carry A70's comparison/bar, the
   S1 T3 reach-around rule, its T4/T5 better-baseline rule or its local name `project`.
@@ -209,7 +209,7 @@ the coordinator supplies the independent corpus/oracle and permission/failure co
 - **Q4:** accept the proposed criteria, measures, vectors and run plan, or revise them?
   **Recommendation:** accept only after the concrete filter contracts and oracle are reviewed.
 
-**Answers, under [ruling 75](../../docs/proposals/ruling-75/README.md), D (2026-11-11):**
+**Answers, under [ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D (2026-11-11):**
 
 - Q1: the second subscription accounts. Every account has its own label, and every Agent home
   signs in on its own (D2).
@@ -228,15 +228,15 @@ index, cross-machine partition or production-scale performance claim is made.
 ## Amendments since acceptance
 
 The text above keeps what the owner accepted on 2026-11-11 under
-[ruling 75](../../docs/proposals/ruling-75/README.md), D. Each line below is dated and says
+[ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D. Each line below is dated and says
 whose it is. A line from a ruling amends the text above as that ruling says. A line marked
 the coordinator's is open to the owner's strike: it changes no pass condition above, and what
 it adds to a run is reported apart from the counted result.
-[Ruling 78](../../docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
+[Ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
 changes in the table under question 4 of
-[the full review's questions](../../docs/proposals/full-review/questions.md); the decisions
+[the full review's questions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/questions.md); the decisions
 that these lines cite are in
-[the full review's decisions](../../docs/proposals/full-review/decisions.md).
+[the full review's decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md).
 
 - **2026-11-14, the coordinator's (decision D71):** the claim is stated in two parts, the
   contract and the convention; an expectation for counted small adapters is stated before the

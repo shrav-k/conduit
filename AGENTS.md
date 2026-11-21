@@ -48,10 +48,14 @@ In this order (ruling 67):
    pending* tells the session that writes `spec/` what to write; builds and vectors follow `spec/`
    until it is written. A line that differs from the owner's words in a ruling is a defect: the
    owner's words govern until it is fixed.
-3. **[The ledger](docs/proposals/ruling-log.md)** says what the owner ruled, when, in the owner's
-   words, and each ruling's status.
-4. **A ruling's record**, under `docs/proposals/`, says why. Its first line says whether it still
-   holds.
+3. **[The ledger](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-log.md)**
+   says what the owner ruled, when, in the owner's words, and each ruling's status.
+4. **A ruling's record**, [beside the ledger](https://github.com/shrav-k/conduit/tree/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals),
+   says why. Its first line says whether it still holds.
+
+The ledger and the records are archived at `077fa47e`: work order 235 took them out of the tree,
+git keeps them, and each link to them names that commit. They hold as items 3 and 4 say until
+IN_FORCE.md is retired, and nothing is added to them.
 
 Not binding: `ROADMAP.md`, `docs/OVERVIEW.md`, `docs/implementation/`, `docs/research/`,
 `docs/archive/` and `experiments/`. Under ruling 57, a document that does not bind may be edited,
@@ -66,16 +70,14 @@ new one. If you were asked to read or audit this repository cold, start at
 
 ## Where things go
 
-- **An owner ruling**: one change writes its record under `docs/proposals/ruling-NN/`, its row in
-  the ledger, the status lines and rows of the rulings it amends, the lines of IN_FORCE.md it
-  changes, and any action item. An answer that changes no decision is added to the existing record,
-  dated, and gets no new number (ruling 67).
+- **An owner decision** goes in the [decision log](docs/decisions/log.md), using its
+  [entry form](docs/decisions/README.md#the-log), with the lines of IN_FORCE.md it changes and any
+  action item. An answer that confirms or corrects a decision is a new entry citing it.
 - **Accepted behavior**: a promise in `spec/`, in the terms of `spec/definitions.md`. It changes by
   a logged ruling.
 - **A defect in the language**: fix it in the language, not around it.
-- **A finding of the first build**: the open increment's log under
-  [docs/proposals/first-build/](docs/proposals/first-build/README.md), and the fix in the
-  specification with a vector (ruling 46, point 4).
+- **A finding of the first build** goes in the [open log](docs/implementation/first-build/log-increment-4.md)
+  and its fix in the specification with a vector (ruling 46, point 4).
 - **Evidence**: its own directory under `experiments/`, with dated results. Never present an
   expected outcome as a result. Before proposing an experiment or a probe, look for it in the
   roadmap's [register](ROADMAP.md#experiments-and-probes), and follow
@@ -101,7 +103,7 @@ new one. If you were asked to read or audit this repository cold, start at
 
 ## If you were given a work order
 
-Under [ruling 48](docs/proposals/ruling-48/README.md), the coordinator's session plans and decides,
+Under [ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md), the coordinator's session plans and decides,
 and Codex sessions carry out work orders, as [work orders](docs/implementation/WORK_ORDERS.md)
 describes. If you were started with an order from `docs/work-orders/`:
 
@@ -127,7 +129,6 @@ Run these from the repository root before each commit:
 
 ```sh
 python3 tools/check_docs.py          # links, anchors and code fences in every Markdown file
-python3 tools/check_rulings.py       # ruling ledger, status lines and undated decisions in force
 python3 tools/set_names.py --check   # the names under spec/, engine/, conformance/ and packages/ agree with spec/names.yaml
 python3 tools/check_schemas.py       # schemas, core package and examples; needs PyYAML and jsonschema
 python3 tools/check_roadmap.py       # one row per action item, and the roadmap cites each open one
@@ -206,7 +207,7 @@ What each check needs:
   writes its record under `target/gate/`. `--plan` runs `rust discovery` alone and lists the
   other gates without running them, and exits 1 when discovery does not pass; `--all` runs
   every Rust directory and the engine. The admin merges on its PASS on the Mac, and CI runs
-  after, as a second opinion ([ruling 80](docs/proposals/ruling-80/README.md)).
+  after, as a second opinion ([ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md)).
 
 The names the specification assigns (the core package's address, `apiVersion`, the prefix of
 its `_meta` keys and, since ruling 43, the names of what `identity` carries) are defined once,

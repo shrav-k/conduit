@@ -11,7 +11,7 @@ value.
 ## What and why
 
 Your tree is order 050a's branch, not `main`: order 050a added `codex.v2` and `claude-code.v2`
-beside the `.v1` Types, with an input `ownTools` (default true). [Ruling 75](../proposals/ruling-75/README.md),
+beside the `.v1` Types, with an input `ownTools` (default true). [Ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md),
 point B1, replaces that switch before 0.2.0 publishes: **an Agent has its client's own tools
 (shell, code execution, file edits, network) exactly when its template names the directory it
 works in.** An Agent whose `directory` is null has exactly `.v1`'s tools and sandbox, as

@@ -24,7 +24,7 @@
 ## Status
 
 Pre-registered on 2026-11-11 by work order 103. Accepted by the owner on 2026-11-11 under
-[ruling 75](../../docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
+[ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
 counting rules and planned vectors, with the answers under "Open for the owner" applied. Ruling
 45 fixes what an experiment must show before it runs. No result is recorded here.
 
@@ -35,14 +35,14 @@ What has changed since acceptance is listed in the last section, "Amendments sin
 
 Can an outside author package an existing MCP server and a small code plugin, using packages,
 contracts, types and label selectors for placement, as [S7](../../ROADMAP.md#scenarios) asks?
-Label selectors replaced “location needs” in [ruling 41, item 8a](../../docs/proposals/ruling-41/README.md).
+Label selectors replaced “location needs” in [ruling 41, item 8a](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-41/README.md).
 
 ## What it must show
 
 1. **P1 — ruled:** S7 runs end to end on the reference engine with its vectors passing;
-   judge by the task evidence and vector report ([ruling 47](../../docs/proposals/ruling-47/README.md)).
+   judge by the task evidence and vector report ([ruling 47](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-47/README.md)).
 2. **P2 — ruled:** every safety vector added here passes, with its safety promise named;
-   judge the vector report under [ruling 68, point 2](../../docs/proposals/ruling-68/README.md).
+   judge the vector report under [ruling 68, point 2](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md).
 3. **P3 — proposed, for the owner's acceptance:** the fresh author produces installable packages
    for the unchanged server and a small plugin, then real Agents use their exported operations.
    Installation, operation results and records agree with the pinned artifacts and contracts;
@@ -113,9 +113,9 @@ synthetic fixture through each D01 variant; the plugin returns that fixture dete
   without access” in [Counting rules](../../docs/implementation/FIRST_BUILD.md#counting-rules-added-after-the-baseline-ran).
   Apply them per S7 task, including package-author work; list package implementation work apart
   without hiding it from the outside author's total. The
-  [increment-4 plan](../../docs/proposals/first-build/increment-4/measurement-plan.md) models the evidence ledger.
-- **Ruled counting:** carry [ruling 63's line count](../../docs/proposals/ruling-63/README.md),
-  with [ruling 68 R1's panel actions apart](../../docs/proposals/ruling-68/README.md), and the
+  [increment-4 plan](../../docs/implementation/first-build/measurement-plan.md) models the evidence ledger.
+- **Ruled counting:** carry [ruling 63's line count](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-63/README.md),
+  with [ruling 68 R1's panel actions apart](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md), and the
   per-run rules of [IN_FORCE.md topic 13](../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement).
   These source rules hold; M0's extension to S7 is proposed. No A70 comparison/bar, S1 T3
   reach-around rule, T4/T5 better-baseline rule or local name `project` is carried.
@@ -207,7 +207,7 @@ an isolated brief and capture of synthetic argv. Q4 must precede any non-Rust co
 - **Q5:** accept the proposed criteria, measures, vectors and run plan, or amend them before use?
   **Recommendation:** accept subject to candidate qualification and the final D01 definition.
 
-**Answers, under [ruling 75](../../docs/proposals/ruling-75/README.md), D (2026-11-11):**
+**Answers, under [ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D (2026-11-11):**
 
 - Q1: the second subscription accounts. Every account has its own label, and every Agent home
   signs in on its own (D2).
@@ -226,17 +226,17 @@ reports restrictions as mediated. The non-Rust publication check does not add a 
 ## Amendments since acceptance
 
 The text above keeps what the owner accepted on 2026-11-11 under
-[ruling 75](../../docs/proposals/ruling-75/README.md), D. Each line below is dated and says
+[ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D. Each line below is dated and says
 whose it is. A line from a ruling amends the text above as that ruling says. A line marked
 the coordinator's is open to the owner's strike: it changes no pass condition above, and what
 it adds to a run is reported apart from the counted result.
-[Ruling 78](../../docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
+[Ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
 changes in the table under question 4 of
-[the full review's questions](../../docs/proposals/full-review/questions.md); the decisions
+[the full review's questions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/questions.md); the decisions
 that these lines cite are in
-[the full review's decisions](../../docs/proposals/full-review/decisions.md).
+[the full review's decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md).
 
-- **2026-11-14, [ruling 78](../../docs/proposals/ruling-78/README.md), point 4 (the owner):** S7
+- **2026-11-14, [ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md), point 4 (the owner):** S7
   is split. The outside author works against a scripted consumer, so that part needs neither the
   owner's presence nor the second accounts. Real Agents on the second accounts then use the same
   packages, and the coordinator, not the outside author, sets them up. This amends ruling 75 D1

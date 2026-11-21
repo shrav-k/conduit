@@ -10,7 +10,7 @@ never print one.
 
 ## What and why
 
-Finding 4-18 of increment 4 ([the log](../proposals/first-build/log-increment-4.md)): the shell's
+Finding 4-18 of increment 4 ([the log](../implementation/first-build/log-increment-4.md)): the shell's
 unit tests took 5 minutes 33 seconds and 31 minutes of processor time, and a profile put that time
 in copying, parsing and dropping the whole state on each commit. The code shows where. Line
 numbers are `main`'s at `cfd7b23`, in `engine/crates/` (nothing under `engine/` has changed on

@@ -28,7 +28,7 @@ Conduit is a configuration language for the relationships between independent ag
 things they share. This directory is its specification: the documents that bind every engine.
 
 Conduit innovates only on connection and access
-([ruling 40](../docs/proposals/ruling-40/README.md)). What is its own is its documents;
+([ruling 40](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-40/README.md)). What is its own is its documents;
 connection, which is the Conduits; access, which is who may reach what, under which limits,
 and how access is delegated; accountability, which is what must be recorded of who did what;
 and the shape of its contracts. Everything else is a provider behind a contract that any
@@ -277,12 +277,12 @@ with the IDs it held, so that none of them is ever reused.
 
 | File | IDs it held | Removed by |
 | --- | --- | --- |
-| `promises/graphs.yaml`, the static meaning of a graph and what held when a step was dispatched; its [last version](https://github.com/shrav-k/conduit/blob/0a9a32326830452d9761f4963077db4fb618918a/spec/promises/graphs.yaml) | GRA-001 to GRA-028. Consolidation pass 1 folded GRA-013 into GRA-019 and GRA-016 into GRA-020. Ruling 41 removed the rest by decision 1 of the principles review (ruling 40, point 3c): an instance's own setup and retirement work is a setup hook and a retire hook, and an operation built from others is an ordinary implementation. GRA-002's rule went to TPL-012; GRA-003's to OPS-022, CON-004 and POOL-013; GRA-022's to CON-004 and POOL-013; nothing replaces the others. | [Ruling 41](../docs/proposals/ruling-41/README.md) |
+| `promises/graphs.yaml`, the static meaning of a graph and what held when a step was dispatched; its [last version](https://github.com/shrav-k/conduit/blob/0a9a32326830452d9761f4963077db4fb618918a/spec/promises/graphs.yaml) | GRA-001 to GRA-028. Consolidation pass 1 folded GRA-013 into GRA-019 and GRA-016 into GRA-020. Ruling 41 removed the rest by decision 1 of the principles review (ruling 40, point 3c): an instance's own setup and retirement work is a setup hook and a retire hook, and an operation built from others is an ordinary implementation. GRA-002's rule went to TPL-012; GRA-003's to OPS-022, CON-004 and POOL-013; GRA-022's to CON-004 and POOL-013; nothing replaces the others. | [Ruling 41](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-41/README.md) |
 
 ### Other IDs removed by rulings
 
 IFC-011, SCT-012, OPS-031 and REV-013 are retired identifiers. Nothing replaces them
-([ruling 78](../docs/proposals/ruling-78/README.md)).
+([ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md)).
 
 ## The form of a promise
 
@@ -339,7 +339,7 @@ read, in a diagnostic that does not reject (CTR-004, TPL-004).
 
 The sections below state what the promises leave open. They are statements, not promises,
 and nothing tests them; each point cites the promises that state its parts. The first is what
-[ruling 44](../docs/proposals/ruling-44/README.md) accepted on delegation and on access to
+[ruling 44](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-44/README.md) accepted on delegation and on access to
 `management` (D03 and D04 of round 6). The second is section 4 of the principles review. Work
 that outlasts its invocation is left out, as [What this is](#what-this-is) says.
 
@@ -699,19 +699,19 @@ comment at the head of each promise file names the standards that its promises f
 
 These records hold the decisions and their reasons. The specification governs where they differ.
 
-- [The core package and schemas](../docs/proposals/core-and-schemas/README.md): the batch's decisions and alternatives.
-- [Round 5 decisions](../docs/proposals/reaudit/round-5/DECISIONS.md): the fifth re-audit's settlements.
-- [Round 6 decisions](../docs/proposals/reaudit/round-6/DECISIONS.md): the sixth re-audit's settlements.
-- [Open decisions after the rewrite](../docs/proposals/ruling-41/open-decisions.md): the coordinator's decisions and questions for the owner.
-- [The planner's choices](../docs/proposals/ruling-41/README.md#planners-choices) and [the owner's changes](../docs/proposals/ruling-41/README.md#after-the-ruling): applying ruling 41.
-- [The principles review](../docs/proposals/principles-review/README.md): connection and access, with providers behind contracts.
-- [The secrets proposal](../docs/proposals/secrets/README.md): the secret type's reasoning and options.
-- [The vocabulary audit](../docs/proposals/vocabulary-audit/README.md): the terms and names in force.
-- [Work across machines](../docs/proposals/multi-machine/README.md): identity, proof and enforcement.
-- [The first build's register](../docs/proposals/first-build/README.md): the increments and their findings and settlements.
-- [The ruling log](../docs/proposals/ruling-log.md): the owner's rulings and their records.
-- [The Fleet structure](../docs/proposals/ruling-59/README.md) and [its name](../docs/proposals/ruling-60/README.md): ownership, defaults and discovery.
-- [The core additions](../docs/proposals/ruling-53/README.md) and [lifting](../docs/proposals/ruling-55/README.md): local names, preconditions, inventory and tombstones.
-- [Provenance](../docs/proposals/ruling-54/README.md), [access limits](../docs/proposals/ruling-62/README.md) and [scoped Interfaces](../docs/proposals/ruling-66/README.md): the authority behind an opening and the limits of reconciliation.
-- [The trust domain](../docs/proposals/ruling-51/README.md): the engine's SPIFFE namespace.
-- [Agents' own tools](../docs/proposals/ruling-70/README.md), [the temporary declaration](../docs/proposals/ruling-74/README.md) and [the directory and runtime provider](../docs/proposals/ruling-75/README.md), part B: CTR-014 and confinement; [ruling 61, B13](../docs/proposals/ruling-61/README.md) and [ruling 52, point 2](../docs/proposals/ruling-52/README.md): the inventory members and one-hop reach.
+- [The core package and schemas](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/core-and-schemas/README.md): the batch's decisions and alternatives.
+- [Round 5 decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/reaudit/round-5/DECISIONS.md): the fifth re-audit's settlements.
+- [Round 6 decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/reaudit/round-6/DECISIONS.md): the sixth re-audit's settlements.
+- [Open decisions after the rewrite](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-41/open-decisions.md): the coordinator's decisions and questions for the owner.
+- [The planner's choices](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-41/README.md#planners-choices) and [the owner's changes](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-41/README.md#after-the-ruling): applying ruling 41.
+- [The principles review](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/principles-review/README.md): connection and access, with providers behind contracts.
+- [The secrets proposal](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/secrets/README.md): the secret type's reasoning and options.
+- [The vocabulary audit](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/vocabulary-audit/README.md): the terms and names in force.
+- [Work across machines](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/multi-machine/README.md): identity, proof and enforcement.
+- [The first build's register](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/README.md): the increments and their findings and settlements.
+- [The ruling log](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-log.md): the owner's rulings and their records.
+- [The Fleet structure](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-59/README.md) and [its name](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-60/README.md): ownership, defaults and discovery.
+- [The core additions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-53/README.md) and [lifting](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-55/README.md): local names, preconditions, inventory and tombstones.
+- [Provenance](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-54/README.md), [access limits](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-62/README.md) and [scoped Interfaces](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-66/README.md): the authority behind an opening and the limits of reconciliation.
+- [The trust domain](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-51/README.md): the engine's SPIFFE namespace.
+- [Agents' own tools](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-70/README.md), [the temporary declaration](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-74/README.md) and [the directory and runtime provider](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), part B: CTR-014 and confinement; [ruling 61, B13](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-61/README.md) and [ruling 52, point 2](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-52/README.md): the inventory members and one-hop reach.

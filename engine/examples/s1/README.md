@@ -46,5 +46,5 @@ engine/target/release/conduit call --store /tmp/conduit-live-store \
 The executable `claude` or `codex` must be on the runner's permitted PATH. Both clients use
 the owner's shared subscription login. These commands start real model work only at call;
 work order 023 did not run them. The admin's
-[closeout plan](../../../docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md#how-to-run-the-open-checks) supplies the
+[closeout plan](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md#how-to-run-the-open-checks) supplies the
 sentinels, evidence and further checks needed before claiming increment 3 complete.

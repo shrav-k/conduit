@@ -55,7 +55,7 @@ claim.
 client's process alone (`Session::shutdown`, `src/lib.rs:723-730`: `s.child.kill()` then
 `s.child.wait()`), and it has no handler for TERM, so the engine runner's stop ends the wrapper and
 leaves the client's children to the run's process group. In the dogfood smoke test, Codex's
-terminal children outlived that group's kill ([FR-332](../proposals/full-review/findings/P06-dogfooding.md#fr-332),
+terminal children outlived that group's kill ([FR-332](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/P06-dogfooding.md#fr-332),
 draft row 4-23). Then a turn can be recorded failed, and its repeat dispatched, while processes of
 the first turn still write in the folder. This order makes every `.v2` wrapper own its client's
 whole process tree. The one behavior, in both packages: every `.v2` stop of the client (a failed
@@ -63,12 +63,12 @@ turn, a deadline, a cancellation, the wrapper's TERM and the end of its input) e
 of that tree that the wrapper can find, and the answer that reports the stop comes only once each
 of them is seen ended or is named as having outlived it. The `.v1` launch and stop do not change.
 
-It carries [the full review's order 16](../proposals/full-review/orders.md): FR-332's wrapper half
+It carries [the full review's order 16](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/orders.md): FR-332's wrapper half
 as its verifier corrected it, that is, the client's descendants found by a walk of parent links,
 with no process's environment read (the marker variable of FR-332's least fix would read the
 environment of every process of the user, against the standing rule); the fourth change of
-[FR-336](../proposals/full-review/findings/P06-dogfooding.md#fr-336)'s step 2, "the wrapper owning
-its client's process tree"; and [FR-337](../proposals/full-review/findings/P06-dogfooding.md#fr-337)'s
+[FR-336](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/P06-dogfooding.md#fr-336)'s step 2, "the wrapper owning
+its client's process tree"; and [FR-337](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/P06-dogfooding.md#fr-337)'s
 probe P3, with its verifier's TERM added, as a test: a background job, a new session and a double
 fork, ended by deadline, by cancellation and by TERM, leave no survivor, or the result names each
 one. The other changes of FR-336's step 2 are not here: the failure as fields is order 050e's (the
@@ -77,15 +77,15 @@ OPS-014 is on the owner's review list, not here.
 
 From the targeted review of the 0.2.0 sign-in surface it carries M64 as frozen ("order 16's stop of
 the client's whole process tree. Freeze as is"), and the start of item 7 of
-[`claude-code.v2`](../proposals/review-signin-2026-11-16/README.md#050-claude-codev2) and
-[`codex.v2`](../proposals/review-signin-2026-11-16/README.md#050-codexv2) (M65, V18): "the
+[`claude-code.v2`](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#050-claude-codev2) and
+[`codex.v2`](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#050-codexv2) (M65, V18): "the
 survivors of order 16's stop are named where #17's fields live and, on TERM, in the wrapper's own
 log". Here they are named in the failed turn's text, the place a failure lives until 050e, and on
 TERM on the wrapper's stderr; 050e moves the first into its fields and leaves the second. The
 coordinator reads M65's "the wrapper's own log" as the wrapper's stderr, open to the owner's
 strike: the wrapper keeps no log, and under the engine's own runner, which discards the wrapper's
 stderr, nothing keeps that line. The coordinator puts that reading on
-[the owner's review list](../proposals/first-build/to-review-with-the-owner.md) with this order's
+[the owner's review list](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/to-review-with-the-owner.md) with this order's
 Record.
 
 **What 172b changed, and why the client gets a group of its own.** Order
@@ -267,7 +267,7 @@ two files are one source; line 17's `CLAUDE` selects the client) and `src/main.r
 
    So the failed answer of a `.v2` turn ends the call only after the client's tree is seen ended
    or named (P3: "no stop or fence is recorded before that"). OPS-014's text still holds the fence
-   until the later order that [ruling 78](../proposals/ruling-78/README.md) point 6 names drops
+   until the later order that [ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md) point 6 names drops
    it, and this order relies on neither the fence nor its removal.
 
 6. **TERM and the end of input**, in `main.rs`, for `.v2` alone. Keep `config.v2` before the
@@ -395,14 +395,14 @@ two files are one source; line 17's `CLAUDE` selects the client) and `src/main.r
 ## Who decided what
 
 The carrier is the full review's order 16, under D55, which stays the coordinator's, open to the
-owner's strike ([ruling 82](../proposals/ruling-82/README.md#what-it-amends), the section after
+owner's strike ([ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md#what-it-amends), the section after
 point 6: "The rest of D55 and D80 stays the coordinator's"); ruling 82 point 5 struck only D55's
 un-refusing for `.v2`. M65 is carried by item 7 of the review's must-state lists, which the owner
 accepted with ruling 82. M64, which freezes order 16's stop as is, is a verdict of the targeted
 review (verdicts.md, section G) that no must-state item traces to, and it decides nothing beyond
 order 16. The split of order
 050 into 050b to 050o, this order's place on `wo/050-agents-0.2.0` after 050c and its base are the
-coordinator's, open to the owner's strike ([ruling 48](../proposals/ruling-48/README.md)), and so is
+coordinator's, open to the owner's strike ([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)), and so is
 the replacement of the queue's "not stacked on 078" for order 16, since order 050 builds on 078's
 branch. Everything else here is the coordinator's too, each open to the owner's strike: the client
 of a `.v2` launch leading a new process group (`process_group(0)`), with the trade stated in the
@@ -497,8 +497,8 @@ The admin then stages any new file and runs `python3 tools/check_private_paths.p
 `git diff --cached --check`. This order is a checkpoint on `wo/050-agents-0.2.0`: it does not merge
 alone, and its Record is written at the foot of this file on that branch, as order 050c's is. A
 fresh Codex verifier and a fresh read-only Opus reader read the result before the checkpoint stands
-([ruling 79](../proposals/ruling-79/README.md), point 2). The local gate that
-[ruling 80](../proposals/ruling-80/README.md) has a merge wait on, `tools/gate.py`, runs at order
+([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md), point 2). The local gate that
+[ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md) has a merge wait on, `tools/gate.py`, runs at order
 050n's merge, read with the expected engine failure known.
 
 ## Record

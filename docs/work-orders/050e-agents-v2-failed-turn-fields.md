@@ -55,29 +55,29 @@ stop move from the text into those fields; on TERM they stay on the wrapper's st
 lapses in a turn fails it with the class `authentication`, and the turn sends no URL request,
 which is the half of F84 that a plain item follows.
 
-It carries [the full review's order 17](../proposals/full-review/orders.md):
-[FR-338](../proposals/full-review/findings/P06-dogfooding.md#fr-338) as its verifier corrected it,
+It carries [the full review's order 17](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/orders.md):
+[FR-338](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/P06-dogfooding.md#fr-338) as its verifier corrected it,
 that is, a `network` class by the same fixed-substring method and "the failed result carries its
 class, the turn's number and whether the client had started as fields, not only as text", with no
 client text kept (the verifier's point 3: a kept tail of client error text would reverse 050a's
 rule against client text in results). Its done-when: "in each package, synthetic failures map to
 each class, `network` included; 050a's byte-for-byte `.v1` check passes; Rust checks". FR-338's
 other proposals are not here: the un-refusing of a failed conversation is struck for `.v2`
-([ruling 82](../proposals/ruling-82/README.md#the-decisions), point 5), the kept tail of client
+([ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md#the-decisions), point 5), the kept tail of client
 text is the verifier's correction, and raising Codex's own retry limits waits on FR-338's probe
 P1, which has not run.
 
 From the targeted review of the 0.2.0 sign-in surface it carries item 7 of both
-[`claude-code.v2`](../proposals/review-signin-2026-11-16/README.md#050-claude-codev2) and
-[`codex.v2`](../proposals/review-signin-2026-11-16/README.md#050-codexv2) ("As `claude-code.v2`'s
+[`claude-code.v2`](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#050-claude-codev2) and
+[`codex.v2`](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#050-codexv2) ("As `claude-code.v2`'s
 item 7"): "`turn.v1`'s schemas stay byte for byte as 0.1.1 published them; #17's class and turn are
 not outputs and no schema or description enumerates the classes; the survivors of order 16's stop
 are named where #17's fields live and, on TERM, in the wrapper's own log; the turn implementation
 follows the half of F84 that matches its item. Done when 050a's byte check passes and a vector shows
 the fields reach the caller under IFC-025 wherever 050 places them." Its verdicts M65 to M67
-([verdicts.md](../proposals/review-signin-2026-11-16/verdicts.md)) and its findings
-[V18](../proposals/review-signin-2026-11-16/findings.md#v18-where-order-17s-fields-and-order-16s-survivors-live)
-and [V28](../proposals/review-signin-2026-11-16/findings.md#v28-a-login-that-lapses-during-a-turn)
+([verdicts.md](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/verdicts.md)) and its findings
+[V18](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/findings.md#v18-where-order-17s-fields-and-order-16s-survivors-live)
+and [V28](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/findings.md#v28-a-login-that-lapses-during-a-turn)
 say why. Order [050d](050d-agents-v2-process-tree.md) named the survivors in the failed turn's text
 until this order and on TERM on the wrapper's stderr, the coordinator's reading of "the wrapper's
 own log"; this order moves the first into the fields and leaves the second. The vector of item 7's
@@ -86,7 +86,7 @@ coordinator's plan of 050, in [order 117](117-plan-s2-s3.md)'s 050 entry); this 
 
 **The turn item's kind, and so where the fields live.** The review left open whether the item that
 implements `turn.v1` carries Conduit's keys, and noted that #17's carrier depends on it (G07, in
-its section 1's line [o1](../proposals/review-signin-2026-11-16/README.md#1-the-open-line-clause-by-clause));
+its section 1's line [o1](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#1-the-open-line-clause-by-clause));
 the owner's ruling 82, point 6, keeps it 050's choice. The coordinator chooses here that the turn
 items stay plain, as `conduit.yaml` gives them at `BASE` (`wrapper`, `wrapper-v2` and, in
 `agent-codex`, `wrapper-v2-path`, each `plain: true`; verdict M18 freezes `wrapper-v2` so), and so
@@ -122,7 +122,7 @@ the carrier is the failed result's `content`, stated as such:
   unavailable naming that action" waits for that check, a tension V28 and
   [order 171b](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/171b-sign-in-return-and-holds.md) record as standing; the keyed alternative would
   meet it. The coordinator puts this choice on
-  [the owner's review list](../proposals/first-build/to-review-with-the-owner.md) with this order's
+  [the owner's review list](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/to-review-with-the-owner.md) with this order's
   Record, beside the keyed alternative and its `spec/` change.
 
 The README cites PND-005's two forms as `spec/` will hold them once 048a-2's work merges, which is
@@ -338,13 +338,13 @@ two files are one source; line 18's `CLAUDE` selects the client) and `src/main.r
 ## Who decided what
 
 The carrier is the full review's order 17, under D55, which stays the coordinator's, open to the
-owner's strike ([ruling 82](../proposals/ruling-82/README.md#what-it-amends), the section after
+owner's strike ([ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md#what-it-amends), the section after
 point 6: "The rest of D55 and D80 stays the coordinator's"); ruling 82 point 5 struck only D55's
 un-refusing for `.v2`. FR-338 as its verifier corrected it is the review's. Item 7 of the review's
 must-state lists, which the owner accepted with ruling 82, carries M65 to M67; ruling 82 point 6
 (o1) leaves the turn item's kind to 050. The split of order 050 into 050b to 050o, this order's
 place on `wo/050-agents-0.2.0` after 050d and 048a-2's text, and its base are the coordinator's,
-open to the owner's strike ([ruling 48](../proposals/ruling-48/README.md)). Everything else here is
+open to the owner's strike ([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)). Everything else here is
 the coordinator's too, each open to the owner's strike: the turn items kept plain (G07), with the
 cost stated in the README's limit; the fields as a second text block of the failed result's
 `content`; their names, the cause kinds and `unclassified`; `clientStarted` read from whether the
@@ -433,8 +433,8 @@ The admin then runs `python3 tools/check_private_paths.py` and `git diff --cache
 staged change. This order is a checkpoint on `wo/050-agents-0.2.0`: it does not merge alone, and its
 Record is written at the foot of this file on that branch, as orders 050c's and 050d's are. A fresh
 Codex verifier and a fresh read-only Opus reader read the result before the checkpoint stands
-([ruling 79](../proposals/ruling-79/README.md), point 2). The local gate that
-[ruling 80](../proposals/ruling-80/README.md) has a merge wait on, `tools/gate.py`, runs at order
+([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md), point 2). The local gate that
+[ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md) has a merge wait on, `tools/gate.py`, runs at order
 050n's merge, read with the expected engine failure known.
 
 ## Record

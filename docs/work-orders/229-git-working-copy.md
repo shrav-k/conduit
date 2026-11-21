@@ -20,7 +20,7 @@ cleared but `PATH`, with `HOME` a temporary directory, `GIT_CONFIG_NOSYSTEM=1`,
 
 ## What and why
 
-**The gap** (the dogfood-gaps stream, step G-5; [ruling 92](../proposals/ruling-92/README.md),
+**The gap** (the dogfood-gaps stream, step G-5; [ruling 92](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-92/README.md),
 point 9; [DEC-027](../decisions/log.md#dec-027-2026-11-20-conduit-builds-conduit-directly-through-conduit)).
 Running order 215 directly through Conduit showed it has no working copy. The coordinator
 readied each Agent's directory by hand with git, and recloned it after Agents ran there. The
@@ -53,10 +53,10 @@ leave out untracked and binary files; works in the `.git` the Agent can change);
 `git2` (not in the offline cache); the git directory under root (the gap above).
 
 **When it runs.** Through Conduit's dogfood: one Codex worker turn (4-hour limit; aim for under
-2 hours), a Codex verifier and a Claude reader ([ruling 79](../proposals/ruling-79/README.md)),
+2 hours), a Codex verifier and a Claude reader ([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md)),
 who run only what settles a doubt, and the gate
 ([DEC-033](../decisions/log.md#dec-033-2026-11-20-the-testing-audit)). By
-[ruling 89](../proposals/ruling-89/README.md), each decision says what must hold; how is yours.
+[ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), each decision says what must hold; how is yours.
 The names are the coordinator's, open to the owner's strike.
 
 ## The decisions

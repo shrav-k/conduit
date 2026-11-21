@@ -15,7 +15,7 @@ never read or print a key, a token or any credential. Read nothing outside the r
 **Every file you write is public.** Write no absolute local path, no user or machine name, no
 email address and no at sign. Where a file you quote holds one, leave that part out, as section 1
 says for the example. Call the second machine the Linux node, as
-[ruling 85](../proposals/ruling-85/README.md) defines it, and cite anything held outside the tree
+[ruling 85](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-85/README.md) defines it, and cite anything held outside the tree
 as "the coordinator's notes (private)". `python3 tools/check_private_paths.py` checks part of
 this; the rest is yours. The repository's own public GitHub address, as the existing permalinks
 and the core package's address give it, is not a private name and may be written.
@@ -27,7 +27,7 @@ date" and asked for a review now, applied when the dogfood reaches its checkpoin
 manual review of the README and the docs, on Claude Fable, produced a plan with drafts (the
 coordinator's notes, private), and the owner chose among its options; ruling 90 records the
 choices, and the coordinator's own, open to the owner's strike. The checkpoint is
-[ruling 89](../proposals/ruling-89/README.md)'s milestone 1: the Agents of the owner's primary
+[ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md)'s milestone 1: the Agents of the owner's primary
 accounts signed in through Conduit on the Mac, running Conduit's work orders one turn at a time.
 This order is the plan's step A. It:
 
@@ -73,7 +73,7 @@ The owner's choices of 2026-11-19, which ruling 90 records:
    one example.
 3. **The archived order file is the record.** A merged order moves whole, with its Record, into
    `docs/archive/work-orders/`, and that file is its record; this amends
-   [ruling 58](../proposals/ruling-58/README.md), point 4. Here, the index, the method's page
+   [ruling 58](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-58/README.md), point 4. Here, the index, the method's page
    and the archive say so (sections 11, 13 and 14), the archive's index is created, empty, and
    the check that keeps it is added (section 15). No row is written to the record for any merged
    order still in the tree (037 on, but 060 to 066).
@@ -93,13 +93,13 @@ The coordinator's, each open to the owner's strike, as ruling 90 records them:
 
 Rulings that bind how it is done:
 
-9. [Ruling 57](../proposals/ruling-57/README.md): a document that does not bind may be edited,
+9. [Ruling 57](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-57/README.md): a document that does not bind may be edited,
    condensed or removed once every relevant piece of it is preserved in `spec/` or a live
    document. Condense only what another live document already holds, and say where in your
    report.
-10. [Ruling 67](../proposals/ruling-67/README.md): what holds, in order: `spec/`, IN_FORCE.md,
+10. [Ruling 67](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-67/README.md): what holds, in order: `spec/`, IN_FORCE.md,
     the ledger, a ruling's record. The README and the map state it in those four lines.
-11. [Ruling 89](../proposals/ruling-89/README.md), point 2: "exact text is prescribed only for the
+11. [Ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), point 2: "exact text is prescribed only for the
     specification's wording, diagnostics and prescribed cases", and a Done-when that pins a line
     count is dropped. So the README and the map in sections 1 and 2, the Fable review's drafts,
     are models: this text, or yours to the same effect, keeping every fact, link and heading each
@@ -128,9 +128,9 @@ Rulings that bind how it is done:
 
 ## What to read
 
-- [Ruling 90's record](../proposals/ruling-90/README.md), and its row in
-  [the ledger](../proposals/ruling-log.md).
-- [Ruling 89](../proposals/ruling-89/README.md): points 2, 3 and 5.
+- [Ruling 90's record](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-90/README.md), and its row in
+  [the ledger](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-log.md).
+- [Ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md): points 2, 3 and 5.
 - [IN_FORCE.md](../../IN_FORCE.md): topics 13 and 15.
 - [CONTRIBUTING.md, "Keeping decisions and documents current"](../../CONTRIBUTING.md#keeping-decisions-and-documents-current).
 - The Records of orders [048b-join](048b-join-build-sign-in-through-the-interface.md),
@@ -474,7 +474,7 @@ link it.
 Trim it to near 150 lines, as IN_FORCE.md, topic 15 asks, not far under:
 
 - Keep everything above `## Checks` but two passages. In "Read first", item 6 becomes: for a
-  coordinator taking over, the handover, then [the full review's record](../proposals/full-review/README.md)
+  coordinator taking over, the handover, then [the full review's record](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/README.md)
   (path from AGENTS.md: `docs/proposals/full-review/README.md`), since the full review ran on
   2026-11-14. In "If you were given a work order", the first sentence becomes: under rulings 48
   and 79, the coordinator's session plans and decides, and Codex or Opus sessions carry out work

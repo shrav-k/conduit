@@ -33,7 +33,7 @@ hash list of archived files is built: `tools/check_docs.py` already checks each 
 commit, path and anchor.
 
 **Preservation tests** ([the tests](../AUDIT.md#preservation-tests);
-[ruling 92](../proposals/ruling-92/README.md), point 1): none served and none at risk. The order
+[ruling 92](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-92/README.md), point 1): none served and none at risk. The order
 changes no promise, engine code, package or case. It keeps the record that ties each change to
 `spec/` to an owner's decision, and stops a promise losing its case unnoticed.
 
@@ -41,7 +41,7 @@ changes no promise, engine code, package or case. It keeps the record that ties 
 some paths adds a changelog line (Danger's first example; Keep a Changelog's `Unreleased`), and a
 ratchet that lets a debt count fall but never rise (Rust's `tidy`; Kubernetes' rule of no new
 feature without conformance tests). Danger and such actions run on GitHub; merges wait on the
-local, offline gate ([ruling 80](../proposals/ruling-80/README.md)), and the Python checkers in
+local, offline gate ([ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md)), and the Python checkers in
 `tools/` are the named exception to Rust
 ([DEC-025](../decisions/log.md#dec-025-2026-11-20-the-engine-is-rust-no-private-code)). It adds one
 tool and one gate row.
@@ -50,7 +50,7 @@ tool and one gate row.
 under 2 hours), a Codex verifier and a Claude reader, who run only what settles a doubt, and the
 gate, which runs everything
 ([DEC-033](../decisions/log.md#dec-033-2026-11-20-the-testing-audit)). By
-[ruling 89](../proposals/ruling-89/README.md), each decision says what must hold; how is yours.
+[ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), each decision says what must hold; how is yours.
 The names, line forms, the split between failing and reporting, and the no-case ratchet's home
 here rather than in `promise_standing.py` are the coordinator's, open to the owner's strike.
 
@@ -279,7 +279,7 @@ git diff --name-only HEAD -- tools | grep -vxE 'tools/(check_decisions|gate)\.py
 - every check's last line.
 
 The verifier's turn follows; the coordinator then runs `tools/gate.py`, has a fresh, read-only
-Claude reader read the diff ([ruling 79](../proposals/ruling-79/README.md); ruling 92 point 4),
+Claude reader read the diff ([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md); ruling 92 point 4),
 and merges.
 
 ## Record

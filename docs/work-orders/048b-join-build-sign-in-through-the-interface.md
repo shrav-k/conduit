@@ -20,14 +20,14 @@ client, sign in nowhere, and open no URL: the URLs below are test values that no
 048b-join: S-M." Each side was cut again (the coordinator's cuts, each open to the owner's strike):
 the shell's side into 048b-relay1 and 048b-relay2, both merged; the engine's side, in the core,
 into the parts of 048a-5 and 048a-6, each after the one before. On 2026-11-19 the owner answered two
-questions on the path to the Mac dogfood, which [ruling 88](../proposals/ruling-88/README.md)
+questions on the path to the Mac dogfood, which [ruling 88](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-88/README.md)
 records with the owner's words:
 
 - "Defer 7 and 8 (Recommended)", whose option read: "048b-join comes right after 048a-5h and joins
   the URL relay and polling only; 048a-7, 048a-8 and 051b-3 (the return through Conduit, used by
   Codex from other machines once keyed) move after dogfood, beside the keyed release. Saves about 6
   hours on the critical path. Records a dated ruling." Under
-  [ruling 86](../proposals/ruling-86/README.md) nothing is keyed in 0.2.0, so PND-013's first
+  [ruling 86](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-86/README.md) nothing is keyed in 0.2.0, so PND-013's first
   check fails for every 0.2.0 package and the carried return has no 0.2.0 user, and a browser login
   on the Mac needs no return.
 - "Pairs: 5e+5f, 5g+5h (Recommended)": 048a-5e and 048a-5f become one order, 048a-5ef (the engine's
@@ -42,13 +42,13 @@ the Agent packages 0.2.0 joined to `main`, follows this order and A5's live chec
 follows 048a-5gh directly. Its return leg, the Interface's retry carrying `signInReturn` on to the
 hook that started the login, moves with 048a-7 and 048a-8 after the dogfood, and is not built or
 tested here. It is on the sign-in chain, so A77's amendment of 2026-11-19 does not pair it, and
-[ruling 89](../proposals/ruling-89/README.md), point 6, pauses pairing until 050n merges
-([work orders](../implementation/WORK_ORDERS.md)); under [ruling 87](../proposals/ruling-87/README.md)
+[ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), point 6, pauses pairing until 050n merges
+([work orders](../implementation/WORK_ORDERS.md)); under [ruling 87](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-87/README.md)
 it runs one Codex round, a worker and a fresh Codex verifier, whose musts go to the fresh Opus
 reader.
 
-[The targeted review's section 6](../proposals/review-signin-2026-11-16/README.md#048b-join) puts
-nothing on 048b-join. The owner's [ruling 82](../proposals/ruling-82/README.md#the-decisions),
+[The targeted review's section 6](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#048b-join) puts
+nothing on 048b-join. The owner's [ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md#the-decisions),
 point 3, merges the Agent packages 0.2.0 only after 048b-join, onto an engine that runs the
 account check; order 050n waits for this order's merge, and so does A5's live check
 ([experiment 027](../../experiments/027-a5-sign-in/README.md), "When, and under which Type").
@@ -58,7 +58,7 @@ refreshed it on 2026-11-19, written ahead against `main` at `c097ec81`, where or
 048a-5b, 048a-5c, 048a-6, 048b-relay1 and 048b-relay2 have merged with their Records, and against
 the texts of orders 209 and 048a-5d (refreshed, not yet merged) and of 048a-5d2, 048a-5ef and
 048a-5gh, written beside it that day. Every change below is the coordinator's, open to the owner's
-strike ([ruling 48](../proposals/ruling-48/README.md)), and follows the owner's two answers above:
+strike ([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)), and follows the owner's two answers above:
 
 - the order follows 048a-5gh directly, after 209, 048a-5d, 048a-5d2 and 048a-5ef, and no longer
   after 048a-7, 048a-8 or 048b-relay2's planned successor;
@@ -81,10 +81,10 @@ dispatch, against `main` at `92632057`, where order 209 has merged (#412, its `s
 carrying `_meta`) and the texts of 048a-5d, 048a-5d2 and 048a-5ef have merged refreshed (#408,
 #410, #411), and against 048a-5gh's text refreshed beside it; none of 048a-5d to 048a-5gh is
 merged as built. Every change below is the coordinator's, open to the owner's strike
-([ruling 48](../proposals/ruling-48/README.md)):
+([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)):
 
 - under the owner's choice on 2026-11-19 of the lever "Pipeline the chain", as the coordinator
-  applies it ([ruling 89](../proposals/ruling-89/README.md), point 2, open to the owner's strike),
+  applies it ([ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), point 2, open to the owner's strike),
   this order may start from 048a-5gh's round-1 branch, before 048a-5gh merges, with orders
   048a-5d, 048a-5d2 and 048a-5ef each merged or on its own round-1 branch below it: the start check
   accepts any of these bases, says how to tell them apart and that the texts on `main` govern
@@ -363,7 +363,7 @@ crosses the shell, in which form, and what is kept nowhere. The owner decided on
 ruling 88 records, that this order follows 048a-5gh directly and joins the URL relay and polling
 only, its return leg moving with 048a-7 and 048a-8 after the dogfood, and that the chain before it
 is batched in two orders. Everything else here is the coordinator's, each open to the owner's strike
-([ruling 48](../proposals/ruling-48/README.md)): the split of 048b into 048b-relay and this order
+([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)): the split of 048b into 048b-relay and this order
 (order 117); the two refreshes' changes listed above; reading A8 as the plan settles it; the five
 seams of decision 1 and the rule that this order joins none of them, a seam that does not meet
 being a reason to stop; keeping this order to tests and one sentence; taking 048b-relay2's and
@@ -733,12 +733,12 @@ relay (order 048b-relay1)" that decision 7's sentence follows, 048a-5ef's or tha
 
 `git diff --check` and `check_private_paths.py` read tracked files only, so the admin then stages
 the change and runs `python3 tools/check_private_paths.py` and `git diff --cached --check`. Before
-the merge the admin runs the local gate that [ruling 80](../proposals/ruling-80/README.md),
+the merge the admin runs the local gate that [ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md),
 point 10, has each merge wait on, `tools/gate.py`; CI runs on the pull request as well, and its
 `docs` job reads `048b-join-declared.yaml` through `--declared-changed`, and the merge does not wait
 for it. Under ruling 87 this order runs one Codex round: a fresh Codex verifier reads it, and a
 fresh read-only Opus reader reads the result, and the verifier's report where it holds a must,
-before it merges ([ruling 79](../proposals/ruling-79/README.md), point 2, as ruling 87 amends it);
+before it merges ([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md), point 2, as ruling 87 amends it);
 where the verifier reported a must, the coordinator merges it. The admin writes this order's Record
 at the foot of this file when it merges.
 

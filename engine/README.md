@@ -3,13 +3,13 @@
 Not binding. The specification in [spec/](../spec/README.md) alone binds, and this code follows
 it: where the two differ, the code is wrong, or the difference is a finding of the first build.
 
-This is the codebase of the first build, as [ruling 46](../docs/proposals/ruling-46/README.md)
+This is the codebase of the first build, as [ruling 46](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-46/README.md)
 shaped it: one Cargo workspace in Rust holding the pure core (A38),
 in which every decision cites a promise, and the shell that makes it runnable, the first
 slice of the reference engine (A50). [The first build](../docs/implementation/FIRST_BUILD.md)
 pre-registers its increments and what each must show, and the
 [roadmap](../ROADMAP.md#the-order-of-the-work) says where it stands. Each increment logs what it
-finds under [docs/proposals/first-build/](../docs/proposals/first-build/README.md).
+finds in the [open log](../docs/implementation/first-build/log-increment-4.md).
 
 It holds the strict loader of increment 1 (A43), in [crates/loader](crates/loader), whose
 package is `conduit-loader`; the pure `conduit-core` in [crates/core](crates/core); and the
@@ -19,13 +19,13 @@ package is `conduit-loader`; the pure `conduit-core` in [crates/core](crates/cor
 State on 2026-11-10: increment 1, the loader, was done on 2026-11-09; increment 2, S1 whole on
 the pure core by vectors, and increment 3, the shell, were done on 2026-11-10. The shell ran
 real Claude Code and Codex as Agents through T1, T2 and T7; the
-[closeout results](../docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)
+[closeout results](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)
 separate what was shown from what was not. Increment 4 is in progress: both the
-[coordinator](../docs/proposals/first-build/increment-4/coordinator-run-2026-11-10.md) and
-[fresh author](../docs/proposals/first-build/increment-4/fresh-author-run-2026-11-10.md)
+[coordinator](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-4/coordinator-run-2026-11-10.md) and
+[fresh author](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-4/fresh-author-run-2026-11-10.md)
 completed T1 to T7 with real clients, writing 332 and 646 lines against the baseline's 64.
 Both failed the owner's bar for authoring work. Orders 025 to 028 supplied change operations and
-command fixes; the [log](../docs/proposals/first-build/log-increment-4.md) records their limits.
+command fixes; the [log](../docs/implementation/first-build/log-increment-4.md) records their limits.
 Rulings 49 to 54 await specification changes while the language's shape and Projects are
 settled, before simplification is built and S1 rerun. The sections below describe the
 implemented slice as of 2026-11-10, distinguishing
@@ -154,7 +154,7 @@ committed change, `access::tool_list_changes` computes consumer-specific list no
 it is a helper, not an intent from step. Client model catalogs and routes around the engine
 need observed shell evidence; the core cannot establish confinement. Future shell evidence
 and unfinished choices belong in [CONFORMANCE.md](CONFORMANCE.md) and the open increment’s
-[log](../docs/proposals/first-build/log-increment-4.md); vector work belongs in
+[log](../docs/implementation/first-build/log-increment-4.md); vector work belongs in
 [Planned work](../conformance/README.md#planned-work).
 
 ## Running it
@@ -178,7 +178,7 @@ directories, start `serve`, then explicitly install the dependencies and submit 
 Claude Code and Codex must be installed, on the runner's PATH and signed in. As of the 2026-11-10 closeout they use the owner's shared logins;
 setup starts wrappers only, and each `conduit call` to a turn tool starts model work explicitly.
 The owner's [setup guides](../docs/guides/README.md) prepare later experiments. The separate
-homes and engine-mediated sign-in of [ruling 49](../docs/proposals/ruling-49/README.md) are
+homes and engine-mediated sign-in of [ruling 49](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-49/README.md) are
 pending as of 2026-11-10, not prerequisites already supplied by this shell.
 
 ## The shell's store, runner and command line (I3-01/02/03)
@@ -284,7 +284,7 @@ Credential directories and authority files are private,
 and actual credentials never enter core inputs or output. The same-key CA file checks
 nothing at the loopback HTTP address. The supported choices and remaining boundaries are in
 [CONFORMANCE.md](CONFORMANCE.md); implementation details and tests are in
-[the increment 3 log](../docs/proposals/first-build/README.md#settlements-register).
+[the increment 3 log](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/README.md#settlements-register).
 
 ## What increment 2 covers
 
@@ -327,12 +327,12 @@ contracts, and compares authored and standalone verdicts for every E05 sample in
 directions. Standalone validation checks all references are local and resolve before compiling
 with no package resolver. As of 2026-11-10, conflicting unconditional defaults are rejected
 under SCH-009 when installed or submitted; equal defaults are one default. Finding
-[2-03](../docs/proposals/first-build/README.md#2-03)
+[2-03](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/README.md#2-03)
 records the admin's settlement and its vectors; the owner can strike it.
 
 These I2-02 cases do not exercise registration, access, invocation handling or the shell.
 Unsupported inputs are embedding errors, not invented Conduit reasons. The
-[increment's log](../docs/proposals/first-build/README.md#settlements-register) records the settled BOM case
+[increment's log](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/README.md#settlements-register) records the settled BOM case
 and the verification corrections: registration checks the existing owning Pool's authority
 before exposing protected-template diagnostics, and lifecycle records keep the Conduit's
 target distinct from the named object. Authorized vectors start from an explicit snapshot
@@ -459,7 +459,7 @@ The old patterns and their rewrites are compared with `regress`'s PikeVM backend
 `tests/pattern_rewrites.rs`, avoiding costly backtracking in the historical patterns. The crate cannot be given another engine for `patternProperties`; no
 schema of the specification uses it, and the core matches it itself when it validates the
 schemas that authors write, from increment 2, as the
-[log of increment 1](../docs/proposals/first-build/README.md#settlements-register) records.
+[log of increment 1](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/README.md#settlements-register) records.
 
 ## Snapshot catalogs and project contexts (I2-03, first part)
 
@@ -727,7 +727,7 @@ server. A scripted filesystem replaces npm in this test; each Agent makes an eng
 request with its own run identity. This needs only crates and loopback networking.
 
 The admin subsequently ran the real clients on 2026-11-10; the
-[closeout results](../docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)
+[closeout results](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)
 record T1, T2 and T7, project-instruction exclusion, refused outside-file reads, request
 records and shutdown observations. Access remains mediated, with both Agents and the engine
 running as one operating-system user. Codex still reads its home's `AGENTS.md` (finding 3-07).

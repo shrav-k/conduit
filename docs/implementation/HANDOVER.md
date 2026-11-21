@@ -4,8 +4,8 @@ Not binding; [spec/](../../spec/README.md) alone binds, and [IN_FORCE.md](../../
 every other decision in force (ruling 67). The coordinator's work on 2026-11-12, when the admin
 session handed it to a new coordinator session because the owner's usage was near its limit. The
 new session's first task was the owner's [full review](../guides/full-review.md), carried out on
-2026-11-14: [its record](../proposals/full-review/README.md) holds the questions, which the owner
-answered the same day in [ruling 78](../proposals/ruling-78/README.md), and the work orders it adds.
+2026-11-14: [its record](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/README.md) holds the questions, which the owner
+answered the same day in [ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md), and the work orders it adds.
 Rulings, orders and pull requests are cited by number; a fact found only in the coordinator's
 private notes is marked "(log)" until it is recorded, and since work order 191 no fact is so marked.
 Machine details (paths, hosts, accounts, the runners' scripts) stay outside the repository, in the
@@ -22,7 +22,7 @@ private value a variable. Read with it
 | The owner | Rules on behavior, on what Conduit is for and on the order of the work. May strike any coordinator decision logged since ruling 57. Answers numbered questions in batches ("1a 2 3c") | 37, 38, 46 point 4, 57, 58 point 1 |
 | The admin session: the coordinator and merge authority | Runs on Claude Opus (ruling 79). Plans; writes and dispatches each order and the decisions it applies; reviews each diff, beside the Opus reader's; runs the checks; commits and opens pull requests; merges those whose fresh read found a must, or whose last Codex verifier reported one (87 point 2, as the coordinator reads it), and reviews after it each other merge made on a clean read (rulings 79, 85 point 1); records rulings. Sole merge authority for the engine's core, the conformance runner and manifest, `spec/`, IN_FORCE.md and the ledger. Its orders are numbered below 100 (037 to 082 so far) | 48, 71 point 1, 85 point 1, 87 point 2 (the coordinator's reading) |
 | The lane coordinator | One lane, scenarios, providers and proof, in its own worktree, with orders 100 to 199. Merges only pull requests confined to its lane's paths (`packages/`, `experiments/`, a provider's crate), once the local gate passes and a fresh verifier is clean; CI is not waited on. A conflict between lanes goes to the admin; a behavior question to the owner. It was a subagent of the outgoing session: [restart it](#restarting-the-lane-coordinator). Not run until the S1 rerun's pin (78 point 1) | 71 point 1, 78 point 1, 80 point 10 |
-| Workers and verifiers | A Codex worker (or Claude Opus) carries out one order in a tree of its own, commits nothing and answers in the order's JSON schema. A fresh read-only Codex verifier checks each round; a fresh Opus reader verifies the order before it merges, and when the Claude allowance runs low, A77's paired reads stop first and dispatch next, and nothing merges unread (80 point 6). Fable is kept for the owner's reviews of the whole | 48 ([how the work is done from now on](../proposals/ruling-48/README.md#how-the-work-is-done-from-now-on)); [ruling 79](../proposals/ruling-79/README.md); [work orders](WORK_ORDERS.md) |
+| Workers and verifiers | A Codex worker (or Claude Opus) carries out one order in a tree of its own, commits nothing and answers in the order's JSON schema. A fresh read-only Codex verifier checks each round; a fresh Opus reader verifies the order before it merges, and when the Claude allowance runs low, A77's paired reads stop first and dispatch next, and nothing merges unread (80 point 6). Fable is kept for the owner's reviews of the whole | 48 ([how the work is done from now on](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md#how-the-work-is-done-from-now-on)); [ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md); [work orders](WORK_ORDERS.md) |
 
 How the rulings shape the work:
 
@@ -42,7 +42,7 @@ How the rulings shape the work:
   ruling 78. Batch 2 on a branch, merged after the owner judges S1's bar (point 2). The bar's rule
   is fixed (point 3), and ruling 78 scores it in ruling 45's two groups. Small findings that add a
   feature are delegated (point 4). When the ChatGPT Codex allowance runs out, the workers
-  pause and the owner is told, with no API key ([later answer of 2026-11-12](../proposals/ruling-71/README.md#later-answers)).
+  pause and the owner is told, with no API key ([later answer of 2026-11-12](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-71/README.md#later-answers)).
 - **74.** `main` is protected before Conduit runs its own orders: pull requests only, for
   administrators too, and no force-push or deletion (point 1).
 - **78.** The full review's answers: one coordinator and no lane until the S1 rerun's pin, with
@@ -70,7 +70,7 @@ coordinator with this brief. The private handoff note gives its worktree, its lo
   Anything else, `engine/`, `spec/`, `conformance/`, IN_FORCE.md and the ledger among it, goes to
   the admin.
 - **Each merge** needs a PASS from `tools/gate.py` on the coordinator's machine and a clean
-  fresh verifier ([ruling 80](../proposals/ruling-80/README.md), point 10;
+  fresh verifier ([ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md), point 10;
   [the method as run](METHOD_AS_RUN.md#7-merge-and-the-record)). The private handoff note
   names the merge script that runs the gate, as it does the runners'. GitHub's CI keeps
   running on every pull request, as a second opinion and the Linux leg, but no merge waits
@@ -81,7 +81,7 @@ coordinator with this brief. The private handoff note gives its worktree, its lo
 - **Its queue** is row 14 of [the queue](#the-queue): Lane SP checkpointed in #262, and
   [PROVIDERS.md's status](PROVIDERS.md#status) lists its queue in order. Tell it that 071 has merged
   (#281), so SV1 is unblocked, and when the checkpoint ends. Under [ruling
-  78](../proposals/ruling-78/README.md), point 1, it restarts only at the S1 rerun's pin.
+  78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md), point 1, it restarts only at the S1 rerun's pin.
 
 ## Dogfooding: Conduit runs its own orders (A78)
 
@@ -92,14 +92,14 @@ log lines, restarts the engine for each fresh conversation, validates each repor
 order's schema (one repair turn), and checks guards after each turn: the slot's HEAD unmoved, the
 verifier changed nothing, nothing pushed, the main checkout untouched. The Agent packages come from
 076's branch: the packages of 050a, 076 and 078 stay unmerged until 050, because NAM-024 forbids
-adding a default once `.v2` is published ([batch 1, order 050](../proposals/spec-batch-1/README.md#the-work-orders)).
+adding a default once `.v2` is published ([batch 1, order 050](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/spec-batch-1/README.md#the-work-orders)).
 
 What worked, the smoke test's six checks and order 042's four rounds, is recorded in
 [A78's results for order 042](../../experiments/028-a78-dogfood/results-2026-11-12.md), beside the
 engine's own records of 042's turns and [the harness's method as run](../../experiments/028-a78-dogfood/README.md).
 
 What failed or cost is logged in
-[increment 4's log](../proposals/first-build/log-increment-4.md) as findings 4-21 to 4-27, each
+[increment 4's log](first-build/log-increment-4.md) as findings 4-21 to 4-27, each
 with its settlement: the network outage (4-21), the write inside a slot's `.git` (4-22), the
 leftover processes (4-23), the restart for each fresh conversation (4-24), the guard that
 tripped (4-25), the turn of hours (4-26) and the sub-agents' reach (4-27).
@@ -117,7 +117,7 @@ point 3; 76 point 6; 77).
 - Until it is enrolled as a node, ordinary workers run there over SSH as on the Mac: a runner
   starts the remote copy, follows its log and fetches `wo/NNN-name` back (76 point 6). Conduit-run
   orders stay on the Mac until enrollment exists.
-- **On demand** ([72's later answers](../proposals/ruling-72/README.md#later-answers)): the computer
+- **On demand** ([72's later answers](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-72/README.md#later-answers)): the computer
   is Conduit's whenever it is on and the owner has not said "pause". On "pause", commit each
   order's partial work on its branch, fetch it to the Mac, stop everything there, and dispatch
   nothing until "resume"; then check SSH first. Once interop is off, the owner stops the distro with
@@ -133,7 +133,7 @@ point 3; 76 point 6; 77).
   distro's restart that applies the lockdown, and taking the coordinator's key out of the owner's
   account, can run now: 080 is checkpointed and the computer is idle; orders then run as
   `conduit-run` only. Ask the owner before part 2, since [ruling 77 gives the setup's steps to the
-  owner](../proposals/ruling-77/README.md#what-follows).
+  owner](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-77/README.md#what-follows).
 - **Capacity**: WSL keeps its default 15 GB (M2-7). Five orders reached 12 GB; before 070, shell
   test binaries took 5 to 8 GB each and ran it out of memory once. The coordinator saw these figures
   up to 2026-11-12, and no measurement of them is in the repository ([the
@@ -179,9 +179,9 @@ package's tests retry a start that follows a held lock.
 | 5 | 071 (S0a): the conformance manifest in pieces | Merged on 2026-11-15 (#281, `2318ec59`) after a third round on the Mac; at the handover it was checkpointed after two rounds on Windows, with one must left ([its Record](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/071-conformance-manifest-pieces.md#record)) | Tell the lane, when it restarts at the pin, that SV1 is unblocked |
 | 6 | Lane: 144 (S4-SRV2, S4's hook server) | Stopped unmerged at Lane SP's checkpoint (#262); `wo/144-s4-srv2-hook` pushed, with two musts named in its Record on that branch; the order's file on `main` has no Record | A finishing order stacked on it, in the lane, once it restarts at the pin |
 | 7 | The admin's next spec order | Not written. PRV-021's owed stop in three cases, matching kit order 141; PRV-015 names a machine by ID where `place.v1` gives a hostname; "labels last reported" (PRV-027, LIF-036, `stop.v1`); one live node per machine (049a1); what an engine owes when it cannot store its state, and races across addresses ([082](../AUDIT.md#known-to-be-open)); 081's Record's leftovers | Write next (077 is in) |
-| 8 | The admin's small engine order | Not written. The first-start report maps Rust's architecture to Go's `GOARCH` wrongly (`loongarch64`, little-endian `mips` and `mips64`, `armbe`, `arm64be`, `riscv32`, `wasm`); mirror order 128's mapping (PRV-014). Logged as [finding 4-28](../proposals/first-build/log-increment-4.md) | The review's [order 66](../proposals/full-review/orders.md), after the pin ([F78](../proposals/full-review/decisions.md#providers-runs-and-machines)), as 4-28's settlement says |
-| 9 | Batch 1's rest, on the rerun path | Not written: 046, 047, 048a, 048b, 050, 053; joining them, 043a, 043b, 052a, 052b, 051a, 051b ([the plan](../proposals/spec-batch-1/README.md#the-work-orders)). Of these, 048a (048a-1 and 048a-2), 048b-join, 050 and 051b were held until [ruling 82](../proposals/ruling-82/README.md), which ends the hold (point 3) | 046 next, through Conduit, once the dogfood engine is re-pinned to `main` |
-| 10 | The sign-in chain | Not written: 050 (each Agent's own home, the hooks, the account check, and the connection Conduit manages for a Claude Agent's sign-in, 80 point 8; merges with 050a, 076 and 078 as one 0.2.0), 048a, 048b, 051b; then A81 (a carried Codex login) and [A82](../../ROADMAP.md#experiments-and-probes) (Linear's OAuth through the Interface). Held by the owner on 2026-11-16 ([ruling 81](../proposals/ruling-81/README.md), point 1): none of 048a-1, 048a-2, 048b-join, 050 and 051b is written or dispatched, 048a-1 not beside 046a and 047 either, until the record of the targeted review on Fable, whether 0.2.0's sign-in and home surface can be frozen (point 2), and the owner's answers. Settles [D18](../proposals/full-review/decisions.md#the-pipeline-and-verification)'s dispatch of 048a-1. Ruling 82 ended the hold on 2026-11-16; 050 may now be written, beside 048a-1 and 048a-2, and 0.2.0 merges after 048b-join | The small order that reads Codex 0.167.1's source for `account/read` and pre-registers A5 stage 1's first step; 048a-1, 048a-2 and 050 written beside each other ([ruling 82](../proposals/ruling-82/README.md), points 1 and 3). The second accounts wait for this: each Agent signed in through the Interface, as the test of its own subscription and of the model ([72's later answers](../proposals/ruling-72/README.md#later-answers)) |
+| 8 | The admin's small engine order | Not written. The first-start report maps Rust's architecture to Go's `GOARCH` wrongly (`loongarch64`, little-endian `mips` and `mips64`, `armbe`, `arm64be`, `riscv32`, `wasm`); mirror order 128's mapping (PRV-014). Logged as [finding 4-28](first-build/log-increment-4.md) | The review's [order 66](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/orders.md), after the pin ([F78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md#providers-runs-and-machines)), as 4-28's settlement says |
+| 9 | Batch 1's rest, on the rerun path | Not written: 046, 047, 048a, 048b, 050, 053; joining them, 043a, 043b, 052a, 052b, 051a, 051b ([the plan](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/spec-batch-1/README.md#the-work-orders)). Of these, 048a (048a-1 and 048a-2), 048b-join, 050 and 051b were held until [ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md), which ends the hold (point 3) | 046 next, through Conduit, once the dogfood engine is re-pinned to `main` |
+| 10 | The sign-in chain | Not written: 050 (each Agent's own home, the hooks, the account check, and the connection Conduit manages for a Claude Agent's sign-in, 80 point 8; merges with 050a, 076 and 078 as one 0.2.0), 048a, 048b, 051b; then A81 (a carried Codex login) and [A82](../../ROADMAP.md#experiments-and-probes) (Linear's OAuth through the Interface). Held by the owner on 2026-11-16 ([ruling 81](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-81/README.md), point 1): none of 048a-1, 048a-2, 048b-join, 050 and 051b is written or dispatched, 048a-1 not beside 046a and 047 either, until the record of the targeted review on Fable, whether 0.2.0's sign-in and home surface can be frozen (point 2), and the owner's answers. Settles [D18](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md#the-pipeline-and-verification)'s dispatch of 048a-1. Ruling 82 ended the hold on 2026-11-16; 050 may now be written, beside 048a-1 and 048a-2, and 0.2.0 merges after 048b-join | The small order that reads Codex 0.167.1's source for `account/read` and pre-registers A5 stage 1's first step; 048a-1, 048a-2 and 050 written beside each other ([ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md), points 1 and 3). The second accounts wait for this: each Agent signed in through the Interface, as the test of its own subscription and of the model ([72's later answers](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-72/README.md#later-answers)) |
 | 11 | Off the rerun path | 049a2, the second half of batch 1's order 049a (PND-008's pending actions for enrollment and ENR-012's removal question), after 047 and 048a; 049b, 051c, SSH-M; `s3/m2` merges after the rerun's pin | After 049a1 |
 | 12 | The S1 rerun and the bar | 053, a pinned tag, the rerun with the owner present, the owner's judgment (71 points 2 and 3, as 78 point 2 amends point 3) | After batch 1 |
 | 13 | Batch 2 | Not begun. On its own branch, merged after the bar (71 point 2). Holds appointment (A78's orders 4 and 5), MC9 ([G5](../../experiments/012-model-checking/G5.md#what-g5-still-needs)), and apply calling the control a Type offers for a changed control value (OPS-020; from 069b's reference, for S4's T1) | After the rerun's pin |
@@ -190,12 +190,12 @@ package's tests retry a start that follows a held lock.
 
 ## The owner's open items
 
-- **Ruling 77's setup** ([what follows](../proposals/ruling-77/README.md#what-follows)). Part 1 is
+- **Ruling 77's setup** ([what follows](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-77/README.md#what-follows)). Part 1 is
   done: `conduit-run`, its tools, and its Codex signed in by the owner. Part 2, which can run now:
   bubblewrap if missing, the restart that applies the lockdown, and the coordinator's key taken out
   of the owner's account. Before the end-to-end run: the Mac renamed in the tailnet, then HTTPS
   certificates turned on.
-- **Answered by [ruling 78](../proposals/ruling-78/README.md)** on 2026-11-14, every one as
+- **Answered by [ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md)** on 2026-11-14, every one as
   recommended: the full review's 17 questions; S3-OF, by option (E), the Mac's own firewall under
   one administrator rule the owner adds once; S2's plain server, which the coordinator now picks
   and logs to strike; and A20, closed on v0's drafted security claim.
@@ -215,7 +215,7 @@ package's tests retry a start that follows a held lock.
 
 ## Decisions the owner may strike
 
-Items 1 to 29 of [the review list](../proposals/first-build/to-review-with-the-owner.md) stand: the
+Items 1 to 29 of [the review list](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/to-review-with-the-owner.md) stand: the
 owner confirmed them on 2026-11-10 and 2026-11-12. Logged since, and still to be added to it:
 
 - Order 038c: four login kinds (`device`, `redirect`, `page`, `service`); `clientId` on every login;
@@ -237,7 +237,7 @@ owner confirmed them on 2026-11-10 and 2026-11-12. Logged since, and still to be
   `CONDUIT_STATE_DIR`; the SSH key is deleted once nothing is owed.
 - Providers: option (b) of order 120, packaged local providers that are to pass the contract
   suites beside the second providers ([PROVIDERS.md](PROVIDERS.md), decision B), as
-  [D45 of the full review's decisions](../proposals/full-review/decisions.md) changed it. No
+  [D45 of the full review's decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md) changed it. No
   further work goes to `provider-local-machine`; `provider-local-process` stays as order 080's
   one-machine tracer and `provider-local-directory` only as a suite partner; no adapter wraps the
   built-in runner, whose built-ins are tested by running the suites' cases as data through the
@@ -251,7 +251,7 @@ owner confirmed them on 2026-11-10 and 2026-11-12. Logged since, and still to be
 - A6's traces come from S2's and S4's runs ([the register](../../ROADMAP.md#experiments-and-probes)).
 - The side branch `s3/m2` for the Windows engine work, merged after the rerun's pin: point 4 of
   [order 120's plan](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/120-plan-providers.md), under [ruling 76's later
-  answer](../proposals/ruling-76/README.md#later-answers) of 2026-11-11.
+  answer](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-76/README.md#later-answers) of 2026-11-11.
 - "Windows computer is up again" read as the resume after the pause of 2026-11-11 (72's later answers).
 - Order 154: a plan prints each `ownTools` member as `inventory.v1` gives it, except that an
   absolute-path `directory` is printed as `{"pathSha256":"HEX"}`, as the plan prints a root as
@@ -263,10 +263,10 @@ owner confirmed them on 2026-11-10 and 2026-11-12. Logged since, and still to be
 ## Standing rules learned this session
 
 - **No environment dumps.** On 2026-11-11 an agent printed a session's environment, which held API
-  keys. The exposure was closed by [ruling 75's note](../proposals/ruling-75/README.md) of the same
+  keys. The exposure was closed by [ruling 75's note](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md) of the same
   day: the coordinator found the keys in no commit of any branch, tag or pull-request ref, and the
   owner accepted leaving them as they are
-  ([D14](../proposals/full-review/decisions.md#the-pipeline-and-verification)). Every brief that may
+  ([D14](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md#the-pipeline-and-verification)). Every brief that may
   run a command says: never run `env`, `printenv`, `set` or `export -p`, nor print a variable's
   value. Probes start clients under `env -i` with fake keys.
 - **Credentials are never read**: no key, token or login file, the owner's or Codex's. Workers never

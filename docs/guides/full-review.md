@@ -6,7 +6,7 @@ coordinator's work to a new session (Claude Fable). The owner asked that session
 review of the repository and of the progress so far, and expects it to decide on faults in the
 language, change the approach where it is wrong, and alter future experiments to test both. This
 brief says how to review and where to look. It does not review, and it decides nothing. The review
-it asked for was carried out on 2026-11-14: [its record](../proposals/full-review/README.md).
+it asked for was carried out on 2026-11-14: [its record](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/README.md).
 
 It builds on [the cold readers' instructions](cold-readers.md): use their reading order and
 known-open list. For this review, its own classes and record ([what to produce](#what-to-produce))
@@ -33,7 +33,7 @@ coordinator settle, and put the rest to the owner.
   (experiment 022); S2's contracts, stub, Conduit-aware implementation and adapter; SCR1;
   S4-SRV1.
 - **Waiting for the owner**: [the tracker's list](../AUDIT.md#waiting-for-the-owner); part 2 of
-  [ruling 77](../proposals/ruling-77/README.md)'s Windows setup, which can run now (part 1 is done:
+  [ruling 77](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-77/README.md)'s Windows setup, which can run now (part 1 is done:
   `conduit-run` has its tools and its Codex, signed in by the owner; the coordinator signs nothing
   in); S3's fault means (S3-OF in [S3's plan](../../experiments/014-s3-two-machines/plan.md), A
   recommended); S2's plain server
@@ -41,7 +41,7 @@ coordinator settle, and put the rest to the owner.
   S1's bar after the rerun.
 - **The second accounts are reserved.** They are used only through Conduit, signed in through
   its Interface, as the test of each Agent's own subscription and of the model as a whole, and
-  never as capacity for work orders ([ruling 72's later answers](../proposals/ruling-72/README.md#later-answers)).
+  never as capacity for work orders ([ruling 72's later answers](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-72/README.md#later-answers)).
   The sign-in chain that test needs is unwritten: 050 (separate homes, hooks, the account check),
   048a, 048b and 051b, then A81 and A82.
 - Machine names, accounts and the scripts that run orders are in the private handoff note,
@@ -59,13 +59,13 @@ coordinator settle, and put the rest to the owner.
    promises by ID. *In spec/* points at text that exists; *spec pending* is ruled and unwritten,
    and names its batch or order; *Open* is the owner's. A line that differs from the owner's
    words in its ruling is a defect, and the owner's words govern.
-4. [The ledger](../proposals/ruling-log.md): find a ruling by number, read the owner's words and
+4. [The ledger](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-log.md): find a ruling by number, read the owner's words and
    the status column (which later rulings amend it), then the record's first line. Answers that
    changed no decision are dated under the record's *Later answers* (ruling 67).
 5. The state: [the tracker](../AUDIT.md) (who decides, known to be open, the
    [layered claim](../AUDIT.md#layered-claim), [purpose](../AUDIT.md#purpose) and preservation
-   tests), [the roadmap](../../ROADMAP.md), [increment 4's log](../proposals/first-build/log-increment-4.md),
-   [the review list](../proposals/first-build/to-review-with-the-owner.md),
+   tests), [the roadmap](../../ROADMAP.md), [increment 4's log](../implementation/first-build/log-increment-4.md),
+   [the review list](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/to-review-with-the-owner.md),
    [G5's account](../../experiments/012-model-checking/G5.md), and the orders' Records: up to 066
    in [the record](../implementation/WORK_ORDERS.md#the-record), later ones at the foot of each
    order file under `docs/work-orders/`.
@@ -95,14 +95,14 @@ coordinator settle, and put the rest to the owner.
   small finding that adds a feature (ruling 71, point 4; until the S1 rerun, none that could move
   S1's counts). Log each for the owner to strike; add any that changes what the language says to
   the review list.
-- **Prefer existing paradigms** ([ruling 40](../proposals/ruling-40/README.md)). Conduit innovates
+- **Prefer existing paradigms** ([ruling 40](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-40/README.md)). Conduit innovates
   only on connection and access. For each fix, name the standard or system it follows and what
   that system does; a fix that invents infrastructure is wrong. Prefer a provider's contract to
   engine machinery.
-- **Make every result explicit** ([ruling 52](../proposals/ruling-52/README.md)): a refusal,
+- **Make every result explicit** ([ruling 52](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-52/README.md)): a refusal,
   diagnostic or limit says what happened and why, unless that discloses what the caller may not
   learn. Terse text is a finding.
-- **Keep rulings few** ([ruling 67](../proposals/ruling-67/README.md)). Batch the owner's
+- **Keep rulings few** ([ruling 67](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-67/README.md)). Batch the owner's
   questions into one ruling; an answer that changes no decision is a dated note in the existing
   record. Do not ask the owner what a coordinator may settle.
 - **Delegate the mechanical parts.** Recounts, cross-reference sweeps and fresh reads suit Codex
@@ -120,8 +120,8 @@ coordinator settle, and put the rest to the owner.
 | Stated limits | Is each limit right for v0, or a fault renamed a limit? A bound does not limit filters; `management` cannot be narrowed below whole operations; the engine's OS user reaches every token and state directory; every restriction reported as mediated (preservation test 9); own tools neither enforced nor mediated; a run beside a later instance | [limits of this version](../../spec/README.md#limits-of-this-version) and its sections |
 | Short form and canonical | Is the translation total, and its meaning the canonical one (SCT-003, SCT-015)? `sections.yaml` has 15 promises and no vectors; experiment 011's 2026-11-11 run passed 14 of 14 exact states (the 2026-11-10 run, 0 of 14, predates `as` in the schemas) | [what the short form covers](../../spec/README.md#what-the-short-forms-meaning-covers), [011](../../experiments/011-short-form-spike/README.md), [023](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/experiments/023-paper-count/README.md) |
 | Authority and access | Bounds (ACC-029, ACC-030, ACC-054, ACC-055), tombstones and lift (LIF-040, LIF-041, ACC-053), ACC-033's table, two-tier refusals (ACC-056, OPS-023), the Fleet papers' unverified gaps; whether the vector that failed after 042's rebase was a language case | `access.yaml`, `lifecycle.yaml`, [042](../work-orders/042-build-tombstones-and-inventory.md) |
-| Retries and the fence | OPS-014's record of an absent effect only once the attempt is fenced, against OPS-024 and OPS-018 (MC2-001); OPS-030; ruling 75 A1's two limits (a server's onward call; a remote server that never answers). Does 077's text close MC2-001 without new machinery? | `operations.yaml`, [ruling 75](../proposals/ruling-75/README.md), [077](../work-orders/077-spec-reconcile-fenced.md) |
-| One run per instance | PRV-019, PRV-021, PRV-030, LIF-036, TPL-018: MC4-009's restart race; MC4-002's overlap, a stated limit, with the owner's answer that a shipped runtime provider carries out an owed stop before any start (MC4) | `providers.yaml`, [ruling 42's later answers](../proposals/ruling-42/README.md#later-answers), [PROVIDERS.md](../implementation/PROVIDERS.md) |
+| Retries and the fence | OPS-014's record of an absent effect only once the attempt is fenced, against OPS-024 and OPS-018 (MC2-001); OPS-030; ruling 75 A1's two limits (a server's onward call; a remote server that never answers). Does 077's text close MC2-001 without new machinery? | `operations.yaml`, [ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), [077](../work-orders/077-spec-reconcile-fenced.md) |
+| One run per instance | PRV-019, PRV-021, PRV-030, LIF-036, TPL-018: MC4-009's restart race; MC4-002's overlap, a stated limit, with the owner's answer that a shipped runtime provider carries out an owed stop before any start (MC4) | `providers.yaml`, [ruling 42's later answers](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-42/README.md#later-answers), [PROVIDERS.md](../implementation/PROVIDERS.md) |
 | Records and loss | REC-003, REC-006 and DL8 after 082: is a loss the engine cannot tell a limit or a broken promise? What does an engine owe when it cannot store state? | `records.yaml`, [what records cover](../../spec/README.md#what-the-promises-on-records-cover) |
 
 ### Queued and not yet written
@@ -195,8 +195,8 @@ Verify each, then fix it or fold it into your findings.
 
 ## What to produce
 
-1. **A dated record**, `docs/proposals/full-review/README.md`, opening "Not binding", with the
-   date, the commit, the scope, and what was and was not checked. Findings in a table: an ID
+1. **A dated report** for the coordinator, kept outside the tree, with the date, the commit, the
+   scope, and what was and was not checked. Findings in a table: an ID
    (`FR-NNN`), class, unsafe or not, promises, `file:line`, quote, situation, counterargument,
    least change, and who decides under which ruling.
 2. **The coordinator's fixes**, each logged to strike and ordered as work orders.
@@ -207,10 +207,10 @@ Verify each, then fix it or fold it into your findings.
    the claim it tests, and its pass condition and measures, fixed before it runs
    ([proposing an experiment](../../ROADMAP.md#proposing-an-experiment)).
 
-Hand the owner a short message that numbers the questions. The answers become one ruling: its
-record under `docs/proposals/ruling-NN/`, a ledger row with the owner's words, the lines of
-IN_FORCE.md it changes and any action item. An answer that changes no decision is added, dated,
-to the existing record.
+Hand the owner a short message that numbers the questions. Record the answers in the
+[decision log](../decisions/log.md) with the affected IN_FORCE.md lines and any action item.
+An answer that confirms or corrects a decision is a new entry citing it. Findings from the
+report go to `spec/` with `spec/CHANGES.md` entries, the decision log, ROADMAP.md or work orders.
 
 ## Traps found this session
 

@@ -4,9 +4,9 @@ Conduit is a configuration language for the relationships between independent ag
 things they share. As of 2026-11-10, this repository holds its draft specification, the records
 behind it, and the first build: a strict loader, a pure core, conformance
 vectors and a runnable engine shell. The shell ran real Claude Code and Codex as Agents on S1
-through T1, T2 and T7 ([dated results](docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)).
+through T1, T2 and T7 ([dated results](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)).
 Increment 4 is in progress: on 2026-11-10 both author runs completed T1 to T7 with real clients
-but failed the owner's bar for authoring work. The [build log](docs/proposals/first-build/log-increment-4.md)
+but failed the owner's bar for authoring work. The [build log](docs/implementation/first-build/log-increment-4.md)
 records the findings and fixes from orders 025 to 028; the
 [roadmap](ROADMAP.md#the-order-of-the-work) puts simplification and a rerun next.
 This is not a release or a claim of whole-language conformance.
@@ -33,28 +33,29 @@ source material for the type contracts still to be written. A behavior that is m
 
 [IN_FORCE.md](IN_FORCE.md) holds decisions in force outside the specification, including
 accepted language decisions marked *spec pending*. Builds and vectors follow `spec/` until those
-changes are written. The [ledger](docs/proposals/ruling-log.md) records what was ruled and each
+changes are written. The [ledger](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-log.md) records what was ruled and each
 ruling's status; the [records](docs/README.md#records-of-rulings) say why. The owner's words govern
-if a line of IN_FORCE.md differs from them ([ruling 67](docs/proposals/ruling-67/README.md)).
+if a line of IN_FORCE.md differs from them ([ruling 67](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-67/README.md)).
 
 ## Where work belongs
 
 - **Accepted behavior** is a promise in [spec/](spec/README.md), in the terms of
-  [spec/definitions.md](spec/definitions.md). A change needs an owner ruling, recorded in the
-  [ledger](docs/proposals/ruling-log.md), with its record under `docs/proposals/`. The one other
+  [spec/definitions.md](spec/definitions.md). A change needs an owner decision entered in the
+  [decision log](docs/decisions/log.md). The one other
   way is a decision on a finding of the re-audit, under
   ruling 37, or a finding of the first build under ruling 46, point 4, logged as the coordinator's
   ([who decides what](docs/AUDIT.md#who-decides-what)).
-- **A proposal for a ruling** is a record under `docs/proposals/`, with the options and a
-  recommendation. The owner makes the rulings. Do not record a recommendation as accepted.
-- **A defect in the language** is fixed in the language, not around it. Findings against `spec/`
-  are recorded with the [re-audit](docs/proposals/reaudit/README.md). The
+- **A proposal** goes to the owner with options and a recommendation in the order or pull request
+  that needs it. The owner makes the rulings. Do not record a recommendation as accepted.
+- **A defect in the language** is fixed in the language, not around it. Give the coordinator a
+  dated report for findings against `spec/`. The report stays outside the tree, and its findings
+  go to `spec/` with `spec/CHANGES.md` entries, the decision log, ROADMAP.md or work orders. The
   [defect register](docs/LANGUAGE_DEFECTS.md) holds the first sweep, which read the protocol topics that ruling 39 removed.
 - **The state of the work** is tracked in the [plan audit](docs/AUDIT.md), and its order and its
   experiments and probes in the [roadmap](ROADMAP.md).
 - **The first build** follows [its increments](docs/implementation/FIRST_BUILD.md) and logs
-  findings under [docs/proposals/first-build/](docs/proposals/first-build/README.md), with the
-  fix in the specification and a vector. Under [ruling 48](docs/proposals/ruling-48/README.md),
+  findings in the [open log](docs/implementation/first-build/log-increment-4.md), with the
+  fix in the specification and a vector. Under [ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md),
   the coordinator plans and decides and Codex workers carry out
   [work orders](docs/implementation/WORK_ORDERS.md). Workers do not commit or publish; the
   admin session reviews and handles that work.
@@ -78,20 +79,18 @@ if a line of IN_FORCE.md differs from them ([ruling 67](docs/proposals/ruling-67
 - **History** is in [docs/archive/](docs/archive/README.md): completed reviews, attribution and
   dissent.
 
-Under [ruling 57](docs/proposals/ruling-57/README.md), a document that does not bind may be edited, condensed or removed once every piece of relevant Conduit information in it is preserved in `spec/` or a live document, git keeping every version.
+Under [ruling 57](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-57/README.md), a document that does not bind may be edited, condensed or removed once every piece of relevant Conduit information in it is preserved in `spec/` or a live document, git keeping every version.
 
 ## Keeping decisions and documents current
 
-Under [ruling 67](docs/proposals/ruling-67/README.md), one change writes a new ruling's record,
-its ledger row in `docs/proposals/ruling-log.md`, the status lines and ledger rows of every ruling
-it amends or replaces, IN_FORCE.md's affected lines, and any action item. A specification batch
-turns its *spec pending* lines into pointers. An answer that confirms or clarifies a ruling
-without changing a decision is added to the existing record, dated, and to its ledger row; it
-gets no new ruling number.
+Write the owner's decision in the [decision log](docs/decisions/log.md), using its
+[entry form](docs/decisions/README.md#the-log), with the affected lines of IN_FORCE.md and any
+action item. A specification batch turns its *spec pending* lines into pointers. An answer that
+confirms or corrects a decision is a new entry citing it.
 
 A proposal record says under its status that it records a ruling, that the specification governs
 where they differ, and which later rulings amended it. Put a note beside examples or rules a
-later ruling reversed (DA8 of the [documents audit](docs/proposals/docs-audit/README.md)). Keep
+later ruling reversed (DA8 of the [documents audit](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/docs-audit/README.md)). Keep
 one reading order across entry points (DA10), one description of Conduit, the specification's
 own (DA11), and the same check list in AGENTS.md and this guide (DA12).
 
@@ -107,8 +106,9 @@ condensation, leave surviving text as written except link targets, one-line supe
 accepted notes, and live instructions retargeted to where the work now goes.
 
 Dated results, the method as run, prompts and counted artifacts remain as v0 evidence. Raw run
-records leave the tree once their results are merged, with links to their last version in git;
-increment 4's runs stay until the S1 rerun (ruling 58, point 5). At the close of a batch,
+records leave the tree once their results are merged, with links to their last version in git.
+Increment 4's raw runs left the tree under work order 235. Its open log and the S1 rerun's plan
+are in [docs/implementation/first-build/](docs/implementation/first-build/). At the close of a batch,
 increment or investigation, condense working papers into registers and records (point 10).
 
 Some facts still stand in two places, and no check covers them; the coordinator keeps each pair
@@ -174,14 +174,14 @@ draft and not a release.
 
 One word for one idea, and one idea for one word. Use plain technical words for authoring and
 operation; flow imagery only around Conduits. Words belonging to a type or profile are settled
-with that type or profile ([vocabulary principles](docs/proposals/vocabulary/README.md#principles)).
+with that type or profile ([vocabulary principles](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/vocabulary/README.md#principles)).
 Before offering a proposed shape, check it against the CS/CC list of the
-[consolidation audit](docs/proposals/consolidation/README.md).
+[consolidation audit](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/consolidation/README.md).
 
 The vocabulary is ruled (rulings 17, 18 and 27 to 29 of the plan audit). The terms in force are
 in [spec/definitions.md](spec/definitions.md). Write new text in them. Changing a term changes
 the specification, so it needs a ruling like any other change. Ruling 42 accepted the twenty
-names of the [vocabulary audit](docs/proposals/vocabulary-audit/README.md) that ruling 41 asked
+names of the [vocabulary audit](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/vocabulary-audit/README.md) that ruling 41 asked
 for, and [spec/definitions.md](spec/definitions.md#words-the-promises-do-not-use) lists each old
 name with its new one.
 
@@ -288,7 +288,7 @@ What the checks cover:
 
 The Python and whitespace checks do not establish engine behavior. As of 2026-11-10, the Rust
 tests exercise the implemented slice; real-client evidence is recorded separately in the
-[increment 3 closeout](docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md).
+[increment 3 closeout](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md).
 Passing these checks does not establish whole-language conformance.
 
 ## Settings this repository relies on
@@ -298,13 +298,13 @@ changes them. Here they are as read on 2026-11-15 with read-only `gh api` and `g
 repository, its `branches/main/protection`, its `rulesets`, its `actions/variables` and
 `actions/secrets`, the last two only counted so that no value is printed, and its CI runs.
 
-- **`main` is protected** under [ruling 74, point 1](docs/proposals/ruling-74/README.md): every
+- **`main` is protected** under [ruling 74, point 1](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-74/README.md): every
   change arrives through a pull request, with no approving review required; the rule binds
   administrators too; and force-pushes and deletion are refused. No ruleset is defined. When the
   protection was first applied is not recorded.
 - **No status check is required** by a branch setting. CI's `rust` check aggregates the Rust jobs
   in `checks`. Order 223 moved the macOS jobs to `nightly`. The full review's [decision
-  D11](docs/proposals/full-review/decisions.md#the-pipeline-and-verification) asks the owner to make
+  D11](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md#the-pipeline-and-verification) asks the owner to make
   `docs` and `rust` required once the CI fix (#266) has held over three runs and the engine's test
   shards wait on no other job. Since order 152 the shards wait only on the engine's build. [CI's
   first three runs on `main` after #266](docs/implementation/HANDOVER.md#the-queue) passed, but
@@ -313,7 +313,7 @@ repository, its `branches/main/protection`, its `rulesets`, its `actions/variabl
   the next, [run 43806163460](https://github.com/shrav-k/conduit/actions/runs/43806163460) on
   `0ed26306`, failed in `macos (packages/provider-local-process)`, a job that order 187 added after
   D11. The coordinator adds `secrets`, which order 151 created after D11. The step and its timing
-  are the owner's. [Ruling 80](docs/proposals/ruling-80/README.md) answered D11 on 2026-11-16, and
+  are the owner's. [Ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md) answered D11 on 2026-11-16, and
   with it the owner's question whether `rust` is required now or once the macOS jobs have held: no
   check is made required now. The checks run as local gates before merge in `tools/gate.py` (orders
   193a and 193b), and the merge waits for its PASS on the Mac, as [AGENTS.md](AGENTS.md#checks)
@@ -334,14 +334,14 @@ repository, its `branches/main/protection`, its `rulesets`, its `actions/variabl
   environment, GitHub masks a secret there but not a variable, and this repository's logs are
   public. So the variable stays unset. Whether CI should read the names from a secret instead, which
   would change `.github/workflows/checks.yml` and needs a secret that only the owner can set, was
-  the owner's question, and [ruling 80](docs/proposals/ruling-80/README.md), point 10, settled it on
+  the owner's question, and [ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md), point 10, settled it on
   2026-11-16: not for now. That choice is the coordinator's, applying the owner's answers against
   its own recommendation of a masked secret, and is open to the owner's strike; [the
   tracker](docs/AUDIT.md#waiting-for-the-owner) records it.
   Since then the only name check is the `private paths` gate of `tools/gate.py` before each
   merge ([the method as run](docs/implementation/METHOD_AS_RUN.md#7-merge-and-the-record)). On
   2026-11-17 the owner chose that the gate derive the names itself ([ruling
-  80](docs/proposals/ruling-80/README.md), its later answers): with `--derive-private-names`,
+  80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md), its later answers): with `--derive-private-names`,
   which the merge uses, it reads them from the machine it runs on at each run, keeps them in
   memory, gives them to the checker alone and prints none. No file of names is kept, and
   `--private-names-file` adds names that no source gives.
@@ -392,7 +392,7 @@ when distribution needs them. The earlier
 [review](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/REVIEW.md#owner-decisions-before-public-distribution) records these boundaries.
 This guide adds no promise about releases.
 
-The [organization and publication plan](docs/proposals/ruling-47/README.md) records the
+The [organization and publication plan](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-47/README.md) records the
 owner's decision for the transition after a v0 engine passes the full experiment program and
 the owner judges it worth publishing. The in-tree Rust convention above applies to prototype
 providers. Official integrations will then have their own maintainers and release repositories.

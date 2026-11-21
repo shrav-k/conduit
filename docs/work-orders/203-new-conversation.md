@@ -17,11 +17,11 @@ and sign in nowhere. The tests use each package's scripted clients, in temporary
 Tests that bind loopback ports may fail in your sandbox; if they do, say so, and the admin reruns
 them.
 
-**Its number.** This order carries [the full review's](../proposals/full-review/orders.md) queue
+**Its number.** This order carries [the full review's](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/orders.md) queue
 row 62. It takes 203, the next number after 202 that no file uses, since 062 is the number of a
 merged order of the condensation (the batch records' logs), whose Record is in
 [the record](../implementation/WORK_ORDERS.md#order-062). Under
-[ruling 90](../proposals/ruling-90/README.md), point 4, this order's Record stays in this file,
+[ruling 90](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-90/README.md), point 4, this order's Record stays in this file,
 which a later archive move carries whole into `docs/archive/work-orders/`; no row is written for
 it.
 
@@ -35,7 +35,7 @@ and report each choice of yours as your own.
 **What it builds.** A caller that wants a fresh conversation with an Agent today has no operation
 for it: `turn.v1` takes only `message`, a run holds one conversation, a failed turn ends it, and
 nothing retires a slot. So the harness that runs Conduit's own work through Conduit
-([ruling 70](../proposals/ruling-70/README.md)) restarts the engine for each fresh conversation,
+([ruling 70](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-70/README.md)) restarts the engine for each fresh conversation,
 and one engine can carry only one turn at a time, however many Agents its Fleet holds. This order
 gives the capability `conversation.v1`, in each Agent package, a second operation,
 `new-conversation.v1`, not marked as model work: it ends the Agent's conversation and starts a new
@@ -43,14 +43,14 @@ one, so that the next turn shares no context with the turns before, with no engi
 new run. The packages are released as 0.2.1, and the engine's pinned copies of their contracts
 move with them, so that the engine's test of the copies holds.
 
-It carries [the full review's order 62](../proposals/full-review/orders.md):
-[FR-339](../proposals/full-review/findings/P06-dogfooding.md#fr-339) as its verifier corrected it,
+It carries [the full review's order 62](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/orders.md):
+[FR-339](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/P06-dogfooding.md#fr-339) as its verifier corrected it,
 that is, "a separate operation in the capability ('start a new conversation', not marked as model
 work)", so that "a Conduit could then grant turns without the right to discard an Agent's
 context", and not an input on `turn.v1`, which would fail 050a's check of `.v1`. Its done-when:
 "in each package, a test that the next turn shares no context, with no engine restart; 050a's
 `.v1` check; Rust checks". Row 4-24 of
-[increment 4's log](../proposals/first-build/log-increment-4.md) gives the same settlement and
+[increment 4's log](../implementation/first-build/log-increment-4.md) gives the same settlement and
 adds that the operation "starts a new conversation and returns its ID". FR-339's other route,
 continuing a named conversation, is not here: it works for Codex (`resume`), not for the Claude
 Code wrapper, which runs its client with `--no-session-persistence`.
@@ -62,20 +62,20 @@ on either lane before 050n:
 - The targeted review of the 0.2.0 surface froze `conversation.v1` with operations `['#turn.v1']`
   for 0.2.0 (verdict M04) and deferred "a slot for a further conversation operation (the full
   review's order 62)" to a later release (M06), in
-  [its verdicts](../proposals/review-signin-2026-11-16/verdicts.md#a-the-release-and-the-contracts-it-carries)
-  and [its finding V32](../proposals/review-signin-2026-11-16/findings.md#v32-m06-defers). Adding
+  [its verdicts](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/verdicts.md#a-the-release-and-the-contracts-it-carries)
+  and [its finding V32](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/findings.md#v32-m06-defers). Adding
   the operation before 050n would change a member the review froze.
 - NAM-024, as [order 199](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/199-nam-024-which-additions-count.md) worded it, makes the addition one
   a later release at the same address may make: "A further operation of a capability is one of
   them, and so is the default implementation of it that a Type whose earlier contract offers that
   capability adds to its `implementation`". So nothing is lost by waiting for the freeze.
 - On a lane it would join 0.2.0's serial chain, which waits on 048b-join and the live check
-  ([ruling 82](../proposals/ruling-82/README.md), points 1 and 3), and lengthen it.
+  ([ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md), points 1 and 3), and lengthen it.
 
 The cost: until 0.2.1 is installed, the harness keeps its restart, one turn at a time on one
 engine, and each restart sets every slot up again and so runs its account check again. That is the
 owner's first dogfood milestone, serial turns; the second, parallel slots, comes once this order
-ships ([ruling 89](../proposals/ruling-89/README.md), point 3), and IN_FORCE.md keeps A78's
+ships ([ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), point 3), and IN_FORCE.md keeps A78's
 orders one at a time only "until order 050 and the review's order 62". So, under the owner's lever
 "Pipeline the chain" (ruling 89, point 2), this order is dispatched stacked on order 050n's built
 branch, before 050n merges.
@@ -89,7 +89,7 @@ order 211) and passed by the local gate, but not merged, since its merge waits o
 check. You tell them apart by `main`'s copy of 050n's order file: 050n's branch already holds its
 Record, but `main` gains it only at 050n's merge, so `main`'s copy has no `## Record` heading until
 050n merges. Read that file from `main`, at `docs/work-orders/050n-agent-packages-joined.md`, or,
-once [ruling 90](../proposals/ruling-90/README.md)'s archive move has carried it there, at
+once [ruling 90](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-90/README.md)'s archive move has carried it there, at
 `docs/archive/work-orders/050n-agent-packages-joined.md`; the start check looks in both.
 Report which base you have. Nothing below reads which it is, but for the start check's two lines
 that say so. On 050n's branch the copy of this order's file in your tree may be older than the
@@ -107,7 +107,7 @@ expects of any `BASE`:
   whose `'#turn.v1'` line has a four-space indent, and the file's last document is `codex.v2` or
   `claude-code.v2`, ending in a newline.
 - Each item that implements `turn.v1` is marked `plain: true`
-  ([ruling 86](../proposals/ruling-86/README.md), point 1). Codex has three such items: `wrapper`
+  ([ruling 86](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-86/README.md), point 1). Codex has three such items: `wrapper`
   (a flow `implements` list), and `wrapper-v2` and `wrapper-v2-path` (block lists); Claude Code
   has two: `wrapper` and `wrapper-v2`, both with flow lists. Each `.v2` item implements, after
   `'#turn.v1'`, the core package's four hooks the lanes added (orders 050h to 050m), in this order:
@@ -159,7 +159,7 @@ call of the sign-in hook alone name protocol revision 2026-07-28 in its `_meta`,
 provider session still opens with the legacy handshake; `new-conversation.v1` is a plain
 operation, not a hook, and answers a complete `CallToolResult` as `turn` does, so the engine
 reaches it over that session as it reaches `turn`, and the new test's plain client (`().serve`)
-negotiates as `BASE`'s stdio tests do. [Ruling 91](../proposals/ruling-91/README.md)'s hold on a
+negotiates as `BASE`'s stdio tests do. [Ruling 91](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-91/README.md)'s hold on a
 late answer of another account is spec pending, for [order 216](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/216-ruling-91-spec-and-engine.md),
 written ahead to run after milestone 1, which changes nothing under `packages/` and no wrapper. Ruling 90 changes only where this order's Record ends up, as above, and where
 the start check reads 050n's file.
@@ -372,13 +372,13 @@ stays ended: its later turns are refused as before, until a call to `new-convers
 the next one, which is an explicit request, not an implicit restart.
 
 That a new conversation may follow a failed one is the coordinator's reading, open to the owner's
-strike under [ruling 82](../proposals/ruling-82/README.md), point 5, which struck
-[D55](../proposals/full-review/decisions.md#dogfooding-and-the-evidence-kept-in-the-tree)'s
+strike under [ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md), point 5, which struck
+[D55](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md#dogfooding-and-the-evidence-kept-in-the-tree)'s
 un-refusing of a failed conversation for `.v2`; the coordinator puts it to the owner before this
 order is dispatched, so that the answer is known before the build. The reading: this is not D55's un-refusing, since the failed conversation stays
 ended and the `.v2` description's "ends the conversation" holds; and
-[ruling 71](../proposals/ruling-71/README.md), point 4, does not bar it, since the S1 rerun
-measures the build pinned at milestone 1 ([ruling 89](../proposals/ruling-89/README.md),
+[ruling 71](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-71/README.md), point 4, does not bar it, since the S1 rerun
+measures the build pinned at milestone 1 ([ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md),
 point 7), before 0.2.1, and this order merges only after that pin. If the owner strikes it, the
 call is refused while the conversation's failure is set, steps 5 to 8 of decision 5's new
 test change to match, and the merge waits for no pin; the coordinator revises this text before
@@ -688,14 +688,14 @@ sentence on `new-conversation.v1`, in this order's merge; report where each name
 FR-339 as its verifier corrected it, a separate operation not marked as model work, is the full
 review's. The deferral of the operation to a release after 0.2.0 is the targeted review's
 verdicts M04 and M06 with V32, and NAM-024's allowance of a further operation with its default
-implementations is in `spec/` ([ruling 82](../proposals/ruling-82/README.md), point 4, written by
-order 199); [ruling 81](../proposals/ruling-81/README.md#what-it-does-not-change) holds that the
+implementations is in `spec/` ([ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md), point 4, written by
+order 199); [ruling 81](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-81/README.md#what-it-does-not-change) holds that the
 review's order 62 is not held. The items stay plain, as ruling 86, point 1, has them. Everything
 else here is the coordinator's, each open to the owner's strike
-([ruling 48](../proposals/ruling-48/README.md)), but for its place: that order 62 comes next on
-the path after order 050 is the owner's, [ruling 80](../proposals/ruling-80/README.md), point 7,
+([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)), but for its place: that order 62 comes next on
+the path after order 050 is the owner's, [ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md), point 7,
 which supersedes the review's "After" the pin; that parallel slots, the second dogfood
-milestone, come once this order ships is the owner's ([ruling 89](../proposals/ruling-89/README.md),
+milestone, come once this order ships is the owner's ([ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md),
 point 3), a target that sets no gate and no deadline by the coordinator's reading; and the lever
 "Pipeline the chain" is the owner's (ruling 89, point 2). The coordinator's: building it after
 0.2.0, not on a lane; applying that lever to this order, which is not on the sign-in chain, so that
@@ -730,12 +730,12 @@ READMEs' content. Apply them as written and report them under `decisions` as the
 
 ## Read first
 
-1. [FR-339](../proposals/full-review/findings/P06-dogfooding.md#fr-339), its verifier's
+1. [FR-339](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/P06-dogfooding.md#fr-339), its verifier's
    counterargument and corrections; row 4-24 of
-   [increment 4's log](../proposals/first-build/log-increment-4.md).
+   [increment 4's log](../implementation/first-build/log-increment-4.md).
 2. The targeted review's
-   [verdicts M04 to M06](../proposals/review-signin-2026-11-16/verdicts.md#a-the-release-and-the-contracts-it-carries)
-   and [V32](../proposals/review-signin-2026-11-16/findings.md#v32-m06-defers).
+   [verdicts M04 to M06](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/verdicts.md#a-the-release-and-the-contracts-it-carries)
+   and [V32](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/findings.md#v32-m06-defers).
 3. In `spec/`: NAM-024 and NAM-026 (`spec/promises/naming.yaml`); TPL-004
    (`spec/promises/templates.yaml`); CTR-002 (`spec/promises/contracts.yaml`); CON-017
    (`spec/promises/conduits.yaml`); IFC-025 and IFC-033
@@ -960,17 +960,17 @@ and the reader reruns it on the Mac.
 
 The admin then runs `python3 tools/check_private_paths.py` and `git diff --cached --check` on the
 staged change. The order runs one Codex round, a worker and a fresh Codex verifier
-([ruling 87](../proposals/ruling-87/README.md), point 1). A fresh read-only Opus reader reads the
-result before it merges ([ruling 79](../proposals/ruling-79/README.md), point 2); where the
+([ruling 87](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-87/README.md), point 1). A fresh read-only Opus reader reads the
+result before it merges ([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md), point 2); where the
 verifier reports a must, the reader confirms or refutes each such finding, and the Opus fixer
 applies the confirmed ones with the reader's own (ruling 87, point 2). The local gate,
-`tools/gate.py`, runs before the merge ([ruling 80](../proposals/ruling-80/README.md)), and a
-read with no must merges on its pass ([ruling 85](../proposals/ruling-85/README.md), point 1),
+`tools/gate.py`, runs before the merge ([ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md)), and a
+read with no must merges on its pass ([ruling 85](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-85/README.md), point 1),
 and, on either base, only after the S1 rerun's pin (ruling 89, point 7), so that the build the
 rerun measures holds no 0.2.1 (decision 3); its
 row `vector changes` reads `203-declared.yaml` through `--declared-changed`, since this build's
 pull request adds it. This order is not on the sign-in chain. Dispatched before 050n merges, it
-falls in A77's pause ([ruling 89](../proposals/ruling-89/README.md), point 6): it is one of A77's
+falls in A77's pause ([ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), point 6): it is one of A77's
 orders, not paired, and the coordinator's A77 record says why; dispatched after, it is paired or
 not as A77's registration has it, and the coordinator says which before dispatch.
 
@@ -1005,7 +1005,7 @@ coordinator's, under the lever of ruling 89, point 2):
 
 Run on 2026-11-20, from about 02:48 to 03:11 UTC, on the Windows node (Linux x86_64) from
 `bd06d0d3`, the tip of order 050n's branch after its rebase onto order 214's merge, in one round
-([ruling 87](../proposals/ruling-87/README.md), point 1): the worker (1019 s) and a fresh Codex
+([ruling 87](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-87/README.md), point 1): the worker (1019 s) and a fresh Codex
 verifier (326 s). Dispatched before 050n merges, it was not paired: it falls in A77's pause (ruling
 89, point 6). The change is 37 files, all in Scope. Both packages append decision 1's Operation
 `new-conversation.v1` to `contracts.yaml`, add it to `conversation.v1` and to both Types' defaults,

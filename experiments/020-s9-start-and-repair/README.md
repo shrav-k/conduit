@@ -25,7 +25,7 @@
 ## Status
 
 Pre-registered on 2026-11-11 by work order 102. Accepted by the owner on 2026-11-11 under
-[ruling 75](../../docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
+[ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
 counting rules and planned vectors, with the answers under "Open for the owner" applied. Ruling
 45 fixes what an experiment must show before it runs. No result is recorded here.
 
@@ -41,9 +41,9 @@ later authored instances and from engine-specific recovery policy.
 
 ## What it must show
 
-1. **P1 — ruled**, [ruling 47](../../docs/proposals/ruling-47/README.md#when-to-publish):
+1. **P1 — ruled**, [ruling 47](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-47/README.md#when-to-publish):
    S9 runs end to end on the reference engine with its vectors passing, including every
-   safety vector it adds ([ruling 68, point 2](../../docs/proposals/ruling-68/README.md)). Judge
+   safety vector it adds ([ruling 68, point 2](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md)). Judge
    by task transcripts, independent state checks and vector verdicts. Missing cases are
    missing evidence, never passes.
 2. **P2 — proposed, for the owner's acceptance**: empty-store initialization creates exactly
@@ -134,8 +134,8 @@ The package contract must define the repair effect; it is not a new engine repai
 by reference the first build's [measure table](../../docs/implementation/FIRST_BUILD.md#measures)
 and three [counting rules](../../docs/implementation/FIRST_BUILD.md#counting-rules-added-after-the-baseline-ran):
 “Provider work apart”, “A client's concepts count” and “Requests and time without access”.
-**Ruled counting rules**: [ruling 63](../../docs/proposals/ruling-63/README.md)'s lines,
-[ruling 68 R1](../../docs/proposals/ruling-68/README.md)'s panel actions apart, and
+**Ruled counting rules**: [ruling 63](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-63/README.md)'s lines,
+[ruling 68 R1](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md)'s panel actions apart, and
 [IN_FORCE.md topic 13](../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement)'s
 per-run rules, except S1's local name `project`. S1's A70 comparison/bar, T3's reach-around rule
 and T4/T5's better-baseline rules do not carry over. No numeric bar or comparison is proposed;
@@ -240,14 +240,14 @@ accepts Q1–Q4; no machine/account setup beyond the local lab is required by th
 - **Q3:** Which client should exercise cases that need real-client behavior: the owner's subscription, a second subscription account signed in through Conduit's own sign-in flow, or none (scripted clients only)?
   **Recommendation:** none: run S9 with engine clients.
   If a replay is chosen, a second account signs in through Conduit as
-  [ruling 72](../../docs/proposals/ruling-72/README.md) requires for S3/S10, not as an existing
+  [ruling 72](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-72/README.md) requires for S3/S10, not as an existing
   S9 requirement. Freeze that replay's client/trial choices first.
 - **Q4:** Which repair scope should S9 exercise before any additional DL6 policy is chosen?
   Options: documented initialization cuts plus reachable authored-setup repair, or also
   damaged-foundation/legacy-store repair after an engine policy and fixtures exist.
   **Recommendation:** the former; keep unsupported foundation reconstruction explicitly unshown.
 
-**Answers, under [ruling 75](../../docs/proposals/ruling-75/README.md), D (2026-11-11):**
+**Answers, under [ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D (2026-11-11):**
 
 - Q1: accepted.
 - Q2: written twice, by the coordinator and by a fresh Codex author, with scripted clients (D3).
@@ -264,18 +264,18 @@ portable atomicity guarantee. This paper order runs nothing and writes no promis
 ## Amendments since acceptance
 
 The text above keeps what the owner accepted on 2026-11-11 under
-[ruling 75](../../docs/proposals/ruling-75/README.md), D. Each line below is dated and says
+[ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D. Each line below is dated and says
 whose it is. A line from a ruling amends the text above as that ruling says. A line marked
 the coordinator's is open to the owner's strike: it changes no pass condition above, and what
 it adds to a run is reported apart from the counted result.
-[Ruling 78](../../docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
+[Ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
 changes in the table under question 4 of
-[the full review's questions](../../docs/proposals/full-review/questions.md); the decisions
+[the full review's questions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/questions.md); the decisions
 that these lines cite are in
-[the full review's decisions](../../docs/proposals/full-review/decisions.md).
+[the full review's decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md).
 
 - **2026-11-14, the coordinator's (decision D72):** once the change of
-  [ruling 78](../../docs/proposals/ruling-78/README.md), point 17 (F39), lands after the pin, so
+  [ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md), point 17 (F39), lands after the pin, so
   that the engine sets nothing up at start, S9-T4's branch (a) and M2 expect no setup or hook
   dispatched at start for a registered or failed instance (OBS-004), and a ready instance's
   restart is recorded but not judged until `spec/` states it. M2 gets a rubric; the dispatches

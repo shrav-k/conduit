@@ -4,7 +4,7 @@ Status: executed 2026-11-06, and run again by a review the same day with the sam
 every case ([re-run](#re-run-by-the-review)). Exploratory Rust code under the exploratory-code
 ruling, which is ruling 3 of the [ruling log](../../docs/AUDIT.md#ruling-log) in the plan audit.
 It was started on the owner's answer recorded
-[after ruling 40](../../docs/proposals/ruling-40/README.md#after-the-ruling): on throwaway
+[after ruling 40](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-40/README.md#after-the-ruling): on throwaway
 keychains, never the login keychain. It probes a store that a provider package
 would read (candidate in action A63 of the [action items](../../docs/AUDIT.md#action-items)). It
 is not a provider package, a Conduit engine or conformance evidence.
@@ -253,7 +253,7 @@ again took longer: 215.9 ms (2a) and 208.4 ms (4a).
   the login keychain, by default the person's login password. The other route that worked is for
   the package's binary to create the item itself (1c), which means the package writes the
   secret. The secrets proposal leaves writing to the person's own tools
-  ([S5](../../docs/proposals/secrets/README.md#s5-where-the-value-is-stored)). A person
+  ([S5](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/secrets/README.md#s5-where-the-value-is-stored)). A person
   answering a dialog is a third possible route, not tried, by rule.
 - **`-A` does not mean any application in the login keychain's format.** The `any-app` item had
   the partition `apple-tool:`, and both probe binaries were refused (3a, 3b). In the older format
@@ -304,7 +304,7 @@ Nothing here binds, and nothing here decides. Points for the owner:
   observable bound on how long a read with no person present may take.
 - An implementation can say why a read failed (locked, or not trusted) only by asking the
   keychain's status. SEC-12's message, "says the store could not be read", needs no more.
-- Option B2 of [S5](../../docs/proposals/secrets/README.md#s5-where-the-value-is-stored) puts the
+- Option B2 of [S5](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/secrets/README.md#s5-where-the-value-is-stored) puts the
   keychain in every engine. An engine built from source is signed ad hoc, so each rebuild that
   changes the engine's binary would lose access to items it was trusted for (question 4). This
   is evidence for the owner's decision on S5, not a ruling on it.

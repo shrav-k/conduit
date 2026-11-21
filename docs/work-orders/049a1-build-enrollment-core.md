@@ -21,13 +21,13 @@ and `049b.patch`, stop and report, and change nothing.
 **What it builds.** Order 038b wrote machine enrollment into the specification. A machine that
 joins the machine provider is pending. It becomes a node only when root admits it, on evidence
 that the provider reports, after the person types the fingerprint read on the machine and the
-engine compares it ([ruling 68](../proposals/ruling-68/README.md), point 3, R2). The promises are
+engine compares it ([ruling 68](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md), point 3, R2). The promises are
 ENR-001 to ENR-012 in `spec/promises/enrollment.yaml` and PND-008 in `spec/promises/pending.yaml`;
 038b also amended PLC-023, PLC-026 and PRV-013 to PRV-015. It staged, as exact patches, the
 contract edits that the engine would reject until enrollment is built.
 
 This order builds that enrollment in the core. It is the first half of batch 1's order 049a
-([the plan](../proposals/spec-batch-1/README.md), lines 583-590), which the coordinator split:
+([the plan](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/spec-batch-1/README.md), lines 583-590), which the coordinator split:
 
 - **049a1, this order:** the core's enrollment state, the three root verbs and their provider
   calls, machine reports, and admitted nodes;
@@ -37,7 +37,7 @@ This order builds that enrollment in the core. It is the first half of batch 1's
 
 **Why now, and where.** This is item 7 of the coordinator's plan for running Agents on the Windows
 computer through Conduit once it is a node. The owner let the coordinator adopt that plan's
-recommendations ([ruling 76, later answers](../proposals/ruling-76/README.md#later-answers)). Four
+recommendations ([ruling 76, later answers](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-76/README.md#later-answers)). Four
 of the plan's choices are held for the owner: which machine provider enrolls the Windows computer;
 which operating-system user the runs on it execute as; how TLS is terminated at the engine's
 address; and whether that machine's Windows interop and drives are turned off. Nothing in this
@@ -65,7 +65,7 @@ Size: L, about 1.0 to 1.3k lines and 17 new cases.
    `vector-impact.md`. This order's cases come from the table in `049a.md`.
 3. In the plan: its orders 047 (lines 556-563), 049b (lines 592-595) and 051c (lines 642-645), and
    its conflict C11 (lines 310-313). In the
-   [area draft](../proposals/spec-batch-1/areas/machines-and-trust.md): its Vectors and Build
+   [area draft](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/spec-batch-1/areas/machines-and-trust.md): its Vectors and Build
    sections (lines 175-265).
 4. Under `engine/crates/`:
    - `core/src/lib.rs`: `State` (lines 61-76) and first start (lines 646-809);
@@ -99,7 +99,7 @@ find their text by promise ID.
 and DL18. If your tree still has them so, follow ENR-010 and IFC-049, and report it.
 
 Every decision you build cites its promise. Every reason a verb reports has a diagnostic that
-names its deciding rule and its cause ([ruling 52](../proposals/ruling-52/README.md); ACC-056;
+names its deciding rule and its cause ([ruling 52](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-52/README.md); ACC-056;
 IFC-050).
 
 ## What to do
@@ -360,7 +360,7 @@ IFC-050).
      ENR-009).
    - **`clock`.** Add a core input `clock`, which carries evidence and does only that. Order 047
      builds a `clock` input for the expiry of every kind of pending action
-     ([the plan](../proposals/spec-batch-1/README.md), line 561), and is on the rerun's path, so
+     ([the plan](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/spec-batch-1/README.md), line 561), and is on the rerun's path, so
      it may have reached `s3/m2` before this order starts. If your tree has a `clock` input,
      extend it with the enrollment's expiry and add no second one; otherwise build it in a form
      that 047's can extend.
@@ -545,7 +545,7 @@ IFC-050).
         `nodes/readmit`, `nodes/provider-replaced`, `enrollment/action-visibility` and
         `nodes/retire-removal`, whose behavior this order builds with unit tests only;
       - `enrollment/url-retry`, which waits for the URL relay and for K1, the coordinator's MCP
-        citation check ([the plan](../proposals/spec-batch-1/README.md), line 408); and
+        citation check ([the plan](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/spec-batch-1/README.md), line 408); and
         `nodes/declare-lost-removal` and `nodes/gone`, with PLC-024's `gone`, which wait for the
         work of scenario S3 in `ROADMAP.md`, which has no order yet;
       - the URL relay, which IFC-049 makes optional and this order does not build;

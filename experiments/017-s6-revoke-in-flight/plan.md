@@ -202,7 +202,7 @@ S5-C2; END spans both lanes after 077 and before WIRE. WIRE follows the shared s
   **recommendation:** preserve existing DL1 cycles and final 081 text, with DUTY1/DUTY2 split.
   Runner/shared-manifest integration stays admin's; no partial run counts as the full gate.
 
-Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed this reading on 2026-11-12 ([ruling 75's later answers](../../docs/proposals/ruling-75/README.md#later-answers)).
+Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed this reading on 2026-11-12 ([ruling 75's later answers](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md#later-answers)).
 
 ## For the owner
 

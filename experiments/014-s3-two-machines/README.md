@@ -27,7 +27,7 @@
 ## Status
 
 Pre-registered on 2026-11-11 by work order 101. Accepted by the owner on 2026-11-11 under
-[ruling 75](../../docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
+[ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
 counting rules and planned vectors, with the answers under "Open for the owner" applied. Ruling
 45 fixes what an experiment must show before it runs. No result is recorded here.
 
@@ -43,12 +43,12 @@ loss, unknown outcomes across the network and proof of identity.
 ## What it must show
 
 1. **P1 — ruled:** S3 runs end to end on the reference engine with its vectors passing, including every safety vector it
-   adds ([ruling 47](../../docs/proposals/ruling-47/README.md#when-to-publish),
-   [ruling 68, point 2](../../docs/proposals/ruling-68/README.md#the-decisions)).
+   adds ([ruling 47](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-47/README.md#when-to-publish),
+   [ruling 68, point 2](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md#the-decisions)).
 2. **P2 — ruled:** use real machines
    ([IN_FORCE topic 10](../../IN_FORCE.md#10-placement-nodes-machines-identity-and-enrollment), rulings 47 and 68.4): the
    Mac and owner's Windows computer with WSL2; no rented stand-in
-   ([ruling 72.3](../../docs/proposals/ruling-72/README.md#the-decisions)). Record actual placement.
+   ([ruling 72.3](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-72/README.md#the-decisions)). Record actual placement.
 3. **P3 — proposed, for the owner's acceptance:** in E15's timing cells, no new dispatch occurs without current
    authorization. An unreachable/omitted machine produces unavailable for new requests and no retirement. A dispatched
    request whose reply is lost remains unknown until checked; reconcile with evidence rather than guessing no effect.
@@ -61,7 +61,7 @@ loss, unknown outcomes across the network and proof of identity.
 5. **P5 — proposed, for the owner's acceptance:** trace second-account authentication through Conduit's flow, including
    missing-login pending action, person-only URL/evidence, correct account completion, wrong-account undo and explicit
    retry. No copied login or API-key Agent substitutes for the
-   [ruled second subscriptions](../../docs/proposals/ruling-72/README.md#the-decisions).
+   [ruled second subscriptions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-72/README.md#the-decisions).
 6. **P6 — proposed, for the owner's acceptance:** D20 explains what local and isolated runtimes protect during a
    partition, which test credentials each Agent can read, and every interval without intended access. A gate or network
    membership never counts as consumer confinement; ACC-027 still reports mediated.
@@ -69,7 +69,7 @@ loss, unknown outcomes across the network and proof of identity.
 ## What it covers
 
 S3 owns E15 and D20 under partition in the [round-6 allocation](../../ROADMAP.md#round-6s-evidence-and-measurements),
-defined in the [critique](../../docs/proposals/reaudit/round-6/design-critique.md#proposed-evidence-for-the-next-stage).
+defined in the [critique](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/reaudit/round-6/design-critique.md#proposed-evidence-for-the-next-stage).
 It replays S1's tasks and S2's E02/E07/E13/E17 workload; it does not redefine S2's D01/D05/D09.
 
 Promise IDs exercised, by file, as written today:
@@ -140,11 +140,11 @@ before shutdown, with provider evidence keyed by instance/run ID for stop receip
 first build's [table of measures](../../docs/implementation/FIRST_BUILD.md#measures), only its
 [three counting rules](../../docs/implementation/FIRST_BUILD.md#counting-rules-added-after-the-baseline-ran) “Provider
 work apart”, “A client's concepts count”, and “Requests and time without access”,
-[ruling 63's line count](../../docs/proposals/first-build/increment-4/measurement-plan.md#the-s1-rerun), with panel
+[ruling 63's line count](../../docs/implementation/first-build/measurement-plan.md#the-s1-rerun), with panel
 actions apart (**ruled**, ruling 68 R1), and
 [topic 13's per-run rules](../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement) (**ruled**, their cited
 rulings). The source measures retain their recorded standing; extending them to S3 is M0. Follow the
-[counted-run model](../../docs/proposals/first-build/increment-4/measurement-plan.md). Do not carry A70's comparison/bar,
+[counted-run model](../../docs/implementation/first-build/measurement-plan.md). Do not carry A70's comparison/bar,
 T3's reach rule, T4/T5's better-baseline rules or `project`. No numeric bar applies; observed time and mistakes precede
 any target (**ruled**, ruling 46.3).
 
@@ -161,7 +161,7 @@ Each following measure and its counting rules is **proposed, for the owner's acc
 Each name and assertion below is **proposed, for the owner's acceptance**; use a deterministic network/machine-provider
 fixture and S2's local service stub, with no accounts or network. Safety follows
 [the tracker](../../docs/AUDIT.md#how-to-use-this-document) and
-[ruling 68.2](../../docs/proposals/ruling-68/README.md#the-decisions); name the safety promise.
+[ruling 68.2](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md#the-decisions); name the safety promise.
 
 | ID / proposed name | Promises and intended assertion | Safety / safety promise |
 | --- | --- | --- |
@@ -194,14 +194,14 @@ packages, Linear test workspace/key on M1's test store, and the two real native 
 transport/gate settings, topology and fault barriers before timing.
 
 Each run uses one second Claude subscription account for A and one second ChatGPT subscription account for B, provided by
-the owner; no API-key Agent ([ruling 72.2](../../docs/proposals/ruling-72/README.md#the-decisions)). Independently sign in
+the owner; no API-key Agent ([ruling 72.2](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-72/README.md#the-decisions)). Independently sign in
 each new home through Conduit; never copy a Codex login between Agents or machines
 ([A8](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/experiments/010-subscription-terms/results-2026-11-10.md#what-this-establishes)). T1 exercises declared expected account,
 missing login, root's URL consent/panel evidence, Claude's browser sign-in on its own machine, M1, never carried between machines (ruling 75 C3); Codex's browser
 login on M2, its redirect carried back through the person's Interface or an SSH forward, with the device code an option
 where the account has it on, after the probe C5 names confirms that a carried redirect completes the login;
 wrong-account undo, correct-account check and new explicit work request, as
-[ruling 49](../../docs/proposals/ruling-49/README.md) and PND-011 state. `conduit` runs on the Mac, and at the Windows computer the person uses SSH and pastes, or a device code (C4). The owner
+[ruling 49](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-49/README.md) and PND-011 state. `conduit` runs on the Mac, and at the Windows computer the person uses SSH and pastes, or a device code (C4). The owner
 turns on device sign-in only where a device code is used, supplies labels
 and completes vendor pages through the [accounts guide](../../docs/guides/accounts.md). Reserve a proposed hour of active
 owner time per run for enrollment, sign-ins and recovery, plus availability to restore WSL; count actual time.
@@ -255,7 +255,7 @@ rented substitute.
   destruction. **Recommendation:** the first; WSL shutdown is a reversible fault and silence must never be promoted to
   gone.
 
-**Answers, under [ruling 75](../../docs/proposals/ruling-75/README.md), D (2026-11-11):**
+**Answers, under [ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D (2026-11-11):**
 
 - O1: accepted.
 - O2: the second subscription accounts, as ruled. Every account has its own label, and every
@@ -280,23 +280,23 @@ labels are not program scenarios; H1–H10 name only its section-11 hypotheses.
 ## Amendments since acceptance
 
 The text above keeps what the owner accepted on 2026-11-11 under
-[ruling 75](../../docs/proposals/ruling-75/README.md), D. Each line below is dated and says
+[ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D. Each line below is dated and says
 whose it is. A line from a ruling amends the text above as that ruling says. A line marked
 the coordinator's is open to the owner's strike: it changes no pass condition above, and what
 it adds to a run is reported apart from the counted result.
-[Ruling 78](../../docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
+[Ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
 changes in the table under question 4 of
-[the full review's questions](../../docs/proposals/full-review/questions.md); the decisions
+[the full review's questions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/questions.md); the decisions
 that these lines cite are in
-[the full review's decisions](../../docs/proposals/full-review/decisions.md).
+[the full review's decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md).
 
-- **2026-11-14, [ruling 78](../../docs/proposals/ruling-78/README.md), point 4 (the owner): the
+- **2026-11-14, [ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md), point 4 (the owner): the
   cut.** The Mac's own firewall cuts the network, run by the coordinator's locked-down script
   under one administrator rule that the owner adds once; two test cuts decide whether it works,
   and a path it misses gets a relay on the Mac. This replaces the Linux-side firewall rule and
   the coordinator's restoring script of "Fault preparation, apart from author tasks", which the
-  lockdown of [ruling 77](../../docs/proposals/ruling-77/README.md) left impossible to follow
-  ([FR-390](../../docs/proposals/full-review/findings/E01-s2-s3-s4.md#fr-390)). It answers S3-OF
+  lockdown of [ruling 77](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-77/README.md) left impossible to follow
+  ([FR-390](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/E01-s2-s3-s4.md#fr-390)). It answers S3-OF
   in the plan, and the table under question 4 of the full review's questions gives its details.
 - **2026-11-14, ruling 78, point 4 (the owner): the loss.** At each loss the owner stops the
   distro with `wsl --terminate`, in place of the `wsl --shutdown` of "Fault preparation" and of
@@ -319,13 +319,13 @@ that these lines cite are in
   condition; the cost of adding a machine; and a disposable Linux node on the engine's machine,
   used to rehearse and never as evidence.
 - **2026-11-14, the coordinator's
-  ([FR-390](../../docs/proposals/full-review/findings/E01-s2-s3-s4.md#fr-390)):** G4, under
+  ([FR-390](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/E01-s2-s3-s4.md#fr-390)):** G4, under
   "What `spec/` does not yet decide", and V7, under "Vectors expected", wait for enrollment's
   promises. They are written: ENR-001 to ENR-012, in
   [spec/promises/enrollment.yaml](../../spec/promises/enrollment.yaml), and V7 cites those it
   tests when its case is written. The engine's enrollment bindings, which orders 049a and 049b
   land, are still spec pending in topic 10 of [IN_FORCE.md](../../IN_FORCE.md).
-- **2026-11-16, [ruling 80](../../docs/proposals/ruling-80/README.md), point 11 (the owner): a
+- **2026-11-16, [ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md), point 11 (the owner): a
   rented stand-in.** P2's "no rented stand-in" and the "no rented substitute" that ends "What it
   needs first" are struck, with ruling 72 decision 3's "No rented machine stands in": a rented
   machine may stand in if the Windows computer is unavailable. The rest of P2 and of that

@@ -25,7 +25,7 @@
 ## Status
 
 Pre-registered on 2026-11-11 by work order 102. Accepted by the owner on 2026-11-11 under
-[ruling 75](../../docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
+[ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
 counting rules and planned vectors, with the answers under "Open for the owner" applied. Ruling
 45 fixes what an experiment must show before it runs. No result is recorded here.
 
@@ -36,14 +36,14 @@ What has changed since acceptance is listed in the last section, "Amendments sin
 
 Can two actors change a live setting under contention without overwriting another change,
 and recover from a lost receipt? [S5's roadmap row](../../ROADMAP.md#scenarios) exercises revisions,
-a control that applies exactly what it was sent or fails ([ruling 41](../../docs/proposals/ruling-41/README.md),
+a control that applies exactly what it was sent or fails ([ruling 41](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-41/README.md),
 item 15, replacing partial confirmation), and a lost receipt.
 
 ## What it must show
 
-1. **P1 — ruled**, [ruling 47](../../docs/proposals/ruling-47/README.md#when-to-publish):
+1. **P1 — ruled**, [ruling 47](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-47/README.md#when-to-publish):
    S5 runs end to end on the reference engine with its vectors passing, including every
-   safety vector it adds ([ruling 68, point 2](../../docs/proposals/ruling-68/README.md)). Judge
+   safety vector it adds ([ruling 68, point 2](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md)). Judge
    by task transcripts, independent state checks and vector verdicts. Missing cases are
    missing evidence, never passes.
 2. **P2 — proposed, for the owner's acceptance**: only one setup/retirement/change of an instance
@@ -68,7 +68,7 @@ item 15, replacing partial confirmation), and a lost receipt.
 
 [Round 6's allocation](../../ROADMAP.md#round-6s-evidence-and-measurements): E03/E04 (equal and
 ancestor pointer overlap), E10 (narrowed/excluded controls), E16 (default normalization); D10
-(frontend distinctions). The [critique's cases](../../docs/proposals/reaudit/round-6/design-critique.md#proposed-evidence-for-the-next-stage)
+(frontend distinctions). The [critique's cases](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/reaudit/round-6/design-critique.md#proposed-evidence-for-the-next-stage)
 use older promise references; the following are today's IDs:
 
 - [revisions.yaml](../../spec/conventions/revisions.yaml): REV-001–007, REV-009–015.
@@ -120,8 +120,8 @@ fixtures; the harness expires the receipt for OPS-034. Fault controls and barrie
 by reference the first build's [measure table](../../docs/implementation/FIRST_BUILD.md#measures)
 and three [counting rules](../../docs/implementation/FIRST_BUILD.md#counting-rules-added-after-the-baseline-ran):
 “Provider work apart”, “A client's concepts count” and “Requests and time without access”.
-**Ruled counting rules**: [ruling 63](../../docs/proposals/ruling-63/README.md)'s lines,
-[ruling 68 R1](../../docs/proposals/ruling-68/README.md)'s panel actions apart, and
+**Ruled counting rules**: [ruling 63](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-63/README.md)'s lines,
+[ruling 68 R1](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md)'s panel actions apart, and
 [IN_FORCE.md topic 13](../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement)'s
 per-run rules, except S1's local name `project`. S1's A70 comparison/bar, T3's reach-around rule
 and T4/T5's better-baseline rules do not carry over. No numeric bar or comparison is proposed;
@@ -217,14 +217,14 @@ Q1–Q4; supplies account/sign-in only if an optional replay is selected.
   **Recommendation:** two separate author runs as above; this introduces no S1 numeric bar.
 - **Q3:** Which client should exercise cases that need real-client behavior: the owner's subscription, a second subscription account signed in through Conduit's own sign-in flow, or none (scripted clients only)?
   **Recommendation:** none: use scripted clients and
-  the engine CLI here. If a replay is chosen, a second account signs in through Conduit; [ruling 72](../../docs/proposals/ruling-72/README.md)
+  the engine CLI here. If a replay is chosen, a second account signs in through Conduit; [ruling 72](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-72/README.md)
   requires that for S3/S10, not S5. Freeze the replay's client and trial count before running.
 - **Q4:** Which supplied control contract and verification operation should S5 qualify? Options:
   a packaged local two-setting fixture, a real service with an existing suitable contract, or
   defer until one exists. **Recommendation:** packaged local fixture with explicit readback,
   counted as provider work; it exercises the convention without inventing a generic repair.
 
-**Answers, under [ruling 75](../../docs/proposals/ruling-75/README.md), D (2026-11-11):**
+**Answers, under [ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D (2026-11-11):**
 
 - Q1: accepted.
 - Q2: written twice, by the coordinator and by a fresh Codex author, with scripted clients (D3).
@@ -241,17 +241,17 @@ selected contract. No run, result, new promise or vector is produced by this pap
 ## Amendments since acceptance
 
 The text above keeps what the owner accepted on 2026-11-11 under
-[ruling 75](../../docs/proposals/ruling-75/README.md), D. Each line below is dated and says
+[ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md), D. Each line below is dated and says
 whose it is. A line from a ruling amends the text above as that ruling says. A line marked
 the coordinator's is open to the owner's strike: it changes no pass condition above, and what
 it adds to a run is reported apart from the counted result.
-[Ruling 78](../../docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
+[Ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
 changes in the table under question 4 of
-[the full review's questions](../../docs/proposals/full-review/questions.md); the decisions
+[the full review's questions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/questions.md); the decisions
 that these lines cite are in
-[the full review's decisions](../../docs/proposals/full-review/decisions.md).
+[the full review's decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md).
 
-- **2026-11-14, [ruling 78](../../docs/proposals/ruling-78/README.md), points 5 and 6 (the
+- **2026-11-14, [ruling 78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-78/README.md), points 5 and 6 (the
   owner):** P5, S5-T5 and V4 follow them. A reconciliation records the outcome and what was
   checked; it stores no control's values, makes nothing ready and leaves the settings reported
   unknown, and the way on is to send again: the control, naming the current revision, or a
@@ -264,7 +264,7 @@ that these lines cite are in
   readback equals what was sent; and a branch in which an Agent's control lands between plan and
   apply is reported apart, and runs only if batch 2 has merged.
 - **2026-11-14, the coordinator's
-  ([FR-404](../../docs/proposals/full-review/findings/E02-s5-s6-s7.md#fr-404)):** "What it needs
+  ([FR-404](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/E02-s5-s6-s7.md#fr-404)):** "What it needs
   first" says that controls and control reconciliation are outside the engine's implemented
   slice. Order 041b has since implemented control reconciliation, which applies the held input
   values to the current revision

@@ -287,4 +287,22 @@ decision 4's paragraph; change 5 rewords CONTRIBUTING.md on proposal records and
 
 ## Record
 
-Not yet run.
+Run on 2026-11-21 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+Worker-1's turn (23:57 to 00:07) pinned the archive at BASE `077fa47e`. It moved the two live
+files to `docs/implementation/first-build/`, removed the other 252 files of `docs/proposals/`
+and `check_rulings.py` with its test, and pinned or repointed every link from a staying file.
+Root then pinned experiment 028's 42 links on the branch, 38 to BASE and four to the moved log,
+as decision 8 says.
+
+`turn-verifier-1.turn.v1` (00:09 to 00:13) confirmed the stay list, the pins, the checkers and
+the retirement. Its one must was root's: the amendment left a blank line at the end of the file
+and did not use decision 8's words. Both are fixed.
+
+`turn-reader-1.turn.v1` (00:14 to 00:19), the Claude reader, accepted it with two shoulds, which
+root applied:
+- IN_FORCE.md marks decision 3's reading as the coordinator's, open to the owner's strike;
+- `engine/README.md` names the open log, not the removed folder.
+
+Its nit, unstaged deletions, was only the state of the reader's copy. The verifier's should, that
+IN_FORCE.md's four-document rule still sends rulings to the frozen records, goes with change 6,
+which retires IN_FORCE.md. The gate's run on the squash is the coordinator's, at the merge.

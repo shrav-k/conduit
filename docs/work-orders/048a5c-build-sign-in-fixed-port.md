@@ -16,7 +16,7 @@ or any credential. Do not run `claude`, `codex` or any client, and sign in nowhe
 **Where it sits.** Order 048a-5 (its file `048a5-build-sign-in-refusals-before-parts.md`) records
 the coordinator's cut of 048a-5 into eight parts, each after the one before, since an order holds
 one behavior and stays small
-([FR-264](../proposals/full-review/findings/P01-work-orders-lanes.md#fr-264)). This is the third:
+([FR-264](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/P01-work-orders-lanes.md#fr-264)). This is the third:
 "048a-5c, PND-010's fixed-port refusal". Order 048a-5 builds `sign-in.v1`'s refusals before any part
 (the missing URL elicitation capability, a return on a first request and an unknown `signInLogin`);
 order 048a-5b binds who may ask at the access tier and dispatches `sign-in.v1`, its account check
@@ -189,7 +189,7 @@ and writes `engine/STANDING.md` again with the tool.
 its reason, that its diagnostic names PND-010, the port and only a visible pending action, what a
 request may start, and its place after conflict. `sign-in-login.v1` and CTR-013 decide which logins
 state ports. Everything else here is the coordinator's, each open to the owner's strike
-([ruling 48](../proposals/ruling-48/README.md)): the cut that puts this behavior here (order 048a5's
+([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)): the cut that puts this behavior here (order 048a5's
 "Where it sits"); the order of the refusals above, from the coordinator's plan for the chain;
 reading "a fixed port" as an integer in a redirect login's `redirect.ports` list, compared whatever
 the login's `redirect.host`, so that `ports: any` and the other returns state none; comparing every
@@ -638,11 +638,11 @@ preflight where the fixed-port refusal is decided.
 
 `git diff --check` and `check_private_paths.py` read tracked files only, so the admin then stages
 the new files and runs `python3 tools/check_private_paths.py` and `git diff --cached --check`.
-Before the merge the admin runs the local gate that [ruling 80](../proposals/ruling-80/README.md),
+Before the merge the admin runs the local gate that [ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md),
 point 10, has each merge wait on, `tools/gate.py`; CI runs on the pull request as well, and its
 `docs` job reads `048a5c-declared.yaml` through `--declared-changed`, and the merge does not wait
 for it. A fresh Codex verifier and a fresh read-only Opus reader read the result before it merges
-([ruling 79](../proposals/ruling-79/README.md), point 2). The admin writes this order's Record at
+([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md), point 2). The admin writes this order's Record at
 the foot of this file when it merges.
 
 ## Record

@@ -10,7 +10,7 @@ a whole large file or log: use `head`, `tail`, `grep` or a count.
 
 ## What and why
 
-An order of the proof lane under [ruling 71](../proposals/ruling-71/README.md). A40 asks that each
+An order of the proof lane under [ruling 71](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-71/README.md). A40 asks that each
 safety promise of the shared conventions hold under model checking, or be listed with the reason
 it cannot be checked this way (G5). Ruling 75, E1, counts every convention-layer safety promise in
 [the catalogue](../implementation/SAFETY_CATALOGUE.md), 217 in all.

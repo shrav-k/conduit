@@ -5,7 +5,7 @@ kept apart (ruling 75 B3). This read ran nothing. A Codex worker read Claude Cod
 documentation, Codex's public source at the tag `rust-v0.167.1` (commit `0a94398fa60c`) with the
 documentation it holds, and OpenAI's pages on Codex that Sources lists, on 2026-11-17, under work
 order 050g, for item 8 of the targeted review's lists for `claude-code.v2` and `codex.v2`
-([section 6](../../docs/proposals/review-signin-2026-11-16/README.md#6-must-state-lists)). Each
+([section 6](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#6-must-state-lists)). Each
 statement below is a page's or the source's, quoted with where it is. None is an observation of
 a client: a page can differ from the client it documents, and source read at a tag can differ
 from the binary installed from it. Beyond its two outcome lines, this file decides nothing and

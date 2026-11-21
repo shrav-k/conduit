@@ -12,7 +12,7 @@ This register feeds condition G7 of the
 **What this register covers.** It covers the first sweep, which read the protocol topics under
 [docs/protocol](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md) before the [specification](../spec/README.md) existed. The
 table of defects stops there. Findings against `spec/` are not added here: they are in the
-[re-audit record](proposals/reaudit/README.md). Defect text keeps the words of the text it was
+[re-audit record](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/reaudit/README.md). Defect text keeps the words of the text it was
 found in, such as handler, plugin, grant, provision, host and join; the terms in force are in
 [spec/definitions.md](../spec/definitions.md).
 
@@ -89,7 +89,7 @@ identifiers of each file that a ruling removed whole. Where an item of the imple
 list no longer covers a row, as ruling 41 narrowed DL1, DL5 and DL9 and round 5 of the re-audit
 removed DL11, the row cites the promise that decides it now. Where ruling 41 removed the feature
 a row is about, the row is closed and names the item of the
-[principles review](proposals/principles-review/README.md) that removed it.
+[principles review](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/principles-review/README.md) that removed it.
 
 ## Defects
 

@@ -110,7 +110,7 @@ wait (its R1), and its README's sign-out sentence differs from its decision 8 (i
 After it the Codex lane holds the whole of `codex.v2`'s pass shape: `signIn`, its logins, and its
 four hooks, each with a default.
 
-**Only on the live check's pass.** [Ruling 82](../proposals/ruling-82/README.md#the-decisions),
+**Only on the live check's pass.** [Ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md#the-decisions),
 point 1, the owner's: "`codex.v2` states `signIn` only if that check passes", the check being A5's
 stage 1, step 1, in which the owner signs a scratch home in once through Conduit's sign-in flow and
 the package's account hook must report the signed-in account. This order builds the Codex half's
@@ -127,9 +127,9 @@ It carries, from [the coordinator's plan of 050](117-plan-s2-s3.md) (order 117's
 codex.v2 states signIn: its browser login, its device login refused, and its keyed sign-in hook.
 After 050l, and 048a-1 merged with the lane rebased onto it"):
 
-- From the targeted review's [section 6](../proposals/review-signin-2026-11-16/README.md#6-must-state-lists),
+- From the targeted review's [section 6](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#6-must-state-lists),
   which the owner accepted with ruling 82,
-  [`codex.v2`](../proposals/review-signin-2026-11-16/README.md#050-codexv2)'s item 1 on the
+  [`codex.v2`](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#050-codexv2)'s item 1 on the
   account fact's pass ("the Type as `claude-code.v2`'s item 1": `signIn` with its required account
   place `/account`; `requires` lists `sign-in-hook.v1`, `account-hook.v1`, `sign-out-hook.v1` and
   `retire-hook.v1`, each with a default; order 050l gave the last three); item 2, the logins ("the
@@ -1014,7 +1014,7 @@ every other child, and order 208's probe before dispatch, are the owner's, rulin
 050l's second reader's, applied as the coordinator's.
 The split of order 050 into 050b to 050o, this order's place as the second of the Codex lane, its
 branch and its base are the coordinator's, open to the owner's strike
-([ruling 48](../proposals/ruling-48/README.md)). Everything else here is the coordinator's too, each
+([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)). Everything else here is the coordinator's too, each
 open to the owner's strike: the logins' names `browser` and `device`; the description sentence's
 wording; reading the literals from the clone at the tag `rust-v0.167.1`, its commit checked against
 stage 0b's; the wrapper reading the logins from its own `contracts.yaml` rather than holding them;
@@ -1212,8 +1212,8 @@ The admin then runs `python3 tools/check_private_paths.py` and `git diff --cache
 staged change. This order is the Codex lane's second checkpoint: it does not merge alone, and its
 Record is written at the foot of this file on the lane's branch, as order 050l's is. A fresh Codex
 verifier and a fresh read-only Opus reader read the result before the checkpoint stands
-([ruling 79](../proposals/ruling-79/README.md), point 2). The local gate that
-[ruling 80](../proposals/ruling-80/README.md) has a merge wait on, `tools/gate.py`, runs at order
+([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md), point 2). The local gate that
+[ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md) has a merge wait on, `tools/gate.py`, runs at order
 050n's merge, read with the expected engine failure known, and order 050n carries this lane into
 0.2.0 only if A5's live check passes.
 

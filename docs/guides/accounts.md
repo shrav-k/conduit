@@ -1,6 +1,6 @@
 # Accounts and sign-in
 
-For A5 and for Agents that each have a home of their own ([ruling 49](../proposals/ruling-49/README.md)).
+For A5 and for Agents that each have a home of their own ([ruling 49](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-49/README.md)).
 Nothing here is done in a terminal the coordinator runs: you do each step yourself.
 
 With Agent packages 0.2.0, each `.v2` Agent keeps its client's login in its own home inside
@@ -9,7 +9,7 @@ its state directory. Your everyday Claude Code and Codex logins stay as they are
 ## Before the engine can sign an Agent in
 
 Know which email each account uses. The configuration names the account each Agent is for,
-and the engine accepts only that account ([ruling 49](../proposals/ruling-49/README.md), point 3).
+and the engine accepts only that account ([ruling 49](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-49/README.md), point 3).
 Tell the coordinator the two emails for Claude and the two for ChatGPT, or a label for each if
 you would rather keep the emails to yourself.
 
@@ -25,7 +25,7 @@ Use `conduit sign-in` or root's Interface only to answer a pending sign-in actio
 For a Codex Agent, a failed check proceeds to the sign-in
 hook, and Codex's login first signs that home out. A Codex Agent left idle until its access
 token lapses may fail its account check and ask you to sign in again. The check blocks token
-refresh, though a turn would have refreshed it ([ruling 86](../proposals/ruling-86/README.md), point 5).
+refresh, though a turn would have refreshed it ([ruling 86](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-86/README.md), point 5).
 
 In 0.2.0, sign in with the client's default login. The engine refuses a login name. The Codex
 device code and Claude Code's code-page login wait for later releases.

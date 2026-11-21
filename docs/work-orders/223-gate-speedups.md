@@ -30,7 +30,7 @@ under R3, a Python update on the Mac that breaks a tool test shows at the next `
 under R4, a break in the short form, which v0 does not need; under R5, a Mac-only break in a
 package the branch did not change, found the next morning.
 
-**Preservation tests** ([ruling 92](../proposals/ruling-92/README.md), point 1): none served and
+**Preservation tests** ([ruling 92](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-92/README.md), point 1): none served and
 none at risk. The order changes no promise, engine code, package or case, and cuts no check v0
 needs.
 
@@ -125,7 +125,7 @@ loader, core, conformance)`). nightly.yml lists the packages for the first itsel
 `packages` output and the check on it. Their cache saves run on the nightly's own events, not on
 `push`. The `rust` job's `needs` and its check line lose the two macOS jobs; `engine-doc` stays
 as it is. Each file's header comment says where its jobs run. No check becomes required
-([ruling 80](../proposals/ruling-80/README.md)). In `docs/implementation/METHOD_AS_RUN.md`, the
+([ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md)). In `docs/implementation/METHOD_AS_RUN.md`, the
 sentences on the macOS jobs say what this order changed. The report names the effect on A77's
 claim 1, whose macOS leg leaves the checks workflow; `docs/implementation/WORK_ORDERS.md` stays as
 written.

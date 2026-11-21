@@ -14,7 +14,7 @@ real `github-mcp-server`, and sign in nowhere.
 
 ## What and why
 
-**The gap** (the dogfood-gaps stream, step G-6; [ruling 92](../proposals/ruling-92/README.md),
+**The gap** (the dogfood-gaps stream, step G-6; [ruling 92](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-92/README.md),
 point 9; [DEC-027](../decisions/log.md#dec-027-2026-11-20-conduit-builds-conduit-directly-through-conduit)).
 No Agent reaches GitHub through Conduit: the coordinator reads and merges pull requests with its
 own `gh`, so no Agent gets a narrower view, and nothing records what was read.
@@ -49,16 +49,16 @@ server's tool names, which change between releases, in one table, failing by nam
 and it gives the token to the server alone.
 
 Not taken (the coordinator's, open to the owner's strike): the server as a `plain` item, as
-[the secrets proposal](../proposals/secrets/README.md) sketches (any repository; no filter,
+[the secrets proposal](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/secrets/README.md) sketches (any repository; no filter,
 PKG-020); one Resource for all repositories, narrowed by a filter (only the package's own check
 would guard the others); GitHub's remote endpoint or image (unserved); `gh` (its stored login is
 a fallback, against ruling 52).
 
 **When it runs.** Through Conduit's dogfood: one Codex worker turn (aim under 2 hours), a
-Codex verifier and a Claude reader ([ruling 79](../proposals/ruling-79/README.md)) who
+Codex verifier and a Claude reader ([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md)) who
 run only what settles a doubt, and the gate
 ([DEC-033](../decisions/log.md#dec-033-2026-11-20-the-testing-audit)). By
-[ruling 89](../proposals/ruling-89/README.md), each decision says what must hold; how is yours.
+[ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), each decision says what must hold; how is yours.
 Where your base holds order 229's rows in `tools/gate.py`, keep them.
 
 ## The decisions

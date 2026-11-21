@@ -2,7 +2,7 @@
 
 Not binding. The specification in [spec/](../../spec/README.md) alone binds. This page is the
 pre-registration of the first build (A68), which ruling 44 made the next milestone and
-[ruling 46](../proposals/ruling-46/README.md) shaped. Under ruling 45's rule it states, before
+[ruling 46](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-46/README.md) shaped. Under ruling 45's rule it states, before
 any part runs, what the build must show and how each measure is counted. Where the build stands
 is in step 3 of the [roadmap](../../ROADMAP.md#the-order-of-the-work), not here.
 
@@ -38,7 +38,7 @@ Context Protocol and an existing JSON Schema validator.
 ## Increments
 
 Each increment is a branch and a pull request, merged by squashing once its checks pass. Each
-logs its findings (below). Since [ruling 48](../proposals/ruling-48/README.md), Codex workers
+logs its findings (below). Since [ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md), Codex workers
 carry out the increments as [work orders](WORK_ORDERS.md) that the coordinator writes, and the
 coordinator reviews and merges them.
 
@@ -49,7 +49,7 @@ coordinator reviews and merges them.
 | 3 | **The shell.** The engine's own runner starts a `plain` filesystem MCP server, unchanged. The presented server answers at a loopback `CONDUIT_URL` with tokens. Two real Agents share one directory: one through a Conduit that lists reads, one through a Conduit that lists reads and writes. It meets [what increment 3 needs](#what-increment-3-needs). A4 runs before it. | The engine serves each Agent exactly the tools of its open Conduits, shown by a vector (IFC-012), and each client's own list is recorded apart, as evidence on the third thesis with A71. A request outside them is refused. Closing one Agent's Conduit leaves the other working. Every request has a record. The results say that access is mediated (ACC-027) and list the routes around the engine, as A70's T3 did. |
 | 4 | **S1 complete.** The message history that S1's two Agents share, the tasks of change and repair below, and the author measurements against A70. Then a fresh Codex author, with only the specification and S1's tasks, does T1 to T7 (ruling 48, point 4). | A68's done-when: S1 runs end to end on the engine and the first providers, its safety vectors pass, and the author measurements are recorded with dated results, beside what they show for round 6's proposed simplifications, the coordinator's and the fresh author's apart. Then comes the next read by cold readers. |
 
-Since 2026-11-10, increment 4 also holds the simplification its first runs called for: both runs failed the bar, and the owner asked for the language's shape to be settled first ([the shape of the language](../proposals/language-shape/README.md), [Projects](../proposals/owner-direction/2026-11-10-projects.md)). Its done-when is met by a rerun of T1 to T7 on what is built, by the coordinator and by a fresh Codex author, under counting rules fixed before it runs (ruling 45).
+Since 2026-11-10, increment 4 also holds the simplification its first runs called for: both runs failed the bar, and the owner asked for the language's shape to be settled first ([the shape of the language](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/language-shape/README.md), [Projects](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/owner-direction/2026-11-10-projects.md)). Its done-when is met by a rerun of T1 to T7 on what is built, by the coordinator and by a fresh Codex author, under counting rules fixed before it runs (ruling 45).
 
 ### What increment 3 needs
 
@@ -100,7 +100,7 @@ ruling 48 settled.
 ## Success criteria
 
 The owner’s bar for v0, as recorded in the
-[coordinator’s S1 run](../proposals/first-build/increment-4/coordinator-run-2026-11-10.md), is
+[coordinator’s S1 run](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-4/coordinator-run-2026-11-10.md), is
 “less of an author's work than the baseline on most of S1's tasks and much more on none”.
 Both first increment-4 runs failed it; the rerun measures it again after simplification.
 Ruling 78, point 2, scores the rerun in ruling 45's two groups: fewer lines on setup (T1 and T2)
@@ -191,9 +191,8 @@ table.
 
 ## Findings
 
-Each increment logs what it finds in
-[docs/proposals/first-build/](../proposals/first-build/README.md), one log per increment (ruling
-46, point 4). A finding is one of:
+Findings for the open increment go in its [log](first-build/log-increment-4.md) (ruling 46,
+point 4). A finding is one of:
 
 - a **gap**: a case that no promise decides;
 - an **ambiguity**: a promise that two readings would build differently;

@@ -70,6 +70,8 @@ Repository checks mean `check_docs.py`, `check_rulings.py`, `set_names.py --chec
 Rust checks mean `cargo test --release`, `cargo clippy --all-targets -- -D warnings` and
 `cargo fmt --check` in each changed crate; no Rust is built by this paper order.
 
+Note of 2026-11-21: `check_rulings.py` left the tree under work order 235 with the records it read; this check is not run.
+
 | ID | Kind | What it does | Promises | Depends on | Size | Who | Starts |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | S7-H1 | harness | Synthetic argv capture and upstream qualification kit | MAN-010, IFC-007 | — | M, 350–500 lines | lane 10 | now |
@@ -161,7 +163,7 @@ work; S7 adds no core/shell order of its own. H1/H2/V have no S2-L or S7-P depen
 - **A1 — split/placement:** private scenario index after 071, or central index edits owned by
   admin. **Recommendation:** private S7 piece, lane 10, after PIN/SV1; admin takes any runner,
   shared-piece or core fix with its affected case. Approve the proposed scopes with a fresh skeptic.
-- **A2 — D4:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed this reading on 2026-11-12 ([ruling 75's later answers](../../docs/proposals/ruling-75/README.md#later-answers)).
+- **A2 — D4:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed this reading on 2026-11-12 ([ruling 75's later answers](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md#later-answers)).
 
 ## For the owner
 

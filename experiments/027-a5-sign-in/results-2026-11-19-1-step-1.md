@@ -2,9 +2,9 @@
 
 Every result of this experiment is obtained under one operating-system user. Under one user, an
 Agent that runs code can read, use or replace another Agent's login and act as root's Interface.
-So no result here shows Agents kept apart ([ruling 84](../../docs/proposals/ruling-84/README.md),
+So no result here shows Agents kept apart ([ruling 84](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-84/README.md),
 point 1). This is stage 1's first step, the live account check of
-[ruling 82](../../docs/proposals/ruling-82/README.md), point 1, run on the Mac on 2026-11-19 as
+[ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md), point 1, run on the Mac on 2026-11-19 as
 [its pre-registration](README.md#stage-1-step-1-the-account-check) sets it and as its
 [amendment of 2026-11-19](README.md#amendment-of-2026-11-19-the-live-check-as-it-runs) has it run,
 with, in the same sitting and outside A5's gate, the Claude scratch-home sign-in that the
@@ -87,7 +87,7 @@ Codex step outcome: **pass**, Type `codex.v2`, package `example.org/conduit/a5-s
 ## The Claude scratch sign-in
 
 Not part of this step's gate or of A5's, by the coordinator's reading in
-[ruling 89](../../docs/proposals/ruling-89/README.md), point 5, open to the owner's strike: it
+[ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md), point 5, open to the owner's strike: it
 decides nothing for `codex.v2`, for `claude-code.v2` or for order 050n's join, and its fail or fault
 goes to the owner before any Claude dogfood slot signs in. C1 to C8 of the amendment's item 6, in a
 new state directory inside the same scratch root, after step 8.

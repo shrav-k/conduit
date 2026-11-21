@@ -133,12 +133,12 @@ It carries, from [the coordinator's plan of 050](117-plan-s2-s3.md) (order 117's
 
 - "claude-code.v2 item 1's signIn: account place /account; requires lists sign-in-hook.v1,
   account-hook.v1, sign-out-hook.v1 and retire-hook.v1, each with a default". The targeted
-  review's [`claude-code.v2` list](../proposals/review-signin-2026-11-16/README.md#050-claude-codev2),
-  which the owner accepted with [ruling 82](../proposals/ruling-82/README.md), item 1: "The Type
+  review's [`claude-code.v2` list](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#050-claude-codev2),
+  which the owner accepted with [ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md), item 1: "The Type
   states `signIn` with its required account place `/account`; `requires` lists `sign-in-hook.v1`,
   `account-hook.v1`, `sign-out-hook.v1` and `retire-hook.v1`, each with a default in
   `implementation`". Its `toolsDirectory`, its `account` and the absence of `apiKey` are at `BASE`
-  (orders 050f and 202, [ruling 83](../proposals/ruling-83/README.md)).
+  (orders 050f and 202, [ruling 83](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-83/README.md)).
 - "Item 2's redirect login: every literal read from the client at a version the README names;
   redirect.ports any where the port varies across starts, the fixed list where it does not". Item
   2: "every literal read from the client at a version the README names; `redirect.ports` is `any`
@@ -153,7 +153,7 @@ It carries, from [the coordinator's plan of 050](117-plan-s2-s3.md) (order 117's
   over [...] each canary absent from every result, diagnostic, record and log." Order 050i's
   canary test of a fake home stands; this order adds the URL's.
 - "An engine registration check that the Type passes CTR-013 (048a-1's checks)".
-- Ruling 82's o1 ([point 6](../proposals/ruling-82/README.md#the-decisions)) and IN_FORCE.md's
+- Ruling 82's o1 ([point 6](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md#the-decisions)) and IN_FORCE.md's
   line on it: "the item that implements `sign-in-hook.v1` carries Conduit's keys [...] in
   `claude-code.v2`". The review's item 3 asks it "where the Type states more than one login".
   The owner's ruling 86, point 1 (2026-11-18), amends o1 for 0.2.0: the Agent packages' `.v2`
@@ -1319,7 +1319,7 @@ owner's, ruling 86, point 1; that a plain hook's URL is relayed and that a login
 is refused before any part are ruling 86, point 3. The two shoulds of decision 1 are order 050i's
 last reader's, with its fixes. The split of order 050 into 050b to 050o, this order's place second
 in the Claude lane, and its base are the coordinator's, open to the owner's strike
-([ruling 48](../proposals/ruling-48/README.md)). Everything else here is the coordinator's too, each
+([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)). Everything else here is the coordinator's too, each
 open to the owner's strike: the login's name, `browser`; the login written as one JSON line;
 `claude auth login` with no flag; the wrapper's own program as the client's browser, through
 `BROWSER` and `AGENT_SIGN_IN_CAPTURE`, keeping the first URL in a file of mode 0600 in a directory
@@ -1506,8 +1506,8 @@ The admin then runs `python3 tools/check_private_paths.py` and `git diff --cache
 staged change. This order is a checkpoint on the Claude lane's branch: it does not merge alone, and
 its Record is written at the foot of this file on that branch, as orders 050c's to 050i's are. A
 fresh Codex verifier and a fresh read-only Opus reader read the result before the checkpoint stands
-([ruling 79](../proposals/ruling-79/README.md), point 2). The local gate that [ruling
-80](../proposals/ruling-80/README.md) has a merge wait on, `tools/gate.py`, runs at order 050n's
+([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md), point 2). The local gate that [ruling
+80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md) has a merge wait on, `tools/gate.py`, runs at order 050n's
 merge, read with the expected engine failure known.
 
 ## Record

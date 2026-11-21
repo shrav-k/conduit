@@ -50,7 +50,7 @@ mediated (ACC-027).
 verifier and a Claude reader who run only what settles a doubt, then the local gate, which runs
 the whole suite (AGENTS.md's work-order rules, DEC-033). It changes nothing under
 `experiments/028-a78-dogfood/` and not the harness. How you build what each decision says must
-hold is yours ([ruling 89](../proposals/ruling-89/README.md)).
+hold is yours ([ruling 89](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-89/README.md)).
 
 **Stop rule.** Where a promise's wording needs a choice that `spec/` does not make, stop there,
 change nothing further, and report the promise, the choice and the options. Do not choose. Stop
@@ -249,7 +249,7 @@ Your report gives, per decision, what changed; how 218's path now serves a provi
 test's failing lines; each fault found in the provider or the kit, and the PRV-021 finding; each
 choice you made yourself, under `own_choices`; and every check's last line. Stage nothing. The
 coordinator runs `tools/gate.py`, has a fresh, read-only Opus reader read the diff
-([ruling 79](../proposals/ruling-79/README.md); ruling 92 point 4), and merges.
+([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md); ruling 92 point 4), and merges.
 
 ## What follows
 

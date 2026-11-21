@@ -40,7 +40,7 @@ other condition, such as one on where the instance is placed.
 This is item 2 (ADDR) of the coordinator's plan for running Agents on the Windows computer through
 Conduit. The owner let the coordinator adopt that plan's recommendations, except a choice that
 changes behavior already ruled or that exposes anything beyond the private network
-([ruling 76, later answers](../proposals/ruling-76/README.md#later-answers)). Four of the plan's
+([ruling 76, later answers](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-76/README.md#later-answers)). Four of the plan's
 choices are held for the owner: the machine provider; which operating-system user runs on that
 machine execute as; how TLS is terminated for the engine's `https` address; and whether that
 machine's Windows interop and drives are turned off. Nothing in this order, and nothing you write,

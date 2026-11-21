@@ -13,7 +13,7 @@ Machine enrollment is ruled but not yet written. A machine that joins the machin
 network becomes a node only when root admits it, on evidence the provider reports and a minimum
 the engine enforces; ruling 68, point 3 (R2) adds that the person types the fingerprint read on
 the machine and the engine compares it. This order writes enrollment into `spec/`, as SPEC-C2 of
-[the batch 1 plan](../proposals/spec-batch-1/README.md) (its order 038b, lines 457 to 465, about
+[the batch 1 plan](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/spec-batch-1/README.md) (its order 038b, lines 457 to 465, about
 1 to 1.2k lines). It stages, as exact patches, the edits the engine would reject today, for build
 orders 049a and 049b. It is off the rerun path. [IN_FORCE.md](../../IN_FORCE.md) holds the
 decisions as *spec pending* at lines 215 to 222, and names this order at lines 182 and 210.
@@ -26,16 +26,16 @@ Read, in this order:
 1. The plan: "The order of the edits" (038b at line 225; conflicts C1, C5 to C8, C11, C25 and
    C27); "The work orders" for 038b (line 457), 049a (line 581), 049b (line 590) and 051c
    (line 639); its question R2 (line 131); and its readings 18 and 19 (lines 183 and 184).
-2. The area draft [machines-and-trust](../proposals/spec-batch-1/areas/machines-and-trust.md):
+2. The area draft [machines-and-trust](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/spec-batch-1/areas/machines-and-trust.md):
    the drafts of ENR-001 to ENR-012 (section A), the promises it changes (B), the core package
    (C), the definitions (D), `spec/README.md` (E), its vectors, and its coordinator choices C1
    to C8. Its paths under `reference-model/` are under `engine/` now. Its "Build" section is
    for 049a, 049b and 051c, not for this order.
 3. What order 038a wrote, on which this order builds: `spec/promises/pending.yaml`, IFC-049,
    ACC-056, IFC-050, and `evidence-item.v1` and `pending-action.v1` in
-   `spec/core/results.yaml`. Then [the K1 check](../proposals/spec-batch-1/k1-mcp-elicitation.md)
+   `spec/core/results.yaml`. Then [the K1 check](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/spec-batch-1/k1-mcp-elicitation.md)
    of the protocol: where it differs from a draft, K1 governs.
-4. The records of rulings 50, 51, 52, 56 and 66, and [ruling 68](../proposals/ruling-68/README.md),
+4. The records of rulings 50, 51, 52, 56 and 66, and [ruling 68](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md),
    point 3 (lines 40 to 49).
 5. How orders 036b and 038a staged edits: [036b-staged/](036b-staged/README.md), with its
    `049a.md`, `049b.md` and `048a.md`.

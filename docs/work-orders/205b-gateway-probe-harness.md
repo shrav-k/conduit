@@ -31,7 +31,7 @@ Nothing under `spec/`, `conformance/`, `engine/`, `packages/`, `tools/` or `docs
 and Codex 0.167.1 send to a gateway they are pointed at, and where else they try to go, with fake
 tokens, against a stub gateway, inside a network namespace that holds loopback alone, on the Linux
 node. [Order 205](https://github.com/shrav-k/conduit/blob/b49e8629b087a32f903214ffb517810ab84c471c/docs/work-orders/205-gateway-probe.md) pre-registered it on 2026-11-18 and split the probe in
-three ([FR-264](../proposals/full-review/findings/P01-work-orders-lanes.md#fr-264)): the
+three ([FR-264](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/P01-work-orders-lanes.md#fr-264)): the
 pre-registration (205, merged), the harness (this order) and the run (205c, written after this
 order merges). The README was amended on 2026-11-19, before this order was written, by the change
 that writes it: a PID namespace with its own `/proc` (R205-2-1, and order 208's namespace), Codex's
@@ -47,12 +47,12 @@ installs, and a rehearsal in which a stand-in client takes a client's place. It 
 no client and runs no case: that is order 205c's.
 
 **Who decided what.** Every decision below is the coordinator's, each open to the owner's strike
-([ruling 48](../proposals/ruling-48/README.md)): the README's amendment of 2026-11-19 and its
+([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)): the README's amendment of 2026-11-19 and its
 fixed auth table; the crate's name, pin and commands; the programs it runs (`unshare`, `ip`,
 `mount`, `hostname` and `strace`) where the standard library has no call; the stand-in client and
 the rehearsal; the tests named in decision 5; the checks of the quotes against the tag; what
 `HARNESS.md` holds; and leaving `ROADMAP.md` and `experiments/README.md` to the coordinator at the
-merge, under the full review's [D78](../proposals/full-review/decisions.md). Apply them as
+merge, under the full review's [D78](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md). Apply them as
 written and report them under `decisions` as the coordinator's.
 
 **Read first:** `AGENTS.md`; this order; `experiments/032-gateway-probe/README.md` whole (about 450
@@ -419,6 +419,6 @@ each choice you made yourself as your own, and the split of the crate into modul
 anything: the `git add -N` above is undone by the `git reset -q` after it.
 
 The admin then has a fresh, read-only Opus reader read the result before it merges
-([ruling 79](../proposals/ruling-79/README.md), point 2), and the merge waits for the local gate
-([ruling 80](../proposals/ruling-80/README.md), point 10). Order 205c is written after this order
+([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md), point 2), and the merge waits for the local gate
+([ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md), point 10). Order 205c is written after this order
 merges.

@@ -17,22 +17,22 @@ in nowhere, and open no URL: the URLs below are test values that no program fetc
 **Where it sits.** [Order 117](117-plan-s2-s3.md)'s batch 1 gives "051b: the pending-action
 commands `pending`, `sign-in` and `answer`. M. After 047 and 048b-join." The coordinator cuts 051b
 into three, each after the one before, since an order holds one behavior and stays small
-([FR-264](../proposals/full-review/findings/P01-work-orders-lanes.md#fr-264); the coordinator's
+([FR-264](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/P01-work-orders-lanes.md#fr-264); the coordinator's
 split, open to the owner's strike): 051b, `conduit pending`, `conduit answer` and the unanswered
 hint, after 047c alone; 051b-2, `conduit sign-in`, which sends `sign-in.v1` declaring URL
 elicitation, shows the engine's message and the full URL, asks consent, opens the browser and
 carries the retries to the end, after 048b-join; and this order, 051b-3, the carried return from
 the command line, after 051b-2, and so after 048a-8, whose redirect return it carries. A slot's
-sign-in under [ruling 82](../proposals/ruling-82/README.md#the-decisions), point 3, follows this
+sign-in under [ruling 82](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-82/README.md#the-decisions), point 3, follows this
 order, and so does 050o.
 
 **What it builds.** One behavior: the command line carries a sign-in's return only from what the
 person types at `conduit sign-in`'s prompt, read with echo off. The full review's
-[D53](../proposals/full-review/decisions.md) asks that "051b says that the command line offers the
+[D53](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/decisions.md) asks that "051b says that the command line offers the
 paste when it runs on the node's machine and the browser is elsewhere", which is
-[ruling 75](../proposals/ruling-75/README.md#the-decisions)'s C4: "`conduit` runs on the Mac in
+[ruling 75](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-75/README.md#the-decisions)'s C4: "`conduit` runs on the Mac in
 v0. From the Windows computer or a phone, the person uses SSH and pastes", and A5's case 2
-([FR-428](../proposals/full-review/findings/E04-signin-isolation.md#fr-428)): "The owner runs
+([FR-428](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/full-review/findings/E04-signin-isolation.md#fr-428)): "The owner runs
 `conduit` on the Mac over SSH from the Windows desktop, opens the URL in that desktop's browser and
 pastes the final URL with echo off". PND-013's `observable`: "An Interface carries a return only
 from a loopback listener it opened for that one login, or what the person typed, never model
@@ -49,12 +49,12 @@ with the paste; and `conduit call`, whose arguments a script or a model may writ
 a return at all. No promise changes.
 
 **The targeted review's sentence, which this order carries.**
-[Section 6](../proposals/review-signin-2026-11-16/README.md#051b) of the targeted review says:
+[Section 6](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/review-signin-2026-11-16/README.md#051b) of the targeted review says:
 "Nothing from this review changes 051b: dec-34's command-line paste is the `carried: true` route
 under PND-013 and serves no Claude Agent's sign-in, whose on-node delivery passes through no Conduit
 process". Decision 2 builds it, since a Claude login states `carried: false`, so its
 `acceptsReturn` is false and no paste is asked; decision 10 writes it in `engine/README.md`.
-[Ruling 83](../proposals/ruling-83/README.md) touches only the Agent packages and their `apiKey`,
+[Ruling 83](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-83/README.md) touches only the Agent packages and their `apiKey`,
 and nothing here reads, sets or names `apiKey`.
 
 **What the orders before it bring, which this order assumes.** Orders 048a-5, 048a-6,
@@ -205,7 +205,7 @@ decides `signInReturn`'s form, its `via`, and `signInLogin`'s `acceptsReturn`; P
 that the value is kept nowhere by the engine; D53 and ruling 75's C4 decide the paste's case; and
 the targeted review's section 6 decides that the paste is the `carried: true` route and serves no
 Claude Agent's sign-in. Everything else here is the coordinator's, each open to the owner's strike
-([ruling 48](../proposals/ruling-48/README.md)): the cut of 051b into three and this part's place
+([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)): the cut of 051b into three and this part's place
 after 051b-2; the three parts of 051b-3 in that split, read as one behavior; asking only where
 `acceptsReturn` is true and standard input is a terminal, and reading a line from a pipe as not
 what the person typed; asking through a method of 051b-2's `Person`, after the Enter prompt and
@@ -660,8 +660,8 @@ findings of decision 12.
 
 `git diff --check` and `check_private_paths.py` read tracked files only, so the admin then stages
 the new files and runs `python3 tools/check_private_paths.py` and `git diff --cached --check`.
-Before the merge the admin runs the local gate that [ruling 80](../proposals/ruling-80/README.md),
+Before the merge the admin runs the local gate that [ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md),
 point 10, has each merge wait on, `tools/gate.py`; CI runs on the pull request as well, and the
 merge does not wait for it. A fresh Codex verifier and a fresh read-only Opus reader read the
-result before it merges ([ruling 79](../proposals/ruling-79/README.md), point 2). The admin writes
+result before it merges ([ruling 79](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-79/README.md), point 2). The admin writes
 this order's Record at the foot of this file when it merges.

@@ -14,11 +14,13 @@ use serde_json::{Value, json};
 use std::{
     collections::BTreeMap,
     fs,
+    io::{BufRead, BufReader, Read, Write},
     path::{Path, PathBuf},
     process::{Child, Command, Output, Stdio},
     sync::{
         Arc,
         atomic::{AtomicUsize, Ordering},
+        mpsc,
     },
     time::{Duration, Instant},
 };
@@ -343,17 +345,12 @@ fn real_npm_serve_s1_tokens_access_t7_and_shutdown() {
     stop_server(&mut server, &store, &groups);
 }
 fn start_server(store: &Path, port: u16) -> Server {
-    let stderr = fs::File::create(store.join("serve.stderr")).unwrap();
-    let mut server = Server(
-        Command::new(env!("CARGO_BIN_EXE_conduit"))
-            .arg("serve")
-            .arg("--store")
-            .arg(store)
-            .stdout(Stdio::null())
-            .stderr(stderr)
-            .spawn()
-            .unwrap(),
-    );
+    let mut server = spawn_server(store, Stdio::null());
+    wait_for_listener(&mut server, store, port);
+    server
+}
+
+fn wait_for_listener(server: &mut Server, store: &Path, port: u16) {
     let start = Instant::now();
     while std::net::TcpStream::connect(("127.0.0.1", port)).is_err() {
         assert!(
@@ -367,7 +364,20 @@ fn start_server(store: &Path, port: u16) -> Server {
         );
         std::thread::sleep(Duration::from_millis(20));
     }
-    server
+}
+
+fn spawn_server(store: &Path, stdout: Stdio) -> Server {
+    let stderr = fs::File::create(store.join("serve.stderr")).unwrap();
+    Server(
+        Command::new(env!("CARGO_BIN_EXE_conduit"))
+            .arg("serve")
+            .arg("--store")
+            .arg(store)
+            .stdout(stdout)
+            .stderr(stderr)
+            .spawn()
+            .unwrap(),
+    )
 }
 fn run_groups(store: &Path, server: &Server) -> Vec<i32> {
     // Read the runner's private historical group diagnostics, avoiding ps (which
@@ -700,6 +710,384 @@ fn records_store(store: &Path) -> (u16, String) {
     let address = format!("http://127.0.0.1:{port}/mcp");
     cli(store, "init", &["--url", &address]);
     (port, address)
+}
+
+#[test]
+fn call_reads_arguments_from_a_file_or_stdin() {
+    let temp = tempfile::tempdir().unwrap();
+    let store = temp.path().join("store");
+    let (port, _) = records_store(&store);
+    let mut server = start_server(&store, port);
+    let root = state(&store)["objects"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|object| object["kind"] == "Interface" && object["name"] == "root")
+        .unwrap()["id"]
+        .clone();
+    let tool = "management.inspect.v1";
+    let arguments = r#"{"object":{"kind":"Interface","name":"root"}}"#;
+    assert_eq!(
+        cli(&store, "call", &[tool, arguments])["structuredContent"]["id"],
+        root
+    );
+
+    let file = temp.path().join("arguments.json");
+    fs::write(&file, format!("{}{arguments}", " ".repeat(64 * 1024))).unwrap();
+    let path = file.to_str().unwrap();
+    assert_eq!(
+        cli(&store, "call", &[tool, "--arguments-file", path])["structuredContent"]["id"],
+        root
+    );
+    let call_stdin = |input: &str| {
+        let mut child = Command::new(env!("CARGO_BIN_EXE_conduit"))
+            .args(["call", "--store"])
+            .arg(&store)
+            .args([tool, "--arguments-file", "-"])
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .unwrap();
+        child
+            .stdin
+            .take()
+            .unwrap()
+            .write_all(input.as_bytes())
+            .unwrap();
+        child.wait_with_output().unwrap()
+    };
+    let stdin = call_stdin(arguments);
+    assert!(
+        stdin.status.success(),
+        "{}",
+        String::from_utf8_lossy(&stdin.stderr)
+    );
+    assert_eq!(
+        serde_json::from_slice::<Value>(&stdin.stdout).unwrap()["structuredContent"]["id"],
+        root
+    );
+
+    let decisions = || {
+        state(&store)["records"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|record| record["type"] == "access-decision")
+            .count()
+    };
+    let before = decisions();
+    let marker = format!("synthetic-{}-{port}", std::process::id());
+    let invalid = format!("{{\n  \"case\": {marker}\n}}");
+    let refused = |output: Output, source: &str, cause: &str| {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(!output.status.success());
+        assert!(output.stdout.is_empty());
+        assert!(!stderr.contains(&marker), "stderr exposed input content");
+        assert!(
+            stderr.contains(source) && stderr.contains(cause),
+            "{stderr}"
+        );
+        assert_eq!(decisions(), before);
+    };
+    refused(
+        cli_output(&store, "call", &[tool, arguments, "--arguments-file", path]),
+        path,
+        "inline",
+    );
+    let missing = temp.path().join("missing.json");
+    let missing = missing.to_str().unwrap();
+    refused(
+        cli_output(&store, "call", &[tool, "--arguments-file", missing]),
+        missing,
+        "read",
+    );
+    fs::write(&file, &invalid).unwrap();
+    refused(
+        cli_output(&store, "call", &[tool, "--arguments-file", path]),
+        path,
+        "line 2, column",
+    );
+    refused(call_stdin(&invalid), "standard input", "line 2, column");
+    terminate_server(&mut server);
+}
+
+fn serve_failed_setups(parent: &Path, store: &Path) -> Server {
+    let (port, _) = records_store(store);
+    let server = start_server(store, port);
+    let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
+    let spec = conduit_loader::Specification::read(&repo.join("spec")).unwrap();
+    let api = &spec.names().api_version;
+    let core = boundary::context(&repo).unwrap().core_package;
+    let hook = format!("{core}#setup-hook.v1");
+    let hook = hook.as_str();
+    let project = parent.join("project");
+    fs::create_dir(&project).unwrap();
+    let manifest = json!({
+        "apiVersion":api,"address":"example.org/test/setup-views",
+        "implementations":{"local":{"implements":[hook],"command":[parent.join("missing-program")]}}
+    });
+    let documents = json!([
+        {"apiVersion":api,"kind":"Type","metadata":{"name":"empty.v1"},"spec":{"family":"Resource","schema":{"type":"object"},"offers":[],"requires":[]}},
+        {"apiVersion":api,"kind":"Type","metadata":{"name":"worker.v1"},"spec":{"family":"Agent","schema":{"type":"object"},"offers":[],"requires":[]}},
+        {"apiVersion":api,"kind":"Pool","metadata":{"name":"test-pool"},"spec":{"type":format!("{core}#pool.v1")}},
+        {"apiVersion":api,"kind":"Pool","metadata":{"name":"workspace"},"from":"test-pool"},
+        {"apiVersion":api,"kind":"Fleet","metadata":{"name":"crew"},"from":format!("{core}#fleet")},
+        {"apiVersion":api,"kind":"Resource","metadata":{"name":"failing-template"},"spec":{"type":"#empty.v1","config":{},"implementation":{hook:"#local"}}},
+        {"apiVersion":api,"kind":"Resource","metadata":{"name":"failing"},"from":"failing-template","owner":"workspace"},
+        {"apiVersion":api,"kind":"Agent","metadata":{"name":"worker-template"},"spec":{"type":"#worker.v1","config":{},"implementation":{hook:"#local"}}},
+        {"apiVersion":api,"kind":"Agent","metadata":{"name":"worker"},"from":"worker-template","owner":"crew"}
+    ]);
+    fs::write(project.join("conduit.json"), manifest.to_string()).unwrap();
+    fs::write(project.join("documents.json"), documents.to_string()).unwrap();
+    let submitted = cli_output(store, "submit", &[project.to_str().unwrap()]);
+    assert!(!submitted.status.success());
+    assert!(
+        record_lines(&submitted.stdout).iter().any(|step| {
+            step["step"] == "setup Resource/failing"
+                && matches!(step["outcome"].as_str(), Some("failed" | "unknown"))
+        }),
+        "{}",
+        String::from_utf8_lossy(&submitted.stderr)
+    );
+    let worker = cli_output(
+        store,
+        "call",
+        &[
+            "crew.set-up.v1",
+            r#"{"instance":{"kind":"Agent","name":"worker"}}"#,
+        ],
+    );
+    assert!(!worker.status.success());
+    assert!(
+        !worker.stdout.is_empty(),
+        "{}",
+        String::from_utf8_lossy(&worker.stderr)
+    );
+    server
+}
+
+#[test]
+fn pending_agent_lists_that_agents_actions_alone() {
+    let temp = tempfile::tempdir().unwrap();
+    let store = temp.path().join("store");
+    let mut server = serve_failed_setups(temp.path(), &store);
+    let full = cli_output(&store, "pending", &[]);
+    assert!(
+        full.status.success(),
+        "{}",
+        String::from_utf8_lossy(&full.stderr)
+    );
+    let lines: Vec<_> = full.stdout.split_inclusive(|byte| *byte == b'\n').collect();
+    assert_eq!(lines.len(), 2);
+    let agent_line = lines
+        .iter()
+        .find(|line| {
+            let action: Value = serde_json::from_slice(line).unwrap();
+            action["subject"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|subject| subject["kind"] == "Agent" && subject["name"] == "worker")
+        })
+        .unwrap();
+    let before = state(&store)["records"].as_array().unwrap().len();
+    let agent = cli_output(&store, "pending", &["--agent", "worker"]);
+    assert!(
+        agent.status.success(),
+        "{}",
+        String::from_utf8_lossy(&agent.stderr)
+    );
+    assert_eq!(agent.stdout, *agent_line);
+    let after = state(&store);
+    let tools: Vec<_> = after["records"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .skip(before)
+        .filter(|record| record["type"] == "access-decision")
+        .map(|record| &record["data"]["tool"])
+        .collect();
+    assert_eq!(tools, [&json!("management.list.v1")]);
+    for name in ["failing", "missing"] {
+        let rejected = cli_output(&store, "pending", &["--agent", name]);
+        let stderr = String::from_utf8_lossy(&rejected.stderr);
+        assert!(!rejected.status.success());
+        assert!(rejected.stdout.is_empty());
+        assert!(
+            stderr.contains(name) && stderr.contains("root sees no Agent"),
+            "{stderr}"
+        );
+    }
+    let action: Value = serde_json::from_slice(agent_line).unwrap();
+    cli(
+        &store,
+        "answer",
+        &[action["id"].as_str().unwrap(), "dismissed"],
+    );
+    let empty = cli_output(&store, "pending", &["--agent", "worker"]);
+    let stderr = String::from_utf8_lossy(&empty.stderr);
+    assert!(empty.status.success(), "{stderr}");
+    assert!(empty.stdout.is_empty());
+    assert!(
+        stderr.contains("worker") && stderr.contains("no pending action"),
+        "{stderr}"
+    );
+    terminate_server(&mut server);
+}
+
+#[test]
+fn inspect_setup_prints_one_line_per_instance() {
+    let temp = tempfile::tempdir().unwrap();
+    let store = temp.path().join("store");
+    let mut server = serve_failed_setups(temp.path(), &store);
+    for (tool, kind, name) in [
+        ("workspace.inspect.v1", "Resource", "failing"),
+        ("crew.inspect.v1", "Agent", "worker"),
+    ] {
+        let args = json!({"object":{"kind":kind,"name":name}}).to_string();
+        let reply = cli(&store, "call", &[tool, &args]);
+        assert!(
+            reply["structuredContent"]["status"]["setup"].is_object(),
+            "{kind}/{name} inspection omitted the completed setup"
+        );
+    }
+    let before = state(&store);
+    let expected: Vec<_> = before["objects"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|object| {
+            matches!(
+                object["kind"].as_str(),
+                Some("Interface" | "Pool" | "Fleet" | "Resource" | "Agent")
+            ) && object.get("spec").is_none()
+        })
+        .map(|object| json!({"kind":object["kind"],"name":object["name"]}))
+        .collect();
+    let online = cli_output(&store, "inspect", &["--setup"]);
+    assert!(
+        online.status.success(),
+        "{}",
+        String::from_utf8_lossy(&online.stderr)
+    );
+    let rows = record_lines(&online.stdout);
+    assert_eq!(
+        rows.iter()
+            .map(|row| row["object"].clone())
+            .collect::<Vec<_>>(),
+        expected
+    );
+    let after = state(&store);
+    assert_eq!(
+        after["records"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .skip(before["records"].as_array().unwrap().len())
+            .filter(|record| record["type"] == "access-decision")
+            .count(),
+        rows.len()
+    );
+    let row = |name: &str| {
+        rows.iter()
+            .find(|row| row["object"]["name"] == name)
+            .unwrap()
+    };
+    let pool = &row("workspace")["setup"];
+    assert_eq!(pool["outcome"], "succeeded");
+    assert_eq!(pool["notSucceeded"], json!([]));
+    for name in ["failing", "worker"] {
+        let inspected = row(name);
+        assert_eq!(inspected["state"], "registered");
+        let setup = &inspected["setup"];
+        assert!(
+            matches!(setup["outcome"].as_str(), Some("failed" | "unknown")),
+            "{setup}"
+        );
+        assert!(setup["invocation"].is_string());
+        assert!(
+            setup["notSucceeded"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|part| {
+                    part["name"] == "run"
+                        && matches!(
+                            part["outcome"].as_str(),
+                            Some("failed" | "unknown" | "unavailable")
+                        )
+                }),
+            "{setup}"
+        );
+    }
+    for row in rows.iter().filter(|row| {
+        !["workspace", "crew", "failing", "worker"]
+            .iter()
+            .any(|name| row["object"]["name"] == *name)
+    }) {
+        assert_eq!(row.get("setup"), Some(&Value::Null), "{row}");
+    }
+    terminate_server(&mut server);
+    let stopped = cli_output(&store, "inspect", &["--setup"]);
+    assert!(
+        stopped.status.success(),
+        "{}",
+        String::from_utf8_lossy(&stopped.stderr)
+    );
+    assert_eq!(stopped.stdout, online.stdout);
+}
+
+#[test]
+fn serve_prints_one_ready_line_once_it_answers() {
+    let temp = tempfile::tempdir().unwrap();
+    let store = temp.path().join("store");
+    let (port, address) = records_store(&store);
+    let mut server = spawn_server(&store, Stdio::piped());
+    let stdout = server.0.stdout.take().unwrap();
+    let (line, ready) = mpsc::channel();
+    let reader = std::thread::spawn(move || {
+        let mut stdout = BufReader::new(stdout);
+        let mut first = String::new();
+        stdout.read_line(&mut first).unwrap();
+        if line.send(first).is_err() {
+            return Vec::new();
+        }
+        let mut rest = Vec::new();
+        stdout.read_to_end(&mut rest).unwrap();
+        rest
+    });
+    let line = ready
+        .recv_timeout(Duration::from_secs(10))
+        .expect("serve did not print its ready line");
+    assert!(line.ends_with('\n'));
+    assert_eq!(
+        serde_json::from_str::<Value>(&line).unwrap(),
+        json!({"ready":{"url":address,"store":store.canonicalize().unwrap()}})
+    );
+    let tools = cli_output(&store, "tools", &[]);
+    let stderr = String::from_utf8_lossy(&tools.stderr);
+    assert!(tools.status.success(), "{stderr}");
+    assert!(!stderr.contains("retrying"), "{stderr}");
+    terminate_server(&mut server);
+    assert!(reader.join().unwrap().is_empty());
+
+    let (read, write) = std::io::pipe().unwrap();
+    drop(read);
+    let mut broken = spawn_server(&store, write.into());
+    wait_for_listener(&mut broken, &store, port);
+    assert!(cli_output(&store, "tools", &[]).status.success());
+    terminate_server(&mut broken);
+    assert!(
+        fs::read_to_string(store.join("serve.stderr"))
+            .unwrap()
+            .contains("cannot write ready line")
+    );
+
+    let _occupied = std::net::TcpListener::bind(("127.0.0.1", port)).unwrap();
+    let failed = cli_output(&store, "serve", &[]);
+    assert!(!failed.status.success());
+    assert!(failed.stdout.is_empty());
 }
 
 fn record_lines(stdout: &[u8]) -> Vec<Value> {

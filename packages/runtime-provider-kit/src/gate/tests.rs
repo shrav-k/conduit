@@ -354,6 +354,23 @@ async fn initialize(client: &mut Client, run: &mut Run, token: &str, id: i64) ->
     session
 }
 
+async fn cached_initialize(client: &mut Client, proof: &str, id: i64) -> String {
+    let data = json!({"jsonrpc":"2.0","id":id,"method":"initialize"});
+    let response = client
+        .send(Method::POST, &data.to_string(), Some(proof), None, None)
+        .await;
+    assert_eq!(response.status(), StatusCode::OK);
+    let session = response.headers()["mcp-session-id"]
+        .to_str()
+        .unwrap()
+        .to_owned();
+    assert_eq!(
+        serde_json::from_slice::<Value>(&body(response).await).unwrap(),
+        json!({"jsonrpc":"2.0","id":id,"result":{}})
+    );
+    session
+}
+
 #[tokio::test]
 async fn certificate_chain_uri_tls13_and_identity_mismatch() {
     let mut fixture = Fixture::new(INSTANCE);
@@ -562,8 +579,9 @@ async fn byte_bridge_sessions_and_two_reply_formats() {
     assert!(response.status() == StatusCode::NOT_FOUND);
     assert!(body(response).await.is_empty());
     run.no_bytes().await;
-    // DELETE leaves stdio alive and another initialize reaches it.
-    initialize(&mut post, &mut run, &token, 10).await;
+    // DELETE leaves stdio alive and the next session uses the cached result.
+    cached_initialize(&mut post, &token, 10).await;
+    run.no_bytes().await;
     handle.close().await;
 }
 
@@ -621,6 +639,506 @@ async fn reset_cancels_both_reply_formats_and_discards_late_responses() {
 }
 
 #[tokio::test]
+async fn later_sessions_initialize_without_reaching_the_run() {
+    let fixture = Fixture::new(INSTANCE);
+    let (handle, mut run) = fixture.open().await;
+    let proof = fixture.token();
+    let mut client = fixture.connect(handle.as_ref()).await;
+    let initialized = r#"{"jsonrpc":"2.0","method":"notifications/initialized"}"#;
+    let result = json!({"protocolVersion":"2025-11-25","capabilities":{}});
+    let post_init = |id| json!({"jsonrpc":"2.0","method":"initialize","id":id}).to_string();
+    let first = client
+        .send(Method::POST, &post_init(1), Some(&proof), None, None)
+        .await;
+    let mut session = first.headers()["mcp-session-id"]
+        .to_str()
+        .unwrap()
+        .to_owned();
+    assert!(run.json().await["id"] == 1);
+    let answer = |id| json!({"jsonrpc":"2.0","id":id,"result":result});
+    run.write(&answer(1).to_string()).await;
+    assert_eq!(
+        serde_json::from_slice::<Value>(&body(first).await).unwrap(),
+        answer(1)
+    );
+    let response = client
+        .send(
+            Method::POST,
+            initialized,
+            Some(&proof),
+            Some(&session),
+            None,
+        )
+        .await;
+    assert_eq!(response.status(), StatusCode::ACCEPTED);
+    assert!(run.json().await["method"] == "notifications/initialized");
+    for (id, accept) in [(0, "application/json"), (9, "text/event-stream")] {
+        if id == 9 {
+            let response = client
+                .send(Method::DELETE, "", Some(&proof), Some(&session), None)
+                .await;
+            assert_eq!(response.status(), StatusCode::OK);
+        }
+        let response = client
+            .send(
+                Method::POST,
+                &post_init(id),
+                Some(&proof),
+                None,
+                Some(accept),
+            )
+            .await;
+        assert_eq!(response.status(), StatusCode::OK);
+        let next = response.headers()["mcp-session-id"]
+            .to_str()
+            .unwrap()
+            .to_owned();
+        assert_ne!(session, next);
+        session = next;
+        run.no_bytes().await;
+        let bytes = body(response).await;
+        let json = if accept == "text/event-stream" {
+            bytes
+                .strip_prefix(b"data: ")
+                .unwrap()
+                .strip_suffix(b"\n\n")
+                .unwrap()
+        } else {
+            &bytes
+        };
+        assert_eq!(serde_json::from_slice::<Value>(json).unwrap(), answer(id));
+        let response = client
+            .send(
+                Method::POST,
+                initialized,
+                Some(&proof),
+                Some(&session),
+                None,
+            )
+            .await;
+        assert_eq!(response.status(), StatusCode::ACCEPTED);
+        run.no_bytes().await;
+    }
+    handle.close().await;
+
+    let (handle, mut run) = fixture.open().await;
+    let mut cut = fixture.connect(handle.as_ref()).await;
+    let response = cut
+        .send(Method::POST, &post_init(0), Some(&proof), None, None)
+        .await;
+    let old = response.headers()["mcp-session-id"]
+        .to_str()
+        .unwrap()
+        .to_owned();
+    assert!(run.json().await["id"] == 0);
+    drop(cut);
+    drop(response);
+    let mut client = fixture.connect(handle.as_ref()).await;
+    let next = client
+        .send(Method::POST, &post_init(0), Some(&proof), None, None)
+        .await;
+    assert_eq!(next.status(), StatusCode::OK);
+    let session = next.headers()["mcp-session-id"]
+        .to_str()
+        .unwrap()
+        .to_owned();
+    assert_ne!(session, old);
+    run.no_bytes().await;
+    run.write(&answer(0).to_string()).await;
+    assert_eq!(
+        serde_json::from_slice::<Value>(&body(next).await).unwrap(),
+        answer(0)
+    );
+    let response = client
+        .send(
+            Method::POST,
+            initialized,
+            Some(&proof),
+            Some(&session),
+            None,
+        )
+        .await;
+    assert_eq!(response.status(), StatusCode::ACCEPTED);
+    assert!(run.json().await["method"] == "notifications/initialized");
+    run.no_bytes().await;
+    handle.close().await;
+
+    let (handle, mut run) = fixture.open().await;
+    let mut cut = fixture.connect(handle.as_ref()).await;
+    let rejected = cut
+        .send(Method::POST, &post_init(0), Some(&proof), None, None)
+        .await;
+    assert!(run.json().await["id"] == 0);
+    drop(cut);
+    drop(rejected);
+    let mut client = fixture.connect(handle.as_ref()).await;
+    let replacement = client
+        .send(Method::POST, &post_init(0), Some(&proof), None, None)
+        .await;
+    run.no_bytes().await;
+    let error = json!({"jsonrpc":"2.0","id":0,"error":{"code":-32602,"message":"invalid params"}});
+    run.write(&error.to_string()).await;
+    assert_eq!(
+        serde_json::from_slice::<Value>(&body(replacement).await).unwrap(),
+        error
+    );
+    let retry = client
+        .send(Method::POST, &post_init(0), Some(&proof), None, None)
+        .await;
+    assert!(run.line().await == post_init(0).as_bytes());
+    run.write(&answer(0).to_string()).await;
+    assert_eq!(
+        serde_json::from_slice::<Value>(&body(retry).await).unwrap(),
+        answer(0)
+    );
+    handle.close().await;
+}
+
+#[tokio::test]
+async fn cancelled_id_is_free_in_a_later_session() {
+    let fixture = Fixture::new(INSTANCE);
+    let (handle, mut run) = fixture.open().await;
+    let proof = fixture.token();
+    let mut client = fixture.connect(handle.as_ref()).await;
+    let first = initialize(&mut client, &mut run, &proof, 0).await;
+    let call = r#"{"jsonrpc":"2.0","id":7,"method":"tools/call"}"#;
+    let mut cut = fixture.connect(handle.as_ref()).await;
+    let response = cut
+        .send(Method::POST, call, Some(&proof), Some(&first), None)
+        .await;
+    assert!(run.line().await == call.as_bytes());
+    drop(cut);
+    drop(response);
+    assert!(run.json().await["params"]["requestId"] == 7);
+    let init = client
+        .send(
+            Method::POST,
+            r#"{"jsonrpc":"2.0","id":1,"method":"initialize"}"#,
+            Some(&proof),
+            None,
+            None,
+        )
+        .await;
+    assert_eq!(init.status(), StatusCode::OK);
+    let second = init.headers()["mcp-session-id"]
+        .to_str()
+        .unwrap()
+        .to_owned();
+    assert_ne!(first, second);
+    let mut next = fixture.connect(handle.as_ref()).await;
+    let response = next
+        .send(Method::POST, call, Some(&proof), Some(&second), None)
+        .await;
+    assert_eq!(response.status(), StatusCode::OK);
+    assert!(!body(init).await.is_empty());
+    let request = run.json().await;
+    assert_eq!(request["method"], "tools/call");
+    assert_ne!(request["id"], 7);
+    // A client string ID can equal the gate's current alias. Its request waits
+    // for that alias to finish and then reaches the run byte for byte.
+    let collision = format!(
+        "{{ \"jsonrpc\":\"2.0\", \"id\":{}, \"method\":\"tools/call\" }}",
+        request["id"]
+    );
+    let mut colliding_client = fixture.connect(handle.as_ref()).await;
+    let colliding = colliding_client
+        .send(Method::POST, &collision, Some(&proof), Some(&second), None)
+        .await;
+    assert_eq!(colliding.status(), StatusCode::OK);
+    run.no_bytes().await;
+    let mut get = fixture.connect(handle.as_ref()).await;
+    let mut stream = get
+        .send(Method::GET, "", Some(&proof), Some(&second), None)
+        .await
+        .into_body();
+    run.write(r#"{"jsonrpc":"2.0","id":7,"result":{"reply":"late"}}"#)
+        .await;
+    run.write(&json!({"jsonrpc":"2.0","id":request["id"],"result":{"reply":"second"}}).to_string())
+        .await;
+    assert_eq!(
+        serde_json::from_slice::<Value>(&body(response).await).unwrap(),
+        json!({"jsonrpc":"2.0","id":7,"result":{"reply":"second"}})
+    );
+    assert!(run.line().await == collision.as_bytes());
+    let reply = json!({"jsonrpc":"2.0","id":request["id"],"result":{}});
+    run.write(&reply.to_string()).await;
+    assert_eq!(
+        serde_json::from_slice::<Value>(&body(colliding).await).unwrap(),
+        reply
+    );
+    let note = r#"{"jsonrpc":"2.0","method":"notifications/test"}"#;
+    run.write(note).await;
+    assert_eq!(frame(&mut stream).await, format!("data: {note}\n\n"));
+    let third = cached_initialize(&mut client, &proof, 3).await;
+    let response = next
+        .send(Method::POST, call, Some(&proof), Some(&third), None)
+        .await;
+    let request = run.json().await;
+    let cancelled = r#"{"jsonrpc":"2.0","method":"notifications/cancelled","params":{"requestId":7,"reason":"client stopped waiting"}}"#;
+    let status = client
+        .send(Method::POST, cancelled, Some(&proof), Some(&third), None)
+        .await;
+    assert_eq!(status.status(), StatusCode::ACCEPTED);
+    let notice = run.json().await;
+    assert_eq!(notice["params"]["requestId"], request["id"]);
+    assert!(notice["params"]["reason"] == "client stopped waiting");
+    let reply =
+        json!({"jsonrpc":"2.0","id":request["id"],"error":{"code":-32800,"message":"cancelled"}});
+    run.write(&reply.to_string()).await;
+    let mut expected = reply;
+    expected["id"] = json!(7);
+    assert_eq!(
+        serde_json::from_slice::<Value>(&body(response).await).unwrap(),
+        expected
+    );
+    let duplicate = next
+        .send(Method::POST, call, Some(&proof), Some(&third), None)
+        .await;
+    assert_eq!(duplicate.status(), StatusCode::CONFLICT);
+    assert!(body(duplicate).await.is_empty());
+    handle.close().await;
+}
+
+#[tokio::test]
+async fn cancel_while_waiting_never_reaches_stdio() {
+    let fixture = Fixture::new(INSTANCE);
+    let (handle, mut run) = fixture.open().await;
+    let proof = fixture.token();
+    let mut client = fixture.connect(handle.as_ref()).await;
+    let first = initialize(&mut client, &mut run, &proof, 0).await;
+    let call = r#"{"jsonrpc":"2.0","id":7,"method":"tools/call"}"#;
+    let mut cut = fixture.connect(handle.as_ref()).await;
+    let response = cut
+        .send(Method::POST, call, Some(&proof), Some(&first), None)
+        .await;
+    assert!(run.line().await == call.as_bytes());
+    drop(cut);
+    drop(response);
+    assert!(run.json().await["params"]["requestId"] == 7);
+
+    let second = cached_initialize(&mut client, &proof, 1).await;
+    let mut active = fixture.connect(handle.as_ref()).await;
+    let response = active
+        .send(Method::POST, call, Some(&proof), Some(&second), None)
+        .await;
+    let alias = run.json().await["id"].clone();
+    assert_ne!(alias, 7);
+    let waiting = json!({"jsonrpc":"2.0","id":alias,"method":"tools/call"}).to_string();
+    let mut queued = fixture.connect(handle.as_ref()).await;
+    let pending = queued
+        .send(Method::POST, &waiting, Some(&proof), Some(&second), None)
+        .await;
+    assert_eq!(pending.status(), StatusCode::OK);
+    run.no_bytes().await;
+
+    let notice =
+        json!({"jsonrpc":"2.0","method":"notifications/cancelled","params":{"requestId":alias}});
+    let accepted = client
+        .send(
+            Method::POST,
+            &notice.to_string(),
+            Some(&proof),
+            Some(&second),
+            None,
+        )
+        .await;
+    assert_eq!(accepted.status(), StatusCode::ACCEPTED);
+    run.write(&json!({"jsonrpc":"2.0","id":alias,"result":{}}).to_string())
+        .await;
+    assert_eq!(
+        serde_json::from_slice::<Value>(&body(response).await).unwrap(),
+        json!({"jsonrpc":"2.0","id":7,"result":{}})
+    );
+    run.no_bytes().await;
+    let answer: Value = serde_json::from_slice(&body(pending).await).unwrap();
+    assert_eq!(answer["id"], alias);
+    assert_eq!(answer["error"]["code"], -32800);
+    let duplicate = queued
+        .send(Method::POST, &waiting, Some(&proof), Some(&second), None)
+        .await;
+    assert_eq!(duplicate.status(), StatusCode::CONFLICT);
+    assert!(body(duplicate).await.is_empty());
+    handle.close().await;
+}
+
+#[tokio::test]
+async fn late_reply_releases_the_retired_stdio_id() {
+    let fixture = Fixture::new(INSTANCE);
+    let (handle, mut run) = fixture.open().await;
+    let proof = fixture.token();
+    let mut client = fixture.connect(handle.as_ref()).await;
+    let first = initialize(&mut client, &mut run, &proof, 0).await;
+    let call = r#"{ "jsonrpc":"2.0", "id":7, "method":"tools/call" }"#;
+    let mut cut = fixture.connect(handle.as_ref()).await;
+    let response = cut
+        .send(Method::POST, call, Some(&proof), Some(&first), None)
+        .await;
+    assert!(run.line().await == call.as_bytes());
+    drop(cut);
+    drop(response);
+    assert!(run.json().await["params"]["requestId"] == 7);
+
+    let second = cached_initialize(&mut client, &proof, 1).await;
+    let mut get = fixture.connect(handle.as_ref()).await;
+    let mut stream = get
+        .send(Method::GET, "", Some(&proof), Some(&second), None)
+        .await
+        .into_body();
+    run.write(r#"{"jsonrpc":"2.0","id":7,"result":{"reply":"late"}}"#)
+        .await;
+    let note = r#"{"jsonrpc":"2.0","method":"notifications/test"}"#;
+    run.write(note).await;
+    assert!(frame(&mut stream).await == format!("data: {note}\n\n"));
+
+    let response = client
+        .send(Method::POST, call, Some(&proof), Some(&second), None)
+        .await;
+    assert_eq!(response.status(), StatusCode::OK);
+    assert!(
+        run.line().await == call.as_bytes(),
+        "the answered ID was still aliased"
+    );
+    let reply = r#"{"jsonrpc":"2.0","id":7,"result":{"reply":"new"}}"#;
+    run.write(reply).await;
+    assert!(body(response).await == reply.as_bytes());
+    handle.close().await;
+}
+
+#[tokio::test]
+async fn explicit_cancellation_keeps_the_bridge_session_live() {
+    let fixture = Fixture::new(INSTANCE);
+    let (handle, mut run) = fixture.open().await;
+    let proof = fixture.token();
+    let mut bridge = fixture.connect(handle.as_ref()).await;
+    let session = initialize(&mut bridge, &mut run, &proof, 0).await;
+    let mut cancelled = fixture.connect(handle.as_ref()).await;
+    let mut active = fixture.connect(handle.as_ref()).await;
+    let call = |id| json!({"jsonrpc":"2.0","method":"tools/call","id":id}).to_string();
+    let response = cancelled
+        .send(Method::POST, &call(7), Some(&proof), Some(&session), None)
+        .await;
+    let mut pending = response.into_body();
+    assert!(run.line().await == call(7).as_bytes());
+    let other = active
+        .send(Method::POST, &call(8), Some(&proof), Some(&session), None)
+        .await;
+    assert!(run.line().await == call(8).as_bytes());
+    let notice = r#"{"jsonrpc":"2.0","method":"notifications/cancelled","params":{"requestId":7}}"#;
+    let accepted = bridge
+        .send(Method::POST, notice, Some(&proof), Some(&session), None)
+        .await;
+    assert_eq!(accepted.status(), StatusCode::ACCEPTED);
+    assert!(run.line().await == notice.as_bytes());
+    assert!(
+        timeout(Duration::from_millis(80), pending.frame())
+            .await
+            .is_err(),
+        "explicit cancellation ended the POST before the run replied"
+    );
+
+    let reply = |id| json!({"jsonrpc":"2.0","id":id,"result":{}}).to_string();
+    run.write(&reply(8)).await;
+    assert!(body(other).await == reply(8).as_bytes());
+    let cancelled_reply =
+        r#"{"jsonrpc":"2.0","id":7,"error":{"code":-32800,"message":"cancelled"}}"#;
+    run.write(cancelled_reply).await;
+    assert!(frame(&mut pending).await == cancelled_reply);
+    let later = bridge
+        .send(Method::POST, &call(9), Some(&proof), Some(&session), None)
+        .await;
+    assert_eq!(later.status(), StatusCode::OK);
+    assert!(run.line().await == call(9).as_bytes());
+    run.write(&reply(9)).await;
+    assert!(body(later).await == reply(9).as_bytes());
+    handle.close().await;
+}
+
+#[tokio::test]
+async fn cached_and_aliased_messages_preserve_payload_bytes() {
+    let fixture = Fixture::new(INSTANCE);
+    let (handle, mut run) = fixture.open().await;
+    let proof = fixture.token();
+    let mut client = fixture.connect(handle.as_ref()).await;
+    let init = |id| json!({"jsonrpc":"2.0","method":"initialize","id":id}).to_string();
+    let response = client
+        .send(Method::POST, &init(0), Some(&proof), None, None)
+        .await;
+    let first = response.headers()["mcp-session-id"]
+        .to_str()
+        .unwrap()
+        .to_owned();
+    assert!(run.line().await == init(0).as_bytes());
+    let payload = r#"{ "id" : 999, "integer" : 18446744073709551616, "exponent" : 1e400, "escaped" : "\u0061" }"#;
+    let init_reply = |id| format!(r#"{{ "result" : {payload}, "jsonrpc": "2.0", "id" : {id} }}"#);
+    run.write(&init_reply(0)).await;
+    assert!(
+        body(response).await == init_reply(0).as_bytes(),
+        "the run's original initialization reply changed"
+    );
+
+    let mut cut = fixture.connect(handle.as_ref()).await;
+    let call_prefix = format!(r#"{{ "params" : {payload}, "\u0069d" : "#);
+    let call_suffix = r#", "jsonrpc" : "2.0", "method" : "tools/call" }"#;
+    let call = format!("{call_prefix}7{call_suffix}");
+    let response = cut
+        .send(Method::POST, &call, Some(&proof), Some(&first), None)
+        .await;
+    assert_eq!(response.status(), StatusCode::OK);
+    assert!(run.line().await == call.as_bytes());
+    drop(cut);
+    drop(response);
+    assert!(run.json().await["params"]["requestId"] == 7);
+
+    let response = client
+        .send(
+            Method::POST,
+            &init(1),
+            Some(&proof),
+            None,
+            Some("text/event-stream"),
+        )
+        .await;
+    let second = response.headers()["mcp-session-id"]
+        .to_str()
+        .unwrap()
+        .to_owned();
+    assert!(body(response).await == format!("data: {}\n\n", init_reply(1)));
+    let response = client
+        .send(Method::POST, &call, Some(&proof), Some(&second), None)
+        .await;
+    assert_eq!(response.status(), StatusCode::OK);
+    let forwarded = run.line().await;
+    let alias = std::str::from_utf8(&forwarded)
+        .unwrap()
+        .strip_prefix(&call_prefix)
+        .unwrap()
+        .strip_suffix(call_suffix)
+        .unwrap();
+    assert!(serde_json::from_str::<String>(alias).is_ok());
+    let notice = |id: &str| {
+        format!(
+            r#"{{ "jsonrpc":"2.0", "method":"notifications/cancelled", "params":{{ "requestId":{id}, "data":{payload} }} }}"#
+        )
+    };
+    let mut canceller = fixture.connect(handle.as_ref()).await;
+    let accepted = canceller
+        .send(
+            Method::POST,
+            &notice("7"),
+            Some(&proof),
+            Some(&second),
+            None,
+        )
+        .await;
+    assert_eq!(accepted.status(), StatusCode::ACCEPTED);
+    assert!(run.line().await == notice(alias).as_bytes());
+    let reply = |id: &str| format!(r#"{{ "jsonrpc":"2.0", "id" : {id}, "result" : {payload} }}"#);
+    run.write(&reply(alias)).await;
+    assert!(body(response).await == reply("7").as_bytes());
+    handle.close().await;
+}
+
+#[tokio::test]
 async fn replacement_delete_and_close_cancel_requests() {
     let fixture = Fixture::new(INSTANCE);
     let (handle, mut run) = fixture.open().await;
@@ -661,15 +1179,17 @@ async fn replacement_delete_and_close_cancel_requests() {
                 cancel["method"] == "notifications/cancelled"
                     && cancel["params"]["requestId"] == id
             );
-            assert!(run.line().await == request.as_bytes());
             let old_session = session;
             session = init.headers()["mcp-session-id"]
                 .to_str()
                 .unwrap()
                 .to_owned();
             assert!(session != old_session);
-            run.write(r#"{"jsonrpc":"2.0","id":10,"result":{}}"#).await;
-            body(init).await;
+            assert_eq!(
+                serde_json::from_slice::<Value>(&body(init).await).unwrap(),
+                json!({"jsonrpc":"2.0","id":10,"result":{}})
+            );
+            run.no_bytes().await;
             let old = client
                 .send(Method::GET, "", Some(&token), Some(&old_session), None)
                 .await;
@@ -690,7 +1210,7 @@ async fn replacement_delete_and_close_cancel_requests() {
             );
             assert!(timeout(WAIT, get.frame()).await.unwrap().is_none());
             assert!(body(response).await.is_empty());
-            session = initialize(&mut client, &mut run, &token, 20).await;
+            session = cached_initialize(&mut client, &token, 20).await;
         } else {
             let ((), cancel) = tokio::join!(handle.close(), run.json());
             assert!(
@@ -740,7 +1260,8 @@ async fn buffer_overflow_ends_session_and_keeps_channel() {
         .await;
     assert!(response.status() == StatusCode::NOT_FOUND);
     body(response).await;
-    initialize(&mut client, &mut run, &token, 2).await;
+    cached_initialize(&mut client, &token, 2).await;
+    run.no_bytes().await;
     handle.close().await;
 }
 

@@ -669,6 +669,47 @@ fn absent(pid: i32) -> bool {
 }
 
 #[test]
+fn local_process_new_bridge_initializes_the_run_once() {
+    let fixture = Fixture::new(false);
+    let engine = fixture.engine();
+    let groups = || {
+        fs::read_dir(fixture.temp.path().join("store/run-groups"))
+            .unwrap()
+            .map(|entry| {
+                let record: Value =
+                    serde_json::from_slice(&fs::read(entry.unwrap().path()).unwrap()).unwrap();
+                record["group"].as_i64().unwrap() as i32
+            })
+            .collect::<Vec<_>>()
+    };
+    let before = groups();
+    engine.succeeds(&engine.setup("a"));
+    engine.turn("a");
+    let run = pid(&fixture.observation("a"));
+    let bridges: Vec<_> = groups()
+        .into_iter()
+        .filter(|group| !before.contains(group))
+        .collect();
+    assert_eq!(bridges.len(), 1);
+    let bridge = bridges[0];
+    assert!(bridge > 1 && unsafe { libc::getpgid(run) } != bridge);
+    assert_eq!(unsafe { libc::kill(-bridge, libc::SIGKILL) }, 0);
+    until(|| engine.runner.running_count() == 1);
+    assert!(!absent(run));
+    engine.succeeds(&engine.setup("a"));
+    engine.turn("a");
+    assert_eq!(pid(&fixture.observation("a")), run);
+    assert_eq!(
+        fixture
+            .events("a")
+            .iter()
+            .filter(|method| *method == "initialize")
+            .count(),
+        1
+    );
+}
+
+#[test]
 fn local_process_run_state_follows_the_provider() {
     let fixture = Fixture::new(false);
     let engine = fixture.engine();

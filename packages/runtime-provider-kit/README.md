@@ -131,37 +131,51 @@ unacknowledged data can exceed this bound there; the TCP keepalive bound applies
 can run. A silent packet-drop test needs privileged network controls and is not part of these
 tests. The configuration requires positive whole seconds and positive counts.
 
-One session is live at a time. An initialize assigns a fresh random 256-bit session ID; another
-initialize cancels open work and closes the old GET stream before forwarding the new initialize.
-Thus a persistent stdio server sees a second initialize when the engine bridge restarts; the
-runtime must use a server that tolerates this. Session IDs are required on later messages.
-DELETE ends the session and cancels its open requests, leaving the channel alive.
+One session is live at a time. Each initialize assigns a fresh random 256-bit session ID and
+ends the previous session, including its GET stream. The gate forwards the first initialize
+to the run. Later sessions receive the server's result under their own request ID, waiting
+if the server is still answering the first. The gate keeps that result even if the HTTP
+response is cut. If the server answers with an error, the next initialize is forwarded to it.
+The gate forwards the first `notifications/initialized` after a successful initialize and
+answers later ones with an empty 202. Session IDs are required on later messages. DELETE
+ends the session and cancels its open requests, leaving the channel alive.
 
-POST bytes are forwarded as one stdio line. Notifications and client responses return empty
-202s. Requests receive the matching response bytes in one SSE event if Accept allows
+The gate sends each forwarded POST as one stdio line, preserving its bytes when it can use
+the original request ID. Notifications and client responses return empty 202s. Requests
+receive the matching response in one SSE event if Accept allows
 `text/event-stream`, otherwise as JSON. Only messages with a `method` enter GET, including
 server requests whose IDs equal engine request IDs. Unmatched responses are discarded. A lost
 response connection, DELETE, session replacement or close writes `notifications/cancelled` for
-pending requests. `close` waits for listener, connections and channel to close, and is idempotent;
-`ended` also resolves on channel EOF/error. A stalled channel gets at most one second to drain
-queued cancellations at shutdown, then its writer is dropped.
+pending requests sent to stdio, except initialize. Client and gate cancellation notifications
+use the request ID sent to the run. An explicit client cancellation keeps a dispatched POST
+open until the run replies or the session ends. If the request is still waiting to be sent,
+the gate answers with a cancellation error without sending the request. `close` waits for
+the listener, connections and channel to close and is idempotent. `ended` also resolves on
+channel EOF/error. A stalled channel gets at most one second to drain queued cancellations
+at shutdown, then its writer is dropped.
 
 The following are kit choices and limits of this bridge, rather than additions to the language:
 
-- The GET buffer defaults to 256 messages; an active GET has the same queue capacity. Overflow
-  ends the session and cancels pending requests, leaving the channel alive. Before initialization
-  run-originated messages are discarded. A new GET replaces the old one; no replay is promised.
-- The message limit defaults to 8 MiB per POST or stdio line. Oversize POSTs return empty 413s;
+- The GET buffer defaults to 256 messages, and an active GET has the same queue capacity. Overflow
+  ends the session and cancels pending requests, leaving the channel alive. Without a session,
+  the gate discards run-originated messages except the response to an in-flight initialize.
+  A new GET replaces the old one. There is no GET replay.
+- The message limit defaults to 8 MiB per POST or line read from stdio. Oversize POSTs return empty 413s;
   malformed, oversized or unfinished stdio messages close the gate. CRLF stdio delimiters are
   accepted. POSTs must be single-line JSON-RPC objects; malformed objects, batches, raw CR/LF
   and null request IDs return empty 400s, rather than being rewritten for stdio.
-- Active duplicate request IDs and IDs cancelled earlier on this channel return empty 409s.
-  The latter remain reserved for the channel's lifetime: stdio carries no session discriminator
-  that could distinguish an old cancelled reply from a new reply with that ID.
+- Active duplicate IDs and IDs cancelled earlier in the same session return empty 409s.
+  A later session may reuse an ID. The gate gives a request a distinct stdio ID when an old
+  reply could still come for its original ID, then restores the original ID in the response.
+  This also protects against late replies to a cut initialize. The gate discards replies
+  after their POSTs have ended, except the initial server response used to finish initialization.
+  Once the gate receives a reply, the stdio ID is available for reuse.
 - GET carries no SSE event IDs, resumption, replay or `Last-Event-ID` handling. The bridge does
   not implement `Mcp-Param`, protocol-version negotiation, task-specific behavior or heartbeat
-  events. MCP content and capabilities, including initialization's negotiated version, pass
-  through to the server. It inspects only JSON envelope fields needed for framing/correlation.
+  events. The server selects the initialization result, including the negotiated version and
+  capabilities. The gate inspects JSON envelope fields for framing and correlation and
+  keeps the raw initialization reply for later sessions. ID substitution changes only
+  the bytes of the ID value.
 - Content-Type and JSON Accept negotiation are not enforced; POST Accept only selects SSE or
   JSON. Other methods return empty 405s, and other paths or query strings return empty 404s.
   A refusal carries no JSON-RPC body, since the engine bridge would forward one.

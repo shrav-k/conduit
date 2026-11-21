@@ -5,6 +5,7 @@ import io
 import json
 import os
 from pathlib import Path
+import re
 import runpy
 import select
 import shutil
@@ -23,6 +24,7 @@ import gate
 import set_names
 
 REPOSITORY = Path(__file__).resolve().parents[2]
+BASE_ENGINE_WHY = 'the branch changes nothing under engine/, spec/ or conformance/'
 
 
 class FakeRunner:
@@ -176,6 +178,119 @@ class CargoCacheTests(unittest.TestCase):
             failing = test_tree(second)
             self.assertEqual(failing.returncode, 101, failing.stdout)
             self.assertIn('source tree assertion', failing.stdout)
+
+
+class EnginePathTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cargo_environment = {name: os.environ[name]
+                             for name in ('PATH', 'HOME', 'CARGO_HOME', 'RUSTUP_HOME', 'TMPDIR')
+                             if name in os.environ}
+        cargo_environment.update(CARGO_NET_OFFLINE='true', RUSTUP_AUTO_INSTALL='0')
+
+        def query(args):
+            return subprocess.check_output(['cargo', *args], cwd=REPOSITORY,
+                                           env=cargo_environment, text=True)
+
+        tracked = subprocess.check_output(['git', 'ls-files', '-z', '--', 'engine'],
+                                          cwd=REPOSITORY).split(b'\0')
+        cls.sources = [os.fsdecode(path) for path in tracked if path.endswith(b'.rs')]
+        cls.directories, cls.dependencies = gate.discover_rust(
+            REPOSITORY, gate.rust_manifests(REPOSITORY), query)
+        cls.prefixes = gate.engine_paths(REPOSITORY, cls.dependencies, cls.sources)
+
+    def test_engine_paths_keep_todays_rows(self):
+        today = (
+            'engine/',
+            'spec/',
+            'conformance/',
+            'experiments/013-s2-shared-login/linear-stub/',
+            'packages/agent-claude-code/',
+            'packages/agent-codex/',
+            'packages/git/',
+            'packages/github/',
+            'packages/provider-file/',
+            'packages/provider-local-process/',
+            'packages/runtime-provider-kit/',
+            'packages/scenario-s2-linear-restrictions/',
+            'packages/scenario-s2-linear/',
+            'packages/scenario-s4-effect/',
+        )
+        self.assertEqual(tuple(path for path in self.prefixes if path in today), today)
+        self.assertEqual(gate.engine_why(today),
+                         f"the branch changes nothing under {', '.join(today[:-1])} or {today[-1]}")
+        for prefix in today:
+            with self.subTest(prefix=prefix):
+                _, _, reason = gate.select_rust(self.directories, self.dependencies,
+                                                [os.fsencode(prefix + 'x')], False, self.prefixes)
+                self.assertEqual(reason, 'the branch changes 1 paths under ' + prefix)
+
+        other_directories = (
+            'experiments/005-macos-keychain/',
+            'experiments/011-short-form-spike/',
+            'experiments/012-model-checking/',
+            'experiments/015-s4-partial-setup/scripted-client/',
+            'experiments/022-provider-contracts/',
+            'experiments/027-a5-sign-in/client-facts/',
+            'experiments/027-a5-sign-in/refresh-probe/',
+            'packages/provider-keychain/',
+            'packages/provider-local-directory/',
+            'packages/provider-local-machine/',
+            'packages/provider-ssh-runtime/',
+            'packages/scenario-s2-linear-adapter/',
+        )
+        for path in ('docs/x.md', 'tools/x.py', 'specs/x.yaml', *(p + 'x' for p in other_directories)):
+            with self.subTest(path=path):
+                _, _, reason = gate.select_rust(self.directories, self.dependencies,
+                                                [os.fsencode(path)], False, self.prefixes)
+                self.assertIsNone(reason)
+
+    def test_engine_paths_agree_with_the_tree(self):
+        self.assert_tree_reads_covered(REPOSITORY, self.sources, self.prefixes)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            source = 'engine/tests/path_literals.rs'
+            (root / source).parent.mkdir(parents=True)
+            (root / source).write_text(
+                'fn read(root: &str) {\n'
+                '    let _ = concat!(env!("CARGO_MANIFEST_DIR"), "/../../packages/concat-read");\n'
+                '    let _ = format!("{root}/packages/format-read/data.txt");\n'
+                '    let _ = "tests/../packages/relative-read";\n'
+                '    let _ = "conformance/fixtures/s1/packages/filesystem";\n'
+                '}\n',
+                encoding='utf-8',
+            )
+            for directory in ('packages/concat-read', 'packages/format-read', 'packages/relative-read',
+                              'conformance/fixtures/s1/packages/filesystem'):
+                (root / directory).mkdir(parents=True)
+            sources = [source]
+            prefixes = gate.engine_paths(root, {}, sources)
+            self.assert_tree_reads_covered(root, sources, prefixes)
+            self.assertNotIn('packages/filesystem/', prefixes)
+
+    def assert_tree_reads_covered(self, root, sources, prefixes):
+        packages = root / 'packages'
+        for source in sources:
+            source_path = root / source
+            if not os.path.lexists(source_path):
+                continue
+            literals = set(gate.rust_string_literals(source_path.read_text(encoding='utf-8'), source))
+            if 'packages' in literals:
+                for directory in packages.iterdir():
+                    if directory.is_dir() and directory.name in literals:
+                        self.assertIn('packages/' + directory.name + '/', prefixes, source)
+            for literal in literals:
+                for match in re.finditer(r'(?:^|/)(?=(packages|experiments)/)', literal):
+                    area = root / match[1]
+                    mentioned = (root / literal[match.end():]).resolve()
+                    for directory in (mentioned, *mentioned.parents):
+                        if area not in directory.parents:
+                            break
+                        if directory.is_dir():
+                            relative = directory.relative_to(root).as_posix() + '/'
+                            with self.subTest(source=source, literal=literal):
+                                self.assertTrue(relative.startswith(prefixes), relative)
+                            break
 
 
 class GateTests(unittest.TestCase):
@@ -939,7 +1054,7 @@ class GateTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertEqual(self.row('identity')['result'], 'PASS')
         self.assertIn('gitleaks is not installed; the pin is 8.24.2', output)
-        self.assertIn('NOT RUN engine: ' + gate.ENGINE_WHY, output)
+        self.assertIn('NOT RUN engine: ' + BASE_ENGINE_WHY, output)
         self.assertNotIn('rust and engine', output)
         self.assertIn('Gate: PASS. 12 passed; not run: tool tests, secrets, engine.', output)
         self.fake.responses['tools/check_schemas.py'] = gate.CommandResult(1, 'detail\nlast failure line\n')
@@ -1132,7 +1247,7 @@ class GateTests(unittest.TestCase):
         self.assertTrue(would[0].startswith('WOULD RUN identity:'))
         self.assertTrue(would[-1].startswith('WOULD RUN secrets:'))
         self.assertTrue(any(line.startswith('PASS rust discovery') for line in output.splitlines()))
-        self.assertIn('NOT RUN engine: ' + gate.ENGINE_WHY, output)
+        self.assertIn('NOT RUN engine: ' + BASE_ENGINE_WHY, output)
         self.assertEqual(output.splitlines()[-1], 'Gate plan: rust discovery passed; 12 other gates '
                          'would run, 2 would not. No other gate was checked, and no record was written.')
         self.assertFalse((self.root / gate.OUTPUT).exists())
@@ -1291,16 +1406,7 @@ class GateTests(unittest.TestCase):
                  ('packages/g/contracts.yaml', {'packages/f', 'packages/g'}, False),
                  ('packages/g/README.md', {'packages/g'}, False),
                  ('specs/x.yaml', set(), False), ('engine/x', {'packages/h'}, True),
-                 ('conformance/x', set(), True), ('packages/agent-claude-code/x', set(), True),
-                 ('packages/agent-codex/x', set(), True), ('packages/provider-file/x', set(), True),
-                 ('packages/github/x', set(), True),
-                 ('packages/git/x', set(), True),
-                 ('packages/scenario-s2-linear/x', set(), True),
-                 ('packages/scenario-s2-linear-restrictions/x', set(), True),
-                 ('experiments/013-s2-shared-login/linear-stub/x', set(), True),
-                 ('packages/provider-local-process/x', set(), True),
-                 ('packages/runtime-provider-kit/x', set(), True),
-                 ('packages/scenario-s4-effect/x', set(), True),
+                 ('conformance/x', set(), True),
                  ('docs/x.md', set(), False),
                  ('tools/x.py', set(), False)]
         with mock.patch.object(gate, 'RUST_READS', reads):
@@ -1322,11 +1428,11 @@ class GateTests(unittest.TestCase):
                         self.assertEqual(self.row('rust packages/h test')['reason'],
                                          'it depends by path on engine, which the branch changes')
                     if engine:
-                        prefix = next(prefix for prefix in gate.ENGINE_PREFIXES if path.startswith(prefix))
+                        prefix = path.split('/', 1)[0] + '/'
                         self.assertEqual(self.row('engine test')['reason'],
                                          'the branch changes 1 paths under ' + prefix)
                     else:
-                        self.assertEqual(self.row('engine')['why'], gate.ENGINE_WHY)
+                        self.assertEqual(self.row('engine')['why'], BASE_ENGINE_WHY)
                         self.assertIsNone(self.row('engine')['command'])
                         self.assertIsNone(self.row('engine')['directory'])
                     if not expected:
@@ -1344,6 +1450,76 @@ class GateTests(unittest.TestCase):
             self.assertEqual(self.invoke()[0], 0)
             self.assertEqual(self.row('engine test')['reason'],
                              'it depends by path on packages/e, which the branch changes')
+
+    def test_engine_paths_take_a_new_read_with_no_edit(self):
+        package = 'packages/new-reader-fixture'
+        self.crates(package)
+        test_path = 'engine/crates/shell/tests/new_reader.rs'
+        source = self.write(test_path, 'fn read(root: &std::path::Path) {\n'
+                            '    let _ = root.join("packages").join("new-reader-fixture");\n'
+                            '}\n')
+        self.commit()
+        self.git('branch', '-f', 'base', 'HEAD')
+
+        change = self.write(package + '/README.md', 'changed\n')
+        self.assertEqual(self.invoke()[0], 0)
+        self.assertEqual(self.row('engine test')['reason'],
+                         'the branch changes 1 paths under ' + package + '/')
+
+        change.unlink()
+        source.unlink()
+        self.commit()
+        self.git('branch', '-f', 'base', 'HEAD')
+        self.write(package + '/README.md', 'changed\n')
+        self.assertEqual(self.invoke()[0], 0)
+        self.assertEqual(self.row('engine')['why'], BASE_ENGINE_WHY)
+
+        for literal in (
+            f'r#"../../{package}/README.md"#',
+            r'"packages\x2fnew-reader-fixture"',
+            r'"packages\u{2_f}new-reader-fixture"',
+            '"packages/\\\n        new-reader-fixture"',
+        ):
+            with self.subTest(literal=literal):
+                self.write(test_path, 'fn read(root: &std::path::Path) {\n'
+                           f'    let _ = root.join({literal});\n'
+                           '}\n')
+                self.assertEqual(self.invoke()[0], 0)
+                self.assertEqual(self.row('engine test')['reason'],
+                                 'the branch changes 2 paths under engine/, ' + package + '/')
+
+        self.assertEqual(list(gate.rust_string_literals(r'"a\\b\"c\n\t\r\0"', test_path)),
+                         ['a\\b"c\n\t\r\0'])
+        self.write(test_path, '\n' + r'const PATH: &str = "packages\qnew-reader-fixture";' + '\n')
+        self.assertEqual(self.invoke()[0], 1)
+        self.assertEqual(self.row('rust discovery')['why'],
+                         f'{test_path}:2: cannot decode Rust string escape')
+        self.assertEqual(self.row('rust and engine')['why'], gate.RUST_WHY)
+
+    def test_engine_read_fallback_uses_package_root_and_deepest_experiment(self):
+        source = 'engine/tests/data_reads.rs'
+        package = 'packages/data-fixture'
+        experiment = 'experiments/data-fixture/nested'
+        self.write(package + '/nested/data.txt', 'package data\n')
+        self.write(experiment + '/data.txt', 'experiment data\n')
+        self.write(source, f'const PACKAGE: &str = "{package}/nested/data.txt";\n'
+                           f'const EXPERIMENT: &str = "{experiment}/data.txt";\n')
+        prefixes = gate.engine_paths(self.root, {}, [source])
+        self.assertEqual(prefixes, gate.ENGINE_ROOTS + (experiment + '/', package + '/'))
+
+    def test_engine_discovery_skips_a_removed_source_and_fails_on_a_dangling_symlink(self):
+        relative = 'engine/tests/source_read.rs'
+        source = self.write(relative, 'fn read() {}\n')
+        self.commit()
+        self.git('branch', '-f', 'base', 'HEAD')
+        source.unlink()
+        self.assertEqual(self.invoke()[0], 0)
+        self.assertEqual(self.row('rust discovery')['result'], 'PASS')
+
+        source.symlink_to('missing.rs')
+        self.assertEqual(self.invoke()[0], 1)
+        self.assertEqual(self.row('rust discovery')['why'], f'could not read engine source: {relative}')
+        self.assertEqual(self.row('rust and engine')['why'], gate.RUST_WHY)
 
     def test_each_kind_of_directory_gets_ci_commands_and_environment(self):
         self.crates('packages/p', 'experiments/e', 'experiments/005-macos-keychain', 'packages/skipped',

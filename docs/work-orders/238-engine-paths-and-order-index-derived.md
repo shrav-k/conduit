@@ -245,4 +245,22 @@ what this leaves; and every check's last line.
 
 ## Record
 
-Not yet run.
+Run on 2026-11-21 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+- **Worker-1's turn** (09:36 to 09:40) derived the gate's engine paths and generated the index's
+  rows from each order's first line.
+- **`turn-verifier-1.turn.v1`** (09:40 to 09:43) confirmed the same fourteen prefixes, the same
+  rows and the same reasons across 2,871 change sets. It found two musts: a Rust string escape
+  in a path literal, and a Markdown reference link in a README row. It also found one should: a
+  row counts only inside a real table. Worker-1 applied all three (09:44 to 09:48).
+- **The Claude reader** (09:49 to 09:53) found one must: a path built from a root plus a literal
+  tail was missed, as in `concat!`, `format!` and `tests/../`. It also found two nits: a
+  non-crate read under `packages/` maps to the package, and a dangling file fails loudly. Worker-1
+  applied all three (09:54 to 09:58), and 189 tool tests pass.
+
+This leaves:
+- `RUST_READS` is still a hand-kept table;
+- order 212's text plans manual rows and is refreshed before its dispatch;
+- the generated index carries each order's first line only, so notes such as "after 050c" live
+  in the order's own text.
+
+The gate's run on the squash is the coordinator's, at the merge.

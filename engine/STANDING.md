@@ -46,7 +46,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | reason, no case | 58 | 17 | 1 | 76 |
 | no case, no reason | 37 | 66 | 19 | 122 |
 | all | 225 | 244 | 47 | 516 |
-| named in engine source | 145 | 171 | 28 | 344 |
+| named in engine source | 145 | 172 | 29 | 346 |
 
 ## The promises
 
@@ -160,7 +160,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | IFC-014 | language | must | 7 | 0 | cases | core | case passes |
 | IFC-015 | interface | must | 0 | 0 | outside | none | no case, no reason |
 | IFC-016 | interface | must | 1 | 0 | outside | core | case passes |
-| IFC-017 | interface | must | 0 | 0 | outside | none | no case, no reason |
+| IFC-017 | interface | must | 0 | 0 | outside | core | no case, no reason |
 | IFC-018 | interface | must | 0 | 0 | outside | none | no case, no reason |
 | IFC-019 | interface | must | 0 | 0 | outside | none | no case, no reason |
 | IFC-020 | interface | must | 8 | 0 | cases | core | case passes |
@@ -462,7 +462,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | PRV-025 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | PRV-026 | convention | must | 1 | 0 | outside | core, shell | case passes |
 | PRV-027 | convention | must | 0 | 0 | outside | none | no case, no reason |
-| PRV-028 | convention | must | 0 | 0 | outside | none | no case, no reason |
+| PRV-028 | convention | must | 0 | 0 | outside | core | no case, no reason |
 | PRV-029 | convention | must | 0 | 0 | outside | shell | no case, no reason |
 | PRV-030 | convention | must not | 0 | 0 | outside | none | no case, no reason |
 | REC-001 | convention | must | 14 | 0 | cases | core | case passes |

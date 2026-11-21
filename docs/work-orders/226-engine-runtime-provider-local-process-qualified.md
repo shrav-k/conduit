@@ -270,4 +270,27 @@ Named here and not in this order:
 
 ## Record
 
-Not yet run.
+Run on 2026-11-20 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+Worker-1's first turn (17:55 to 18:12) wrote the order's tests and stopped, correctly, at the
+shipped provider's qualification. The Mac's OS hostname is mixed case, the engine sends the
+canonical lowercase name (PRV-027), and `provider-local-process` compared them exactly. Root
+widened the scope to that provider's hostname comparison. Root also rebased the work onto order
+231, which routes provider calls through discovery.
+
+Worker-2 took it over (19:19 to 19:57). The provider now compares and advertises the canonical
+hostname. The shipped provider passed all five Mac integration tests, and the one whole engine
+run passed 472.
+
+`turn-verifier-2.turn.v1` (19:57 to 20:06) found four musts:
+- a repeated URL accepted without fresh TLS proof;
+- an MCP initialization failure overwriting Running;
+- no restart after an upgrade from order 221's engine;
+- the provider and the engine canonicalizing differently.
+
+The second turn (20:06 to 20:19) fixed all four, each with a regression that failed first.
+Where stored history cannot show that a run ended at shutdown, root decided that the part needs
+explicit setup, and its diagnostic says so.
+
+`turn-reader-1.turn.v1` (20:19 to 20:24), the Claude reader, accepted it with no findings.
+PRV-021 past the provider's own removal (F2) is left to the next provider order. The gate's run
+on the squash is the coordinator's, at the merge.

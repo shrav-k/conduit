@@ -241,13 +241,17 @@ completions through the shell. The engine reads secrets from the
 [file store](../packages/provider-file/README.md) for its own runner.
 The shell calls a runtime provider's `run.v1`, `stop.v1` and `inspect-run.v1` through its
 run on the engine's own runner. A private bridge reaches the instance at the returned HTTPS
-URL using the store's root. The tests use a stand-in provider. Until order 226, an unproved
-URL reports unknown or failed, a provider ended at restart is not run again, and the engine
-has run no shipped runtime provider. From order 231, a provider whose discovery lacks Conduit's
-extension is sent no call, and its part reports unavailable with the extension named. Remote connections, secrets for
-runs on providers, and the engine's own inspections remain unserved. The base S1 fixture
-used above has no executable
-Agent; [live S1](examples/s1/README.md) supplies the real-client wrappers instead.
+URL using the store's root. Integration tests run [local-process](../packages/provider-local-process/README.md)
+on the Mac, beside the built-in runner. The engine checks TLS proof when a provider explicitly
+reports a URL, even if the URL is unchanged. An unproved URL or a failed MCP initialization
+leaves the part unavailable and preserves the provider's running report. A provider whose
+discovery lacks Conduit's extension receives no call, and the part reports unavailable with
+the missing extension named. The engine restarts an eligible provider before a call after
+reopening the store. If an older store cannot establish that the provider's run ended at engine
+shutdown, the provider needs explicit setup. Package-relative `command` items stay on the engine's
+own runner under PRV-007. Remote connections, secrets for runs on providers, and the engine's
+own inspections remain unserved. The base S1 fixture used above has no executable Agent;
+[live S1](examples/s1/README.md) supplies the real-client wrappers instead.
 
 Config sets the engine addresses and output retention. `serve` alone accepts
 `--https-url URL`, a canonical `https` address with path `/mcp` and no loopback host, fixed at

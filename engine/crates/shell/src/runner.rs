@@ -1552,6 +1552,13 @@ mod provider {
         }
     }
 
+    struct BridgeProcess {
+        directory: BridgeDirectory,
+        child: Child,
+        group: Arc<ProcessGroup>,
+        timeout: std::time::Duration,
+    }
+
     #[derive(Debug, PartialEq)]
     enum ProviderReply {
         NotSent,
@@ -1561,6 +1568,34 @@ mod provider {
         Failed,
         Unknown,
         NoResult,
+    }
+
+    #[derive(PartialEq, Eq)]
+    enum BridgeStart {
+        Reached,
+        Unproved,
+        Uninitialized,
+    }
+    impl BridgeStart {
+        fn unavailable(self, operation: &str) -> Option<Value> {
+            let kind = match self {
+                Self::Reached => return None,
+                Self::Unproved => "provider-run-unproved",
+                Self::Uninitialized => "provider-bridge-uninitialized",
+            };
+            Some(json!({"kind":kind,"operation":operation}))
+        }
+    }
+
+    async fn bridge_exit_status(group: &ProcessGroup) -> Option<i32> {
+        use tokio::io::AsyncReadExt;
+        let socket = group.lifetime.lock().unwrap().as_ref()?.try_clone().ok()?;
+        socket.set_nonblocking(true).ok()?;
+        tokio::net::UnixStream::from_std(socket)
+            .ok()?
+            .read_i32()
+            .await
+            .ok()
     }
     fn capability_performed_nothing(data: &Value) -> bool {
         let Some(caps) = data["requiredCapabilities"].as_object() else {
@@ -1791,46 +1826,37 @@ mod provider {
             if operation.ends_with("#stop.v1") && let Some(run) = this.runs.lock().unwrap().remove(subject) { run.group.stop(); }
             let reply = if missing_identity {
                 this.provider_diagnostic(operation, "provider run has no https engine address");
-                ProviderReply::NotSent
+                ProviderReply::Failed
             } else { this.provider_operation(&intent, inputs).await };
             let report = if reply == ProviderReply::DiscoveryUnavailable {
                 json!({"kind":"provider-discovery-unavailable","operation":operation})
+            } else if reply == ProviderReply::NotSent {
+                json!({"kind":"provider-call-unavailable","operation":operation})
             } else if operation.ends_with("#run.v1") {
                 match reply {
                     ProviderReply::Succeeded(outputs) => {
                         let url = outputs["url"].as_str().unwrap_or("");
-                        if this.start_bridge(subject, setup, url, operation).await.is_ok() { json!({"kind":"run","outcome":"succeeded","url":url}) }
-                        else { json!({"kind":"run","outcome":"unknown"}) }
+                        this.start_bridge(subject, setup, url, operation).await
+                            .unwrap_or(BridgeStart::Unproved)
+                            .unavailable(operation)
+                            .unwrap_or_else(|| json!({"kind":"run","outcome":"succeeded","url":url}))
                     }
-                    ProviderReply::Failed | ProviderReply::Nothing | ProviderReply::NotSent => json!({"kind":"run","outcome":"failed"}),
+                    ProviderReply::Failed | ProviderReply::Nothing => json!({"kind":"run","outcome":"failed"}),
                     _ => json!({"kind":"run","outcome":"unknown"}),
                 }
             } else if operation.ends_with("#stop.v1") {
                 json!({"kind":"stop","outcome":match reply { ProviderReply::Succeeded(_) => "succeeded", ProviderReply::Failed => "failed", _ => "unknown" }})
             } else {
                 let mut state = "unknown";
+                let mut bridge = BridgeStart::Reached;
                 if let ProviderReply::Succeeded(outputs) = &reply {
                     state = outputs["state"].as_str().unwrap_or("unknown");
                     if state == "running" {
-                        let old = this.runs.lock().unwrap().get(subject).cloned();
-                        let url = outputs["url"].as_str().or_else(|| old.as_ref().and_then(|r| r.url.as_deref()));
-                        let reached = old.as_ref().is_some_and(|r| r.live() && r.url.as_deref() == url);
-                        if !reached && match url {
-                            Some(url) => this.start_bridge(subject, setup, url, operation).await.is_err(),
-                            None => { this.provider_diagnostic(operation, "running provider run has no URL to prove the instance"); true }
-                        } {
-                            state = "unknown";
-                            // The provider's latest URL supersedes the old one even if
-                            // its proof fails. Keep no stale session available to dispatch.
-                            if let Some(old) = old {
-                                old.group.stop();
-                                let mut runs = this.runs.lock().unwrap();
-                                if runs.get(subject).is_some_and(|current| Arc::ptr_eq(current,&old)) { runs.remove(subject); }
-                            }
-                        }
+                        bridge = this.inspect_bridge(subject, setup, outputs["url"].as_str(), operation).await;
                     }
                 }
-                json!({"kind":"inspect-run","state":state})
+                bridge.unavailable(operation)
+                    .unwrap_or_else(|| json!({"kind":"inspect-run","state":state}))
             };
             if this.cancelled_setups.lock().unwrap().contains(setup) { return; }
             let executor = this.completion_executor.lock().unwrap().as_ref().and_then(Weak::upgrade);
@@ -1840,154 +1866,221 @@ mod provider {
         });
             Ok(Execution::Deferred)
         }
+        async fn inspect_bridge(
+            self: &Arc<Self>,
+            subject: &str,
+            setup: &str,
+            reported_url: Option<&str>,
+            operation: &str,
+        ) -> BridgeStart {
+            let old = self.runs.lock().unwrap().get(subject).cloned();
+            let cached_url = old.as_ref().and_then(|run| run.url.as_deref());
+            let Some(url) = reported_url.or(cached_url) else {
+                self.provider_diagnostic(
+                    operation,
+                    "running provider run has no URL to prove the instance",
+                );
+                return BridgeStart::Unproved;
+            };
+            let reusable = old
+                .as_ref()
+                .filter(|run| cached_url == Some(url) && run.live());
+            let proof = if reusable.is_some() && reported_url.is_some() {
+                // A live stdio bridge can outlast the HTTPS listener. Prove the
+                // listener again without initializing another MCP session.
+                self.prove_bridge(subject, setup, url, operation).await
+            } else {
+                BridgeStart::Reached
+            };
+            let outcome = if proof != BridgeStart::Reached || reusable.is_some_and(|run| run.live())
+            {
+                proof
+            } else {
+                self.start_bridge(subject, setup, url, operation)
+                    .await
+                    .unwrap_or(BridgeStart::Unproved)
+            };
+            if outcome != BridgeStart::Reached
+                && let Some(old) = old
+            {
+                old.group.stop();
+                let mut runs = self.runs.lock().unwrap();
+                if runs
+                    .get(subject)
+                    .is_some_and(|current| Arc::ptr_eq(current, &old))
+                {
+                    runs.remove(subject);
+                }
+            }
+            outcome
+        }
+
+        async fn prove_bridge(
+            &self,
+            subject: &str,
+            setup: &str,
+            url: &str,
+            operation: &str,
+        ) -> BridgeStart {
+            let Ok(BridgeProcess {
+                directory: _directory,
+                mut child,
+                group,
+                timeout,
+            }) = self.bridge_process(subject, setup, url, &["--prove-only"])
+            else {
+                self.provider_diagnostic(operation, "TLS proof process could not be started");
+                return BridgeStart::Unproved;
+            };
+            let code = tokio::time::timeout(timeout, bridge_exit_status(&group))
+                .await
+                .ok()
+                .flatten();
+            group.stop();
+            let _ = child.wait().await;
+            if code == Some(0) {
+                return BridgeStart::Reached;
+            }
+            self.provider_diagnostic(operation, "certificate did not prove the instance");
+            BridgeStart::Unproved
+        }
+
+        fn bridge_process(
+            &self,
+            subject: &str,
+            setup: &str,
+            url: &str,
+            flags: &[&str],
+        ) -> Result<BridgeProcess> {
+            let shell = self.shell.upgrade().ok_or("shell stopped")?;
+            let timeout = shell.config.initialize_timeout;
+            let parent = self.directory.join("http-bridges");
+            private_directory(&parent)?;
+            let directory = BridgeDirectory(parent.join(Uuid::new_v4().to_string()));
+            private_directory(&directory.0)?;
+            for (name, value) in shell.authority.bridge_files(subject)? {
+                crate::store::atomic_write(&directory.0, &name, value.as_bytes())?;
+            }
+            let mut args = vec!["__http-bridge".into(), url.into()];
+            args.extend(flags.iter().map(|flag| (*flag).into()));
+            let (child, group) = self.spawn(
+                &self.guard,
+                &args,
+                &self.directory,
+                &BTreeMap::from([(
+                    "HTTP_BRIDGE_DIR".into(),
+                    directory.0.to_string_lossy().into_owned(),
+                )]),
+                setup,
+                false,
+            )?;
+            Ok(BridgeProcess {
+                directory,
+                child,
+                group,
+                timeout,
+            })
+        }
+
         async fn start_bridge(
             self: &Arc<Self>,
             subject: &str,
             setup: &str,
             url: &str,
             operation: &str,
-        ) -> Result<()> {
-            let shell = self.shell.upgrade().ok_or("shell stopped")?;
-            let timeout = shell.config.initialize_timeout;
-            let parent = self.directory.join("http-bridges");
-            private_directory(&parent)?;
-            let cleanup = BridgeDirectory(parent.join(Uuid::new_v4().to_string()));
-            let directory = &cleanup.0;
-            private_directory(directory)?;
-            async {
-                for (name, value) in shell.authority.bridge_files(subject)? {
-                    crate::store::atomic_write(directory, &name, value.as_bytes())?;
-                }
-                drop(shell);
-                let (mut child, group) = self.spawn(
-                    &self.guard,
-                    &["__http-bridge".into(), url.into()],
-                    &self.directory,
-                    &BTreeMap::from([(
-                        "HTTP_BRIDGE_DIR".into(),
-                        directory.to_string_lossy().into_owned(),
-                    )]),
-                    setup,
-                    false,
-                )?;
-                if crate::store::atomic_write(
-                    &self.directory.join("run-groups"),
-                    &Uuid::new_v4().to_string(),
-                    &serde_json::to_vec(&json!({"engine":std::process::id(),"group":group.pid}))
-                        .map_err(|_| "bridge group diagnostic encoding failed")?,
-                )
-                .is_err()
-                {
-                    group.stop();
-                    return Err("bridge group diagnostic could not be written".into());
-                }
-                let responses = Arc::new(Mutex::new(HashMap::new()));
-                let transport = Wire {
-                    reader: BufReader::new(child.stdout.take().ok_or("missing bridge stdout")?)
-                        .lines(),
-                    writer: Arc::new(AsyncMutex::new(child.stdin.take())),
-                    responses: responses.clone(),
-                };
-                let initialized = tokio::time::timeout(timeout, ().serve(transport)).await;
-                let service = match initialized {
-                    Ok(Ok(service)) => service,
-                    _ => {
-                        // The guard publishes the bridge's distinct proof-refusal exit status.
-                        let socket = group
-                            .lifetime
-                            .lock()
-                            .unwrap()
-                            .as_ref()
-                            .and_then(|s| s.try_clone().ok());
-                        let code = if let Some(socket) = socket {
-                            use tokio::io::AsyncReadExt;
-                            socket.set_nonblocking(true).ok();
-                            if let Ok(mut socket) = tokio::net::UnixStream::from_std(socket) {
-                                tokio::time::timeout(
-                                    std::time::Duration::from_secs(1),
-                                    socket.read_i32(),
-                                )
-                                .await
-                                .ok()
-                                .and_then(std::result::Result::ok)
-                            } else {
-                                None
-                            }
-                        } else {
-                            None
-                        };
-                        group.stop();
-                        let _ = child.wait().await;
-                        self.provider_diagnostic(
-                            operation,
-                            if code == Some(crate::http_bridge::PROOF_REFUSED) {
-                                "certificate did not prove the instance"
-                            } else {
-                                "bridge initialization failed or deadline passed"
-                            },
-                        );
-                        return Err("bridge session not initialized".into());
-                    }
-                };
-                responses.lock().unwrap().clear();
-                let cancelled = self.cancelled_setups.lock().unwrap();
-                if self.stopping.load(Ordering::SeqCst) || cancelled.contains(setup) {
-                    group.stop();
-                    return Err("setup cancelled".into());
-                }
-                let run = Arc::new(Run {
-                    service,
-                    group,
-                    responses,
-                    discovery: OnceCell::new(),
-                    setup: setup.into(),
-                    url: Some(url.into()),
-                    provider: None,
-                });
-                if let Some(old) = self
-                    .runs
-                    .lock()
-                    .unwrap()
-                    .insert(subject.into(), run.clone())
-                {
-                    old.group.stop();
-                }
-                drop(cancelled);
-                let group = run.group.clone();
-                let socket = group
-                    .lifetime
-                    .lock()
-                    .unwrap()
-                    .as_ref()
-                    .and_then(|s| s.try_clone().ok());
-                let owner = Arc::downgrade(self);
-                let operation = operation.to_owned();
-                self.handle.spawn(async move {
-                    use tokio::io::AsyncReadExt;
-                    let code = if let Some(socket) = socket {
-                        socket.set_nonblocking(true).ok();
-                        if let Ok(mut socket) = tokio::net::UnixStream::from_std(socket) {
-                            socket.read_i32().await.ok()
-                        } else {
-                            None
-                        }
-                    } else {
-                        None
-                    };
-                    if code == Some(crate::http_bridge::PROOF_REFUSED)
-                        && let Some(owner) = owner.upgrade()
-                    {
-                        owner.provider_diagnostic(
-                            &operation,
-                            "certificate did not prove the instance",
-                        );
-                    }
+        ) -> Result<BridgeStart> {
+            let BridgeProcess {
+                directory,
+                mut child,
+                group,
+                timeout,
+            } = self.bridge_process(subject, setup, url, &[])?;
+            if crate::store::atomic_write(
+                &self.directory.join("run-groups"),
+                &Uuid::new_v4().to_string(),
+                &serde_json::to_vec(&json!({"engine":std::process::id(),"group":group.pid}))
+                    .map_err(|_| "bridge group diagnostic encoding failed")?,
+            )
+            .is_err()
+            {
+                group.stop();
+                return Err("bridge group diagnostic could not be written".into());
+            }
+            let responses = Arc::new(Mutex::new(HashMap::new()));
+            let transport = Wire {
+                reader: BufReader::new(child.stdout.take().ok_or("missing bridge stdout")?).lines(),
+                writer: Arc::new(AsyncMutex::new(child.stdin.take())),
+                responses: responses.clone(),
+            };
+            let initialized = tokio::time::timeout(timeout, ().serve(transport)).await;
+            let service = match initialized {
+                Ok(Ok(service)) => service,
+                _ => {
+                    // The guard publishes the bridge's distinct proof-refusal exit status.
+                    let code = tokio::time::timeout(
+                        std::time::Duration::from_secs(1),
+                        bridge_exit_status(&group),
+                    )
+                    .await
+                    .ok()
+                    .flatten();
                     group.stop();
                     let _ = child.wait().await;
-                });
-                Ok(())
+                    let unproved = code == Some(crate::http_bridge::PROOF_REFUSED)
+                        || !directory.0.join(crate::http_bridge::PROOF_MARKER).is_file();
+                    self.provider_diagnostic(
+                        operation,
+                        if code == Some(crate::http_bridge::PROOF_REFUSED) {
+                            "certificate did not prove the instance"
+                        } else {
+                            "bridge initialization failed or deadline passed"
+                        },
+                    );
+                    return if unproved {
+                        Ok(BridgeStart::Unproved)
+                    } else {
+                        Ok(BridgeStart::Uninitialized)
+                    };
+                }
+            };
+            responses.lock().unwrap().clear();
+            let cancelled = self.cancelled_setups.lock().unwrap();
+            if self.stopping.load(Ordering::SeqCst) || cancelled.contains(setup) {
+                group.stop();
+                return Err("setup cancelled".into());
             }
-            .await
+            let run = Arc::new(Run {
+                service,
+                group,
+                responses,
+                discovery: OnceCell::new(),
+                setup: setup.into(),
+                url: Some(url.into()),
+                provider: None,
+            });
+            if let Some(old) = self
+                .runs
+                .lock()
+                .unwrap()
+                .insert(subject.into(), run.clone())
+            {
+                old.group.stop();
+            }
+            drop(cancelled);
+            let group = run.group.clone();
+            let owner = Arc::downgrade(self);
+            let operation = operation.to_owned();
+            self.handle.spawn(async move {
+                let code = bridge_exit_status(&group).await;
+                if code == Some(crate::http_bridge::PROOF_REFUSED)
+                    && let Some(owner) = owner.upgrade()
+                {
+                    owner.provider_diagnostic(&operation, "certificate did not prove the instance");
+                }
+                group.stop();
+                let _ = child.wait().await;
+            });
+            Ok(BridgeStart::Reached)
         }
     }
 

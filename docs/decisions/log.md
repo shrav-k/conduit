@@ -332,3 +332,24 @@ speed-ups); ROADMAP.md's "What v0 must pass" (ruling 47's six gate v0; mutation 
 on the core before the owner's judgment, as information; independent builds inform after)
 
 Status: accepted, not done (order 223)
+
+## DEC-034, 2026-11-20, the github package's server and its credentials
+
+Owner's words: GitHub implementation -> "Wrap github-mcp-server (Recommended)"; push
+credential -> "Working copy references the secret (Rec.)"; token kind -> "Fine-grained personal
+token"
+
+Lands in: work order 232 (the server and the token); the `git` package's push, a slice after
+order 229
+
+Status: accepted, not done (order 232)
+
+## DEC-035, 2026-11-20, the packages' public address and platforms
+
+Owner's words: public address -> "Stay on example.org until first publish (Rec.)"; platforms
+(after the explanation) -> "Decide at first publish"
+
+Lands in: the packages' addresses under `example.org/conduit/` until first publish; the platforms
+each package ships for, at first publish
+
+Status: accepted, not done (first publish)

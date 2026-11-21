@@ -726,6 +726,142 @@ fn author_commands_require_serve_and_make_recorded_requests() {
     stop_server(&mut server, &store, &[]);
 }
 
+fn pack_scenario_s4_effect(package: &Path) -> (PathBuf, String) {
+    let cargo = |subcommand, binary| {
+        // Use the package's pinned host build even when the engine shares a cache.
+        let output = Command::new("cargo")
+            .current_dir(package)
+            .env_remove("RUSTUP_TOOLCHAIN")
+            .env_remove("CARGO_BUILD_TARGET")
+            .env_remove("CARGO_BUILD_BUILD_DIR")
+            .args([
+                subcommand,
+                "--offline",
+                "--locked",
+                "--release",
+                "--bin",
+                binary,
+            ])
+            .arg("--target-dir")
+            .arg(package.join("target"))
+            .output()
+            .expect("start Cargo for scenario S4");
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            let lines: Vec<_> = stderr.lines().collect();
+            panic!(
+                "scenario S4 cargo {subcommand} --bin {binary} failed ({}):\n{}",
+                output.status,
+                lines[lines.len().saturating_sub(20)..].join("\n")
+            );
+        }
+        output.stdout
+    };
+    cargo("build", "scenario-s4-effect");
+    let output = cargo("run", "package");
+    let archive = package.join("dist/scenario-s4-effect.tar.gz");
+    let sidecar = fs::read_to_string(archive.with_extension("gz.sha256")).unwrap();
+    let digest = format!("sha256:{}", sidecar.trim());
+    assert_eq!(
+        String::from_utf8(output).unwrap().trim(),
+        format!("scenario-s4-effect.tar.gz {digest}")
+    );
+    assert_eq!(
+        digest,
+        conduit_core::packages::bytes_digest(&fs::read(&archive).unwrap())
+    );
+    (archive, digest)
+}
+
+#[test]
+fn scenario_s4_effect_installs_and_registers_templates_only() {
+    const ADDRESS: &str = "example.org/conduit/scenario-s4-effect";
+    const PLACEHOLDER: &str = "sha256:PLACEHOLDER";
+    let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
+    let package = repo
+        .join("packages/scenario-s4-effect")
+        .canonicalize()
+        .unwrap();
+    let (archive, digest) = pack_scenario_s4_effect(&package);
+    let temp = tempfile::tempdir().unwrap();
+    let project = temp.path().join("project");
+    let fixture = package.join("tests/fixtures/project");
+    fs::create_dir(&project).unwrap();
+    let mut placeholders = 0;
+    for name in ["conduit.yaml", "templates.yaml"] {
+        let text = fs::read_to_string(fixture.join(name)).unwrap();
+        placeholders += text.matches(PLACEHOLDER).count();
+        fs::write(project.join(name), text.replace(PLACEHOLDER, &digest)).unwrap();
+    }
+    assert_eq!(placeholders, 1, "expected one fixture digest pin");
+
+    let store = temp.path().join("store");
+    let (port, _) = records_store(&store);
+    let mut server = start_server(&store, port);
+    cli(
+        &store,
+        "install",
+        &[&format!("{}#{digest}", archive.display())],
+    );
+    let before_submit = state(&store)["records"].as_array().unwrap().len();
+    cli(&store, "submit", &[project.to_str().unwrap()]);
+
+    let current = state(&store);
+    let resources = current["objects"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|object| object["kind"] == "Resource");
+    for name in ["effect-plain", "effect-keyed", "effect-ledger"] {
+        let kind = format!("{ADDRESS}#{name}.v1");
+        assert!(
+            resources
+                .clone()
+                .any(|object| { object["name"] == name && object["spec"]["type"] == kind }),
+            "missing Resource template {name} of Type {kind}"
+        );
+        assert!(
+            !resources
+                .clone()
+                .any(|object| object.get("spec").is_none() && object["type"] == kind),
+            "submit created a Resource instance of Type {kind}"
+        );
+    }
+
+    let core = boundary::context(&repo).unwrap().core_package;
+    let register = format!("{core}#register.v1");
+    let dispatches: Vec<_> = current["records"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .enumerate()
+        .filter(|(_, record)| record["type"] == "invocation-dispatched")
+        .map(|(index, record)| (index, record["data"]["operation"].as_str().unwrap()))
+        .collect();
+    for operation in [format!("{core}#install.v1"), register.clone()] {
+        assert!(
+            dispatches
+                .iter()
+                .any(|(_, dispatched)| *dispatched == operation),
+            "missing dispatch record for {operation}"
+        );
+    }
+    let prefix = format!("{ADDRESS}#");
+    for (index, operation) in dispatches {
+        assert!(
+            !operation.starts_with(&prefix),
+            "dispatched to S4: {operation}"
+        );
+        if index >= before_submit {
+            assert_eq!(
+                operation, register,
+                "submit dispatched more than registration"
+            );
+        }
+    }
+    terminate_server(&mut server);
+}
+
 fn records_store(store: &Path) -> (u16, String) {
     let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
     let port = listener.local_addr().unwrap().port();

@@ -1300,6 +1300,7 @@ class GateTests(unittest.TestCase):
                  ('experiments/013-s2-shared-login/linear-stub/x', set(), True),
                  ('packages/provider-local-process/x', set(), True),
                  ('packages/runtime-provider-kit/x', set(), True),
+                 ('packages/scenario-s4-effect/x', set(), True),
                  ('docs/x.md', set(), False),
                  ('tools/x.py', set(), False)]
         with mock.patch.object(gate, 'RUST_READS', reads):

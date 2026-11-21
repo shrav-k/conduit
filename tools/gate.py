@@ -62,16 +62,18 @@ PYTHON_REASON = "CI's docs job runs it on each pull request"
 TOOL_TESTS_WHY = ('the branch changes nothing under tools/ or .github/workflows/, and no .rs, '
                   'Cargo.toml or Cargo.lock under packages/ or experiments/. ' + PYTHON_REASON)
 RUST_WHY = 'rust discovery did not pass, so no Rust directory or engine gate was chosen'
-ENGINE_PREFIXES = ('engine/', 'spec/', 'conformance/', 'packages/agent-claude-code/',
-                   'packages/agent-codex/', 'packages/provider-file/', 'packages/git/',
+ENGINE_PREFIXES = ('engine/', 'spec/', 'conformance/',
+                   'experiments/013-s2-shared-login/linear-stub/', 'packages/agent-claude-code/',
+                   'packages/agent-codex/', 'packages/git/', 'packages/provider-file/',
                    'packages/provider-local-process/', 'packages/runtime-provider-kit/',
-                   'packages/scenario-s2-linear/', 'packages/scenario-s2-linear-restrictions/',
-                   'experiments/013-s2-shared-login/linear-stub/')
+                   'packages/scenario-s2-linear-restrictions/', 'packages/scenario-s2-linear/',
+                   'packages/scenario-s4-effect/')
 ENGINE_WHY = ('the branch changes nothing under engine/, spec/, conformance/, '
-              'packages/agent-claude-code/, packages/agent-codex/, packages/provider-file/, '
-              'packages/git/, packages/provider-local-process/, packages/runtime-provider-kit/, '
-              'packages/scenario-s2-linear/, packages/scenario-s2-linear-restrictions/ '
-              'or experiments/013-s2-shared-login/linear-stub/')
+              'experiments/013-s2-shared-login/linear-stub/, packages/agent-claude-code/, '
+              'packages/agent-codex/, packages/git/, packages/provider-file/, '
+              'packages/provider-local-process/, packages/runtime-provider-kit/, '
+              'packages/scenario-s2-linear-restrictions/, packages/scenario-s2-linear/ or '
+              'packages/scenario-s4-effect/')
 UNREACHED_WHY = ('the branch changes nothing in these, in a directory they depend on by path, '
                  'or in a path they read: ')
 NOT_BUILT_WHY = ('listed in macos_only of checks.yml, which CI does not build; '

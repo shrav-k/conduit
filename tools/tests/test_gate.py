@@ -880,8 +880,9 @@ class GateTests(unittest.TestCase):
             ('private paths', 'python3 tools/check_private_paths.py'),
             ('tool tests', 'python3 -m unittest discover -s tools/tests'),
             ('whitespace', 'git diff --check ' + self.base),
-            ('vector changes', 'python3 tools/vector_delta.py ' + self.base + ' WORKTREE --declared-changed')]
-        actual = [(row['name'], row['command']) for row in self.record()['gates'][2:13]]
+            ('vector changes', 'python3 tools/vector_delta.py ' + self.base + ' WORKTREE --declared-changed'),
+            ('decisions', 'python3 tools/check_decisions.py ' + self.base + ' WORKTREE')]
+        actual = [(row['name'], row['command']) for row in self.record()['gates'][2:14]]
         self.assertEqual(actual, expected)
         for call in self.fake.calls:
             self.assertEqual(call['cwd'], self.root.resolve())
@@ -941,7 +942,7 @@ class GateTests(unittest.TestCase):
         self.assertIn('gitleaks is not installed; the pin is 8.24.2', output)
         self.assertIn('NOT RUN engine: ' + gate.ENGINE_WHY, output)
         self.assertNotIn('rust and engine', output)
-        self.assertIn('Gate: PASS. 12 passed; not run: tool tests, secrets, engine.', output)
+        self.assertIn('Gate: PASS. 13 passed; not run: tool tests, secrets, engine.', output)
         self.fake.responses['tools/check_schemas.py'] = gate.CommandResult(1, 'detail\nlast failure line\n')
         self.fake.calls.clear()
         code, output, error = self.invoke()
@@ -950,8 +951,8 @@ class GateTests(unittest.TestCase):
         line = next(line for line in output.splitlines() if line.startswith('FAIL schemas'))
         self.assertIn('exit 1; its last line: last failure line; log target/gate/logs/', line)
         self.assertIn('    last failure line', error)
-        self.assertEqual(len(self.fake.calls), 11)
-        self.assertIn('tools/vector_delta.py', self.fake.calls[-1]['args'])
+        self.assertEqual(len(self.fake.calls), 12)
+        self.assertIn('tools/vector_delta.py', self.fake.calls[-2]['args'])
         self.fake.responses['tools/check_schemas.py'] = gate.CommandResult(None, 'partial\n', True)
         code, output, _ = self.invoke()
         self.assertEqual(code, 1)
@@ -1128,12 +1129,12 @@ class GateTests(unittest.TestCase):
                          [['cargo', 'metadata', '--no-deps', '--format-version', '1', '--offline',
                            '--manifest-path', 'engine/Cargo.toml'], ['gitleaks', 'version']])
         would = [line for line in output.splitlines() if line.startswith('WOULD RUN ')]
-        self.assertEqual(len(would), 12)
+        self.assertEqual(len(would), 13)
         self.assertTrue(would[0].startswith('WOULD RUN identity:'))
         self.assertTrue(would[-1].startswith('WOULD RUN secrets:'))
         self.assertTrue(any(line.startswith('PASS rust discovery') for line in output.splitlines()))
         self.assertIn('NOT RUN engine: ' + gate.ENGINE_WHY, output)
-        self.assertEqual(output.splitlines()[-1], 'Gate plan: rust discovery passed; 12 other gates '
+        self.assertEqual(output.splitlines()[-1], 'Gate plan: rust discovery passed; 13 other gates '
                          'would run, 2 would not. No other gate was checked, and no record was written.')
         self.assertFalse((self.root / gate.OUTPUT).exists())
         self.fake.calls.clear()
@@ -1149,7 +1150,7 @@ class GateTests(unittest.TestCase):
         self.git('reset', '--hard', self.base)
         code, output, _ = self.invoke('--plan')
         self.assertEqual(code, 0)
-        self.assertIn('Gate plan: rust discovery passed; 10 other gates would run, 4 would not.', output)
+        self.assertIn('Gate plan: rust discovery passed; 11 other gates would run, 4 would not.', output)
         self.assertEqual([call['args'][1] for call in self.fake.calls], ['metadata'])
         self.assertFalse((self.root / gate.OUTPUT).exists())
 
@@ -1172,7 +1173,7 @@ class GateTests(unittest.TestCase):
                     'rust experiments/f/g test', 'rust packages/p fmt', 'rust packages/p clippy',
                     'rust packages/p test', 'rust packages/w fmt', 'rust packages/w clippy',
                     'rust packages/w test', 'engine fmt', 'engine clippy', 'engine test']
-        self.assertEqual([row['name'] for row in self.record()['gates']][14:], expected)
+        self.assertEqual([row['name'] for row in self.record()['gates']][15:], expected)
         self.assertFalse(self.row('rust experiments/005-macos-keychain')['required'])
         self.assertEqual(self.row('rust experiments/005-macos-keychain')['why'], gate.NOT_BUILT_WHY)
         locate = [call for call in self.fake.calls if call['args'][1] == 'locate-project']

@@ -334,9 +334,10 @@ changes](../../conformance/README.md#reviewing-vector-changes)).
 `main`, as a second opinion and the Linux leg that nothing waits on (ruling 80). A run that
 fails after a merge is fixed in a follow-up, an order or a coordinator's fix read by a
 fresh Opus reader, whose Record names the run. Its jobs:
-`secrets` scans added commits; `docs` runs nine Python checks (docs, names, schemas, roadmap,
+`secrets` scans added commits; `docs` runs ten Python checks (docs, names, schemas, roadmap,
 rulings, model account with history, promise standing, private paths and, on pull requests,
-vector changes against declarations), tools' unit tests and PR `git diff --check`.
+vector changes against declarations and the decision framework), tools' unit tests and PR
+`git diff --check`.
 `rust directories` discovers crates;
 `rust (directory)` runs fmt/clippy for packages, release tests for packages and experiments,
 excluding the macOS-only probe. Since 189, on a pull request, `changed packages` lists each package

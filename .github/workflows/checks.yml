@@ -160,6 +160,10 @@ jobs:
       - name: python3 tools/vector_delta.py HEAD^1 HEAD --declared-changed
         if: ${{ !cancelled() && github.event_name == 'pull_request' }}
         run: python3 tools/vector_delta.py HEAD^1 HEAD --declared-changed
+      # Compare decision records and ratchets against the pull request's base.
+      - name: python3 tools/check_decisions.py HEAD^1 HEAD
+        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+        run: python3 tools/check_decisions.py HEAD^1 HEAD
 
   # Packages and experiments with a Cargo.toml one or two directories down, excluding target/
   # and members built by a workspace above them. The engine builds in its own job.

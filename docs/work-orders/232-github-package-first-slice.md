@@ -288,4 +288,27 @@ stops; `own_choices`; the corrected list of what this leaves; every check's last
 
 ## Record
 
-Not yet run.
+Run on 2026-11-20 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+Worker-1's first turn (19:50 to 20:09) built the package, and its eight tests passed. It stopped
+at `conduit submit`, which failed on a schema reference that order 227's SCH-015 fix then
+resolved. The second turn (20:35 to 21:00), on main with 227, finished the order. The engine
+integration covered installation, registration, Pool setup, delivery of the token through the
+secret path, and both reads, and the one whole engine run passed.
+
+`turn-verifier-1.turn.v1` (21:00 to 21:05) found three musts:
+- a configured name could carry the token into an upstream argument;
+- an echoed restriction could carry it into a reply;
+- SIGHUP could end the front without stopping its server.
+
+The third turn (21:06 to 21:13) fixed all three, each with a regression that failed first. 11
+package tests pass.
+
+`turn-reader-1.turn.v1` (21:14 to 21:16), the Claude reader, accepted it with no findings.
+
+The real `github-mcp-server` is not on this Mac, so live use waits for the owner's sitting:
+- install a GitHub release of the server onto serve's PATH;
+- check the tool table against that release;
+- store a scoped, fine-grained token in the Pool's secret;
+- make one issue read and one pull-request read.
+
+The gate's run on the squash is the coordinator's, at the merge.

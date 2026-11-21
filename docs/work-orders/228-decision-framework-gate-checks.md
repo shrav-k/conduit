@@ -284,4 +284,27 @@ and merges.
 
 ## Record
 
-Not yet run.
+Run on 2026-11-20 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+Worker-1's first turn (17:27 to 17:39) built `tools/check_decisions.py`, its tests and the wiring.
+It stopped on one gate test outside its list, which slices the rows by position. Root moved that
+slice from `[14:]` to `[15:]` for the new row, and 176 tool tests passed.
+
+`turn-verifier-1.turn.v1` (17:41 to 17:46) found six musts, each shown by a probe:
+- a symlink at the retired path;
+- a changelog item inside an HTML comment;
+- a fake term in indented code;
+- nested bullets folded into their parent;
+- a dangling `checked:` label;
+- the no-case ratchet without a baseline.
+
+The second turn (17:47 to 17:54) fixed all six, with eight regressions that failed first. 185
+tool tests pass, and the checker gives Errors: 0 on the real tree: no-case ratchet 122, the
+ratio 1.04.
+
+`turn-reader-1.turn.v1` (17:55 to 17:59), the Claude reader, accepted it with two shoulds:
+- root corrected `docs/implementation/METHOD_AS_RUN.md`'s count of CI's docs checks;
+- the promise-ID pattern also takes tokens such as `SHA-256`, so a CHANGES line that names a
+  digest algorithm fails as an unknown promise. It fails loudly and passes nothing, and is left
+  to a follow-up that limits the pattern to the promise families.
+
+The gate's run on the squash is the coordinator's, at the merge.

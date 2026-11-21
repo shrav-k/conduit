@@ -1116,7 +1116,9 @@ def run_gate(root, argv, run, machine, cleanup):
                       ['git', 'diff', '--check', merge_base]),
                      ('vector changes', [sys.executable, VECTOR, merge_base,
                                          'WORKTREE', '--declared-changed'],
-                      ['python3', VECTOR, merge_base, 'WORKTREE', '--declared-changed'])]
+                      ['python3', VECTOR, merge_base, 'WORKTREE', '--declared-changed']),
+                     ('decisions', [sys.executable, 'tools/check_decisions.py', merge_base, 'WORKTREE'],
+                      ['python3', 'tools/check_decisions.py', merge_base, 'WORKTREE'])]
         for current, args, printed in commands:
             row = gate_row(current, command_text(printed), reason=PYTHON_REASON)
             if current == 'tool tests' and not (options.all or tool_tests_reached(changed)):

@@ -90,7 +90,7 @@ fn every_valid_sectioned_example_reads_as_its_translation() {
         ),
         (
             "sectioned-package",
-            &[("Conduit", "read"), ("Conduit", "read-write")][..],
+            &[("Conduit", "resolve"), ("Conduit", "triage")][..],
         ),
     ] {
         let project = read_project(&examples().join("valid").join(name), specification())

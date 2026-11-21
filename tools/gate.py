@@ -369,12 +369,19 @@ def claim_target_cache(directory, shown, head, started, cleanup):
 
 
 def invalidate_path_fingerprints(target, names):
-    for profile in ('debug', 'release'):
-        fingerprints = target / profile / '.fingerprint'
-        if fingerprints.is_dir():
-            for fingerprint in fingerprints.iterdir():
-                if fingerprint.name.rpartition('-')[0] in names and fingerprint.is_dir():
-                    shutil.rmtree(fingerprint)
+    try:
+        # Cargo uses one extra directory level for explicit targets, including
+        # targets selected by Cargo configuration rather than the command line.
+        build_roots = [target, *target.iterdir()]
+    except FileNotFoundError:
+        return
+    for root in build_roots:
+        for profile in ('debug', 'release'):
+            fingerprints = root / profile / '.fingerprint'
+            if fingerprints.is_dir():
+                for fingerprint in fingerprints.iterdir():
+                    if fingerprint.name.rpartition('-')[0] in names and fingerprint.is_dir():
+                        shutil.rmtree(fingerprint)
 
 
 def positive_integer(text):
@@ -1225,9 +1232,16 @@ def run_gate(root, argv, run, machine, cleanup):
                 if target_cache is not None and arguments[0] in ('clippy', 'test'):
                     cache_name = directory.replace('/', '-')
                     target = target_cache / cache_name
-                    printed = command_text(['cargo', arguments[0], '--target-dir',
-                                            f'<target-cache>/{cache_name}', *arguments[1:]])
-                    arguments = [arguments[0], '--target-dir', str(target), *arguments[1:]]
+                    displayed_target = f'<target-cache>/{cache_name}'
+                    if directory.startswith('packages/') and arguments[0] == 'test':
+                        # Archive builders invoked by package tests use the same binaries.
+                        # Engine tests build several packages and keep their separate targets.
+                        env['CARGO_TARGET_DIR'] = str(target)
+                        printed = f'CARGO_TARGET_DIR={shlex.quote(displayed_target)} {printed}'
+                    else:
+                        printed = command_text(['cargo', arguments[0], '--target-dir',
+                                                displayed_target, *arguments[1:]])
+                        arguments = [arguments[0], '--target-dir', str(target), *arguments[1:]]
                 if arguments[0] == 'test':
                     env['RUST_TEST_THREADS'] = str(options.test_threads)
                     printed = f'RUST_TEST_THREADS={options.test_threads} ' + printed
@@ -1244,19 +1258,30 @@ def run_gate(root, argv, run, machine, cleanup):
                 if target is not None and directory not in prepared:
                     raw = []
                     with tempfile.TemporaryDirectory() as temporary:
-                        metadata = execute([cargo, 'metadata', '--format-version', '1', '--offline'],
-                                           Path(temporary) / 'metadata.log', 5, directory=directory,
-                                           raw_output=raw)
-                    if metadata.timed_out or metadata.exit != 0:
-                        failure = timeout_words(5) if metadata.timed_out else f'exit {metadata.exit}'
-                        log.write_text(metadata.output, encoding='utf-8')
-                        row.update(result='FAIL', why=f'cached path metadata: {failure}', exit=metadata.exit,
+                        stage = 'cached Rust host'
+                        probe = execute(['rustc', '-vV'], Path(temporary) / 'host.log', 5,
+                                        directory=directory, raw_output=raw)
+                        hosts = re.findall(r'^host: (\S+)$', raw[-1] if raw else probe.output,
+                                           re.MULTILINE)
+                        if not probe.timed_out and probe.exit == 0 and len(hosts) == 1:
+                            stage = 'cached path metadata'
+                            raw.clear()
+                            probe = execute([cargo, 'metadata', '--format-version', '1', '--offline',
+                                             '--filter-platform', hosts[0]],
+                                            Path(temporary) / 'metadata.log', 5,
+                                            directory=directory, raw_output=raw)
+                    if probe.timed_out or probe.exit != 0 or len(hosts) != 1:
+                        failure = (timeout_words(5) if probe.timed_out else
+                                   f'exit {probe.exit}' if probe.exit != 0 else
+                                   'expected one host triple from rustc -vV')
+                        log.write_text(probe.output, encoding='utf-8')
+                        row.update(result='FAIL', why=f'{stage}: {failure}', exit=probe.exit,
                                    seconds=round(time.monotonic() - started, 1),
                                    log=log.relative_to(root).as_posix())
-                        finish(row, metadata.output)
+                        finish(row, probe.output)
                         return
                     try:
-                        output = raw[-1] if raw else metadata.output
+                        output = raw[-1] if raw else probe.output
                         # Cargo's JSON is one line. The runner also captures warnings from stderr.
                         payload = next((line for line in output.splitlines() if line.startswith('{')), '')
                         packages = json.loads(payload)['packages']

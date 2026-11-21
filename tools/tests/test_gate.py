@@ -60,6 +60,8 @@ class FakeRunner:
                 0, json.dumps(dict(packages=packages))))
         elif args[-1] == 'version':
             result = self.responses.get('version', gate.CommandResult(0, self.version))
+        elif args[-1] == '-vV':
+            result = self.responses.get('-vV', gate.CommandResult(0, 'host: aarch64-apple-darwin\n'))
         elif 'git' in args and '--report-path' in args:
             if self.report is not None:
                 Path(args[args.index('--report-path') + 1]).write_text(json.dumps(self.report))
@@ -129,6 +131,51 @@ class FakeMachine(gate.Machine):
         if args[0] == 'git' and '--global' not in args:
             return super().query(args, extra)
         raise AssertionError('unexpected machine command')
+
+
+class CargoCacheTests(unittest.TestCase):
+    def test_target_cache_rebuilds_for_a_second_tree_with_an_explicit_host_target(self):
+        if not shutil.which('cargo') or not shutil.which('rustc'):
+            self.skipTest('Cargo and rustc are required for the cache regression')
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            cache = root / 'cache'
+            environment, _, _ = gate.scrub_environment()
+            environment.update(CARGO_NET_OFFLINE='true', CARGO_TERM_COLOR='never',
+                               RUSTUP_AUTO_INSTALL='0')
+            version = subprocess.check_output(['rustc', '-vV'], cwd=root, env=environment,
+                                              text=True, timeout=60)
+            host = next(line.removeprefix('host: ') for line in version.splitlines()
+                        if line.startswith('host: '))
+            environment.update(CARGO_BUILD_TARGET=host, CARGO_TARGET_DIR=str(cache))
+
+            first, second = root / 'first', root / 'second'
+            for tree, expected in ((first, 1), (second, 2)):
+                (tree / 'src').mkdir(parents=True)
+                manifest = tree / 'Cargo.toml'
+                manifest.write_text('[package]\nname = "gate-cache-probe"\nversion = "0.0.0"\n',
+                                    encoding='utf-8')
+                source = tree / 'src/lib.rs'
+                source.write_text('#[test]\nfn identifies_its_tree() {\n'
+                                  f'    assert_eq!(1, {expected}, "source tree assertion");\n'
+                                  '}\n', encoding='utf-8')
+                # Give both trees timestamps older than the shared cached build.
+                for file in (manifest, source):
+                    os.utime(file, (1_700_000_000, 1_700_000_000))
+
+            def test_tree(tree):
+                return subprocess.run(['cargo', 'test', '--release', '--offline'],
+                                      cwd=tree, env=environment, text=True, timeout=60,
+                                      stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+            passing = test_tree(first)
+            self.assertEqual(passing.returncode, 0, passing.stdout)
+            fingerprints = cache / host / 'release' / '.fingerprint'
+            self.assertTrue(any(fingerprints.glob('gate-cache-probe-*')))
+            gate.invalidate_path_fingerprints(cache, {'gate-cache-probe'})
+            failing = test_tree(second)
+            self.assertEqual(failing.returncode, 101, failing.stdout)
+            self.assertIn('source tree assertion', failing.stdout)
 
 
 class GateTests(unittest.TestCase):
@@ -1380,11 +1427,16 @@ class GateTests(unittest.TestCase):
                 call = next(call for call in self.fake.calls
                             if call['cwd'] == self.root / directory and call['args'][1] == subcommand)
                 command = self.row(f'{prefix} {subcommand}')['command']
-                self.assertNotIn('CARGO_TARGET_DIR', call['env'])
-                if subcommand == 'fmt':
+                if directory == 'packages/a' and subcommand == 'test':
+                    self.assertEqual(call['args'], ['cargo', 'test', '--release'])
+                    self.assertEqual(call['env']['CARGO_TARGET_DIR'], str(cache / 'packages-a'))
+                    self.assertIn("CARGO_TARGET_DIR='<target-cache>/packages-a'", command)
+                elif subcommand == 'fmt':
+                    self.assertNotIn('CARGO_TARGET_DIR', call['env'])
                     self.assertEqual(call['args'], ['cargo', 'fmt', '--check'])
                     self.assertNotIn('--target-dir', command)
                 else:
+                    self.assertNotIn('CARGO_TARGET_DIR', call['env'])
                     name = directory.replace('/', '-')
                     self.assertEqual(call['args'][2:4], ['--target-dir', str(cache / name)])
                     self.assertIn(f'<target-cache>/{name}', command)
@@ -1393,6 +1445,60 @@ class GateTests(unittest.TestCase):
         self.assertEqual(self.record()['settings']['target_cache'], shown)
         self.assertIn('checked in <target-cache>', self.logs())
         self.assert_private(output + error + self.record_path().read_text() + self.logs(), cache)
+
+    def test_target_cache_resolves_metadata_for_each_directories_host(self):
+        self.crates('packages/a')
+        cache = self.parent / 'cache'
+        hosts = {'packages/a': 'aarch64-apple-darwin', 'engine': 'x86_64-unknown-linux-gnu'}
+
+        def inspect(call):
+            if call['args'] == ['rustc', '-vV']:
+                directory = call['cwd'].relative_to(self.root).as_posix()
+                self.fake.responses['-vV'] = gate.CommandResult(0, f'host: {hosts[directory]}\n')
+        self.fake.inspect = inspect
+        self.assertEqual(self.invoke('--all', '--target-cache', str(cache))[0], 0)
+        for directory, host in hosts.items():
+            probes = [call['args'] for call in self.fake.calls
+                      if call['cwd'] == self.root / directory
+                      and call['args'][1] in ('-vV', 'metadata')]
+            self.assertEqual(probes, [
+                ['rustc', '-vV'],
+                ['cargo', 'metadata', '--format-version', '1', '--offline',
+                 '--filter-platform', host],
+            ])
+
+    def test_target_cache_fails_closed_when_host_is_unknown(self):
+        self.crates('packages/a')
+        self.write('packages/a/README.md', 'changed\n')
+        cache = self.parent / 'cache'
+        for host_result in (gate.CommandResult(1, 'rustc unavailable\n'),
+                            gate.CommandResult(0, 'no host line\n'),
+                            gate.CommandResult(0, 'host: a-b-c\nhost: d-e-f\n'),
+                            gate.CommandResult(1, 'rustc timed out\n', timed_out=True)):
+            with self.subTest(host_result=host_result):
+                self.fake.calls.clear()
+                self.fake.responses['-vV'] = host_result
+                self.assertEqual(self.invoke('--target-cache', str(cache))[0], 1)
+                for verb in ('clippy', 'test'):
+                    row = self.row('rust packages/a ' + verb)
+                    self.assertEqual(row['result'], 'FAIL')
+                    self.assertIn('cached Rust host:', row['why'])
+                package_calls = [call['args'][1:] for call in self.fake.calls
+                                 if call['cwd'] == self.root / 'packages/a']
+                self.assertEqual(package_calls, [['fmt', '--check'], ['-vV'], ['-vV']])
+                self.assertFalse((cache / 'gate.lock').exists())
+
+    def test_without_target_cache_keeps_rust_commands_and_environment(self):
+        self.crates('packages/a')
+        with mock.patch.dict(os.environ, CARGO_TARGET_DIR='planted-target'):
+            self.assertEqual(self.invoke('--all')[0], 0)
+        self.assertFalse(any(call['args'][1] == '-vV' or '--filter-platform' in call['args']
+                             for call in self.fake.calls))
+        tests = [call for call in self.fake.calls if call['args'][1] == 'test']
+        self.assertEqual(len(tests), 2)
+        for call in tests:
+            self.assertEqual(call['args'], ['cargo', 'test', '--release'])
+            self.assertEqual(call['env']['CARGO_TARGET_DIR'], 'planted-target')
 
     def test_target_cache_invalidates_transitive_path_fingerprints_once(self):
         self.crates('packages/a', 'packages/b', 'packages/c')
@@ -1404,12 +1510,13 @@ class GateTests(unittest.TestCase):
             dict(name=name, source=None) for name in ('a', 'b', 'c', 'c-member')]
         cache = self.parent / 'cache'
         stale, kept = [], []
-        for profile in ('debug', 'release'):
-            fingerprints = cache / 'packages-a' / profile / '.fingerprint'
-            for name in ('a-123', 'b-123', 'c-123', 'c-member-123', 'a-registry-456', 'registry-456'):
-                path = fingerprints / name
-                path.mkdir(parents=True)
-                (stale if name.endswith('123') else kept).append(path)
+        for root in (cache / 'packages-a', cache / 'packages-a' / 'aarch64-apple-darwin'):
+            for profile in ('debug', 'release'):
+                fingerprints = root / profile / '.fingerprint'
+                for name in ('a-123', 'b-123', 'c-123', 'c-member-123', 'a-registry-456', 'registry-456'):
+                    path = fingerprints / name
+                    path.mkdir(parents=True)
+                    (stale if name.endswith('123') else kept).append(path)
 
         def inspect(call):
             if call['args'][1] == 'clippy':

@@ -6,7 +6,8 @@ This is the proposed CLI reference for spec batch 1, K3, with hand-written golde
 It describes tooling, not additional language promises or engine behavior. Its five approval
 and command readings follow [ruling 76, points 1–5](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-76/README.md).
 A builder follows the specification where this reference and it differ. No program has produced
-these expected plans. The remaining cases are listed under
+these expected plans. Order 241 sent their requests to the serving engine.
+[Experiment 029 records the results](../../../experiments/029-a84-plan-apply/results-2026-11-21.md). The remaining cases are listed under
 [Safety cases for 052a's convergence check](#safety-cases-for-052as-convergence-check).
 What ships to the rerun's fresh author is the rerun preparation's decision, not this reference
 ([ruling 53, point 9](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-53/README.md)).
@@ -28,7 +29,7 @@ engine it serves as the person's current engine context; commands use that conte
 `--store DIR` overrides it ([ruling 76, point 3](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-76/README.md)).
 This is proposed help, not today's parser. No separate context-selection command is defined.
 If no context or override is available, stop with status 2; context persistence and discovery
-are implementation work for order 052a (O8 below).
+are implementation work for order 243 (O8 below).
 `conduit plan` is available and never required: apply computes its own plan, with no prior plan
 invocation or saved-plan prerequisite ([ruling 76, point 5](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-76/README.md)).
 `--withhold` belongs to batch 2 ([ruling 61, B11](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-61/README.md)).
@@ -59,8 +60,7 @@ only [core operations](../../../spec/core/operations.yaml), adding no operation 
    no line holds any part of the value (SEC-003). This plan has no step, `detail` or `difference`
    line; nothing is kept or sent. A valid value is a reference to a Resource, never the secret itself. Print,
    keep in `.conduit/state.yaml` and compare it like any other reference: as written, `{kind, name}`,
-   with the ID it resolves to as inspection shows it (OBJ-009, SEC-004). Where the schema allows
-   null, as for S1's `apiKey`, null is not a reference.
+   with the ID it resolves to as inspection shows it (OBJ-009, SEC-004). A permitted null is not a reference.
    Read the working copy's kept state described below.
    Reject malformed local state rather than treating it as a new working copy.
 2. Send `management.list.v1 {}` as root. Inspect each listed object through the tool ACC-033
@@ -586,7 +586,8 @@ hashed plan text; saved journals retain it through their safe result references.
 Inspection `view` and list `tombstones` results use
 the compact notation below
 for declared/package/inventory projections; omitted records are irrelevant safe projections,
-not invented empty record lists. All nine cases assume the person's package cache holds the
+not invented empty record lists. The cases omit literal tombstone timestamps. The replay checks
+that the engine records a time within the replay under LIF-040. All nine cases assume the person's package cache holds the
 archive of every listed address, version and digest, put there by the install commands under
 "S1 commands and counts under ruling 76" (T1, T2 and T5); the core package is built in. Schemas,
 defaults, operation contracts and implementation maps come from those archives. The compact
@@ -655,7 +656,7 @@ or catch-all approval or control-takeover flag is part of batch 1.
 | 12 | Placement with two nodes | Left out: second-node enrollment follows the rerun. Do not invent replacement placement behavior. |
 | 13 | Change a first-start/default root Conduit | ACC-024: refuse before sending closure. Ordinary root-consumed Conduits follow replacement rules. |
 | 14 | Generated-name collision | Translator's SCT-013, not a planner golden case here. |
-| 15 | Value at a secret-reference place | Check locally during translation/resolution before any step (SCT-014, SEC-001). A literal or bare name stops with status 2: `plan`, one `stop KIND/NAME place=POINTER SEC-001` per invalid place, then `flags []`, then `stopped`; no value or part of it, step, detail or difference, and nothing kept or sent (SEC-003). A valid Resource reference is printed, kept in `.conduit/state.yaml` and compared as written, `{kind, name}`, with its resolved ID as inspection shows it (OBJ-009, SEC-004); permitted null, as for S1's `apiKey`, is not a reference. |
+| 15 | Value at a secret-reference place | Check locally during translation/resolution before any step (SCT-014, SEC-001). A literal or bare name stops with status 2: `plan`, one `stop KIND/NAME place=POINTER SEC-001` per invalid place, then `flags []`, then `stopped`; no value or part of it, step, detail or difference, and nothing kept or sent (SEC-003). A valid Resource reference is printed, kept in `.conduit/state.yaml` and compared as written, `{kind, name}`, with its resolved ID as inspection shows it (OBJ-009, SEC-004); permitted null is not a reference. |
 | 16 | Caller has only Pool authority | Engine inspection LIF-013/ACC-033, not this root CLI: no Agent inspection, no hidden counts; full inventory of inspectable objects. |
 | 17 | Setup raises sign-in | Setup returns pendingAction; ruling 76 point 4 continues apply, prints action IDs for the panel and answers nothing (TPL-012, PND-005, PND-011). |
 | 18 | Pin downgrade | Same resolved diff and replace permission as upgrade; no special downgrade bypass. |
@@ -694,7 +695,7 @@ No line holds any part of the value (SEC-003); there is no step, detail or diffe
 nothing is kept or sent. A valid value is a reference to a Resource, never the secret itself:
 print, keep in `.conduit/state.yaml` and compare it like any other reference, as written,
 `{kind, name}`, with its resolved ID as inspection shows it (OBJ-009, SEC-004). Where permitted,
-null, as for S1's `apiKey`, is not a reference. Public absolute paths use the fingerprint defined
+null is not a reference. Public absolute paths use the fingerprint defined
 above, so their edits do not collide in plan keys.
 
 O7: Decided. The planner reads package contents from the person's package cache, keyed by the
@@ -705,7 +706,7 @@ needs no engine operation and discloses nothing new: the pin already names the b
 hash to HEX, whatever `install.v1` then answers: a copy named by its digest is never wrong.
 Nothing else writes the cache; plan and apply only read it. The cache belongs to the person
 on that machine and lies outside every project and its `.conduit/`, so every working copy
-shares it. Order 052a fixes its directory with O8's context data. It holds archives only: no
+shares it. Order 243 fixes its directory with O8's context data. It holds archives only: no
 credential, and nothing from the engine's store.
 
 The planner reads the archive of each package the manifest pins, of each package that an
@@ -723,11 +724,11 @@ cache and changes nothing in the engine (PKG-027).
 
 The core package has no archive (NAM-009): the planner uses the core contents of its own build,
 as the engine does. So a CLI of another version than the serving engine stops with status 2
-before it sends any request, naming both versions; order 052a fixes how the CLI learns the
+before it sends any request, naming both versions; order 243 fixes how the CLI learns the
 serving engine's version, with O8's context data.
 
 O8: Open. Ruling 76 point 3 fixes how commands choose the engine: `conduit serve` records the engine
-it serves as the person's current context, and `--store` overrides it. Order 052a still needs
+it serves as the person's current context, and `--store` overrides it. Order 243 still needs
 to specify the local context's persistence/discovery and unavailable-context diagnostics. No
 additional context command is proposed here. Context data stays outside the project's kept state.
 
@@ -744,7 +745,7 @@ its golden plan demonstrates a no-op, rather than a required inspection step.
 ```text
 T1: conduit init
 T1: conduit install conformance/fixtures/install-archives/filesystem-0.1.1.tar.gz#eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614
-T1: conduit install conformance/fixtures/install-archives/agents-0.2.0.tar.gz#479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71
+T1: conduit install conformance/fixtures/s1/archives/agents-0.2.1.tar.gz#13f8a1252769975905fae3ba3732ada43b538b76c6fee8740577f0b7e22ca47a
 T1: conduit apply
 T2: conduit install conformance/fixtures/s1/archives/filesystem.tar.gz#200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160
 T2: conduit install conformance/fixtures/s1/archives/history.tar.gz#e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69
@@ -764,6 +765,11 @@ using experiment 023's retained dependency install. Generated-name operands chan
 text, but not its line count. Narrowing B at T4 removes one named flag use, while A's widening
 still makes that command count. Bare T7 revocation carries no author-chosen value.
 
+The agents 0.2.1 archive in T1's install line is the replay's fixture: its Agent Types select a
+scripted implementation whose command, `s1-scripted-agent`, the test harness supplies, and the
+cases' Agent set-up outcomes assume that program. Followed with the real CLI and no such program,
+the Agent runs cannot start; the S1 rerun uses the real Agent packages instead (order 250).
+
 Primary counts only commands carrying an author-chosen value; strict command counts include
 every scheduled command ([ruling 63, point 1](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-63/README.md)).
 The file hunk costs below come from experiment 023's flow states, not the compact serialization
@@ -781,6 +787,10 @@ The task's strict total also includes panel actions, following its counting meth
 | T7 | 1 | 2 | 1 | 0 | 2 | 3 |
 | Total | 9 | 13 | 26 | 2 | 35 | 41 |
 
+T1's 19 file lines include root's two `operator` Conduits, one flow line each (SCT-009).
+The measurement plan lists them apart as root's Conduits under [Grants made by hand](../first-build/measurement-plan.md#how-each-measure-is-counted-for-the-build). The cases leave them out. Each costs one
+line inline or by reference. Which form is the owner's to choose, for order 250.
+
 The total primary sequence `21, 5, 0, 3, 2, 2, 2` agrees with experiment 023's row
 "No store + K3 A's omitted narrowing flags" and ruling 76's forecast. Strict remains
 `25, 6, 0, 3, 2, 2, 3`: omitting values or flags removes no scheduled command or panel action.
@@ -788,7 +798,8 @@ The two T1 panel actions are sign-in for A and B, listed apart from authored lin
 ([ruling 68 R1](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md)). Apply continues through both pending
 sign-ins, without a follow-up apply or an answer. A returned pendingAction is a list of IDs,
 never evidence or a prompt, under `io.github.shrav-k.conduit/pendingAction` (IFC-025).
-These actions are prospective for real Agent packages; fixture agents 0.2.0 raise none.
+The scripted S1 Agent fixture raises both sign-ins. They appear on inspection. The engine
+currently omits the action IDs from the setup replies, as recorded in the replay (IFC-025).
 All counts remain a paper forecast, not a fresh-author result or a live sign-in run.
 
 ### Case command and output counts
@@ -802,7 +813,7 @@ cases 03 and 09 means no file is written, although the expected plan text and di
 
 | Case | Command primary/strict | Named flag uses | Requests after printing | Plan lines | Stdout lines |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| [01-t1](cases/01-t1.yaml) | 0/1 | 0 | 15 | 37 | 52 |
+| [01-t1](cases/01-t1.yaml) | 0/1 | 0 | 15 | 37 | 54 |
 | [02-t2](cases/02-t2.yaml) | 0/1 | 0 | 7 | 20 | 27 |
 | [03-t3-noop](cases/03-t3-noop.yaml) | 0/1 | 0 | 0 | 2 | 2 |
 | [04-t4](cases/04-t4.yaml) | 1/1 | 1 | 10 | 20 | 30 |
@@ -821,3 +832,4 @@ re-derived the same way. Cases 02 and 03 keep their plan digests: command spelli
 citations and case order are outside the hash. No package, file or path fingerprint digest
 changed. Case 09 now precedes case 08 in the documented sequence so all nine cases form one
 applied/kept chain.
+Order 241 re-derived the fixture pins, configurations, plan digests, request keys, file hashes, printed results and saved chain. `plan_apply_cases_are_consistent` checks them.

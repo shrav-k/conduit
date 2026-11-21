@@ -21,17 +21,17 @@ command: conduit apply
 files:
   conduit.yaml: |
     apiVersion: github.com/shrav-k/conduit/v0
-    packages: {example.org/s1/filesystem: {version: 0.2.1, digest: 'sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614'}, example.org/s1/agents: {version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}, example.org/s1/history: {version: 0.1.0, digest: 'sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69'}}
+    packages: {example.org/s1/filesystem: {version: 0.2.1, digest: 'sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614'}, example.org/s1/agents: {version: 0.2.1, digest: 'sha256:13f8a1252769975905fae3ba3732ada43b538b76c6fee8740577f0b7e22ca47a'}, example.org/s1/history: {version: 0.1.0, digest: 'sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69'}}
   s1.yaml: |
     fleet: s1
     pools: {team: {type: github.com/shrav-k/conduit/core#pool.v1}}
     resources: {shared: {type: example.org/s1/filesystem#local-directory.v1, owner: team, config: {root: /lab/replacement}}, history: {type: example.org/s1/history#file-history.v1, owner: team, config: {root: /lab/history}}}
-    agents: {agent-a: {type: example.org/s1/agents#claude-code.v2, config: {accountServices: false, peerMessaging: false, model: '', account: agent-a@example.org, apiKey: null}, consumes: {project: {to: {kind: Resource, name: shared}, from: example.org/s1/filesystem#read-write}, history: {to: {kind: Resource, name: history}, from: example.org/s1/filesystem#read-write}}}, agent-b: {type: example.org/s1/agents#codex.v2, config: {accountServices: false, model: '', account: agent-b@example.org, apiKey: null}, consumes: {project: {to: {kind: Resource, name: shared}, from: example.org/s1/filesystem#read}, history: {to: {kind: Resource, name: history}, from: example.org/s1/filesystem#read-write}}}}
+    agents: {agent-a: {type: example.org/s1/agents#claude-code.v2, config: {account: agent-a@example.org}, consumes: {project: {to: {kind: Resource, name: shared}, from: example.org/s1/filesystem#read-write}, history: {to: {kind: Resource, name: history}, from: example.org/s1/filesystem#read-write}}}, agent-b: {type: example.org/s1/agents#codex.v2, config: {account: agent-b@example.org}, consumes: {project: {to: {kind: Resource, name: shared}, from: example.org/s1/filesystem#read}, history: {to: {kind: Resource, name: history}, from: example.org/s1/filesystem#read-write}}}}
 applied:
   format: 1
   files:
-    conduit.yaml: d4960ea1d5ed92178917ac51a3b323022233a9d396b0fac64dfa8fd5096ea30c
-    s1.yaml: 0fdc9bd676d6e9b375935731663c3ffab13c955452076637d52940fb0ac1fc7d
+    conduit.yaml: aefe70b1b3a3c0d49d8cdd5cbe61a34331a9f9d3656b3649f23d82428d9cde6e
+    s1.yaml: 90796136d34fdb18638512836be2e2413460ca074fab26b2baf15ed2ee4554f4
   objects:
   - [Pool, team--t, 00000000-0000-4000-8000-000000000100, r1, template, {type: github.com/shrav-k/conduit/core#pool.v1},
     [{address: github.com/shrav-k/conduit/core, version: 0.1.0}]]
@@ -41,17 +41,17 @@ applied:
       config: {root: {pathSha256: 009c6483fb688c0c413a1ad1477ae1f9d92f495c528145ab083db3168c73c9b4}}}, [{address: example.org/s1/filesystem,
         version: 0.2.1, digest: 'sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614'}]]
   - [Agent, agent-a--t, 00000000-0000-4000-8000-000000000105, r1, template, {type: example.org/s1/agents#claude-code.v2,
-      config: {accountServices: false, peerMessaging: false, model: '', account: agent-a@example.org, apiKey: null}},
-    [{address: example.org/s1/agents, version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+      config: {account: agent-a@example.org}},
+    [{address: example.org/s1/agents, version: 0.2.1, digest: 'sha256:13f8a1252769975905fae3ba3732ada43b538b76c6fee8740577f0b7e22ca47a'}]]
   - [Agent, agent-a, 00000000-0000-4000-8000-000000000106, r1, ready, {from: agent-a--t, resolved: {type: example.org/s1/agents#claude-code.v2,
-        config: {accountServices: false, peerMessaging: false, model: '', account: agent-a@example.org, apiKey: null}},
-      owner: s1}, [{address: example.org/s1/agents, version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+        config: {account: agent-a@example.org, accountServices: false, directory: null, effort: '', model: '', turnDeadlineSeconds: 180, peerMessaging: false}},
+      owner: s1}, [{address: example.org/s1/agents, version: 0.2.1, digest: 'sha256:13f8a1252769975905fae3ba3732ada43b538b76c6fee8740577f0b7e22ca47a'}]]
   - [Agent, agent-b--t, 00000000-0000-4000-8000-000000000107, r1, template, {type: example.org/s1/agents#codex.v2,
-      config: {accountServices: false, model: '', account: agent-b@example.org, apiKey: null}}, [{address: example.org/s1/agents,
-        version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+      config: {account: agent-b@example.org}}, [{address: example.org/s1/agents,
+        version: 0.2.1, digest: 'sha256:13f8a1252769975905fae3ba3732ada43b538b76c6fee8740577f0b7e22ca47a'}]]
   - [Agent, agent-b, 00000000-0000-4000-8000-000000000108, r1, ready, {from: agent-b--t, resolved: {type: example.org/s1/agents#codex.v2,
-        config: {accountServices: false, model: '', account: agent-b@example.org, apiKey: null}}, owner: s1}, [
-      {address: example.org/s1/agents, version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+        config: {account: agent-b@example.org, accountServices: false, directory: null, effort: '', model: '', turnDeadlineSeconds: 180}}, owner: s1}, [
+      {address: example.org/s1/agents, version: 0.2.1, digest: 'sha256:13f8a1252769975905fae3ba3732ada43b538b76c6fee8740577f0b7e22ca47a'}]]
   - [Fleet, s1, 00000000-0000-4000-8000-000000000109, r1, ready, {from: github.com/shrav-k/conduit/core#fleet, resolved: {
         type: github.com/shrav-k/conduit/core#fleet.v1}}, [{address: github.com/shrav-k/conduit/core, version: 0.1.0}]]
   - [Conduit, root-pool-abc01, 00000000-0000-4000-8000-000000000112, r1, ready, {from: github.com/shrav-k/conduit/core#root-pool,
@@ -99,7 +99,6 @@ applied:
       id: 00000000-0000-4000-8000-000000000124
     cause:
       invocation: 00000000-0000-4000-8000-000000000930
-    time: '2026-11-11T00:00:00Z'
     by: 00000000-0000-4000-8000-000000000005
     consumer:
       kind: Agent
@@ -122,18 +121,18 @@ applied:
       openedThrough:
       - 00000000-0000-4000-8000-000000000007
   plans:
-  - sha256:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7
-  - sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66
-  - sha256:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241
-  - sha256:4322e82635da43bfafe2f1ab371dbcfc6e5e8a610fb2ea8bea30b0f90cded1d8
-  - sha256:351bea0d6d4ce16f63560186537f7b701426ec25dd92cfccbf8eac63c0efc38f
+  - sha256:fab3b245718d826270b2fe2f4c847ea80a2310d551bf19754a5de2e79915ea1f
+  - sha256:7d6a6f601702baad984c422094b1d602eabf63df5eb54ae798c20936fe06569a
+  - sha256:d5fe65093e903086bac765bf4549815c2c552a60c87affd96903c7405a6997d5
+  - sha256:ba9c7db91ec2ff0fcdc058eff03b92658a0818c2bffb05e4eb8befb2b9855688
+  - sha256:2a0094efb58174533bd18abb030849f39ce10dc7acc6ae67e33601a50b5beee1
   - sha256:7415bd165b9a42d4dbde679df28d7a1de1bbcbbc341bfda6688af748a757463f
   journals:
-    sha256:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7: safe:case:01-t1/requests
-    sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66: safe:case:02-t2/requests
-    sha256:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241: safe:case:04-t4/requests
-    sha256:4322e82635da43bfafe2f1ab371dbcfc6e5e8a610fb2ea8bea30b0f90cded1d8: safe:case:05-t5/requests
-    sha256:351bea0d6d4ce16f63560186537f7b701426ec25dd92cfccbf8eac63c0efc38f: safe:case:06-t6/requests
+    sha256:fab3b245718d826270b2fe2f4c847ea80a2310d551bf19754a5de2e79915ea1f: safe:case:01-t1/requests
+    sha256:7d6a6f601702baad984c422094b1d602eabf63df5eb54ae798c20936fe06569a: safe:case:02-t2/requests
+    sha256:d5fe65093e903086bac765bf4549815c2c552a60c87affd96903c7405a6997d5: safe:case:04-t4/requests
+    sha256:ba9c7db91ec2ff0fcdc058eff03b92658a0818c2bffb05e4eb8befb2b9855688: safe:case:05-t5/requests
+    sha256:2a0094efb58174533bd18abb030849f39ce10dc7acc6ae67e33601a50b5beee1: safe:case:06-t6/requests
     sha256:7415bd165b9a42d4dbde679df28d7a1de1bbcbbc341bfda6688af748a757463f: safe:case:07-t7-revoke/requests
 engine:
   base: first-start
@@ -142,8 +141,8 @@ engine:
     version: 0.1.1
     digest: sha256:eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614
   - address: example.org/s1/agents
-    version: 0.2.0
-    digest: sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71
+    version: 0.2.1
+    digest: sha256:13f8a1252769975905fae3ba3732ada43b538b76c6fee8740577f0b7e22ca47a
   - address: example.org/s1/filesystem
     version: 0.1.0
     digest: sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160
@@ -161,17 +160,17 @@ engine:
   - [Resource, shared--t, 00000000-0000-4000-8000-000000000102, r3, template, {type: example.org/s1/filesystem#local-directory.v1,
       config: {root: /lab/replacement}}, [{address: example.org/s1/filesystem, version: 0.2.1, digest: 'sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614'}]]
   - [Agent, agent-a--t, 00000000-0000-4000-8000-000000000105, r1, template, {type: example.org/s1/agents#claude-code.v2,
-      config: {accountServices: false, peerMessaging: false, model: '', account: agent-a@example.org, apiKey: null}},
-    [{address: example.org/s1/agents, version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+      config: {account: agent-a@example.org}},
+    [{address: example.org/s1/agents, version: 0.2.1, digest: 'sha256:13f8a1252769975905fae3ba3732ada43b538b76c6fee8740577f0b7e22ca47a'}]]
   - [Agent, agent-a, 00000000-0000-4000-8000-000000000106, r1, ready, {from: agent-a--t, resolved: {type: example.org/s1/agents#claude-code.v2,
-        config: {accountServices: false, peerMessaging: false, model: '', account: agent-a@example.org, apiKey: null}},
-      owner: s1}, [{address: example.org/s1/agents, version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+        config: {account: agent-a@example.org, accountServices: false, directory: null, effort: '', model: '', turnDeadlineSeconds: 180, peerMessaging: false}},
+      owner: s1}, [{address: example.org/s1/agents, version: 0.2.1, digest: 'sha256:13f8a1252769975905fae3ba3732ada43b538b76c6fee8740577f0b7e22ca47a'}]]
   - [Agent, agent-b--t, 00000000-0000-4000-8000-000000000107, r1, template, {type: example.org/s1/agents#codex.v2,
-      config: {accountServices: false, model: '', account: agent-b@example.org, apiKey: null}}, [{address: example.org/s1/agents,
-        version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+      config: {account: agent-b@example.org}}, [{address: example.org/s1/agents,
+        version: 0.2.1, digest: 'sha256:13f8a1252769975905fae3ba3732ada43b538b76c6fee8740577f0b7e22ca47a'}]]
   - [Agent, agent-b, 00000000-0000-4000-8000-000000000108, r1, ready, {from: agent-b--t, resolved: {type: example.org/s1/agents#codex.v2,
-        config: {accountServices: false, model: '', account: agent-b@example.org, apiKey: null}}, owner: s1}, [
-      {address: example.org/s1/agents, version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+        config: {account: agent-b@example.org, accountServices: false, directory: null, effort: '', model: '', turnDeadlineSeconds: 180}}, owner: s1}, [
+      {address: example.org/s1/agents, version: 0.2.1, digest: 'sha256:13f8a1252769975905fae3ba3732ada43b538b76c6fee8740577f0b7e22ca47a'}]]
   - [Fleet, s1, 00000000-0000-4000-8000-000000000109, r1, ready, {from: github.com/shrav-k/conduit/core#fleet, resolved: {
         type: github.com/shrav-k/conduit/core#fleet.v1}}, [{address: github.com/shrav-k/conduit/core, version: 0.1.0}]]
   - [Conduit, root-pool-abc01, 00000000-0000-4000-8000-000000000112, r1, ready, {from: github.com/shrav-k/conduit/core#root-pool,
@@ -216,7 +215,6 @@ engine:
       id: 00000000-0000-4000-8000-000000000124
     cause:
       invocation: 00000000-0000-4000-8000-000000000930
-    time: '2026-11-11T00:00:00Z'
     by: 00000000-0000-4000-8000-000000000005
     consumer:
       kind: Agent
@@ -258,8 +256,8 @@ requests: []
 kept:
   format: 1
   files:
-    conduit.yaml: d4960ea1d5ed92178917ac51a3b323022233a9d396b0fac64dfa8fd5096ea30c
-    s1.yaml: 0fdc9bd676d6e9b375935731663c3ffab13c955452076637d52940fb0ac1fc7d
+    conduit.yaml: aefe70b1b3a3c0d49d8cdd5cbe61a34331a9f9d3656b3649f23d82428d9cde6e
+    s1.yaml: 90796136d34fdb18638512836be2e2413460ca074fab26b2baf15ed2ee4554f4
   objects:
   - [Pool, team--t, 00000000-0000-4000-8000-000000000100, r1, template, {type: github.com/shrav-k/conduit/core#pool.v1},
     [{address: github.com/shrav-k/conduit/core, version: 0.1.0}]]
@@ -269,17 +267,17 @@ kept:
       config: {root: {pathSha256: 009c6483fb688c0c413a1ad1477ae1f9d92f495c528145ab083db3168c73c9b4}}}, [{address: example.org/s1/filesystem,
         version: 0.2.1, digest: 'sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614'}]]
   - [Agent, agent-a--t, 00000000-0000-4000-8000-000000000105, r1, template, {type: example.org/s1/agents#claude-code.v2,
-      config: {accountServices: false, peerMessaging: false, model: '', account: agent-a@example.org, apiKey: null}},
-    [{address: example.org/s1/agents, version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+      config: {account: agent-a@example.org}},
+    [{address: example.org/s1/agents, version: 0.2.1, digest: 'sha256:13f8a1252769975905fae3ba3732ada43b538b76c6fee8740577f0b7e22ca47a'}]]
   - [Agent, agent-a, 00000000-0000-4000-8000-000000000106, r1, ready, {from: agent-a--t, resolved: {type: example.org/s1/agents#claude-code.v2,
-        config: {accountServices: false, peerMessaging: false, model: '', account: agent-a@example.org, apiKey: null}},
-      owner: s1}, [{address: example.org/s1/agents, version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+        config: {account: agent-a@example.org, accountServices: false, directory: null, effort: '', model: '', turnDeadlineSeconds: 180, peerMessaging: false}},
+      owner: s1}, [{address: example.org/s1/agents, version: 0.2.1, digest: 'sha256:13f8a1252769975905fae3ba3732ada43b538b76c6fee8740577f0b7e22ca47a'}]]
   - [Agent, agent-b--t, 00000000-0000-4000-8000-000000000107, r1, template, {type: example.org/s1/agents#codex.v2,
-      config: {accountServices: false, model: '', account: agent-b@example.org, apiKey: null}}, [{address: example.org/s1/agents,
-        version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+      config: {account: agent-b@example.org}}, [{address: example.org/s1/agents,
+        version: 0.2.1, digest: 'sha256:13f8a1252769975905fae3ba3732ada43b538b76c6fee8740577f0b7e22ca47a'}]]
   - [Agent, agent-b, 00000000-0000-4000-8000-000000000108, r1, ready, {from: agent-b--t, resolved: {type: example.org/s1/agents#codex.v2,
-        config: {accountServices: false, model: '', account: agent-b@example.org, apiKey: null}}, owner: s1}, [
-      {address: example.org/s1/agents, version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+        config: {account: agent-b@example.org, accountServices: false, directory: null, effort: '', model: '', turnDeadlineSeconds: 180}}, owner: s1}, [
+      {address: example.org/s1/agents, version: 0.2.1, digest: 'sha256:13f8a1252769975905fae3ba3732ada43b538b76c6fee8740577f0b7e22ca47a'}]]
   - [Fleet, s1, 00000000-0000-4000-8000-000000000109, r1, ready, {from: github.com/shrav-k/conduit/core#fleet, resolved: {
         type: github.com/shrav-k/conduit/core#fleet.v1}}, [{address: github.com/shrav-k/conduit/core, version: 0.1.0}]]
   - [Conduit, root-pool-abc01, 00000000-0000-4000-8000-000000000112, r1, ready, {from: github.com/shrav-k/conduit/core#root-pool,
@@ -327,7 +325,6 @@ kept:
       id: 00000000-0000-4000-8000-000000000124
     cause:
       invocation: 00000000-0000-4000-8000-000000000930
-    time: '2026-11-11T00:00:00Z'
     by: 00000000-0000-4000-8000-000000000005
     consumer:
       kind: Agent
@@ -350,17 +347,17 @@ kept:
       openedThrough:
       - 00000000-0000-4000-8000-000000000007
   plans:
-  - sha256:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7
-  - sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66
-  - sha256:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241
-  - sha256:4322e82635da43bfafe2f1ab371dbcfc6e5e8a610fb2ea8bea30b0f90cded1d8
-  - sha256:351bea0d6d4ce16f63560186537f7b701426ec25dd92cfccbf8eac63c0efc38f
+  - sha256:fab3b245718d826270b2fe2f4c847ea80a2310d551bf19754a5de2e79915ea1f
+  - sha256:7d6a6f601702baad984c422094b1d602eabf63df5eb54ae798c20936fe06569a
+  - sha256:d5fe65093e903086bac765bf4549815c2c552a60c87affd96903c7405a6997d5
+  - sha256:ba9c7db91ec2ff0fcdc058eff03b92658a0818c2bffb05e4eb8befb2b9855688
+  - sha256:2a0094efb58174533bd18abb030849f39ce10dc7acc6ae67e33601a50b5beee1
   - sha256:7415bd165b9a42d4dbde679df28d7a1de1bbcbbc341bfda6688af748a757463f
   journals:
-    sha256:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7: safe:case:01-t1/requests
-    sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66: safe:case:02-t2/requests
-    sha256:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241: safe:case:04-t4/requests
-    sha256:4322e82635da43bfafe2f1ab371dbcfc6e5e8a610fb2ea8bea30b0f90cded1d8: safe:case:05-t5/requests
-    sha256:351bea0d6d4ce16f63560186537f7b701426ec25dd92cfccbf8eac63c0efc38f: safe:case:06-t6/requests
+    sha256:fab3b245718d826270b2fe2f4c847ea80a2310d551bf19754a5de2e79915ea1f: safe:case:01-t1/requests
+    sha256:7d6a6f601702baad984c422094b1d602eabf63df5eb54ae798c20936fe06569a: safe:case:02-t2/requests
+    sha256:d5fe65093e903086bac765bf4549815c2c552a60c87affd96903c7405a6997d5: safe:case:04-t4/requests
+    sha256:ba9c7db91ec2ff0fcdc058eff03b92658a0818c2bffb05e4eb8befb2b9855688: safe:case:05-t5/requests
+    sha256:2a0094efb58174533bd18abb030849f39ce10dc7acc6ae67e33601a50b5beee1: safe:case:06-t6/requests
     sha256:7415bd165b9a42d4dbde679df28d7a1de1bbcbbc341bfda6688af748a757463f: safe:case:07-t7-revoke/requests
 exit: 2

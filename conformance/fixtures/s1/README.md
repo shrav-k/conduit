@@ -9,8 +9,10 @@ is the live project for shell runs.
 
 The filesystem package exports its three Operations, Capability and Resource Type. The history
 Type reuses that package's implementation for a separate directory, with one file per post;
-its description states the overwrite, ordering and authorship limits. The Agent Types remain
-registration-only, with no implementation or model work. The project has nine templates and
+its description states the overwrite, ordering and authorship limits. The Agent Types of the
+original snapshot and of agents 0.2.0 are registration-only, with no implementation or model work;
+agents 0.2.1 is K3's replay fixture, whose v2 Types select a scripted implementation whose command a
+test supplies. The project has nine templates and
 six instance documents. Its paths are supplied values, and no directory is created.
 
 ## Computed digests
@@ -22,11 +24,13 @@ Computed on 2026-11-09 from the retained bytes:
 | [filesystem.tar.gz](archives/filesystem.tar.gz) | `200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160` |
 | [history.tar.gz](archives/history.tar.gz) | `e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69` |
 | [agents.tar.gz](archives/agents.tar.gz) | `3b73fe853164e58125d960da62795f748b88c06a6eefe86046bbef00bc08b44a` |
+| [agents-0.2.1.tar.gz](archives/agents-0.2.1.tar.gz) | `13f8a1252769975905fae3ba3732ada43b538b76c6fee8740577f0b7e22ca47a`, computed on 2026-11-21. K3's v2 replay fixture selects a scripted Agent implementation whose executable the test supplies. It is hand-built from the two files of [packages/agents-0.2.1/](packages/agents-0.2.1/), byte for byte, with the archive form below; no generator or check ties them. |
 
-The Conduit archives hold exactly each package directory's two YAML files at the archive
-root. They use USTAR, sorted file names, mode 0644, zero uid/gid/mtime, empty owner names,
-and gzip level 9 with mtime zero and no filename. Their bytes are evidence for the supplied
-snapshot identities. The runner reads the documents beside them and verifies their archive
+The older Conduit archives in the table hold `conduit.yaml` and `contracts.yaml` at the archive
+root. The agents 0.2.1 archive holds `conduit.json` and `contracts.json` there. The archives
+use USTAR, sorted file names, mode 0644, zero uid/gid/mtime, empty owner names,
+and gzip level 9 with mtime zero and no filename. The older archives' bytes are evidence for the supplied
+snapshot identities. The snapshot runner reads the documents beside them and verifies their archive
 hashes; it does not assert an archive installation.
 
 The filesystem implementation's `fileSha256` is recorded data:

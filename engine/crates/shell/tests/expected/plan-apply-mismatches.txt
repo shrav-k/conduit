@@ -1,0 +1,13 @@
+# A84: differences observed through the serving shell.
+# Replay with cargo test --offline --release -p conduit-shell --test plan_apply_cases -- --nocapture.
+# A line changes only in the pull request that changes what the engine does or what the case states.
+# CASE STEP POINTER PROMISE
+01-t1 9 /requests/8/result/pendingAction IFC-025
+01-t1 11 /requests/10/result/pendingAction IFC-025
+02-t2 1 /requests/0/result/diagnostics NAM-008
+04-t4 6 /requests/5/result/diagnostics NAM-008
+05-t5 1 /requests/0/result/diagnostics NAM-008
+05-t5 5 /requests/4/result/diagnostics NAM-008
+06-t6 1 /requests/0/result/diagnostics NAM-008
+06-t6 5 /requests/4/result/diagnostics NAM-008
+08-t7-restore 2 /requests/1/result/diagnostics NAM-008

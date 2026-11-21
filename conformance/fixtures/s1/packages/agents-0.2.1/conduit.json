@@ -1,0 +1,73 @@
+{
+  "address": "example.org/s1/agents",
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "exports": [
+    "claude-code.v1",
+    "codex.v1",
+    "claude-code.v2",
+    "codex.v2",
+    "conversation.v1",
+    "turn.v1",
+    "turn"
+  ],
+  "version": "0.2.1",
+  "implementations": {
+    "scripted-claude-code": {
+      "implements": [
+        "#turn.v1",
+        "github.com/shrav-k/conduit/core#account-hook.v1",
+        "github.com/shrav-k/conduit/core#sign-in-hook.v1",
+        "github.com/shrav-k/conduit/core#sign-out-hook.v1",
+        "github.com/shrav-k/conduit/core#retire-hook.v1"
+      ],
+      "command": [
+        "s1-scripted-agent",
+        "claude-code"
+      ],
+      "environment": {
+        "AGENT_ACCOUNT_SERVICES": "/accountServices",
+        "AGENT_DIRECTORY": "/directory",
+        "AGENT_EFFORT": "/effort",
+        "AGENT_MODEL": "/model",
+        "AGENT_TURN_DEADLINE_SECONDS": "/turnDeadlineSeconds",
+        "AGENT_PEER_MESSAGING": "/peerMessaging"
+      },
+      "plain": true,
+      "tools": {
+        "#turn.v1": "turn",
+        "github.com/shrav-k/conduit/core#account-hook.v1": "account",
+        "github.com/shrav-k/conduit/core#sign-in-hook.v1": "sign-in",
+        "github.com/shrav-k/conduit/core#sign-out-hook.v1": "sign-out",
+        "github.com/shrav-k/conduit/core#retire-hook.v1": "retire"
+      }
+    },
+    "scripted-codex": {
+      "implements": [
+        "#turn.v1",
+        "github.com/shrav-k/conduit/core#account-hook.v1",
+        "github.com/shrav-k/conduit/core#sign-in-hook.v1",
+        "github.com/shrav-k/conduit/core#sign-out-hook.v1",
+        "github.com/shrav-k/conduit/core#retire-hook.v1"
+      ],
+      "command": [
+        "s1-scripted-agent",
+        "codex"
+      ],
+      "environment": {
+        "AGENT_ACCOUNT_SERVICES": "/accountServices",
+        "AGENT_DIRECTORY": "/directory",
+        "AGENT_EFFORT": "/effort",
+        "AGENT_MODEL": "/model",
+        "AGENT_TURN_DEADLINE_SECONDS": "/turnDeadlineSeconds"
+      },
+      "plain": true,
+      "tools": {
+        "#turn.v1": "turn",
+        "github.com/shrav-k/conduit/core#account-hook.v1": "account",
+        "github.com/shrav-k/conduit/core#sign-in-hook.v1": "sign-in",
+        "github.com/shrav-k/conduit/core#sign-out-hook.v1": "sign-out",
+        "github.com/shrav-k/conduit/core#retire-hook.v1": "retire"
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "interfaces": {
+    "bare": {
+      "from": "basis",
+      "arguments": {
+        "limit": 3
+      }
+    },
+    "qualified": {
+      "from": "example.org/conformance/templates#basis",
+      "arguments": {
+        "limit": 3
+      }
+    },
+    "kind-name": {
+      "from": {
+        "kind": "Interface",
+        "name": "basis"
+      },
+      "arguments": {
+        "limit": 3
+      }
+    },
+    "hash-name": {
+      "from": "#basis",
+      "arguments": {
+        "limit": 3
+      }
+    }
+  }
+}

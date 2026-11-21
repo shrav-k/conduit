@@ -1,0 +1,39 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Interface",
+    "metadata": {
+      "name": "auditor"
+    },
+    "from": "basis"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "auditor--operator--t"
+    },
+    "spec": {
+      "capability": "example.org/conformance/tools#catalog.v1",
+      "operations": []
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "auditor--operator",
+      "description": "From root"
+    },
+    "consumer": {
+      "kind": "Interface",
+      "name": "root"
+    },
+    "target": {
+      "kind": "Interface",
+      "name": "auditor"
+    },
+    "from": "auditor--operator--t",
+    "as": "auditor"
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "kind": {"enum": ["Interface", "Agent", "Resource", "Pool", "Fleet", "Conduit"]},
+      "name": {"type": ["string", "null"]},
+      "rule": {"enum": ["SCT-005", "SCT-006", "SCT-007", "SCT-009", "SCT-011", "SCT-016"]}
+    },
+    "required": ["kind", "name", "rule"]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "conduits": {
+    "direct": {
+      "consumer": {
+        "kind": "Interface",
+        "name": "root"
+      },
+      "target": {
+        "kind": "Resource",
+        "name": "management"
+      },
+      "as": "manage",
+      "capability": "github.com/shrav-k/conduit/core#object-management.v1",
+      "operations": [
+        "github.com/shrav-k/conduit/core#inspect.v1"
+      ],
+      "description": "Explicit management"
+    },
+    "catalog": {
+      "consumer": {
+        "kind": "Interface",
+        "name": "root"
+      },
+      "target": {
+        "kind": "Pool",
+        "name": "system"
+      },
+      "from": "github.com/shrav-k/conduit/core#pool-view",
+      "arguments": {}
+    }
+  }
+}

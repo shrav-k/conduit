@@ -1,0 +1,49 @@
+{
+  "id": "sectioned-version-only",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-001",
+    "SUB-005"
+  ],
+  "title": "A version alone is not a section",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.json": "authored.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "file": "authored.json",
+              "document": 1
+            }
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sectioned"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

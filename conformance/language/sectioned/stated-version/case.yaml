@@ -1,0 +1,40 @@
+{
+  "id": "sectioned-stated-version",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-002"
+  ],
+  "title": "A sectioned document supplies its own version without a manifest",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.json": "authored.json",
+    "framed.json": "framed.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "framed": "framed.json",
+        "translations": [
+          {
+            "kind": "Pool",
+            "name": "library",
+            "rule": "SCT-006"
+          }
+        ]
+      }
+    }
+  ]
+}

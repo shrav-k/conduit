@@ -1,0 +1,45 @@
+{
+  "id": "sectioned-operator-referenced",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-009"
+  ],
+  "title": "A referenced operator retains its template without an inline template",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.json": "authored.json",
+    "framed.json": "framed.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "framed": "framed.json",
+        "translations": [
+          {
+            "kind": "Conduit",
+            "name": "auditor--operator",
+            "rule": "SCT-009"
+          },
+          {
+            "kind": "Interface",
+            "name": "auditor",
+            "rule": "SCT-006"
+          }
+        ]
+      }
+    }
+  ]
+}

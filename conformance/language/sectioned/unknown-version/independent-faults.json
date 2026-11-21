@@ -1,0 +1,6 @@
+{
+  "apiVersion": "example.org/conduit/v99",
+  "pools": false,
+  "extra": {},
+  "grants": {}
+}

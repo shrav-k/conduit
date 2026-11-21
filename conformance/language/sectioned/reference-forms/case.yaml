@@ -1,0 +1,56 @@
+{
+  "id": "sectioned-reference-forms",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-006",
+    "INS-025"
+  ],
+  "title": "All four template reference forms and their arguments are preserved",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.json": "authored.json",
+    "framed.json": "framed.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "framed": "framed.json",
+        "translations": [
+          {
+            "kind": "Interface",
+            "name": "bare",
+            "rule": "SCT-006"
+          },
+          {
+            "kind": "Interface",
+            "name": "hash-name",
+            "rule": "SCT-006"
+          },
+          {
+            "kind": "Interface",
+            "name": "kind-name",
+            "rule": "SCT-006"
+          },
+          {
+            "kind": "Interface",
+            "name": "qualified",
+            "rule": "SCT-006"
+          }
+        ]
+      }
+    }
+  ]
+}

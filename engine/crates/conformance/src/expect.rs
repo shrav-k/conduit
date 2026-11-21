@@ -56,6 +56,40 @@ pub(super) fn prepare(actual: &mut Value, next: &State) -> Result<()> {
     Ok(())
 }
 
+pub(super) fn framed(expected: &Value, actual: &Value, base: &Path, case: &Case) -> Result<()> {
+    let alias = expected["framed"]
+        .as_str()
+        .ok_or("missing framed expectation")?;
+    let path = case
+        .files
+        .get(alias)
+        .ok_or("undeclared framed file alias")?;
+    let wanted = read_file(&base.join(path)).map_err(|error| error.to_string())?;
+    let bytes =
+        serde_json::to_vec(&actual["framed_documents"]).map_err(|error| error.to_string())?;
+    let mut remaining = read_bytes(Syntax::Json, &bytes).map_err(|error| error.to_string())?;
+    if wanted.len() != remaining.len() {
+        return Err(format!(
+            "framed: expected {} documents, found {}",
+            wanted.len(),
+            remaining.len()
+        ));
+    }
+    for document in wanted {
+        let index = remaining
+            .iter()
+            .position(|node| *node == document.root)
+            .ok_or_else(|| {
+                format!(
+                    "framed: no equal translated document for {alias} document {}",
+                    document.index
+                )
+            })?;
+        remaining.swap_remove(index);
+    }
+    Ok(())
+}
+
 pub(super) fn check(
     raw_step: &Value,
     symbols: &BTreeMap<String, Value>,
@@ -67,6 +101,9 @@ pub(super) fn check(
 ) -> Result<()> {
     let expected = expand(&raw_step["expect"], symbols, spec)?;
     let mut fields = expected.as_object().ok_or("missing expectation")?.clone();
+    if raw_step["input"]["kind"] == "translate" {
+        fields.remove("framed");
+    }
     if let Some(count) = fields.remove("object_count") {
         projection(&json!(next.objects.len()), &count, "/object_count")?;
     }

@@ -1,0 +1,8 @@
+{
+  "if": {"properties": {"input": {"properties": {"kind": {"const": "translate"}}}}},
+  "then": {
+    "properties": {"expect": {"required": ["accepted", "diagnostics"]}},
+    "if": {"properties": {"expect": {"properties": {"accepted": {"const": true}}}}},
+    "then": {"properties": {"expect": {"required": ["framed", "translations"]}}}
+  }
+}

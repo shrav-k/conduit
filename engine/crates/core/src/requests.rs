@@ -1087,6 +1087,41 @@ fn invoke_inner(
         } else {
             v.rules[0]
         };
+        if rule == "SUB-005" {
+            let mut diagnostics: Vec<_> = access::sectioned_wire_items(&request.arguments)
+                .map(|index| json!({
+                    "ruleId": rule, "level": "error",
+                    "message": {"text": format!("documents[{index}]: the register.v1 wire accepts framed documents only")},
+                    "locations": [{"logicalLocations": [{"fullyQualifiedName": format!("/documents/{index}")}]}],
+                }))
+                .collect();
+            if !v.independent_schema_failures.is_empty() {
+                let generic = crate::explain::diagnostic(
+                    &t.state,
+                    &rejection_route(&route),
+                    c,
+                    reason,
+                    "OPS-033",
+                )?;
+                for pointer in &v.independent_schema_failures {
+                    let mut diagnostic = generic.clone();
+                    diagnostic["locations"] =
+                        json!([{"logicalLocations":[{"fullyQualifiedName":pointer}]}]);
+                    diagnostics.push(diagnostic);
+                }
+            }
+            return reject_diagnostics(
+                t,
+                a,
+                c,
+                &route,
+                reason,
+                rule,
+                None,
+                None,
+                Some(json!(diagnostics)),
+            );
+        }
         return reject(t, a, c, &route, reason, rule, None, v.restriction.as_ref());
     }
     if request.sign_in_return.is_some() && route["operation"] != c.qualified("sign-in.v1") {

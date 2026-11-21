@@ -854,3 +854,14 @@ carrying the key is not decided.
 - **A failed or unknown account check counts as no account** (ruling 86, point 3 (d); PND-010, PND-011, TPL-012, OPS-022; order 209): in `sign-in.v1` it takes the path of no account, clearing no condition and raising nothing, and so goes on to the `sign-in-hook.v1` part (order 048a-5d), whose URL elicitation is relayed, and the account polled on each retry (order 048a-5ef; `requests-sign-in-account-first`, `requests-keyed-hook-dispatch`, `requests-sign-in-hook-part`, `requests-sign-in-polling`); in setup it raises the sign-in action unless one is unanswered, undoes nothing, clears no condition and lets the setup go on to its setup hook, the check counting as succeeded in the setup's outcome (`requests-sign-in-setup-check-failed`, `requests-sign-in-setup-check-failed-hook`). The second of those also shows a failed check in `sign-in.v1` leaving a `False` `SignInUndone` as it is. A check that ends with a reason, such as unavailable under IFC-037, is neither: it ends `sign-in.v1` failed under PND-011 and stops a setup, as before. Polling, where a failed or unknown poll counts as no account yet, is order 048a-5ef's (`requests-sign-in-polling`).
 
 IFC-010's relay of a URL request from the `sign-in-hook.v1` part, plain or keyed, has no case in this section: the hook part and the relay are orders 048a-5d and 048a-5ef, whose cases show it. Order 048a-5d takes that request into `sign-in.v1`, not as IFC-016's lapse trigger, and order 048a-5ef relays it, its `acceptsReturn` false (`requests-sign-in-plain-hook-part`). Order 048a-5d2 matches its URL as it matches a keyed hook's (`requests-sign-in-plain-url-match`).
+
+## Sectioned documents
+
+The loader translates a project's directory or submitted files after strict reading and before
+canonical document validation. Package installation uses the same translation and accepts only
+templates and the version in a sectioned package document. The manifest retains its form.
+The core receives framed documents from file-based registration and installation. The
+`register.v1` wire accepts framed documents and rejects a sectioned item under SUB-005.
+Authored provenance travels with the loader's project; stored objects and wire values are
+framed. Order 244 maps canonical diagnostic locations to the authored text and adds SARIF
+`properties.translation`.

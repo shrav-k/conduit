@@ -33,6 +33,8 @@ rules! {
     /// manifest: a file that is not UTF-8, or not YAML or JSON as the ending of its name says,
     /// and a document or a manifest that a Schema contract rejects.
     SUB_005 = "SUB-005";
+    /// Neither a sectioned document nor its manifest supplies a version.
+    SCT_002 = "SCT-002";
     /// Two Schema contracts of the specification with one name. Only the specification itself
     /// is checked for this; the core checks the documents of a project.
     NAM_027 = "NAM-027";

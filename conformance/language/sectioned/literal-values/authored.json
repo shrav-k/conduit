@@ -1,0 +1,30 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "resources": {
+    "vault-client": {
+      "type": "#reader.v1",
+      "owner": "library",
+      "config": {
+        "object": {
+          "kind": "Resource",
+          "name": "root"
+        },
+        "secret": {
+          "kind": "Resource",
+          "name": "vault"
+        }
+      }
+    },
+    "caller": {
+      "from": "vault-client--t",
+      "owner": "library",
+      "arguments": {
+        "literal": {
+          "kind": "Pool",
+          "name": "system"
+        },
+        "number": 1.0
+      }
+    }
+  }
+}

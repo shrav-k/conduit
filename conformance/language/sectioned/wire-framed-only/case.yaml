@@ -1,0 +1,687 @@
+{
+  "id": "sectioned-wire-framed-only",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-001",
+    "SUB-005",
+    "OPS-033"
+  ],
+  "title": "Wire register rejects a sectioned item and preserves unrelated schema attribution",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {},
+  "steps": [
+    {
+      "input": {
+        "kind": "first-start",
+        "evidence": {
+          "time": "2026-11-09T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000000001",
+            "00000000-0000-4000-8000-000000000002",
+            "00000000-0000-4000-8000-000000000003",
+            "00000000-0000-4000-8000-000000000004",
+            "00000000-0000-4000-8000-000000000005",
+            "00000000-0000-4000-8000-000000000006",
+            "00000000-0000-4000-8000-000000000007",
+            "00000000-0000-4000-8000-000000000008",
+            "00000000-0000-4000-8000-000000000009",
+            "00000000-0000-4000-8000-000000000010",
+            "00000000-0000-4000-8000-000000000011",
+            "00000000-0000-4000-8000-000000000012",
+            "00000000-0000-4000-8000-000000000013",
+            "00000000-0000-4000-8000-000000000014",
+            "00000000-0000-4000-8000-000000000015",
+            "00000000-0000-4000-8000-000000000016",
+            "00000000-0000-4000-8000-000000000017",
+            "00000000-0000-4000-8000-000000000018",
+            "00000000-0000-4000-8000-000000000019",
+            "00000000-0000-4000-8000-000000000020",
+            "00000000-0000-4000-8000-000000000021",
+            "00000000-0000-4000-8000-000000000022",
+            "00000000-0000-4000-8000-000000000023",
+            "00000000-0000-4000-8000-000000000024"
+          ],
+          "revisions": [
+            "r1",
+            "r2",
+            "r3",
+            "r4",
+            "r5",
+            "r6",
+            "r7",
+            "r8"
+          ],
+          "suffixes": [
+            "abc01",
+            "abc02",
+            "abc03"
+          ]
+        },
+        "machine": {
+          "hostname": " WORKSTATION.Example ",
+          "labels": {
+            "kubernetes.io/hostname": "workstation.example",
+            "kubernetes.io/os": "darwin",
+            "kubernetes.io/arch": "arm64",
+            "example.org/role": "test"
+          },
+          "state": "reachable"
+        },
+        "trustDomain": "vectors-040.example"
+      },
+      "expect": {
+        "reply": {
+          "started": true
+        },
+        "state": {
+          "started": true
+        },
+        "record_facts": [],
+        "external_intents": [],
+        "required_promises": [
+          "FST-001"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-21T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-a002-000000000001",
+            "00000000-0000-4000-a002-000000000002",
+            "00000000-0000-4000-a002-000000000003",
+            "00000000-0000-4000-a002-000000000004",
+            "00000000-0000-4000-a002-000000000005",
+            "00000000-0000-4000-a002-000000000006",
+            "00000000-0000-4000-a002-000000000007",
+            "00000000-0000-4000-a002-000000000008"
+          ],
+          "revisions": [
+            "sectioned-2-0",
+            "sectioned-2-1",
+            "sectioned-2-2",
+            "sectioned-2-3",
+            "sectioned-2-4",
+            "sectioned-2-5",
+            "sectioned-2-6",
+            "sectioned-2-7",
+            "sectioned-2-8",
+            "sectioned-2-9",
+            "sectioned-2-10",
+            "sectioned-2-11",
+            "sectioned-2-12",
+            "sectioned-2-13",
+            "sectioned-2-14",
+            "sectioned-2-15",
+            "sectioned-2-16",
+            "sectioned-2-17",
+            "sectioned-2-18",
+            "sectioned-2-19",
+            "sectioned-2-20",
+            "sectioned-2-21"
+          ],
+          "suffixes": [
+            "s0000",
+            "s0001",
+            "s0002",
+            "s0003",
+            "s0004",
+            "s0005",
+            "s0006",
+            "s0007",
+            "s0008",
+            "s0009",
+            "s0010",
+            "s0011",
+            "s0012",
+            "s0013",
+            "s0014",
+            "s0015",
+            "s0016",
+            "s0017",
+            "s0018",
+            "s0019"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.register.v1",
+          "arguments": {
+            "documents": [
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Pool",
+                "metadata": {
+                  "name": "library-template"
+                },
+                "spec": {
+                  "type": "github.com/shrav-k/conduit/core#pool.v1"
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "pools": {
+                  "library": {
+                    "type": "github.com/shrav-k/conduit/core#pool.v1"
+                  }
+                }
+              }
+            ]
+          },
+          "readable": true,
+          "authority_readable": true
+        }
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "invalid"
+          },
+          "structuredContent": {
+            "diagnostics": [
+              {
+                "ruleId": "SUB-005",
+                "level": "error",
+                "message": {
+                  "text": "documents[1]: the register.v1 wire accepts framed documents only"
+                },
+                "locations": [
+                  {
+                    "logicalLocations": [
+                      {
+                        "fullyQualifiedName": "/documents/1"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "external_intents": []
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-21T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-a003-000000000001",
+            "00000000-0000-4000-a003-000000000002",
+            "00000000-0000-4000-a003-000000000003",
+            "00000000-0000-4000-a003-000000000004",
+            "00000000-0000-4000-a003-000000000005",
+            "00000000-0000-4000-a003-000000000006",
+            "00000000-0000-4000-a003-000000000007",
+            "00000000-0000-4000-a003-000000000008"
+          ],
+          "revisions": [
+            "sectioned-3-0",
+            "sectioned-3-1",
+            "sectioned-3-2",
+            "sectioned-3-3",
+            "sectioned-3-4",
+            "sectioned-3-5",
+            "sectioned-3-6",
+            "sectioned-3-7",
+            "sectioned-3-8",
+            "sectioned-3-9",
+            "sectioned-3-10",
+            "sectioned-3-11",
+            "sectioned-3-12",
+            "sectioned-3-13",
+            "sectioned-3-14",
+            "sectioned-3-15",
+            "sectioned-3-16",
+            "sectioned-3-17",
+            "sectioned-3-18",
+            "sectioned-3-19",
+            "sectioned-3-20",
+            "sectioned-3-21"
+          ],
+          "suffixes": [
+            "s0000",
+            "s0001",
+            "s0002",
+            "s0003",
+            "s0004",
+            "s0005",
+            "s0006",
+            "s0007",
+            "s0008",
+            "s0009",
+            "s0010",
+            "s0011",
+            "s0012",
+            "s0013",
+            "s0014",
+            "s0015",
+            "s0016",
+            "s0017",
+            "s0018",
+            "s0019"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.register.v1",
+          "arguments": {
+            "documents": [
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Pool",
+                "metadata": {
+                  "name": "broken"
+                }
+              }
+            ]
+          },
+          "readable": true,
+          "authority_readable": true
+        }
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "invalid"
+          },
+          "structuredContent": {
+            "diagnostics": [
+              {
+                "ruleId": "OPS-033",
+                "level": "error"
+              }
+            ]
+          }
+        },
+        "external_intents": []
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-21T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-a004-000000000001",
+            "00000000-0000-4000-a004-000000000002",
+            "00000000-0000-4000-a004-000000000003",
+            "00000000-0000-4000-a004-000000000004",
+            "00000000-0000-4000-a004-000000000005",
+            "00000000-0000-4000-a004-000000000006",
+            "00000000-0000-4000-a004-000000000007",
+            "00000000-0000-4000-a004-000000000008"
+          ],
+          "revisions": [
+            "sectioned-4-0",
+            "sectioned-4-1",
+            "sectioned-4-2",
+            "sectioned-4-3",
+            "sectioned-4-4",
+            "sectioned-4-5",
+            "sectioned-4-6",
+            "sectioned-4-7",
+            "sectioned-4-8",
+            "sectioned-4-9",
+            "sectioned-4-10",
+            "sectioned-4-11",
+            "sectioned-4-12",
+            "sectioned-4-13",
+            "sectioned-4-14",
+            "sectioned-4-15",
+            "sectioned-4-16",
+            "sectioned-4-17",
+            "sectioned-4-18",
+            "sectioned-4-19",
+            "sectioned-4-20",
+            "sectioned-4-21"
+          ],
+          "suffixes": [
+            "s0000",
+            "s0001",
+            "s0002",
+            "s0003",
+            "s0004",
+            "s0005",
+            "s0006",
+            "s0007",
+            "s0008",
+            "s0009",
+            "s0010",
+            "s0011",
+            "s0012",
+            "s0013",
+            "s0014",
+            "s0015",
+            "s0016",
+            "s0017",
+            "s0018",
+            "s0019"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.register.v1",
+          "arguments": {
+            "documents": [
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "spec": {
+                  "type": "github.com/shrav-k/conduit/core#pool.v1"
+                },
+                "metadata": {
+                  "name": "frameless"
+                }
+              }
+            ]
+          },
+          "readable": true,
+          "authority_readable": true
+        }
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "invalid"
+          },
+          "structuredContent": {
+            "diagnostics": [
+              {
+                "ruleId": "OPS-033",
+                "level": "error"
+              }
+            ]
+          }
+        },
+        "external_intents": []
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-21T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-a005-000000000001",
+            "00000000-0000-4000-a005-000000000002",
+            "00000000-0000-4000-a005-000000000003",
+            "00000000-0000-4000-a005-000000000004",
+            "00000000-0000-4000-a005-000000000005",
+            "00000000-0000-4000-a005-000000000006",
+            "00000000-0000-4000-a005-000000000007",
+            "00000000-0000-4000-a005-000000000008"
+          ],
+          "revisions": [
+            "sectioned-5-0",
+            "sectioned-5-1",
+            "sectioned-5-2",
+            "sectioned-5-3",
+            "sectioned-5-4",
+            "sectioned-5-5",
+            "sectioned-5-6",
+            "sectioned-5-7",
+            "sectioned-5-8",
+            "sectioned-5-9",
+            "sectioned-5-10",
+            "sectioned-5-11",
+            "sectioned-5-12",
+            "sectioned-5-13",
+            "sectioned-5-14",
+            "sectioned-5-15",
+            "sectioned-5-16",
+            "sectioned-5-17",
+            "sectioned-5-18",
+            "sectioned-5-19",
+            "sectioned-5-20",
+            "sectioned-5-21"
+          ],
+          "suffixes": [
+            "s0000",
+            "s0001",
+            "s0002",
+            "s0003",
+            "s0004",
+            "s0005",
+            "s0006",
+            "s0007",
+            "s0008",
+            "s0009",
+            "s0010",
+            "s0011",
+            "s0012",
+            "s0013",
+            "s0014",
+            "s0015",
+            "s0016",
+            "s0017",
+            "s0018",
+            "s0019"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.register.v1",
+          "arguments": {
+            "documents": [
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Pool",
+                "metadata": {
+                  "name": "library-template"
+                },
+                "spec": {
+                  "type": "github.com/shrav-k/conduit/core#pool.v1"
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "pools": {
+                  "library": {
+                    "type": "github.com/shrav-k/conduit/core#pool.v1"
+                  }
+                }
+              }
+            ],
+            "manifest": "malformed"
+          },
+          "readable": true,
+          "authority_readable": true
+        }
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "invalid"
+          },
+          "structuredContent": {
+            "diagnostics": [
+              {
+                "ruleId": "SUB-005",
+                "level": "error",
+                "message": {
+                  "text": "documents[1]: the register.v1 wire accepts framed documents only"
+                },
+                "locations": [
+                  {
+                    "logicalLocations": [
+                      {
+                        "fullyQualifiedName": "/documents/1"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "ruleId": "OPS-033",
+                "level": "error",
+                "locations": [
+                  {
+                    "logicalLocations": [
+                      {
+                        "fullyQualifiedName": "/manifest"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "external_intents": []
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-21T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-a006-000000000001",
+            "00000000-0000-4000-a006-000000000002",
+            "00000000-0000-4000-a006-000000000003",
+            "00000000-0000-4000-a006-000000000004",
+            "00000000-0000-4000-a006-000000000005",
+            "00000000-0000-4000-a006-000000000006",
+            "00000000-0000-4000-a006-000000000007",
+            "00000000-0000-4000-a006-000000000008"
+          ],
+          "revisions": [
+            "sectioned-6-0",
+            "sectioned-6-1",
+            "sectioned-6-2",
+            "sectioned-6-3",
+            "sectioned-6-4",
+            "sectioned-6-5",
+            "sectioned-6-6",
+            "sectioned-6-7",
+            "sectioned-6-8",
+            "sectioned-6-9",
+            "sectioned-6-10",
+            "sectioned-6-11",
+            "sectioned-6-12",
+            "sectioned-6-13",
+            "sectioned-6-14",
+            "sectioned-6-15",
+            "sectioned-6-16",
+            "sectioned-6-17",
+            "sectioned-6-18",
+            "sectioned-6-19",
+            "sectioned-6-20",
+            "sectioned-6-21"
+          ],
+          "suffixes": [
+            "s0000",
+            "s0001",
+            "s0002",
+            "s0003",
+            "s0004",
+            "s0005",
+            "s0006",
+            "s0007",
+            "s0008",
+            "s0009",
+            "s0010",
+            "s0011",
+            "s0012",
+            "s0013",
+            "s0014",
+            "s0015",
+            "s0016",
+            "s0017",
+            "s0018",
+            "s0019"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.register.v1",
+          "arguments": {
+            "documents": [
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Pool",
+                "metadata": {
+                  "name": "library-template"
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "pools": {
+                  "library": {
+                    "type": "github.com/shrav-k/conduit/core#pool.v1"
+                  }
+                }
+              }
+            ]
+          },
+          "readable": true,
+          "authority_readable": true
+        }
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "invalid"
+          },
+          "structuredContent": {
+            "diagnostics": [
+              {
+                "ruleId": "SUB-005",
+                "level": "error",
+                "message": {
+                  "text": "documents[1]: the register.v1 wire accepts framed documents only"
+                },
+                "locations": [
+                  {
+                    "logicalLocations": [
+                      {
+                        "fullyQualifiedName": "/documents/1"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "ruleId": "OPS-033",
+                "level": "error",
+                "locations": [
+                  {
+                    "logicalLocations": [
+                      {
+                        "fullyQualifiedName": "/documents/0"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "external_intents": []
+      }
+    }
+  ]
+}

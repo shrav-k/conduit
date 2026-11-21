@@ -607,14 +607,13 @@ fn run_case_portable(
             Ok((actual, next))
         };
         let (mut actual, next) = run().map_err(|e| format!("step {}: {e}", index + 1))?;
-        portable.after_step(
-            &case.id,
-            index + 1,
-            &expand(&raw_step["expect"], &symbols, spec)?,
-            &actual,
-            context,
-        )?;
+        let expected = expand(&raw_step["expect"], &symbols, spec)?;
+        portable.after_step(&case.id, index + 1, &expected, &actual, context)?;
         expect::prepare(&mut actual, &next)?;
+        if raw_step["input"]["kind"] == "translate" && actual["accepted"] == true {
+            expect::framed(&expected, &actual, base, case)
+                .map_err(|error| format!("step {}: {error}", index + 1))?;
+        }
         expect::check(raw_step, &symbols, spec, &state, &next, &actual, index)?;
         if let Some(captures) = raw_step["capture"].as_object() {
             for (name, pointer) in captures {
@@ -712,6 +711,66 @@ mod explanation_regressions {
         Evidence, Input, State,
         access::{AccessRequest, Identity},
     };
+
+    #[test]
+    fn equivalent_fails_on_a_differing_framed_project() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let spec = Specification::read(&root.join("spec")).unwrap();
+        let (_, context) = started();
+        let snapshot =
+            read_value(&root.join("conformance/fixtures/root-system-state.json")).unwrap();
+        let state: State =
+            serde_json::from_value(expand(&snapshot, &BTreeMap::new(), &spec).unwrap()).unwrap();
+        let established =
+            read_value(&root.join("conformance/language/registration/type-default/case.yaml"))
+                .unwrap();
+        let mut input = established["steps"][0]["input"].clone();
+        input["request"]["operation"] = json!(format!("{}#register.v1", context.core_package));
+        input["equivalent"] = json!("other");
+        let temporary = std::env::temp_dir().join(format!(
+            "conduit-equivalent-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir(&temporary).unwrap();
+        let case: Case = serde_json::from_value(json!({
+            "id":"equivalent-test","layers":["language"],"promises":["SCT-015"],
+            "title":"Differing operation","profile":"first-build","initial":{"recipe":"empty"},
+            "files":{"fixture":"fixture.json","other":"other.json","left":"left.json","right":"right.json"},
+            "steps":[]
+        })).unwrap();
+        for (fixture, doc, operation) in [
+            ("fixture.json", "left", "open.v1"),
+            ("other.json", "right", "close.v1"),
+        ] {
+            let recipe = json!({"snapshots":[],"project":{"files":{"template.json":doc}}});
+            std::fs::write(temporary.join(fixture), recipe.to_string()).unwrap();
+            let frame = json!({
+                "apiVersion":spec.names().api_version,"kind":"Conduit","metadata":{"name":"review"},
+                "spec":{"capability":format!("{}#access-control.v1", context.core_package),
+                    "operations":[format!("{}#{operation}", context.core_package)]}
+            });
+            std::fs::write(temporary.join(format!("{doc}.json")), frame.to_string()).unwrap();
+        }
+        let outcome = steps::run(&steps::Step {
+            base: &temporary,
+            case: &case,
+            input: &input,
+            kind: "register-project",
+            state: &state,
+            context: &context,
+            spec: &spec,
+            symbols: &BTreeMap::new(),
+        });
+        std::fs::remove_dir_all(temporary).unwrap();
+        let Err(error) = outcome else {
+            panic!("registration accepted a differing framed project")
+        };
+        assert!(error.contains("operations"), "{error}");
+    }
 
     fn started() -> (State, Context) {
         let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");

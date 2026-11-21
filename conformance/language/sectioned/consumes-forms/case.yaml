@@ -1,0 +1,85 @@
+{
+  "id": "sectioned-consumes-forms",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-007",
+    "SUB-005"
+  ],
+  "title": "Consumes rejects a bare target, mixed forms and use on a Pool",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "bare.json": "bare.json",
+    "mixed.json": "mixed.json",
+    "on-pool.json": "on-pool.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "bare.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "file": "bare.json",
+              "document": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "mixed.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "file": "mixed.json",
+              "document": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "on-pool.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "file": "on-pool.json",
+              "document": 1
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

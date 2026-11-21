@@ -9,6 +9,7 @@ mod request_fixture;
 mod resolve_project;
 mod restore_state;
 mod schema_case;
+mod translate;
 mod validate_values;
 pub(super) struct Step<'a> {
     pub base: &'a Path,
@@ -44,6 +45,7 @@ pub(super) fn run(step: &Step<'_>) -> Result<(Value, State)> {
         "resolve-project" | "register-project" | "registration-orders" => resolve_project::run(step),
         "read" => read::run(step),
         "load" | "submit-files" => load::run(step),
+        "translate" => translate::run(step),
         "schema-case" | "schema-admission" | "schema-evaluation" => schema_case::run(step),
         "validate-values" => validate_values::run(step),
         _ => core::run(step),

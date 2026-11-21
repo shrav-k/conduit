@@ -1,0 +1,45 @@
+{
+  "id": "sectioned-instance-metadata",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-006"
+  ],
+  "title": "An inline definition's description and annotations belong only to its instance",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.json": "authored.json",
+    "framed.json": "framed.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "framed": "framed.json",
+        "translations": [
+          {
+            "kind": "Interface",
+            "name": "auditor",
+            "rule": "SCT-006"
+          },
+          {
+            "kind": "Interface",
+            "name": "auditor--t",
+            "rule": "SCT-006"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "id": "sectioned-atomic-set",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-003",
+    "SUB-003"
+  ],
+  "title": "One bad document rejects a submitted set that contains a valid document",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "valid.json": "valid.json",
+    "invalid.json": "invalid.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "valid.json",
+          "invalid.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "file": "invalid.json",
+              "document": 1
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/grants"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sectioned"
+            ],
+            "keyword_location": true,
+            "keyword": "additionalProperties",
+            "contract": "sectioned.v1",
+            "pointer": "/additionalProperties",
+            "root_schema": "sectioned.v1"
+          }
+        ]
+      }
+    }
+  ]
+}

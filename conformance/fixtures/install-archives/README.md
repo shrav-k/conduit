@@ -38,3 +38,7 @@ before `..`; only the directory form can be read (MAN-011, SUB-010 and MAN-013).
 link-expansion fixtures require 39, 40 and 41 replacements from `conduit.yaml` to its regular
 manifest, accepting the first two and rejecting the last under the profile's DL7 limit.
 The escape vectors assert both the archive name and the offending member `escape` (MAN-014).
+
+The sectioned archive fixtures export the Pool template `catalog` from a templates-only
+package, or contain a `fleet` key or an empty `agents` section that installation rejects
+under MAN-011.

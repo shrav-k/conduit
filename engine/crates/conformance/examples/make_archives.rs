@@ -407,6 +407,32 @@ fn main() {
         })
         .unwrap()
         .to_owned();
+    for (suffix, sections, exports) in [
+        (
+            "templates",
+            "templates:\n  pools:\n    catalog: {type: 'github.com/shrav-k/conduit/core#pool.v1'}\n",
+            "exports: [catalog]\n",
+        ),
+        ("fleet", "fleet: maintainers\n", ""),
+        ("agents", "agents: {}\n", ""),
+    ] {
+        let name = format!("sectioned-{suffix}");
+        let manifest =
+            format!("{api}\naddress: example.org/conformance/{name}\nversion: 0.1.0\n{exports}");
+        generated.insert(
+            name,
+            archive(BTreeMap::from([
+                (
+                    "conduit.yaml".into(),
+                    (manifest.into_bytes(), b'0', String::new()),
+                ),
+                (
+                    "sections.yaml".into(),
+                    (sections.as_bytes().to_vec(), b'0', String::new()),
+                ),
+            ])),
+        );
+    }
     let instance =
         format!("{api}\nkind: Pool\nmetadata:\n  name: unwanted\nfrom: unused\n").into_bytes();
     for (name, path, data, kind, target) in [

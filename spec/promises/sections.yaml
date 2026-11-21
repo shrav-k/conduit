@@ -36,7 +36,8 @@
     `apiVersion`. With neither it is rejected. Every document its translation makes carries
     that version.
   observable: >-
-    An unknown version is rejected under OBJ-017. OBJ-024 applies to the effective version,
+    An unknown version is one OBJ-017 rejects; a Schema contract rejects it, so it is reported
+    under SUB-005, at the authored place under SCT-014. OBJ-024 applies to the effective version,
     including its prohibition on mixing versions' names. The manifest's version is not changed
     by translation.
 

@@ -74,47 +74,62 @@ fn the_trees_of_examples_are_flat() {
 }
 
 #[test]
+fn every_valid_sectioned_example_reads_as_its_translation() {
+    for (name, expected) in [
+        (
+            "sectioned-project",
+            &[
+                ("Conduit", "auditor--catalog"),
+                ("Interface", "auditor"),
+                ("Interface", "auditor--t"),
+                ("Pool", "releases"),
+                ("Pool", "releases--t"),
+                ("Resource", "artifacts"),
+                ("Resource", "artifacts--t"),
+            ][..],
+        ),
+        (
+            "sectioned-package",
+            &[("Conduit", "read"), ("Conduit", "read-write")][..],
+        ),
+    ] {
+        let project = read_project(&examples().join("valid").join(name), specification())
+            .unwrap_or_else(|faults| panic!("{name}: {faults}"));
+        let documents: Vec<_> = project.documents.iter().map(|d| d.root.to_json()).collect();
+        for (document, translation) in project.documents.iter().zip(project.translations()) {
+            let translation = translation.as_ref().expect("sectioned example provenance");
+            let [source] = translation.sources.as_slice() else {
+                panic!("an example definition has one authored source");
+            };
+            assert_eq!(source.file, document.file);
+            assert_eq!(source.document, document.index);
+            assert!(source.pointer.starts_with('/'), "{}", source.pointer);
+        }
+        let mut actual = documents
+            .iter()
+            .map(|d| {
+                (
+                    d["kind"].as_str().unwrap(),
+                    d["metadata"]["name"].as_str().unwrap(),
+                )
+            })
+            .collect::<Vec<_>>();
+        actual.sort_unstable();
+        assert_eq!(actual, expected, "{name}");
+    }
+}
+
+#[test]
 fn every_valid_example_is_accepted() {
     let directories = directories_in(&examples().join("valid"));
     assert!(!directories.is_empty());
     for directory in directories {
-        // Short-form translation is built in 043a/043b. Check its authored schemas here,
-        // without passing a sectioned value through the canonical wire document validator.
-        let files = files_in(&directory);
-        let sectioned = files
-            .iter()
-            .filter(|file| !is_manifest_file(file))
-            .any(|file| {
-                read_file(file)
-                    .expect("strict example syntax")
-                    .iter()
-                    .any(|document| document.root.get("kind").is_none())
-            });
-        if sectioned {
-            for file in files {
-                for document in read_file(&file).expect("strict example syntax") {
-                    if is_manifest_file(&file) {
-                        specification()
-                            .validate(&document, Role::Manifest)
-                            .unwrap_or_else(|fault| panic!("{}: {fault}", file.display()));
-                    } else if document.root.get("kind").is_none() {
-                        let schema = specification()
-                            .contract_validator("sectioned.v1")
-                            .expect("sectioned schema");
-                        schema
-                            .validate(&document.root.to_json())
-                            .unwrap_or_else(|fault| panic!("{}: {fault}", file.display()));
-                    } else {
-                        specification()
-                            .validate(&document, Role::Document)
-                            .unwrap_or_else(|fault| panic!("{}: {fault}", file.display()));
-                    }
-                }
-            }
-            continue;
-        }
         let project = read_project(&directory, specification())
             .unwrap_or_else(|faults| panic!("{}: {faults}", directory.display()));
+        if project.translations().iter().any(Option::is_some) {
+            // The sectioned test checks the contents of the expansion.
+            continue;
+        }
         // Every file of the directory is read: the manifest, and each document of the others.
         let mut documents = 0;
         for file in files_in(&directory) {

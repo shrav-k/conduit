@@ -15,13 +15,14 @@ use std::path::Path;
 use jsonschema::Validator;
 use jsonschema::error::ValidationErrorKind;
 use serde_json::{Map, Value as Json};
+use std::sync::OnceLock;
 
 use crate::authored;
 use crate::diagnostic::{Diagnostic, Diagnostics, SchemaLocation};
 use crate::formats;
 use crate::project;
 use crate::read::{Document, read_file};
-use crate::rules::{NAM_027, SCH_001, SCH_015, SCH_016, SUB_005};
+use crate::rules::{NAM_027, SCH_001, SCH_015, SCH_016, SCT_002, SUB_005};
 use crate::value::Node;
 
 /// The names that `spec/names.yaml` defines and the loader uses. They are read from that file
@@ -75,6 +76,7 @@ pub struct Specification {
     template: Validator,
     instance: Validator,
     contract: Validator,
+    sectioned: OnceLock<Result<Validator, Diagnostics>>,
 }
 
 impl std::fmt::Debug for Specification {
@@ -104,7 +106,7 @@ impl Specification {
             if !faults.is_empty() {
                 return Err(Diagnostics(faults));
             }
-            documents.extend(read.documents);
+            documents.extend(read.documents.into_iter().flatten());
         }
         Specification::from_documents(names, &documents)
     }
@@ -145,6 +147,7 @@ impl Specification {
             template: build("template.v1")?,
             instance: build("instance.v1")?,
             contract: build("contract.v1")?,
+            sectioned: OnceLock::new(),
             names,
             contracts,
         })
@@ -209,29 +212,85 @@ impl Specification {
                 Some(first_failure(narrow, &instance).unwrap_or(found))
             }),
         };
-        match failure {
-            None => Ok(()),
-            Some(failure) => {
-                let node = document.root.locate(&failure.instance_path);
-                let mut diagnostic = Diagnostic::new(
-                    SUB_005,
-                    format!(
-                        "not valid against `{}`: {}",
-                        failure.contract, failure.message
-                    ),
-                )
-                .in_file(document.file.clone())
-                .in_document(document.index)
-                .at_pointer(failure.instance_path)
-                .at(node.position);
-                diagnostic.schema_location = Some(Box::new(SchemaLocation {
-                    keyword_location: failure.keyword_location,
-                    absolute_keyword_location: failure.absolute_keyword_location,
-                }));
-                Err(diagnostic)
-            }
+        failure.map_or(Ok(()), |failure| {
+            Err(schema_diagnostic(document, failure, false))
+        })
+    }
+
+    pub(crate) fn check_sectioned(
+        &self,
+        document: &Document,
+        version: Option<&Node>,
+    ) -> Result<(), Diagnostics> {
+        let validator = self
+            .sectioned
+            .get_or_init(|| self.contract_validator("sectioned.v1"));
+        let validator = validator.as_ref().map_err(Clone::clone)?;
+        // A stated version belongs to this schema check. The manifest's check owns
+        // the diagnostic for an inherited version.
+        let instance = document.root.to_json();
+        if document.root.get("metadata").is_some() || document.root.get("spec").is_some() {
+            let mut failure =
+                first_failure(validator, &instance).expect("framed keys fail sectioned.v1");
+            failure.message = "a framed document needs kind".into();
+            failure.contract = "sectioned.v1".into();
+            return Err(schema_diagnostic(document, failure, true).into());
+        }
+        let mut failures = Vec::new();
+        for error in validator.iter_errors(&instance) {
+            sectioned_failures(&error, &mut failures);
+        }
+        locate_keywords(validator, &instance, &mut failures);
+        let mut diagnostics: Vec<_> = failures
+            .into_iter()
+            .map(|failure| schema_diagnostic(document, failure, true))
+            .collect();
+        if version.is_none() {
+            diagnostics.push(
+                Diagnostic::new(SCT_002, "apiVersion is required when the manifest has none")
+                    .in_file(document.file.clone())
+                    .in_document(document.index)
+                    .at_pointer("/apiVersion")
+                    .at(document.root.position),
+            );
+        }
+        diagnostics.sort_by(|a, b| {
+            a.pointer
+                .cmp(&b.pointer)
+                .then(a.keyword_location().cmp(&b.keyword_location()))
+        });
+        diagnostics.dedup();
+        if diagnostics.is_empty() {
+            Ok(())
+        } else {
+            Err(Diagnostics(diagnostics))
         }
     }
+}
+
+fn schema_diagnostic(document: &Document, failure: Failure, authored_member: bool) -> Diagnostic {
+    let mut pointer = failure.instance_path;
+    if authored_member && let Some(member) = failure.member {
+        pointer.push('/');
+        pointer.push_str(&member.replace('~', "~0").replace('/', "~1"));
+    }
+    let position = document.root.locate(&pointer).position;
+    let mut diagnostic = Diagnostic::new(
+        SUB_005,
+        format!(
+            "not valid against `{}`: {}",
+            failure.contract, failure.message
+        ),
+    )
+    .in_file(document.file.clone())
+    .in_document(document.index)
+    .at_pointer(pointer)
+    .at(position);
+    diagnostic.schema_location = Some(Box::new(SchemaLocation {
+        keyword_location: failure.keyword_location,
+        absolute_keyword_location: failure.absolute_keyword_location,
+    }));
+    diagnostic
 }
 
 /// Compile a schema with the validator's options (see [`formats::options`]). Used for the
@@ -403,9 +462,11 @@ fn narrow_role(instance: &Json) -> Option<&'static str> {
 }
 
 /// Why a value is not valid, in the terms a diagnostic needs.
+#[derive(Clone)]
 struct Failure {
     /// Where in the document, as a JSON Pointer.
     instance_path: String,
+    member: Option<String>,
     /// The Schema contract whose keyword failed.
     contract: String,
     keyword_location: String,
@@ -419,29 +480,47 @@ fn first_failure(validator: &Validator, instance: &Json) -> Option<Failure> {
     let mut errors: Vec<_> = validator.iter_errors(instance).collect();
     errors.sort_by(|a, b| a.instance_path().as_str().cmp(b.instance_path().as_str()));
     let mut failure = errors.first().map(|error| explain(error))?;
+    locate_keywords(validator, instance, std::slice::from_mut(&mut failure));
+    Some(failure)
+}
+
+fn locate_keywords(validator: &Validator, instance: &Json, failures: &mut [Failure]) {
+    if failures.is_empty() {
+        return;
+    }
     // Custom keywords in jsonschema 0.61 lose the reference tracker in iter_errors.
     // Its evaluation tree retains it: use that path for JSON Schema 2020-12's
     // keywordLocation, which must include every by-reference applicator.
     let evaluation = validator.evaluate(instance);
     let mut units = vec![evaluation.root()];
+    let mut locations = BTreeMap::new();
     while let Some(unit) = units.pop() {
-        if !unit.valid()
-            && !unit.errors().is_empty()
-            && unit.schema_location() == failure.schema_location
-            && unit.instance_location().as_str() == failure.instance_path
-        {
-            failure.keyword_location = unit.evaluation_path().as_str().to_string();
-            break;
+        if !unit.valid() && !unit.errors().is_empty() {
+            locations
+                .entry((
+                    unit.schema_location().to_string(),
+                    unit.instance_location().as_str().to_string(),
+                ))
+                .or_insert_with(|| unit.evaluation_path().as_str().to_string());
         }
         units.extend(unit.children());
     }
-    Some(failure)
+    for failure in failures {
+        if let Some(location) = locations.get(&(
+            failure.schema_location.clone(),
+            failure.instance_path.clone(),
+        )) {
+            failure.keyword_location.clone_from(location);
+        }
+    }
 }
 
 /// Say why a value is not valid. Where a schema offers alternatives, follow the one the value
 /// was most plainly meant for, as `explain()` in `tools/check_schemas.py` does: the one whose
 /// `kind` it has, then one whose type it has, then the one it breaks in the fewest places.
-fn explain(error: &jsonschema::ValidationError<'_>) -> Failure {
+fn best_branch<'a>(
+    error: &'a jsonschema::ValidationError<'_>,
+) -> Option<&'a [jsonschema::ValidationError<'static>]> {
     let branches = match error.kind() {
         ValidationErrorKind::AnyOf { context } | ValidationErrorKind::OneOfNotValid { context } => {
             Some(context)
@@ -449,7 +528,7 @@ fn explain(error: &jsonschema::ValidationError<'_>) -> Failure {
         _ => None,
     };
     let parent = error.instance_path().as_str();
-    let best = branches.and_then(|branches| {
+    branches.and_then(|branches| {
         branches
             .iter()
             .filter(|subs| !subs.is_empty())
@@ -472,8 +551,12 @@ fn explain(error: &jsonschema::ValidationError<'_>) -> Failure {
                     .unwrap_or(0);
                 (other_kind, wrong_type, subs.len(), usize::MAX - deepest)
             })
-    });
-    if let Some(subs) = best {
+            .map(Vec::as_slice)
+    })
+}
+
+fn explain(error: &jsonschema::ValidationError<'_>) -> Failure {
+    if let Some(subs) = best_branch(error) {
         let has_context = |s: &jsonschema::ValidationError<'_>| {
             matches!(
                 s.kind(),
@@ -488,6 +571,37 @@ fn explain(error: &jsonschema::ValidationError<'_>) -> Failure {
             return explain(chosen);
         }
     }
+    describe(error)
+}
+
+fn sectioned_failures(error: &jsonschema::ValidationError<'_>, failures: &mut Vec<Failure>) {
+    if let Some(branch) = best_branch(error) {
+        for error in branch {
+            sectioned_failures(error, failures);
+        }
+        return;
+    }
+    let mut failure = describe(error);
+    match error.kind() {
+        ValidationErrorKind::AdditionalProperties { unexpected } if unexpected.len() > 1 => {
+            for member in unexpected {
+                let mut fault = failure.clone();
+                fault.member = Some(member.clone());
+                fault.message = format!("additional property {member:?} is not allowed");
+                failures.push(fault);
+            }
+            return;
+        }
+        ValidationErrorKind::Required { property } if !failure.instance_path.is_empty() => {
+            failure.member = property.as_str().map(str::to_owned);
+        }
+        _ => {}
+    }
+    failures.push(failure);
+}
+
+fn describe(error: &jsonschema::ValidationError<'_>) -> Failure {
+    let parent = error.instance_path().as_str();
     let schema_path = error.schema_path().as_str();
     let mut tokens = schema_path.split('/');
     let contract = tokens
@@ -504,6 +618,13 @@ fn explain(error: &jsonschema::ValidationError<'_>) -> Failure {
     }
     Failure {
         instance_path: parent.to_string(),
+        member: match error.kind() {
+            ValidationErrorKind::AdditionalProperties { unexpected } => unexpected.first().cloned(),
+            ValidationErrorKind::PropertyNames { error } => {
+                error.instance().as_str().map(str::to_owned)
+            }
+            _ => None,
+        },
         contract,
         keyword_location: error.evaluation_path().as_str().to_string(),
         schema_location: error

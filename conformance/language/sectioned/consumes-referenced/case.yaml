@@ -1,0 +1,56 @@
+{
+  "id": "sectioned-consumes-referenced",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-007",
+    "SCT-004"
+  ],
+  "title": "A consumes reference can name a core scope, package export or local template",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.json": "authored.json",
+    "framed.json": "framed.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "framed": "framed.json",
+        "translations": [
+          {
+            "kind": "Conduit",
+            "name": "auditor--files",
+            "rule": "SCT-007"
+          },
+          {
+            "kind": "Conduit",
+            "name": "auditor--local",
+            "rule": "SCT-007"
+          },
+          {
+            "kind": "Conduit",
+            "name": "auditor--scope",
+            "rule": "SCT-007"
+          },
+          {
+            "kind": "Interface",
+            "name": "auditor",
+            "rule": "SCT-006"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -41,6 +41,7 @@ fn load(
     files: &BTreeMap<String, String>,
     spec: &Specification,
     reverse_files: bool,
+    framed: bool,
 ) -> Result<Project> {
     let mut bytes = recipe
         .files
@@ -56,6 +57,20 @@ fn load(
     if reverse_files {
         bytes.reverse();
     }
+    if framed {
+        for (name, file) in &bytes {
+            if let conduit_loader::FileRole::Documents(syntax) = conduit_loader::FileRole::of(name)
+                && read_bytes(syntax, file)
+                    .map_err(|error| error.to_string())?
+                    .iter()
+                    .any(|document| document.get("kind").is_none())
+            {
+                return Err(format!(
+                    "equivalent project must hold framed documents: {name}"
+                ));
+            }
+        }
+    }
     let p = read_submitted_files(&bytes, spec).map_err(|e| e.to_string())?;
     Ok(Project {
         manifest: p.manifest.map(|d| d.root.to_json()),
@@ -63,6 +78,14 @@ fn load(
         directory: recipe.directory,
     })
 }
+#[derive(Clone, Copy)]
+pub(super) struct Registration<'a> {
+    pub evidence: &'a Value,
+    pub request: &'a Value,
+    pub order: usize,
+    pub framed: bool,
+}
+
 pub(super) fn run(
     base: &Path,
     file: &str,
@@ -70,7 +93,7 @@ pub(super) fn run(
     state: &State,
     spec: &Specification,
     context: &Context,
-    registration: Option<(&Value, &Value, usize)>,
+    registration: Option<Registration<'_>>,
 ) -> Result<conduit_core::Transition> {
     let path = files.get(file).ok_or("undeclared context fixture")?;
     let fixture: Fixture =
@@ -92,7 +115,7 @@ pub(super) fn run(
             address: recipe.address,
             version: recipe.version,
             digest: recipe.digest,
-            project: load(recipe.project, base, files, spec, false)?,
+            project: load(recipe.project, base, files, spec, false, false)?,
         });
     }
     for artifact in fixture.artifacts {
@@ -118,21 +141,22 @@ pub(super) fn run(
         base,
         files,
         spec,
-        registration.is_some_and(|(_, _, order)| order == 2),
+        registration.is_some_and(|input| input.order == 2),
+        registration.is_some_and(|input| input.framed),
     )?;
-    if registration.is_some_and(|(_, _, order)| order == 1) {
+    if registration.is_some_and(|input| input.order == 1) {
         project.documents.reverse();
     }
-    if registration.is_some_and(|(_, _, order)| order == 2) && !project.documents.is_empty() {
+    if registration.is_some_and(|input| input.order == 2) && !project.documents.is_empty() {
         project.documents.rotate_left(1);
     }
-    let input = if let Some((evidence, request, _)) = registration {
+    let input = if let Some(input) = registration {
         Input::RegisterProject {
             snapshots,
             builtin,
             project,
-            evidence: serde_json::from_value(evidence.clone()).map_err(|e| e.to_string())?,
-            request: serde_json::from_value(request.clone()).map_err(|e| e.to_string())?,
+            evidence: serde_json::from_value(input.evidence.clone()).map_err(|e| e.to_string())?,
+            request: serde_json::from_value(input.request.clone()).map_err(|e| e.to_string())?,
         }
     } else {
         Input::ResolveProject {

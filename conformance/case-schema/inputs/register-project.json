@@ -81,6 +81,19 @@
     },
     "reverse": {
       "type": "boolean"
+    },
+    "equivalent": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "dependentSchemas": {
+    "equivalent": {
+      "properties": {
+        "kind": {
+          "const": "register-project"
+        }
+      }
     }
   },
   "required": [

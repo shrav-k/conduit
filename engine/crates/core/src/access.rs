@@ -457,6 +457,7 @@ pub(crate) struct Verdict {
     pub(crate) rules: Vec<&'static str>,
     pub(crate) restriction: Option<Value>,
     pub(crate) route: Value,
+    pub(crate) independent_schema_failures: Vec<String>,
 }
 impl Verdict {
     fn reason(reason: &'static str, rule: &'static str) -> Self {
@@ -465,6 +466,7 @@ impl Verdict {
             rules: vec![rule],
             restriction: None,
             route: Value::Null,
+            independent_schema_failures: Vec::new(),
         }
     }
     fn restriction(reason: &'static str, rule: &'static str, r: &Value) -> Self {
@@ -472,6 +474,28 @@ impl Verdict {
         v.restriction = Some(json!({"requirement":r["requirement"],"arguments":r["arguments"]}));
         v
     }
+}
+
+pub(crate) fn sectioned_wire_items(arguments: &Value) -> impl Iterator<Item = usize> + '_ {
+    values(arguments, "documents")
+        .enumerate()
+        .filter_map(|(index, item)| {
+            let keys = item.as_object()?;
+            let sections = [
+                "fleet",
+                "templates",
+                "interfaces",
+                "agents",
+                "resources",
+                "pools",
+                "conduits",
+            ];
+            (!keys.contains_key("kind")
+                && !keys.contains_key("metadata")
+                && !keys.contains_key("spec")
+                && sections.iter().any(|section| keys.contains_key(*section)))
+            .then_some(index)
+        })
 }
 pub(crate) fn management<'a>(state: &'a State, name: &str, context: &Context) -> Result<&'a Value> {
     state
@@ -1111,7 +1135,33 @@ fn evaluate_path(
         contract["spec"].get("changes").is_none(),
         &context.core_package,
     )?;
-    if !schemas::standalone_valid(&publication["tool"]["inputSchema"], &args)? {
+    let validator = schemas::standalone_validator(&publication["tool"]["inputSchema"], &args)?;
+    if !validator.is_valid(&args) {
+        // SCT-001 and SUB-005 distinguish a sectioned document on the framed-only wire.
+        if registration {
+            let items: BTreeSet<_> = sectioned_wire_items(&request.arguments).collect();
+            if !items.is_empty() {
+                let mut verdict = Verdict::reason("invalid", "SUB-005");
+                verdict.rules.push("SCT-001");
+                // OPS-033 still governs failures outside the rejected sectioned items.
+                for error in validator.iter_errors(&args) {
+                    let pointer = error.instance_path().as_str();
+                    let sectioned = pointer
+                        .strip_prefix("/documents/")
+                        .and_then(|path| path.split('/').next())
+                        .and_then(|index| index.parse::<usize>().ok())
+                        .is_some_and(|index| items.contains(&index));
+                    if !sectioned {
+                        verdict.independent_schema_failures.push(pointer.into());
+                    }
+                }
+                if !verdict.independent_schema_failures.is_empty() {
+                    verdict.independent_schema_failures.sort_unstable();
+                    verdict.rules.push("OPS-033");
+                }
+                return Ok(verdict);
+            }
+        }
         return Ok(Verdict::reason("invalid", "SCH-001"));
     }
     if [
@@ -1202,6 +1252,7 @@ fn evaluate_path(
             "IFC-020", "IFC-022",
         ],
         restriction: None,
+        independent_schema_failures: Vec::new(),
         route: json!({"consumer":instance["id"],"caller":caller,"conduit":path["id"],"target":target["id"],"operation":op,"arguments":args,"filters":filters,"restrictionMode":"mediated"}),
     })
 }

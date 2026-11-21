@@ -1,0 +1,66 @@
+{
+  "id": "sectioned-pure-order",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-004",
+    "SCH-007",
+    "SUB-001"
+  ],
+  "title": "Renaming and reordering files, reordering keys and changing YAML style preserve frames",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "z-flow.yaml": "z-flow.yaml",
+    "a-block.yaml": "a-block.yaml",
+    "m-template.json": "m-template.json",
+    "framed.json": "framed.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "z-flow.yaml",
+          "m-template.json"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "framed": "framed.json",
+        "translations": [
+          {
+            "kind": "Pool",
+            "name": "library",
+            "rule": "SCT-006"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "m-template.json",
+          "a-block.yaml"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "framed": "framed.json",
+        "translations": [
+          {
+            "kind": "Pool",
+            "name": "library",
+            "rule": "SCT-006"
+          }
+        ]
+      }
+    }
+  ]
+}

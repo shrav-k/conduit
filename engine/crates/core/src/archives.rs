@@ -2,7 +2,7 @@
 use crate::registration::ReportedFault;
 use crate::{Context, Result, Transition, decision, packages::*};
 use conduit_loader::{
-    Document, FileRole, Names, Specification, Syntax, read_bytes, read_submitted_files,
+    Document, FileRole, Names, Specification, Syntax, read_archive_files, read_bytes,
 };
 use flate2::read::MultiGzDecoder;
 use serde::{Deserialize, Serialize};
@@ -249,7 +249,7 @@ pub(crate) fn install(
         return Ok(Some(reject(t, diagnostics)));
     }
     let spec = specification(&builtin, context)?;
-    let loaded = match read_submitted_files(&selected, &spec) {
+    let loaded = match read_archive_files(&selected, &spec) {
         Ok(project) => project,
         Err(errors) => {
             return Ok(Some(reject(

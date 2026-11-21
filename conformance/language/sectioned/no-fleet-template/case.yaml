@@ -1,0 +1,63 @@
+{
+  "id": "sectioned-no-fleet-template",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-005",
+    "SUB-005"
+  ],
+  "title": "The templates section has no Fleet family",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.json": "authored.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "file": "authored.json",
+              "document": 1
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/templates/fleets"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sectioned-templates.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "additionalProperties",
+            "contract": "sectioned-templates.v1",
+            "pointer": "/additionalProperties",
+            "root_schema": "sectioned.v1"
+          }
+        ]
+      }
+    }
+  ]
+}

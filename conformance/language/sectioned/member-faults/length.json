@@ -1,0 +1,9 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "pools": {
+    "broken": null,
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa": {
+      "type": "github.com/shrav-k/conduit/core#pool.v1"
+    }
+  }
+}

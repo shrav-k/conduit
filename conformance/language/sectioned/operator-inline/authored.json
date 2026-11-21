@@ -1,0 +1,13 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "interfaces": {
+    "auditor": {
+      "from": "basis",
+      "operator": {
+        "capability": "example.org/conformance/tools#catalog.v1",
+        "operations": [],
+        "description": "From root"
+      }
+    }
+  }
+}

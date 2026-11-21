@@ -1,0 +1,121 @@
+{
+  "id": "sectioned-consumes-reserved",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-008",
+    "SCT-014"
+  ],
+  "title": "Reserved management and unbounded access consumes point to the offending item",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "management.json": "management.json",
+    "no-bound.json": "no-bound.json",
+    "template.json": "template.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "management.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SCT-008",
+            "level": "error",
+            "properties": {
+              "file": "management.json",
+              "document": 1
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/interfaces/auditor/consumes/admin"
+                  }
+                ]
+              }
+            ],
+            "message": {
+              "text": "write this Conduit under conduits with its consumer and target"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "no-bound.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SCT-008",
+            "level": "error",
+            "properties": {
+              "file": "no-bound.json",
+              "document": 1
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/interfaces/auditor/consumes/admin"
+                  }
+                ]
+              }
+            ],
+            "message": {
+              "text": "write this Conduit under conduits with its consumer and target"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "template.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SCT-008",
+            "level": "error",
+            "properties": {
+              "file": "template.json",
+              "document": 1
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/interfaces/auditor/consumes/admin"
+                  }
+                ]
+              }
+            ],
+            "message": {
+              "text": "write this Conduit under conduits with its consumer and target"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

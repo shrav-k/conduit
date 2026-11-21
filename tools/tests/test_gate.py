@@ -1294,6 +1294,7 @@ class GateTests(unittest.TestCase):
                  ('specs/x.yaml', set(), False), ('engine/x', {'packages/h'}, True),
                  ('conformance/x', set(), True), ('packages/agent-claude-code/x', set(), True),
                  ('packages/agent-codex/x', set(), True), ('packages/provider-file/x', set(), True),
+                 ('packages/github/x', set(), True),
                  ('packages/git/x', set(), True),
                  ('packages/scenario-s2-linear/x', set(), True),
                  ('packages/scenario-s2-linear-restrictions/x', set(), True),

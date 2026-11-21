@@ -64,13 +64,13 @@ TOOL_TESTS_WHY = ('the branch changes nothing under tools/ or .github/workflows/
 RUST_WHY = 'rust discovery did not pass, so no Rust directory or engine gate was chosen'
 ENGINE_PREFIXES = ('engine/', 'spec/', 'conformance/',
                    'experiments/013-s2-shared-login/linear-stub/', 'packages/agent-claude-code/',
-                   'packages/agent-codex/', 'packages/git/', 'packages/provider-file/',
-                   'packages/provider-local-process/', 'packages/runtime-provider-kit/',
-                   'packages/scenario-s2-linear-restrictions/', 'packages/scenario-s2-linear/',
-                   'packages/scenario-s4-effect/')
+                   'packages/agent-codex/', 'packages/git/', 'packages/github/',
+                   'packages/provider-file/', 'packages/provider-local-process/',
+                   'packages/runtime-provider-kit/', 'packages/scenario-s2-linear-restrictions/',
+                   'packages/scenario-s2-linear/', 'packages/scenario-s4-effect/')
 ENGINE_WHY = ('the branch changes nothing under engine/, spec/, conformance/, '
               'experiments/013-s2-shared-login/linear-stub/, packages/agent-claude-code/, '
-              'packages/agent-codex/, packages/git/, packages/provider-file/, '
+              'packages/agent-codex/, packages/git/, packages/github/, packages/provider-file/, '
               'packages/provider-local-process/, packages/runtime-provider-kit/, '
               'packages/scenario-s2-linear-restrictions/, packages/scenario-s2-linear/ or '
               'packages/scenario-s4-effect/')
@@ -86,6 +86,7 @@ OWN_PATHS_ONLY = {
 # directory, path read, evidence file within the directory, literal evidence in that file.
 RUST_READS = (
     ('packages/git', 'spec/', 'tests/schema_drift.rs', '"../../spec'),
+    ('packages/github', 'spec/', 'tests/schema_drift.rs', '"../../spec'),
     ('packages/provider-file', 'spec/', 'tests/schema_drift.rs', '"../../spec'),
     ('packages/provider-keychain', 'spec/', 'tests/schema_drift.rs', '"../../spec'),
     ('packages/provider-local-directory', 'spec/', 'tests/schema_drift.rs', '"../../spec'),

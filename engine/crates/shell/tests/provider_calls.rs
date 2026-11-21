@@ -359,7 +359,13 @@ fn scripted_runtime_provider() {
                     }
                     _ => {}
                 }
-                json!({"content":[],"structuredContent":outputs,"isError":error,"_meta":{format!("{prefix}outcome"):stated}})
+                if name == "run.v1"
+                    && let Some(reason) = mode.strip_prefix("reason-")
+                {
+                    json!({"content":[{"type":"text","text":"private provider detail"}],"isError":true,"_meta":{format!("{prefix}reason"):reason}})
+                } else {
+                    json!({"content":[],"structuredContent":outputs,"isError":error,"_meta":{format!("{prefix}outcome"):stated}})
+                }
             }
             _ => continue,
         };
@@ -483,6 +489,28 @@ fn runtime_provider_setup_discovers_materializes_bridges_and_drop_ends_bridge() 
     drop(fixture.runner);
     deadline(|| groups.iter().all(|pid| unsafe { libc::kill(*pid, 0) } != 0));
 }
+#[test]
+fn runtime_provider_reason_reads_as_unknown() {
+    for mode in ["reason-refused", "reason-unavailable"] {
+        let fixture = Fixture::new(mode);
+        let reply = fixture.setup();
+        assert_eq!(outcome(&fixture.shell, &reply), "unknown", "{mode}");
+        let diagnostics = fixture.runner.diagnostics();
+        assert_eq!(
+            diagnostics
+                .iter()
+                .filter(|d| d.contains("IFC-026") && d.contains("PRV-005"))
+                .count(),
+            1
+        );
+        assert!(
+            !diagnostics
+                .iter()
+                .any(|d| d.contains("private provider detail"))
+        );
+    }
+}
+
 #[test]
 fn runtime_provider_failures_discovery_and_tls_refusal_map_reports() {
     for (mode, expected) in [

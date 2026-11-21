@@ -290,4 +290,28 @@ Named here and not in this order:
 
 ## Record
 
-Not yet run.
+Run on 2026-11-21 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+
+**Worker-2's turn** (09:41 to 10:12) found all three of order 080's findings still open on main
+and fixed each one. A regression for each failed before the fix and passes after it:
+- the run's stdio server is now initialized once, and later sessions get the cached result;
+- a cancelled request ID is now free in a later session;
+- a provider result that carries only a reason now ends unknown.
+
+The whole engine suite passed.
+
+**`turn-verifier-2.turn.v1`** (10:12 to 10:17) found two musts:
+- an explicit cancellation could end the bridge and other calls;
+- ID aliasing and the cached initialize re-serialized the payload.
+
+Worker-2 fixed both (10:17 to 10:25). Cancellation is now forwarded under the stdio ID, and only
+the envelope's `id` bytes change.
+
+**The Claude reader** (10:26 to 10:31) approved with no must. It found that no request can get
+another's reply, and that no alias collides. It had two nits, which worker-2 applied (10:31 to
+10:37):
+- a request cancelled while it waits is never forwarded;
+- a retired stdio ID is freed once its one reply arrives.
+
+94 kit tests and 22 local-process provider tests pass. The gate's run on the squash is the
+coordinator's, at the merge.

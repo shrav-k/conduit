@@ -1612,7 +1612,12 @@ mod provider {
         }
         true
     }
-    fn provider_result(completion: Value, prefix: &str, schema: &Value) -> ProviderReply {
+    fn provider_result(
+        completion: Value,
+        prefix: &str,
+        schema: &Value,
+        unsupported_reason: impl FnOnce(),
+    ) -> ProviderReply {
         if completion["kind"] == "protocol-error" {
             return if completion["code"] == -32021
                 && capability_performed_nothing(&completion["data"])
@@ -1628,17 +1633,11 @@ mod provider {
         let result = &completion["result"];
         let outcome = result["_meta"].get(format!("{prefix}outcome"));
         let reason = result["_meta"].get(format!("{prefix}reason"));
-        if outcome.is_some() && reason.is_some() {
+        if reason.is_some() {
+            if outcome.is_none() {
+                unsupported_reason();
+            }
             return ProviderReply::Unknown;
-        }
-        if let Some(reason) = reason {
-            return if ["refused", "unavailable"].iter().any(|r| reason == r)
-                && result["isError"] == true
-            {
-                ProviderReply::Nothing
-            } else {
-                ProviderReply::Unknown
-            };
         }
         match outcome.and_then(Value::as_str) {
             Some("succeeded") if result["isError"] != true => {
@@ -1777,7 +1776,9 @@ mod provider {
                 }
                 called.store(true, Ordering::SeqCst);
                 self.call(&run, &key, json!({"method":"tools/call","params":{"name":operation.rsplit('#').next().unwrap_or(""),"arguments":inputs,"_meta":meta}}))
-                    .await.map(|v| provider_result(v, &prefix, &schema))
+                    .await.map(|v| provider_result(v, &prefix, &schema, || {
+                        self.provider_diagnostic(operation, "IFC-026 reason without outcome is invalid for a PRV-005 provider call");
+                    }))
             }).await;
             if let Some((_, id)) = self.requests.lock().unwrap().remove(&key) {
                 run.responses.lock().unwrap().remove(&id);
@@ -2092,6 +2093,7 @@ mod provider {
             let prefix = "test/";
             let schema =
                 json!({"type":"object","properties":{"url":{"type":"string"}},"required":["url"]});
+            let read = |completion| provider_result(completion, prefix, &schema, || {});
             for (result, expected) in [
                 (
                     json!({"_meta":{"test/outcome":"succeeded"},"structuredContent":{"url":"https://gate.test"}}),
@@ -2119,11 +2121,11 @@ mod provider {
                 ),
                 (
                     json!({"_meta":{"test/reason":"refused"},"isError":true}),
-                    ProviderReply::Nothing,
+                    ProviderReply::Unknown,
                 ),
                 (
                     json!({"_meta":{"test/reason":"unavailable"},"isError":true}),
-                    ProviderReply::Nothing,
+                    ProviderReply::Unknown,
                 ),
                 (
                     json!({"_meta":{"test/reason":"invalid"},"isError":true}),
@@ -2134,20 +2136,15 @@ mod provider {
                     ProviderReply::Unknown,
                 ),
             ] {
-                assert_eq!(
-                    provider_result(json!({"kind":"result","result":result}), prefix, &schema),
-                    expected
-                );
+                assert_eq!(read(json!({"kind":"result","result":result})), expected);
             }
             for required in [
                 json!({"extensions":{"test/implementation-interface":{"revision":"v1"}}}),
                 json!({"sampling":{}}),
             ] {
                 assert_eq!(
-                    provider_result(
-                        json!({"kind":"protocol-error","code":-32021,"data":{"requiredCapabilities":required}}),
-                        prefix,
-                        &schema
+                    read(
+                        json!({"kind":"protocol-error","code":-32021,"data":{"requiredCapabilities":required}})
                     ),
                     ProviderReply::Nothing
                 );
@@ -2159,10 +2156,8 @@ mod provider {
                 json!({"extensions":{"unknown":true}}),
             ] {
                 assert_eq!(
-                    provider_result(
-                        json!({"kind":"protocol-error","code":-32021,"data":{"requiredCapabilities":required}}),
-                        prefix,
-                        &schema
+                    read(
+                        json!({"kind":"protocol-error","code":-32021,"data":{"requiredCapabilities":required}})
                     ),
                     ProviderReply::NoResult
                 );

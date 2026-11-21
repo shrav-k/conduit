@@ -252,4 +252,20 @@ Stage nothing. The coordinator runs `tools/gate.py`, has the diff read, and merg
 
 ## Record
 
-Not yet run.
+Run on 2026-11-20 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+Worker-2's turn (20:21 to 20:42) replaced `install.sh` with the plain Rust test
+`scenario_s4_effect_installs_and_registers_templates_only` in `engine/crates/shell/tests/serve.rs`,
+which asserts what the script only printed, and removed the script. The test passed in 26 s cold
+and 3 s warm, and failed when one digit of the fixture's pin changed. The one whole engine run
+passed 468.
+
+`turn-verifier-2.turn.v1` (20:43 to 20:48) confirmed the port and raised two points, both settled
+by root:
+- the three remaining mentions of `install.sh` are historical: the owner's words quoted in the
+  decision log, this order's own text, and its index row;
+- `check_private_paths.py` reports Errors: 0 on the committed tree. It errs only on an unstaged
+  deletion.
+
+`turn-reader-1.turn.v1` (20:49 to 20:51), the Claude reader, accepted it with that same nit. For
+later orders that delete files, the wording is "git rm stages the deletion". The gate's run on
+the squash is the coordinator's, at the merge.

@@ -158,7 +158,10 @@ sidecar holding bare lowercase hex plus newline. Build output and dist are ignor
 The installation fixture pins the address and version with `sha256:PLACEHOLDER`, replaced
 in a temporary copy by the archive digest. Its three Resource templates register without
 instances: submit opens and sets up nothing. Qualification of dispatch through Conduit is
-S4-H's work. This package introduces no engine change and no vector.
+S4-H's work. This package introduces no engine change and no vector. The engine test
+`scenario_s4_effect_installs_and_registers_templates_only` in [`serve.rs`](../../engine/crates/shell/tests/serve.rs)
+builds and packs this package, installs the archive into a served store and submits
+the fixture.
 
 ## D15 and preparation counts
 
@@ -183,10 +186,10 @@ request, person intervention or recovery time was measured here.
 | --- | --- | --- |
 | Rust implementation and packaging | 5 | 666 |
 | Manifests, contracts, fixture and build configuration | 7 | 161 |
-| Qualification tests and installation script | 4 | 959 |
-| README | 1 | 161 |
+| Qualification tests | 3 | 906 |
+| README | 1 | 164 |
 | Generated Cargo.lock | 1 | 1518 |
-| Total | 18 | 3465 |
+| Total | 17 | 3415 |
 <!-- PACKAGE_COUNTS_END -->
 
 Configuration: 3 Types, 3 items, 6 environment bindings, 3 distinct configuration places

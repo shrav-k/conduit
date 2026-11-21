@@ -288,4 +288,38 @@ Named here and not in this order:
 
 ## Record
 
-Not yet run.
+Run on 2026-11-21 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+
+**Worker-2's first turn** (10:57 to 13:09) brought the nine cases up to today's fixtures and
+passed the consistency test. It then stopped at case 01, as the stop rule says:
+- the contracts-only agents fixture offers `turn.v1` with no implementation, so registration
+  fails under TPL-004;
+- its first replay sent 10 of 60 requests and matched none.
+
+Root's decision, open to the owner's strike, was to keep K3 on its fixture and give the fixture's
+Agents a scripted implementation. A new agents 0.2.1 fixture selects one, and the harness
+supplies its command. K3 does not move to the real Agent packages: that is order 250's, and it
+touches the owner's open item 1c.
+
+**Worker-2's second turn** (13:10 to 13:47) sent all 60 requests to a serving engine. All 60
+outcomes and all nine kept-state comparisons match. 51 replies match every stated field. Nine
+reply-field differences are logged as engine gaps for order 252:
+- under IFC-025, setup replies leave out `pendingAction`;
+- under NAM-008, unused-package notes are missing.
+
+The changed-outcome check failed as expected. The full shell suite passed.
+
+**`turn-verifier-2.turn.v1`** (13:47 to 13:52) confirmed the replay and the nine differences. Its
+one must was that embedded pins went unchecked. Worker-2 fixed it, with a regression, and also
+applied the verifier's should and two nits (13:52 to 13:57).
+
+**The Claude reader** (13:58 to 14:05) approved with two shoulds and two nits. Root applied them:
+- the reference and case 01 now say that the 0.2.1 fixture's Agent command is the harness's;
+- the fixture README dates the 0.2.1 row and says how its archive was built.
+
+Two of the order's "fails today" lines now print other values, because of root's fixture
+decision and the added wrong-pin test:
+- `test result: ok. 2 passed` gives 0, since the file now has three tests;
+- the old agents digest `09e98548...` is in no case, since the cases pin 0.2.1.
+
+The gate's run on the squash is the coordinator's, at the merge.

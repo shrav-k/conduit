@@ -297,3 +297,10 @@ that these lines cite are in
   row (under "S2-L2"), and that the plain row runs only in the owner's runs, against the test
   workspace (under "The plain row"). D05's cases are listed in the contracts package's
   [README](../../packages/scenario-s2-linear-restrictions/README.md#d05-restriction-cases).
+- **2026-11-20, the coordinator's (order 227):** V1 to V6 are engine tests in
+  `engine/crates/shell/tests/s2.rs`, on the Linear stub with the file store and two scripted
+  Agents, not portable cases: they assert on real processes. V2's plain-filter half and V5's
+  onward half are not run there; the keychain, real Agents and the service are S2-4's.
+  V4's unkept dispatch record (SEC-016) is the unit test
+  `a_read_whose_dispatch_record_cannot_be_kept_is_not_dispatched` in
+  `engine/crates/shell/src/tests.rs`.

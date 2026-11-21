@@ -1781,3 +1781,152 @@ fn state_write_fault_is_private_to_its_store_and_state_file() {
     shell.submit(input, &MissingExecutor).unwrap();
     assert_memory_equals_disk(&shell);
 }
+
+// SEC-016 / DL2 / DL10: the successful discovery reply is the input whose
+// commit would publish the dispatch record for the secret read.
+#[test]
+fn a_read_whose_dispatch_record_cannot_be_kept_is_not_dispatched() {
+    struct StoreServer<'a> {
+        shell: &'a Shell,
+        store_id: Value,
+        discoveries: AtomicUsize,
+        reads: AtomicUsize,
+        consumer_runs: AtomicUsize,
+        withheld: String,
+    }
+    impl Executor for StoreServer<'_> {
+        fn dispatch(&self, intent: &Value) -> Result<Execution> {
+            assert_eq!(intent["target"], self.store_id);
+            match intent["call"]["method"].as_str().unwrap() {
+                "server/discover" => {
+                    self.discoveries.fetch_add(1, Ordering::SeqCst);
+                    *self.shell.writer.lock().unwrap().store.fault.borrow_mut() =
+                        Some(store::WriteFault::Write);
+                    let extension =
+                        format!("{}implementation-interface", self.shell.context.meta_prefix);
+                    Ok(Execution::Complete(json!({"kind":"result","result":{
+                        "capabilities":{"extensions":{extension:{"revision":"v0"}}}
+                    }})))
+                }
+                "tools/call" => {
+                    assert_eq!(intent["call"]["params"]["name"], "get-secret.v1");
+                    self.reads.fetch_add(1, Ordering::SeqCst);
+                    let outcome = format!("{}outcome", self.shell.context.meta_prefix);
+                    Ok(Execution::Complete(json!({"kind":"result","result":{
+                        "structuredContent":{"value":self.withheld},"_meta":{outcome:"succeeded"}
+                    }})))
+                }
+                _ => panic!("unexpected store server request"),
+            }
+        }
+
+        fn builtin_runner(&self, intent: &Value, _: Option<&RunIdentity>) -> Result<Execution> {
+            let core = &self.shell.context.core_package;
+            let inspect = format!("{core}#inspect-run.v1");
+            let run = format!("{core}#run.v1");
+            if intent["operation"] == inspect {
+                return Ok(Execution::SetupReport(
+                    json!({"kind":"inspect-run","state":"stopped"}),
+                ));
+            }
+            assert_eq!(intent["operation"], run);
+            if intent["subject"] != self.store_id {
+                self.consumer_runs.fetch_add(1, Ordering::SeqCst);
+            }
+            Ok(Execution::SetupReport(
+                json!({"kind":"run","outcome":"succeeded"}),
+            ))
+        }
+    }
+
+    let temp = temporary();
+    let shell = open(temp.path());
+    shell
+        .submit(
+            json!({"kind":"first-start","machine":local_machine(BTreeMap::new()).unwrap()}),
+            &MissingExecutor,
+        )
+        .unwrap();
+    let root = actor(&shell, "root");
+    let spec = conduit_loader::Specification::read(&repository().join("spec")).unwrap();
+    let project = boundary::project(
+        &repository().join("conformance/conventions/secret-reads/project"),
+        &spec,
+    )
+    .unwrap();
+    let manifest = project.manifest.unwrap();
+    let registered = shell
+        .submit(
+            json!({"kind":"invoke","request":{
+                "identity":{"kind":"instance","id":root},"tool":"management.register.v1",
+                "arguments":{"documents":project.documents,"manifest":manifest}
+            }}),
+            &MissingExecutor,
+        )
+        .unwrap();
+    assert_eq!(registered["isError"], false);
+    let locator = |entry| {
+        shell
+            .state()
+            .unwrap()
+            .objects
+            .iter()
+            .find(|object| object["kind"] == "Resource" && object["nested"]["name"] == entry)
+            .unwrap()["id"]
+            .clone()
+    };
+    let probe = StoreServer {
+        shell: &shell,
+        store_id: locator("store"),
+        discoveries: AtomicUsize::new(0),
+        reads: AtomicUsize::new(0),
+        consumer_runs: AtomicUsize::new(0),
+        withheld: format!("withheld-{}", Uuid::new_v4()),
+    };
+    let result = shell.submit(
+        json!({"kind":"invoke","request":{
+            "identity":{"kind":"instance","id":root},"tool":"management.set-up.v1",
+            "arguments":{"instance":{"kind":"Pool","name":"demo"}}
+        }}),
+        &probe,
+    );
+    let error = match result {
+        Err(error) => error,
+        Ok(_) => panic!("the unkept dispatch returned a reply"),
+    };
+    assert!(error.contains("injected state write failure"));
+    assert_eq!(probe.discoveries.load(Ordering::SeqCst), 1);
+    assert_eq!(probe.reads.load(Ordering::SeqCst), 0);
+    assert_eq!(probe.consumer_runs.load(Ordering::SeqCst), 0);
+    let state = shell.state().unwrap();
+    let read = state
+        .invocations
+        .iter()
+        .find(|invocation| {
+            invocation["operation"] == format!("{}#get-secret.v1", shell.context.core_package)
+        })
+        .expect("discovery did not commit");
+    assert_eq!(read["state"], "in-progress");
+    assert_eq!(read["secret_read"]["phase"], "discover");
+    assert!(state.invocations.iter().any(|invocation| {
+        invocation["id"] == read["secret_read"]["run"] && invocation["state"] == "in-progress"
+    }));
+    assert!(
+        !state
+            .records
+            .iter()
+            .any(|record| record["data"]["invocation"] == read["id"]
+                && matches!(
+                    record["type"].as_str(),
+                    Some("invocation-dispatched" | "request-ended")
+                ))
+    );
+    assert!(shell.writer.lock().unwrap().read_values.is_empty());
+    assert!(
+        !serde_json::to_string(state.as_ref())
+            .unwrap()
+            .contains(&probe.withheld)
+    );
+    assert!(!error.contains(&probe.withheld));
+    assert_memory_equals_disk(&shell);
+}

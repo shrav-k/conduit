@@ -597,6 +597,9 @@ impl Catalog {
                         ),
                     ));
                 }
+                if d["kind"] == "Operation" {
+                    diagnostics.extend(overlapping_changes(scope, d));
+                }
                 if d["kind"] == "Type" {
                     let offers = strings(&d["spec"], "offers")
                         .map(|reference| {
@@ -606,6 +609,9 @@ impl Catalog {
                         })
                         .collect::<Result<Vec<_>>>()?;
                     diagnostics.extend(secret_type_faults(scope, d, &offers));
+                    let package_source = offers
+                        .iter()
+                        .any(|(_, (scope, name))| scope == "core" && name == "package-source.v1");
                     let name = &d["metadata"]["name"];
                     let pointer = d["spec"]["toolsDirectory"]["directory"].as_str();
                     let sign_in = &d["spec"]["signIn"];
@@ -663,6 +669,12 @@ impl Catalog {
                             diagnostics.push(diag(
                                 "CTR-006",
                                 format!("{scope}: Type {name} lists control {control}: {cause}"),
+                            ));
+                        }
+                        if package_source && changes_schemes(spec) {
+                            diagnostics.push(diag(
+                                "PRV-016",
+                                format!("{scope}: package-source Type {name} lists control {control} that changes /schemes"),
                             ));
                         }
                         if let Some(pointer) = pointer
@@ -1131,7 +1143,8 @@ fn check_items(
                 // MAN-018/TPL-004: only effective selections reserve variables.
                 // Secret-reference bindings use this same environment map;
                 // run materialization later moves their values under secrets.
-                if !is_default || needed.contains(&operation) {
+                let effective = !is_default || needed.contains(&operation);
+                if effective {
                     for (name, pointer) in items(implementation, "environment") {
                         if crate::run_variables()
                             .values()
@@ -1147,6 +1160,15 @@ fn check_items(
                         }
                     }
                 }
+                let secret_remote = implementation["remote"]["url"]
+                    .as_str()
+                    .filter(|url| effective && !secret_transport(url));
+                if let Some(url) = secret_remote
+                    && operation.0 == "core"
+                    && operation.1 == "get-secret.v1"
+                {
+                    diagnostics.push(diag("SEC-024", format!("template {} selects {r} for get-secret.v1 at {url}, which cannot carry a secret", d["metadata"]["name"])));
+                }
                 for (bindings, source, declared) in [
                     ("packageArguments", "package", "packageArguments"),
                     ("environment", "package", "environmentVariables"),
@@ -1156,14 +1178,7 @@ fn check_items(
                         let Some(pointer) = pointer.as_str() else {
                             continue;
                         };
-                        let tokens: Vec<_> = pointer
-                            .strip_prefix('/')
-                            .map(|p| {
-                                p.split('/')
-                                    .map(|s| s.replace("~1", "/").replace("~0", "~"))
-                                    .collect()
-                            })
-                            .unwrap_or_default();
+                        let tokens = pointer_tokens(pointer);
                         let required_input = implementation[source][declared]
                             .as_array()
                             .into_iter()
@@ -1172,10 +1187,18 @@ fn check_items(
                                 a["isRequired"] == true
                                     && (a["name"] == *name || a["valueHint"] == *name)
                             });
-                        let ok = binding(env, &ts, &t["spec"]["schema"], &tokens, core)
-                            .is_some_and(|nullable| !required_input || !nullable);
+                        let place = binding(env, &ts, &t["spec"]["schema"], &tokens, core);
+                        let ok = place
+                            .as_ref()
+                            .is_some_and(|place| !required_input || !place.nullable);
                         if !ok {
                             diagnostics.push(diag("MAN-017",format!("template {} selects {r}: {name} -> {pointer} is not a required scalar place, or required input admits null",d["metadata"]["name"])));
+                        }
+                        if bindings == "headers"
+                            && let Some(url) = secret_remote
+                            && place.is_some_and(|place| place.secret)
+                        {
+                            diagnostics.push(diag("SEC-024", format!("template {} selects {r} at {url}, which cannot carry secret header {name}", d["metadata"]["name"])));
                         }
                     }
                 }
@@ -1205,7 +1228,67 @@ fn pointer_tokens(pointer: &str) -> Vec<String> {
 fn pointers_reach(a: &str, b: &str) -> bool {
     let a = pointer_tokens(a);
     let b = pointer_tokens(b);
-    a.starts_with(&b) || b.starts_with(&a)
+    pointers_overlap(&a, &b)
+}
+
+fn pointers_overlap(a: &[String], b: &[String]) -> bool {
+    a.starts_with(b) || b.starts_with(a)
+}
+
+fn overlapping_changes(scope: &str, operation: &Value) -> Vec<Value> {
+    let changes: Vec<_> = items(&operation["spec"], "changes")
+        .filter_map(|(input, pointer)| {
+            let pointer = pointer.as_str()?;
+            Some((input, pointer, pointer_tokens(pointer)))
+        })
+        .collect();
+    let name = &operation["metadata"]["name"];
+    let mut faults = Vec::new();
+    for (i, (input, pointer, tokens)) in changes.iter().enumerate() {
+        for (other, other_pointer, other_tokens) in &changes[..i] {
+            if pointers_overlap(tokens, other_tokens) {
+                faults.push(diag("CTR-006", format!("{scope}: control {name} sets overlapping places from input {other} ({other_pointer:?}) and input {input} ({pointer:?})")));
+            }
+        }
+    }
+    faults
+}
+
+fn changes_schemes(control: &Value) -> bool {
+    items(control, "changes")
+        .filter_map(|(_, pointer)| pointer.as_str())
+        .any(|pointer| pointers_reach(pointer, "/schemes"))
+}
+
+fn secret_transport(url: &str) -> bool {
+    let Some((scheme, rest)) = url.split_once("://") else {
+        return false;
+    };
+    if url::Url::parse(url).is_err() {
+        return false;
+    }
+    if scheme.eq_ignore_ascii_case("https") {
+        return true;
+    }
+    if !scheme.eq_ignore_ascii_case("http") {
+        return false;
+    }
+    let authority = rest.split(['/', '?', '#']).next().unwrap_or("");
+    if authority.contains('\\') {
+        return false;
+    }
+    let host = authority.rsplit('@').next().unwrap_or("");
+    if let Some(ip) = host.strip_prefix('[').and_then(|host| host.split_once(']')) {
+        return ip
+            .0
+            .parse::<std::net::Ipv6Addr>()
+            .is_ok_and(|ip| ip.is_loopback());
+    }
+    let host = host.split(':').next().unwrap_or("");
+    host.eq_ignore_ascii_case("localhost")
+        || host
+            .parse::<std::net::Ipv4Addr>()
+            .is_ok_and(|ip| ip.is_loopback())
 }
 
 fn own_tools_control_fault(control: &str, spec: &Value, pointer: &str) -> Option<String> {
@@ -1419,7 +1502,7 @@ fn branches(
     let mut own = part.clone();
     let mut conjunctions = vec![];
     if let Some(reference) = part.schema["$ref"].as_str() {
-        if reference == format!("{core}#secret-reference.v1") {
+        if env.references_secret(&part.scope, reference, core) {
             own.secret = true;
         } else if seen
             .insert(serde_json::to_string(&json!([part.scope, part.root, reference])).ok()?)
@@ -1487,14 +1570,20 @@ fn branches(
 }
 /// Conjunctions keep their separate roots and scopes. Each disjunct must guarantee the
 /// required pointer and a scalar leaf; a sibling never overwrites a referenced constraint.
+#[derive(Default)]
+struct Binding {
+    nullable: bool,
+    secret: bool,
+}
+
 fn binding(
     env: &Environment,
     scope: &str,
     schema: &Value,
     tokens: &[String],
     core: &str,
-) -> Option<bool> {
-    binding_parts(
+) -> Option<Binding> {
+    binding_parts_at(
         env,
         vec![BindingPart {
             scope: scope.into(),
@@ -1505,6 +1594,7 @@ fn binding(
         tokens,
         core,
         false,
+        "",
     )
     .ok()
 }
@@ -1515,7 +1605,7 @@ fn binding_parts(
     core: &str,
     own_tools: bool,
 ) -> std::result::Result<bool, String> {
-    binding_parts_at(env, parts, tokens, core, own_tools, "")
+    binding_parts_at(env, parts, tokens, core, own_tools, "").map(|place| place.nullable)
 }
 
 fn binding_parts_at(
@@ -1525,7 +1615,7 @@ fn binding_parts_at(
     core: &str,
     own_tools: bool,
     path: &str,
-) -> std::result::Result<bool, String> {
+) -> std::result::Result<Binding, String> {
     const UNREADABLE: &str =
         "rule (a): the walk could not read a reference or a pattern of the schema";
     let mut alternatives = vec![vec![]];
@@ -1536,7 +1626,7 @@ fn binding_parts_at(
             .flat_map(|a| expanded.iter().map(|b| [a.clone(), b.clone()].concat()))
             .collect();
     }
-    let mut nullable = false;
+    let mut place = Binding::default();
     for parts in alternatives {
         if let Some((head, tail)) = tokens.split_first() {
             // MAN-017: required/properties constrain objects only. Every admitted
@@ -1585,9 +1675,12 @@ fn binding_parts_at(
                     "rule (a): a branch of the schema describes {member} under none of properties, patternProperties and additionalProperties"
                 ));
             }
-            nullable |= binding_parts_at(env, subs, tail, core, own_tools, &member)?;
+            let member = binding_parts_at(env, subs, tail, core, own_tools, &member)?;
+            place.nullable |= member.nullable;
+            place.secret |= member.secret;
         } else {
             if !own_tools && parts.iter().any(|p| p.secret) {
+                place.secret = true;
                 continue;
             }
             let mask = binding_mask(&parts);
@@ -1611,10 +1704,10 @@ fn binding_parts_at(
                     "the place admits an array or object".into()
                 });
             }
-            nullable |= mask & 1 != 0;
+            place.nullable |= mask & 1 != 0;
         }
     }
-    Ok(nullable)
+    Ok(place)
 }
 /// null, boolean, number, string, array, object. Conjuncts only narrow the set.
 fn binding_mask(parts: &[BindingPart]) -> u8 {
@@ -1720,6 +1813,51 @@ fn file_reference(base: &UriRef<&str>, reference: &str) -> Result<String> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn ctr_006_reports_decoded_overlaps_and_prv_016_protects_the_whole_schemes_list() {
+        let control =
+            |changes| json!({"metadata":{"name":"configure.v1"},"spec":{"changes":changes}});
+        let faults = super::overlapping_changes(
+            "project",
+            &control(json!({
+                "whole":"/a~1b","part":"/a~1b/~0member","different":"/a"
+            })),
+        );
+        assert_eq!(faults.len(), 1);
+        let message = faults[0]["message"]["text"].as_str().unwrap();
+        for entry in ["whole", "part", "/a~1b", "/a~1b/~0member"] {
+            assert!(message.contains(entry));
+        }
+        let changes = |pointer| super::changes_schemes(&json!({"changes":{"input":pointer}}));
+        for pointer in ["", "/schemes", "/schemes/0"] {
+            assert!(changes(pointer));
+        }
+        for pointer in ["/schemesExtra", "/schemes~1extra"] {
+            assert!(!changes(pointer));
+        }
+    }
+
+    #[test]
+    fn sec_024_allows_https_and_explicit_loopback_only() {
+        for allowed in [
+            "https://example.test/mcp",
+            "HTTP://LOCALHOST:80/mcp",
+            "http://127.2.3.4/mcp",
+            "http://[::1]/mcp",
+        ] {
+            assert!(super::secret_transport(allowed));
+        }
+        for refused in [
+            "http://example.test/mcp",
+            "http://localhost.example.test/mcp",
+            "http://127.1/mcp",
+            "http://localhost./mcp",
+            "http://example.test\\@localhost/mcp",
+        ] {
+            assert!(!super::secret_transport(refused));
+        }
+    }
+
     use super::*;
     #[test]
     fn secret_type_faults_name_every_control_and_capability() {
@@ -1868,9 +2006,28 @@ mod tests {
         assert_eq!(pointer_tokens("/"), [""]);
     }
     fn own_tools_binding_result(schema: Value, pointer: &str) -> std::result::Result<bool, String> {
+        let scope = |address: &str, contracts| Scope {
+            address: address.into(),
+            version: None,
+            manifest: BTreeMap::new(),
+            contracts,
+            exports: None,
+        };
         binding_parts(
             &Environment {
-                scopes: BTreeMap::new(),
+                scopes: BTreeMap::from([
+                    ("project".into(), scope("project", BTreeMap::new())),
+                    (
+                        "core".into(),
+                        scope(
+                            "core",
+                            BTreeMap::from([(
+                                "secret-reference.v1".into(),
+                                json!({"kind":"Schema","spec":{"type":"object"}}),
+                            )]),
+                        ),
+                    ),
+                ]),
             },
             vec![BindingPart {
                 scope: "project".into(),

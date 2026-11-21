@@ -305,4 +305,34 @@ merges.
 
 ## Record
 
-Not yet run.
+Run on 2026-11-20 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+Worker-1's first turn (16:24 to 17:24) ran S2 end to end, and all seven tests passed. It found
+the IFC-037 gap that order 231 then fixed, and an SCH-015 redaction defect. Root set the turn
+aside until 231 merged. The second turn (18:26 to 18:54) rebased onto 231, kept 231's IFC-037
+and dropped its own. Root widened the scope to the by-rule snapshot.
+
+`turn-verifier-1.turn.v1` (18:55 to 19:01) found seven musts. The key one: the redaction fix
+unmasked four registration checks the engine never had. Five by-rule examples that had errored
+only through the defect would have been accepted:
+- CTR-006, controls with overlapping pointers (two examples);
+- PRV-016, a package-source control that changes its schemes;
+- SEC-001, a literal where a secret reference is required;
+- SEC-024, a secret header to a non-loopback HTTP endpoint.
+
+Root widened the scope to the engine's resolution and registration code. The third turn (19:01
+to 19:49) added the four checks, each naming its promise. Those rows now read `named invalid`,
+and equal-defaults stays accepted. The turn also fixed OPS-024's unanswered earlier attempt and
+two S2 tests that could pass without showing their claims. It moved V1's deadline past setup,
+after one whole-suite run failed on it.
+
+`turn-reader-1.turn.v1` (19:49 to 19:54), the Claude reader, accepted it with a should and a nit:
+- The fixes run to about 335 lines outside tests, past decision 4's 200. Root accepted that, for
+  the four checks the verifier found (CTR-006, PRV-016, SEC-001, SEC-024) and the OPS-012 and
+  OPS-024 outcome tracking.
+- The loopback test reads the raw authority, so `http://127.1/` is refused. That is the safe
+  side, and it is left to a follow-up.
+
+Root also updated `packages/scenario-s2-linear/README.md`, which still called the engine's
+secret read unbuilt. SEC-016's reply during a store write fault stays open for a spec order.
+The worker's two options are a transient unavailable with recovery, or a durable unavailable
+once writes recover. The gate's run on the squash is the coordinator's, at the merge.

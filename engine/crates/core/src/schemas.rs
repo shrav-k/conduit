@@ -40,7 +40,7 @@ fn fragment(s: &str) -> String {
         })
         .collect()
 }
-fn unfragment(s: &str) -> Result<String> {
+pub(crate) fn unfragment(s: &str) -> Result<String> {
     let mut out = Vec::new();
     let mut bytes = s.bytes();
     while let Some(b) = bytes.next() {
@@ -752,7 +752,149 @@ pub(crate) fn roots(document: &Value) -> Vec<(String, Value)> {
 fn diagnostic(rule: &str, pointer: &str, message: &str) -> Value {
     json!({"ruleId":rule,"level":"error","message":{"text":message},"locations":[{"logicalLocations":[{"fullyQualifiedName":pointer}]}]})
 }
+
+#[derive(Clone, Copy)]
+struct SchemaPosition<'a> {
+    scope: &'a str,
+    root: &'a Value,
+    schema: &'a Value,
+}
+
+impl<'a> SchemaPosition<'a> {
+    fn at(self, schema: &'a Value) -> Self {
+        Self { schema, ..self }
+    }
+}
+
+type SecretPositions<'a> = BTreeSet<(&'a str, *const Value, *const Value, bool)>;
+
 impl Environment {
+    pub(crate) fn references_secret(&self, scope: &str, reference: &str, core: &str) -> bool {
+        self.resolve(scope, reference, core)
+            .is_ok_and(|contract| contract.0 == "core" && contract.1 == "secret-reference.v1")
+    }
+
+    fn referenced_position<'a>(
+        &'a self,
+        position: SchemaPosition<'a>,
+        reference: &str,
+        core: &str,
+    ) -> Option<SchemaPosition<'a>> {
+        if reference == "#" || reference.starts_with("#/") {
+            let pointer = unfragment(&reference[1..]).ok()?;
+            return Some(position.at(position.root.pointer(&pointer)?));
+        }
+        let contract = self.resolve(position.scope, reference, core).ok()?;
+        let scope = self.scopes.get_key_value(&contract.0)?.0;
+        let schema = self.schema(&contract).ok()?;
+        Some(SchemaPosition {
+            scope,
+            root: schema,
+            schema,
+        })
+    }
+
+    fn null_branch<'a>(&'a self, mut position: SchemaPosition<'a>, core: &str) -> bool {
+        let mut seen = SecretPositions::new();
+        while seen.insert((position.scope, position.root, position.schema, true)) {
+            let Some(fields) = position
+                .schema
+                .as_object()
+                .filter(|fields| fields.len() == 1)
+            else {
+                break;
+            };
+            if fields.get("type").is_some_and(|ty| ty == "null") {
+                return true;
+            }
+            let Some(target) = fields
+                .get("$ref")
+                .and_then(Value::as_str)
+                .and_then(|reference| self.referenced_position(position, reference, core))
+            else {
+                break;
+            };
+            position = target;
+        }
+        false
+    }
+
+    fn invalid_secret_position<'a>(
+        &'a self,
+        position: SchemaPosition<'a>,
+        path: &str,
+        permitted: bool,
+        core: &str,
+        seen: &mut SecretPositions<'a>,
+    ) -> Option<String> {
+        if !seen.insert((position.scope, position.root, position.schema, permitted)) {
+            return None;
+        }
+        let fields = position.schema.as_object()?;
+        if let Some(reference) = fields.get("$ref").and_then(Value::as_str) {
+            let site = format!("{path}/$ref");
+            if self.references_secret(position.scope, reference, core) {
+                if !permitted {
+                    return Some(site);
+                }
+            } else if let Some(target) = self.referenced_position(position, reference, core)
+                && self
+                    .invalid_secret_position(target, &site, permitted, core, seen)
+                    .is_some()
+            {
+                return Some(site);
+            }
+        }
+        let mut check = |sub, site: &str, allowed| {
+            self.invalid_secret_position(position.at(sub), site, allowed, core, seen)
+        };
+        for (key, children) in fields {
+            let at = format!("{path}/{}", token(key));
+            let invalid = match key.as_str() {
+                "$defs" | "properties" | "patternProperties" | "dependentSchemas" => {
+                    let allowed = key == "$defs" || (key == "properties" && permitted);
+                    children
+                        .as_object()
+                        .into_iter()
+                        .flatten()
+                        .find_map(|(name, child)| {
+                            check(child, &format!("{at}/{}", token(name)), allowed)
+                        })
+                }
+                "anyOf" | "oneOf" | "allOf" | "prefixItems" => children
+                    .as_array()
+                    .into_iter()
+                    .flat_map(|choices| {
+                        choices
+                            .iter()
+                            .enumerate()
+                            .map(move |(i, child)| (choices, i, child))
+                    })
+                    .find_map(|(choices, i, child)| {
+                        let allowed = permitted
+                            && matches!(key.as_str(), "anyOf" | "oneOf")
+                            && choices.iter().enumerate().all(|(j, sibling)| {
+                                j == i || self.null_branch(position.at(sibling), core)
+                            });
+                        check(child, &format!("{at}/{i}"), allowed)
+                    }),
+                "items" => check(children, &at, permitted),
+                "additionalProperties"
+                | "contains"
+                | "propertyNames"
+                | "not"
+                | "if"
+                | "then"
+                | "else" => check(children, &at, false),
+                _ => None,
+            };
+            if invalid.is_some() {
+                return invalid;
+            }
+        }
+        None
+    }
+
     /// Admission checks after the strict document loader, shared by installation/submission.
     pub fn check_document(&self, scope: &str, document: &Value, core: &str) -> Result<Vec<Value>> {
         let mut diagnostics = vec![];
@@ -816,6 +958,26 @@ impl Environment {
                 Ok(())
             })?;
             if diagnostics.len() != before {
+                continue;
+            }
+            // SEC-001 applies at the use site even when an alias or local pointer
+            // hides the reference. Definitions themselves do not apply a schema.
+            if let Some(site) = self.invalid_secret_position(
+                SchemaPosition {
+                    scope,
+                    root: &original,
+                    schema: &original,
+                },
+                &at,
+                true,
+                core,
+                &mut SecretPositions::new(),
+            ) {
+                diagnostics.push(diagnostic(
+                    "SEC-001",
+                    &site,
+                    &format!("secret-reference.v1 at {site} must govern the place directly, as items, or with only null alternatives"),
+                ));
                 continue;
             }
             let mut conflicts = vec![];
@@ -1155,6 +1317,55 @@ pub(crate) fn publish_normalized(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn sec_001_follows_local_aliases_and_allows_only_null_siblings() {
+        let env = Environment {
+            scopes: BTreeMap::from([(
+                "core".into(),
+                Scope {
+                    address: "test.core".into(),
+                    version: None,
+                    manifest: BTreeMap::new(),
+                    contracts: BTreeMap::from([(
+                        "secret-reference.v1".into(),
+                        json!({"kind":"Schema","spec":{"type":"object"}}),
+                    )]),
+                    exports: None,
+                },
+            )]),
+        };
+        let mut schema = json!({
+            "$defs":{"secret":{"$ref":"#secret-reference.v1"},"absent":{"type":"null"}},
+            "properties":{
+                "value":{"type":"array","items":{"oneOf":[{"$ref":"#/$defs/secret"},{"$ref":"#/$defs/absent"}]}}
+            }
+        });
+        let invalid = |schema: &Value| {
+            env.invalid_secret_position(
+                SchemaPosition {
+                    scope: "core",
+                    root: schema,
+                    schema,
+                },
+                "/spec",
+                true,
+                "test.core",
+                &mut SecretPositions::new(),
+            )
+        };
+        assert_eq!(invalid(&schema), None);
+        schema["$defs"]["absent"] = json!({"type":"string"});
+        assert_eq!(
+            invalid(&schema).as_deref(),
+            Some("/spec/properties/value/items/oneOf/0/$ref")
+        );
+        schema["properties"]["value"] = json!({"not":{"$ref":"#/$defs/secret"}});
+        assert_eq!(
+            invalid(&schema).as_deref(),
+            Some("/spec/properties/value/not/$ref")
+        );
+    }
 
     #[test]
     fn standalone_validation_refuses_nonlocal_and_dangling_references() {

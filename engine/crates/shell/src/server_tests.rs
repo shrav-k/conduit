@@ -1073,6 +1073,9 @@ impl SignInScript {
 
 impl Executor for SignInScript {
     fn dispatch(&self, intent: &Value) -> Result<Execution> {
+        if let Some(reply) = scripted_discovery(intent) {
+            return Ok(reply);
+        }
         self.dispatches.lock().unwrap().push(intent.clone());
         let (account_hook, sign_in_hook) = if self.plain {
             ("account_hook", "sign_in_hook")
@@ -1235,7 +1238,7 @@ fn scan_sign_in_store(authority: &Path, directory: &Path, markers: &[&str]) {
 async fn sign_in_relays_through_the_interface_and_polls_to_signed_in() {
     let temp = temporary();
     let case = repository().join("conformance/conventions/requests/sign-in-hold");
-    let shell = Arc::new(fixed_case_shell(temp.path(), &case, 9));
+    let shell = Arc::new(fixed_case_shell(temp.path(), &case, 11));
     let signed = actor(&shell, "signed");
     assert!(shell.state().unwrap().sign_in_holds.contains_key(&signed));
 
@@ -1344,7 +1347,7 @@ async fn sign_in_relays_through_the_interface_and_polls_to_signed_in() {
 async fn relayed_sign_in_starts_the_expiry_timer() {
     let temp = temporary();
     let case = repository().join("conformance/conventions/requests/sign-in-hold");
-    let shell = Arc::new(fixed_case_shell(temp.path(), &case, 9));
+    let shell = Arc::new(fixed_case_shell(temp.path(), &case, 11));
     let token = sign_in_root_token(&shell, temp.path());
     let script = Arc::new(SignInScript::new(&shell, false));
     let mut executor = ServingExecutor::new(script.clone());
@@ -1410,7 +1413,7 @@ async fn sign_in_decline_through_the_interface_ends_failed() {
         "http://127.0.0.1:8400/callback?code=join-code-0001&state=join-state-0123456789abcdef";
     let temp = temporary();
     let case = repository().join("conformance/conventions/requests/sign-in-hold");
-    let shell = Arc::new(fixed_case_shell(temp.path(), &case, 9));
+    let shell = Arc::new(fixed_case_shell(temp.path(), &case, 11));
     let signed = actor(&shell, "signed");
     assert!(shell.state().unwrap().sign_in_holds.contains_key(&signed));
 
@@ -1621,6 +1624,9 @@ impl PollScript {
 
 impl Executor for PollScript {
     fn dispatch(&self, intent: &Value) -> Result<Execution> {
+        if let Some(reply) = scripted_discovery(intent) {
+            return Ok(reply);
+        }
         self.dispatches.lock().unwrap().push(intent.clone());
         let (account_hook, sign_in_hook) = if self.plain {
             ("account_hook", "sign_in_hook")
@@ -1683,7 +1689,7 @@ fn assert_invalid_sign_in_login(result: &Value, prefix: &str, text: &str) {
 async fn sign_in_command_opens_the_url_and_polls_to_signed_in() {
     let temp = temporary();
     let case = repository().join("conformance/conventions/requests/sign-in-hold");
-    let shell = Arc::new(fixed_case_shell(temp.path(), &case, 9));
+    let shell = Arc::new(fixed_case_shell(temp.path(), &case, 11));
     let prefix = &shell.context.meta_prefix;
     let signed = actor(&shell, "signed");
     let stop = CancellationToken::new();
@@ -1749,7 +1755,7 @@ async fn sign_in_command_opens_the_url_and_polls_to_signed_in() {
 async fn sign_in_command_declines_cancels_and_asks_for_a_login() {
     let temp = temporary();
     let case = repository().join("conformance/conventions/requests/sign-in-hold");
-    let shell = Arc::new(fixed_case_shell(temp.path(), &case, 9));
+    let shell = Arc::new(fixed_case_shell(temp.path(), &case, 11));
     let prefix = &shell.context.meta_prefix;
     let signed = actor(&shell, "signed");
     let stop = CancellationToken::new();

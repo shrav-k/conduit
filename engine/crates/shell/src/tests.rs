@@ -508,10 +508,19 @@ fn s1_whole_through_store_loop_and_scripted_executor() {
     );
 }
 
+fn scripted_discovery(intent: &Value) -> Option<Execution> {
+    (intent["call"]["method"] == "server/discover").then(|| {
+        Execution::Complete(json!({"kind":"result","result":{"capabilities":{
+            "extensions":intent["call"]["params"]["_meta"]
+                ["io.modelcontextprotocol/clientCapabilities"]["extensions"]
+        }}}))
+    })
+}
+
 struct Deferred;
 impl Executor for Deferred {
-    fn dispatch(&self, _: &Value) -> Result<Execution> {
-        Ok(Execution::Deferred)
+    fn dispatch(&self, intent: &Value) -> Result<Execution> {
+        Ok(scripted_discovery(intent).unwrap_or(Execution::Deferred))
     }
 }
 
@@ -709,7 +718,7 @@ fn retention_cap_oldest_first_and_age_survive_restart() {
 
 // Test-only observed implementation, like the conformance runner's aware fixtures.
 // Requests, completions and expiry under test still go through the shell/core loop.
-fn filtered_shell(path: &Path) -> Shell {
+pub(crate) fn filtered_shell(path: &Path) -> Shell {
     let shell = established(path);
     let writer = shell.writer.lock().unwrap();
     // DL2: adapt the fixture's state access to the shared committed snapshot.
@@ -766,7 +775,7 @@ fn filtered_shell(path: &Path) -> Shell {
 fn filter() -> Value {
     json!({"requirement":"example.org/requirements#deadline.v1","arguments":{"until":"2026-11-09T00:00:00Z"}})
 }
-fn filtered_read(shell: &Shell, key: &str) -> Value {
+pub(crate) fn filtered_read(shell: &Shell, key: &str) -> Value {
     let mut request = invoke(shell, "agent-b", "project.file.read.v1", Some(key));
     request["request"]["arguments"] = json!({"path":"hello.txt"});
     request

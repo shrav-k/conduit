@@ -25,7 +25,7 @@ pub(crate) fn prepare_run(
         return unavailable(t, a, c, i);
     }
     if resources.is_empty() {
-        return emit_run(t, a, c, i);
+        return emit_run(t, c, i);
     }
     let v = &mut t.state.invocations[i];
     if v.get("retirement").is_some() {
@@ -37,7 +37,7 @@ pub(crate) fn prepare_run(
     advance(t, a, c, i)
 }
 
-fn emit_run(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) -> Result<()> {
+fn emit_run(t: &mut Transition, c: &Context, i: usize) -> Result<()> {
     let v = t.state.invocations[i].clone();
     let object = access::object(&t.state, &v["object"]).ok_or("run subject missing")?;
     let (inputs, mut bindings) = lifecycle::run_inputs(object, &v, c)?;
@@ -51,7 +51,7 @@ fn emit_run(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) -
         }
     }
     let intent_index = t.external_intents.len();
-    lifecycle::emit(t, a, c, i, "run.v1", inputs)?;
+    lifecycle::emit(t, c, i, "run.v1", inputs)?;
     if secret_provider {
         t.external_intents[intent_index]["observeProviderExit"] = json!(true);
     }
@@ -113,7 +113,7 @@ fn advance(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) ->
                 .is_none()
         })
     else {
-        return emit_run(t, a, c, i);
+        return emit_run(t, c, i);
     };
     let id = a.next(&mut t.state)?;
     let serving = v["provider_restart"].get("setup").unwrap_or(&v["id"]);
@@ -219,13 +219,7 @@ fn decide(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) -> 
             .push(requests::dispatch_intent(&t.state.invocations[i], false, c));
     } else {
         read["secret_read"]["phase"] = json!("discover");
-        let extension = format!("{}implementation-interface", c.meta_prefix);
-        t.external_intents.push(json!({"kind":"dispatch","invocation":v["id"],"attempt":1,
-            "target":v["target"],"implementation":read["implementation"],
-            "call":{"method":"server/discover","params":{"_meta":{
-                "io.modelcontextprotocol/protocolVersion":"2026-07-28",
-                "io.modelcontextprotocol/clientCapabilities":{"extensions":{extension:{"revision":"v0"}}}
-            }}}}));
+        t.external_intents.push(requests::discovery_intent(read, c));
     }
     t.reply = json!({"pending":true,"invocation":t.state.invocations[run]["id"]});
     Ok(())

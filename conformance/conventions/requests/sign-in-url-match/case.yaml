@@ -861,12 +861,80 @@
             "kind": "dispatch",
             "attempt": 1,
             "call": {
+              "method": "server/discover",
+              "params": {
+                "_meta": {
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  },
+                  "io.modelcontextprotocol/protocolVersion": "2026-07-28"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "capture": {
+        "account0": "/reply/hook"
+      }
+    },
+    {
+      "input": {
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "capabilities": {
+              "extensions": {
+                "io.github.shrav-k.conduit/implementation-interface": {
+                  "revision": "v0"
+                }
+              }
+            }
+          }
+        },
+        "evidence": {
+          "ids": [
+            "00000000-0000-4000-8000-000000060802"
+          ],
+          "time": "2026-11-12T12:00:00Z"
+        },
+        "invocation": "$account0",
+        "kind": "complete"
+      },
+      "expect": {
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "attempt": 1,
+            "call": {
               "params": {
                 "_meta": {
                   "io.github.shrav-k.conduit/operation": "@core#account-hook.v1",
-                  "io.github.shrav-k.conduit/caller": "00000000-0000-4000-8000-000000000005"
+                  "io.github.shrav-k.conduit/caller": "00000000-0000-4000-8000-000000000005",
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  }
                 }
-              }
+              },
+              "method": "tools/call"
+            }
+          }
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "invocation": "$account0",
+              "attempt": 1
             }
           }
         ],
@@ -874,9 +942,6 @@
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1conduit",
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1idempotencyKey"
         ]
-      },
-      "capture": {
-        "account0": "/reply/hook"
       }
     },
     {
@@ -1219,12 +1284,81 @@
             "kind": "dispatch",
             "attempt": 1,
             "call": {
+              "method": "server/discover",
+              "params": {
+                "_meta": {
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  },
+                  "io.modelcontextprotocol/protocolVersion": "2026-07-28"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "capture": {
+        "signin1": "/reply/invocation",
+        "check1": "/reply/hook"
+      }
+    },
+    {
+      "input": {
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "capabilities": {
+              "extensions": {
+                "io.github.shrav-k.conduit/implementation-interface": {
+                  "revision": "v0"
+                }
+              }
+            }
+          }
+        },
+        "evidence": {
+          "ids": [
+            "00000000-0000-4000-8000-000000150704"
+          ],
+          "time": "2026-11-12T12:00:00Z"
+        },
+        "invocation": "$check1",
+        "kind": "complete"
+      },
+      "expect": {
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "attempt": 1,
+            "call": {
               "params": {
                 "_meta": {
                   "io.github.shrav-k.conduit/operation": "@core#account-hook.v1",
-                  "io.github.shrav-k.conduit/caller": "00000000-0000-4000-8000-000000000005"
+                  "io.github.shrav-k.conduit/caller": "00000000-0000-4000-8000-000000000005",
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  }
                 }
-              }
+              },
+              "method": "tools/call"
+            }
+          }
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "invocation": "$check1",
+              "attempt": 1
             }
           }
         ],
@@ -1232,10 +1366,6 @@
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1conduit",
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1idempotencyKey"
         ]
-      },
-      "capture": {
-        "signin1": "/reply/invocation",
-        "check1": "/reply/hook"
       }
     },
     {
@@ -1406,6 +1536,57 @@
             "kind": "dispatch",
             "attempt": 1,
             "call": {
+              "method": "server/discover",
+              "params": {
+                "_meta": {
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  },
+                  "io.modelcontextprotocol/protocolVersion": "2026-07-28"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "capture": {
+        "hook1": "/reply/hook"
+      }
+    },
+    {
+      "input": {
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "capabilities": {
+              "extensions": {
+                "io.github.shrav-k.conduit/implementation-interface": {
+                  "revision": "v0"
+                }
+              }
+            }
+          }
+        },
+        "evidence": {
+          "ids": [
+            "00000000-0000-4000-8000-000000150803"
+          ],
+          "time": "2026-11-12T12:00:00Z"
+        },
+        "invocation": "$hook1",
+        "kind": "complete"
+      },
+      "expect": {
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "attempt": 1,
+            "call": {
               "params": {
                 "_meta": {
                   "io.github.shrav-k.conduit/operation": "@core#sign-in-hook.v1",
@@ -1413,10 +1594,25 @@
                   "io.modelcontextprotocol/clientCapabilities": {
                     "elicitation": {
                       "url": {}
+                    },
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
                     }
                   }
                 }
-              }
+              },
+              "method": "tools/call"
+            }
+          }
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "invocation": "$hook1",
+              "attempt": 1
             }
           }
         ],
@@ -1425,9 +1621,6 @@
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1idempotencyKey",
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1signInLogin"
         ]
-      },
-      "capture": {
-        "hook1": "/reply/hook"
       }
     },
     {
@@ -1962,12 +2155,81 @@
             "kind": "dispatch",
             "attempt": 1,
             "call": {
+              "method": "server/discover",
+              "params": {
+                "_meta": {
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  },
+                  "io.modelcontextprotocol/protocolVersion": "2026-07-28"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "capture": {
+        "signin2": "/reply/invocation",
+        "check2": "/reply/hook"
+      }
+    },
+    {
+      "input": {
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "capabilities": {
+              "extensions": {
+                "io.github.shrav-k.conduit/implementation-interface": {
+                  "revision": "v0"
+                }
+              }
+            }
+          }
+        },
+        "evidence": {
+          "ids": [
+            "00000000-0000-4000-8000-000000191004"
+          ],
+          "time": "2026-11-12T12:00:00Z"
+        },
+        "invocation": "$check2",
+        "kind": "complete"
+      },
+      "expect": {
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "attempt": 1,
+            "call": {
               "params": {
                 "_meta": {
                   "io.github.shrav-k.conduit/operation": "@core#account-hook.v1",
-                  "io.github.shrav-k.conduit/caller": "00000000-0000-4000-8000-000000000005"
+                  "io.github.shrav-k.conduit/caller": "00000000-0000-4000-8000-000000000005",
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  }
                 }
-              }
+              },
+              "method": "tools/call"
+            }
+          }
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "invocation": "$check2",
+              "attempt": 1
             }
           }
         ],
@@ -1975,10 +2237,6 @@
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1conduit",
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1idempotencyKey"
         ]
-      },
-      "capture": {
-        "signin2": "/reply/invocation",
-        "check2": "/reply/hook"
       }
     },
     {
@@ -2149,6 +2407,57 @@
             "kind": "dispatch",
             "attempt": 1,
             "call": {
+              "method": "server/discover",
+              "params": {
+                "_meta": {
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  },
+                  "io.modelcontextprotocol/protocolVersion": "2026-07-28"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "capture": {
+        "hook2": "/reply/hook"
+      }
+    },
+    {
+      "input": {
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "capabilities": {
+              "extensions": {
+                "io.github.shrav-k.conduit/implementation-interface": {
+                  "revision": "v0"
+                }
+              }
+            }
+          }
+        },
+        "evidence": {
+          "ids": [
+            "00000000-0000-4000-8000-000000191103"
+          ],
+          "time": "2026-11-12T12:00:00Z"
+        },
+        "invocation": "$hook2",
+        "kind": "complete"
+      },
+      "expect": {
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "attempt": 1,
+            "call": {
               "params": {
                 "_meta": {
                   "io.github.shrav-k.conduit/operation": "@core#sign-in-hook.v1",
@@ -2156,10 +2465,25 @@
                   "io.modelcontextprotocol/clientCapabilities": {
                     "elicitation": {
                       "url": {}
+                    },
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
                     }
                   }
                 }
-              }
+              },
+              "method": "tools/call"
+            }
+          }
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "invocation": "$hook2",
+              "attempt": 1
             }
           }
         ],
@@ -2168,9 +2492,6 @@
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1idempotencyKey",
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1signInLogin"
         ]
-      },
-      "capture": {
-        "hook2": "/reply/hook"
       }
     },
     {
@@ -2531,12 +2852,81 @@
             "kind": "dispatch",
             "attempt": 1,
             "call": {
+              "method": "server/discover",
+              "params": {
+                "_meta": {
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  },
+                  "io.modelcontextprotocol/protocolVersion": "2026-07-28"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "capture": {
+        "signin3": "/reply/invocation",
+        "check3": "/reply/hook"
+      }
+    },
+    {
+      "input": {
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "capabilities": {
+              "extensions": {
+                "io.github.shrav-k.conduit/implementation-interface": {
+                  "revision": "v0"
+                }
+              }
+            }
+          }
+        },
+        "evidence": {
+          "ids": [
+            "00000000-0000-4000-8000-000000191304"
+          ],
+          "time": "2026-11-12T12:00:00Z"
+        },
+        "invocation": "$check3",
+        "kind": "complete"
+      },
+      "expect": {
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "attempt": 1,
+            "call": {
               "params": {
                 "_meta": {
                   "io.github.shrav-k.conduit/operation": "@core#account-hook.v1",
-                  "io.github.shrav-k.conduit/caller": "00000000-0000-4000-8000-000000000005"
+                  "io.github.shrav-k.conduit/caller": "00000000-0000-4000-8000-000000000005",
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  }
                 }
-              }
+              },
+              "method": "tools/call"
+            }
+          }
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "invocation": "$check3",
+              "attempt": 1
             }
           }
         ],
@@ -2544,10 +2934,6 @@
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1conduit",
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1idempotencyKey"
         ]
-      },
-      "capture": {
-        "signin3": "/reply/invocation",
-        "check3": "/reply/hook"
       }
     },
     {
@@ -2718,6 +3104,57 @@
             "kind": "dispatch",
             "attempt": 1,
             "call": {
+              "method": "server/discover",
+              "params": {
+                "_meta": {
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  },
+                  "io.modelcontextprotocol/protocolVersion": "2026-07-28"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "capture": {
+        "hook3": "/reply/hook"
+      }
+    },
+    {
+      "input": {
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "capabilities": {
+              "extensions": {
+                "io.github.shrav-k.conduit/implementation-interface": {
+                  "revision": "v0"
+                }
+              }
+            }
+          }
+        },
+        "evidence": {
+          "ids": [
+            "00000000-0000-4000-8000-000000191403"
+          ],
+          "time": "2026-11-12T12:00:00Z"
+        },
+        "invocation": "$hook3",
+        "kind": "complete"
+      },
+      "expect": {
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "attempt": 1,
+            "call": {
               "params": {
                 "_meta": {
                   "io.github.shrav-k.conduit/operation": "@core#sign-in-hook.v1",
@@ -2725,13 +3162,28 @@
                   "io.modelcontextprotocol/clientCapabilities": {
                     "elicitation": {
                       "url": {}
+                    },
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
                     }
                   },
                   "io.github.shrav-k.conduit/signInLogin": {
                     "name": "browser"
                   }
                 }
-              }
+              },
+              "method": "tools/call"
+            }
+          }
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "invocation": "$hook3",
+              "attempt": 1
             }
           }
         ],
@@ -2739,9 +3191,6 @@
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1conduit",
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1idempotencyKey"
         ]
-      },
-      "capture": {
-        "hook3": "/reply/hook"
       }
     },
     {
@@ -3102,12 +3551,81 @@
             "kind": "dispatch",
             "attempt": 1,
             "call": {
+              "method": "server/discover",
+              "params": {
+                "_meta": {
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  },
+                  "io.modelcontextprotocol/protocolVersion": "2026-07-28"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "capture": {
+        "signin4": "/reply/invocation",
+        "check4": "/reply/hook"
+      }
+    },
+    {
+      "input": {
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "capabilities": {
+              "extensions": {
+                "io.github.shrav-k.conduit/implementation-interface": {
+                  "revision": "v0"
+                }
+              }
+            }
+          }
+        },
+        "evidence": {
+          "ids": [
+            "00000000-0000-4000-8000-000000191604"
+          ],
+          "time": "2026-11-12T12:00:00Z"
+        },
+        "invocation": "$check4",
+        "kind": "complete"
+      },
+      "expect": {
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "attempt": 1,
+            "call": {
               "params": {
                 "_meta": {
                   "io.github.shrav-k.conduit/operation": "@core#account-hook.v1",
-                  "io.github.shrav-k.conduit/caller": "00000000-0000-4000-8000-000000000005"
+                  "io.github.shrav-k.conduit/caller": "00000000-0000-4000-8000-000000000005",
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  }
                 }
-              }
+              },
+              "method": "tools/call"
+            }
+          }
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "invocation": "$check4",
+              "attempt": 1
             }
           }
         ],
@@ -3115,10 +3633,6 @@
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1conduit",
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1idempotencyKey"
         ]
-      },
-      "capture": {
-        "signin4": "/reply/invocation",
-        "check4": "/reply/hook"
       }
     },
     {
@@ -3289,6 +3803,57 @@
             "kind": "dispatch",
             "attempt": 1,
             "call": {
+              "method": "server/discover",
+              "params": {
+                "_meta": {
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  },
+                  "io.modelcontextprotocol/protocolVersion": "2026-07-28"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "capture": {
+        "hook4": "/reply/hook"
+      }
+    },
+    {
+      "input": {
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "capabilities": {
+              "extensions": {
+                "io.github.shrav-k.conduit/implementation-interface": {
+                  "revision": "v0"
+                }
+              }
+            }
+          }
+        },
+        "evidence": {
+          "ids": [
+            "00000000-0000-4000-8000-000000191703"
+          ],
+          "time": "2026-11-12T12:00:00Z"
+        },
+        "invocation": "$hook4",
+        "kind": "complete"
+      },
+      "expect": {
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "attempt": 1,
+            "call": {
               "params": {
                 "_meta": {
                   "io.github.shrav-k.conduit/operation": "@core#sign-in-hook.v1",
@@ -3296,13 +3861,28 @@
                   "io.modelcontextprotocol/clientCapabilities": {
                     "elicitation": {
                       "url": {}
+                    },
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
                     }
                   },
                   "io.github.shrav-k.conduit/signInLogin": {
                     "name": "device"
                   }
                 }
-              }
+              },
+              "method": "tools/call"
+            }
+          }
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "invocation": "$hook4",
+              "attempt": 1
             }
           }
         ],
@@ -3310,9 +3890,6 @@
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1conduit",
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1idempotencyKey"
         ]
-      },
-      "capture": {
-        "hook4": "/reply/hook"
       }
     },
     {
@@ -3847,12 +4424,81 @@
             "kind": "dispatch",
             "attempt": 1,
             "call": {
+              "method": "server/discover",
+              "params": {
+                "_meta": {
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  },
+                  "io.modelcontextprotocol/protocolVersion": "2026-07-28"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "capture": {
+        "signin5": "/reply/invocation",
+        "check5": "/reply/hook"
+      }
+    },
+    {
+      "input": {
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "capabilities": {
+              "extensions": {
+                "io.github.shrav-k.conduit/implementation-interface": {
+                  "revision": "v0"
+                }
+              }
+            }
+          }
+        },
+        "evidence": {
+          "ids": [
+            "00000000-0000-4000-8000-000000191904"
+          ],
+          "time": "2026-11-12T12:00:00Z"
+        },
+        "invocation": "$check5",
+        "kind": "complete"
+      },
+      "expect": {
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "attempt": 1,
+            "call": {
               "params": {
                 "_meta": {
                   "io.github.shrav-k.conduit/operation": "@core#account-hook.v1",
-                  "io.github.shrav-k.conduit/caller": "00000000-0000-4000-8000-000000000005"
+                  "io.github.shrav-k.conduit/caller": "00000000-0000-4000-8000-000000000005",
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  }
                 }
-              }
+              },
+              "method": "tools/call"
+            }
+          }
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "invocation": "$check5",
+              "attempt": 1
             }
           }
         ],
@@ -3860,10 +4506,6 @@
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1conduit",
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1idempotencyKey"
         ]
-      },
-      "capture": {
-        "signin5": "/reply/invocation",
-        "check5": "/reply/hook"
       }
     },
     {
@@ -4034,6 +4676,57 @@
             "kind": "dispatch",
             "attempt": 1,
             "call": {
+              "method": "server/discover",
+              "params": {
+                "_meta": {
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  },
+                  "io.modelcontextprotocol/protocolVersion": "2026-07-28"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "capture": {
+        "hook5": "/reply/hook"
+      }
+    },
+    {
+      "input": {
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "capabilities": {
+              "extensions": {
+                "io.github.shrav-k.conduit/implementation-interface": {
+                  "revision": "v0"
+                }
+              }
+            }
+          }
+        },
+        "evidence": {
+          "ids": [
+            "00000000-0000-4000-8000-000000192003"
+          ],
+          "time": "2026-11-12T12:00:00Z"
+        },
+        "invocation": "$hook5",
+        "kind": "complete"
+      },
+      "expect": {
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "attempt": 1,
+            "call": {
               "params": {
                 "_meta": {
                   "io.github.shrav-k.conduit/operation": "@core#sign-in-hook.v1",
@@ -4041,10 +4734,25 @@
                   "io.modelcontextprotocol/clientCapabilities": {
                     "elicitation": {
                       "url": {}
+                    },
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
                     }
                   }
                 }
-              }
+              },
+              "method": "tools/call"
+            }
+          }
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "invocation": "$hook5",
+              "attempt": 1
             }
           }
         ],
@@ -4053,9 +4761,6 @@
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1idempotencyKey",
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1signInLogin"
         ]
-      },
-      "capture": {
-        "hook5": "/reply/hook"
       }
     },
     {
@@ -4413,12 +5118,81 @@
             "kind": "dispatch",
             "attempt": 1,
             "call": {
+              "method": "server/discover",
+              "params": {
+                "_meta": {
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  },
+                  "io.modelcontextprotocol/protocolVersion": "2026-07-28"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "capture": {
+        "signin6": "/reply/invocation",
+        "check6": "/reply/hook"
+      }
+    },
+    {
+      "input": {
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "capabilities": {
+              "extensions": {
+                "io.github.shrav-k.conduit/implementation-interface": {
+                  "revision": "v0"
+                }
+              }
+            }
+          }
+        },
+        "evidence": {
+          "ids": [
+            "00000000-0000-4000-8000-000000192204"
+          ],
+          "time": "2026-11-12T12:00:00Z"
+        },
+        "invocation": "$check6",
+        "kind": "complete"
+      },
+      "expect": {
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "attempt": 1,
+            "call": {
               "params": {
                 "_meta": {
                   "io.github.shrav-k.conduit/operation": "@core#account-hook.v1",
-                  "io.github.shrav-k.conduit/caller": "00000000-0000-4000-8000-000000000005"
+                  "io.github.shrav-k.conduit/caller": "00000000-0000-4000-8000-000000000005",
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  }
                 }
-              }
+              },
+              "method": "tools/call"
+            }
+          }
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "invocation": "$check6",
+              "attempt": 1
             }
           }
         ],
@@ -4426,10 +5200,6 @@
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1conduit",
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1idempotencyKey"
         ]
-      },
-      "capture": {
-        "signin6": "/reply/invocation",
-        "check6": "/reply/hook"
       }
     },
     {
@@ -4600,6 +5370,57 @@
             "kind": "dispatch",
             "attempt": 1,
             "call": {
+              "method": "server/discover",
+              "params": {
+                "_meta": {
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  },
+                  "io.modelcontextprotocol/protocolVersion": "2026-07-28"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "capture": {
+        "hook6": "/reply/hook"
+      }
+    },
+    {
+      "input": {
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "capabilities": {
+              "extensions": {
+                "io.github.shrav-k.conduit/implementation-interface": {
+                  "revision": "v0"
+                }
+              }
+            }
+          }
+        },
+        "evidence": {
+          "ids": [
+            "00000000-0000-4000-8000-000000192303"
+          ],
+          "time": "2026-11-12T12:00:00Z"
+        },
+        "invocation": "$hook6",
+        "kind": "complete"
+      },
+      "expect": {
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "attempt": 1,
+            "call": {
               "params": {
                 "_meta": {
                   "io.github.shrav-k.conduit/operation": "@core#sign-in-hook.v1",
@@ -4607,10 +5428,25 @@
                   "io.modelcontextprotocol/clientCapabilities": {
                     "elicitation": {
                       "url": {}
+                    },
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
                     }
                   }
                 }
-              }
+              },
+              "method": "tools/call"
+            }
+          }
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "invocation": "$hook6",
+              "attempt": 1
             }
           }
         ],
@@ -4619,9 +5455,6 @@
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1idempotencyKey",
           "/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1signInLogin"
         ]
-      },
-      "capture": {
-        "hook6": "/reply/hook"
       }
     },
     {

@@ -300,10 +300,20 @@ impl Gate {
                             if value["method"] == "tools/call" {
                                 calls.fetch_add(1, Ordering::SeqCst);
                             }
-                            let reply = format!(
-                                "{{ \"jsonrpc\": \"2.0\", \"id\": {}, \"result\": {{\"content\":[],\"structuredContent\":{{}},\"_meta\":{{\"io.github.shrav-k.conduit/outcome\":\"succeeded\"}}}} }}",
-                                value["id"]
-                            );
+                            let reply = if value["method"] == "server/discover" {
+                                json!({"jsonrpc":"2.0","id":value["id"],"result":{
+                                    "supportedVersions":["2026-07-28"],
+                                    "serverInfo":{"name":"gate","version":"1"},
+                                    "capabilities":{"extensions":{
+                                        "io.github.shrav-k.conduit/implementation-interface":{"revision":"v0"}
+                                    }}
+                                }}).to_string()
+                            } else {
+                                format!(
+                                    "{{ \"jsonrpc\": \"2.0\", \"id\": {}, \"result\": {{\"content\":[],\"structuredContent\":{{}},\"_meta\":{{\"io.github.shrav-k.conduit/outcome\":\"succeeded\"}}}} }}",
+                                    value["id"]
+                                )
+                            };
                             if options.sse && options.prime_events {
                                 (
                                     "200 OK",

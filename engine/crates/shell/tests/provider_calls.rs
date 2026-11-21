@@ -379,6 +379,36 @@ fn runtime_provider_setup_discovers_materializes_bridges_and_drop_ends_bridge() 
     assert_eq!(calls[0].1["params"]["name"], "inspect-run.v1");
     assert_eq!(calls[1].1["params"]["name"], "run.v1");
     let prefix = &fixture.shell.context.meta_prefix;
+    assert_eq!(
+        messages
+            .iter()
+            .filter(|m| m["method"] == "server/discover")
+            .count(),
+        1
+    );
+    let state = fixture.shell.state().unwrap();
+    let provider_records: Vec<_> = state
+        .records
+        .iter()
+        .filter(|r| r["type"] == "provider-call")
+        .map(|r| (&r["data"]["operation"], &r["data"]["phase"]))
+        .collect();
+    let inspect = json!(format!(
+        "{}#inspect-run.v1",
+        fixture.shell.context.core_package
+    ));
+    let run = json!(format!("{}#run.v1", fixture.shell.context.core_package));
+    let made = json!("made");
+    let ended = json!("ended");
+    assert_eq!(
+        provider_records,
+        [
+            (&inspect, &made),
+            (&inspect, &ended),
+            (&run, &made),
+            (&run, &ended)
+        ]
+    );
     for (_, call) in &calls {
         let keys = call["params"]["_meta"]
             .as_object()
@@ -450,7 +480,45 @@ fn runtime_provider_failures_discovery_and_tls_refusal_map_reports() {
         );
         let messages = log(fixture.temp.path());
         if mode == "no-extension" {
+            assert_eq!(
+                messages
+                    .iter()
+                    .filter(|m| m["method"] == "server/discover")
+                    .count(),
+                1
+            );
             assert!(!messages.iter().any(|m| m["method"] == "tools/call"));
+            let state = fixture.shell.state().unwrap();
+            let records: Vec<_> = state
+                .records
+                .iter()
+                .filter(|r| r["type"] == "provider-call")
+                .collect();
+            assert_eq!(records.len(), 1);
+            let record = &records[0]["data"];
+            assert_eq!(record["phase"], "ended");
+            assert_eq!(record["reason"], "unavailable");
+            assert_eq!(record["ruleId"], "IFC-037");
+            assert_eq!(
+                record["missingExtension"],
+                format!(
+                    "{}implementation-interface",
+                    fixture.shell.context.meta_prefix
+                )
+            );
+            assert_eq!(record["extensionRevision"], "v0");
+            let setup = state
+                .invocations
+                .iter()
+                .find(|v| v["id"] == record["invocation"])
+                .unwrap();
+            assert!(
+                setup["setup"]["parts"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .any(|part| part["name"] == "run" && part["outcome"] == "unavailable")
+            );
         }
         if mode == "no-https" {
             assert!(!messages.iter().any(|m| m["params"]["name"] == "run.v1"));

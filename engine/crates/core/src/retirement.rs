@@ -324,7 +324,7 @@ pub(crate) fn execute(
         {
             t.state.invocations[i]["setup"] = json!({"item":implementation});
             t.state.invocations[i]["retirement"]["phase"] = json!("inspect-run");
-            return lifecycle::emit(t, a, c, i, "inspect-run.v1", json!({}));
+            return lifecycle::emit(t, c, i, "inspect-run.v1", json!({}));
         }
         if implementation["item"].get("remote").is_some() {
             t.state.invocations[i]["retirement"]["phase"] = json!("connect");
@@ -369,7 +369,7 @@ fn stop(
 ) -> Result<()> {
     if run(o).is_some() {
         t.state.invocations[i]["retirement"]["phase"] = json!("stop");
-        return lifecycle::emit(t, a, c, i, "stop.v1", json!({}));
+        return lifecycle::emit(t, c, i, "stop.v1", json!({}));
     }
     settle(t, a, c, i, o)
 }
@@ -448,18 +448,10 @@ pub(crate) fn report(
         lifecycle::Report::Run { outcome, .. } => ("run.v1", outcome.as_str()),
         lifecycle::Report::Stop { outcome } => ("stop.v1", outcome.as_str()),
         lifecycle::Report::Connected { outcome, .. } => ("connect", outcome.as_str()),
+        _ => unreachable!("provider discovery is handled before retirement parts"),
     };
     if !["succeeded", "failed", "unknown"].contains(&outcome) {
         return Err("invalid retirement part outcome".into());
-    }
-    if let Some(runtime) = o.get("runtime").and_then(|r| access::object(&t.state, r)) {
-        requests::record(
-            t,
-            a,
-            c,
-            "provider-call",
-            json!({"target":runtime["id"],"subject":o["id"],"operation":c.qualified(operation),"invocation":v["id"],"caller":v["caller"],"phase":"ended","outcome":outcome}),
-        )?;
     }
     event(
         t,
@@ -505,6 +497,33 @@ pub(crate) fn report(
         _ => return Err("report does not match retirement part".into()),
     }
     stop(t, a, c, i, &o)
+}
+pub(crate) fn provider_unavailable(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+) -> Result<()> {
+    let v = &t.state.invocations[i];
+    let o = access::object(&t.state, &v["object"])
+        .ok_or("retirement object disappeared")?
+        .clone();
+    match v["retirement"]["phase"].as_str() {
+        Some("stop") => {
+            add(t, i, "stop", "unavailable");
+            settle(t, a, c, i, &o)
+        }
+        Some("inspect-run") => {
+            add(t, i, "hook", "unavailable");
+            stop(t, a, c, i, &o)
+        }
+        Some("run") => {
+            add(t, i, "hook-run", "unavailable");
+            add(t, i, "hook", "unavailable");
+            stop(t, a, c, i, &o)
+        }
+        _ => Err("provider discovery does not match outstanding retirement part".into()),
+    }
 }
 pub(crate) fn run_unavailable(
     t: &mut Transition,
@@ -704,6 +723,18 @@ mod tests {
         let mut completion_evidence = evidence.clone();
         completion_evidence.ids = (0..20).map(|n| format!("completion-{n}")).collect();
 
+        requests::complete(
+            &mut t,
+            &completion_evidence,
+            &id,
+            1,
+            requests::advertised_extension(&c),
+            &c,
+        )
+        .unwrap();
+        completion_evidence
+            .ids
+            .retain(|id| !t.state.allocated_ids.contains(id));
         requests::complete(
             &mut t,
             &completion_evidence,

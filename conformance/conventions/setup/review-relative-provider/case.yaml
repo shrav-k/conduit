@@ -327,6 +327,28 @@
     {
       "input": {
         "kind": "setup-report",
+        "evidence": {
+          "time": "2026-11-09T13:47:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000231062"
+          ]
+        },
+        "invocation": "$setup",
+        "report": {
+          "kind": "provider-call-ready",
+          "operation": "@core#inspect-run.v1"
+        }
+      },
+      "expect": {
+        "reply": {
+          "accepted": true
+        },
+        "external_intents": []
+      }
+    },
+    {
+      "input": {
+        "kind": "setup-report",
         "invocation": "$setup",
         "report": {
           "kind": "inspect-run",

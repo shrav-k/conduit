@@ -330,7 +330,7 @@ impl RecordInputs<'_> {
         Ok(())
     }
 }
-fn record_content(t: &Transition, c: &Context, data: &mut Value) -> Result<()> {
+pub(crate) fn record_content(t: &Transition, c: &Context, data: &mut Value) -> Result<()> {
     let invocation = t
         .state
         .invocations
@@ -786,8 +786,27 @@ fn intent(v: &Value, state: &State, c: &Context) -> Result<Value> {
     Ok(dispatch_intent(v, url_elicitation, c))
 }
 
+const CAPABILITIES: &str = "io.modelcontextprotocol/clientCapabilities";
+
+pub(crate) fn discovery_intent(v: &Value, c: &Context) -> Value {
+    let extension = mark(c, "implementation-interface");
+    json!({"kind":"dispatch","invocation":v["id"],"attempt":v["attempt"],
+    "target":v["target"],"implementation":v["implementation"],
+    "call":{"method":"server/discover","params":{"_meta":{
+        "io.modelcontextprotocol/protocolVersion":"2026-07-28",
+        CAPABILITIES:{"extensions":{extension:{"revision":"v0"}}}
+    }}}})
+}
+
+#[cfg(test)]
+pub(crate) fn advertised_extension(c: &Context) -> Completion {
+    let extension = mark(c, "implementation-interface");
+    Completion::Result {
+        result: json!({"capabilities":{"extensions":{extension:{"revision":"v0"}}}}),
+    }
+}
+
 pub(crate) fn dispatch_intent(v: &Value, url_elicitation: bool, c: &Context) -> Value {
-    const CAPABILITIES: &str = "io.modelcontextprotocol/clientCapabilities";
     let implementation = &v["implementation"];
     let item = &implementation["item"];
     let operation = v["operation"].as_str().unwrap_or("");
@@ -827,10 +846,8 @@ pub(crate) fn dispatch_intent(v: &Value, url_elicitation: bool, c: &Context) -> 
         if v["sign_in_login"].is_string() {
             meta[mark(c, "signInLogin")] = json!({"name":v["sign_in_login"]});
         }
-        if item["plain"] == true || v["secret_read"].is_object() {
-            meta[CAPABILITIES]["extensions"][mark(c, "implementation-interface")] =
-                json!({"revision":"v0"});
-        }
+        meta[CAPABILITIES]["extensions"][mark(c, "implementation-interface")] =
+            json!({"revision":"v0"});
         call["params"]["_meta"] = meta;
     }
     // IFC-045: URL elicitation is declared only toward an instance whose Type states signIn.
@@ -1142,7 +1159,7 @@ fn invoke_inner(
     if let Some(old) = &previous {
         let id = &old["id"];
         if old["digest"] == digest {
-            link_access(t, id);
+            link_access(t, id, None);
         }
         let conflict = if old["digest"] != digest {
             Some("OPS-010")
@@ -1645,12 +1662,20 @@ fn invoke_inner(
         t.state.invocations.push(invocation.clone());
         t.state.invocations.len() - 1
     };
-    link_access(t, &id);
+    let discover = !plain
+        && reconciled.is_none()
+        && installation.is_none()
+        && !crate::records::handles(op, c)
+        && !crate::lifecycle::handles(op, c)
+        && op != c.qualified("sign-in.v1");
+    link_access(t, &id, discover.then_some(&invocation["attempt"]));
     let mut data = json!({"target":route["target"],"caller":route["caller"],"consumer":route["consumer"],"conduit":route["conduit"],"operation":op,"invocation":id,"attempt":invocation["attempt"]});
     if let Some(action) = &retried {
         data["pendingAction"] = json!([action["id"]]);
     }
-    record(t, a, c, "invocation-dispatched", data)?;
+    if !discover {
+        record(t, a, c, "invocation-dispatched", data)?;
+    }
     if let Some(action) = retried {
         pending::record_answer(t, a, c, &action)?;
         t.decisions.push(decision(
@@ -1662,7 +1687,11 @@ fn invoke_inner(
         ));
     }
     t.decisions.push(decision(
-        "dispatch-invocation",
+        if discover {
+            "prepare-invocation-discovery"
+        } else {
+            "dispatch-invocation"
+        },
         &[
             "OPS-008", "OPS-010", "OPS-011", "OPS-012", "OPS-024", "OPS-025", "OPS-026", "OPS-018",
             "IMP-007", "IFC-001", "IFC-007", "REC-002",
@@ -1776,13 +1805,18 @@ fn invoke_inner(
     } else if op == c.qualified("sign-in.v1") {
         crate::sign_in::begin(t, a, c, i)?;
     } else {
-        let call = intent(&invocation, &t.state, c)?;
+        let call = if discover {
+            t.state.invocations[i]["discovery"] = json!("pending");
+            discovery_intent(&invocation, c)
+        } else {
+            intent(&invocation, &t.state, c)?
+        };
         t.external_intents.push(call);
         t.reply = json!({"pending":true,"invocation":id,"attempt":invocation["attempt"]});
     }
     Ok(())
 }
-fn link_access(t: &mut Transition, id: &Value) {
+fn link_access(t: &mut Transition, id: &Value, attempt: Option<&Value>) {
     if let Some(r) = t
         .records
         .iter_mut()
@@ -1790,6 +1824,9 @@ fn link_access(t: &mut Transition, id: &Value) {
         .find(|r| r["type"] == "access-decision")
     {
         r["data"]["invocation"] = id.clone();
+        if let Some(attempt) = attempt {
+            r["data"]["attempt"] = attempt.clone();
+        }
         if let Some(stored) = t.state.records.iter_mut().find(|s| s["id"] == r["id"]) {
             *stored = r.clone();
         }
@@ -1912,7 +1949,7 @@ pub(crate) fn complete(
             evidence,
             cursor: 0,
         };
-        return complete_hook_discovery(t, &mut a, c, i, &v, completion);
+        return complete_discovery(t, &mut a, c, i, &v, completion);
     }
     if v["attempt"] != attempt || v["state"] != "in-progress" {
         // Late or duplicate completions never change a settled or cancelled outcome.
@@ -2127,7 +2164,7 @@ fn restore_or_remove_invocation(state: &mut State, i: usize, v: &Value) {
     }
 }
 
-fn complete_hook_discovery(
+fn complete_discovery(
     t: &mut Transition,
     a: &mut Allocation<'_>,
     c: &Context,
@@ -2167,7 +2204,17 @@ fn complete_hook_discovery(
     }
     if has_extension && !retired {
         t.state.invocations[i]["discovery"] = json!("read");
-        record_hook_dispatch(t, a, c, v)?;
+        if v["hook"] == true {
+            record_hook_dispatch(t, a, c, v)?;
+        } else {
+            record(
+                t,
+                a,
+                c,
+                "invocation-dispatched",
+                json!({"invocation":v["id"],"attempt":v["attempt"]}),
+            )?;
+        }
         t.decisions.push(decision(
             "read-implementation-discovery",
             &["IFC-037", "PKG-020"],
@@ -2184,7 +2231,8 @@ fn complete_hook_discovery(
     let operation = v["operation"].as_str().ok_or("hook has no operation")?;
     let mut route = json!({
         "target":v["target"],"caller":v["caller"],"consumer":v["sender"],
-        "conduit":v["conduit"],"operation":operation,"arguments":v["arguments"]
+        "conduit":v["conduit"],"operation":operation,"arguments":v["arguments"],
+        "serving":v["serving"],"idempotencyKey":v["key"]
     });
     let cause = if retired {
         t.decisions.push(decision(
@@ -2197,7 +2245,11 @@ fn complete_hook_discovery(
         "the instance was retired under LIF-005 or is gone, so LIF-015 does not permit this part of sign-in.v1 to be dispatched and the call was not sent.".into()
     } else {
         t.decisions.push(decision(
-            "hook-without-extension",
+            if v["hook"] == true {
+                "hook-without-extension"
+            } else {
+                "request-without-extension"
+            },
             &["IFC-037", "PKG-020"],
             &[],
             json!({"invocation":v["id"],"extension":extension,"revision":"v0"}),
@@ -2205,9 +2257,15 @@ fn complete_hook_discovery(
         ));
         route["missingExtension"] = json!(extension);
         route["extensionRevision"] = json!("v0");
-        format!(
-            "the implementation's result of server/discover does not list Conduit's extension {extension} at revision v0, so this hook, which its item lists under keyed, was not sent; the item's other calls are sent as before."
-        )
+        if v["hook"] == true && v["implementation"]["item"]["plain"] == true {
+            format!(
+                "the implementation's result of server/discover does not list Conduit's extension {extension} at revision v0, so this hook, which its item lists under keyed, was not sent; the item's other calls are sent as before."
+            )
+        } else {
+            format!(
+                "the implementation's result of server/discover does not list Conduit's extension {extension} at revision v0, so the call was not sent."
+            )
+        }
     };
     let rejection = sign_in::rejection(
         "unavailable",
@@ -2657,7 +2715,7 @@ fn dispatch_hook(
     if let Some(id) = p.get("retirement_of") {
         v["retirement_of"] = id.clone();
     }
-    if keyed {
+    if v["plain"] != true {
         v["discovery"] = json!("pending");
         if let Some(i) = previous {
             v["previous"] = t.state.invocations[i].clone();
@@ -2668,10 +2726,8 @@ fn dispatch_hook(
     } else {
         t.state.invocations.push(v.clone());
     }
-    if keyed {
-        // rmcp 3.9.0 refuses server/discover without these two keys; it exists only in 2026-07-28.
-        let meta = json!({"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{"extensions":{mark(c, "implementation-interface"):{"revision":"v0"}}}});
-        t.external_intents.push(json!({"kind":"dispatch","invocation":id,"attempt":attempt,"target":object["id"],"implementation":implementation,"call":{"method":"server/discover","params":{"_meta":meta}}}));
+    if v["plain"] != true {
+        t.external_intents.push(discovery_intent(&v, c));
     } else {
         record_hook_dispatch(t, a, c, &v)?;
         t.external_intents.push(intent(&v, &t.state, c)?);
@@ -2759,7 +2815,11 @@ mod tests {
         assert_eq!(call["call"]["params"]["name"], "setup-hook.v1");
         let meta = &call["call"]["params"]["_meta"];
         assert_eq!(meta[mark(&c, "operation")], setup);
-        assert_eq!(meta.get(CAPABILITIES), None);
+        // IFC-037 applies to every call with Conduit's keys.
+        assert_eq!(
+            meta[CAPABILITIES],
+            json!({"extensions":{extension:{"revision":"v0"}}})
+        );
     }
 
     #[test]
@@ -2782,14 +2842,23 @@ mod tests {
         });
         let without_url = dispatch_intent(&v, false, &c);
         let meta = without_url["call"]["params"]["_meta"].as_object().unwrap();
-        assert_eq!(meta.len(), 8);
-        assert_eq!(meta.get(CAP), None);
+        let extension = json!({mark(&c, "implementation-interface"):{"revision":"v0"}});
+        assert_eq!(meta.len(), 9);
+        assert_eq!(meta[CAP], json!({"extensions":extension}));
 
         let first = dispatch_intent(&v, true, &c);
         let mut with_url = first.clone();
         let meta = with_url["call"]["params"]["_meta"].as_object_mut().unwrap();
         assert_eq!(meta.len(), 9);
-        assert_eq!(meta.remove(CAP), Some(json!({"elicitation":{"url":{}}})));
+        assert_eq!(
+            meta[CAP],
+            json!({"extensions":extension,"elicitation":{"url":{}}})
+        );
+        meta.get_mut(CAP)
+            .unwrap()
+            .as_object_mut()
+            .unwrap()
+            .remove("elicitation");
         assert_eq!(with_url, without_url);
 
         let mut p = v.clone();
@@ -2888,7 +2957,7 @@ mod tests {
         let mut pending = hook.clone();
         pending["discovery"] = json!("pending");
         discovering.invocations.push(pending);
-        let discovered = answer(
+        let discovered = complete_step(
             &transition(discovering),
             &c,
             Completion::Result {
@@ -3167,6 +3236,14 @@ mod tests {
     }
 
     fn answer(t: &Transition, c: &Context, completion: Completion) -> Transition {
+        if t.state.invocations[0]["discovery"] == "pending" {
+            let ready = complete_step(t, c, advertised_extension(c));
+            return complete_step(&ready, c, completion);
+        }
+        complete_step(t, c, completion)
+    }
+
+    fn complete_step(t: &Transition, c: &Context, completion: Completion) -> Transition {
         let invocation = &t.state.invocations[0];
         step(
             &t.state,
@@ -3518,6 +3595,45 @@ mod tests {
             c,
         )
         .unwrap()
+    }
+
+    #[test]
+    fn non_plain_request_withholds_dispatch_when_discovery_lacks_extension() {
+        let (state, c, request) = repeat_fixture(false);
+        let pending = invoke_repeat(&state, &c, &request);
+        assert_eq!(pending.external_intents.len(), 1);
+        assert_eq!(
+            pending.external_intents[0]["call"]["method"],
+            "server/discover"
+        );
+        assert!(
+            !pending
+                .records
+                .iter()
+                .any(|record| record["type"] == "invocation-dispatched")
+        );
+
+        let refused = complete_step(
+            &pending,
+            &c,
+            Completion::Result {
+                result: json!({"capabilities":{"tools":{}}}),
+            },
+        );
+        assert!(refused.external_intents.is_empty());
+        assert_eq!(refused.reply["_meta"][mark(&c, "reason")], "unavailable");
+        assert!(refused.records.iter().any(|record| {
+            record["type"] == "request-ended"
+                && record["data"]["missingExtension"] == mark(&c, "implementation-interface")
+                && record["data"]["extensionRevision"] == "v0"
+                && record["data"]["idempotencyKey"] == "key"
+        }));
+        assert!(
+            !refused
+                .records
+                .iter()
+                .any(|record| record["type"] == "invocation-dispatched")
+        );
     }
 
     #[test]

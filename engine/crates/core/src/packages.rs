@@ -598,6 +598,14 @@ impl Catalog {
                     ));
                 }
                 if d["kind"] == "Type" {
+                    let offers = strings(&d["spec"], "offers")
+                        .map(|reference| {
+                            resolve_name(&env, &indexes, scope, reference, "Capability", core)
+                                .map(|resolved| (reference, resolved))
+                                .map_err(|(_, why)| why)
+                        })
+                        .collect::<Result<Vec<_>>>()?;
+                    diagnostics.extend(secret_type_faults(scope, d, &offers));
                     let name = &d["metadata"]["name"];
                     let pointer = d["spec"]["toolsDirectory"]["directory"].as_str();
                     let sign_in = &d["spec"]["signIn"];
@@ -1239,6 +1247,38 @@ struct SignInLogin<'a> {
     value: &'a Value,
 }
 
+fn secret_type_faults(scope: &str, doc: &Value, offers: &[(&str, (String, String))]) -> Vec<Value> {
+    let is_secret = |(_, (scope, name)): &(&str, (String, String))| {
+        scope == "core" && name == "secret-provider.v1"
+    };
+    if !offers.iter().any(is_secret) {
+        return Vec::new();
+    }
+    let name = doc["metadata"]["name"].as_str().unwrap_or("?");
+    let mut faults: Vec<_> = strings(&doc["spec"], "controls")
+        .map(|control| {
+            diag(
+                "SEC-005",
+                format!("{scope}: secret store Type {name} lists control {control}"),
+            )
+        })
+        .collect();
+    if offers.iter().any(|offer| !is_secret(offer)) {
+        let capabilities = offers
+            .iter()
+            .map(|(reference, _)| *reference)
+            .collect::<Vec<_>>();
+        faults.push(diag(
+            "SEC-022",
+            format!(
+                "{scope}: secret store Type {name} offers capabilities {}",
+                capabilities.join(", ")
+            ),
+        ));
+    }
+    faults
+}
+
 fn sign_in_login_faults(logins: &Value) -> Vec<String> {
     let Some(logins) = logins.as_array() else {
         return Vec::new();
@@ -1681,6 +1721,42 @@ fn file_reference(base: &UriRef<&str>, reference: &str) -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn secret_type_faults_name_every_control_and_capability() {
+        let doc =
+            json!({"metadata":{"name":"store.v1"},"spec":{"controls":["#first.v1","#second.v1"]}});
+        let offers = [
+            (
+                "core#secret-provider.v1",
+                ("core".into(), "secret-provider.v1".into()),
+            ),
+            ("#another.v1", ("project".into(), "another.v1".into())),
+        ];
+        let faults = secret_type_faults("project", &doc, &offers);
+        assert_eq!(
+            faults,
+            [
+                diag(
+                    "SEC-005",
+                    "project: secret store Type store.v1 lists control #first.v1"
+                ),
+                diag(
+                    "SEC-005",
+                    "project: secret store Type store.v1 lists control #second.v1"
+                ),
+                diag(
+                    "SEC-022",
+                    "project: secret store Type store.v1 offers capabilities core#secret-provider.v1, #another.v1"
+                ),
+            ]
+        );
+        let lookalike = [(
+            "#secret-provider.v1",
+            ("project".into(), "secret-provider.v1".into()),
+        )];
+        assert!(secret_type_faults("project", &doc, &lookalike).is_empty());
+    }
+
     #[test]
     fn sign_in_login_faults_name_duplicates_and_overlaps() {
         let redirect = json!({

@@ -1,0 +1,62 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Operation",
+    "metadata": {
+      "name": "set-location.v1"
+    },
+    "spec": {
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "$ref": "github.com/shrav-k/conduit/core#revision.v1"
+          },
+          "location": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "revision",
+          "location"
+        ],
+        "additionalProperties": false
+      },
+      "changes": {
+        "location": "/location"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "test-store.v1"
+    },
+    "spec": {
+      "family": "Resource",
+      "offers": [
+        "github.com/shrav-k/conduit/core#secret-provider.v1"
+      ],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string"
+          }
+        }
+      },
+      "implementation": {
+        "github.com/shrav-k/conduit/core#get-secret.v1": "#store-exec",
+        "#set-location.v1": "#store-exec"
+      },
+      "records": {
+        "inputs": false,
+        "outputs": false
+      },
+      "controls": [
+        "#set-location.v1"
+      ]
+    }
+  }
+]

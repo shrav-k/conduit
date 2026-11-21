@@ -1,0 +1,38 @@
+{
+  "id": "contracts-secret-store-only",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SEC-005",
+    "SEC-022"
+  ],
+  "title": "Accept a Type that offers only the secret provider capability",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "project-manifest": "project/conduit.json",
+    "project-documents": "project/documents.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "diagnostics": []
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": []
+      }
+    }
+  ]
+}

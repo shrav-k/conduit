@@ -1,0 +1,49 @@
+{
+  "id": "contracts-secret-store-control",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SEC-005"
+  ],
+  "title": "Refuse a control on a secret store Type",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "project-manifest": "project/conduit.json",
+    "project-documents": "project/documents.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "diagnostics": [
+            {
+              "ruleId": "SEC-005"
+            }
+          ],
+          "reason": "invalid"
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "SEC-005"
+        ],
+        "absent": [
+          "/reply/environment",
+          "/reply/digest",
+          "/reply/contexts"
+        ]
+      }
+    }
+  ]
+}

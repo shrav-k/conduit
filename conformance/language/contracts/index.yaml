@@ -33,6 +33,31 @@
       "safety_rows": []
     },
     {
+      "id": "contracts-secret-store-control",
+      "case": "language/contracts/secret-store-control/case.yaml",
+      "promises": [
+        "SEC-005"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "contracts-secret-store-only",
+      "case": "language/contracts/secret-store-only/case.yaml",
+      "promises": [
+        "SEC-005",
+        "SEC-022"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "contracts-secret-store-other-capability",
+      "case": "language/contracts/secret-store-other-capability/case.yaml",
+      "promises": [
+        "SEC-022"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "contracts-sign-in-logins",
       "case": "language/contracts/sign-in-logins/case.yaml",
       "promises": [

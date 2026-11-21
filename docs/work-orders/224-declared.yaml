@@ -1,0 +1,10 @@
+# Added portable cases for resolving secret store Types.
+- name: contracts-secret-store-control
+  kind: added
+  cases: [contracts-secret-store-control]
+- name: contracts-secret-store-other-capability
+  kind: added
+  cases: [contracts-secret-store-other-capability]
+- name: contracts-secret-store-only
+  kind: added
+  cases: [contracts-secret-store-only]

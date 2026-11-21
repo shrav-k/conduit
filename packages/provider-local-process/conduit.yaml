@@ -17,3 +17,4 @@ implementations:
       LOCAL_PROCESS_KEEPALIVE_INTERVAL: /keepaliveInterval
       LOCAL_PROCESS_KEEPALIVE_COUNT: /keepaliveCount
       LOCAL_PROCESS_MAX_LIFETIME: /maxLifetime
+      LOCAL_PROCESS_DURABLE_DIR: /durableDir

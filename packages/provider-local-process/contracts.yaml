@@ -13,9 +13,26 @@ metadata:
     also lives in private 0600 files, including tls.key, in a 0700 run directory and in
     the gate's memory. Confirmed stop removes that directory. Run stderr is a private
     file there; a program may itself print credentials into it. No remote channel is used.
-    CONDUIT_STATE_DIR must name the provider's private state directory at startup. Each
-    run receives CONDUIT_STATE_DIR pointing to instances/<SHA-256(instance-ID)> there,
-    mode 0700, reused across starts and never removed. Configuration changes take effect
+    The engine supplies private CONDUIT_STATE_DIR under PRV-029. It holds runs/ for
+    identity files and stderr.log, and instances/<SHA-256(instance-ID)> for each run's
+    own private state across starts. The engine removes both with the provider Resource.
+    The operator creates durableDir (LOCAL_PROCESS_DURABLE_DIR), an absolute directory
+    owned by the provider user at mode 0700 outside CONDUIT_STATE_DIR and its parent.
+    Startup refuses a missing, empty, relative, non-directory, foreign-owned, non-0700 or
+    misplaced durableDir, or ledger.json or markers/ in CONDUIT_STATE_DIR.
+    Under durableDir the provider keeps a mode 0700 subdirectory named by the lowercase
+    hex SHA-256 of the exact CONDUIT_STATE_DIR bytes, without a newline. It takes
+    owner.lock there and binds state-dir after writing the initial empty ledger.json.
+    Startup refuses a different binding or a missing ledger for an existing binding.
+    Keep durableDir fixed for an existing Resource. Before initializing an empty ledger,
+    startup refuses a non-empty CONDUIT_STATE_DIR/runs/ because durableDir may have changed
+    and owed stops may be in the old directory. Restart with the original durableDir.
+    Startup refuses a markers/ directory at a mode other than 0700. For an owed stop it
+    refuses a missing, unreadable or mismatched markers/<key> entry, naming the instance
+    and the entry. Recovery can finish a stop with no marker entry when the retained run
+    state proves the instance never launched. For a refused stop, end any survivors first,
+    then restore the matching marker or remove the owed-stop record from ledger.json.
+    Configuration changes take effect
     at the provider's next start. Runs never restart automatically; provider loss and
     maxLifetime end their process groups. Descendants calling setsid escape this reach.
     Marker locks inventory runs; the guard durably records its group before launch. A free
@@ -24,12 +41,14 @@ metadata:
     reports unknown, retains identity and owes a stop across restarts; operators must end
     survivors independently before the group can be confirmed absent. Unreaped group
     zombies can delay confirmation; legacy markers without a witness remain unknown.
-    ledger.json durably keeps
-    run records and owed stops. Startup, calls and a one-second drain retry owed stops.
-    Under the owner's 2026-11-12 rule MC4-002, every held stop on this machine is carried
-    out before any new run starts; a refused start names the owed instance and machine.
-    One owed stop therefore blocks all new runs. RP1 has no external drainer after
-    retirement, separate OS users or registry packages. Stopped-run recovery is present;
+    In the durable subdirectory, ledger.json and markers/ keep run records and owed stops
+    past engine restart and provider retirement (PRV-021). Startup, calls and a one-second
+    drain retry the provider's owed stops. Under MC4-002, an owed stop in this provider's
+    ledger blocks its new runs; a later provider Resource keeps a separate ledger. A
+    refused start names the owed instance and machine. A stop still owed at retirement
+    stays in that subdirectory for the operator to end the survivors. Remove the
+    subdirectory only once nothing is owed. RP2 supplies the external drainer; separate
+    OS users and registry packages are also outside RP1. Stopped-run recovery is present;
     live sessions do not survive provider restart. README.md inventories D15's four fields.
 spec:
   family: Resource
@@ -44,7 +63,7 @@ spec:
     outputs: false
   schema:
     type: object
-    required: [bindAddress, advertisedHost, keepaliveIdle, keepaliveInterval, keepaliveCount, maxLifetime]
+    required: [bindAddress, advertisedHost, keepaliveIdle, keepaliveInterval, keepaliveCount, maxLifetime, durableDir]
     properties:
       bindAddress: {type: string, default: '127.0.0.1'}
       advertisedHost: {type: string, default: '127.0.0.1'}
@@ -52,4 +71,5 @@ spec:
       keepaliveInterval: {type: integer, minimum: 1, maximum: 2147483647, default: 5}
       keepaliveCount: {type: integer, minimum: 1, maximum: 2147483647, default: 3}
       maxLifetime: {type: integer, minimum: 1, maximum: 2147483647, default: 3600}
+      durableDir: {type: string, pattern: '^/'}
     additionalProperties: false

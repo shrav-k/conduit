@@ -1,7 +1,7 @@
 use crate::{
     guard::{GroupWitness, Launch, Marker},
     instance_key, private_directory,
-    storage::{atomic_write, private_file},
+    storage::{atomic_write, bind_state, prepare_layout, private_file},
 };
 use async_trait::async_trait;
 use runtime_provider_kit::{names, *};
@@ -57,7 +57,8 @@ impl Signaller for StopPipe {
 }
 
 pub struct LocalBackend {
-    root: PathBuf,
+    state_dir: PathBuf,
+    durable_dir: PathBuf,
     binary: PathBuf,
     hostname: String,
     pipes: Mutex<BTreeMap<String, UnixStream>>,
@@ -106,16 +107,16 @@ fn duplicate(file: &impl AsRawFd) -> std::io::Result<OwnedFd> {
     }
 }
 impl LocalBackend {
-    pub fn new(root: &Path, binary: &Path) -> Result<Self> {
-        Self::with_signaller(root, binary, Arc::new(StopPipe))
+    pub fn new(state: &Path, durable: &Path, binary: &Path) -> std::result::Result<Self, String> {
+        Self::with_signaller(state, durable, binary, Arc::new(StopPipe))
     }
     pub fn with_signaller(
-        root: &Path,
+        state: &Path,
+        durable: &Path,
         binary: &Path,
         signaller: Arc<dyn Signaller>,
-    ) -> Result<Self> {
-        private_directory(root).map_err(|_| Unavailable)?;
-        let root = root.canonicalize().map_err(|_| Unavailable)?;
+    ) -> std::result::Result<Self, String> {
+        let (state_dir, durable_dir) = prepare_layout(state, durable)?;
         let owner = OpenOptions::new()
             .read(true)
             .write(true)
@@ -123,25 +124,40 @@ impl LocalBackend {
             .truncate(false)
             .mode(0o600)
             .custom_flags(libc::O_NOFOLLOW)
-            .open(root.join("owner.lock"))
-            .map_err(|_| Unavailable)?;
-        if !lock(&owner).map_err(|_| Unavailable)? {
-            return Err(Unavailable);
+            .open(durable_dir.join("owner.lock"))
+            .map_err(|_| "durableDir (LOCAL_PROCESS_DURABLE_DIR): cannot open owner.lock")?;
+        if !lock(&owner)
+            .map_err(|_| "durableDir (LOCAL_PROCESS_DURABLE_DIR): cannot take owner.lock")?
+        {
+            return Err("durableDir (LOCAL_PROCESS_DURABLE_DIR): owner.lock is held".into());
         }
-        for name in ["markers", "runs", "instances"] {
-            private_directory(&root.join(name)).map_err(|_| Unavailable)?;
+        bind_state(&durable_dir, state, &state_dir)?;
+        private_directory(&durable_dir.join("markers"))
+            .map_err(|_| "durableDir (LOCAL_PROCESS_DURABLE_DIR): cannot open markers/")?;
+        for name in ["runs", "instances"] {
+            private_directory(&state_dir.join(name))
+                .map_err(|_| format!("cannot open CONDUIT_STATE_DIR/{name}"))?;
         }
         Ok(Self {
-            root,
+            state_dir,
+            durable_dir,
             binary: binary.into(),
-            hostname: hostname()?,
+            hostname: hostname().map_err(|_| "cannot read the OS hostname")?,
             pipes: Mutex::new(BTreeMap::new()),
             signaller,
             _owner: owner,
         })
     }
+    pub fn durable_directory(&self) -> &Path {
+        &self.durable_dir
+    }
     fn path(&self, area: &str, instance: &str) -> PathBuf {
-        self.root.join(area).join(instance_key(instance))
+        self.state_dir.join(area).join(instance_key(instance))
+    }
+    fn marker(&self, instance: &str) -> PathBuf {
+        self.durable_dir
+            .join("markers")
+            .join(instance_key(instance))
     }
     fn local(&self, context: &CallContext) -> Result<()> {
         if canonical_hostname(&context.machine.hostname) == canonical_hostname(&self.hostname) {
@@ -151,7 +167,7 @@ impl LocalBackend {
         }
     }
     fn observed(&self, instance: &str) -> Result<RunState> {
-        let mut file = match open_marker(&self.path("markers", instance)) {
+        let mut file = match open_marker(&self.marker(instance)) {
             Ok(file) => file,
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(RunState::Stopped),
             Err(_) => return Err(Unavailable),
@@ -194,7 +210,7 @@ impl RuntimeBackend for LocalBackend {
     }
     async fn inventory(&self) -> Result<Vec<RunRecord>> {
         let mut records = Vec::new();
-        for entry in fs::read_dir(self.root.join("markers")).map_err(|_| Unavailable)? {
+        for entry in fs::read_dir(self.durable_dir.join("markers")).map_err(|_| Unavailable)? {
             let entry = entry.map_err(|_| Unavailable)?;
             if entry
                 .file_name()
@@ -304,7 +320,7 @@ impl RuntimeBackend for LocalBackend {
             state: RunState::Unknown,
             owed_stop: false,
         };
-        let markers = self.root.join("markers");
+        let markers = self.durable_dir.join("markers");
         atomic_write(
             &markers,
             &instance_key(instance),
@@ -315,7 +331,7 @@ impl RuntimeBackend for LocalBackend {
             .map_err(|_| Unavailable)?,
         )
         .map_err(|_| Unavailable)?;
-        let marker = open_marker(&self.path("markers", instance)).map_err(|_| Unavailable)?;
+        let marker = open_marker(&self.marker(instance)).map_err(|_| Unavailable)?;
         if !lock(&marker).map_err(|_| Unavailable)? {
             return Err(Unavailable);
         }
@@ -458,13 +474,21 @@ impl AsyncWrite for ProcessChannel {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::os::unix::fs::PermissionsExt;
+
+    fn test_backend() -> (tempfile::TempDir, LocalBackend) {
+        let root = tempfile::tempdir().unwrap();
+        let durable = root.path().join("durable");
+        let instances = root.path().join("instances");
+        private_directory(&durable).unwrap();
+        private_directory(&instances).unwrap();
+        let backend =
+            LocalBackend::new(&instances.join("provider"), &durable, Path::new("/unused")).unwrap();
+        (root, backend)
+    }
 
     #[test]
     fn local_backend_accepts_the_canonical_spelling_of_its_hostname() {
-        let state = tempfile::tempdir().unwrap();
-        fs::set_permissions(state.path(), fs::Permissions::from_mode(0o700)).unwrap();
-        let mut backend = LocalBackend::new(state.path(), Path::new("/unused")).unwrap();
+        let (_root, mut backend) = test_backend();
         assert_eq!(backend.hostname, backend.hostname.to_ascii_lowercase());
         backend.hostname = "Mixed-Case.Example".into();
         let mut context = CallContext {
@@ -482,9 +506,7 @@ mod tests {
 
     #[test]
     fn local_backend_advertises_and_compares_canonical_hostnames() {
-        let state = tempfile::tempdir().unwrap();
-        fs::set_permissions(state.path(), fs::Permissions::from_mode(0o700)).unwrap();
-        let mut backend = LocalBackend::new(state.path(), Path::new("/unused")).unwrap();
+        let (_root, mut backend) = test_backend();
         backend.hostname = " Mixed.Äxample ".into();
         assert_eq!(
             backend.declaration().machines[0].hostname.as_deref(),

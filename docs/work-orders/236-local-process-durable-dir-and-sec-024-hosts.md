@@ -275,4 +275,31 @@ Named here and not in this order:
 
 ## Record
 
-Not yet run.
+Run on 2026-11-20 and 2026-11-21 through Conduit itself, by the dogfood's own Agents, in Pacific
+time.
+- **Worker-2's first turn** (00:08 to 00:24) moved the owed-stop ledger and its markers out of the
+  directory PRV-029 removes, into a 0700 subdirectory of `durableDir`. It also made a missing
+  ledger an error. SEC-024's check passed all nine new URL cases, so its parser stays as written.
+- **verifier-2** (00:25 to 00:29) confirmed both. It had one must: startup took a missing marker as
+  proof that the run had stopped. It also confirmed that the refused loopback spellings fall
+  outside RFC 3986's IPv4 grammar.
+- **Worker-2's second turn** (00:30 to 00:34) made startup refuse that case and keep the ledger.
+
+The Claude weekly limit cut off the reader's first read (00:34). Its session could not resume
+until serve restarted (08:3x), which began new conversations. The reader (08:36 to 08:41)
+approved with one must, stale D15 counts, and three shoulds:
+- an explicit missing-marker refusal that keeps a never-launched crash path recoverable;
+- four distinct directory refusals;
+- refusing a changed `durableDir`.
+
+Worker-2 applied them (08:41 to 08:49). The reader's delta read (08:50 to 08:52) found no must. It
+confirmed that a launched run can never be cleared as never-launched. Its one should, that the
+changed-`durableDir` check blocked the README's migration, was applied by worker-2 (08:52 to
+08:55): the check now runs only when no ledger exists. 22 provider tests pass.
+
+Left open, each named in the worker's report:
+- RP2's external drainer;
+- MC4-002's question across Resources;
+- sharing the durable-directory code through the kit.
+
+The gate's run on the squash is the coordinator's, at the merge.

@@ -5,7 +5,7 @@ mod guard;
 mod storage;
 pub use backend::{LocalBackend, Signaller, Staged, StopPipe, hostname};
 pub use guard::guard_main;
-pub use storage::{FileStore, instance_key, private_directory};
+pub use storage::{DURABLE_DIR_VARIABLE, FileStore, instance_key, private_directory};
 
 use runtime_provider_kit::{Options, Unavailable, gate::GateConfig};
 use std::time::Duration;

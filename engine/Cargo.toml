@@ -2,7 +2,7 @@
 # Increment 2 adds the pure core and the conformance runner.
 # Increment 3 adds the durable shell and its conduit command.
 [workspace]
-members = ["crates/loader", "crates/core", "crates/conformance", "crates/shell"]
+members = ["crates/loader", "crates/core", "crates/conformance", "crates/shell", "crates/model-check"]
 resolver = "3"
 
 [workspace.package]

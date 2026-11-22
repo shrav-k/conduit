@@ -288,5 +288,33 @@ Named here and not in this order; three to five orders in all (DEC-005):
 
 ## Record
 
-Written on 2026-11-21 from the owner's "A: check the real core (Rec.)" of 2026-11-20 (DEC-005).
-Not yet run.
+Run on 2026-11-21 through Conduit itself, by the dogfood's own Agents, in Pacific time. The owner
+chose to run this first slice now (DEC-041: DEC-005's sequence read as priority for this slice
+only).
+
+**Worker-2's turn** (17:35 to 18:17) built `engine/crates/model-check`. It drives the real
+`conduit_core::step` under Stateright 0.31.0, from the conformance runner's prepared states of
+`requests-unknown-write` and `requests-repeat-failed-earlier-unanswered`. Its fault model is one
+machine's loss and reordering. Results:
+- 012's O, W and U held in all six correct configurations and fault parts;
+- every registered witness was reached, and each control refuted only its target;
+- the model-check tests passed in 114 s on the Mac, and the whole engine suite passed once.
+
+**`turn-verifier-2.turn.v1`** (18:18 to 18:21) confirmed the real core, the fixtures, the
+controls, the byte-identical counterexamples of a repeated search and a seeded simulation, the
+bounds (the slowest search 10.3 s) and the lockfile's seven allowed moves. Experiment 012 is
+untouched. Its should and nit were applied (18:22 to 18:25): U's retry rule now derives from
+the prepared fixture's settings.
+
+**The Claude reader** (18:26 to 18:31) passed it: the invariants are 012's promises' meaning,
+line for line. Its should and nit were applied (18:32 to 18:33). The crate's README now says what
+this slice leaves out:
+- a second machine, cuts and lost machines;
+- restarts and duplicated dispatch;
+- every promise but O, W and U;
+- the later slices.
+
+It also says that the run's bounds were cut to one repeat and one stop, and that within those
+bounds the search is exhaustive.
+
+The gate's run on the squash is the coordinator's, at the merge.

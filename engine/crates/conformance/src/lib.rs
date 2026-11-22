@@ -166,58 +166,10 @@ pub fn run_matching_with_threads(
         .build(&schema)
         .map_err(|e| e.to_string())?;
     let profile = read_value(&repository.join("conformance/profiles/first-build.yaml"))?;
-    let mut context = Context {
-        builtin: Some(packages::builtin(&spec)?),
-        core_package: spec.names().core_package.clone(),
-        meta_prefix: read_file(&repository.join("spec/names.yaml")).unwrap()[0]
-            .root
-            .to_json()["metaPrefix"]
-            .as_str()
-            .unwrap()
-            .into(),
-        templates: BTreeMap::new(),
-        core_environment: schemas::environment(
-            repository,
-            &json!({"environment":{"scopes":{}}}),
-            &spec,
-        )?,
-        record_source: profile["DL8"]["source"]
-            .as_str()
-            .ok_or("profile needs DL8.source")?
-            .into(),
-    };
-    for document in
-        read_file(&repository.join("spec/core/templates.yaml")).map_err(|e| e.to_string())?
-    {
-        let value = document.root.to_json();
-        let name = value["metadata"]["name"]
-            .as_str()
-            .ok_or("built-in template has no name")?;
-        context.templates.insert(name.into(), value);
-    }
     if profile["DL10"]["nesting"] != conduit_loader::MAX_DEPTH {
         return Err("profile/loader depth mismatch".into());
     }
-    let mut known_promises = BTreeSet::new();
-    for directory in ["promises", "conventions", "interface"] {
-        for entry in
-            std::fs::read_dir(repository.join("spec").join(directory)).map_err(|e| e.to_string())?
-        {
-            let path = entry.map_err(|e| e.to_string())?.path();
-            if path.extension().is_none_or(|e| e != "yaml") {
-                continue;
-            }
-            for document in read_file(&path).map_err(|e| e.to_string())? {
-                if let Some(items) = document.root.to_json().as_array() {
-                    for item in items {
-                        if let Some(id) = item["id"].as_str() {
-                            known_promises.insert(id.to_string());
-                        }
-                    }
-                }
-            }
-        }
-    }
+    let (context, known_promises) = case_context(repository, &spec, &profile)?;
     let mut ids = BTreeSet::new();
     let s1_promises = read_value(&directory.join("s1-promises.yaml"))?;
     validate_s1_coverage(&manifest, &inventory, &s1_promises, &known_promises)?;
@@ -385,6 +337,88 @@ pub fn run_matching_with_threads(
         passed: reports,
         expected_failures,
     })
+}
+
+fn case_context(
+    repository: &Path,
+    spec: &Specification,
+    profile: &Value,
+) -> Result<(Context, BTreeSet<String>)> {
+    let mut context = Context {
+        builtin: Some(packages::builtin(spec)?),
+        core_package: spec.names().core_package.clone(),
+        meta_prefix: read_file(&repository.join("spec/names.yaml")).unwrap()[0]
+            .root
+            .to_json()["metaPrefix"]
+            .as_str()
+            .unwrap()
+            .into(),
+        templates: BTreeMap::new(),
+        core_environment: schemas::environment(
+            repository,
+            &json!({"environment":{"scopes":{}}}),
+            spec,
+        )?,
+        record_source: profile["DL8"]["source"]
+            .as_str()
+            .ok_or("profile needs DL8.source")?
+            .into(),
+    };
+    for document in
+        read_file(&repository.join("spec/core/templates.yaml")).map_err(|e| e.to_string())?
+    {
+        let value = document.root.to_json();
+        let name = value["metadata"]["name"]
+            .as_str()
+            .ok_or("built-in template has no name")?;
+        context.templates.insert(name.into(), value);
+    }
+    let mut known_promises = BTreeSet::new();
+    for directory in ["promises", "conventions", "interface"] {
+        for entry in
+            std::fs::read_dir(repository.join("spec").join(directory)).map_err(|e| e.to_string())?
+        {
+            let path = entry.map_err(|e| e.to_string())?.path();
+            if path.extension().is_none_or(|e| e != "yaml") {
+                continue;
+            }
+            for document in read_file(&path).map_err(|e| e.to_string())? {
+                if let Some(items) = document.root.to_json().as_array() {
+                    for item in items {
+                        if let Some(id) = item["id"].as_str() {
+                            known_promises.insert(id.to_string());
+                        }
+                    }
+                }
+            }
+        }
+    }
+    Ok((context, known_promises))
+}
+
+/// Prepare the core input for a one-based request-fixture or lifecycle-fixture step.
+/// Earlier steps run through the ordinary conformance checks and symbol captures.
+pub fn request_fixture_at(
+    repository: &Path,
+    case_path: &Path,
+    step: usize,
+) -> Result<(Context, State, Input)> {
+    let path = repository.join(case_path);
+    let case: Case = serde_json::from_value(read_value(&path)?).map_err(|e| e.to_string())?;
+    let spec = Specification::read(&repository.join("spec")).map_err(|e| e.to_string())?;
+    let profile = read_value(&repository.join("conformance/profiles/first-build.yaml"))?;
+    let (context, known) = case_context(repository, &spec, &profile)?;
+    let run = run_case_steps(
+        &path,
+        &case,
+        &spec,
+        &context,
+        &known,
+        &portable::Controls::default(),
+        Some(step),
+    )?;
+    let (state, input) = run.prepared.ok_or("request fixture step out of range")?;
+    Ok((context, state, input))
 }
 
 /// Keep the frozen S1 inventory visible, including unvectorized boundaries.
@@ -574,6 +608,23 @@ fn run_case_portable(
     known: &BTreeSet<String>,
     portable: &portable::Controls,
 ) -> Result<Vec<Value>> {
+    Ok(run_case_steps(path, case, spec, context, known, portable, None)?.storage)
+}
+
+struct CaseRun {
+    storage: Vec<Value>,
+    prepared: Option<(State, Input)>,
+}
+
+fn run_case_steps(
+    path: &Path,
+    case: &Case,
+    spec: &Specification,
+    context: &Context,
+    known: &BTreeSet<String>,
+    portable: &portable::Controls,
+    prepare_step: Option<usize>,
+) -> Result<CaseRun> {
     if case.profile != "first-build" || case.title.is_empty() || case.layers.is_empty() {
         return Err("unsupported profile or initial recipe".into());
     }
@@ -590,23 +641,35 @@ fn run_case_portable(
     let mut symbols = BTreeMap::new();
     let checks = checks::Checks::new(spec)?;
     for (index, raw_step) in case.steps.iter().enumerate() {
-        let run = || -> Result<(Value, State)> {
-            let input = expand(&raw_step["input"], &symbols, spec)?;
-            let kind = input["kind"].as_str().ok_or("input has no kind")?;
-            let (actual, next) = steps::run(&steps::Step {
-                base,
-                case,
-                input: &input,
-                kind,
-                state: &state,
-                context,
-                spec,
-                symbols: &symbols,
-            })?;
-            checks.run(&input, &actual, &state, &next, context, known)?;
-            Ok((actual, next))
+        let step_number = index + 1;
+        let step_error = |error: String| format!("step {step_number}: {error}");
+        let input = expand(&raw_step["input"], &symbols, spec).map_err(step_error)?;
+        let kind = input["kind"]
+            .as_str()
+            .ok_or_else(|| step_error("input has no kind".into()))?;
+        let step = steps::Step {
+            base,
+            case,
+            input: &input,
+            kind,
+            state: &state,
+            context,
+            spec,
+            symbols: &symbols,
         };
-        let (mut actual, next) = run().map_err(|e| format!("step {}: {e}", index + 1))?;
+        if prepare_step == Some(step_number) {
+            if !matches!(step.kind, "request-fixture" | "lifecycle-fixture") {
+                return Err(step_error("step is not a request fixture".into()));
+            }
+            return Ok(CaseRun {
+                storage,
+                prepared: Some(steps::request_fixture::prepare(&step).map_err(step_error)?),
+            });
+        }
+        let (mut actual, next) = steps::run(&step).map_err(step_error)?;
+        checks
+            .run(&input, &actual, &state, &next, context, known)
+            .map_err(step_error)?;
         let expected = expand(&raw_step["expect"], &symbols, spec)?;
         portable.after_step(&case.id, index + 1, &expected, &actual, context)?;
         expect::prepare(&mut actual, &next)?;
@@ -634,7 +697,10 @@ fn run_case_portable(
         }
         state = next;
     }
-    Ok(storage)
+    Ok(CaseRun {
+        storage,
+        prepared: None,
+    })
 }
 
 #[cfg(test)]

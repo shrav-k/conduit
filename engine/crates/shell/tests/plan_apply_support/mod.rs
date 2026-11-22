@@ -359,7 +359,16 @@ pub struct Engine {
 }
 
 impl Engine {
+    #[allow(dead_code)] // Used by the planner integration tests.
+    pub fn directory(&self) -> PathBuf {
+        self._store.path().join("store")
+    }
+
     pub async fn start() -> Self {
+        Self::start_with(|_| {}).await
+    }
+
+    pub async fn start_with(prepare: impl FnOnce(&Shell)) -> Self {
         conduit_shell::install_crypto_provider();
         let store = tempfile::tempdir().unwrap();
         let directory = store.path().join("store");
@@ -382,6 +391,7 @@ impl Engine {
             &MissingExecutor,
         ).unwrap();
         assert_eq!(start["started"], true, "first start refused");
+        prepare(&shell);
         let id = shell
             .state()
             .unwrap()
@@ -554,6 +564,32 @@ pub struct Symbols {
 }
 
 impl Symbols {
+    #[allow(dead_code)] // Used by the planner integration tests.
+    pub fn kept_for_plan(&self, value: &Value) -> Value {
+        let mut mapped = self.substitute(value).unwrap();
+        if let Some(rows) = mapped["objects"].as_array_mut() {
+            for (original, mapped) in list(&value["objects"]).iter().zip(rows) {
+                if let Some(revision) = self
+                    .revisions
+                    .get(original[2].as_str().unwrap())
+                    .and_then(|r| r.get(original[3].as_str().unwrap()))
+                {
+                    mapped[3] = json!(revision);
+                }
+            }
+        }
+        mapped
+    }
+
+    #[allow(dead_code)] // Used by the planner integration tests.
+    pub fn plan_text(&self, text: &str) -> String {
+        let mut out = text.to_owned();
+        for (expected, observed) in self.ids.0.iter().chain(&self.names.0) {
+            out = out.replace(expected, observed);
+        }
+        out
+    }
+
     fn bind_base(&mut self, rows: &[Value]) {
         for (n, kind, name) in [
             (1, "Pool", "system"),
@@ -1015,7 +1051,15 @@ impl Replay {
     }
 }
 
+#[allow(dead_code)] // Used by the consistency and replay target.
 pub async fn replay(cases: &[Value]) -> Replay {
+    replay_visit(cases, |_, _, _| {}).await
+}
+
+pub async fn replay_visit(
+    cases: &[Value],
+    mut before_case: impl FnMut(&Engine, &Value, &Symbols),
+) -> Replay {
     let started = chrono::Utc::now().timestamp();
     let engine = Engine::start().await;
     let initial = result(&engine.call("management.list.v1", json!({}), None).await);
@@ -1072,6 +1116,7 @@ pub async fn replay(cases: &[Value]) -> Replay {
             );
             first.get_or_insert("- /engine/packages NAM-011".into());
         }
+        before_case(&engine, case, &symbols);
         let mut sent = 0;
         let mut matched = 0;
         for (i, request) in list(&case["requests"]).iter().enumerate() {

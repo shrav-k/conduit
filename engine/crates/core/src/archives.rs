@@ -488,7 +488,7 @@ fn resolved_path(
         }
     }
 }
-fn resolve<'a>(
+pub fn resolve<'a>(
     files: &'a BTreeMap<String, Member>,
     path: &str,
 ) -> ArchiveResult<Option<&'a Member>> {

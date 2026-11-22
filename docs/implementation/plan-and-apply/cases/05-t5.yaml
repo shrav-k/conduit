@@ -205,12 +205,12 @@ printed: |
   detail objects=[Resource/shared,Conduit/agent-a--project,Conduit/agent-b--project]
   6 team.inspect.v1 Resource/shared expected=(step 5) neither flag=- LIF-013
   7 team.set-up.v1 Resource/shared expected=(step 5) neither flag=- TPL-012
-  8 management.inspect.v1 Conduit/agent-b--project expected=(step 5) neither flag=- LIF-013
-  9 access.open.v1 Conduit/agent-b--project expected=(step 5) widens flag=--replace shared LIF-037
-  detail operations=[example.org/s1/filesystem#file.read.v1,example.org/s1/filesystem#directory.list.v1]
-  10 management.inspect.v1 Conduit/agent-a--project expected=(step 5) neither flag=- LIF-013
-  11 access.open.v1 Conduit/agent-a--project expected=(step 5) widens flag=--replace shared LIF-037
+  8 management.inspect.v1 Conduit/agent-a--project expected=(step 5) neither flag=- LIF-013
+  9 access.open.v1 Conduit/agent-a--project expected=(step 5) widens flag=--replace shared LIF-037
   detail operations=[example.org/s1/filesystem#file.read.v1,example.org/s1/filesystem#directory.list.v1,example.org/s1/filesystem#file.write.v1]
+  10 management.inspect.v1 Conduit/agent-b--project expected=(step 5) neither flag=- LIF-013
+  11 access.open.v1 Conduit/agent-b--project expected=(step 5) widens flag=--replace shared LIF-037
+  detail operations=[example.org/s1/filesystem#file.read.v1,example.org/s1/filesystem#directory.list.v1]
   affects bounds=[] closed-conduits=[agent-a--project,agent-b--project]
   difference history holds filesystem=0.1.0; history grants retain filesystem=0.1.1 NAM-010
   flags [--replace shared]
@@ -222,13 +222,13 @@ printed: |
   result 5 succeeded {"diagnostics":[{"level":"note","message":{"text":"Unused package example.org/s1/agents; submission accepted."},"ruleId":"NAM-008"},{"level":"note","message":{"text":"Unused package example.org/s1/history; submission accepted."},"ruleId":"NAM-008"}],"objects":[{"id":"00000000-0000-4000-8000-000000000120","kind":"Resource","name":"shared"},{"id":"00000000-0000-4000-8000-000000000121","kind":"Conduit","name":"agent-a--project"},{"id":"00000000-0000-4000-8000-000000000122","kind":"Conduit","name":"agent-b--project"}],"outcome":"succeeded"}
   result 6 succeeded {"outcome":"succeeded","view":["Resource","shared","00000000-0000-4000-8000-000000000120","r1","registered",{"from":"shared--t","owner":"team","resolved":{"config":{"root":{"pathSha256":"a0852764f35f908a141f0faafb1c7fd2f8761f20e7f48a15dcbc4fa587bff412"}},"type":"example.org/s1/filesystem#local-directory.v1"}},[{"address":"example.org/s1/filesystem","digest":"sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614","version":"0.2.1"}]]}
   result 7 succeeded {"outcome":"succeeded"}
-  result 8 succeeded {"outcome":"succeeded","view":["Conduit","agent-b--project","00000000-0000-4000-8000-000000000122","r1","registered",{"as":"project","consumer":{"kind":"Agent","name":"agent-b"},"from":"example.org/s1/filesystem#read","resolved":{"capability":"example.org/s1/filesystem#directory.v1","operations":["example.org/s1/filesystem#file.read.v1","example.org/s1/filesystem#directory.list.v1"]},"target":{"kind":"Resource","name":"shared"}},[{"address":"example.org/s1/filesystem","digest":"sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614","version":"0.2.1"}]]}
-  result 9 succeeded {"invocation":"00000000-0000-4000-8000-000000002122","outcome":"succeeded"}
-  result 10 succeeded {"outcome":"succeeded","view":["Conduit","agent-a--project","00000000-0000-4000-8000-000000000121","r1","registered",{"as":"project","consumer":{"kind":"Agent","name":"agent-a"},"from":"example.org/s1/filesystem#read-write","resolved":{"capability":"example.org/s1/filesystem#directory.v1","operations":["example.org/s1/filesystem#file.read.v1","example.org/s1/filesystem#directory.list.v1","example.org/s1/filesystem#file.write.v1"]},"target":{"kind":"Resource","name":"shared"}},[{"address":"example.org/s1/filesystem","digest":"sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614","version":"0.2.1"}]]}
-  result 11 succeeded {"invocation":"00000000-0000-4000-8000-000000002121","outcome":"succeeded"}
+  result 8 succeeded {"outcome":"succeeded","view":["Conduit","agent-a--project","00000000-0000-4000-8000-000000000121","r1","registered",{"as":"project","consumer":{"kind":"Agent","name":"agent-a"},"from":"example.org/s1/filesystem#read-write","resolved":{"capability":"example.org/s1/filesystem#directory.v1","operations":["example.org/s1/filesystem#file.read.v1","example.org/s1/filesystem#directory.list.v1","example.org/s1/filesystem#file.write.v1"]},"target":{"kind":"Resource","name":"shared"}},[{"address":"example.org/s1/filesystem","digest":"sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614","version":"0.2.1"}]]}
+  result 9 succeeded {"invocation":"00000000-0000-4000-8000-000000002121","outcome":"succeeded"}
+  result 10 succeeded {"outcome":"succeeded","view":["Conduit","agent-b--project","00000000-0000-4000-8000-000000000122","r1","registered",{"as":"project","consumer":{"kind":"Agent","name":"agent-b"},"from":"example.org/s1/filesystem#read","resolved":{"capability":"example.org/s1/filesystem#directory.v1","operations":["example.org/s1/filesystem#file.read.v1","example.org/s1/filesystem#directory.list.v1"]},"target":{"kind":"Resource","name":"shared"}},[{"address":"example.org/s1/filesystem","digest":"sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614","version":"0.2.1"}]]}
+  result 11 succeeded {"invocation":"00000000-0000-4000-8000-000000002122","outcome":"succeeded"}
 recorded:
-  path: .conduit/plans/ba9c7db91ec2ff0fcdc058eff03b92658a0818c2bffb05e4eb8befb2b9855688.txt
-  digest: sha256:ba9c7db91ec2ff0fcdc058eff03b92658a0818c2bffb05e4eb8befb2b9855688
+  path: .conduit/plans/c86e952155529f66340b82325f7a22f4b0c5d32f04333e764d1742231709981e.txt
+  digest: sha256:c86e952155529f66340b82325f7a22f4b0c5d32f04333e764d1742231709981e
   text: |
     plan
     1 management.replace.v1 Resource/shared--t expected=00000000-0000-4000-8000-000000000102 replaces flag=--replace shared INS-020
@@ -246,12 +246,12 @@ recorded:
     detail objects=[Resource/shared,Conduit/agent-a--project,Conduit/agent-b--project]
     6 team.inspect.v1 Resource/shared expected=(step 5) neither flag=- LIF-013
     7 team.set-up.v1 Resource/shared expected=(step 5) neither flag=- TPL-012
-    8 management.inspect.v1 Conduit/agent-b--project expected=(step 5) neither flag=- LIF-013
-    9 access.open.v1 Conduit/agent-b--project expected=(step 5) widens flag=--replace shared LIF-037
-    detail operations=[example.org/s1/filesystem#file.read.v1,example.org/s1/filesystem#directory.list.v1]
-    10 management.inspect.v1 Conduit/agent-a--project expected=(step 5) neither flag=- LIF-013
-    11 access.open.v1 Conduit/agent-a--project expected=(step 5) widens flag=--replace shared LIF-037
+    8 management.inspect.v1 Conduit/agent-a--project expected=(step 5) neither flag=- LIF-013
+    9 access.open.v1 Conduit/agent-a--project expected=(step 5) widens flag=--replace shared LIF-037
     detail operations=[example.org/s1/filesystem#file.read.v1,example.org/s1/filesystem#directory.list.v1,example.org/s1/filesystem#file.write.v1]
+    10 management.inspect.v1 Conduit/agent-b--project expected=(step 5) neither flag=- LIF-013
+    11 access.open.v1 Conduit/agent-b--project expected=(step 5) widens flag=--replace shared LIF-037
+    detail operations=[example.org/s1/filesystem#file.read.v1,example.org/s1/filesystem#directory.list.v1]
     affects bounds=[] closed-conduits=[agent-a--project,agent-b--project]
     difference history holds filesystem=0.1.0; history grants retain filesystem=0.1.1 NAM-010
     flags [--replace shared]
@@ -281,7 +281,7 @@ requests:
         example.org/s1/history:
           version: 0.1.0
           digest: sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69
-  idempotencyKey: plan:ba9c7db91ec2ff0fcdc058eff03b92658a0818c2bffb05e4eb8befb2b9855688:1:1
+  idempotencyKey: plan:c86e952155529f66340b82325f7a22f4b0c5d32f04333e764d1742231709981e:1:1
   flag: --replace shared
   result:
     outcome: succeeded
@@ -301,14 +301,14 @@ requests:
       kind: Resource
       name: shared
     expectedId: 00000000-0000-4000-8000-000000000103
-  idempotencyKey: plan:ba9c7db91ec2ff0fcdc058eff03b92658a0818c2bffb05e4eb8befb2b9855688:1:2
+  idempotencyKey: plan:c86e952155529f66340b82325f7a22f4b0c5d32f04333e764d1742231709981e:1:2
   flag: --replace shared
   result:
     outcome: succeeded
     invocation: 00000000-0000-4000-8000-000000000915
 - tool: management.list.v1
   arguments: {}
-  idempotencyKey: plan:ba9c7db91ec2ff0fcdc058eff03b92658a0818c2bffb05e4eb8befb2b9855688:1:3
+  idempotencyKey: plan:c86e952155529f66340b82325f7a22f4b0c5d32f04333e764d1742231709981e:1:3
   flag: null
   result:
     outcome: succeeded
@@ -399,7 +399,7 @@ requests:
 - tool: access.lift.v1
   arguments:
     id: 00000000-0000-4000-8000-000000000310
-  idempotencyKey: plan:ba9c7db91ec2ff0fcdc058eff03b92658a0818c2bffb05e4eb8befb2b9855688:1:4
+  idempotencyKey: plan:c86e952155529f66340b82325f7a22f4b0c5d32f04333e764d1742231709981e:1:4
   flag: null
   result:
     outcome: succeeded
@@ -449,7 +449,7 @@ requests:
         example.org/s1/history:
           version: 0.1.0
           digest: sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69
-  idempotencyKey: plan:ba9c7db91ec2ff0fcdc058eff03b92658a0818c2bffb05e4eb8befb2b9855688:1:5
+  idempotencyKey: plan:c86e952155529f66340b82325f7a22f4b0c5d32f04333e764d1742231709981e:1:5
   flag: --replace shared
   result:
     outcome: succeeded
@@ -478,7 +478,7 @@ requests:
       kind: Resource
       name: shared
     expectedId: 00000000-0000-4000-8000-000000000120
-  idempotencyKey: plan:ba9c7db91ec2ff0fcdc058eff03b92658a0818c2bffb05e4eb8befb2b9855688:1:6
+  idempotencyKey: plan:c86e952155529f66340b82325f7a22f4b0c5d32f04333e764d1742231709981e:1:6
   flag: null
   result:
     outcome: succeeded
@@ -491,43 +491,17 @@ requests:
       kind: Resource
       name: shared
     expectedId: 00000000-0000-4000-8000-000000000120
-  idempotencyKey: plan:ba9c7db91ec2ff0fcdc058eff03b92658a0818c2bffb05e4eb8befb2b9855688:1:7
+  idempotencyKey: plan:c86e952155529f66340b82325f7a22f4b0c5d32f04333e764d1742231709981e:1:7
   flag: null
   result:
     outcome: succeeded
-- tool: management.inspect.v1
-  arguments:
-    object:
-      kind: Conduit
-      name: agent-b--project
-    expectedId: 00000000-0000-4000-8000-000000000122
-  idempotencyKey: plan:ba9c7db91ec2ff0fcdc058eff03b92658a0818c2bffb05e4eb8befb2b9855688:1:8
-  flag: null
-  result:
-    outcome: succeeded
-    view: [Conduit, agent-b--project, 00000000-0000-4000-8000-000000000122, r1, registered, {from: example.org/s1/filesystem#read,
-        consumer: {kind: Agent, name: agent-b}, target: {kind: Resource, name: shared}, as: project, resolved: {
-          capability: example.org/s1/filesystem#directory.v1, operations: [example.org/s1/filesystem#file.read.v1,
-            example.org/s1/filesystem#directory.list.v1]}}, [{address: example.org/s1/filesystem, version: 0.2.1,
-          digest: 'sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614'}]]
-- tool: access.open.v1
-  arguments:
-    conduit:
-      kind: Conduit
-      name: agent-b--project
-    expectedId: 00000000-0000-4000-8000-000000000122
-  idempotencyKey: plan:ba9c7db91ec2ff0fcdc058eff03b92658a0818c2bffb05e4eb8befb2b9855688:1:9
-  flag: --replace shared
-  result:
-    outcome: succeeded
-    invocation: 00000000-0000-4000-8000-000000002122
 - tool: management.inspect.v1
   arguments:
     object:
       kind: Conduit
       name: agent-a--project
     expectedId: 00000000-0000-4000-8000-000000000121
-  idempotencyKey: plan:ba9c7db91ec2ff0fcdc058eff03b92658a0818c2bffb05e4eb8befb2b9855688:1:10
+  idempotencyKey: plan:c86e952155529f66340b82325f7a22f4b0c5d32f04333e764d1742231709981e:1:8
   flag: null
   result:
     outcome: succeeded
@@ -542,11 +516,37 @@ requests:
       kind: Conduit
       name: agent-a--project
     expectedId: 00000000-0000-4000-8000-000000000121
-  idempotencyKey: plan:ba9c7db91ec2ff0fcdc058eff03b92658a0818c2bffb05e4eb8befb2b9855688:1:11
+  idempotencyKey: plan:c86e952155529f66340b82325f7a22f4b0c5d32f04333e764d1742231709981e:1:9
   flag: --replace shared
   result:
     outcome: succeeded
     invocation: 00000000-0000-4000-8000-000000002121
+- tool: management.inspect.v1
+  arguments:
+    object:
+      kind: Conduit
+      name: agent-b--project
+    expectedId: 00000000-0000-4000-8000-000000000122
+  idempotencyKey: plan:c86e952155529f66340b82325f7a22f4b0c5d32f04333e764d1742231709981e:1:10
+  flag: null
+  result:
+    outcome: succeeded
+    view: [Conduit, agent-b--project, 00000000-0000-4000-8000-000000000122, r1, registered, {from: example.org/s1/filesystem#read,
+        consumer: {kind: Agent, name: agent-b}, target: {kind: Resource, name: shared}, as: project, resolved: {
+          capability: example.org/s1/filesystem#directory.v1, operations: [example.org/s1/filesystem#file.read.v1,
+            example.org/s1/filesystem#directory.list.v1]}}, [{address: example.org/s1/filesystem, version: 0.2.1,
+          digest: 'sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614'}]]
+- tool: access.open.v1
+  arguments:
+    conduit:
+      kind: Conduit
+      name: agent-b--project
+    expectedId: 00000000-0000-4000-8000-000000000122
+  idempotencyKey: plan:c86e952155529f66340b82325f7a22f4b0c5d32f04333e764d1742231709981e:1:11
+  flag: --replace shared
+  result:
+    outcome: succeeded
+    invocation: 00000000-0000-4000-8000-000000002122
 kept:
   format: 1
   files:
@@ -622,10 +622,10 @@ kept:
   - sha256:fab3b245718d826270b2fe2f4c847ea80a2310d551bf19754a5de2e79915ea1f
   - sha256:7d6a6f601702baad984c422094b1d602eabf63df5eb54ae798c20936fe06569a
   - sha256:d5fe65093e903086bac765bf4549815c2c552a60c87affd96903c7405a6997d5
-  - sha256:ba9c7db91ec2ff0fcdc058eff03b92658a0818c2bffb05e4eb8befb2b9855688
+  - sha256:c86e952155529f66340b82325f7a22f4b0c5d32f04333e764d1742231709981e
   journals:
     sha256:fab3b245718d826270b2fe2f4c847ea80a2310d551bf19754a5de2e79915ea1f: safe:case:01-t1/requests
     sha256:7d6a6f601702baad984c422094b1d602eabf63df5eb54ae798c20936fe06569a: safe:case:02-t2/requests
     sha256:d5fe65093e903086bac765bf4549815c2c552a60c87affd96903c7405a6997d5: safe:case:04-t4/requests
-    sha256:ba9c7db91ec2ff0fcdc058eff03b92658a0818c2bffb05e4eb8befb2b9855688: safe:case:05-t5/requests
+    sha256:c86e952155529f66340b82325f7a22f4b0c5d32f04333e764d1742231709981e: safe:case:05-t5/requests
 exit: 0

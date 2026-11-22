@@ -6,6 +6,7 @@ pub mod http_bridge;
 mod https;
 mod identity;
 mod install;
+pub mod plan;
 pub mod runner;
 pub mod server;
 pub mod sign_in;

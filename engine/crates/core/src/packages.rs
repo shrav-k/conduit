@@ -1127,7 +1127,7 @@ fn selections_spec(spec: &Value, out: &mut Vec<(String, String)>) {
         add(&r["requirement"], "Requirement", out);
     }
 }
-pub(crate) fn selections_document(
+pub fn selections_document(
     d: &Value,
     packaged: bool,
     out: &mut Vec<(String, String)>,

@@ -9,19 +9,22 @@ to the build, in the way the baseline (A70,
 applied them to the agents' own configuration. Where the run departs from this page, the
 results say so.
 
+This plan was amended on 2026-11-22 by work order 246 before the rerun, following the
+2026-11-10 runs that used the binary as work order 025 left it and Codex 0.167.0.
+
 ## Who and what
 
 - **Two authors, apart.** The coordinator does T1 to T7 first. It knows the design, so its
   numbers are a floor on what the language costs someone who knows it. A fresh Codex author
-  then does them with only the specification, S1's tasks and what the engine ships
+  then does them from [the fresh author's pack](#the-fresh-authors-pack)
   (ruling 48, point 4). The two are reported side by side, never merged.
-- **The engine and the clients.** The `conduit` binary as work order 025 leaves it; Claude Code
-  2.1.318 as agent A and Codex 0.167.0 as agent B, each through the Agent package the build
-  ships; Node 21.5.0. The filesystem server is 2.1.0 at T1 and 2.2.0 after T5, as in the
-  baseline.
+- **The engine and the clients.** Use the `conduit` binary built at the rerun's pin, Claude Code
+  2.1.318 as agent A and Codex 0.167.1 as agent B, each through the Agent package the pin ships,
+  and Node 21.5.0. Read each version again after each run and give it in the results, naming
+  the binary by its build commit.
 - **A lab of its own.** A fresh store and fresh shared and history directories, outside the
   repository, written `<lab>/` in the results. The project directory the author writes starts
-  empty: the author does not copy `reference-model/examples/s1/`.
+  empty: the author does not copy `engine/examples/s1/`.
 
 ## What the author writes, and what is provider work
 
@@ -31,10 +34,9 @@ results say so.
   the baseline; a document separator `---` is a line. The package digests in the manifest are
   copied from a tool's output: they are counted as lines and listed apart, so a reader can
   subtract them.
-- **Provider work, counted apart**: the five packages the build ships, the filesystem package
-  in 0.1.0 and 0.2.0, the history's, and the two Agent packages with their wrappers. Each is
-  measured by the same measures once, and listed apart, with the note that A70's harness flags
-  are the same kind of work and were not counted.
+- **Provider work, counted apart.** Measure each package the pin ships once by the same
+  measures and list it separately in the results by address, version and digest. A70's
+  harness flags are the same kind of work and were not counted.
 - **Not counted**: the commands of the harness that do no author's work: building the binary
   and the packages, starting `conduit serve`, and each check. A check is a turn requested with
   `conduit call` or a `conduit tools --as`, as in increment 3's closeout.
@@ -80,6 +82,20 @@ The rules above describe the original runs. For the rerun,
   primary one.
 
 Packages' standard Conduit templates are counted as provider work (ruling 63, point 3).
+
+### The fresh author's pack
+
+The fresh author reads only these, each as at the rerun's pin: `spec/`; the tasks, T1 to
+T7 of [FIRST_BUILD.md](../FIRST_BUILD.md#the-tasks), with the lab's paths; the CLI's format
+reference, [engine/CLI.md](../../../engine/CLI.md); and the text of `conduit --help` and of
+each command's `--help` ([ruling 53, point 9](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-53/README.md)).
+The lab also holds what the tasks use: the binary, the archives they install, the
+mirror directory T2's install reads, a store, and the files and directories the tasks
+name. Nothing of S1's design goes in: not `engine/examples/s1/`, `conformance/`,
+`docs/` (the plan-and-apply cases are S1's tasks), `experiments/`, the decision log or
+the rulings, nor this page. Before the start,
+a fresh reader checks the pack for S1's design; the results record what it found and
+what changed.
 
 ## The routes for T4 to T6
 

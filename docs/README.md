@@ -51,10 +51,10 @@ record says why. They are archived as [AGENTS.md](../AGENTS.md#what-holds) says;
 | --- | --- |
 | [implementation/FIRST_BUILD.md](implementation/FIRST_BUILD.md) | First-build increments, tasks and measurements. |
 | [implementation/first-build/](implementation/first-build/log-increment-4.md) | The first build's open log, increment 4's, and the S1 rerun's [measurement plan](implementation/first-build/measurement-plan.md). |
-| [implementation/plan-and-apply/](implementation/plan-and-apply/README.md) | The CLI reference for `conduit plan` and `conduit apply`, with golden cases that do not bind (spec batch 1, K3). |
+| [implementation/plan-and-apply/](implementation/plan-and-apply/README.md) | The design of `conduit plan` and `conduit apply` and their golden cases. Authors use the [CLI format guide](../engine/CLI.md). |
 | [implementation/SAFETY_CATALOGUE.md](implementation/SAFETY_CATALOGUE.md) | The safety promises of `spec/`, and the safety promises each of S1's safety traces tests, for the safety vectors and model checking (A40, G5). |
 | [implementation/PROVIDERS.md](implementation/PROVIDERS.md) | The first and second provider of each provider contract, their contract vectors and the engine work they need (A63; work order 120). |
-| [engine/](../engine/README.md) | The first build, runnable, and its [conformance choices](../engine/CONFORMANCE.md). |
+| [engine/](../engine/README.md) | The runnable first build, its [CLI format guide](../engine/CLI.md) and its [conformance choices](../engine/CONFORMANCE.md). |
 | [conformance/](../conformance/README.md) | Portable vectors, fixtures, coverage and gaps. |
 | [implementation/WORK_ORDERS.md](implementation/WORK_ORDERS.md) | Coordinator and worker roles, dispatch, review and records. |
 | [work-orders/](work-orders/README.md) | Open orders and report schemas. |

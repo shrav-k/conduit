@@ -9,6 +9,7 @@
 #   node.v1         the type of every node (PLC-008): a node has an empty configuration,
 #                   offers no capability and lists no control; its labels are fixed at admission
 #                   (ENR-010, PLC-026), and the engine alone makes one (FST-006)
+#   value.v1        one installation value, named under `values` (OBJ-009, INS-013, ACC-057)
 #   management.v1   the type of `management` (FST-001, ACC-033, OPS-019)
 #   access.v1       the type of `access` (FST-001, ACC-006, ACC-012); it requires
 #                   `reconcile.v1`, which its capability includes (ACC-033)
@@ -77,6 +78,39 @@ spec:
   schema:
     type: object
     additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: value.v1
+  description: >-
+    One installation value, such as an account, that a document using it names under `values`
+    and never holds (OBJ-009). The `system` Pool owns it and root alone registers it (ACC-057).
+    It runs nothing, offers no capability, requires no operation and lists no control. It holds
+    an uninterpreted scalar, changed only by retiring the Resource and registering a new one.
+    The optional `node` constrains the placement of instances that take the value (OBJ-009).
+    PLC-020 governs interpretation at a receiving instance's placement. A value is not secret.
+    A secret stays on a secret Resource.
+
+    If `node` is given and does not resolve to a Resource of the core Type `node.v1`, the
+    document is rejected under OBJ-023 and registration reports invalid. The diagnostic names
+    the document, `/config/node`, the authored place that supplies it and the reference as
+    written. An owner other than the `system` Pool also makes the document rejected under
+    OBJ-023. Its diagnostic names the document, `/owner` and the owner as supplied, or the
+    nested entry and its owning Pool where ownership comes from nesting.
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      value:
+        type: [string, number, boolean]
+      node:
+        $ref: github.com/shrav-k/conduit/core#resource-reference.v1
+    required: [value]
+    additionalProperties: false
+  offers: []
+  requires: []
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type

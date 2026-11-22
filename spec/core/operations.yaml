@@ -147,10 +147,10 @@ metadata:
     configured, can restart on another machine or run as several parts (SEC-024).
 
     ACC-033 authorizes registration through management and each live owning Pool or Fleet not registered
-    in this submission. An Agent requires its Fleet owner and only root may submit an Agent on its
-    own behalf (ACC-057). Only root registers root-consumed Conduits (ACC-054). Registering a Pool
-    or Fleet also makes and opens root's default Conduit (FLEET-005), reported among objects. A matching
-    tombstone reports conflict after access and invalid checks (LIF-041).
+    in this submission. An Agent requires its Fleet owner and only root may submit an Agent or a
+    value Resource on its own behalf (ACC-057). Only root registers root-consumed Conduits (ACC-054).
+    Registering a Pool or Fleet also makes and opens root's default Conduit (FLEET-005), reported
+    among objects. A matching tombstone reports conflict after access and invalid checks (LIF-041).
     A submitted project's Type whose login states a client ID also stated by a Type held at
     another address reports conflict under CTR-013, after access and validity in OPS-023's
     order and before dispatch. This includes installed packages and submissions a template or
@@ -303,9 +303,13 @@ metadata:
     did, that the manifest did. No document's content is shown, and no other item has `documents`.
     The `documents` member stays in the reply and its retained repeats and is omitted from
     recorded outputs (REC-002).
-    `declared` shows each reference in its resolved form, `{kind, id}`. Inspecting an open Conduit
-    shows, under each requirement it applies, the implementation that applies it, named by its
-    qualified reference.
+    `declared` shows each reference in its resolved form, `{kind, id}`. The optional output
+    `values` is present for an instance whose source map still has entries. It shows that map,
+    each place a JSON Pointer into `declared`, with its value Resource in the resolved form.
+    The value fills its place in `declared` at instantiation, as an argument does. A value
+    Resource's `declared` shows its `value` and its `node` when given (INS-013). Inspecting an open
+    Conduit shows, under each requirement it applies, the implementation that applies it, named by
+    its qualified reference.
     The status holds the lifecycle state, the shutdown of a retired instance and, in `conditions`,
     the further conditions of the instance and what was observed of it, the state of its run among
     them, and, in `unreconciled`, the engine's ID for each invocation whose outcome is unknown and
@@ -447,6 +451,18 @@ spec:
           additionalProperties: false
       declared:
         type: object
+      values:
+        type: object
+        minProperties: 1
+        propertyNames:
+          $ref: github.com/shrav-k/conduit/core#pointer.v1
+        additionalProperties:
+          type: object
+          properties:
+            kind: {const: Resource}
+            id: {$ref: github.com/shrav-k/conduit/core#id.v1}
+          required: [kind, id]
+          additionalProperties: false
       status:
         type: object
         properties:
@@ -671,8 +687,9 @@ metadata:
     cannot place the new Resource now, as when it is not ready or a node that matches represents a
     machine reported unreachable or omitted, the request reports unavailable.
 
-    Only root on its own behalf may submit an Agent or register a root-consumed Conduit (ACC-057,
-    ACC-054). Replacement lifts no tombstone: a matching tombstone reports conflict under LIF-041.
+    Only root on its own behalf may submit an Agent or a value Resource, or register a root-consumed
+    Conduit (ACC-057, ACC-054). Replacement lifts no tombstone: a matching tombstone reports conflict
+    under LIF-041.
 spec:
   inputSchema:
     type: object

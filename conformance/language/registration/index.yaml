@@ -325,6 +325,17 @@
       ]
     },
     {
+      "id": "registration-implementations-inspected",
+      "case": "language/registration/implementations-inspected/case.yaml",
+      "promises": [
+        "LIF-013",
+        "NAM-009",
+        "SUB-008",
+        "SUB-010",
+        "TPL-004"
+      ]
+    },
+    {
       "id": "registration-live-agents",
       "case": "language/registration/live-agents/case.yaml",
       "promises": [

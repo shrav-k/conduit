@@ -1,0 +1,32 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "reader-one"
+    },
+    "spec": {
+      "type": "#reader.v1",
+      "implementation": {
+        "#read.v1": "#server"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "one"
+    },
+    "from": "reader-one",
+    "owner": "system"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Fleet",
+    "metadata": {
+      "name": "f"
+    },
+    "from": "github.com/shrav-k/conduit/core#fleet"
+  }
+]

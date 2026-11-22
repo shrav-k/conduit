@@ -289,7 +289,29 @@ Named here and not in this order:
 
 ## Record
 
-Not yet run.
+Run on 2026-11-22 through Conduit itself, by the dogfood's own Agents, in Pacific time.
 
-The coordinator's line (HOW-WE-WORK rule 6): 245 uses neither reading under "Found while
-writing" until the owner answers.
+**Worker-2's turn** (01:13 to 01:52) added `inspect.v1`'s `implementations`: for a template or an
+instance, each operation's selection, the package it comes from and the item as held, built
+beside `Held::package_list`, with the portable case `registration-implementations-inspected`,
+which fails on `main` and passes. The whole engine suite stopped once at
+`s2_dependent_call_after_close`, a test this order does not reach, which passed alone.
+
+**Two blind reads at once** (01:53 to 01:56), the owner's answer for A77's window:
+`turn-verifier-2.turn.v1` found two musts; the Claude reader passed it with one should, the
+verifier's first must in other words. One fix turn (01:57 to 02:16), each must reproduced first,
+the coordinator deciding each (open to the owner's strike):
+- an item could carry an author's literal for an input marked `isSecret`; such a `value` or
+  `default` is now shown as `(secret: not shown)`, and the description says every other literal
+  an author wrote is shown to anyone allowed to inspect the object, so secrets belong in secret
+  references (SEC-021);
+- a Type that records its outputs would have recorded `implementations`; it is kept out of
+  recorded outputs and stays in the reply and its repeat (REC-002).
+
+170 core tests and the case pass. The fix turn's whole-suite run stopped at an unrelated CLI test
+while the machine's disk was full; from this order on, workers run targeted tests and the gate
+alone runs the whole suite. At the merge the gate's names check flagged the masking test's core address,
+`example.org/core`, as a misspelling of the core package's; the coordinator renamed it to
+`example.org/fixture-engine-package`, which the test does not otherwise read, and the test passes.
+
+The gate's run on the squash is the coordinator's, at the merge.

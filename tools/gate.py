@@ -2,7 +2,7 @@
 """Run the local merge gates for what the branch changes, without fetching anything."""
 
 import argparse
-from contextlib import ExitStack
+from contextlib import ExitStack, nullcontext
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import importlib.util
@@ -11,6 +11,7 @@ import os
 from pathlib import Path, PurePosixPath
 import platform
 import posixpath
+from queue import Empty, Queue
 import re
 import select
 import shlex
@@ -106,6 +107,17 @@ class CommandResult:
     exit: object
     output: str = ''
     timed_out: bool = False
+    cancelled: bool = False
+
+
+class Cancellation:
+    def __init__(self):
+        self.event = threading.Event()
+        self.lock = threading.Lock()
+
+    def request(self):
+        with self.lock:
+            self.event.set()
 
 
 @dataclass
@@ -354,6 +366,12 @@ def engine_paths(root, dependencies, sources):
     return ENGINE_ROOTS + tuple(sorted((path + '/' for path in reads), key=os.fsencode))
 
 
+def read_by_engine(directory, prefixes):
+    directory = directory.rstrip('/') + '/'
+    return any(directory.startswith(prefix) or prefix.startswith(directory)
+               for prefix in prefixes)
+
+
 def engine_why(prefixes):
     return 'the branch changes nothing under ' + ', '.join(prefixes[:-1]) + ' or ' + prefixes[-1]
 
@@ -538,22 +556,23 @@ def redact_output(text, names=None):
     return re.sub(pattern, '[redacted]', text, flags=re.IGNORECASE)
 
 
-def run_command(args, *, cwd, env, timeout, log, redact=redact_output):
-    """Runner: argv, cwd/env/timeout/log/redact -> CommandResult; may interrupt.
-
-    The timeout counts the leader alone. A reader thread collects the output, and a process
-    that left the group and still holds the pipe delays the result by PIPE_WAIT at most.
-    Output stays in memory until redacted, before any log is written.
-    """
+def run_command(args, *, cwd, env, timeout, log, redact=redact_output, cancel=None,
+                on_launch=None):
+    """Run a command with a bounded wait for output from children that leave its group."""
     buffer = bytearray()
-    timed_out = False
+    timed_out = cancelled = failed = False
     process = reader = stop = None
     try:
         try:
             try:
-                process = subprocess.Popen(args, cwd=cwd, env=env, stdin=subprocess.DEVNULL,
-                                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                           start_new_session=True)
+                with cancel.lock if cancel else nullcontext():
+                    cancelled = cancel is not None and cancel.event.is_set()
+                    if not cancelled:
+                        process = subprocess.Popen(args, cwd=cwd, env=env, stdin=subprocess.DEVNULL,
+                                                   stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                                   start_new_session=True)
+                        if on_launch is not None:
+                            on_launch()
             except OSError:
                 buffer.extend(b'could not start the command\n')
             if process is not None:
@@ -561,13 +580,34 @@ def run_command(args, *, cwd, env, timeout, log, redact=redact_output):
                 reader = threading.Thread(target=read_output, args=(process.stdout, buffer, stop),
                                           daemon=True)
                 reader.start()
-                try:
-                    process.wait(timeout=timeout)
-                except subprocess.TimeoutExpired:
-                    timed_out = True
-                    end_group(process)
-                # Inside the try: an interrupt during this wait still ends the group (decision 8).
-                reader.join(PIPE_WAIT)
+                deadline = time.monotonic() + timeout
+                while True:
+                    if cancel and cancel.event.is_set():
+                        cancelled = True
+                        end_group(process)
+                        break
+                    remaining = max(0, deadline - time.monotonic())
+                    try:
+                        exit_code = process.wait(timeout=min(remaining, 0.05) if cancel else remaining)
+                        if cancel and exit_code != 0:
+                            failed = True
+                            end_group(process)
+                        break
+                    except subprocess.TimeoutExpired:
+                        if time.monotonic() >= deadline:
+                            timed_out = True
+                            end_group(process)
+                            break
+                # A leader can finish while a child still holds its output pipe.
+                if cancel:
+                    deadline = time.monotonic() + PIPE_WAIT
+                    while reader.is_alive() and time.monotonic() < deadline:
+                        if not (cancelled or timed_out or failed) and cancel.event.is_set():
+                            cancelled = True
+                            end_group(process)
+                        reader.join(min(max(0, deadline - time.monotonic()), 0.05))
+                else:
+                    reader.join(PIPE_WAIT)
         except KeyboardInterrupt:
             if process is not None:
                 end_group(process)
@@ -583,9 +623,9 @@ def run_command(args, *, cwd, env, timeout, log, redact=redact_output):
                 process.stdout.close()
     finally:
         output = redact(bytes(buffer).decode('utf-8', errors='replace'))
-        Path(log).write_text(output, encoding='utf-8')
-    return CommandResult(process.returncode if process else 127,
-                         output, timed_out)
+        if process is not None or not cancelled:
+            Path(log).write_text(output, encoding='utf-8')
+    return CommandResult(process.returncode if process else 127, output, timed_out, cancelled)
 
 
 def scrub_environment():
@@ -876,6 +916,13 @@ def utc_now():
     return datetime.now(timezone.utc).isoformat()
 
 
+def load_sample():
+    try:
+        return [round(value, 2) for value in os.getloadavg()]
+    except (AttributeError, OSError):
+        return None
+
+
 def write_record(path, record):
     path.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary = tempfile.mkstemp(dir=path.parent, prefix='.record-', suffix='.json')
@@ -900,10 +947,10 @@ def timeout_words(minutes):
 def gate_row(name, command, required=True, reason=None, why=None):
     return dict(name=name, directory='.' if command else None, command=command,
                 required=required, result='NOT RUN', reason=reason, why=why,
-                partial=None, exit=None, seconds=None, log=None)
+                partial=None, exit=None, seconds=None, log=None, started=None)
 
 
-def show(row, output='', findings=(), plan=False):
+def show(row, output='', findings=(), plan=False, suffix=''):
     name, command = row['name'], row['command']
     if command and row['directory'] != '.':
         command += ' in ' + row['directory']
@@ -913,7 +960,7 @@ def show(row, output='', findings=(), plan=False):
         # A command's NOT RUN line uses a semicolon after its command, as in the order.
         return
     if plan:
-        print(f"WOULD RUN {label}; because {row['reason']}")
+        print(f"WOULD RUN {label}; because {row['reason']}{suffix}")
         return
     label = f"{name} ({row['seconds']:.1f} s): {command}"
     line = f"{row['result']} {label}; because {row['reason']}"
@@ -944,6 +991,8 @@ def run_gate(root, argv, run, machine, cleanup):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--base', default='origin/main', metavar='REF')
     parser.add_argument('--plan', action='store_true')
+    parser.add_argument('--merge-queue', action='store_true')
+    parser.add_argument('--one-at-a-time', action='store_true')
     parser.add_argument('--private-names-file', metavar='FILE')
     parser.add_argument('--derive-private-names', action='store_true')
     parser.add_argument('--all', action='store_true')
@@ -951,10 +1000,13 @@ def run_gate(root, argv, run, machine, cleanup):
     parser.add_argument('--jobs', type=positive_integer, default=6, metavar='N')
     parser.add_argument('--test-threads', type=positive_integer, default=4, metavar='N')
     options = parser.parse_args(argv)
+    if options.one_at_a_time and not options.merge_queue:
+        parser.error('--one-at-a-time requires --merge-queue')
     root = Path(root).resolve()
     clean_environment, removed, credentials = scrub_environment()
     settings = dict(jobs=options.jobs, test_threads=options.test_threads, all=options.all,
-                    target_cache=None)
+                    target_cache=None, merge_queue=options.merge_queue,
+                    one_at_a_time=options.one_at_a_time, side_jobs=None, side_test_threads=None)
     environment_set = dict(CARGO_NET_OFFLINE='true', RUSTUP_AUTO_INSTALL='0',
                            CARGO_TERM_COLOR='never', CARGO_BUILD_JOBS=str(options.jobs),
                            RUST_TEST_THREADS=str(options.test_threads))
@@ -1083,25 +1135,93 @@ def run_gate(root, argv, run, machine, cleanup):
                                    private_names=dict(file=names_file, derived=derived_record)), gates=[])
     record_path = root / OUTPUT / (head + '.json')
     log_directory = root / OUTPUT / 'logs' / head
+    output_lock = threading.Lock()
+    stopped_rows = set()
+    interrupted_rows = []
+    tests = []
     if not options.plan:
+        record['stopped_at'] = None
+        sample = load_sample()
+        cores = os.cpu_count()
+        record['load_average'] = dict(cores=cores, start=sample, end=None)
+        if sample is None:
+            print('Load: not available on this machine, so the record holds none.')
+        else:
+            figures = ' '.join(f'{value:.2f}' for value in sample)
+            print(f'Load: {figures} (1, 5 and 15 minutes) on {cores if cores is not None else "unknown"} '
+                  "cores at the start; the record also keeps the end's.")
         log_directory.mkdir(parents=True, exist_ok=True)
         for old in log_directory.glob('*.log'):
             old.unlink()
         write_record(record_path, record)
     current = 'rust discovery'
 
-    def finish(row, output='', findings=()):
+    def finish(row, output='', findings=(), suffix=''):
         shown = dict(row)
         for key in ('name', 'directory', 'command', 'reason', 'why', 'partial', 'log'):
             if isinstance(row[key], str):
                 shown[key] = redact_output(row[key], private_names)
+        if shown.pop('_stopped', False):
+            stopped_rows.add(len(record['gates']))
         record['gates'].append(shown)
         if not options.plan:
+            if (options.merge_queue and record['stopped_at'] is None
+                    and row['required'] and row['result'] == 'FAIL'):
+                record['stopped_at'] = shown['name']
             write_record(record_path, record)
-        show(shown, output, (redact_output(item, private_names) for item in findings),
-             options.plan and row['name'] != 'rust discovery')
+        with output_lock:
+            show(shown, output, (redact_output(item, private_names) for item in findings),
+                 options.plan and row['name'] != 'rust discovery', suffix=suffix)
 
-    def execute(args, log, minutes, env=None, display=None, directory='.', raw_output=None):
+    def omit(row):
+        reason = "the merge queue's gate stops at its first required failure, " + record['stopped_at']
+        row['_stopped'] = True
+        if row['started'] is None:
+            row['why'] = 'not run: ' + reason
+        else:
+            row['why'] = (f"ended after {row['seconds']:.1f} s with its process group: "
+                          + reason + '; its log is partial')
+
+    def log_for(row, position):
+        name = redact_output(row['name'], private_names).replace(' ', '-').replace('/', '-')
+        return log_directory / (f'{position:02d}-' + name + '.log')
+
+    def result_row(row, result, log, clock, minutes):
+        if result.cancelled and row['started'] is None:
+            return result.output
+        if result.cancelled and not log.exists():
+            # A cache probe may have launched before the main command was cancelled.
+            log.write_text(result.output, encoding='utf-8')
+        row.update(seconds=round(time.monotonic() - clock, 1), log=log.relative_to(root).as_posix())
+        if not result.cancelled:
+            failed = result.timed_out or result.exit != 0
+            row.update(result='FAIL' if failed else 'PASS', exit=result.exit)
+            if failed:
+                row['why'] = timeout_words(minutes) if result.timed_out else f'exit {result.exit}'
+        return result.output
+
+    def dispatch(row, check, *, is_test=False):
+        if options.merge_queue and is_test:
+            tests.append((row, check))
+            return
+        run_one(row, check, len(record['gates']) + 1)
+
+    def run_one(row, check, position, suffix=''):
+        nonlocal current
+        current = row['name']
+        output = ''
+        if row['why'] is None:
+            if options.plan:
+                row['result'] = 'PASS'
+            elif record['stopped_at'] is not None:
+                omit(row)
+            else:
+                row['started'] = utc_now()
+                output = check(position, None)
+        finish(row, output, suffix=suffix)
+
+    def execute(args, log, minutes, env=None, display=None, directory='.', raw_output=None,
+                name=None, cancel=None, on_launch=None):
         def redact(text):
             if raw_output is not None:
                 raw_output.append(text)
@@ -1109,14 +1229,139 @@ def run_gate(root, argv, run, machine, cleanup):
                 text = text.replace(str(target_cache), '<target-cache>')
             return redact_output(text, private_names)
 
-        print(redact_output(f'running {current}: {display or command_text(args)}', private_names),
-              file=sys.stderr)
+        with output_lock:
+            print(redact_output(f'running {name or current}: {display or command_text(args)}',
+                                private_names), file=sys.stderr)
         command_environment = dict(environment if env is None else env)
         if 'CONDUIT_PRIVATE_NAMES' in command_environment:
             record['environment']['private_names_configured'] = True
             write_record(record_path, record)
-        return run(args, cwd=root / directory, env=command_environment,
-                   timeout=minutes * 60, log=log, redact=redact)
+        kwargs = dict(cwd=root / directory, env=command_environment,
+                      timeout=minutes * 60, log=log, redact=redact)
+        if options.merge_queue and not options.plan:
+            kwargs['cancel'] = cancel if cancel is not None else Cancellation()
+        if on_launch is not None:
+            kwargs['on_launch'] = on_launch
+        return run(args, **kwargs)
+
+    def run_batch(engine, companions):
+        cancel = Cancellation()
+        results = Queue()
+        workers = {}
+        pending = iter(companions)
+
+        def launch(item, side):
+            row, check, position = item
+            launched_or_finished = threading.Event()
+
+            def launched():
+                if row['started'] is None:
+                    row['started'] = utc_now()
+                    launched_or_finished.set()
+
+            def worker():
+                output = ''
+                error = None
+                if not cancel.event.is_set():
+                    try:
+                        output = check(position, cancel, launched)
+                    except BaseException as fault:
+                        error = fault
+                with cancel.lock:
+                    if error is not None or (row['required'] and row['result'] == 'FAIL'):
+                        cancel.event.set()
+                    results.put((position, output, error))
+                    launched_or_finished.set()
+
+            thread = threading.Thread(target=worker)
+            workers[position] = (thread, row, side)
+            thread.start()
+            launched_or_finished.wait()
+
+        def fill():
+            for _ in range(2 - sum(side for _, _, side in workers.values())):
+                if cancel.event.is_set():
+                    break
+                item = next(pending, None)
+                if item is None:
+                    break
+                launch(item, side=True)
+
+        try:
+            if engine is not None:
+                launch(engine, side=False)
+            fill()
+            while workers:
+                position, output, error = results.get()
+                thread, row, _ = workers.pop(position)
+                thread.join()
+                if error is not None:
+                    if isinstance(error, KeyboardInterrupt):
+                        interrupted_rows.append(row['name'])
+                    raise error
+                if row['result'] == 'NOT RUN':
+                    omit(row)
+                finish(row, output)
+                fill()
+        except KeyboardInterrupt:
+            interrupted_rows.extend(row['name'] for _, row, _ in workers.values()
+                                    if row['started'] is not None)
+            cancel.request()
+            for thread, _, _ in workers.values():
+                if thread.ident is not None:
+                    thread.join()
+            while True:
+                try:
+                    position, output, error = results.get_nowait()
+                except Empty:
+                    break
+                _, row, _ = workers.pop(position)
+                if row['started'] is not None and error is None:
+                    if row['result'] == 'NOT RUN':
+                        row['why'] = (f"ended after {row['seconds']:.1f} s with its process group: "
+                                      'the gate was interrupted; its log is partial')
+                    finish(row, output)
+            raise
+        finally:
+            if workers:
+                cancel.request()
+                for thread, _, _ in workers.values():
+                    if thread.ident is not None:
+                        thread.join()
+
+        for row, check, position in pending:
+            run_one(row, check, position)
+
+    def run_phase(items, *, engine=None, suffix=''):
+        if options.plan or options.one_at_a_time or record.get('stopped_at') is not None:
+            if engine is not None:
+                run_one(*engine)
+            for row, check, position in items:
+                run_one(row, check, position, suffix=suffix)
+            return
+        runnable = []
+        for item in items:
+            if item[0]['why'] is None:
+                runnable.append(item)
+            else:
+                run_one(*item)
+        run_batch(engine, runnable)
+
+    def run_tests():
+        # Log numbers follow the cheap-first order even when completion order differs.
+        indexed = [(row, check, position)
+                   for position, (row, check) in enumerate(tests, len(record['gates']) + 1)]
+        engine = next((item for item in indexed if item[0]['name'] == 'engine test'), None)
+        if engine is None or options.one_at_a_time:
+            run_phase(indexed)
+            return
+        before, beside = [], []
+        for item in indexed:
+            if item is not engine:
+                group = before if read_by_engine(item[0]['directory'], engine_prefixes) else beside
+                group.append(item)
+        run_phase(before, suffix="; before the engine test, since the engine's sources read its directory")
+        run_phase(beside, engine=engine, suffix='; beside the engine test')
 
     try:
         manifests = rust_manifests(root)
@@ -1129,6 +1374,7 @@ def run_gate(root, argv, run, machine, cleanup):
         if cargo is None:
             discovery['why'] = 'cargo was not found on the PATH; install Rust through rustup'
         else:
+            discovery['started'] = utc_now()
             started = time.monotonic()
             discovery_output = []
             # Plans also discover, but write neither a persistent log nor a record.
@@ -1171,17 +1417,26 @@ def run_gate(root, argv, run, machine, cleanup):
                     if not options.plan:
                         discovery['log'] = log.relative_to(root).as_posix()
         finish(discovery, ''.join(discovery_output) if cargo else '')
+        if discovery['result'] == 'PASS':
+            selected, skipped_own_paths, engine_reason = select_rust(
+                directories, dependencies, changed, options.all, engine_prefixes)
+            if options.merge_queue and not options.one_at_a_time and engine_reason:
+                settings.update(side_jobs=max(1, options.jobs // 2),
+                                side_test_threads=max(1, options.test_threads // 2))
 
         current = 'identity'
         identity_args = ['log', '-z', IDENTITY_FORMAT, merge_base + '..HEAD']
         identity = gate_row('identity', command_text([*GIT, *identity_args]), required=head != merge_base)
         if head == merge_base:
             identity['why'] = NO_COMMITS
+        elif record.get('stopped_at') is not None:
+            omit(identity)
         elif options.plan:
             count = int(git(root, environment, 'rev-list', '--count', merge_base + '..HEAD').stdout)
             identity.update(result='PASS', reason=(f'the branch adds {count} commits, each to be by '
                             'Conduit work order <work-orders@conduit.invalid>'))
         else:
+            identity['started'] = utc_now()
             started = time.monotonic()
             print('running identity: ' + identity['command'], file=sys.stderr)
             commits = git(root, environment, *identity_args)
@@ -1228,42 +1483,40 @@ def run_gate(root, argv, run, machine, cleanup):
                       ['python3', VECTOR, merge_base, 'WORKTREE', '--declared-changed']),
                      ('decisions', [sys.executable, 'tools/check_decisions.py', merge_base, 'WORKTREE'],
                       ['python3', 'tools/check_decisions.py', merge_base, 'WORKTREE'])]
+        def python_command(row, args):
+            name = row['name']
+            env = dict(environment)
+            if name == 'private paths' and private_names is not None:
+                env['CONDUIT_PRIVATE_NAMES'] = private_names
+
+            def check(position, cancel, on_launch=None):
+                log = log_for(row, position)
+                clock = time.monotonic()
+                raw = []
+                result = execute(args, log, 15, env, row['command'], raw_output=raw,
+                                 name=name, cancel=cancel, on_launch=on_launch)
+                output = result_row(row, result, log, clock, 15)
+                if name in ('whitespace', 'private paths') and untracked:
+                    row['partial'] = f'{untracked} untracked path(s)'
+                if name == 'docs':
+                    skipped = sum(line.startswith('Notice: skipped repository permalinks at')
+                                  for line in ''.join(raw).splitlines())
+                    if skipped:
+                        row['partial'] = (f'the permalinks at {skipped} commit(s) this clone lacks, '
+                                          'which CI fetches')
+                if name == 'tool tests':
+                    skipped = re.search(r'OK \(skipped=(\d+)\)\s*$', ''.join(raw))
+                    if skipped:
+                        row['partial'] = f'{skipped[1]} test(s) unittest skipped'
+                return output
+
+            dispatch(row, check, is_test=name == 'tool tests')
+
         for current, args, printed in commands:
             row = gate_row(current, command_text(printed), reason=PYTHON_REASON)
             if current == 'tool tests' and not (options.all or tool_tests_reached(changed)):
                 row.update(required=False, why=TOOL_TESTS_WHY)
-                finish(row)
-                continue
-            if options.plan:
-                row['result'] = 'PASS'  # Only show WOULD RUN; no check is claimed or recorded.
-                finish(row)
-                continue
-            position = len(record['gates']) + 1
-            log_name = redact_output(current, private_names).replace(' ', '-').replace('/', '-')
-            log = log_directory / (f'{position:02d}-' + log_name + '.log')
-            env = dict(environment)
-            if current == 'private paths' and private_names is not None:
-                env['CONDUIT_PRIVATE_NAMES'] = private_names
-            started = time.monotonic()
-            raw = []
-            result = execute(args, log, 15, env, row['command'], raw_output=raw)
-            row.update(result='FAIL' if result.timed_out or result.exit != 0 else 'PASS',
-                       exit=result.exit, seconds=round(time.monotonic() - started, 1),
-                       log=log.relative_to(root).as_posix())
-            if row['result'] == 'FAIL':
-                row['why'] = timeout_words(15) if result.timed_out else f'exit {result.exit}'
-            if current in ('whitespace', 'private paths') and untracked:
-                row['partial'] = f'{untracked} untracked path(s)'
-            if current == 'docs':
-                skipped = sum(line.startswith('Notice: skipped repository permalinks at')
-                              for line in ''.join(raw).splitlines())
-                if skipped:
-                    row['partial'] = f'the permalinks at {skipped} commit(s) this clone lacks, which CI fetches'
-            if current == 'tool tests':
-                skipped = re.search(r'OK \(skipped=(\d+)\)\s*$', ''.join(raw))
-                if skipped:
-                    row['partial'] = f'{skipped[1]} test(s) unittest skipped'
-            finish(row, result.output)
+            python_command(row, args)
 
         current = 'secrets'
         try:
@@ -1287,6 +1540,11 @@ def run_gate(root, argv, run, machine, cleanup):
                 secrets['why'] = (f'gitleaks is not installed; the pin is {pin} '
                                   "(.github/workflows/checks.yml), and the pull request's secrets job "
                                   'scans these commits after the push')
+            elif record.get('stopped_at') is not None:
+                if head == merge_base:
+                    secrets['why'] = NO_COMMITS
+                else:
+                    omit(secrets)
             else:
                 raw_output = []
                 version = execute([executable, 'version'], temp / 'version.log', 10,
@@ -1303,6 +1561,7 @@ def run_gate(root, argv, run, machine, cleanup):
                     secrets.update(required=True, reason=f'gitleaks {pin}, the pinned release, is installed',
                                    result='PASS')
                     if not options.plan:
+                        secrets['started'] = utc_now()
                         actual = [executable, *scan_args[1:-1], str(temp / 'findings.json')]
                         result = execute(actual, temp / 'scan.log', 10, display=secrets['command'])
                         try:
@@ -1330,8 +1589,6 @@ def run_gate(root, argv, run, machine, cleanup):
         if discovery['result'] != 'PASS':
             finish(gate_row('rust and engine', None, required=False, why=RUST_WHY))
         else:
-            selected, skipped_own_paths, engine_reason = select_rust(
-                directories, dependencies, changed, options.all, engine_prefixes)
             prepared = set()
 
             def rust_command(name, directory, arguments, reason):
@@ -1353,66 +1610,69 @@ def run_gate(root, argv, run, machine, cleanup):
                         printed = command_text(['cargo', arguments[0], '--target-dir',
                                                 displayed_target, *arguments[1:]])
                         arguments = [arguments[0], '--target-dir', str(target), *arguments[1:]]
-                if arguments[0] == 'test':
-                    env['RUST_TEST_THREADS'] = str(options.test_threads)
-                    printed = f'RUST_TEST_THREADS={options.test_threads} ' + printed
+                is_test = arguments[0] == 'test'
+                if is_test:
+                    side = settings['side_jobs'] is not None and directory != 'engine' and not read_by_engine(
+                        directory, engine_prefixes)
+                    threads = settings['side_test_threads'] if side else options.test_threads
+                    env['RUST_TEST_THREADS'] = str(threads)
+                    printed = f'RUST_TEST_THREADS={threads} ' + printed
+                    if side:
+                        jobs = settings['side_jobs']
+                        env['CARGO_BUILD_JOBS'] = str(jobs)
+                        printed = f'CARGO_BUILD_JOBS={jobs} ' + printed
                 row = gate_row(name, printed, reason=reason)
                 row['directory'] = directory
-                if options.plan:
-                    row['result'] = 'PASS'
-                    finish(row)
-                    return
-                position = len(record['gates']) + 1
-                log_name = redact_output(name, private_names).replace(' ', '-').replace('/', '-')
-                log = log_directory / (f'{position:02d}-' + log_name + '.log')
-                started = time.monotonic()
-                if target is not None and directory not in prepared:
-                    raw = []
-                    with tempfile.TemporaryDirectory() as temporary:
-                        stage = 'cached Rust host'
-                        probe = execute(['rustc', '-vV'], Path(temporary) / 'host.log', 5,
-                                        directory=directory, raw_output=raw)
-                        hosts = re.findall(r'^host: (\S+)$', raw[-1] if raw else probe.output,
-                                           re.MULTILINE)
-                        if not probe.timed_out and probe.exit == 0 and len(hosts) == 1:
-                            stage = 'cached path metadata'
-                            raw.clear()
-                            probe = execute([cargo, 'metadata', '--format-version', '1', '--offline',
-                                             '--filter-platform', hosts[0]],
-                                            Path(temporary) / 'metadata.log', 5,
-                                            directory=directory, raw_output=raw)
-                    if probe.timed_out or probe.exit != 0 or len(hosts) != 1:
-                        failure = (timeout_words(5) if probe.timed_out else
-                                   f'exit {probe.exit}' if probe.exit != 0 else
-                                   'expected one host triple from rustc -vV')
-                        log.write_text(probe.output, encoding='utf-8')
-                        row.update(result='FAIL', why=f'{stage}: {failure}', exit=probe.exit,
-                                   seconds=round(time.monotonic() - started, 1),
-                                   log=log.relative_to(root).as_posix())
-                        finish(row, probe.output)
-                        return
-                    try:
-                        output = raw[-1] if raw else probe.output
-                        # Cargo's JSON is one line. The runner also captures warnings from stderr.
-                        payload = next((line for line in output.splitlines() if line.startswith('{')), '')
-                        packages = json.loads(payload)['packages']
-                        names = {package['name'] for package in packages if package['source'] is None}
-                        invalidate_path_fingerprints(target, names)
-                    except (ValueError, KeyError, TypeError, OSError) as fault:
-                        why = (f'cannot invalidate path fingerprints: {fault.strerror}'
-                               if isinstance(fault, OSError) else 'invalid cached path metadata')
-                        row.update(result='FAIL', why=why, seconds=round(time.monotonic() - started, 1))
-                        finish(row)
-                        return
-                    prepared.add(directory)
-                result = execute([cargo, *arguments], log, 90, env, printed + ' in ' + directory,
-                                 directory=directory)
-                row.update(result='FAIL' if result.timed_out or result.exit != 0 else 'PASS',
-                           exit=result.exit, seconds=round(time.monotonic() - started, 1),
-                           log=log.relative_to(root).as_posix())
-                if row['result'] == 'FAIL':
-                    row['why'] = timeout_words(90) if result.timed_out else f'exit {result.exit}'
-                finish(row, result.output)
+
+                def check(position, cancel, on_launch=None):
+                    log = log_for(row, position)
+                    clock = time.monotonic()
+                    if target is not None and directory not in prepared:
+                        raw = []
+                        with tempfile.TemporaryDirectory() as temporary:
+                            stage = 'cached Rust host'
+                            probe = execute(['rustc', '-vV'], Path(temporary) / 'host.log', 5,
+                                            directory=directory, raw_output=raw, name=name, cancel=cancel,
+                                            on_launch=on_launch)
+                            hosts = re.findall(r'^host: (\S+)$', raw[-1] if raw else probe.output,
+                                               re.MULTILINE)
+                            if not (probe.timed_out or probe.cancelled) and probe.exit == 0 and len(hosts) == 1:
+                                stage = 'cached path metadata'
+                                raw.clear()
+                                probe = execute([cargo, 'metadata', '--format-version', '1', '--offline',
+                                                 '--filter-platform', hosts[0]],
+                                                Path(temporary) / 'metadata.log', 5,
+                                                directory=directory, raw_output=raw, name=name, cancel=cancel,
+                                                on_launch=on_launch)
+                        if probe.cancelled:
+                            return result_row(row, probe, log, clock, 5)
+                        if probe.timed_out or probe.exit != 0 or len(hosts) != 1:
+                            failure = (timeout_words(5) if probe.timed_out else
+                                       f'exit {probe.exit}' if probe.exit != 0 else
+                                       'expected one host triple from rustc -vV')
+                            log.write_text(probe.output, encoding='utf-8')
+                            row.update(result='FAIL', why=f'{stage}: {failure}', exit=probe.exit,
+                                       seconds=round(time.monotonic() - clock, 1),
+                                       log=log.relative_to(root).as_posix())
+                            return probe.output
+                        try:
+                            output = raw[-1] if raw else probe.output
+                            # Cargo's JSON is one line. The runner also captures warnings from stderr.
+                            payload = next((line for line in output.splitlines() if line.startswith('{')), '')
+                            packages = json.loads(payload)['packages']
+                            names = {package['name'] for package in packages if package['source'] is None}
+                            invalidate_path_fingerprints(target, names)
+                        except (ValueError, KeyError, TypeError, OSError) as fault:
+                            why = (f'cannot invalidate path fingerprints: {fault.strerror}'
+                                   if isinstance(fault, OSError) else 'invalid cached path metadata')
+                            row.update(result='FAIL', why=why, seconds=round(time.monotonic() - clock, 1))
+                            return ''
+                        prepared.add(directory)
+                    result = execute([cargo, *arguments], log, 90, env, printed + ' in ' + directory,
+                                     directory=directory, name=name, cancel=cancel, on_launch=on_launch)
+                    return result_row(row, result, log, clock, 90)
+
+                dispatch(row, check, is_test=is_test)
 
             for entry in directories:
                 if entry.path in skipped_own_paths:
@@ -1444,9 +1704,20 @@ def run_gate(root, argv, run, machine, cleanup):
                     rust_command('engine ' + suffix, 'engine', arguments, engine_reason)
             else:
                 finish(gate_row('engine', None, required=False, why=engine_why(engine_prefixes)))
+        if tests:
+            run_tests()
     except KeyboardInterrupt:
-        print(redact_output(f'Gate: interrupted during {current}; its process group was ended, '
-                            'and the record says incomplete.', private_names))
+        if not options.plan:
+            record['load_average']['end'] = load_sample()
+            write_record(record_path, record)
+        if interrupted_rows:
+            names = ', '.join(interrupted_rows)
+            message = (f'Gate: interrupted during {names}; their process groups were ended, '
+                       'and the record says incomplete.')
+        else:
+            message = (f'Gate: interrupted during {current}; its process group was ended, '
+                       'and the record says incomplete.')
+        print(redact_output(message, private_names))
         return 130
 
     if options.plan:
@@ -1458,18 +1729,23 @@ def run_gate(root, argv, run, machine, cleanup):
               'No other gate was checked, and no record was written.')
         return 0 if discovery['result'] == 'PASS' else 1
     failed = [row['name'] for row in record['gates'] if row['result'] == 'FAIL']
-    required_missing = [row['name'] for row in record['gates']
-                        if row['required'] and row['result'] == 'NOT RUN']
+    required_missing = [row['name'] for index, row in enumerate(record['gates'])
+                        if row['required'] and row['result'] == 'NOT RUN' and index not in stopped_rows]
     not_run = [row['name'] for row in record['gates'] if row['result'] == 'NOT RUN']
     passed = sum(row['result'] == 'PASS' for row in record['gates'])
     record.update(result='FAIL' if failed or required_missing else 'PASS', finished=utc_now())
+    record['load_average']['end'] = load_sample()
     write_record(record_path, record)
     relative_record = record_path.relative_to(root).as_posix()
     if record['result'] == 'PASS':
         line = f"Gate: PASS. {passed} passed; not run: {', '.join(not_run) or 'none'}. Record: {relative_record}"
     else:
         line = (f"Gate: FAIL. Failed: {', '.join(failed) or 'none'}; required, not run: "
-                f"{', '.join(required_missing) or 'none'}; {passed} passed. Record: {relative_record}")
+                f"{', '.join(required_missing) or 'none'}; ")
+        if record['stopped_at'] is not None:
+            line += (f"stopped at {record['stopped_at']} under --merge-queue, so "
+                     f'{len(stopped_rows)} rows did not run (the record names each and why); ')
+        line += f'{passed} passed. Record: {relative_record}'
     if dirty:
         line += (f' The tree has {dirty} uncommitted paths: commit them and run the gate again '
                  'before citing the record.')

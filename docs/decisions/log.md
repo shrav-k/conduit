@@ -556,3 +556,67 @@ Owner's words: stage 2's results, item 4 -> "Ended at 239's merge (Recommended)"
 Lands in: DEC-037's "once orders 236 to 239 are in": an order the coordinator held, which sent no turn, keeps no stage open; stage 2 ended at order 239's merge, and order 237 (held under DEC-005, run later on the owner's answer) and orders 240 to 242 fall outside it
 
 Status: accepted, not done (a results amendment of experiment 028)
+
+## DEC-060, 2026-11-22, the Windows PC offloads and tries, and never decides a merge
+
+Owner's words: the second machine -> "Offload + try runs (Recommended)"
+
+Lands in: every order's gate runs in full on the Mac before it merges (ruling 80 point 10 unchanged); the Windows PC, while the owner has it resumed, runs the readers' tests and a try run of each order's tree before the order enters the queue, and the Codex workers' runs once Conduit places their Agents there (DEC-049, DEC-051); its results never decide a merge
+
+Status: accepted, not done (the PC's setup; the gate and queue orders)
+
+## DEC-061, 2026-11-22, batches once failures fall
+
+Owner's words: batching -> "Batch once failures fall (Recommended)"
+
+Lands in: the queue may gate up to three waiting orders as one tree when fewer than 10% of the last 20 gate runs failed and each order's try run passed; on a failure it splits the batch and gates the halves; an order marked to be gated alone is; commits inside a batch are not tested alone on main
+
+Status: accepted, not done (after the queue's skip-and-continue and the try runs)
+
+## DEC-062, 2026-11-22, no machine bought or rented for the gate until measured
+
+Owner's words: another machine -> "Measure first (Recommended)"
+
+Lands in: no machine is bought or rented for the gate until the gate's speed-ups and the PC's offload have run for a day and measured merges per day fall below the orders built per day; each gate run records the machine's load average
+
+Status: accepted, in force
+
+## DEC-063, 2026-11-22, an owner's app acts for the owner, with its own credential
+
+Owner's words: which Interface the app is -> "1, but we should aim for 2 in v0, let's discuss"; whose authority its credential carries -> "Acts for the owner (Recommended)"
+
+Lands in: until the engine issues Interface credentials, an app such as the Mac app is a client of root's Interface, on the engine's machine, presenting root's token; for v0 the engine issues each such app its own credential through IFC-042's authorization server (MCP's OAuth route, RFC 9728), approved once by the owner on the engine's own panel, carrying root's authority narrowed to the scopes the owner grants, and records name the client; sign-in codes stay on the engine's panel, never in an app (ruling 78 point 9)
+
+Status: accepted, not done (a spec order and engine orders)
+
+## DEC-064, 2026-11-22, an Agent may ask for access
+
+Owner's words: may an Agent ask for more access -> "Access-request actions"
+
+Lands in: the established route (Teleport Access Requests, Kubernetes CertificateSigningRequest): an Agent may ask for an operation it cannot call; the engine raises one pending action of a new kind, which permits nothing; root answers by applying a plan that opens exactly that access, or by declining; a request for get-secret.v1 or an operation reserved to root is refused and raises nothing; the questions of grant expiry and of how records name the action come back to the owner
+
+Status: accepted, not done (a design study, then spec, engine, CLI and package orders)
+
+## DEC-065, 2026-11-22, apply checks the approved plan's digest
+
+Owner's words: must apply send exactly the plan approved -> "discuss 1 vs 2", then "Digest check (Recommended)"
+
+Lands in: `conduit apply --expect sha256:HEX` recomputes the plan from live state and sends nothing when its digest differs from the one given; no plan file is required (ruling 76 point 5 stands)
+
+Status: accepted, not done (a CLI order after orders 245, 247 and 248)
+
+## DEC-066, 2026-11-22, a Resource's health is reported by its implementation
+
+Owner's words: how a Resource's own health is known -> "Reported by its implementation (Recommended)"
+
+Lands in: the Kubernetes and OpenShift route: an implementation reports conditions its Type names (for example CredentialAccepted) in a result's `_meta`; the engine shows each with its source and time until the run ends or a later report replaces it, drops a condition the Type does not name with a warning, and acts on none; a condition's message holds no secret value
+
+Status: accepted, not done (an interface spec order, an engine order, a github package release)
+
+## DEC-067, 2026-11-22, an Agent speaks to the owner only in replies, made readable
+
+Owner's words: how an Agent may speak to the owner -> "Replies only, made readable (Recommended)"
+
+Lands in: an Agent speaks only in the reply to a turn someone asked for; both Agent packages offer `history.v1` (each turn's message, final text, invocation, caller and times; no effect and no model work) to whoever holds a Conduit listing it; a role template's report may carry a field for the owner; states such as an Agent held by a lapsed login come from the engine, never from an Agent's text
+
+Status: accepted, not done (one order per Agent package and a role-template update)

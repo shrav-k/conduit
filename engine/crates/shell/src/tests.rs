@@ -1,5 +1,7 @@
 #[path = "fixtures.rs"]
 mod fixtures;
+#[path = "usage_tests.rs"]
+mod usage_tests;
 use super::*;
 use conduit_core::access::Identity;
 use std::fs;

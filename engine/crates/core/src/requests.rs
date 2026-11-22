@@ -1980,7 +1980,7 @@ pub(crate) fn complete(
     evidence: &Evidence,
     id: &str,
     attempt: u64,
-    completion: Completion,
+    mut completion: Completion,
     c: &Context,
 ) -> Result<()> {
     let i = t
@@ -2009,6 +2009,29 @@ pub(crate) fn complete(
         t.reply = json!({"ignored":true});
         return Ok(());
     }
+    let first_record = t.records.len();
+    let usage = if v["discovery"] == "pending" {
+        None
+    } else {
+        crate::usage::take(&mut completion, c)
+    };
+    complete_call(t, evidence, c, i, v, completion)?;
+    if let Some(usage) = usage {
+        crate::usage::record_end(t, c, first_record, id, usage);
+    }
+    Ok(())
+}
+
+fn complete_call(
+    t: &mut Transition,
+    evidence: &Evidence,
+    c: &Context,
+    i: usize,
+    v: Value,
+    completion: Completion,
+) -> Result<()> {
+    let id = v["id"].as_str().ok_or("invocation has no ID")?;
+    let attempt = v["attempt"].as_u64().ok_or("invocation has no attempt")?;
     let mut a = Allocation {
         evidence,
         cursor: 0,

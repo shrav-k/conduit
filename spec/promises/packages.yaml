@@ -370,7 +370,9 @@
   observable: >-
     The request reports invalid under PKG-023, and nothing is installed. No package is fetched
     or installed because another package lists it, as none is because the manifest of a
-    registration lists it under PKG-006: each is installed first, by a request of its own. So
+    registration lists it under PKG-006: each is installed first, by a request of its own. As
+    under PKG-006, the reference engine's command line may offer one command that installs
+    them first, through every dependency and each by a request of its own, which is no promise. So
     every check on the package's documents that needs another package is made when the package
     is installed. An instance document whose template needs a package that is no longer
     installed is rejected under PKG-007.

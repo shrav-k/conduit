@@ -119,6 +119,25 @@ pub(crate) fn named_install_arguments(
     argument: &str,
     keep_verified_bytes: impl FnOnce(&str, &[u8]),
 ) -> Result<(&str, Value)> {
+    let archive = verified_install_archive(argument, keep_verified_bytes)?;
+    let manifest = install_manifest(&archive.bytes)?;
+    Ok((
+        archive.authored_path,
+        serde_json::json!({"address":manifest["address"],"version":manifest["version"],"digest":archive.digest,"fetch":archive.fetch.as_str()}),
+    ))
+}
+
+pub(crate) struct VerifiedArchive<'a> {
+    pub authored_path: &'a str,
+    pub digest: String,
+    pub bytes: Vec<u8>,
+    pub fetch: url::Url,
+}
+
+pub(crate) fn verified_install_archive(
+    argument: &str,
+    keep_verified_bytes: impl FnOnce(&str, &[u8]),
+) -> Result<VerifiedArchive<'_>> {
     let (authored_path, hash) = argument
         .rsplit_once('#')
         .ok_or("install needs ARCHIVE#SHA256")?;
@@ -141,11 +160,16 @@ pub(crate) fn named_install_arguments(
         ));
     }
     keep_verified_bytes(hex, &bytes);
-    let manifest = archive_metadata::manifest(&bytes)?;
-    Ok((
+    Ok(VerifiedArchive {
         authored_path,
-        serde_json::json!({"address":manifest["address"],"version":manifest["version"],"digest":digest,"fetch":url::Url::from_file_path(path).map_err(|_| "invalid archive URL")?.as_str()}),
-    ))
+        digest,
+        bytes,
+        fetch: url::Url::from_file_path(path).map_err(|_| "invalid archive URL")?,
+    })
+}
+
+pub(crate) fn install_manifest(bytes: &[u8]) -> Result<Value> {
+    archive_metadata::manifest(bytes)
 }
 
 /// CLI archive admission. No filesystem extraction; the core owns package validation.

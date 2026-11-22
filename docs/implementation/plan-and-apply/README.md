@@ -702,8 +702,8 @@ O7: Decided. The planner reads package contents from the person's package cache,
 archive's digest, as Go's module cache, Terraform's provider cache and npm's cache are. This
 needs no engine operation and discloses nothing new: the pin already names the bytes (PKG-004).
 
-`conduit install ARCHIVE#HEX` keeps a copy of the archive in the cache under HEX once the bytes
-hash to HEX, whatever `install.v1` then answers: a copy named by its digest is never wrong.
+`conduit install ARCHIVE#HEX` keeps each archive it reads whose bytes hash to its digest, the given one and each
+dependency, in the cache under its lowercase hex digest, whatever `install.v1` then answers.
 Nothing else writes the cache; plan and apply only read it. The cache belongs to the person
 on that machine and lies outside every project and its `.conduit/`, so every working copy
 shares it. Its location is `packages/` in O8's directory. It holds archives only: no
@@ -750,8 +750,7 @@ T1: conduit init
 T1: conduit install conformance/fixtures/install-archives/filesystem-0.1.1.tar.gz#eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614
 T1: conduit install conformance/fixtures/s1/archives/agents-0.2.1.tar.gz#13f8a1252769975905fae3ba3732ada43b538b76c6fee8740577f0b7e22ca47a
 T1: conduit apply
-T2: conduit install conformance/fixtures/s1/archives/filesystem.tar.gz#200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160
-T2: conduit install conformance/fixtures/s1/archives/history.tar.gz#e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69
+T2: conduit install --mirror conformance/fixtures/s1/mirror conformance/fixtures/s1/archives/history.tar.gz#e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69
 T2: conduit apply
 T3: (none)
 T4: conduit apply --replace agent-a--project
@@ -762,9 +761,8 @@ T7: conduit apply
 T7: conduit apply --reopen agent-a--project
 ```
 
-History's filesystem 0.1.0 dependency is installed explicitly at T2, before history; nothing
-moves that command into setup. This resolves the old O6 accounting question for this schedule
-using experiment 023's retained dependency install. Generated-name operands change the restoration
+History's filesystem 0.1.0 dependency is installed at T2 by history's own install line,
+from the mirror fixture, before history. Generated-name operands change the restoration
 text, but not its line count. Narrowing B at T4 removes one named flag use, while A's widening
 still makes that command count. Bare T7 revocation carries no author-chosen value.
 
@@ -782,21 +780,22 @@ The task's strict total also includes panel actions, following its counting meth
 | Task | Command lines, primary | Command lines, strict | Authored file lines | Panel actions apart | Total primary | Total strict |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | T1 | 2 | 4 | 19 | 2 | 21 | 25 |
-| T2 | 2 | 3 | 3 | 0 | 5 | 6 |
+| T2 | 1 | 2 | 3 | 0 | 4 | 5 |
 | T3 | 0 | 0 | 0 | 0 | 0 | 0 |
 | T4 | 1 | 1 | 2 | 0 | 3 | 3 |
 | T5 | 2 | 2 | 0 | 0 | 2 | 2 |
 | T6 | 1 | 1 | 1 | 0 | 2 | 2 |
 | T7 | 1 | 2 | 1 | 0 | 2 | 3 |
-| Total | 9 | 13 | 26 | 2 | 35 | 41 |
+| Total | 8 | 12 | 26 | 2 | 34 | 40 |
 
 T1's 19 file lines include root's two `operator` Conduits, one flow line each (SCT-009).
 The measurement plan lists them apart as root's Conduits under [Grants made by hand](../first-build/measurement-plan.md#how-each-measure-is-counted-for-the-build). The cases leave them out. Each costs one
 line inline or by reference. Which form is the owner's to choose, for order 250.
 
-The total primary sequence `21, 5, 0, 3, 2, 2, 2` agrees with experiment 023's row
-"No store + K3 A's omitted narrowing flags" and ruling 76's forecast. Strict remains
-`25, 6, 0, 3, 2, 2, 3`: omitting values or flags removes no scheduled command or panel action.
+The total primary sequence is `21, 4, 0, 3, 2, 2, 2` and the strict sequence is
+`25, 5, 0, 3, 2, 2, 3`. Before DEC-048 they were `21, 5, 0, 3, 2, 2, 2` and
+`25, 6, 0, 3, 2, 2, 3`, in agreement with experiment 023 and ruling 76. T2’s single install
+line is a tooling change ([ruling 71, point 4](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-71/README.md)).
 The two T1 panel actions are sign-in for A and B, listed apart from authored lines
 ([ruling 68 R1](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-68/README.md)). Apply continues through both pending
 sign-ins, without a follow-up apply or an answer. A returned pendingAction is a list of IDs,

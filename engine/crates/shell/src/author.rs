@@ -1,5 +1,5 @@
 //! Author workflows: every management action is a root MCP request to the serving engine.
-use crate::{Result, boundary, diagnostics, server, store};
+use crate::{Result, diagnostics, server, store};
 use serde::Deserialize;
 use serde_json::{Value, json};
 use std::path::Path;
@@ -28,7 +28,7 @@ pub fn unanswered_hint() -> Option<String> {
     })
 }
 
-fn state(directory: &Path) -> Result<Value> {
+pub(crate) fn state(directory: &Path) -> Result<Value> {
     let bytes = store::private_read(&directory.join("state.json"))?;
     let mut decoder = serde_json::Deserializer::from_slice(&bytes);
     decoder.disable_recursion_limit();
@@ -240,7 +240,7 @@ fn read_author_project(
     })
 }
 
-fn author_diagnostics(
+pub(crate) fn author_diagnostics(
     reply: &mut Value,
     source: Option<(&conduit_loader::Project, Option<&str>)>,
     path: &str,
@@ -335,6 +335,8 @@ pub struct Options<'a> {
     pub agent: Option<&'a str>,
     pub setup: bool,
     pub serving_checked: bool,
+    pub install_mirrors: &'a [std::path::PathBuf],
+    pub install_dry_run: bool,
 }
 
 /// Establish the serving path without opening the live store for writing or recovery.
@@ -374,7 +376,7 @@ pub async fn run(
         "replace" | "answer" => 2,
         _ => 1,
     };
-    if args.len() != expected {
+    if command != "install" && args.len() != expected {
         return Err(format!(
             "{command}: expected {expected} positional argument(s), received {}; run conduit {command} --help for usage and an example",
             args.len()
@@ -433,18 +435,16 @@ pub async fn run(
                 return Err("inspect: one or more objects could not be inspected; see their results and check root's management Conduits".into());
             }
         }
-        "install" => {
-            if args.len() != 1 {
-                return Err("install needs ARCHIVE#SHA256".into());
+        "install" => match crate::install::run(directory, repository, args, &options).await {
+            Ok(()) => {}
+            Err(crate::install::Failure::Stop(message)) => {
+                if !message.is_empty() {
+                    eprintln!("conduit install: {message}");
+                }
+                std::process::exit(2);
             }
-            let tool = "management.install.v1";
-            let (archive, request) =
-                boundary::named_install_arguments(&args[0], crate::user_config::cache_archive)?;
-            let mut reply = server::client(directory, None, Some(tool), request).await?;
-            author_diagnostics(&mut reply, None, archive, true);
-            println!("{reply}");
-            ensure_success(&reply, &format!("request to {tool}"))?;
-        }
+            Err(crate::install::Failure::Request(message)) => return Err(message),
+        },
         "replace" => {
             if args.len() != 2 {
                 return Err("replace needs DIR KIND/NAME".into());

@@ -197,7 +197,10 @@
     MAN-006, which rejects a `fetch` that holds user information. Reading or registering the
     manifest fetches nothing and installs nothing: a package is installed only by a request for
     `install.v1`, which is given the item's address, `version` and `digest` and, in its input
-    `fetch`, the place the item gives. A request for `install.v1` that gives no `fetch`, for a
+    `fetch`, the place the item gives. Where the reference engine's command line takes the
+    archive from a cache or from a mirror that the user names, it picks that copy before it
+    sends the request and gives its `file:` URL in `fetch`, once the copy's bytes hash to the
+    item's digest; how the user names a mirror is DL7. A request for `install.v1` that gives no `fetch`, for a
     package that is not installed at that address and version, reports invalid under PKG-023,
     and so does one whose `fetch` has a scheme that neither the engine nor a package-source
     provider accepts. A registration whose manifest lists a package that is not installed is

@@ -208,15 +208,25 @@ a private store and its root identity. The store, runner and labeling options re
 `--store DIR` with `init`.
 
 The CLI stores the current engine context and package cache in the absolute directory named by
-`CONDUIT_CONFIG_DIR`, or in `$HOME/.config/conduit` when the variable is unset or empty. When
-`install` verifies the archive's SHA-256, it keeps the bytes under `packages/HEX` in that
-directory, even if the engine refuses the install. A cache write failure is reported on standard
-error and the install continues. `install` changes no project manifest.
+`CONDUIT_CONFIG_DIR`, or in `$HOME/.config/conduit` when the variable is unset or empty.
+`install ARCHIVE#SHA256` installs the named archive's missing dependencies first, one request per
+archive, and pins only the named archive at its exact version and digest in the current manifest.
+Without an archive, `install` restores the manifest's pins. The CLI looks in the per-user package
+cache, then at an absolute `file:` fetch, then in the repeatable `--mirror DIR` directories and
+the absolute mirrors in the per-user `config.json`. It keeps each verified archive in the
+per-user packages directory, named by its lowercase hex digest, even if the engine refuses the
+install. A cache write failure is reported on standard error and the install continues.
+`--dry-run` prints the proposed requests and pin without sending any install or writing files.
+
+Before checking the closure, install prints `list Package/* as=root` and sends
+`management.list.v1` as root, including during a dry run. An already installed dependency is reported as
+`present Package/ADDRESS version=VERSION digest=sha256:HEX needed-by=[NEEDER,...] with its dependencies (PKG-028)`.
+The walk treats that package’s closure as present and skips its descendants.
 
 First start uses the machine's hostname, OS and architecture, plus no custom labels unless
-`--label KEY=VALUE` is supplied. Install every required package explicitly, including S1's
-filesystem, history and registration-only agents packages. Neither registration nor first
-start installs them. `submit` reads the directory through the strict loader, registers it,
+`--label KEY=VALUE` is supplied. S1 installs filesystem, history and the registration-only
+agents package. Registration and first start leave package installation to the CLI.
+`submit` reads the directory through the strict loader, registers it,
 then explicitly requests opening root's submitted Conduits and setup. The built-in runner now starts S1's unchanged npm filesystem
 server for each held directory; those directories must already exist. `register` waits for
 initialization and setup to end. This local command owns its runs and ends them when it exits;
@@ -763,8 +773,8 @@ The other unshown checks carry forward.
 ## Change a serving project
 
 As of 2026-11-10, orders 025 to 028 supply the commands below, help for every command and
-nonzero exit status for any unsuccessful result. Registration preinstalls no S1 package;
-install every dependency explicitly, as in the example above. `submit` requires absolute
+nonzero exit status for any unsuccessful result. Use `install` to install an archive and its
+missing dependencies before registration. `submit` requires absolute
 fetch and program values: a request carrying documents has no submitted directory against
 which to resolve them (SUB-010, finding 4-03, ruling 52).
 

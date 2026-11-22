@@ -1,6 +1,5 @@
 use serde_json::{Value, json};
 use std::{
-    collections::BTreeMap,
     fs,
     io::{BufRead, BufReader},
     net::TcpListener,
@@ -134,8 +133,12 @@ fn archive(name: &str) -> (String, String, Vec<u8>) {
 
 fn one_result(result: &Output) -> Value {
     let output = std::str::from_utf8(&result.stdout).unwrap();
-    assert_eq!(output.lines().count(), 1, "one engine result line");
-    serde_json::from_str(output).expect("the engine result is JSON")
+    let mut replies = output
+        .lines()
+        .filter_map(|line| serde_json::from_str(line).ok());
+    let reply = replies.next().expect("the engine result is JSON");
+    assert!(replies.next().is_none(), "one engine result line");
+    reply
 }
 
 fn skeleton() -> String {
@@ -535,8 +538,8 @@ fn install_keeps_the_archive_in_the_package_cache() {
 
     let (arg, hex, bytes) = archive("missing-dependency.tar.gz");
     let refused = lab.at_store("install").arg(&arg).output().unwrap();
-    assert_eq!(refused.status.code(), Some(1));
-    assert!(!conduit_shell::author::succeeded(&one_result(&refused)));
+    assert_eq!(refused.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&refused.stdout).contains("archive=absent"));
     assert!(fs::read(cache.join(hex)).unwrap() == bytes);
 
     let blocked = lab.directory.path().join("config-file");
@@ -547,64 +550,12 @@ fn install_keeps_the_archive_in_the_package_cache() {
         .arg(&arg)
         .output()
         .unwrap();
-    assert_eq!(output.status.code(), Some(1));
-    assert!(!conduit_shell::author::succeeded(&one_result(&output)));
+    assert_eq!(output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&output.stdout).contains("archive=absent"));
     let warning = stderr(&output)
         .lines()
         .filter(|line| line.contains("cache was not written"))
         .collect::<Vec<_>>();
     assert_eq!(warning.len(), 1);
     assert!(warning[0].contains(blocked.to_str().unwrap()));
-}
-
-#[test]
-fn install_changes_no_manifest() {
-    let lab = Lab::new();
-    lab.init_store();
-    let _server = lab.start(&lab.config);
-    let (arg, _, _) = archive("filesystem-0.2.1.tar.gz");
-    let (refused_arg, _, _) = archive("missing-dependency.tar.gz");
-    let skeleton = skeleton();
-    let api = skeleton.lines().next().unwrap();
-    let pinned = format!(
-        "{api}\npackages: {{example.org/s1/filesystem: {{version: '0.1.1', digest: 'sha256:{}'}}}}\n",
-        "0".repeat(64)
-    );
-    let snapshot = || {
-        fs::read_dir(&lab.project)
-            .unwrap()
-            .map(|entry| {
-                let entry = entry.unwrap();
-                (entry.file_name(), fs::read(entry.path()).unwrap())
-            })
-            .collect::<BTreeMap<_, _>>()
-    };
-    let manifest = lab.project.join("conduit.yaml");
-    for content in [None, Some(skeleton.as_str()), Some(pinned.as_str())] {
-        if let Some(content) = content {
-            fs::write(&manifest, content).unwrap();
-        }
-        let before = snapshot();
-        for explicit in [false, true] {
-            for (archive, expected_status) in [(&arg, 0), (&refused_arg, 1)] {
-                let mut command = if explicit {
-                    lab.at_store("install")
-                } else {
-                    lab.command("install")
-                };
-                let output = command.arg(archive).output().unwrap();
-                assert_eq!(
-                    output.status.code(),
-                    Some(expected_status),
-                    "install result with explicit store {explicit}"
-                );
-                assert_eq!(
-                    conduit_shell::author::succeeded(&one_result(&output)),
-                    expected_status == 0
-                );
-                assert!(!stderr(&output).contains(" pin "));
-                assert!(snapshot() == before, "install changes no project file");
-            }
-        }
-    }
 }

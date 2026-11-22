@@ -117,7 +117,9 @@ registration meaning from changing a running project.
 
 Definitions and Conduits in examples and guides use YAML flow style (`{...}` and `[...]`);
 block style remains equally legal under SCH-013. `conduit init` writes a flow-style skeleton.
-Package pins belong to the manifest, and `conduit install` writes them into the author's file.
+Package pins belong to the manifest: `conduit install ARCHIVE#HEX` writes the given archive's
+pin into the author's file, at exactly its version and digest, after installing what that
+archive lists, and pins no dependency.
 These tools keep its `apiVersion`. Neither command is an engine operation.
 
 1. The shape of a document, its names and references, and schemas:

@@ -476,3 +476,35 @@ Owner's words: PRV-007 -> "Per-platform in one archive (Recommended)"
 Lands in: closes DEC-044's research: an implementation item may state `platforms`; its archive holds `platforms/<os>/<arch>/<program>`; such an item runs only on a matching node, through a runtime provider with `run.v2`, which checks the archive's digest on the node before unpacking; the engine keeps each archive's bytes as distributed; narrows DEC-035 for the two Agent packages, whose Linux builds need a cross toolchain installed only on the owner's approval
 
 Status: accepted, not done (spec, engine, kit and ssh-runtime, package and vendor-client orders)
+
+## DEC-050, 2026-11-22, both reads on every order
+
+Owner's words: A77's reads after the window -> "Both, every order (Recommended)"
+
+Lands in: closes A77's ten-order window (15 orders read: the Codex verifier found 28 musts, the Claude reader none, and its shoulds and nits made refusals, help and diagnostics more explicit for agent callers); every order keeps both reads, blind and at the same time, one fix turn covering both; the reader moves to the second Claude account after the second-account sitting; at a usage limit that account pauses, and nothing merges unread
+
+Status: accepted, in force
+
+## DEC-051, 2026-11-22, the Linux programs built in Docker
+
+Owner's words: the cross toolchain for DEC-049's Linux programs -> "Build in Docker"
+
+Lands in: DEC-049's packages order: the static musl programs for `x86_64-unknown-linux-musl` and `aarch64-unknown-linux-musl` are built in a Linux container on the building machine, with nothing new installed on its host; the order names the image by digest, as an exact pin, and pulling it is the order's one download, approved by this entry
+
+Status: accepted, not done (DEC-049's packages order)
+
+## DEC-052, 2026-11-22, a release reached through a project contract must be installed
+
+Owner's words: order 273's reading of PKG-007 -> "Keep the refusal (Recommended)"
+
+Lands in: order 273: `inspect.v1`'s `packages` lists each package an object reaches through a contract of its submitted project, and PKG-007's "uses a package" includes such a package, so an instance of a template that reaches a release not installed is refused, naming the release, the template and the contract
+
+Status: accepted, done by order 273
+
+## DEC-053, 2026-11-22, an Opus drafter on the second Claude account
+
+Owner's words: the drafter Agent -> "Yes, at the sitting (Recommended)"
+
+Lands in: the second-account sitting creates an Opus drafter Agent on the second Claude account, through Conduit, which writes first drafts of order texts from the coordinator's brief; the coordinator approves each draft, the drafter's turns are recorded, and its first five drafts are compared with the coordinator's own; it shares that account's week with the readers (DEC-046)
+
+Status: accepted, not done (the second-account sitting)

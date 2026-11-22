@@ -1,0 +1,4 @@
+# Added case for work order 270.
+- name: change-unknown-setting
+  kind: added
+  cases: [change-unknown-setting]

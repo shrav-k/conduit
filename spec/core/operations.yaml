@@ -299,7 +299,15 @@ metadata:
     them, and, in `unreconciled`, the engine's ID for each invocation whose outcome is unknown and
     that was dispatched to the instance or names it in an input or as its target, which no purge shortens;
     the status of a node holds fixed labels and, after admission, its machine binding and
-    enrollment (PLC-008, PLC-026, ENR-010). `records` holds the
+    enrollment (PLC-008, PLC-026, ENR-010). The status of an instance holds, in `settings`, each
+    setting that a control whose outcome is unknown addressed (REV-009), under its JSON Pointer:
+    `state` `unknown`, the control's qualified reference as `control` and the engine's ID for the
+    invocation as `invocation`, and no value. A setting stays there after reconciliation (REV-010),
+    and leaves once a later control that was sent a value for it, or for a setting that holds it,
+    succeeds other than by reconciliation (REV-007); a later control whose outcome is unknown and
+    that addresses it takes its place, and one that fails changes nothing. No document changes an
+    existing instance (OBJ-002), so an instance that replaces another holds none of its settings.
+    `settings` is absent where no setting is unknown, and no purge shortens it. `records` holds the
     records that name the object, each as a CloudEvent. Where `expectedId` is given and the object
     named has another ID, the request reports conflict.
 
@@ -448,6 +456,24 @@ spec:
             type: array
             items:
               $ref: github.com/shrav-k/conduit/core#id.v1
+          settings:
+            type: object
+            propertyNames:
+              $ref: github.com/shrav-k/conduit/core#pointer.v1
+            additionalProperties:
+              type: object
+              properties:
+                state:
+                  const: unknown
+                control:
+                  $ref: github.com/shrav-k/conduit/core#qualified-reference.v1
+                invocation:
+                  $ref: github.com/shrav-k/conduit/core#id.v1
+              required:
+              - state
+              - control
+              - invocation
+              additionalProperties: false
           pending:
             type: array
             items:

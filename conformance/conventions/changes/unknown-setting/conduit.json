@@ -1,0 +1,19 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "address": "example.org/conformance/settings",
+  "implementations": {
+    "scripted": {
+      "plain": true,
+      "implements": [
+        "#configure.v1"
+      ],
+      "tools": {
+        "#configure.v1": "configure"
+      },
+      "remote": {
+        "type": "streamable-http",
+        "url": "https://scripted.invalid/mcp"
+      }
+    }
+  }
+}

@@ -431,8 +431,8 @@ pub(crate) fn record_content(t: &Transition, c: &Context, data: &mut Value) -> R
             continue;
         }
         if let Some(mut value) = value {
-            // Implementation selections, contract digests and pending inspection evidence
-            // stay in the reply and its retained repeats.
+            // Implementation selections, contract digests, pending inspection evidence and
+            // unknown settings stay in the reply and its retained repeats.
             if setting == "outputs" && op == c.qualified("inspect.v1") {
                 if let Some(outputs) = value.as_object_mut() {
                     outputs.remove("implementations");
@@ -444,6 +444,7 @@ pub(crate) fn record_content(t: &Transition, c: &Context, data: &mut Value) -> R
                 }
                 if let Some(status) = value.get_mut("status").and_then(Value::as_object_mut) {
                     status.remove("pending");
+                    status.remove("settings");
                 }
                 // Keep answer evidence in its standalone record, even when the Type
                 // keeps the rest of the inspection output.
@@ -1665,6 +1666,15 @@ fn invoke_inner(
     }
     let plain = implementation["item"]["plain"] == true;
     let mut invocation = json!({"id":id,"key":key,"sender":route["consumer"],"caller":route["caller"],"target":route["target"],"conduit":route["conduit"],"operation":op,"arguments":route["arguments"],"digest":digest,"filters":route["filters"],"state":"in-progress","plain":plain,"contract":contract,"held_target":target,"implementation":implementation,"needs_result":plain || contract["spec"].get("outputSchema").is_some(),"attempt":previous.as_ref().and_then(|v|v["attempt"].as_u64()).unwrap_or(0)+1,"wire_retried":false,"config":target["config"],"revision":target["revision"]});
+    if let Some(changes) = contract["spec"]["changes"].as_object() {
+        invocation["control_sent"] = json!(false);
+        invocation["control_inputs"] = json!(
+            changes
+                .keys()
+                .filter(|name| request.arguments.get(*name).is_some())
+                .collect::<Vec<_>>()
+        );
+    }
     if op == c.qualified("sign-in.v1")
         && let Some(login) = request
             .sign_in_login
@@ -1725,6 +1735,10 @@ fn invoke_inner(
         if let Some(notices) = old.get("notices") {
             invocation["notices"] = notices.clone();
         }
+        if let Some(order) = old.get("control_dispatched") {
+            // Until discovery completes, the earlier attempt is the latest dispatch.
+            invocation["control_dispatched"] = order.clone();
+        }
         invocation["previous"] = old;
     }
     let retried = if op == c.qualified("set-up.v1") {
@@ -1774,6 +1788,7 @@ fn invoke_inner(
         data["pendingAction"] = json!([action["id"]]);
     }
     if !discover {
+        order_control_dispatch(&mut t.state, i)?;
         record(t, a, c, "invocation-dispatched", data)?;
     }
     if let Some(action) = retried {
@@ -1820,6 +1835,7 @@ fn invoke_inner(
         )?;
         let mut rules = vec!["OPS-014", "OPS-030", "ACC-033"];
         if crate::revisions::is_control(&t.state.invocations[reconciled]["contract"]["spec"]) {
+            t.state.invocations[reconciled]["reconciled_control"] = json!(true);
             rules.push("REV-010");
         }
         t.decisions.push(decision(
@@ -1931,6 +1947,36 @@ fn invoke_inner(
     }
     Ok(())
 }
+
+fn order_control_dispatch(state: &mut State, i: usize) -> Result<()> {
+    if crate::revisions::is_control(&state.invocations[i]["contract"]["spec"]) {
+        let order = state
+            .invocations
+            .iter()
+            .filter_map(|v| v["control_dispatched"].as_u64())
+            .max()
+            .unwrap_or(0)
+            .checked_add(1)
+            .ok_or("control dispatch order exhausted")?;
+        state.invocations[i]["control_dispatched"] = json!(order);
+        state.invocations[i]["control_sent"] = json!(true);
+    }
+    Ok(())
+}
+
+pub(crate) fn control_attempt_dispatched(invocation: &Value) -> bool {
+    invocation["control_sent"].as_bool().unwrap_or_else(|| {
+        invocation["discovery"] != "pending" || invocation["control_dispatched"].is_number()
+    })
+}
+
+pub(crate) fn control_input_supplied(invocation: &Value, input: &str) -> bool {
+    invocation["control_inputs"].as_array().map_or_else(
+        || invocation["arguments"].get(input).is_some(),
+        |inputs| inputs.iter().any(|name| name == input),
+    )
+}
+
 fn link_access(t: &mut Transition, id: &Value, attempt: Option<&Value>) {
     if let Some(r) = t
         .records
@@ -1971,10 +2017,32 @@ pub(crate) fn finish(
             v["setup_cause"] = json!(cause);
         }
     }
-    if let Some(previous) = v.as_object_mut().unwrap().remove("previous")
-        && earlier_attempt_may_have_succeeded(&previous)
-    {
-        v["unanswered_or_succeeded"] = json!(true);
+    if let Some(previous) = v.as_object_mut().unwrap().remove("previous") {
+        if earlier_attempt_may_have_succeeded(&previous) {
+            v["unanswered_or_succeeded"] = json!(true);
+        }
+        if let Some(changes) = v["contract"]["spec"]["changes"].as_object() {
+            let mut uncertainty = previous["control_uncertainty"]
+                .as_object()
+                .cloned()
+                .unwrap_or_default();
+            if previous["state"] == "unknown" && control_attempt_dispatched(&previous) {
+                for input in changes
+                    .keys()
+                    .filter(|input| control_input_supplied(&previous, input))
+                {
+                    uncertainty.insert(input.clone(), previous["control_dispatched"].clone());
+                }
+            }
+            // A failed or unsent attempt leaves the earlier setting effect in place.
+            // Retries that do run can supply different inputs with the same normalized arguments.
+            if control_attempt_dispatched(v) && outcome != "failed" {
+                uncertainty.retain(|input, _| !control_input_supplied(v, input));
+            }
+            if !uncertainty.is_empty() {
+                v["control_uncertainty"] = Value::Object(uncertainty);
+            }
+        }
     }
     v.as_object_mut().unwrap().remove("hook_input");
     if let Some(w) = v.get_mut("sign_in_wait").and_then(Value::as_object_mut) {
@@ -2490,6 +2558,23 @@ fn restore_or_remove_invocation(state: &mut State, i: usize, v: &Value) {
         } else {
             fields.remove("cause");
         }
+        if crate::revisions::is_control(&previous["contract"]["spec"]) {
+            fields.insert(
+                "control_sent".into(),
+                json!(control_attempt_dispatched(previous)),
+            );
+            for name in [
+                "control_dispatched",
+                "control_inputs",
+                "control_uncertainty",
+            ] {
+                if let Some(value) = previous.get(name) {
+                    fields.insert(name.into(), value.clone());
+                } else {
+                    fields.remove(name);
+                }
+            }
+        }
         fields.remove("previous");
     } else {
         state.invocations.remove(i);
@@ -2539,6 +2624,7 @@ fn complete_discovery(
         if v["hook"] == true {
             record_hook_dispatch(t, a, c, v)?;
         } else {
+            order_control_dispatch(&mut t.state, i)?;
             record(
                 t,
                 a,
@@ -3507,6 +3593,437 @@ mod tests {
             c,
         )
         .unwrap()
+    }
+
+    fn settings_fixture() -> (State, Context) {
+        let (mut t, c) = interrupted_setup();
+        t.state.invocations.clear();
+        let resource = t
+            .state
+            .objects
+            .iter_mut()
+            .find(|o| o["id"] == "o1")
+            .unwrap();
+        resource["config"] = json!({"limit":10,"label":"original"});
+        resource["revision"] = json!("initial-revision");
+        (t.state, c)
+    }
+
+    fn complete_control(
+        mut state: State,
+        c: &Context,
+        id: &str,
+        changes: Value,
+        arguments: Value,
+        completion: Completion,
+    ) -> State {
+        let resource = access::object_by_id(&state, &json!("o1")).unwrap();
+        state.invocations.push(json!({
+            "id":id,"attempt":1,"operation":c.qualified("configure.v1"),
+            "target":"o1","held_target":resource,"caller":"root","sender":"root",
+            "plain":false,"state":"in-progress","arguments":arguments,
+            "contract":{"spec":{"changes":changes}}
+        }));
+        step(
+            &state,
+            Input::Complete {
+                evidence: unused_evidence(&state),
+                invocation: id.into(),
+                attempt: 1,
+                completion,
+            },
+            c,
+        )
+        .unwrap()
+        .state
+    }
+
+    fn inspect_settings(state: &State, c: &Context) -> Value {
+        let inspected = inspect_setup(state, c, "root", &evidence().time, None);
+        assert_eq!(inspected.reply["isError"], false);
+        inspected.reply["structuredContent"].clone()
+    }
+
+    fn unknown_setting(c: &Context, invocation: &str) -> Value {
+        json!({"state":"unknown","control":c.qualified("configure.v1"),"invocation":invocation})
+    }
+
+    fn control_request_fixture() -> (State, Context, AccessRequest) {
+        let (mut state, c) = settings_fixture();
+        let operation = c.qualified("configure.v1");
+        let resource = state.objects.iter_mut().find(|o| o["id"] == "o1").unwrap();
+        let mut environment = json!(c.core_environment);
+        let contracts = &mut environment["scopes"]["core"]["contracts"];
+        contracts["type.v1"]["spec"]["controls"] = json!([operation]);
+        contracts["capability.v1"] = json!({"kind":"Capability","spec":{"operations":[operation]}});
+        contracts["configure.v1"] = json!({
+            "kind":"Operation","metadata":{"name":"configure.v1"},"spec":{
+                "deduplicates":true,"changes":{"limit":"/limit","label":"/label"},
+                "inputSchema":{"type":"object","properties":{
+                    "revision":{"type":"string"},"limit":{"type":"integer"},
+                    "label":{"type":"string","default":"default label"}
+                },"required":["revision"]}
+            }
+        });
+        resource["schema_environment"] = environment;
+        resource["type"] = json!(c.qualified("type.v1"));
+        resource["contract_scope"] = json!("core");
+        resource["type_controls"] = json!([operation]);
+        resource["state"] = json!("ready");
+        resource["resolved_implementations"][&operation] =
+            json!({"source":"project","item":{"command":["test"]}});
+        state.objects.push(json!({
+            "id":"root-settings","kind":"Conduit","name":"root-settings","local_name":"settings",
+            "consumer":"root","target":"o1","state":"ready","open":true,
+            "capability":c.qualified("capability.v1"),"operations":[operation]
+        }));
+        let request = AccessRequest {
+            identity: Identity::Instance { id: "root".into() },
+            tool: "settings.configure.v1".into(),
+            arguments: json!({"revision":"initial-revision","limit":20}),
+            serving: None,
+            readable: true,
+            authority_readable: true,
+            client_capabilities: None,
+            sign_in_login: None,
+            sign_in_return: None,
+        };
+        (state, c, request)
+    }
+
+    fn invoke_control(
+        state: &State,
+        c: &Context,
+        request: &AccessRequest,
+        key: &str,
+    ) -> Transition {
+        let result = step(
+            state,
+            Input::Invoke {
+                evidence: unused_evidence(state),
+                request: request.clone(),
+                key: Some(key.into()),
+                archive: None,
+            },
+            c,
+        )
+        .unwrap();
+        assert_eq!(result.reply["pending"], true, "{}", result.reply);
+        result
+    }
+
+    fn control_completion(t: &Transition, completion: Completion) -> Input {
+        Input::Complete {
+            evidence: unused_evidence(&t.state),
+            invocation: t.reply["invocation"].as_str().unwrap().into(),
+            attempt: t.reply["attempt"].as_u64().unwrap(),
+            completion,
+        }
+    }
+
+    fn answer_control(t: &Transition, c: &Context, outcome: &str) -> Transition {
+        let ready = step(&t.state, control_completion(t, advertised_extension(c)), c).unwrap();
+        assert_eq!(ready.reply["pending"], true);
+        let answer = Completion::Result {
+            result: json!({"_meta":{mark(c, "outcome"):outcome},"isError":outcome!="succeeded"}),
+        };
+        let ended = step(&ready.state, control_completion(&ready, answer), c).unwrap();
+        assert_eq!(ended.reply["_meta"][mark(c, "outcome")], outcome);
+        ended
+    }
+
+    #[test]
+    fn failed_control_retry_preserves_the_earlier_unknown_setting() {
+        let (state, c, request) = control_request_fixture();
+        let first = invoke_control(&state, &c, &request, "repeated");
+        let invocation = first.reply["invocation"].as_str().unwrap();
+        let unknown = answer_control(&first, &c, "unknown");
+        let retry = invoke_control(&unknown.state, &c, &request, "repeated");
+        assert_eq!(retry.reply["invocation"], invocation);
+        assert_eq!(retry.reply["attempt"], 2);
+        let failed = answer_control(&retry, &c, "failed");
+        assert_eq!(
+            inspect_settings(&failed.state, &c)["status"]["settings"]["/limit"],
+            unknown_setting(&c, invocation)
+        );
+    }
+
+    #[test]
+    fn cancelled_control_discovery_leaves_no_unknown_setting() {
+        let (state, c, request) = control_request_fixture();
+        let pending = invoke_control(&state, &c, &request, "cancelled");
+        assert_eq!(
+            pending.external_intents[0]["call"]["method"],
+            "server/discover"
+        );
+        let cancelled = step(
+            &pending.state,
+            Input::Cancel {
+                evidence: unused_evidence(&pending.state),
+                invocation: pending.reply["invocation"].as_str().unwrap().into(),
+                confirmation: None,
+            },
+            &c,
+        )
+        .unwrap();
+        assert_eq!(cancelled.reply["_meta"][mark(&c, "outcome")], "unknown");
+        assert!(
+            inspect_settings(&cancelled.state, &c)["status"]
+                .get("settings")
+                .is_none()
+        );
+    }
+
+    #[test]
+    fn control_retry_readback_preserves_its_earlier_dispatch_position() {
+        let (state, c, request) = control_request_fixture();
+        let first = invoke_control(&state, &c, &request, "repeated");
+        let unknown = answer_control(&first, &c, "unknown");
+        let later = invoke_control(&unknown.state, &c, &request, "settled");
+        let settled = answer_control(&later, &c, "succeeded");
+        assert!(
+            inspect_settings(&settled.state, &c)["status"]
+                .get("settings")
+                .is_none()
+        );
+
+        let retry = invoke_control(&settled.state, &c, &request, "repeated");
+        let input = control_completion(&retry, advertised_extension(&c));
+        let trial = step(&retry.state, input.clone(), &c).unwrap();
+        assert_eq!(trial.external_intents[0]["call"]["method"], "tools/call");
+        let fault = crate::RecordFault::from_trial(input, &trial, true).unwrap();
+        let readback = fault.step(trial.state, &c).unwrap();
+        assert_eq!(readback.reply["_meta"][mark(&c, "reason")], "unavailable");
+        assert!(
+            inspect_settings(&readback.state, &c)["status"]
+                .get("settings")
+                .is_none()
+        );
+    }
+
+    #[test]
+    fn defaulted_control_arguments_do_not_mark_or_clear_omitted_settings() {
+        let (state, c, request) = control_request_fixture();
+        let first = invoke_control(&state, &c, &request, "omitted");
+        let first_id = first.reply["invocation"].as_str().unwrap();
+        let unknown = answer_control(&first, &c, "unknown");
+        let first_inspection = inspect_settings(&unknown.state, &c);
+
+        let mut with_label = request.clone();
+        with_label.arguments = json!({"revision":"initial-revision","label":"submitted label"});
+        let explicit = invoke_control(&unknown.state, &c, &with_label, "explicit");
+        let explicit_id = explicit.reply["invocation"].as_str().unwrap();
+        let unknown = answer_control(&explicit, &c, "unknown");
+        let later = invoke_control(&unknown.state, &c, &request, "settled");
+        let settled = answer_control(&later, &c, "succeeded");
+        assert_eq!(
+            first_inspection["status"]["settings"],
+            json!({"/limit":unknown_setting(&c, first_id)})
+        );
+        assert_eq!(
+            inspect_settings(&settled.state, &c)["status"]["settings"],
+            json!({"/label":unknown_setting(&c, explicit_id)})
+        );
+    }
+
+    #[test]
+    fn successful_control_retry_leaves_the_previously_supplied_setting_unknown() {
+        let (state, c, request) = control_request_fixture();
+        let mut first_request = request.clone();
+        first_request.arguments["label"] = json!("default label");
+        let first = invoke_control(&state, &c, &first_request, "repeated");
+        let invocation = first.reply["invocation"].as_str().unwrap();
+        let unknown = answer_control(&first, &c, "unknown");
+
+        // Normalized arguments still match even when the caller omits the default.
+        let retry = invoke_control(&unknown.state, &c, &request, "repeated");
+        assert_eq!(retry.reply["invocation"], invocation);
+        assert_eq!(retry.reply["attempt"], 2);
+        let succeeded = answer_control(&retry, &c, "succeeded");
+        assert_eq!(
+            inspect_settings(&succeeded.state, &c)["status"]["settings"],
+            json!({"/label":unknown_setting(&c, invocation)})
+        );
+    }
+
+    #[test]
+    fn inspection_settings_stay_out_of_records_and_in_replies() {
+        let (state, c) = settings_fixture();
+        let state = complete_control(
+            state,
+            &c,
+            "first-control",
+            json!({"limit":"/limit"}),
+            json!({"limit":20}),
+            Completion::Missing,
+        );
+        let time = &evidence().time;
+        let original = inspect_setup(&state, &c, "root", time, Some("inspect-once"));
+        let repeated = inspect_setup(&original.state, &c, "root", time, Some("inspect-once"));
+        let outputs = &original.reply["structuredContent"];
+        assert_eq!(
+            outputs["status"]["settings"],
+            json!({"/limit":unknown_setting(&c, "first-control")})
+        );
+        assert_eq!(repeated.reply["structuredContent"], *outputs);
+        for (records, event) in [
+            (&original.state.records, "invocation-ended"),
+            (&original.state.records, "request-ended"),
+            (&repeated.records, "request-ended"),
+        ] {
+            let invocation = &original.reply["_meta"][mark(&c, "invocation")];
+            let output = &records
+                .iter()
+                .find(|r| r["type"] == event && r["data"]["invocation"] == *invocation)
+                .unwrap()["data"]["outputs"];
+            assert_eq!(
+                output["id"], "o1",
+                "the Pool Type records inspection outputs"
+            );
+            assert!(
+                output["status"].get("settings").is_none(),
+                "{event} records settings"
+            );
+        }
+    }
+
+    #[test]
+    fn unknown_settings_inspected_after_reconciliation() {
+        let (state, c) = settings_fixture();
+        let state = complete_control(
+            state,
+            &c,
+            "first-control",
+            json!({"limit":"/limit","label":"/label"}),
+            json!({"revision":"initial-revision","limit":20}),
+            Completion::Missing,
+        );
+        let inspected = inspect_settings(&state, &c);
+        let settings = json!({"/limit":unknown_setting(&c, "first-control")});
+        let config = json!({"limit":10,"label":"original"});
+        assert_eq!(inspected["status"]["settings"], settings);
+        assert_eq!(
+            inspected["status"]["unreconciled"],
+            json!(["first-control"])
+        );
+        assert_eq!(inspected["declared"]["config"], config);
+        assert_eq!(inspected["revision"], "initial-revision");
+
+        let reconciled = step(
+            &state,
+            Input::Invoke {
+                evidence: unused_evidence(&state),
+                request: AccessRequest {
+                    identity: Identity::Instance { id: "root".into() },
+                    tool: "owners.reconcile.v1".into(),
+                    arguments: json!({"invocation":"first-control","occurred":true,"checked":"observed"}),
+                    serving: None,
+                    readable: true,
+                    authority_readable: true,
+                    client_capabilities: None,
+                    sign_in_login: None,
+                    sign_in_return: None,
+                },
+                key: None,
+                archive: None,
+            },
+            &c,
+        ).unwrap();
+        assert_eq!(reconciled.reply["isError"], false, "{}", reconciled.reply);
+        let inspected = inspect_settings(&reconciled.state, &c);
+        assert_eq!(inspected["status"]["settings"], settings);
+        assert_eq!(inspected["status"]["unreconciled"], json!([]));
+        assert_eq!(inspected["declared"]["config"], config);
+        assert_eq!(inspected["revision"], "initial-revision");
+    }
+
+    #[test]
+    fn later_control_settles_unknown_setting() {
+        let (mut state, c) = settings_fixture();
+        let succeeded = || Completion::Result {
+            result: json!({"_meta":{mark(&c, "outcome"):"succeeded"}}),
+        };
+        let failed = Completion::Result {
+            result: json!({"_meta":{mark(&c, "outcome"):"failed"},"isError":true}),
+        };
+        for (id, completion, unknown) in [
+            ("first", Completion::Missing, Some("first")),
+            ("failed", failed, Some("first")),
+            ("later", Completion::Missing, Some("later")),
+            ("succeeded", succeeded(), None),
+        ] {
+            state = complete_control(
+                state,
+                &c,
+                id,
+                json!({"limit":"/limit"}),
+                json!({"limit":20}),
+                completion,
+            );
+            let inspected = inspect_settings(&state, &c);
+            assert_eq!(
+                inspected["status"].get("settings"),
+                unknown
+                    .map(|id| json!({"/limit":unknown_setting(&c, id)}))
+                    .as_ref(),
+                "inspection after {id}"
+            );
+        }
+        let mut retry_state = state.clone();
+        let retried = retry_state
+            .invocations
+            .iter_mut()
+            .find(|v| v["id"] == "first")
+            .unwrap();
+        retried["previous"] = retried.clone();
+        retried["state"] = json!("in-progress");
+        // Redispatch moves the same invocation after the later success.
+        retried["control_dispatched"] = json!(1);
+        assert_eq!(
+            inspect_settings(&retry_state, &c)["status"]["settings"],
+            json!({"/limit":unknown_setting(&c, "first")})
+        );
+
+        let all = json!({"all":""});
+        let config = json!({"all":{"limit":20,"label":"new"}});
+        state = complete_control(
+            state,
+            &c,
+            "unknown-root",
+            all.clone(),
+            config.clone(),
+            Completion::Missing,
+        );
+        state = complete_control(
+            state,
+            &c,
+            "success-at-child",
+            json!({"limit":"/limit"}),
+            json!({"limit":20}),
+            succeeded(),
+        );
+        assert_eq!(
+            inspect_settings(&state, &c)["status"]["settings"],
+            json!({"":unknown_setting(&c, "unknown-root")})
+        );
+        state = complete_control(
+            state,
+            &c,
+            "unknown-child",
+            json!({"limit":"/limit"}),
+            json!({"limit":20}),
+            Completion::Missing,
+        );
+        assert_eq!(
+            inspect_settings(&state, &c)["status"]["settings"]["/limit"],
+            unknown_setting(&c, "unknown-child")
+        );
+        state = complete_control(state, &c, "success-at-root", all, config, succeeded());
+        assert!(
+            inspect_settings(&state, &c)["status"]
+                .get("settings")
+                .is_none()
+        );
     }
 
     #[test]

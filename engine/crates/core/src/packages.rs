@@ -2021,6 +2021,8 @@ mod tests {
             "http://127.255.255.254/mcp",
             "http://localhost:8080/mcp",
             "http://[::1]:8080/mcp",
+            "http://[0:0:0:0:0:0:0:1]/mcp",
+            "http://[::0:1]/mcp",
         ] {
             assert!(super::secret_transport(url), "unexpectedly refused {url}");
         }

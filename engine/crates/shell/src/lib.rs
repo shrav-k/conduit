@@ -11,7 +11,7 @@ pub mod sign_in;
 mod store;
 pub mod user_config;
 use chrono::{DateTime, SecondsFormat, Utc};
-use conduit_core::{Context, Input, State, Transition};
+use conduit_core::{Context, Input, RecordFault, State, Transition};
 pub use identity::RunIdentity;
 
 /// Install the single TLS crypto provider used by the shell and its tests.
@@ -26,7 +26,7 @@ use std::sync::{Arc, Condvar, Mutex, Weak};
 use std::time::{Duration, Instant};
 #[cfg(test)]
 use store::Stored;
-use store::{Memory, Store};
+use store::{Memory, StateWriteError, Store};
 use uuid::Uuid;
 
 pub type Result<T> = std::result::Result<T, String>;
@@ -179,6 +179,8 @@ struct Writer {
     store: Store,
     waiters: BTreeMap<(String, u64), Vec<Weak<ReplyCell>>>,
     read_values: BTreeMap<String, String>,
+    // REC-007: the replied-to steps waiting for the next state write.
+    held_records: VecDeque<RecordFault>,
     open_micros: Option<u64>,
     unwritten: u64,
 }
@@ -205,11 +207,40 @@ struct Committed {
     ticket: Ticket,
     intents: Vec<Intent>,
     notifications: Vec<Value>,
+    fault_endings: Option<BTreeSet<String>>,
 }
 
 struct Intent {
     descriptor: Value,
     secrets: Option<Value>,
+    from_record_fault: bool,
+}
+
+#[derive(Debug)]
+enum PersistenceError {
+    Write(StateWriteError),
+    Other(String),
+}
+
+impl From<&str> for PersistenceError {
+    fn from(message: &str) -> Self {
+        Self::Other(message.to_owned())
+    }
+}
+
+impl From<String> for PersistenceError {
+    fn from(message: String) -> Self {
+        Self::Other(message)
+    }
+}
+
+impl From<PersistenceError> for String {
+    fn from(error: PersistenceError) -> Self {
+        match error {
+            PersistenceError::Write(error) => error.message,
+            PersistenceError::Other(message) => message,
+        }
+    }
 }
 
 pub struct Shell {
@@ -279,6 +310,7 @@ impl Shell {
                 store,
                 waiters: BTreeMap::new(),
                 read_values: BTreeMap::new(),
+                held_records: VecDeque::new(),
                 open_micros: None,
                 unwritten: 0,
             }),
@@ -335,8 +367,13 @@ impl Shell {
     /// Inputs here are trusted embedding values, never raw consumer wire messages.
     /// Supplied evidence is replaced with shell evidence.
     pub fn begin(&self, input: Value, executor: &dyn Executor) -> Result<Ticket> {
-        let committed = self.commit(input)?;
-        self.drive(committed.intents, committed.notifications, executor)?;
+        let committed = self.commit_input(input, true)?;
+        self.drive_committed(
+            committed.intents,
+            committed.notifications,
+            committed.fault_endings.is_some(),
+            executor,
+        )?;
         Ok(committed.ticket)
     }
     pub fn submit(&self, input: Value, executor: &dyn Executor) -> Result<Value> {
@@ -491,7 +528,25 @@ impl Shell {
         self.client_token(&writer, instance)
     }
 
-    fn transition(&self, state: State, store: &Store, mut input: Value) -> Result<Transition> {
+    fn transition(&self, state: State, store: &Store, input: Value) -> Result<Transition> {
+        self.transition_input(state, store, input, &VecDeque::new())
+            .map(|(t, _)| t)
+    }
+
+    fn replay_held(&self, mut state: State, held: &VecDeque<RecordFault>) -> Result<State> {
+        for input in held {
+            state = input.step(state, &self.context)?.state;
+        }
+        Ok(state)
+    }
+
+    fn transition_input(
+        &self,
+        state: State,
+        store: &Store,
+        mut input: Value,
+        held: &VecDeque<RecordFault>,
+    ) -> Result<(Transition, Value)> {
         if input["kind"] == "first-start"
             && input
                 .get("trustDomain")
@@ -547,7 +602,7 @@ impl Shell {
                 .map_err(|e| format!("embedding input: {e}"))?;
             let state = match state.take() {
                 Some(state) => state,
-                None => store.read()?.state,
+                None => self.replay_held(store.read()?.state, held)?,
             };
             match conduit_core::step_owned(state, parsed, &self.context) {
                 Ok(t) => {
@@ -581,14 +636,15 @@ impl Shell {
                             .map_err(|e| format!("embedding input: {e}"))?;
                         // DL2/IMP-007: archive evidence retries the committed State, not the trial.
                         drop(t);
-                        return conduit_core::step_owned(
-                            store.read()?.state,
+                        let t = conduit_core::step_owned(
+                            self.replay_held(store.read()?.state, held)?,
                             parsed,
                             &self.context,
                         )
-                        .map_err(|e| format!("embedding error: {e}"));
+                        .map_err(|e| format!("embedding error: {e}"))?;
+                        return Ok((t, input));
                     }
-                    return Ok(t);
+                    return Ok((t, input));
                 }
                 Err(e) if e.starts_with("exhausted ") && supply == 256 => continue,
                 Err(e) => return Err(format!("embedding error: {e}")),
@@ -602,7 +658,7 @@ impl Shell {
         writer: &Writer,
         stored: &mut Memory,
         transition: &Transition,
-    ) -> Result<(usize, Duration)> {
+    ) -> std::result::Result<(usize, Duration), PersistenceError> {
         let now = Utc::now().to_rfc3339_opts(SecondsFormat::Nanos, true);
         stored.output_times.retain(|id, _| {
             transition
@@ -630,7 +686,8 @@ impl Shell {
         let started = Instant::now();
         let bytes = writer
             .store
-            .write_state(&transition.state, &stored.output_times)?;
+            .write_state(&transition.state, &stored.output_times)
+            .map_err(PersistenceError::Write)?;
         Ok((bytes, started.elapsed()))
     }
 
@@ -639,7 +696,7 @@ impl Shell {
         writer: &Writer,
         stored: &mut Memory,
         measures: &mut CommitMeasures,
-    ) -> Result<()> {
+    ) -> std::result::Result<(), PersistenceError> {
         let now = Utc::now();
         let mut outputs = Vec::new();
         for v in &stored.state.invocations {
@@ -686,10 +743,45 @@ impl Shell {
     }
 
     fn commit(&self, input: Value) -> Result<Committed> {
+        // The runner commits discovery under its session lock, before driving the
+        // result. Other low-level commits preserve raw embedding errors.
+        self.commit_input(input, false)
+    }
+
+    fn retry_held(
+        &self,
+        writer: &mut Writer,
+        stored: &mut Memory,
+        measures: &mut CommitMeasures,
+    ) -> std::result::Result<(), PersistenceError> {
+        while let Some(input) = writer.held_records.front() {
+            let state = Arc::unwrap_or_clone(std::mem::take(&mut stored.state));
+            let started = Instant::now();
+            let t = input.step(state, &self.context)?;
+            measures.step_time += started.elapsed();
+            match self.persist(writer, stored, &t) {
+                Ok(written) => {
+                    measures.written(written);
+                    writer.held_records.pop_front();
+                    stored.state = Arc::new(t.state);
+                }
+                Err(PersistenceError::Write(error)) => {
+                    if error.renamed {
+                        writer.held_records.pop_front();
+                    }
+                    return Err(PersistenceError::Write(error));
+                }
+                Err(error) => return Err(error),
+            }
+        }
+        Ok(())
+    }
+
+    fn commit_input(&self, input: Value, fail_closed: bool) -> Result<Committed> {
         let mut writer = self.writer.lock().map_err(|_| "writer lock poisoned")?;
         let started = Instant::now();
         let kind = input["kind"].as_str().unwrap_or("").to_string();
-        let read_value = (kind == "complete")
+        let mut read_value = (kind == "complete")
             .then(|| {
                 Some((
                     input["invocation"].as_str()?.to_owned(),
@@ -702,22 +794,98 @@ impl Shell {
         let mut measures = CommitMeasures::default();
         // DL2: taking memory leaves the cache empty on every failed step/write.
         let mut stored = writer.store.take()?;
-        if input["kind"] != "recover" {
-            self.retention(&writer, &mut stored, &mut measures)?;
-        }
+        let discovery = !fail_closed
+            && kind == "complete"
+            && stored.state.invocations.iter().any(|v| {
+                v["id"] == input["invocation"]
+                    && v["attempt"] == input["attempt"]
+                    && (v["discovery"] == "pending" || v["secret_read"]["phase"] == "discover")
+            });
+        let covered = (fail_closed || discovery) && RecordFault::covers(&kind);
         // IFC-038: notices read objects only. The State is copied only for a held reader.
         let before = State {
             objects: stored.state.objects.clone(),
             ..State::default()
         };
-        let state = Arc::unwrap_or_clone(std::mem::take(&mut stored.state));
+        let earlier = self
+            .retry_held(&mut writer, &mut stored, &mut measures)
+            .and_then(|()| {
+                if kind == "recover" {
+                    Ok(())
+                } else {
+                    self.retention(&writer, &mut stored, &mut measures)
+                }
+            });
+        let (state, prewrite_failed) = match earlier {
+            Ok(()) => (
+                Arc::unwrap_or_clone(std::mem::take(&mut stored.state)),
+                false,
+            ),
+            Err(PersistenceError::Write(_)) if covered => {
+                stored = writer.store.take()?;
+                (
+                    self.replay_held(
+                        Arc::unwrap_or_clone(std::mem::take(&mut stored.state)),
+                        &writer.held_records,
+                    )?,
+                    true,
+                )
+            }
+            Err(error) => return Err(error.into()),
+        };
         let step_started = Instant::now();
-        let mut t = self.transition(state, &writer.store, input)?;
+        let (mut t, input) =
+            self.transition_input(state, &writer.store, input, &writer.held_records)?;
         measures.step_time += step_started.elapsed();
-        measures.written(self.persist(&writer, &mut stored, &t)?);
+        let failed = if prewrite_failed {
+            Some(false)
+        } else {
+            match self.persist(&writer, &mut stored, &t) {
+                Ok(written) => {
+                    measures.written(written);
+                    None
+                }
+                Err(PersistenceError::Write(error)) if covered => Some(error.renamed),
+                Err(error) => return Err(error.into()),
+            }
+        };
+        let mut kept_fault = false;
+        if let Some(renamed) = failed {
+            let input =
+                serde_json::from_value(input).map_err(|e| format!("embedding input: {e}"))?;
+            let fault = RecordFault::from_trial(input, &t, renamed)?;
+            drop(t);
+            stored = writer.store.take()?;
+            let state = self.replay_held(
+                Arc::unwrap_or_clone(std::mem::take(&mut stored.state)),
+                &writer.held_records,
+            )?;
+            let step_started = Instant::now();
+            t = fault.step(state, &self.context)?;
+            measures.step_time += step_started.elapsed();
+            match self.persist(&writer, &mut stored, &t) {
+                Ok(written) => {
+                    measures.written(written);
+                    writer.held_records.clear();
+                    kept_fault = true;
+                }
+                Err(PersistenceError::Write(error)) => {
+                    if error.renamed {
+                        writer.held_records.clear();
+                    } else {
+                        writer.held_records.push_back(fault);
+                    }
+                    stored = writer.store.take()?;
+                }
+                Err(error) => return Err(error.into()),
+            }
+            read_value = None;
+        }
         // PRV-029/LIF-035: reconcile only after removal is durable. A directory
         // whose delete fails remains the retry marker, including across restart.
-        writer.store.clean_state_directories(&t.state)?;
+        if failed.is_none() {
+            writer.store.clean_state_directories(&t.state)?;
+        }
         #[cfg(test)]
         if let Some(trace) = self
             .trace
@@ -767,6 +935,7 @@ impl Shell {
                 Ok(Intent {
                     descriptor,
                     secrets,
+                    from_record_fault: failed.is_some(),
                 })
             })
             .collect::<Result<_>>()?;
@@ -832,8 +1001,12 @@ impl Shell {
         }
         // DL10/IFC-038: keep the second retention check before notices. Expiry
         // changes only retained outputs, so the committed objects are still t's.
-        stored.state = Arc::new(std::mem::take(&mut t.state));
-        self.retention(&writer, &mut stored, &mut measures)?;
+        if failed.is_none() || kept_fault {
+            stored.state = Arc::new(std::mem::take(&mut t.state));
+        }
+        if failed.is_none() {
+            self.retention(&writer, &mut stored, &mut measures)?;
+        }
         let mut notifications =
             conduit_core::access::tool_list_changes(&before, &stored.state, &self.context)?;
         for o in before.objects.iter().filter(|o| {
@@ -844,6 +1017,14 @@ impl Shell {
             }
         }
         let invocations = stored.state.invocations.len();
+        let fault_endings = failed.map(|_| {
+            t.records
+                .iter()
+                .filter(|r| r["type"] == "request-ended")
+                .filter_map(|r| r["data"]["invocation"].as_str().map(str::to_owned))
+                .chain(t.request_replies.iter().map(|r| r.invocation.clone()))
+                .collect()
+        });
         writer.store.remember(stored);
         let commit_micros = micros(started.elapsed());
         // These optional measures cannot turn a durable commit into a failure.
@@ -879,6 +1060,7 @@ impl Shell {
             ticket: Ticket { invocation, cell },
             intents,
             notifications,
+            fault_endings,
         })
     }
 
@@ -888,11 +1070,26 @@ impl Shell {
         notifications: Vec<Value>,
         executor: &dyn Executor,
     ) -> Result<()> {
-        executor.tools_changed(&notifications)?;
+        let from_record_fault = intents.iter().any(|intent| intent.from_record_fault);
+        self.drive_committed(intents, notifications, from_record_fault, executor)
+    }
+
+    fn drive_committed(
+        &self,
+        intents: Vec<Intent>,
+        notifications: Vec<Value>,
+        from_record_fault: bool,
+        executor: &dyn Executor,
+    ) -> Result<()> {
+        let notices = executor.tools_changed(&notifications);
+        if !from_record_fault {
+            notices?;
+        }
         let mut queue = VecDeque::from(intents);
         while let Some(Intent {
             descriptor: intent,
             secrets,
+            from_record_fault,
         }) = queue.pop_front()
         {
             let kind = intent["kind"].as_str().ok_or("intent has no kind")?;
@@ -919,8 +1116,19 @@ impl Shell {
                 }
                 "provider-call" => executor.provider_call(&intent, identity.as_ref())?,
                 "connect" => executor.connect(&intent)?,
-                "cancel" => executor.cancel(&intent)?,
-                "cancel-setup-parts" => executor.cancel_setup_parts(&intent)?,
+                "cancel" | "cancel-setup-parts" => {
+                    let result = if kind == "cancel" {
+                        executor.cancel(&intent)
+                    } else {
+                        executor.cancel_setup_parts(&intent)
+                    };
+                    if from_record_fault {
+                        // The result was already decided by REC-007. Cancellation
+                        // is a notification and cannot replace that result.
+                        continue;
+                    }
+                    result?
+                }
                 _ => return Err("embedding error: unsupported intent kind".into()),
             };
             let execution = if matches!(execution, Execution::Missing) {
@@ -943,8 +1151,20 @@ impl Shell {
                 Execution::Done if matches!(kind, "cancel" | "cancel-setup-parts") => continue,
                 _ => return Err("embedding error: executor response does not match intent".into()),
             };
-            let next = self.commit(input)?;
-            executor.tools_changed(&next.notifications)?;
+            let next = self.commit_input(input, true)?;
+            let notices = executor.tools_changed(&next.notifications);
+            if let Some(ended) = &next.fault_endings {
+                queue.retain(|queued| {
+                    matches!(
+                        queued.descriptor["kind"].as_str(),
+                        Some("cancel" | "cancel-setup-parts")
+                    ) || !queued.descriptor["invocation"]
+                        .as_str()
+                        .is_some_and(|id| ended.contains(id))
+                });
+            } else {
+                notices?;
+            }
             queue.extend(next.intents);
         }
         Ok(())

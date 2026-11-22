@@ -636,6 +636,7 @@ mod tests {
             reply: Value::Null,
             request_replies: vec![],
             input_required: vec![],
+            validated_reason: None,
         };
         let evidence = Evidence {
             time: "2026-11-10T12:00:00Z".into(),
@@ -1020,6 +1021,7 @@ mod tests {
             reply: Value::Null,
             request_replies: vec![],
             input_required: vec![],
+            validated_reason: None,
         };
         let evidence = Evidence {
             time: "2026-11-10T12:00:00Z".into(),

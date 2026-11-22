@@ -1782,17 +1782,321 @@ fn state_write_fault_is_private_to_its_store_and_state_file() {
     assert_memory_equals_disk(&shell);
 }
 
-// SEC-016 / DL2 / DL10: the successful discovery reply is the input whose
-// commit would publish the dispatch record for the secret read.
+fn fail_writes(shell: &Shell, fault: store::WriteFault, count: usize) {
+    shell
+        .writer
+        .lock()
+        .unwrap()
+        .store
+        .faults
+        .borrow_mut()
+        .extend(std::iter::repeat_n(fault, count));
+}
+
+fn list_tools_after_fault(shell: &Shell) {
+    shell
+        .submit(
+            json!({"kind":"list-tools","identity":{"kind":"instance","id":actor(shell, "root")}}),
+            &MissingExecutor,
+        )
+        .unwrap();
+    assert_memory_equals_disk(shell);
+}
+
+fn assert_record_fault_reply(shell: &Shell, reply: &Value, field: &str, expected: &str) {
+    assert_eq!(reply["isError"], true);
+    assert_eq!(
+        reply["_meta"][format!("{}{field}", shell.context.meta_prefix)],
+        expected
+    );
+    let diagnostics = reply["structuredContent"]["diagnostics"]
+        .as_array()
+        .unwrap();
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0]["ruleId"], "REC-007");
+    assert_eq!(diagnostics[0]["level"], "error");
+}
+
 #[test]
-fn a_read_whose_dispatch_record_cannot_be_kept_is_not_dispatched() {
+fn a_request_whose_record_cannot_be_kept_reports_unavailable() {
+    struct NoDispatch;
+    impl Executor for NoDispatch {
+        fn dispatch(&self, _: &Value) -> Result<Execution> {
+            panic!("an unrecorded request reached the executor");
+        }
+    }
+
+    for tool in ["project.file.write.v1", "project.file.absent.v1"] {
+        for fault in [
+            store::WriteFault::Write,
+            store::WriteFault::FileSync,
+            store::WriteFault::Rename,
+        ] {
+            let temp = temporary();
+            let shell = established(temp.path());
+            let before = shell.state().unwrap().records.len();
+            fail_writes(&shell, fault, 2);
+            let reply = shell
+                .submit(invoke(&shell, "agent-b", tool, None), &NoDispatch)
+                .expect("an unrecorded request must return a result");
+            assert_record_fault_reply(&shell, &reply, "reason", "unavailable");
+            assert_eq!(shell.state().unwrap().records.len(), before);
+            list_tools_after_fault(&shell);
+            let state = shell.state().unwrap();
+            let decision = &state.records[before];
+            let end = &state.records[before + 1];
+            assert_eq!(decision["type"], "access-decision");
+            assert_eq!(decision["data"]["dispatched"], false);
+            assert_eq!(end["type"], "request-ended");
+            for record in [decision, end] {
+                assert_eq!(record["data"]["reason"], "unavailable");
+                assert_eq!(record["data"]["ruleId"], "REC-007");
+            }
+        }
+    }
+    let temp = temporary();
+    let shell = established(temp.path());
+    let before = shell.state().unwrap().records.len();
+    fail_writes(&shell, store::WriteFault::Write, 4);
+    for tool in ["project.file.write.v1", "project.file.absent.v1"] {
+        let reply = shell
+            .submit(invoke(&shell, "agent-b", tool, None), &NoDispatch)
+            .unwrap();
+        assert_record_fault_reply(&shell, &reply, "reason", "unavailable");
+        assert_eq!(shell.state().unwrap().records.len(), before);
+    }
+    list_tools_after_fault(&shell);
+    let state = shell.state().unwrap();
+    assert_eq!(state.records.len(), before + 4);
+    for (records, tool) in state.records[before..]
+        .chunks_exact(2)
+        .zip(["project.file.write.v1", "project.file.absent.v1"])
+    {
+        assert_eq!(records[0]["type"], "access-decision");
+        assert_eq!(records[0]["data"]["tool"], tool);
+        assert_eq!(records[1]["type"], "request-ended");
+        assert_eq!(records[1]["data"]["ruleId"], "REC-007");
+    }
+}
+
+#[test]
+fn an_invocation_whose_end_cannot_be_recorded_ends_unknown() {
+    let temp = temporary();
+    let shell = established(temp.path());
+    let pending = shell
+        .begin(
+            invoke(&shell, "agent-b", "project.file.write.v1", None),
+            &Deferred,
+        )
+        .unwrap();
+    let id = pending.invocation().unwrap();
+    let before = shell.state().unwrap().records.len();
+    fail_writes(&shell, store::WriteFault::Write, 2);
+    shell.complete(id, 1, json!({"kind":"result","result":{"content":[{"type":"text","text":"uncommitted implementation output"}]}}), &MissingExecutor)
+        .expect("a lost end record must settle the invocation");
+    let reply = pending
+        .try_reply()
+        .unwrap()
+        .expect("completion must release the caller");
+    assert_record_fault_reply(&shell, &reply, "outcome", "unknown");
+    assert!(
+        !reply
+            .to_string()
+            .contains("uncommitted implementation output")
+    );
+    assert_eq!(shell.state().unwrap().records.len(), before);
+    list_tools_after_fault(&shell);
+    let state = shell.state().unwrap();
+    for (record, kind) in state.records[before..]
+        .iter()
+        .zip(["invocation-ended", "request-ended"])
+    {
+        assert_eq!(record["type"], kind);
+        assert_eq!(record["data"]["invocation"], id);
+        assert_eq!(record["data"]["outcome"], "unknown");
+    }
+    assert!(state.records.len() >= before + 2);
+}
+
+#[test]
+fn a_completion_read_back_after_rename_keeps_its_result_and_end_records() {
+    let temp = temporary();
+    let shell = established(temp.path());
+    let pending = shell
+        .begin(
+            invoke(&shell, "agent-b", "project.file.write.v1", None),
+            &Deferred,
+        )
+        .unwrap();
+    let id = pending.invocation().unwrap();
+    let before = shell.state().unwrap().records.len();
+    fail_writes(&shell, store::WriteFault::DirectorySync, 1);
+    let completed = shell.complete(
+        id, 1,
+        json!({"kind":"result","result":{"isError":false,"content":[{"type":"text","text":"completion output"}]}}),
+        &MissingExecutor,
+    ).unwrap();
+    let reply = pending.try_reply().unwrap().unwrap();
+    assert_eq!(Some(reply.clone()), completed.try_reply().unwrap());
+    assert_eq!(
+        reply["_meta"][format!("{}outcome", shell.context.meta_prefix)],
+        "succeeded"
+    );
+    assert_eq!(reply["content"][0]["text"], "completion output");
+    assert_memory_equals_disk(&shell);
+    let state = shell.state().unwrap();
+    assert_eq!(state.records.len(), before + 2);
+    for (record, kind) in state.records[before..]
+        .iter()
+        .zip(["invocation-ended", "request-ended"])
+    {
+        assert_eq!(record["type"], kind);
+        assert_eq!(record["data"]["invocation"], id);
+        assert_eq!(record["data"]["outcome"], "succeeded");
+    }
+    list_tools_after_fault(&shell);
+    assert_eq!(shell.state().unwrap().records.len(), before + 2);
+}
+
+#[test]
+fn an_ordinary_request_waiting_for_discovery_ends_unavailable_at_recovery() {
+    struct PendingDiscovery;
+    impl Executor for PendingDiscovery {
+        fn dispatch(&self, intent: &Value) -> Result<Execution> {
+            assert_eq!(intent["call"]["method"], "server/discover");
+            Ok(Execution::Deferred)
+        }
+    }
+
+    let temp = temporary();
+    let shell = filtered_shell(temp.path());
+    let pending = shell
+        .begin(
+            filtered_read(&shell, "discovery-restart"),
+            &PendingDiscovery,
+        )
+        .unwrap();
+    let id = pending.invocation().unwrap();
+    assert!(pending.try_reply().unwrap().is_none());
+    let before = shell.state().unwrap();
+    let access = before
+        .records
+        .iter()
+        .find(|record| record["data"]["invocation"] == id && record["type"] == "access-decision")
+        .expect("access must be recorded before discovery");
+    assert_eq!(access["data"]["permitted"], true);
+    assert!(!before.records.iter().any(|record| {
+        record["data"]["invocation"] == id && record["type"] == "invocation-dispatched"
+    }));
+    let context = shell.context.clone();
+    drop(shell);
+
+    let reopened = Shell::open(temp.path(), context, Config::default()).unwrap();
+    let state = reopened.state().unwrap();
+    let end = state.records[before.records.len()..]
+        .iter()
+        .find(|record| record["data"]["invocation"] == id && record["type"] == "request-ended")
+        .expect("recovery must append a request end");
+    assert_eq!(end["data"]["reason"], "unavailable");
+    assert_eq!(end["data"]["ruleId"], "REC-007");
+    let records: Vec<_> = state
+        .records
+        .iter()
+        .filter(|record| record["data"]["invocation"] == id)
+        .collect();
+    assert_eq!(records.len(), 2);
+    assert!(records[0] == access, "the recorded access decision changed");
+    assert!(
+        records[1] == end,
+        "recovery appended a different request end"
+    );
+    assert_memory_equals_disk(&reopened);
+}
+
+#[test]
+fn an_invocation_whose_end_cannot_be_recorded_keeps_the_implementation_reason() {
+    let temp = temporary();
+    let shell = filtered_shell(temp.path());
+    let pending = shell
+        .begin(filtered_read(&shell, "filter-end"), &Deferred)
+        .unwrap();
+    let id = pending.invocation().unwrap();
+    let before = shell.state().unwrap().records.len();
+    fail_writes(&shell, store::WriteFault::Write, 2);
+    let completed = shell
+        .complete(id, 1, filter_refusal(&shell), &MissingExecutor)
+        .expect("the implementation's reason must settle the invocation");
+    assert_filter_reply(&shell, &pending, &completed);
+    assert_eq!(shell.state().unwrap().records.len(), before);
+    list_tools_after_fault(&shell);
+    let state = shell.state().unwrap();
+    for (record, kind) in state.records[before..]
+        .iter()
+        .zip(["invocation-ended", "request-ended"])
+    {
+        assert_eq!(record["type"], kind);
+        assert_eq!(record["data"]["invocation"], id);
+        assert_eq!(record["data"]["reason"], "refused");
+        assert!(record["data"].get("outcome").is_none());
+    }
+    assert!(state.records.len() >= before + 2);
+}
+
+#[test]
+fn a_write_that_fails_after_its_rename_ends_the_undispatched_request_unavailable() {
+    struct NoDispatch;
+    impl Executor for NoDispatch {
+        fn dispatch(&self, _: &Value) -> Result<Execution> {
+            panic!("a recorded but unsent dispatch reached the executor");
+        }
+    }
+    let temp = temporary();
+    let shell = established(temp.path());
+    let before = shell.state().unwrap().records.len();
+    fail_writes(&shell, store::WriteFault::DirectorySync, 1);
+    let reply = shell
+        .submit(
+            invoke(&shell, "agent-b", "project.file.write.v1", None),
+            &NoDispatch,
+        )
+        .expect("a recorded but unsent dispatch must return a result");
+    assert_record_fault_reply(&shell, &reply, "reason", "unavailable");
+    assert!(
+        reply["structuredContent"]["diagnostics"][0]["message"]["text"]
+            .as_str()
+            .is_some_and(|message| message.contains("the record could be read back"))
+    );
+    let state = shell.state().unwrap();
+    assert_eq!(state.records[before]["type"], "access-decision");
+    assert_eq!(state.records[before + 1]["type"], "invocation-dispatched");
+    let end = &state.records[before + 2];
+    assert_eq!(end["type"], "request-ended");
+    assert_eq!(end["data"]["reason"], "unavailable");
+    assert_eq!(end["data"]["ruleId"], "REC-007");
+    assert_memory_equals_disk(&shell);
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum SecretReadFault {
+    Inspect,
+    Discovery,
+    Restart,
+    NullRestriction,
+    DirectorySync,
+}
+
+// SEC-016: inject the fault as the secret provider answers discovery, or
+// inject it on the first run inspection to check that setup stops before discovery.
+fn secret_read_record_fault(fault: SecretReadFault) {
     struct StoreServer<'a> {
         shell: &'a Shell,
         store_id: Value,
         discoveries: AtomicUsize,
+        inspections: AtomicUsize,
         reads: AtomicUsize,
         consumer_runs: AtomicUsize,
         withheld: String,
+        fault: SecretReadFault,
     }
     impl Executor for StoreServer<'_> {
         fn dispatch(&self, intent: &Value) -> Result<Execution> {
@@ -1800,8 +2104,26 @@ fn a_read_whose_dispatch_record_cannot_be_kept_is_not_dispatched() {
             match intent["call"]["method"].as_str().unwrap() {
                 "server/discover" => {
                     self.discoveries.fetch_add(1, Ordering::SeqCst);
-                    *self.shell.writer.lock().unwrap().store.fault.borrow_mut() =
-                        Some(store::WriteFault::Write);
+                    let stage = if self.fault == SecretReadFault::DirectorySync {
+                        store::WriteFault::DirectorySync
+                    } else {
+                        store::WriteFault::Write
+                    };
+                    fail_writes(
+                        self.shell,
+                        stage,
+                        if self.fault == SecretReadFault::Restart {
+                            2
+                        } else {
+                            1
+                        },
+                    );
+                    if self.fault == SecretReadFault::NullRestriction {
+                        let prefix = &self.shell.context.meta_prefix;
+                        return Ok(Execution::Complete(json!({"kind":"result","result":{
+                            "isError":true,"_meta":{format!("{prefix}reason"):"unavailable",format!("{prefix}restriction"):null}
+                        }})));
+                    }
                     let extension =
                         format!("{}implementation-interface", self.shell.context.meta_prefix);
                     Ok(Execution::Complete(json!({"kind":"result","result":{
@@ -1825,6 +2147,11 @@ fn a_read_whose_dispatch_record_cannot_be_kept_is_not_dispatched() {
             let inspect = format!("{core}#inspect-run.v1");
             let run = format!("{core}#run.v1");
             if intent["operation"] == inspect {
+                if self.inspections.fetch_add(1, Ordering::SeqCst) == 0
+                    && self.fault == SecretReadFault::Inspect
+                {
+                    fail_writes(self.shell, store::WriteFault::Write, 1);
+                }
                 return Ok(Execution::SetupReport(
                     json!({"kind":"inspect-run","state":"stopped"}),
                 ));
@@ -1879,9 +2206,11 @@ fn a_read_whose_dispatch_record_cannot_be_kept_is_not_dispatched() {
         shell: &shell,
         store_id: locator("store"),
         discoveries: AtomicUsize::new(0),
+        inspections: AtomicUsize::new(0),
         reads: AtomicUsize::new(0),
         consumer_runs: AtomicUsize::new(0),
         withheld: format!("withheld-{}", Uuid::new_v4()),
+        fault,
     };
     let result = shell.submit(
         json!({"kind":"invoke","request":{
@@ -1890,15 +2219,64 @@ fn a_read_whose_dispatch_record_cannot_be_kept_is_not_dispatched() {
         }}),
         &probe,
     );
-    let error = match result {
-        Err(error) => error,
-        Ok(_) => panic!("the unkept dispatch returned a reply"),
-    };
-    assert!(error.contains("injected state write failure"));
-    assert_eq!(probe.discoveries.load(Ordering::SeqCst), 1);
+    let inspect_fault = fault == SecretReadFault::Inspect;
+    let recover = fault == SecretReadFault::Restart;
+    assert_eq!(
+        probe.discoveries.load(Ordering::SeqCst),
+        usize::from(!inspect_fault)
+    );
     assert_eq!(probe.reads.load(Ordering::SeqCst), 0);
     assert_eq!(probe.consumer_runs.load(Ordering::SeqCst), 0);
+    assert!(shell.writer.lock().unwrap().read_values.is_empty());
+    let context = shell.context.clone();
+    let withheld = probe.withheld.clone();
+    let shell = if recover {
+        drop(shell);
+        Shell::open(temp.path(), context, Config::default()).unwrap()
+    } else {
+        let result = result.expect("setup must return a final result when a record write fails");
+        assert!(!result.to_string().contains(&withheld));
+        if inspect_fault {
+            assert_record_fault_reply(&shell, &result, "outcome", "unknown");
+        }
+        if fault == SecretReadFault::DirectorySync {
+            assert!(
+                result["structuredContent"]["diagnostics"]
+                    .as_array()
+                    .is_some_and(|diagnostics| {
+                        diagnostics.iter().any(|diagnostic| {
+                            diagnostic["ruleId"] == "SEC-016"
+                                && diagnostic["message"]["text"]
+                                    .as_str()
+                                    .is_some_and(|message| {
+                                        message.contains("the record could be read back")
+                                            && message.contains("the write reported a failure")
+                                    })
+                        })
+                    })
+            );
+        }
+        shell
+    };
     let state = shell.state().unwrap();
+    assert!(
+        !serde_json::to_string(state.as_ref())
+            .unwrap()
+            .contains(&withheld)
+    );
+    assert_memory_equals_disk(&shell);
+    if inspect_fault {
+        assert!(
+            state
+                .records
+                .iter()
+                .any(|record| record["type"] == "request-ended"
+                    && record["data"]["operation"]
+                        == format!("{}#set-up.v1", shell.context.core_package)
+                    && record["data"]["outcome"] == "unknown")
+        );
+        return;
+    }
     let read = state
         .invocations
         .iter()
@@ -1906,27 +2284,61 @@ fn a_read_whose_dispatch_record_cannot_be_kept_is_not_dispatched() {
             invocation["operation"] == format!("{}#get-secret.v1", shell.context.core_package)
         })
         .expect("discovery did not commit");
-    assert_eq!(read["state"], "in-progress");
-    assert_eq!(read["secret_read"]["phase"], "discover");
-    assert!(state.invocations.iter().any(|invocation| {
-        invocation["id"] == read["secret_read"]["run"] && invocation["state"] == "in-progress"
-    }));
-    assert!(
-        !state
-            .records
-            .iter()
-            .any(|record| record["data"]["invocation"] == read["id"]
-                && matches!(
-                    record["type"].as_str(),
-                    Some("invocation-dispatched" | "request-ended")
-                ))
-    );
-    assert!(shell.writer.lock().unwrap().read_values.is_empty());
-    assert!(
-        !serde_json::to_string(state.as_ref())
-            .unwrap()
-            .contains(&probe.withheld)
-    );
-    assert!(!error.contains(&probe.withheld));
-    assert_memory_equals_disk(&shell);
+    assert_eq!(read["state"], "unavailable");
+    let read_records: Vec<_> = state
+        .records
+        .iter()
+        .filter(|record| record["data"]["invocation"] == read["id"])
+        .collect();
+    let read_back = fault == SecretReadFault::DirectorySync;
+    assert_eq!(read_records.len(), if read_back { 3 } else { 2 });
+    assert_eq!(read_records[0]["type"], "access-decision");
+    if read_back {
+        assert_eq!(read_records[0]["data"]["permitted"], true);
+        assert_eq!(read_records[1]["type"], "invocation-dispatched");
+    } else {
+        assert_eq!(read_records[0]["data"]["dispatched"], false);
+        assert_eq!(read_records[0]["data"]["reason"], "unavailable");
+        assert_eq!(read_records[0]["data"]["ruleId"], "SEC-016");
+    }
+    let end = read_records.last().unwrap();
+    assert_eq!(end["type"], "request-ended");
+    assert_eq!(end["data"]["reason"], "unavailable");
+    assert_eq!(end["data"]["ruleId"], "SEC-016");
+    assert!(state.invocations.iter().any(|invocation| invocation["id"]
+        == read["secret_read"]["run"]
+        && if recover {
+            invocation["state"] == "unknown"
+        } else {
+            invocation["setup"]["parts"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|part| part["name"] == "run" && part["outcome"] == "unavailable")
+        }));
+}
+
+#[test]
+fn a_setup_whose_records_cannot_be_kept_asks_for_no_run() {
+    secret_read_record_fault(SecretReadFault::Inspect);
+}
+
+#[test]
+fn a_read_whose_record_cannot_be_kept_ends_unavailable_at_once() {
+    secret_read_record_fault(SecretReadFault::Discovery);
+}
+
+#[test]
+fn an_undispatched_secret_read_ends_unavailable_at_recovery() {
+    secret_read_record_fault(SecretReadFault::Restart);
+}
+
+#[test]
+fn a_failed_secret_discovery_record_does_not_preserve_a_null_restriction() {
+    secret_read_record_fault(SecretReadFault::NullRestriction);
+}
+
+#[test]
+fn a_secret_dispatch_read_back_after_rename_ends_unavailable_under_sec_016() {
+    secret_read_record_fault(SecretReadFault::DirectorySync);
 }

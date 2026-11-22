@@ -21,6 +21,8 @@ mod inventory;
 pub mod lifecycle;
 pub mod packages;
 mod pending;
+mod record_fault;
+pub use record_fault::RecordFault;
 pub mod records;
 pub mod registration;
 pub mod requests;
@@ -317,6 +319,9 @@ pub struct Transition {
     pub request_replies: Vec<RequestReply>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub input_required: Vec<InputRequired>,
+    // Completion validation is also needed if the shell has to replay the end.
+    #[serde(skip)]
+    validated_reason: Option<(String, Value)>,
 }
 
 fn decision(
@@ -540,6 +545,7 @@ fn step_body(state: State, input: Input, context: &Context) -> Result<Transition
         reply: Value::Null,
         request_replies: vec![],
         input_required: vec![],
+        validated_reason: None,
     };
     match input {
         Input::ExportRecords { unreadable } => records::export(&mut transition, &unreadable)?,

@@ -119,8 +119,14 @@ metadata:
     FLEET-005. Authorized against `management`; registering a Resource into a Pool that already exists
     also needs an open Conduit to that Pool that lists this operation. `objects` lists every template
     and instance the request added, nested instances among them, and says of each nested instance
-    which nested instantiation made it. Except for CTR-013's client-ID conflict, a registration that is rejected is not dispatched,
-    reports invalid, and its result still carries `diagnostics`. A registration fetches and installs no package:
+    which nested instantiation made it. Each item also gives `revision`, the revision of that
+    object as the request leaves it, the one `inspect.v1` then shows for it (REV-001), for a
+    template, an instance, a nested instance and a default Conduit of FLEET-005 alike. A repeat
+    that OPS-009 answers changes nothing and gives the items of the invocation it repeats, with
+    the revisions that invocation left; where a later change has advanced one (REV-003),
+    `inspect.v1` shows the newer. Except for CTR-013's client-ID conflict, a registration that
+    is rejected is not dispatched, reports invalid, and its result still carries `diagnostics`.
+    A registration fetches and installs no package:
     one whose manifest lists a package that is not installed at the version and digest the manifest
     gives is rejected, and a diagnostic names each such package. A project that holds a contract or
     lists an implementation, and whose manifest states no `address`, is rejected, and so is one whose
@@ -168,7 +174,13 @@ spec:
       objects:
         type: array
         items:
-          $ref: github.com/shrav-k/conduit/core#object.v1
+          allOf:
+          - $ref: github.com/shrav-k/conduit/core#object.v1
+          - properties:
+              revision:
+                $ref: github.com/shrav-k/conduit/core#revision.v1
+            required:
+            - revision
       diagnostics:
         type: array
         items:
@@ -650,7 +662,9 @@ metadata:
     and reports invalid. Authorized as registering the new instance would be, with this operation
     in the place of `register.v1`: against `management`, and for the Resource of a Pool's entry also
     by an open Conduit to that Pool that lists this operation. The request is a registration, so one
-    that is rejected still carries `diagnostics`. A request for a new instance that a rule on instantiation
+    that is rejected still carries `diagnostics`. `object` gives, beside the new instance's kind,
+    name and ID, its `revision`, the one `inspect.v1` then shows for it (REV-001), as an item of the
+    `objects` of `register.v1` does. A request for a new instance that a rule on instantiation
     does not make reports invalid, as the registration of a document that the rule rejects does: one
     for a declared Conduit whose target is retired, for example, for a new Resource whose `runtime`
     names a retired runtime provider, or for one for which no node matches. Where the machine provider
@@ -674,7 +688,13 @@ spec:
     type: object
     properties:
       object:
-        $ref: github.com/shrav-k/conduit/core#object.v1
+        allOf:
+        - $ref: github.com/shrav-k/conduit/core#object.v1
+        - properties:
+            revision:
+              $ref: github.com/shrav-k/conduit/core#revision.v1
+          required:
+          - revision
       diagnostics:
         type: array
         items:

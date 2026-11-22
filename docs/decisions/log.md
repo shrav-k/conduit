@@ -620,3 +620,115 @@ Owner's words: how an Agent may speak to the owner -> "Replies only, made readab
 Lands in: an Agent speaks only in the reply to a turn someone asked for; both Agent packages offer `history.v1` (each turn's message, final text, invocation, caller and times; no effect and no model work) to whoever holds a Conduit listing it; a role template's report may carry a field for the owner; states such as an Agent held by a lapsed login come from the engine, never from an Agent's text
 
 Status: accepted, not done (one order per Agent package and a role-template update)
+
+## DEC-068, 2026-11-22, the second-account sitting runs by hand tonight
+
+Owner's words: tonight's sitting -> "Sit tonight by hand (Recommended)"
+
+Lands in: the second accounts' login Resources are registered from copies outside the repository whose `account:` lines the owner types in their own editor; the coordinator writes every other line first and never opens the copies after, checking only their mode and that no placeholder is left; the owner tells the coordinator each account's plan and weekly reset day by label before the sign-ins; this is the procedure stage 3's registration names, and `value.v1` (DEC-076) replaces it once it lands
+
+Status: accepted, not done (the sitting)
+
+## DEC-069, 2026-11-22, pairs 1 and 2 and one reader take turns first
+
+Owner's words: tonight's load -> "Pairs 1–2 + reader first (Recommended)"
+
+Lands in: amends DEC-053 and DEC-054: the sitting signs in every account and creates every Agent through Conduit; pairs 1 and 2 and one reader take turns; pair 3 and the drafter receive no turn until orders 280 to 282 merge and one day's engine gates average under 20 minutes; pair 4 stays held by DEC-054's measure, read as no window reached
+
+Status: accepted, not done (the sitting)
+
+## DEC-070, 2026-11-22, stage 3 is judged on access
+
+Owner's words: what stage 3 must prove -> "Judge on access (Recommended)"
+
+Lands in: experiment 028's stage 3: an order passes on conditions 1, 3, 5, 8, 11 and 12; conditions 6 and 9 are measured and reported; condition 10 judges nothing until each package names every reason a turn lacks usage; a dated amendment, merged before stage 3's first turn, says so and says which store upgrade, if any, does not end the stage
+
+Status: accepted, not done (a text order amending experiment 028)
+
+## DEC-071, 2026-11-22, the Claude reader reads text-facing orders
+
+Owner's words: the reader's scope -> "Reader on text-facing orders (Recommended)"
+
+Lands in: amends DEC-050: the Codex verifier reads every order blind; the Claude reader also reads, blind and at the same time, an order that changes `spec/`, a diagnostic or refusal, agent- or owner-facing package text, or a README; one fix turn covers both; an engine-internal order merges on the verifier's clean read and the gate
+
+Status: accepted, in force
+
+## DEC-072, 2026-11-22, the S1 chain merges next
+
+Owner's words: the merge order -> "S1 chain next (Recommended)"
+
+Lands in: DEC-045's "capacity first" is read as the login and package orders it named, now merged; from today the S1 chain (orders 245 to 250) merges ahead of every engine order not on the second-account sitting's path; the gate speed-ups merge as they are ready
+
+Status: accepted, in force
+
+## DEC-073, 2026-11-22, v0's seven items, full v0 by the end of the year
+
+Owner's words: what gates v0 -> "We need the same items, but if more resources, usage, and accounts can speed up our work then we should do so, target full v0 by the end of the year"
+
+Lands in: v0 publishes on the seven items as ruled (ruling 47 as DEC-005 confirmed it); the target is full v0 by 2026-12-31; more machines, accounts and usage are added wherever measurement shows they speed the work (DEC-046, DEC-062); model checking's order 237 runs in parallel as information until S2-4 live
+
+Status: accepted, in force
+
+## DEC-074, 2026-11-22, the owner's app is root's client, then its own Interface by steps
+
+Owner's words: what the app is in v0 -> "Client now, own Interface by steps (Recommended)"
+
+Lands in: amends DEC-063: in v0 the owner's app is a client of root's Interface on the engine's machine, presenting a token whose subject is root with a claim naming the client and no scope; Conduits alone decide (IFC-022); records name the client; it becomes an Interface of its own by opening root-only acts (sign-in of login Resources, the login notice, registering Agents, get-secret Conduits, install) to a scoped Interface one at a time, each with its own guard; the authorization server (DL13, OAuth 2.1, RFC 9728) lands once, after the engine's panel
+
+Status: accepted, not done (the panel first, then a spec and an engine order, then one order per opened act)
+
+## DEC-075, 2026-11-22, the engine's panel first, then the app
+
+Owner's words: the v0 surface -> "Panel first, then the app (Recommended)"
+
+Lands in: the engine's own panel comes first, in Rust, rendered to a terminal `serve` owns (order 051c), showing pending actions with their answers, login holds, nodes and a records tail; the owner's app comes second as DEC-074's client; an Interface client adds no rule of its own (one spec paragraph); a document change from an app reaches the engine only through `conduit plan --output json` and `conduit apply --expect sha256:HEX`
+
+Status: accepted, not done (051c, the spec paragraph, the CLI order)
+
+## DEC-076, 2026-11-22, installation values are value.v1 Resources
+
+Owner's words: the durable form of private values -> "value.v1 Resources (Recommended)"
+
+Lands in: an installation's private values live in its engine as `value.v1` Resources registered by root; documents name them under `values:` beside `arguments:`; the engine writes each into configuration at registration (OBJ-009's moment), keeps a source map on the instance and shows where each came from; `conduit value set` takes a value shown as typed and saves it only on y; every stop names `conduit value set`; `conduit records` redacts by value name on export; secrets stay on secret Resources (the ConfigMap-beside-Secret route)
+
+Status: accepted, not done (spec, engine, CLI and dogfood orders)
+
+## DEC-077, 2026-11-22, usage and limits advertised, in v0
+
+Owner's words: usage limits -> "2, and an agent must keep track of and advertise its usage, its a core feature of conduit, let's discuss"; then "Design B in v0 (Recommended)"
+
+Lands in: in v0, every turn's result reports the usage limits its client saw; the engine keeps the newest report for each window on the Agent and on its login Resource, marks a window unknown after its reset, adds nothing up and acts on none of it; a Codex login answers `limits.v1`, a read that starts no model work and never refreshes the login; a Claude login answers through its status; the CLI tables usage and limits; nothing is relayed to the Agent's model (ruling 68); a Type with a model-work operation or `signIn` states what it reports
+
+Status: accepted, not done (seven orders: a probe, spec, engine, two package releases, CLI, the dispatcher)
+
+## DEC-078, 2026-11-22, only login Resources sign in, trimmed after the sitting
+
+Owner's words: the sign-in path -> "Trim after the sitting (Recommended)"
+
+Lands in: only a Resource whose Type states `signIn` is signed in; an Agent's login place refers to one; no Agent Type states `signIn`; both Agent packages mark their per-Agent Types as compatibility now, and the spec's per-Agent branch and the old wrappers are removed in the first package release after the sitting
+
+Status: accepted, not done (two README orders now; a spec order and two package orders after the sitting)
+
+## DEC-079, 2026-11-22, access requests, health and history now
+
+Owner's words: when DEC-064, DEC-066 and DEC-067 land -> "All three now"
+
+Lands in: access requests (DEC-064), Resource health reported by implementations (DEC-066) and Agent replies through `history.v1` (DEC-067) are built now, in v0, each through its design study or orders; DEC-064's study carries the full refusal list (every operation no Conduit with an Agent consumer may list) and says where `request-access.v1` is offered; DEC-067's package orders keep tool calls, tool results, file contents and usage limits out of `history.v1`
+
+Status: accepted, not done (about eleven orders)
+
+## DEC-080, 2026-11-22, the per-node chain is finished now
+
+Owner's words: where the per-node chain stops -> "Finish the chain now"
+
+Lands in: DEC-049's and DEC-051's orders are finished now (the run side with `run.v2`, the kit and ssh-runtime, the packages' Linux programs built in Docker), so the Windows PC can carry Agents through Conduit; the Pi stays the hub and builds nothing; a package install in the dogfood store waits for a stage boundary or a dated amendment (order 277 item 8)
+
+Status: accepted, not done (about three orders)
+
+## DEC-081, 2026-11-22, a default Pool by `pool:`, as a Fleet by `fleet:`
+
+Owner's words: the default Pool -> "pool: like fleet: (Recommended)"
+
+Lands in: ruling 53 point 6: a Resource that states no owner belongs to the file's `pool:` Pool, as an Agent belongs to its `fleet:` Fleet; `conduit init` writes neither; lands before the S1 rerun's pin or not before it
+
+Status: accepted, not done (a spec order with vectors and a loader order)

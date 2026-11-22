@@ -47,7 +47,7 @@ PUBLIC_WORDS = {
 }
 NAMED = frozenset(('CONDUIT_TEST_NPM', 'SCR_AGENT_CODEX', 'RUSTUP_TOOLCHAIN',
                    'RUSTFLAGS', 'CARGO_ENCODED_RUSTFLAGS', 'RUSTDOCFLAGS',
-                   'CONDUIT_PRIVATE_NAMES'))
+                   'CONDUIT_PRIVATE_NAMES', 'CONDUIT_TEST_TARGET_CACHE'))
 CREDENTIAL = re.compile('KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL')
 PYTHON_GATES = (
     ('docs', ('tools/check_docs.py',)),
@@ -1591,25 +1591,87 @@ def run_gate(root, argv, run, machine, cleanup):
         else:
             prepared = set()
 
+            def prepare_cache(row, directory, log, clock, cancel, *, existing_only=False):
+                if directory in prepared:
+                    return None
+                target = target_cache / directory.replace('/', '-')
+                name = row['name']
+                prefix = f'{directory}: ' if name == 'engine test' else ''
+                if existing_only:
+                    try:
+                        exists = target.exists()
+                    except OSError as fault:
+                        row.update(result='FAIL',
+                                   why=f'{prefix}cannot inspect target-cache folder: {fault.strerror}',
+                                   seconds=round(time.monotonic() - clock, 1))
+                        return ''
+                    if not exists:
+                        prepared.add(directory)
+                        return None
+                raw = []
+                with tempfile.TemporaryDirectory() as temporary:
+                    stage = 'cached Rust host'
+                    probe = execute(['rustc', '-vV'], Path(temporary) / 'host.log', 5,
+                                    directory=directory, raw_output=raw, name=name, cancel=cancel)
+                    hosts = re.findall(r'^host: (\S+)$', raw[-1] if raw else probe.output,
+                                       re.MULTILINE)
+                    if not (probe.timed_out or probe.cancelled) and probe.exit == 0 and len(hosts) == 1:
+                        stage = 'cached path metadata'
+                        raw.clear()
+                        probe = execute([cargo, 'metadata', '--format-version', '1', '--offline',
+                                         '--filter-platform', hosts[0]],
+                                        Path(temporary) / 'metadata.log', 5,
+                                        directory=directory, raw_output=raw, name=name, cancel=cancel)
+                if probe.cancelled:
+                    log.write_text(probe.output, encoding='utf-8')
+                    return result_row(row, probe, log, clock, 5)
+                if probe.timed_out or probe.exit != 0 or len(hosts) != 1:
+                    failure = (timeout_words(5) if probe.timed_out else
+                               f'exit {probe.exit}' if probe.exit != 0 else
+                               'expected one host triple from rustc -vV')
+                    log.write_text(probe.output, encoding='utf-8')
+                    row.update(result='FAIL', why=f'{prefix}{stage}: {failure}', exit=probe.exit,
+                               seconds=round(time.monotonic() - clock, 1),
+                               log=log.relative_to(root).as_posix())
+                    return probe.output
+                try:
+                    output = raw[-1] if raw else probe.output
+                    # Cargo's JSON is one line. The runner also captures warnings from stderr.
+                    payload = next((line for line in output.splitlines() if line.startswith('{')), '')
+                    packages = json.loads(payload)['packages']
+                    names = {package['name'] for package in packages if package['source'] is None}
+                    invalidate_path_fingerprints(target, names)
+                except (ValueError, KeyError, TypeError, OSError) as fault:
+                    why = (f'cannot invalidate path fingerprints: {fault.strerror}'
+                           if isinstance(fault, OSError) else 'invalid cached path metadata')
+                    row.update(result='FAIL', why=prefix + why, seconds=round(time.monotonic() - clock, 1))
+                    return ''
+                prepared.add(directory)
+
             def rust_command(name, directory, arguments, reason):
                 nonlocal current
                 current = name
                 env = dict(environment)
                 printed = command_text(['cargo', *arguments])
                 target = None
+                engine_test = name == 'engine test'
                 if target_cache is not None and arguments[0] in ('clippy', 'test'):
                     cache_name = directory.replace('/', '-')
                     target = target_cache / cache_name
                     displayed_target = f'<target-cache>/{cache_name}'
                     if directory.startswith('packages/') and arguments[0] == 'test':
                         # Archive builders invoked by package tests use the same binaries.
-                        # Engine tests build several packages and keep their separate targets.
                         env['CARGO_TARGET_DIR'] = str(target)
                         printed = f'CARGO_TARGET_DIR={shlex.quote(displayed_target)} {printed}'
                     else:
                         printed = command_text(['cargo', arguments[0], '--target-dir',
                                                 displayed_target, *arguments[1:]])
                         arguments = [arguments[0], '--target-dir', str(target), *arguments[1:]]
+                    if engine_test:
+                        # Nested package builds use their own rows' cache folders.
+                        env['CONDUIT_TEST_TARGET_CACHE'] = str(target_cache)
+                        shown = shlex.quote('<target-cache>')
+                        printed = f'CONDUIT_TEST_TARGET_CACHE={shown} {printed}'
                 is_test = arguments[0] == 'test'
                 if is_test:
                     side = settings['side_jobs'] is not None and directory != 'engine' and not read_by_engine(
@@ -1627,47 +1689,18 @@ def run_gate(root, argv, run, machine, cleanup):
                 def check(position, cancel, on_launch=None):
                     log = log_for(row, position)
                     clock = time.monotonic()
-                    if target is not None and directory not in prepared:
-                        raw = []
-                        with tempfile.TemporaryDirectory() as temporary:
-                            stage = 'cached Rust host'
-                            probe = execute(['rustc', '-vV'], Path(temporary) / 'host.log', 5,
-                                            directory=directory, raw_output=raw, name=name, cancel=cancel,
-                                            on_launch=on_launch)
-                            hosts = re.findall(r'^host: (\S+)$', raw[-1] if raw else probe.output,
-                                               re.MULTILINE)
-                            if not (probe.timed_out or probe.cancelled) and probe.exit == 0 and len(hosts) == 1:
-                                stage = 'cached path metadata'
-                                raw.clear()
-                                probe = execute([cargo, 'metadata', '--format-version', '1', '--offline',
-                                                 '--filter-platform', hosts[0]],
-                                                Path(temporary) / 'metadata.log', 5,
-                                                directory=directory, raw_output=raw, name=name, cancel=cancel,
-                                                on_launch=on_launch)
-                        if probe.cancelled:
-                            return result_row(row, probe, log, clock, 5)
-                        if probe.timed_out or probe.exit != 0 or len(hosts) != 1:
-                            failure = (timeout_words(5) if probe.timed_out else
-                                       f'exit {probe.exit}' if probe.exit != 0 else
-                                       'expected one host triple from rustc -vV')
-                            log.write_text(probe.output, encoding='utf-8')
-                            row.update(result='FAIL', why=f'{stage}: {failure}', exit=probe.exit,
-                                       seconds=round(time.monotonic() - clock, 1),
-                                       log=log.relative_to(root).as_posix())
-                            return probe.output
-                        try:
-                            output = raw[-1] if raw else probe.output
-                            # Cargo's JSON is one line. The runner also captures warnings from stderr.
-                            payload = next((line for line in output.splitlines() if line.startswith('{')), '')
-                            packages = json.loads(payload)['packages']
-                            names = {package['name'] for package in packages if package['source'] is None}
-                            invalidate_path_fingerprints(target, names)
-                        except (ValueError, KeyError, TypeError, OSError) as fault:
-                            why = (f'cannot invalidate path fingerprints: {fault.strerror}'
-                                   if isinstance(fault, OSError) else 'invalid cached path metadata')
-                            row.update(result='FAIL', why=why, seconds=round(time.monotonic() - clock, 1))
-                            return ''
-                        prepared.add(directory)
+                    if target is not None:
+                        failure = prepare_cache(row, directory, log, clock, cancel)
+                        if failure is not None:
+                            return failure
+                        if engine_test:
+                            for entry in directories:
+                                failure = prepare_cache(row, entry.path, log, clock, cancel,
+                                                        existing_only=True)
+                                if failure is not None:
+                                    return failure
+                    # The companion rows are admitted when this row's command launches, after
+                    # preparation, so they use these folders only once they are ready.
                     result = execute([cargo, *arguments], log, 90, env, printed + ' in ' + directory,
                                      directory=directory, name=name, cancel=cancel, on_launch=on_launch)
                     return result_row(row, result, log, clock, 90)

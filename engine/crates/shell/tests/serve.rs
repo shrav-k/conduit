@@ -1,7 +1,10 @@
 //! Process coverage for the joined HTTP adapter and unchanged npm filesystem runner.
 mod common;
+mod package_target;
+
 use conduit_shell::{Config, MissingExecutor, Shell, boundary};
 use fs2::FileExt;
+use package_target::package_target_dir;
 use rmcp::{
     ClientHandler, RoleClient, ServiceExt,
     model::{CallToolRequestParams, CallToolResult, ClientConfig, ProtocolVersion},
@@ -735,8 +738,9 @@ fn author_commands_require_serve_and_make_recorded_requests() {
 
 fn pack_scenario_s4_effect(package: &Path) -> (PathBuf, String) {
     let cargo = |subcommand, binary| {
-        // Use the package's pinned host build even when the engine shares a cache.
-        let output = Command::new("cargo")
+        // Keep the package's pinned host build in either target directory.
+        let mut command = Command::new("cargo");
+        command
             .current_dir(package)
             .env_remove("RUSTUP_TOOLCHAIN")
             .env_remove("CARGO_BUILD_TARGET")
@@ -748,11 +752,13 @@ fn pack_scenario_s4_effect(package: &Path) -> (PathBuf, String) {
                 "--release",
                 "--bin",
                 binary,
-            ])
-            .arg("--target-dir")
-            .arg(package.join("target"))
-            .output()
-            .expect("start Cargo for scenario S4");
+            ]);
+        if let Some(directory) = package_target_dir(package) {
+            command.env("CARGO_TARGET_DIR", directory);
+        } else {
+            command.arg("--target-dir").arg(package.join("target"));
+        }
+        let output = command.output().expect("start Cargo for scenario S4");
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
             let lines: Vec<_> = stderr.lines().collect();

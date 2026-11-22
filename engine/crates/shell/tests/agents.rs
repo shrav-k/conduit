@@ -1,10 +1,13 @@
 //! Live S1 packages with scripted native clients and a scripted filesystem (no npm).
 mod common;
+mod package_target;
+
 use conduit_shell::{
     Config, MissingExecutor, Shell, boundary,
     runner::Runner,
     server::{self, ServingExecutor},
 };
+use package_target::package_target_dir;
 use serde_json::{Value, json};
 use std::{
     collections::BTreeMap,
@@ -80,6 +83,7 @@ fn build_archive(name: &str) -> String {
     assert!(
         Command::new("cargo")
             .current_dir(&path)
+            .envs(package_target_dir(&path).map(|dir| ("CARGO_TARGET_DIR", dir)))
             .args(["build", "--locked", "--release", "--bin", "scripted-client"])
             .status()
             .unwrap()
@@ -87,6 +91,7 @@ fn build_archive(name: &str) -> String {
     );
     let output = Command::new("cargo")
         .current_dir(&path)
+        .envs(package_target_dir(&path).map(|dir| ("CARGO_TARGET_DIR", dir)))
         .args(["run", "--locked", "--release", "--bin", "package"])
         .output()
         .unwrap();
@@ -637,8 +642,10 @@ fn scripted_package(package: &str, name: &str, parent: &Path) -> String {
 }
 
 fn scripted_client(name: &str) -> PathBuf {
+    let directory = repo().join("packages").join(name);
     let output = Command::new("cargo")
-        .current_dir(repo().join("packages").join(name))
+        .current_dir(&directory)
+        .envs(package_target_dir(&directory).map(|dir| ("CARGO_TARGET_DIR", dir)))
         .args(["metadata", "--format-version", "1", "--no-deps"])
         .output()
         .unwrap();

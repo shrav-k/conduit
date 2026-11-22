@@ -171,8 +171,10 @@ class CargoCacheTests(unittest.TestCase):
                     os.utime(file, (1_700_000_000, 1_700_000_000))
 
             def test_tree(tree):
+                # Under the merge queue this test runs beside the engine test and can wait on
+                # cargo's locks; the bound guards against a hang, not against a slow machine.
                 return subprocess.run(['cargo', 'test', '--release', '--offline'],
-                                      cwd=tree, env=environment, text=True, timeout=60,
+                                      cwd=tree, env=environment, text=True, timeout=600,
                                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
             passing = test_tree(first)
@@ -1637,6 +1639,177 @@ class GateTests(unittest.TestCase):
         self.assertEqual(self.record()['settings']['target_cache'], shown)
         self.assertIn('checked in <target-cache>', self.logs())
         self.assert_private(output + error + self.record_path().read_text() + self.logs(), cache)
+
+    def test_target_cache_engine_command_and_redaction(self):
+        self.crates('packages/a', 'experiments/example')
+        cache = self.parent / 'planted-engine-cache'
+        names = self.names_file(cache.name)
+        options = ('--all', '--target-cache', str(cache))
+        displays = (((), str(cache)), (('--private-names-file', str(names)),
+                                      str(cache.parent / '[redacted]')))
+        assignment = "CONDUIT_TEST_TARGET_CACHE='<target-cache>'"
+
+        # R1 permits the path in the Target cache line and settings.target_cache.
+        # Commands and logs use the placeholder, even without a private names file.
+        def assert_cache_header(output, error, shown):
+            header, = (line for line in output.splitlines() if line.startswith('Target cache:'))
+            self.assertTrue(header.startswith(f'Target cache: {shown}.'))
+            self.assert_private(output.replace(header, '', 1) + error, cache)
+
+        for flags, shown in displays:
+            with self.subTest(plan=True, private=bool(flags)):
+                code, plan, error = self.invoke('--plan', *options, *flags)
+                self.assertEqual(code, 0)
+                self.assertFalse(cache.exists())
+                self.assertFalse(self.record_path().exists())
+                assert_cache_header(plan, error, shown)
+                engine_line = next(line for line in plan.splitlines()
+                                   if line.startswith('WOULD RUN engine test:'))
+                self.assertIn(assignment, engine_line)
+
+        self.fake.responses['test'] = gate.CommandResult(0, f'checked in {cache}\n')
+        for flags, shown in displays:
+            with self.subTest(plan=False, private=bool(flags)):
+                self.fake.calls.clear()
+                code, output, error = self.invoke(*options, *flags)
+                self.assertEqual(code, 0)
+                assert_cache_header(output, error, shown)
+                record = self.record()
+                self.assertEqual(record['settings'].pop('target_cache'), shown)
+                self.assert_private(json.dumps(record) + self.logs(), cache)
+                if flags:
+                    self.assert_private(output + error + self.record_path().read_text(), cache)
+                self.assertIn('checked in <target-cache>', self.logs())
+                self.assertIn(assignment, self.row('engine test')['command'])
+                self.assertIn(assignment, error)
+                engine_calls = [call for call in self.fake.calls
+                                if call['cwd'] == self.root / 'engine' and call['args'][1] == 'test']
+                self.assertEqual(len(engine_calls), 1)
+                for call in self.fake.calls:
+                    self.assertEqual(call['env'].get('CONDUIT_TEST_TARGET_CACHE'),
+                                     str(cache) if call is engine_calls[0] else None)
+
+    def test_target_cache_engine_prepares_discovered_directories_once(self):
+        self.crates('packages/a', 'packages/b', 'packages/c', 'experiments/demo/stub')
+        self.write('packages/a/README.md', 'changed\n')
+        self.write('engine/src/lib.rs', 'changed\n')
+        self.fake.dependencies['packages/b'] = [('packages/c', None)]
+        self.fake.package_names['packages/c'] = ['transitive']
+        self.fake.resolved_packages['packages/b'] = [
+            dict(name='b', source=None),
+            dict(name='transitive', source=None),
+            dict(name='registry-dependency', source='registry+https://example.invalid/index'),
+        ]
+        cache = self.parent / 'cache'
+        first = cache / 'packages-a/release/.fingerprint/a-123'
+        stale = [cache / path for path in ('packages-b/release/.fingerprint/b-123',
+                 'packages-b/release/.fingerprint/transitive-123',
+                 'experiments-demo-stub/release/.fingerprint/stub-123')]
+        kept = cache / 'packages-b/release/.fingerprint/registry-dependency-456'
+        for path in [first, *stale, kept]:
+            path.mkdir(parents=True)
+
+        def inspect(call):
+            if call['cwd'] == self.root / 'packages/a' and call['args'][1] == 'clippy':
+                self.assertFalse(first.exists())
+                first.mkdir()
+            if call['cwd'] == self.root / 'engine' and call['args'][1] == 'test':
+                self.assertTrue(first.is_dir(), 'the earlier package row prepared its cache')
+                self.assertTrue(kept.is_dir(), 'the registry fingerprint should remain')
+                self.assertFalse(any(path.exists() for path in stale),
+                                 'nested path fingerprints survived up to engine test')
+        self.fake.inspect = inspect
+        self.assertEqual(self.invoke('--target-cache', str(cache))[0], 0)
+        self.assertFalse((cache / 'packages-c').exists())
+        probes = [call['cwd'].relative_to(self.root).as_posix() for call in self.fake.calls
+                  if call['args'] == ['rustc', '-vV']]
+        for directory in ('packages/a', 'packages/b', 'experiments/demo/stub'):
+            self.assertEqual(probes.count(directory), 1)
+        self.assertNotIn('packages/c', probes)
+
+    def test_target_cache_engine_preparation_fails_closed(self):
+        self.crates('packages/b')
+        self.write('engine/src/lib.rs', 'changed\n')
+        cache = self.parent / 'cache'
+        (cache / 'packages-b').mkdir(parents=True)
+        fake = self.fake
+
+        def run(args, **kwargs):
+            if (kwargs['cwd'] == self.root / 'packages/b'
+                    and args[1] == 'metadata' and '--filter-platform' in args):
+                with mock.patch.dict(fake.responses, metadata=gate.CommandResult(9, 'metadata failed\n')):
+                    return fake(args, **kwargs)
+            return fake(args, **kwargs)
+        self.fake = run
+        self.assertEqual(self.invoke('--target-cache', str(cache))[0], 1,
+                         'a nested metadata failure must fail the engine test row')
+        row = self.row('engine test')
+        self.assertEqual(row['result'], 'FAIL')
+        self.assertIn('packages/b', row['why'])
+        self.assertIn('cached path metadata: exit 9', row['why'])
+        self.assertFalse(any(call['args'][1] == 'test' for call in fake.calls))
+        self.assertFalse((cache / 'gate.lock').exists())
+
+    def test_target_cache_engine_scrubs_caller_value(self):
+        self.crates('packages/a')
+        variable = 'CONDUIT_TEST_TARGET_CACHE'
+        planted = str(self.parent / 'unprepared-cache')
+        for options in ((), ('--target-cache', str(self.parent / 'prepared-cache'))):
+            with self.subTest(cached=bool(options)):
+                self.fake.calls.clear()
+                with mock.patch.dict(os.environ, {variable: planted}):
+                    code, output, error = self.invoke('--all', *options)
+                self.assertEqual(code, 0)
+                line = next(line for line in output.splitlines() if line.startswith('Environment:'))
+                self.assertTrue(variable in line, 'Environment line omits the scrubbed cache variable')
+                self.assert_private(output + error + self.record_path().read_text() + self.logs(),
+                                    planted)
+                self.assertIn(variable, self.record()['environment']['removed'])
+                for call in self.fake.calls:
+                    value = (options[1] if options and call['cwd'] == self.root / 'engine'
+                             and call['args'][1] == 'test' else None)
+                    self.assertEqual(call['env'].get(variable), value)
+
+    def test_target_cache_engine_prepares_before_merge_queue_companions(self):
+        self.crates('experiments/overlap', 'experiments/cold')
+        for directory in ('engine', 'experiments/overlap', 'experiments/cold'):
+            self.write(directory + '/src/lib.rs', 'changed\n')
+        cache = self.parent / 'cache'
+        stale = cache / 'experiments-overlap/release/.fingerprint/overlap-123'
+        stale.mkdir(parents=True)
+        companion_started = threading.Event()
+        preparation_paused = threading.Event()
+        seen = []
+
+        def inspect(call):
+            args = call['args']
+            directory = call['cwd'].relative_to(self.root).as_posix()
+            if (directory == 'experiments/overlap' and args[1] == 'metadata'
+                    and '--filter-platform' in args):
+                self.assertTrue(stale.is_dir())
+                preparation_paused.set()
+                self.assertFalse(companion_started.wait(0.5),
+                                 'a companion started while engine cache preparation was paused')
+            if args[1:3] == ['-m', 'unittest'] or (args[1] == 'test' and directory != 'engine'):
+                companion_started.set()
+            if args[1] == 'test':
+                seen.append(stale.exists())
+        self.fake.inspect = inspect
+        code, _, error = self.invoke('--merge-queue', '--target-cache', str(cache))
+        self.assertEqual(code, 0)
+        self.assertTrue(preparation_paused.is_set())
+        self.assertTrue(companion_started.is_set())
+        engine_commands = [line for line in error.splitlines()
+                           if line.startswith('running engine test:')]
+        prepare = next(index for index, line in enumerate(engine_commands) if 'cargo metadata ' in line)
+        run = next(index for index, line in enumerate(engine_commands) if ' cargo test ' in line)
+        self.assertLess(prepare, run)
+        self.assertEqual(seen, [False, False, False])
+        probes = [call['cwd'].relative_to(self.root).as_posix() for call in self.fake.calls
+                  if call['args'] == ['rustc', '-vV']]
+        self.assertEqual(probes.count('experiments/overlap'), 1)
+        self.assertNotIn('experiments/cold', probes)
+        self.assertFalse((cache / 'experiments-cold').exists())
 
     def test_target_cache_resolves_metadata_for_each_directories_host(self):
         self.crates('packages/a')

@@ -1,9 +1,12 @@
 //! The engine's own runner reads from the installed file store through a Pool entry.
+mod package_target;
+
 use conduit_shell::{
     Config, Execution, Executor, MissingExecutor, RunIdentity, Shell, boundary,
     runner::Runner,
     server::{self, ServingExecutor},
 };
+use package_target::package_target_dir;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
@@ -35,6 +38,7 @@ fn pack(repository: &Path) -> (String, String) {
     let package = repository.join("packages/provider-file");
     let output = Command::new("cargo")
         .current_dir(&package)
+        .envs(package_target_dir(&package).map(|dir| ("CARGO_TARGET_DIR", dir)))
         .env("CARGO_NET_OFFLINE", "true")
         .args([
             "run",

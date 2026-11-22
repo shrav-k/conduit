@@ -70,7 +70,7 @@ INTERFACE = ROOT / "spec" / "interface" / "implementation.yaml"
 FOREIGN_META_PREFIXES = ("io.modelcontextprotocol/",)
 # Build-only switches are not run identity variables. Keep this exception exact so
 # other CONDUIT_ spellings, including identity typos, still fail the check.
-BUILD_TEST_VARIABLES = {"CONDUIT_TEST_NPM", "CONDUIT_VECTOR_THREADS"}
+BUILD_TEST_VARIABLES = {"CONDUIT_TEST_NPM", "CONDUIT_TEST_TARGET_CACHE", "CONDUIT_VECTOR_THREADS"}
 # Names the CLI's per-user directory (order 243, K3's O8).
 CLI_VARIABLES = {"CONDUIT_CONFIG_DIR"}
 # A run of characters that can make up a name, a reference or a path.

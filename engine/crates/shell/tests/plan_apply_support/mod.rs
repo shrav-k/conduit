@@ -1,3 +1,4 @@
+use crate::package_target::package_target_dir;
 use conduit_shell::{
     Config, Execution, Executor, MissingExecutor, RunIdentity, Shell, boundary, runner::Runner,
     server,
@@ -150,8 +151,10 @@ fn scripted_agents() -> BTreeMap<&'static str, AgentPrograms> {
         .into_iter()
         .map(|kind| {
             let name = format!("agent-{kind}");
+            let directory = repository().join("packages").join(&name);
             let output = Command::new("cargo")
-                .current_dir(repository().join("packages").join(&name))
+                .current_dir(&directory)
+                .envs(package_target_dir(&directory).map(|dir| ("CARGO_TARGET_DIR", dir)))
                 .args([
                     "build",
                     "--offline",

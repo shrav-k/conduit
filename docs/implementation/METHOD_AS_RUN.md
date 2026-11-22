@@ -311,8 +311,14 @@ directory changes. The engine's fmt, clippy and release tests run
 when `engine/`, `spec/`, `conformance/` or an Agent package changes. Gitleaks scans the branch's
 commits when the release that checks.yml pins is on the `PATH`. Cargo runs offline.
 `--target-cache DIR` uses one target directory per Rust directory, rebuilds the tree's own
-crates and reuses registry crates. The gate holds `DIR/gate.lock` for the run. The gate prints
-one line for each gate, PASS, FAIL or NOT RUN with its command
+crates and reuses registry crates. The engine's tests build the packages they use in the same
+folders, which the gate names to them in `CONDUIT_TEST_TARGET_CACHE`. Without that variable,
+manual builds default to each package's own `target/` and honor `CARGO_TARGET_DIR` when set.
+The S4 test uses its package-local target in those runs even when `CARGO_TARGET_DIR` is set.
+The gate shows the cache path only in the `Target cache` line and `settings.target_cache`,
+applying private-name redaction in both places. Commands and logs use `<target-cache>`.
+The gate holds `DIR/gate.lock` for the run.
+The gate prints one line for each gate, PASS, FAIL or NOT RUN with its command
 and why, and a last line that says PASS only when every required gate passed, and writes
 its record to `target/gate/<HEAD>.json`. `--plan` runs `rust discovery` alone and lists
 the other gates without running them, and exits 1 when discovery does not pass; `--all`

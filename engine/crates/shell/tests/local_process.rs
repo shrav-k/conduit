@@ -1,10 +1,13 @@
 //! R-1 qualification against the installed local-process runtime and its real TLS gate.
+mod package_target;
+
 use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD as B64};
 use conduit_shell::{Config, MissingExecutor, Shell, boundary, runner::Runner};
 use p256::{
     ecdsa::{Signature, SigningKey, signature::Signer},
     pkcs8::DecodePrivateKey,
 };
+use package_target::package_target_dir;
 use rustls::{
     CertificateError, DigitallySignedStruct, RootCertStore, SignatureScheme,
     client::danger::{HandshakeSignatureValid, ServerCertVerified, ServerCertVerifier},
@@ -42,6 +45,7 @@ fn archive() -> &'static (String, String) {
         let package = repository().join("packages/provider-local-process");
         let output = Command::new("cargo")
             .current_dir(&package)
+            .envs(package_target_dir(&package).map(|dir| ("CARGO_TARGET_DIR", dir)))
             .env("CARGO_NET_OFFLINE", "true")
             .args([
                 "run",

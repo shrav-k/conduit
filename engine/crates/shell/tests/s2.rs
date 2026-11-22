@@ -1,4 +1,6 @@
 //! S2's dry run on the engine, with a fresh loopback stub and store per test.
+mod package_target;
+
 use axum::{
     Router,
     body::{Body, to_bytes},
@@ -10,6 +12,7 @@ use axum::{
 use chrono::{DateTime, Utc};
 use conduit_shell::{Config, Shell, boundary};
 use futures_util::StreamExt;
+use package_target::package_target_dir;
 use rmcp::{
     ClientHandler, RoleClient, ServiceExt,
     model::{CallToolRequestParams, ClientConfig, ProtocolVersion},
@@ -63,6 +66,7 @@ fn cargo(directory: &Path, args: &[&str]) {
     let log = tempfile::tempfile().unwrap();
     let mut child = std::process::Command::new("cargo")
         .current_dir(directory)
+        .envs(package_target_dir(directory).map(|dir| ("CARGO_TARGET_DIR", dir)))
         .env("CARGO_NET_OFFLINE", "true")
         .args(args)
         .stdin(Stdio::null())
@@ -137,10 +141,12 @@ fn artifacts() -> &'static Artifacts {
             &directory,
             &["build", "--offline", "--locked", "--release", "--bins"],
         );
-        let target = std::env::var_os("CARGO_TARGET_DIR")
-            .map(PathBuf::from)
-            .map(|path| directory.join(path))
-            .unwrap_or_else(|| directory.join("target"));
+        let target = package_target_dir(&directory).unwrap_or_else(|| {
+            std::env::var_os("CARGO_TARGET_DIR")
+                .map(PathBuf::from)
+                .map(|path| directory.join(path))
+                .unwrap_or_else(|| directory.join("target"))
+        });
         Artifacts {
             stub: target.join("release/s2-linear-stub"),
             packages,

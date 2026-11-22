@@ -1,5 +1,8 @@
 #![cfg(unix)]
 
+mod package_target;
+
+use package_target::package_target_dir;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
@@ -29,6 +32,7 @@ async fn cargo(directory: &Path, args: &[&str]) -> Vec<u8> {
         Duration::from_secs(480),
         Command::new("cargo")
             .current_dir(directory)
+            .envs(package_target_dir(directory).map(|dir| ("CARGO_TARGET_DIR", dir)))
             .env("CARGO_NET_OFFLINE", "true")
             .args(args)
             .kill_on_drop(true)

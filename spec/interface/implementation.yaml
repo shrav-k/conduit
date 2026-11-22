@@ -767,6 +767,40 @@
     of the request states it. The engine's own access decision was made before the call and
     permitted the request, as ACC-002 requires.
 
+- id: IFC-051
+  layer: interface
+  level: must
+  when: >-
+    An implementation, whether or not it is marked `plain`, ends a call for a request or a
+    hook, other than a read of a secret under SEC-010, SEC-013 or SEC-023, with a result
+    from which its outcome is read, under IFC-009 or IFC-010, and the result's `_meta` holds
+    `io.github.shrav-k.conduit/usage`.
+  then: >-
+    Where its value conforms to the core schema `usage.v1`, the record of the invocation's
+    end holds that value, unchanged, in `usage`. Where it does not, that record holds no part
+    of it, and holds in `usageDropped` one diagnostic whose `level` is `warning` and whose
+    `ruleId` is the ID of this promise. Nothing else about the call changes.
+  observable: >-
+    The value says what the call's model work used, by client and model, with the meanings
+    that `usage.v1` gives its counts. An implementation may carry it on any such result, one
+    that states failed or unknown among them, and answers for its numbers and strings. The
+    engine checks only the member's shape against `usage.v1`. The implementation includes no
+    account name or secret in its strings, and the engine keeps them as received. The warning
+    says that the value was dropped and why. Its location is a JSON Pointer into the result
+    that stops at the last member on the failing path whose name the schema fixes, such as
+    `models`, and never names a key or value chosen by the report. In `properties` it carries
+    the failing keyword's `keywordLocation`, as SUB-005 has it, and it quotes no value. The
+    call's outcome, its result, its other records and every decision are what they would be
+    without the key: nothing depends on it, and the engine sums, compares and acts on none
+    of its numbers. The result that the engine gives the consumer does not carry it. The
+    record holds it whatever the type's `records` states, since the value is no output
+    (CTR-004), and the record is read as any other (LIF-013). Under SEC-015, the engine
+    ignores the usage member of any read of a secret without checking, keeping or relaying
+    it, and writes no warning for it. The record names the target whose call it was (REC-002).
+    A call that ends on its client's usage limit is recorded as any other ending: the limit's
+    class, window and time of reset are the implementation's own report in its result,
+    and are no part of this value.
+
 - id: IFC-028
   layer: interface
   level: must

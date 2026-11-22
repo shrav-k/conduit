@@ -102,6 +102,7 @@ exports:
   - diagnostic.v1
   - condition.v1
   - record.v1
+  - usage.v1
   # Schemas of documents (spec/schemas/).
   - name.v1
   - export-name.v1

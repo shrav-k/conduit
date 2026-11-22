@@ -1,0 +1,3 @@
+- name: requests-usage-kept
+  kind: added
+  cases: [requests-usage-kept]

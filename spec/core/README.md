@@ -23,7 +23,7 @@ everything the promises say it exports, and everything first start needs.
 | [types.yaml](types.yaml) | The 6 Type contracts: the basic Interface, Pool and Fleet types, and the types of a node, of `management` and of `access` |
 | [requirements.yaml](requirements.yaml) | The 2 Requirement contracts: the bound of a right to open, and the shared-host requirement |
 | [references.yaml](references.yaml) | The 13 reference schemas: the Schema contracts that make a value a reference (OBJ-021), a secret reference among them (SEC-001). Each also accepts the resolved form `{kind, id}`, which only the engine writes |
-| [results.yaml](results.yaml) | 11 Schema contracts: an object as a result names it, a diagnostic, a condition, a record, an inventory, a tombstone, opening provenance and a trust domain |
+| [results.yaml](results.yaml) | 12 Schema contracts: an object as a result names it, a diagnostic, a condition, a record, a call's usage, an inventory, a tombstone, opening provenance and a trust domain |
 | [templates.yaml](templates.yaml) | The 17 templates: first-start objects and Conduits, defaults, scoped administration and explicit cascades |
 
 The package also exports the 51 Schema contracts under [spec/schemas](../schemas/README.md),
@@ -603,6 +603,7 @@ its binding and labels are fixed when made (PLC-008, ENR-010).
 | `diagnostic.v1` | Schema | IFC-025, OBJ-008, PKG-006: SARIF 2.1.0's `result`, reduced |
 | `condition.v1` | Schema | LIF-011, OBS-002, PRV-009 |
 | `record.v1` | Schema | REC-002, LIF-013 |
+| `usage.v1` | Schema | IFC-051: what one call's model work used, by client and model |
 | `name.v1` | Schema of a document's part | OBJ-001, OBJ-022 |
 | `export-name.v1` | Schema of a document's part | NAM-004 |
 | `contract-name.v1` | Schema of a document's part | CTR-001 |

@@ -30,3 +30,6 @@ then they are under `docs/proposals/`.
 - Changed: IMP-007, a request found undispatched at a restart ends unavailable under REC-007 (DEC-044).
 - Changed: DL10 leaves storage exhaustion beyond REC-007 to each engine (DEC-044).
 - Changed: SEC-024, an IPv4 address is RFC 3986's IPv4address, `[::1]` is compared as an IPv6 address, and its restatements in `spec/schema-profile.md` and `spec/core/README.md` become citations (DEC-044).
+- Added: IFC-051, a result, plain or not, may carry one usage member in `_meta`, which the record of the invocation's end keeps unchanged, or drops with a warning naming IFC-051 where it is malformed; it changes nothing else; a secret read's usage member is ignored without a warning under SEC-015 (DEC-047).
+- Added: `usage.v1`, the core schema of IFC-051's member, and `record.v1`'s `usage` and `usageDropped` (DEC-047).
+- Changed: REC-002, except for a read of a secret, the record of an invocation's end holds its usage member or the warning that dropped it, under IFC-051, whatever `records` states (DEC-047).

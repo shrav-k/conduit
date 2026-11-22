@@ -157,3 +157,31 @@ fn codex_login_types_keep_their_shape() {
     assert!(manifest.contains("- codex.v2\n- codex-login.v1\n- codex.v3\n"));
     assert!(manifest.contains("AGENT_LOGIN_DIRECTORY: /login\n"));
 }
+
+#[test]
+fn codex_v4_keeps_its_shape() {
+    let contracts = include_str!("../contracts.yaml");
+    let doc = |name| {
+        let name = format!("  name: {name}");
+        contracts
+            .split("\n---\n")
+            .find(|doc| doc.lines().any(|line| line == name))
+            .unwrap_or_else(|| panic!("missing Type {name}"))
+    };
+    let v4 = doc("codex.v4");
+    assert!(v4.contains("  family: Agent\n"));
+    assert!(v4.contains("  loginResource: {place: /login}\n"));
+    assert!(v4.contains("  toolsDirectory: {directory: /directory}\n"));
+    for (field, limit) in [("instructions", 21_841), ("outputSchema", 32_762)] {
+        assert!(v4.contains(&format!("      {field}: {{type: [string, 'null'], minLength: 1, maxLength: {limit}, default: null}}\n")));
+    }
+    assert!(v4.contains("required: [directory, turnDeadlineSeconds, effort, accountServices, model, login, instructions, outputSchema]"));
+    assert_eq!(v4.matches(": '#wrapper-v4'\n").count(), 4);
+    let turn = doc("turn.v1").split_once("  outputSchema:\n").unwrap().1;
+    assert!(turn.contains("      structured: {type: object}\n"));
+    assert!(turn.contains("    required: [text, clientTools]\n"));
+    let manifest = include_str!("../conduit.yaml");
+    assert!(manifest.contains("- codex.v3\n- codex.v4\n"));
+    assert!(manifest.contains("      AGENT_INSTRUCTIONS: /instructions\n"));
+    assert!(manifest.contains("      AGENT_OUTPUT_SCHEMA: /outputSchema\n"));
+}

@@ -6,7 +6,7 @@ the admin's [real-client closeout](https://github.com/shrav-k/conduit/blob/077fa
 and [increment 4 log](../../docs/implementation/first-build/log-increment-4.md) record subsequent trials on 2026-11-10.
 
 This standalone Rust crate has no dependency on another repository directory. Its lockfile
-and pinned toolchain travel with it. Its manifest exports three Agent Types, a login Resource
+and pinned toolchain travel with it. Its manifest exports four Agent Types, a login Resource
 Type, and a conversation capability with two explicit operations, `turn.v1` and
 `new-conversation.v1`. The plain Agent wrapper exposes `turn` and `new-conversation`. Each
 `.v2` item also exposes the hook tools `retire`, `account`, `sign-out` and `sign-in`.
@@ -401,6 +401,7 @@ object has these fields.
 | `turn` | The turn number, counted from 1 across resumes |
 | `cause` | The fixed kind selected from the cause text below |
 | `class` | The class from `client failure: CLASS`, or `null` for every other cause |
+| `limit` | The window and reset for `usage-limit`, or `null` for every other class |
 | `clientStarted` | Whether the session held a client when the failure was recorded, before stopping it |
 | `survivors` | The PIDs that outlived the stop in ascending order, or an empty list |
 | `stopConfirmed` | `true` if the stop was confirmed, otherwise `false` |
@@ -894,6 +895,61 @@ As root, use `logins.set-up.v1` for `Resource/codex-login` and complete sign-in 
 `logins.sign-in.v1` before setting up any of its Agents. Then use `operators.set-up.v1` for
 `Agent/codex-worker`.
 
+## The .v4 Agent
+
+`codex.v4` uses the same login Resource as `codex.v3`. Its optional `instructions` value
+adds developer instructions on every launch, including a resume. `outputSchema` constrains
+the final response to a JSON object. Supply the schema as JSON text because MAN-017 binds
+scalar configuration to the environment. The schema must be an object whose `type` is
+`object`. The wrapper writes it to `output-schema.json` in the run's private directory and
+passes it with `--output-schema`.
+
+`instructions` accepts 1 to 21,841 characters. `outputSchema` accepts 1 to 32,762 characters.
+These limits fit Linux's per-string exec limit with the environment variable name, up to four
+bytes per character, and space for worst-case TOML escaping in the instructions argument.
+Either input can be null, which omits its flag. Registration rejects an empty string.
+If the output schema fails the object check, every turn returns
+`invalid configuration: outputSchema (AGENT_OUTPUT_SCHEMA): expected the JSON text of a schema whose type is object`
+and starts no client.
+
+The wrapper returns the final message as `text`. If the text parses as a JSON object, the
+result also gives the parsed object in `structured`. Codex's model service enforces the
+schema.
+
+## Usage in each turn's result
+
+Completed turns can report `io.github.shrav-k.conduit/usage` in the result's `_meta`. The
+engine keeps it in the invocation's end record under IFC-051. For the configured model, the
+wrapper reports the client's per-turn input and output counts, including the cached-input
+and reasoning counts when available. Codex supplies running totals on resume, so the wrapper
+subtracts the last reported totals in the conversation. `new-conversation` starts a fresh
+baseline. The client version comes from one bounded `codex --version` probe per run with
+reportable usage.
+
+The member is omitted when the model is empty, the version is unreadable, counts are missing,
+the input difference is zero, a count falls, or the turn fails.
+
+## A usage limit's window and reset
+
+From `.v2` onward, a `usage-limit` failure can report `windowMinutes` and `resetsAt` in
+`failedTurn.limit`. After stopping the failed client, the wrapper asks the client for
+`account/rateLimits/read` with refresh blocked. It takes a reached window with the latest
+reset, using the client's limit classification if no window is at 100 percent. The read has
+at most 15 seconds and uses only the time left in the turn's deadline. A missing answer or field
+gives null. `resetsAt` is an RFC 3339 UTC timestamp. Codex supplies no name for `window`, so it
+is null. DEC-046 pauses only that account's lanes until the reported reset.
+
+## Model, effort and what stays off
+
+| Configuration | Client argument | Default |
+|---|---|---|
+| `model` on every version | `--model` | Empty string, using Codex's model default |
+| `effort` on `.v2` and later | `-c model_reasoning_effort=...` | Empty string, using Codex's effort default |
+
+Every launch passes `--disable memories` and `-c skills.include_instructions=false` to keep
+memories and automatic skill instructions off. A skill named in the message can still load.
+The existing flags keep hooks, plugins, multi-agent tools, rules and AGENTS.md discovery off.
+
 ## The standard Conduit templates
 
 From 0.2.2, `turn` grants `turn.v1` alone, and `conversation` grants both `turn.v1` and
@@ -914,3 +970,8 @@ old Agent automatically (LIF-035). If it still exists in the retired state, wait
 confirmation or unregister it before reusing the name (LIF-017). A tombstone can also block the
 name (LIF-041). Then sign in each account's login Resource once per machine and register the
 `.v3` Agents that refer to it.
+
+## Moving to 0.2.4
+
+Install the 0.2.4 archive, move the pin, and replace each Agent that should use the release.
+A `.v4` Agent replacing a `.v3` Agent can use the same `login` Resource without another sign-in.

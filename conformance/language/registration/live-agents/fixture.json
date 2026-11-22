@@ -43,8 +43,8 @@
     {
       "source": "preinstalled-snapshot",
       "address": "example.org/conduit/agent-codex",
-      "version": "0.2.3",
-      "digest": "sha256:fef6b25f1f53267dba4b2f8d5506f7ca079702ba7de39e8dc5d42494cd59decc",
+      "version": "0.2.4",
+      "digest": "sha256:ae99b03f3a71c907ece150e469726edc415b44855359160cb6b706d67cf9ea6c",
       "archive": "agent-codex-a",
       "project": {
         "files": {

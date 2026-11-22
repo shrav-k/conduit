@@ -410,13 +410,13 @@ Each number counts promises. The last row counts those whose Engine source is no
 | PND-002 | convention | must | 3 | 0 | outside | core | case passes |
 | PND-003 | convention | must | 5 | 0 | outside | core | case passes |
 | PND-004 | interface | must | 0 | 0 | outside | core | no case, no reason |
-| PND-005 | convention | must | 7 | 0 | outside | core, shell | case passes |
+| PND-005 | convention | must | 8 | 0 | outside | core, shell | case passes |
 | PND-006 | convention | must | 3 | 0 | outside | core | case passes |
 | PND-007 | convention | must | 1 | 0 | outside | core | case passes |
 | PND-008 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | PND-009 | convention | must | 2 | 0 | outside | core, shell | case passes |
-| PND-010 | convention | must | 15 | 0 | outside | core, shell | case passes |
-| PND-011 | convention | must | 8 | 0 | outside | core, shell | case passes |
+| PND-010 | convention | must | 18 | 0 | outside | core, shell | case passes |
+| PND-011 | convention | must | 9 | 0 | outside | core, shell | case passes |
 | PND-012 | convention | must | 1 | 0 | outside | core | case passes |
 | PND-013 | convention | must | 4 | 0 | outside | core, shell | case passes |
 | PND-014 | convention | must not | 2 | 0 | outside | core, shell | case passes |

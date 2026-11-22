@@ -1,0 +1,1243 @@
+{
+  "id": "requests-sign-in-late-first-account",
+  "layers": [
+    "convention"
+  ],
+  "promises": [
+    "PND-010",
+    "PND-011"
+  ],
+  "title": "A late poll that finds the first account keeps the sign-in hold and creates no undo condition",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "../sign-in-hold/fixture.json",
+    "manifest": "../sign-in-hold/manifest.json",
+    "documents": "../sign-in-hold/documents.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "first-start",
+        "evidence": {
+          "time": "2026-11-09T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000000001",
+            "00000000-0000-4000-8000-000000000002",
+            "00000000-0000-4000-8000-000000000003",
+            "00000000-0000-4000-8000-000000000004",
+            "00000000-0000-4000-8000-000000000005",
+            "00000000-0000-4000-8000-000000000006",
+            "00000000-0000-4000-8000-000000000007",
+            "00000000-0000-4000-8000-000000000008",
+            "00000000-0000-4000-8000-000000000009",
+            "00000000-0000-4000-8000-000000000010",
+            "00000000-0000-4000-8000-000000000011",
+            "00000000-0000-4000-8000-000000000012",
+            "00000000-0000-4000-8000-000000000013",
+            "00000000-0000-4000-8000-000000000014",
+            "00000000-0000-4000-8000-000000000015",
+            "00000000-0000-4000-8000-000000000016",
+            "00000000-0000-4000-8000-000000000017",
+            "00000000-0000-4000-8000-000000000018",
+            "00000000-0000-4000-8000-000000000019",
+            "00000000-0000-4000-8000-000000000020",
+            "00000000-0000-4000-8000-000000000021",
+            "00000000-0000-4000-8000-000000000022",
+            "00000000-0000-4000-8000-000000000023",
+            "00000000-0000-4000-8000-000000000024"
+          ],
+          "revisions": [
+            "r1",
+            "r2",
+            "r3",
+            "r4",
+            "r5",
+            "r6",
+            "r7",
+            "r8"
+          ],
+          "suffixes": [
+            "abc01",
+            "abc02",
+            "abc03"
+          ]
+        },
+        "machine": {
+          "hostname": " WORKSTATION.Example ",
+          "labels": {
+            "kubernetes.io/hostname": "workstation.example",
+            "kubernetes.io/os": "darwin",
+            "kubernetes.io/arch": "arm64",
+            "example.org/role": "test"
+          },
+          "state": "reachable"
+        },
+        "trustDomain": "vectors-040.example"
+      },
+      "expect": {
+        "reply": {
+          "started": true
+        },
+        "external_intents": [],
+        "required_promises": [
+          "FST-001"
+        ],
+        "state": {
+          "started": true
+        },
+        "record_facts": []
+      }
+    },
+    {
+      "input": {
+        "kind": "register-project",
+        "file": "fixture",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "aafcda11-14ad-5c5a-ba5c-d0a1600cebb3",
+            "989875c3-7854-55eb-8803-e254c011f86c",
+            "51ad0863-3e6a-5987-b63d-6c3cdefe3fd2",
+            "0d1fbcdc-0c2e-56a0-8b81-138386eefd56",
+            "8da1ca00-9117-5481-8d85-c215fcf199db",
+            "eb9a8359-84a0-5ea4-823d-261c248523d5",
+            "2a179504-a785-5453-8e10-e87cd341ed7e",
+            "9d7a975f-3b0b-5d61-966a-f5b9c6c29575",
+            "8ac2ded3-9977-5af1-a719-3c816911249e",
+            "99cfe16a-1dfc-521c-9735-daca1cb86bc0",
+            "8b569f10-09d3-5eae-b183-e20bbd4b80a9",
+            "4a4f7f35-7130-5231-8fc8-c97120c138ed",
+            "f94e864e-1905-586d-9fb1-30c691ba9aae",
+            "6beb926d-5e74-5fec-8b13-1d1235171c9b",
+            "bf675fc6-6aa7-5b0a-9c44-8c8191ff606f",
+            "dfba39ba-dfef-5c52-8c65-6edce4ebe5d6",
+            "d9581753-6f60-5e6e-a8fb-36d02b95ab94",
+            "f4d348d5-358d-5428-98d6-c4d7e1fbfa5b",
+            "2a3336cb-0764-5084-95ed-1eb1b265ff02",
+            "63ee04cb-218e-5d32-b59a-78bb29e9b429",
+            "85d6fdbb-0c4c-54b0-bdb2-82166c83b8a8",
+            "98485d7b-26fe-5192-8ebb-865ab857c3de",
+            "4471148d-86ae-55b6-bd5a-19e7629b36b1",
+            "4c9ab226-e46f-5e8f-ad53-a9c5d40cf673",
+            "58a85193-cb23-5225-849a-388192862d7c",
+            "65eb6f19-63c6-5ecb-a62e-4afbdc20e61a",
+            "fa36e856-c0e4-5788-ae23-be87a82a7d79",
+            "eff415c1-4338-5bd5-b4d4-64abe6ce6e8d",
+            "fea10c26-e43e-587e-95fe-dfb0e3061a24",
+            "cf0c20c7-281e-580c-9ab2-28f6a224df83",
+            "c46eb95a-0a7d-562d-be37-aef8347f37c5",
+            "2ebf0f38-8e80-5dc2-a1a6-3edada54eb08",
+            "c1040648-9f03-50eb-91bf-2af32e099b2f",
+            "44bc2d6d-e7ea-5e06-8658-9b485eef1807",
+            "9de88d3e-4290-5b03-ab89-17e35c7cb069",
+            "a840de8f-6cf6-5ae7-800e-3c8d56a9b7ba",
+            "b42c1ade-b480-5f7e-b1c4-2f2e05b0eb65",
+            "31bc6fee-44b9-5840-b6e9-b56ab6870cbf",
+            "5eccd7aa-0216-5673-8d84-9810f83d1c76",
+            "840577dc-6311-5751-a6bc-c9503d60a1bb",
+            "ddb3ab2a-795d-5561-bf9b-1060804a0f8b",
+            "31aead14-48e3-54a7-acf2-5799c495c579",
+            "55958ebb-2700-53d6-aaae-9ce4cf018657",
+            "648687c3-40f7-561e-8885-68177d8dd104",
+            "dde6446c-cfc1-5d1b-8e5f-4e0504a762e9",
+            "05b2837c-90fb-5b58-98cd-9ea18409bab8",
+            "998f6342-a176-5c2d-a839-216f748907ed",
+            "282b3368-ecae-53bf-9a6a-eea519095141",
+            "a60525e8-13b5-5099-9ca5-62a5217e416a",
+            "087bb328-f4ad-5456-88d7-c39e7bb8de83"
+          ],
+          "revisions": [
+            "wo042-registration-0",
+            "wo042-registration-1",
+            "wo042-registration-2",
+            "wo042-registration-3",
+            "wo042-registration-4",
+            "wo042-registration-5",
+            "wo042-registration-6",
+            "wo042-registration-7",
+            "wo042-registration-8",
+            "wo042-registration-9",
+            "wo042-registration-10",
+            "wo042-registration-11",
+            "wo042-registration-12",
+            "wo042-registration-13",
+            "wo042-registration-14",
+            "wo042-registration-15",
+            "wo042-registration-16",
+            "wo042-registration-17",
+            "wo042-registration-18",
+            "wo042-registration-19",
+            "wo042-registration-20",
+            "wo042-registration-21",
+            "wo042-registration-22",
+            "wo042-registration-23",
+            "wo042-registration-24",
+            "wo042-registration-25",
+            "wo042-registration-26",
+            "wo042-registration-27",
+            "wo042-registration-28",
+            "wo042-registration-29",
+            "wo042-registration-30",
+            "wo042-registration-31",
+            "wo042-registration-32",
+            "wo042-registration-33",
+            "wo042-registration-34",
+            "wo042-registration-35",
+            "wo042-registration-36",
+            "wo042-registration-37",
+            "wo042-registration-38",
+            "wo042-registration-39",
+            "wo042-registration-40",
+            "wo042-registration-41",
+            "wo042-registration-42",
+            "wo042-registration-43",
+            "wo042-registration-44",
+            "wo042-registration-45",
+            "wo042-registration-46",
+            "wo042-registration-47",
+            "wo042-registration-48",
+            "wo042-registration-49",
+            "wo042-registration-50",
+            "wo042-registration-51",
+            "wo042-registration-52",
+            "wo042-registration-53",
+            "wo042-registration-54",
+            "wo042-registration-55",
+            "wo042-registration-56",
+            "wo042-registration-57",
+            "wo042-registration-58",
+            "wo042-registration-59",
+            "wo042-registration-60",
+            "wo042-registration-61",
+            "wo042-registration-62",
+            "wo042-registration-63",
+            "wo042-registration-64",
+            "wo042-registration-65",
+            "wo042-registration-66",
+            "wo042-registration-67",
+            "wo042-registration-68",
+            "wo042-registration-69"
+          ],
+          "suffixes": [
+            "b0000",
+            "b0001",
+            "b0002",
+            "b0003",
+            "b0004",
+            "b0005",
+            "b0006",
+            "b0007",
+            "b0008",
+            "b0009",
+            "b0010",
+            "b0011",
+            "b0012",
+            "b0013",
+            "b0014",
+            "b0015"
+          ]
+        },
+        "request": {
+          "sender": "00000000-0000-4000-8000-000000000005",
+          "caller": "00000000-0000-4000-8000-000000000005",
+          "conduit": "00000000-0000-4000-8000-000000000006",
+          "target": "00000000-0000-4000-8000-000000000003",
+          "operation": "@core#register.v1"
+        }
+      },
+      "expect": {
+        "reply": {
+          "accepted": true
+        },
+        "state": {
+          "started": true
+        },
+        "external_intents": [],
+        "required_promises": [
+          "SUB-001"
+        ],
+        "record_facts": [
+          {
+            "type": "access-decision"
+          },
+          {
+            "type": "invocation-dispatched"
+          },
+          {
+            "type": "object-change"
+          },
+          {
+            "type": "invocation-ended"
+          },
+          {
+            "type": "request-ended"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-12T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000060300",
+            "00000000-0000-4000-8000-000000060301",
+            "00000000-0000-4000-8000-000000060302",
+            "00000000-0000-4000-8000-000000060303",
+            "00000000-0000-4000-8000-000000060304",
+            "00000000-0000-4000-8000-000000060305",
+            "00000000-0000-4000-8000-000000060306",
+            "00000000-0000-4000-8000-000000060307"
+          ],
+          "revisions": [
+            "sign-in-3-0",
+            "sign-in-3-1",
+            "sign-in-3-2",
+            "sign-in-3-3"
+          ],
+          "suffixes": [
+            "s0300",
+            "s0301",
+            "s0302",
+            "s0303"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "group.set-up.v1",
+          "arguments": {
+            "instance": {
+              "kind": "Agent",
+              "name": "signed"
+            }
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "pending": true
+        }
+      },
+      "capture": {
+        "setup1": "/reply/invocation"
+      }
+    },
+    {
+      "input": {
+        "kind": "setup-report",
+        "evidence": {
+          "time": "2026-11-12T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000060700",
+            "00000000-0000-4000-8000-000000060701",
+            "00000000-0000-4000-8000-000000060702",
+            "00000000-0000-4000-8000-000000060703",
+            "00000000-0000-4000-8000-000000060704",
+            "00000000-0000-4000-8000-000000060705",
+            "00000000-0000-4000-8000-000000060706",
+            "00000000-0000-4000-8000-000000060707"
+          ],
+          "revisions": [
+            "sign-in-7-0",
+            "sign-in-7-1",
+            "sign-in-7-2",
+            "sign-in-7-3"
+          ],
+          "suffixes": [
+            "s0700",
+            "s0701",
+            "s0702",
+            "s0703"
+          ]
+        },
+        "invocation": "$setup1",
+        "report": {
+          "kind": "inspect-run",
+          "state": "stopped"
+        }
+      },
+      "expect": {
+        "reply": {
+          "pending": true
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "setup-report",
+        "evidence": {
+          "time": "2026-11-12T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000060800",
+            "00000000-0000-4000-8000-000000060801",
+            "00000000-0000-4000-8000-000000060802",
+            "00000000-0000-4000-8000-000000060803",
+            "00000000-0000-4000-8000-000000060804",
+            "00000000-0000-4000-8000-000000060805",
+            "00000000-0000-4000-8000-000000060806",
+            "00000000-0000-4000-8000-000000060807"
+          ],
+          "revisions": [
+            "sign-in-8-0",
+            "sign-in-8-1",
+            "sign-in-8-2",
+            "sign-in-8-3"
+          ],
+          "suffixes": [
+            "s0800",
+            "s0801",
+            "s0802",
+            "s0803"
+          ]
+        },
+        "invocation": "$setup1",
+        "report": {
+          "kind": "run",
+          "outcome": "succeeded"
+        }
+      },
+      "expect": {
+        "reply": {
+          "pending": true
+        },
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "call": {
+              "method": "server/discover",
+              "params": {
+                "_meta": {
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  },
+                  "io.modelcontextprotocol/protocolVersion": "2026-07-28"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "capture": {
+        "account0": "/reply/hook"
+      }
+    },
+    {
+      "input": {
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "capabilities": {
+              "extensions": {
+                "io.github.shrav-k.conduit/implementation-interface": {
+                  "revision": "v0"
+                }
+              }
+            }
+          }
+        },
+        "evidence": {
+          "ids": [
+            "00000000-0000-4000-8000-000000060802"
+          ],
+          "time": "2026-11-12T12:00:00Z"
+        },
+        "invocation": "$account0",
+        "kind": "complete"
+      },
+      "expect": {
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "call": {
+              "params": {
+                "_meta": {
+                  "io.github.shrav-k.conduit/operation": "@core#account-hook.v1",
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  }
+                }
+              },
+              "method": "tools/call"
+            }
+          }
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "invocation": "$account0",
+              "attempt": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "complete",
+        "evidence": {
+          "time": "2026-11-12T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000090000",
+            "00000000-0000-4000-8000-000000090001",
+            "00000000-0000-4000-8000-000000090002",
+            "00000000-0000-4000-8000-000000090003",
+            "00000000-0000-4000-8000-000000090004",
+            "00000000-0000-4000-8000-000000090005",
+            "00000000-0000-4000-8000-000000090006",
+            "00000000-0000-4000-8000-000000090007"
+          ],
+          "revisions": [
+            "account-check-0",
+            "account-check-1",
+            "account-check-2",
+            "account-check-3"
+          ],
+          "suffixes": [
+            "c0000",
+            "c0001",
+            "c0002",
+            "c0003"
+          ]
+        },
+        "invocation": "$account0",
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "_meta": {
+              "io.github.shrav-k.conduit/outcome": "succeeded"
+            },
+            "content": [],
+            "structuredContent": {
+              "account": "primary-account"
+            }
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": false,
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          }
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-12T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000061200",
+            "00000000-0000-4000-8000-000000061201",
+            "00000000-0000-4000-8000-000000061202",
+            "00000000-0000-4000-8000-000000061203",
+            "00000000-0000-4000-8000-000000061204",
+            "00000000-0000-4000-8000-000000061205",
+            "00000000-0000-4000-8000-000000061206",
+            "00000000-0000-4000-8000-000000061207"
+          ],
+          "revisions": [
+            "sign-in-12-0",
+            "sign-in-12-1",
+            "sign-in-12-2",
+            "sign-in-12-3"
+          ],
+          "suffixes": [
+            "s1200",
+            "s1201",
+            "s1202",
+            "s1203"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.open.v1",
+          "arguments": {
+            "conduit": "to-signed"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": false
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-12T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000571100",
+            "00000000-0000-4000-8000-000000571101",
+            "00000000-0000-4000-8000-000000571102",
+            "00000000-0000-4000-8000-000000571103",
+            "00000000-0000-4000-8000-000000571104",
+            "00000000-0000-4000-8000-000000571105",
+            "00000000-0000-4000-8000-000000571106",
+            "00000000-0000-4000-8000-000000571107"
+          ],
+          "revisions": [
+            "undo-11-0",
+            "undo-11-1",
+            "undo-11-2",
+            "undo-11-3"
+          ],
+          "suffixes": [
+            "g1100",
+            "g1101",
+            "g1102",
+            "g1103"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "group.sign-in.v1",
+          "arguments": {
+            "instance": {
+              "kind": "Agent",
+              "name": "signed"
+            }
+          },
+          "clientCapabilities": {
+            "elicitation": {
+              "url": {}
+            }
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "pending": true
+        },
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "call": {
+              "method": "server/discover",
+              "params": {
+                "_meta": {
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  },
+                  "io.modelcontextprotocol/protocolVersion": "2026-07-28"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "capture": {
+        "signIn": "/reply/invocation",
+        "firstCheck": "/reply/hook"
+      }
+    },
+    {
+      "input": {
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "capabilities": {
+              "extensions": {
+                "io.github.shrav-k.conduit/implementation-interface": {
+                  "revision": "v0"
+                }
+              }
+            }
+          }
+        },
+        "evidence": {
+          "ids": [
+            "00000000-0000-4000-8000-000000571104"
+          ],
+          "time": "2026-11-12T12:00:00Z"
+        },
+        "invocation": "$firstCheck",
+        "kind": "complete"
+      },
+      "expect": {
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "call": {
+              "params": {
+                "_meta": {
+                  "io.github.shrav-k.conduit/operation": "@core#account-hook.v1",
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  }
+                }
+              },
+              "method": "tools/call"
+            }
+          }
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "invocation": "$firstCheck",
+              "attempt": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "complete",
+        "evidence": {
+          "time": "2026-11-12T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000571200",
+            "00000000-0000-4000-8000-000000571201",
+            "00000000-0000-4000-8000-000000571202",
+            "00000000-0000-4000-8000-000000571203",
+            "00000000-0000-4000-8000-000000571204",
+            "00000000-0000-4000-8000-000000571205",
+            "00000000-0000-4000-8000-000000571206",
+            "00000000-0000-4000-8000-000000571207"
+          ],
+          "revisions": [
+            "undo-12-0",
+            "undo-12-1",
+            "undo-12-2",
+            "undo-12-3"
+          ],
+          "suffixes": [
+            "g1200",
+            "g1201",
+            "g1202",
+            "g1203"
+          ]
+        },
+        "invocation": "$firstCheck",
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "_meta": {
+              "io.github.shrav-k.conduit/outcome": "succeeded"
+            },
+            "content": [],
+            "structuredContent": {
+              "account": "first-account"
+            }
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "pending": true
+        },
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "call": {
+              "method": "server/discover",
+              "params": {
+                "_meta": {
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  },
+                  "io.modelcontextprotocol/protocolVersion": "2026-07-28"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "capture": {
+        "login": "/reply/hook"
+      }
+    },
+    {
+      "input": {
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "capabilities": {
+              "extensions": {
+                "io.github.shrav-k.conduit/implementation-interface": {
+                  "revision": "v0"
+                }
+              }
+            }
+          }
+        },
+        "evidence": {
+          "ids": [
+            "00000000-0000-4000-8000-000000571204"
+          ],
+          "time": "2026-11-12T12:00:00Z"
+        },
+        "invocation": "$login",
+        "kind": "complete"
+      },
+      "expect": {
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "call": {
+              "params": {
+                "_meta": {
+                  "io.github.shrav-k.conduit/operation": "@core#sign-in-hook.v1",
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  }
+                }
+              },
+              "method": "tools/call"
+            }
+          }
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "invocation": "$login",
+              "attempt": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "complete",
+        "evidence": {
+          "time": "2026-11-12T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000571300",
+            "00000000-0000-4000-8000-000000571301",
+            "00000000-0000-4000-8000-000000571302",
+            "00000000-0000-4000-8000-000000571303",
+            "00000000-0000-4000-8000-000000571304",
+            "00000000-0000-4000-8000-000000571305",
+            "00000000-0000-4000-8000-000000571306",
+            "00000000-0000-4000-8000-000000571307"
+          ],
+          "revisions": [
+            "undo-13-0",
+            "undo-13-1",
+            "undo-13-2",
+            "undo-13-3"
+          ],
+          "suffixes": [
+            "g1300",
+            "g1301",
+            "g1302",
+            "g1303"
+          ]
+        },
+        "invocation": "$login",
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "resultType": "input_required",
+            "inputRequests": {
+              "sign-in": {
+                "method": "elicitation/create",
+                "params": {
+                  "mode": "url",
+                  "message": "Open the device page.",
+                  "url": "https://example.org/device"
+                }
+              }
+            },
+            "requestState": "opaque-hook-state-0001"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "pending": true,
+          "invocation": "$signIn"
+        },
+        "external_intents": [],
+        "input_required": [
+          {
+            "invocation": "$signIn",
+            "attempt": 1,
+            "request": {
+              "method": "elicitation/create",
+              "params": {
+                "mode": "url",
+                "url": "https://example.org/device"
+              }
+            },
+            "meta": {
+              "io.github.shrav-k.conduit/signInLogin": {
+                "name": "device",
+                "return": "device",
+                "acceptsReturn": false
+              }
+            },
+            "expires": "2026-11-12T12:10:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "respond",
+        "evidence": {
+          "time": "2026-11-12T12:01:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000571400",
+            "00000000-0000-4000-8000-000000571401",
+            "00000000-0000-4000-8000-000000571402",
+            "00000000-0000-4000-8000-000000571403",
+            "00000000-0000-4000-8000-000000571404",
+            "00000000-0000-4000-8000-000000571405",
+            "00000000-0000-4000-8000-000000571406",
+            "00000000-0000-4000-8000-000000571407"
+          ],
+          "revisions": [
+            "undo-14-0",
+            "undo-14-1",
+            "undo-14-2",
+            "undo-14-3"
+          ],
+          "suffixes": [
+            "g1400",
+            "g1401",
+            "g1402",
+            "g1403"
+          ]
+        },
+        "invocation": "$signIn",
+        "attempt": 1,
+        "identity": {
+          "kind": "instance",
+          "id": "00000000-0000-4000-8000-000000000005"
+        },
+        "responses": {
+          "url": {
+            "action": "accept"
+          }
+        },
+        "meta": {}
+      },
+      "expect": {
+        "reply": {
+          "pending": true,
+          "invocation": "$signIn"
+        },
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "call": {
+              "method": "server/discover",
+              "params": {
+                "_meta": {
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  },
+                  "io.modelcontextprotocol/protocolVersion": "2026-07-28"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "capture": {
+        "poll": "/reply/hook"
+      }
+    },
+    {
+      "input": {
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "capabilities": {
+              "extensions": {
+                "io.github.shrav-k.conduit/implementation-interface": {
+                  "revision": "v0"
+                }
+              }
+            }
+          }
+        },
+        "evidence": {
+          "ids": [
+            "00000000-0000-4000-8000-000000571401"
+          ],
+          "time": "2026-11-12T12:01:00Z"
+        },
+        "invocation": "$poll",
+        "kind": "complete"
+      },
+      "expect": {
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "call": {
+              "params": {
+                "_meta": {
+                  "io.github.shrav-k.conduit/operation": "@core#account-hook.v1",
+                  "io.modelcontextprotocol/clientCapabilities": {
+                    "extensions": {
+                      "io.github.shrav-k.conduit/implementation-interface": {
+                        "revision": "v0"
+                      }
+                    }
+                  }
+                }
+              },
+              "method": "tools/call"
+            }
+          }
+        ],
+        "record_facts": [
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "invocation": "$poll",
+              "attempt": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "complete",
+        "evidence": {
+          "time": "2026-11-12T12:10:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000571500",
+            "00000000-0000-4000-8000-000000571501",
+            "00000000-0000-4000-8000-000000571502",
+            "00000000-0000-4000-8000-000000571503",
+            "00000000-0000-4000-8000-000000571504",
+            "00000000-0000-4000-8000-000000571505",
+            "00000000-0000-4000-8000-000000571506",
+            "00000000-0000-4000-8000-000000571507"
+          ],
+          "revisions": [
+            "undo-15-0",
+            "undo-15-1",
+            "undo-15-2",
+            "undo-15-3"
+          ],
+          "suffixes": [
+            "g1500",
+            "g1501",
+            "g1502",
+            "g1503"
+          ]
+        },
+        "invocation": "$poll",
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "_meta": {
+              "io.github.shrav-k.conduit/outcome": "succeeded"
+            },
+            "content": [],
+            "structuredContent": {
+              "account": "FIRST-ACCOUNT"
+            }
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": true,
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "unknown",
+            "io.github.shrav-k.conduit/invocation": "$signIn"
+          },
+          "structuredContent": {
+            "diagnostics": [
+              {
+                "ruleId": "PND-010",
+                "level": "error",
+                "message": {
+                  "text": "github.com/shrav-k/conduit/core#sign-in.v1 for Agent/signed via tool group.sign-in.v1 ended unknown under PND-010: The account check answered after the sign-in's URL action's wait had ended (DL18) without the expected account, raising and answering no sign-in action, and no hook runs for it later; send sign-in.v1 again to sign in."
+                }
+              }
+            ]
+          }
+        },
+        "external_intents": [],
+        "record_facts": [
+          {
+            "type": "invocation-ended",
+            "data": {
+              "invocation": "$signIn",
+              "outcome": "unknown"
+            }
+          }
+        ],
+        "absent": [
+          "/reply/pending"
+        ]
+      },
+      "capture": {
+        "signInAction": "/reply/_meta/io.github.shrav-k.conduit~1pendingAction/0"
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-12T12:10:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000572700",
+            "00000000-0000-4000-8000-000000572701",
+            "00000000-0000-4000-8000-000000572702",
+            "00000000-0000-4000-8000-000000572703",
+            "00000000-0000-4000-8000-000000572704",
+            "00000000-0000-4000-8000-000000572705",
+            "00000000-0000-4000-8000-000000572706",
+            "00000000-0000-4000-8000-000000572707"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "group.inspect.v1",
+          "arguments": {
+            "object": {
+              "kind": "Agent",
+              "name": "signed"
+            }
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": false,
+          "structuredContent": {
+            "status": {
+              "conditions": [
+                {
+                  "type": "Running"
+                }
+              ],
+              "pending": [
+                {
+                  "kind": "sign-in",
+                  "id": "$signInAction"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-12T12:10:01Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000572900",
+            "00000000-0000-4000-8000-000000572901",
+            "00000000-0000-4000-8000-000000572902",
+            "00000000-0000-4000-8000-000000572903",
+            "00000000-0000-4000-8000-000000572904",
+            "00000000-0000-4000-8000-000000572905",
+            "00000000-0000-4000-8000-000000572906",
+            "00000000-0000-4000-8000-000000572907"
+          ],
+          "revisions": [
+            "undo-29-0",
+            "undo-29-1",
+            "undo-29-2",
+            "undo-29-3"
+          ],
+          "suffixes": [
+            "g2900",
+            "g2901",
+            "g2902",
+            "g2903"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "to-signed.work.v1",
+          "arguments": {}
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": true,
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "unavailable",
+            "io.github.shrav-k.conduit/pendingAction": [
+              "$signInAction"
+            ]
+          },
+          "structuredContent": {
+            "diagnostics": [
+              {
+                "ruleId": "PND-005",
+                "level": "error"
+              }
+            ]
+          }
+        },
+        "external_intents": []
+      }
+    }
+  ]
+}

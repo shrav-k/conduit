@@ -771,6 +771,32 @@
       "safety_rows": []
     },
     {
+      "id": "requests-sign-in-late-expected-account",
+      "case": "conventions/requests/sign-in-late-expected-account/case.yaml",
+      "promises": [
+        "PND-010",
+        "PND-005"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "requests-sign-in-late-first-account",
+      "case": "conventions/requests/sign-in-late-first-account/case.yaml",
+      "promises": [
+        "PND-010",
+        "PND-011"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "requests-sign-in-late-no-account",
+      "case": "conventions/requests/sign-in-late-no-account/case.yaml",
+      "promises": [
+        "PND-010"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "requests-sign-in-late-other-account",
       "case": "conventions/requests/sign-in-late-other-account/case.yaml",
       "promises": [

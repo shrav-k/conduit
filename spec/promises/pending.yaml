@@ -206,7 +206,12 @@
     block. Decline or cancel received on a retry ends failed. DL18 ending without completion
     ends unknown and no hook runs later; an account check in progress then that later reports
     an account other than the expected one and than the one found before sign-in-hook.v1 holds
-    the instance under PND-011. The operation starts no model work and resumes no held request.
+    the instance under PND-011. Any other later answer of that check changes nothing: the
+    invocation stays unknown (OPS-013), no URL action is relayed, no sign-in action is raised or
+    answered, no hold is lifted and no condition is cleared; where it reports the expected
+    account, the diagnostic names PND-010 and says that the wait ended and that, if the login
+    landed, a new sign-in.v1 completes on its first account check with no URL action.
+    The operation starts no model work and resumes no held request.
     A request that does not declare URL elicitation is decided after the access decision and
     before any part: it gets the protocol's error -32021 with
     requiredCapabilities, not the JSON-RPC error for invalid parameters, and reports invalid
@@ -252,7 +257,9 @@
     account other than the expected one and than the one the check before sign-in-hook.v1 found:
     no sign-out-hook.v1 part runs, the invocation stays unknown (OPS-013), and the condition's
     cause says that the check answered after the wait ended. Only a later account-hook.v1 part
-    within sign-in.v1 or setup that reports the expected account or none clears that condition;
+    within sign-in.v1 or setup that reports the expected account or none, and that does not
+    answer after DL18 ended the wait of its sign-in.v1, clears that condition; a check that
+    answers after that end completes nothing either (PND-010);
     reconciliation never clears it. Hooks run only as parts of sign-in.v1 or setup, for that
     invocation's caller and filters, through no Conduit, never on an implementation
     notification. Setup checks the account after its run and connections and before its setup

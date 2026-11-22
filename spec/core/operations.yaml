@@ -1371,7 +1371,8 @@ metadata:
     other than the expected one and than the one the first check found, reported by a check that
     answers after DL18, holds every request to the instance but the parts of sign-in.v1, of a
     setup and of its retirement (PND-011). Missing URL capability returns
-    -32021. No held request resumes and no later hook runs after DL18.
+    -32021. No held request resumes and no later hook runs after DL18, and a check that answers
+    after it changes nothing but another account's hold under PND-011 (PND-010).
     The optional request _meta signInLogin asks for one stated login; an unknown name reports
     invalid before any part, with the stated names, and so does any name where the instance's
     sign-in-hook is plain, its item not listing it under keyed, since a plain hook gets no

@@ -8,6 +8,7 @@ use crate::{
 };
 use chrono::{DateTime, SecondsFormat, TimeDelta};
 use serde_json::{Value, json};
+use std::borrow::Cow;
 use std::collections::{BTreeMap, BTreeSet};
 use url::Url;
 
@@ -286,12 +287,22 @@ pub(crate) fn part_answered(
         .as_array_mut()
         .unwrap()
         .push(json!({"name":name,"outcome":outcome,"invocation":part["id"]}));
-    let Some(object) = t
+    let object = t
         .state
         .objects
         .iter()
-        .position(|o| o["id"] == invocation["object"])
-    else {
+        .position(|o| o["id"] == invocation["object"]);
+    if name == "poll" && wait_over(&invocation["sign_in_wait"]["expires"], &a.evidence.time) {
+        let expected = object
+            .map(|index| expected_account(&t.state.objects[index], c))
+            .transpose()?;
+        let account = match expected {
+            Some(ExpectedAccount::Set { account, .. }) => Some(account.to_owned()),
+            _ => None,
+        };
+        return poll_answered(t, a, c, i, part, outcome, account.as_deref());
+    }
+    let Some(object) = object else {
         return end_sign_in(t, a, c, i, "failed", "PND-003", RETIRED_DURING_CHECK);
     };
     let instance = t.state.objects[object].clone();
@@ -314,7 +325,7 @@ pub(crate) fn part_answered(
         return end_sign_in(t, a, c, i, "failed", "PND-003", RETIRED_DURING_CHECK);
     }
     if name == "poll" {
-        return poll_answered(t, a, c, i, part, outcome, account);
+        return poll_answered(t, a, c, i, part, outcome, Some(account));
     }
     match check {
         FirstCheck::Expected(found) => return signed_in(t, a, c, i, &found),
@@ -407,15 +418,62 @@ fn poll_answered(
     i: usize,
     part: &Value,
     outcome: &str,
-    account: &str,
+    account: Option<&str>,
 ) -> Result<()> {
     let invocation = &t.state.invocations[i];
-    match poll_check(
-        outcome,
-        &part["retained"]["outputs"],
-        account,
-        &invocation["sign_in"]["first_account"],
-    ) {
+    let check = account.map_or(Poll::NotKnown, |account| {
+        poll_check(
+            outcome,
+            &part["retained"]["outputs"],
+            account,
+            &invocation["sign_in"]["first_account"],
+        )
+    });
+    if wait_over(&invocation["sign_in_wait"]["expires"], &a.evidence.time) {
+        let facts = json!({
+            "invocation":invocation["id"],
+            "attempt":invocation["sign_in_wait"]["attempt"],
+            "ended":true
+        });
+        let cause: Cow<'_, str> = if check == Poll::Other {
+            if let Some(instance) =
+                t.state.objects.iter_mut().find(|object| {
+                    object["id"] == invocation["object"] && object["state"] != "retired"
+                })
+            {
+                let check = part["id"].as_str().ok_or("account check has no ID")?;
+                let time = &a.evidence.time;
+                let condition = json!({
+                    "type":"SignInUndone",
+                    "status":"False",
+                    "reason":"CheckAfterWait",
+                    "message":format!(
+                        "An account check of sign-in.v1 reported another account after the sign-in's wait had ended, so no sign-out ran. {SIGN_IN_UNDONE_HOLD}"
+                    ),
+                    "lastTransitionTime":time,
+                    "source":format!("urn:uuid:{check}")
+                });
+                write_undone_condition(instance, undone_condition(instance), condition, time);
+            }
+            WAIT_ENDED.into()
+        } else if matches!(check, Poll::Expected(_)) {
+            LATE_EXPECTED.into()
+        } else if outcome == "succeeded" {
+            LATE_WITHOUT_EXPECTED.into()
+        } else {
+            format!("{LATE_WITHOUT_EXPECTED} The account check itself ended {outcome}.").into()
+        };
+        end_sign_in(t, a, c, i, "unknown", "PND-010", &cause)?;
+        t.decisions.push(decision(
+            "sign-in-wait-ended",
+            &["PND-010", "IFC-049", "PND-011"],
+            &["DL18"],
+            facts,
+            vec![],
+        ));
+        return Ok(());
+    }
+    match check {
         Poll::Expected(found) => signed_in(t, a, c, i, &found),
         Poll::NoneYet => {
             let id = invocation["id"]
@@ -431,41 +489,6 @@ fn poll_answered(
                 vec![],
             ));
             relay_output(t, &id, &a.evidence.time, c)
-        }
-        Poll::Other if wait_over(&invocation["sign_in_wait"]["expires"], &a.evidence.time) => {
-            let facts = json!({
-                "invocation":invocation["id"],
-                "attempt":invocation["sign_in_wait"]["attempt"],
-                "ended":true
-            });
-            let instance = t
-                .state
-                .objects
-                .iter_mut()
-                .find(|object| object["id"] == invocation["object"])
-                .ok_or("sign-in instance missing")?;
-            let check = part["id"].as_str().ok_or("account check has no ID")?;
-            let time = &a.evidence.time;
-            let condition = json!({
-                "type":"SignInUndone",
-                "status":"False",
-                "reason":"CheckAfterWait",
-                "message":format!(
-                    "An account check of sign-in.v1 reported another account after the sign-in's wait had ended, so no sign-out ran. {SIGN_IN_UNDONE_HOLD}"
-                ),
-                "lastTransitionTime":time,
-                "source":format!("urn:uuid:{check}")
-            });
-            write_undone_condition(instance, undone_condition(instance), condition, time);
-            end_sign_in(t, a, c, i, "unknown", "PND-010", WAIT_ENDED)?;
-            t.decisions.push(decision(
-                "sign-in-wait-ended",
-                &["PND-010", "IFC-049", "PND-011"],
-                &["DL18"],
-                facts,
-                vec![],
-            ));
-            Ok(())
         }
         Poll::Other => {
             let account = part["retained"]["outputs"]["account"].clone();
@@ -1502,6 +1525,8 @@ pub(crate) fn waits_on_person(state: &State, invocation: &str, attempt: u64, c: 
 }
 
 const WAIT_ENDED: &str = "No retry completed the sign-in within its URL action's wait (DL18), so it ended without signing in and no hook runs for it later; send sign-in.v1 again to sign in.";
+const LATE_EXPECTED: &str = "The account check answered after the sign-in's URL action's wait had ended (DL18) and found the expected account, answering no sign-in action and lifting no hold; if the login landed, a new sign-in.v1 completes on its first account check, with no URL to open.";
+const LATE_WITHOUT_EXPECTED: &str = "The account check answered after the sign-in's URL action's wait had ended (DL18) without the expected account, raising and answering no sign-in action, and no hook runs for it later; send sign-in.v1 again to sign in.";
 
 fn wait_over(expires: &Value, time: &str) -> bool {
     matches!(
@@ -1511,6 +1536,18 @@ fn wait_over(expires: &Value, time: &str) -> bool {
         ),
         (Some(Ok(expires)), Ok(time)) if time >= expires
     )
+}
+
+pub(crate) fn poll_answered_after_wait(state: &State, part: &Value, time: &str) -> bool {
+    part.get("setup_parent").is_some_and(|parent| {
+        state.invocations.iter().any(|invocation| {
+            invocation["id"] == *parent
+                && invocation["state"] == "in-progress"
+                && invocation["sign_in"]["phase"] == "poll-pending"
+                && invocation["sign_in"]["poll"] == part["id"]
+                && wait_over(&invocation["sign_in_wait"]["expires"], time)
+        })
+    })
 }
 
 pub(crate) fn sign_in_wait_ended(
@@ -3593,7 +3630,7 @@ mod tests {
             2,
             &a2,
             "succeeded",
-            "primary-account",
+            Some("primary-account"),
         )
         .unwrap();
         assert_eq!(t.external_intents, Vec::<Value>::new());
@@ -3606,6 +3643,233 @@ mod tests {
         assert_eq!(
             decision.facts,
             json!({"invocation":"w2","attempt":1,"ended":true})
+        );
+    }
+
+    #[test]
+    fn sign_in_late_expected_account_changes_nothing() {
+        let (t, c) = late_poll_fixture();
+        let result = account_result(&c, "succeeded", json!("PRIMARY-ACCOUNT"));
+        let late = complete_poll_at(&t, &c, POLL_EXPIRY, result.clone());
+        assert_late_poll_unchanged(&t, &late, LATE_EXPECTED);
+        let action = &t.state.invocations[0]["sign_in"]["raised"];
+        assert_eq!(late.reply["_meta"]["test/pendingAction"], json!([action]));
+
+        let early = complete_poll_at(&t, &c, BEFORE_POLL_EXPIRY, result);
+        assert_eq!(early.state.invocations[0]["state"], "succeeded");
+        assert_eq!(early.reply["_meta"]["test/outcome"], "succeeded");
+    }
+
+    #[test]
+    fn sign_in_late_no_account_changes_nothing() {
+        let (mut t, c) = late_poll_fixture();
+        let restriction = json!({"requirement":c.qualified("bound.v1"),"arguments":{}});
+        t.state.invocations[1]["filters"] = json!([restriction]);
+        let completed = [
+            account_result(&c, "succeeded", Value::Null),
+            account_result(&c, "succeeded", json!("FIRST-ACCOUNT")),
+            account_result(&c, "failed", Value::Null),
+            account_result(&c, "unknown", Value::Null),
+            json!({"_meta":{"test/reason":"unavailable","test/restriction":restriction},
+                "isError":true,"content":[]}),
+        ]
+        .map(|result| complete_poll_at(&t, &c, POLL_EXPIRY, result));
+        assert_eq!(
+            completed
+                .each_ref()
+                .map(|late| late.state.invocations[0]["state"].as_str().unwrap()),
+            ["unknown"; 5],
+            "null, first account, failed, unknown, unavailable"
+        );
+        assert_eq!(
+            completed[4].state.invocations[0]["sign_in"]["parts"][0]["outcome"],
+            "unavailable"
+        );
+        for late in &completed[..2] {
+            assert_late_poll_unchanged(&t, late, LATE_WITHOUT_EXPECTED);
+        }
+        for (late, outcome) in completed[2..]
+            .iter()
+            .zip(["failed", "unknown", "unavailable"])
+        {
+            assert_late_poll_unchanged(
+                &t,
+                late,
+                &format!("{LATE_WITHOUT_EXPECTED} The account check itself ended {outcome}."),
+            );
+        }
+
+        // A late failure reporting a lapsed login cannot raise the first action either.
+        t.state.pending_actions.clear();
+        t.state.sign_in_holds.clear();
+        t.state.invocations[0]["sign_in"]
+            .as_object_mut()
+            .unwrap()
+            .remove("raised");
+        let mut result = account_result(&c, "failed", Value::Null);
+        result["structuredContent"]["diagnostics"] = json!([{"ruleId":"PND-005","level":"error"}]);
+        let late = complete_poll_at(&t, &c, POLL_EXPIRY, result);
+        assert_late_poll_unchanged(
+            &t,
+            &late,
+            &format!("{LATE_WITHOUT_EXPECTED} The account check itself ended failed."),
+        );
+    }
+
+    #[test]
+    fn sign_in_expired_poll_does_not_repair_parameters() {
+        let (t, c) = late_poll_fixture();
+        let completion = requests::Completion::ProtocolError {
+            code: -32020,
+            data: Value::Null,
+        };
+        let late = complete_poll_with(&t, &c, POLL_EXPIRY, completion.clone());
+        assert_late_poll_unchanged(
+            &t,
+            &late,
+            &format!("{LATE_WITHOUT_EXPECTED} The account check itself ended unknown."),
+        );
+
+        let early = complete_poll_with(&t, &c, BEFORE_POLL_EXPIRY, completion);
+        assert_eq!(early.state.invocations[0]["state"], "in-progress");
+        assert_eq!(early.external_intents.len(), 1);
+        assert_eq!(early.external_intents[0]["kind"], "refresh-tools-and-call");
+    }
+
+    #[test]
+    fn sign_in_expired_poll_discovery_does_not_dispatch() {
+        let (mut t, c) = late_poll_fixture();
+        let account_hook = c.qualified("account-hook.v1");
+        let poll = &mut t.state.invocations[1];
+        poll["discovery"] = json!("pending");
+        poll["implementation"] = json!({"source":"project","item":{
+            "plain":true,"keyed":[account_hook],"tools":{&account_hook:"account"}
+        }});
+        let completion = requests::advertised_extension(&c);
+        let late = complete_poll_with(&t, &c, POLL_EXPIRY, completion.clone());
+        assert_late_poll_unchanged(
+            &t,
+            &late,
+            &format!("{LATE_WITHOUT_EXPECTED} The account check itself ended unknown."),
+        );
+
+        let early = complete_poll_with(&t, &c, BEFORE_POLL_EXPIRY, completion);
+        assert_eq!(early.state.invocations[0]["state"], "in-progress");
+        assert_eq!(early.external_intents.len(), 1);
+        assert_eq!(early.external_intents[0]["call"]["method"], "tools/call");
+    }
+
+    #[test]
+    fn sign_in_expired_poll_preserves_retirement() {
+        let (mut t, c) = late_poll_fixture();
+        let instance = t.state.objects[1].clone();
+        let action = pending::void_sign_in(
+            &mut t.state,
+            &instance,
+            BEFORE_POLL_EXPIRY,
+            &json!({"id":"retirement","caller":"r"}),
+        )
+        .unwrap();
+        assert_eq!(action["answer"]["value"], "void");
+        t.state.objects[1]["state"] = json!("retired");
+        t.state.objects[1]["retirement"] = json!("retirement");
+
+        let result = account_result(&c, "succeeded", json!("PRIMARY-ACCOUNT"));
+        let late = complete_poll_at(&t, &c, POLL_EXPIRY, result.clone());
+        assert_late_poll_unchanged(&t, &late, LATE_EXPECTED);
+        assert_eq!(late.state.objects[1], t.state.objects[1]);
+
+        let late_other = complete_poll_at(
+            &t,
+            &c,
+            POLL_EXPIRY,
+            account_result(&c, "succeeded", json!("third-account")),
+        );
+        assert_late_poll_unchanged(&t, &late_other, WAIT_ENDED);
+        assert_eq!(late_other.state.objects[1], t.state.objects[1]);
+
+        let early = complete_poll_at(&t, &c, BEFORE_POLL_EXPIRY, result);
+        assert_eq!(early.state.invocations[0]["state"], "failed");
+        assert_eq!(early.state.invocations[0]["cause"][0]["ruleId"], "PND-003");
+    }
+
+    const POLL_EXPIRY: &str = "2026-11-09T13:10:00Z";
+    const BEFORE_POLL_EXPIRY: &str = "2026-11-09T13:09:59Z";
+
+    fn late_poll_fixture() -> (Transition, Context) {
+        let (mut t, c) = account_part_fixture();
+        t.state.started = true;
+        let evidence = unused_evidence(&t);
+        let mut allocation = Allocation {
+            evidence: &evidence,
+            cursor: 0,
+        };
+        let instance = t.state.objects[1].clone();
+        let invocation = t.state.invocations[0].clone();
+        let action = pending::raise_sign_in(
+            &mut t.state,
+            &instance,
+            "primary-account",
+            "/account",
+            pending::SignInRequest::SignIn {
+                invocation: &invocation,
+            },
+            &mut allocation,
+        )
+        .unwrap()
+        .unwrap();
+        t.state.invocations[0]["sign_in"] = json!({
+            "phase":"poll-pending","poll":"k1","first_account":"first-account","parts":[],
+            "raised":action["id"]
+        });
+        t.state.invocations[0]["sign_in_wait"] = json!({
+            "attempt":1,"expires":POLL_EXPIRY,"login":"device","url":"https://example.org/device",
+            "plain":true
+        });
+        set_sign_in_undone_false(
+            &mut t.state.objects[1],
+            "failed",
+            &json!("undo"),
+            &evidence.time,
+            false,
+        );
+        (t, c)
+    }
+
+    fn complete_poll_at(t: &Transition, c: &Context, time: &str, result: Value) -> Transition {
+        complete_poll_with(t, c, time, requests::Completion::Result { result })
+    }
+
+    fn complete_poll_with(
+        t: &Transition,
+        c: &Context,
+        time: &str,
+        completion: requests::Completion,
+    ) -> Transition {
+        let mut completed = transition(t.state.clone());
+        let mut evidence = unused_evidence(&completed);
+        evidence.time = time.into();
+        requests::complete(&mut completed, &evidence, "k1", 1, completion, c).unwrap();
+        completed
+    }
+
+    fn assert_late_poll_unchanged(before: &Transition, late: &Transition, cause: &str) {
+        assert_eq!(late.state.invocations[0]["state"], "unknown");
+        assert_eq!(late.reply["_meta"]["test/outcome"], "unknown");
+        let diagnostics = late.reply["structuredContent"]["diagnostics"]
+            .as_array()
+            .unwrap();
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0]["ruleId"], "PND-010");
+        let text = diagnostics[0]["message"]["text"].as_str().unwrap();
+        assert!(text.ends_with(cause), "{text}");
+        assert!(late.input_required.is_empty());
+        assert!(late.external_intents.is_empty());
+        assert_eq!(late.state.pending_actions, before.state.pending_actions);
+        assert_eq!(late.state.sign_in_holds, before.state.sign_in_holds);
+        assert_eq!(
+            late.state.objects[1]["status"]["conditions"],
+            before.state.objects[1]["status"]["conditions"]
         );
     }
 
@@ -3664,7 +3928,7 @@ mod tests {
             completed
         };
         let same = complete_poll("FIRST-ACCOUNT");
-        assert_eq!(same.state.invocations[0]["state"], "in-progress");
+        assert_eq!(same.state.invocations[0]["state"], "unknown");
         assert!(undone_condition(&same.state.objects[1]).is_none());
         assert!(same.external_intents.is_empty());
 

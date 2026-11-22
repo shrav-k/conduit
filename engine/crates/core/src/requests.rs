@@ -1994,13 +1994,6 @@ pub(crate) fn complete(
         };
         return crate::secrets::complete(t, &mut a, c, i, attempt, completion);
     }
-    if v["discovery"] == "pending" && v["attempt"] == attempt && v["state"] == "in-progress" {
-        let mut a = Allocation {
-            evidence,
-            cursor: 0,
-        };
-        return complete_discovery(t, &mut a, c, i, &v, completion);
-    }
     if v["attempt"] != attempt || v["state"] != "in-progress" {
         // Late or duplicate completions never change a settled or cancelled outcome.
         t.decisions.push(decision(
@@ -2017,10 +2010,37 @@ pub(crate) fn complete(
         evidence,
         cursor: 0,
     };
+    let discovering = v["discovery"] == "pending";
+    let readonly = read_only(&v["contract"]["spec"]);
+    let repairing = matches!(completion, Completion::ProtocolError { code: -32020, .. })
+        && v["wire_retried"] != true
+        && readonly;
+    let late_poll = sign_in::poll_answered_after_wait(&t.state, &v, &evidence.time);
+    if late_poll && (discovering || repairing) {
+        let detail = if discovering {
+            "Discovery answered after the sign-in wait ended (DL18), so the account check was not dispatched."
+        } else {
+            "The parameter error arrived after the sign-in wait ended (DL18), so the account check was not resent."
+        };
+        let cause = explain::outcome_diagnostic(&v, "unknown", "PND-010", detail)?;
+        finish(
+            t,
+            &mut a,
+            c,
+            i,
+            "unknown",
+            json!({}),
+            json!([]),
+            Some(vec![cause]),
+        )?;
+        return crate::lifecycle::child_ended(t, &mut a, c, i);
+    }
+    if discovering {
+        return complete_discovery(t, &mut a, c, i, &v, completion);
+    }
     let plain = v["plain"] == true;
     let sign_in_part = sign_in::is_part(&t.state, &v, c);
     let sign_in_hook = sign_in_part && v["operation"] == c.qualified("sign-in-hook.v1");
-    let readonly = read_only(&v["contract"]["spec"]);
     let mut content = json!([]);
     let mut outputs = json!({});
     let mut outcome = "unknown";
@@ -2032,7 +2052,7 @@ pub(crate) fn complete(
         _ => true,
     };
     match completion {
-        Completion::ProtocolError { code: -32020, .. } if v["wire_retried"] != true && readonly => {
+        Completion::ProtocolError { code: -32020, .. } if repairing => {
             t.state.invocations[i]["wire_retried"] = json!(true);
             let mut call = intent(&v, &t.state, c)?;
             call["kind"] = json!("refresh-tools-and-call");
@@ -2159,6 +2179,7 @@ pub(crate) fn complete(
                     && response_ends_call(&result)
                     && matches!(outcome, "failed" | "unknown")
                     && sign_in::lapse_diagnostic(&result)
+                    && !late_poll
                 {
                     lapse = Some(sign_in::Trigger::LapsedLogin);
                 }

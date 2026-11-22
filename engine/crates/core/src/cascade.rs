@@ -300,7 +300,25 @@ pub(crate) fn advance(
             let kind = p["kind"].as_str().unwrap();
             let name = p["name"].as_str().unwrap();
             let id = p["id"].as_str().unwrap();
-            cause.push(json!({"ruleId":"LIF-021","level":"error","message":{"text":format!("Shutdown is unconfirmed for {kind}/{name} ({id}).")}}));
+            let mut text = format!("Shutdown is unconfirmed for {kind}/{name} ({id}).");
+            let rule = if t
+                .state
+                .objects
+                .iter()
+                .any(|agent| crate::login_resource::id(agent) == Some(&p["id"]))
+            {
+                let route = json!({"arguments":{"instance":{"kind":kind,"id":id}}});
+                if let Some(blockers) =
+                    crate::retirement::blocking_diagnostic(&t.state, &route, "PRV-020")
+                {
+                    text.push_str(" Its retirement reports conflict under PRV-020. ");
+                    text.push_str(&blockers);
+                }
+                "PRV-020"
+            } else {
+                "LIF-021"
+            };
+            cause.push(json!({"ruleId":rule,"level":"error","message":{"text":text}}));
         }
         return requests::finish(t, a, c, i, "failed", json!({}), json!([]), Some(cause));
     }

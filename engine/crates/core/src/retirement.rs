@@ -33,9 +33,9 @@ pub(crate) fn preflight(
         return Some(("conflict", "PLC-011"));
     }
     if !unregister
-        && s.objects
-            .iter()
-            .any(|x| access::id(&x["runtime"]) == &o["id"])
+        && s.objects.iter().any(|x| {
+            access::id(&x["runtime"]) == &o["id"] || crate::login_resource::id(x) == Some(&o["id"])
+        })
     {
         return Some(("conflict", "PRV-020"));
     }
@@ -57,7 +57,8 @@ pub(crate) fn blocking_diagnostic(s: &State, route: &Value, rule: &str) -> Optio
         .iter()
         .filter(|x| {
             x["id"] != object["id"]
-                && access::id(&x[field]) == &object["id"]
+                && (access::id(&x[field]) == &object["id"]
+                    || rule == "PRV-020" && crate::login_resource::id(x) == Some(&object["id"]))
                 && (rule != "LIF-020" || x["shutdown"] != "confirmed")
         })
         .map(|x| {
@@ -528,7 +529,7 @@ pub(crate) fn provider_unavailable(
             unavailable(t, "stop");
             settle(t, a, c, i, &o)
         }
-        Some("inspect-run") => {
+        Some("inspect-run" | "read-secrets") => {
             unavailable(t, "hook");
             stop(t, a, c, i, &o)
         }

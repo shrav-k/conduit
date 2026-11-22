@@ -811,6 +811,20 @@ fn advance(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) ->
         t.state.invocations[i]["setup"]["phase"] = json!("work");
         t.state.invocations[i]["setup"]["connections"] = json!({});
         t.state.invocations[i]["setup"]["run_phase"] = json!("ended");
+        if let Some(diagnostic) = crate::login_resource::run_diagnostic(&t.state, &o) {
+            part(t, i, "run", "failed", true, false, Value::Null);
+            let parts = t.state.invocations[i]["setup"]["parts"]
+                .as_array_mut()
+                .unwrap();
+            parts.last_mut().unwrap()["diagnostics"] = json!([diagnostic]);
+            cite(
+                t,
+                "refuse-login-directory-run",
+                &["PRV-029", "PRV-007"],
+                &o["id"],
+            );
+            return settle(t, a, c, i);
+        }
         if let Some(run) = run {
             t.state.invocations[i]["setup"]["item"] = run;
             t.state.invocations[i]["setup"]["run_phase"] = json!("inspect-run");
@@ -1007,9 +1021,23 @@ fn bindings(config: &Value, bindings: &Value, secrets: &mut Value) -> Result<Val
 pub(crate) fn run_inputs(o: &Value, v: &Value, c: &Context) -> Result<(Value, Value)> {
     let item = &v["setup"]["item"]["item"];
     let mut secrets = json!({"environment":{},"packageArguments":{}});
+    let mut environment_bindings = item["environment"].clone();
+    let mut login_directories = serde_json::Map::new();
+    if let Some(id) = crate::login_resource::id(o)
+        && let Some(entries) = environment_bindings.as_object_mut()
+    {
+        entries.retain(|name, pointer| {
+            if *pointer == o["login_resource_place"] {
+                login_directories.insert(name.clone(), id.clone());
+                false
+            } else {
+                true
+            }
+        });
+    }
     let environment = bindings(
         &o["config"],
-        &item["environment"],
+        &environment_bindings,
         &mut secrets["environment"],
     )?;
     let arguments = bindings(
@@ -1025,10 +1053,11 @@ pub(crate) fn run_inputs(o: &Value, v: &Value, c: &Context) -> Result<(Value, Va
         .find(|d| d["kind"] == "Operation" && d["metadata"]["name"] == "run.v1")
         .ok_or("missing run contract")?["spec"]["inputSchema"]["properties"]["identity"];
     let identity = json!({"materializeFor":v["object"],"environmentNames":run_schema["properties"]["environment"]["required"],"fileNames":run_schema["properties"]["files"]["required"]});
-    Ok((
-        json!({"item":item,"environment":environment,"packageArguments":arguments,"identity":identity}),
-        secrets,
-    ))
+    let mut inputs = json!({"item":item,"environment":environment,"packageArguments":arguments,"identity":identity});
+    if !login_directories.is_empty() {
+        inputs["loginDirectories"] = Value::Object(login_directories);
+    }
+    Ok((inputs, secrets))
 }
 enum ProviderRefusal {
     Discovery,
@@ -1128,7 +1157,7 @@ pub(crate) fn provider_restart_failed(
     )
 }
 
-fn provider_part_unavailable(
+pub(crate) fn provider_part_unavailable(
     t: &mut Transition,
     a: &mut Allocation<'_>,
     c: &Context,

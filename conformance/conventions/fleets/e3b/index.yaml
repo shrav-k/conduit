@@ -137,6 +137,14 @@
       ]
     },
     {
+      "id": "fleets-retire-login-resource",
+      "case": "conventions/fleets/e3b/login-resource-retire/case.yaml",
+      "promises": [
+        "PRV-020",
+        "LIF-021"
+      ]
+    },
+    {
       "id": "fleets-retire-ordinary-data",
       "case": "conventions/fleets/e3b/retire-ordinary-data/case.yaml",
       "promises": [

@@ -235,6 +235,23 @@
       "safety_rows": []
     },
     {
+      "id": "requests-login-resource-lapse",
+      "case": "conventions/requests/login-resource-lapse/case.yaml",
+      "promises": [
+        "PND-005",
+        "PND-010"
+      ]
+    },
+    {
+      "id": "requests-login-resource-one-at-a-time",
+      "case": "conventions/requests/login-resource-one-at-a-time/case.yaml",
+      "promises": [
+        "PND-005",
+        "PND-009",
+        "IFC-016"
+      ]
+    },
+    {
       "id": "requests-metadata-failed-reason-array",
       "case": "conventions/requests/metadata-failed-reason-array/case.yaml",
       "promises": [

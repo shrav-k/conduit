@@ -350,6 +350,14 @@
       "safety_rows": []
     },
     {
+      "id": "registration-login-place",
+      "case": "language/registration/login-place/case.yaml",
+      "promises": [
+        "CTR-013",
+        "MAN-017"
+      ]
+    },
+    {
       "id": "registration-nested-reference-input",
       "case": "language/registration/nested-reference-input/case.yaml",
       "promises": [

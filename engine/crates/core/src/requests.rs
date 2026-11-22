@@ -1338,6 +1338,29 @@ fn invoke_inner(
         ));
         return end(t, a, c, &route, Some(outcome), None, Some(&old["id"]));
     }
+    if contract["spec"]["startsModelWork"] == true
+        && let Some(hold) =
+            crate::login_resource::hold_work(t, a, c, &target, &route, &access_record_id)?
+    {
+        if !hold.actions.is_empty() {
+            route["pendingAction"] = json!(hold.actions);
+        }
+        reject_diagnostics(
+            t,
+            a,
+            c,
+            &route,
+            "unavailable",
+            hold.rule,
+            None,
+            None,
+            Some(json!([{"ruleId":hold.rule,"level":"error","message":{"text":hold.message}}])),
+        )?;
+        if let Some(ids) = route.get("pendingAction") {
+            t.reply["_meta"][mark(c, "pendingAction")] = ids.clone();
+        }
+        return Ok(());
+    }
     let held_for_sign_in = sign_in::request_is_held(&t.state, &target, &contract);
     let held_for_undo = sign_in::request_is_held_for_sign_in_undone(&t.state, &target["id"]);
     if held_for_sign_in || held_for_undo {
@@ -1632,6 +1655,9 @@ fn invoke_inner(
             format!("tool {tool}")
         };
     invocation["named_subject"] = json!(subject);
+    if contract["spec"]["startsModelWork"] == true && crate::login_resource::id(&target).is_some() {
+        invocation["login_request_record"] = json!(access_record_id);
+    }
     if ["open.v1", "close.v1"]
         .iter()
         .any(|name| *op == c.qualified(name))
@@ -2567,6 +2593,33 @@ fn finish_login_lapse(
     let instance = access::object_by_id(&t.state, &v["target"])
         .cloned()
         .unwrap_or(Value::Null);
+    if let Some(resource) = crate::login_resource::resource(&t.state, &instance).cloned() {
+        let (text, actions) =
+            crate::login_resource::report_lapse(t, a, c, &instance, &resource, v, &trigger)?;
+        let cause = explain::outcome_diagnostic(v, outcome, trigger.rule(), &text)?;
+        if !actions.is_empty() {
+            t.state.invocations[i]["notices"] = json!(actions);
+        }
+        finish(t, a, c, i, outcome, json!({}), json!([]), Some(vec![cause]))?;
+        if !actions.is_empty() {
+            let ended = t
+                .records
+                .iter_mut()
+                .rev()
+                .find(|r| r["type"] == "invocation-ended" && r["data"]["invocation"] == v["id"])
+                .ok_or("login lapse invocation has no ending record")?;
+            ended["data"]["pendingAction"] = json!(actions);
+            let stored = t
+                .state
+                .records
+                .iter_mut()
+                .rev()
+                .find(|r| r["id"] == ended["id"])
+                .ok_or("login lapse ending record absent from state")?;
+            *stored = ended.clone();
+        }
+        return Ok(());
+    }
     let expected = sign_in::expected_account(&instance, c)?;
     let cause = explain::outcome_diagnostic(
         v,

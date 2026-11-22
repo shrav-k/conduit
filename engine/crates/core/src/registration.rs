@@ -1385,6 +1385,11 @@ fn resolve_instance(
             .at_configuration(&failure.instance_pointer));
         }
         o["config"] = refs.schema(&th, schema, schema, &config, entry_pool, !trusted, 0)?;
+        if kind == "Agent"
+            && let Some(place) = ty["spec"]["loginResource"].get("place")
+        {
+            o["login_resource_place"] = place.clone();
+        }
         if let Some(failure) = th
             .environment
             .failure_at(&th.scope, schema, "", &o["config"], core)
@@ -2364,11 +2369,74 @@ pub(crate) fn prepare(
     if !root_own && b.objects.iter().any(|o| root_consumed(&b.state, o, root)) {
         return refuse_root_registration(t, evidence, request, &project.documents, context);
     }
+    let mut all_resolved = b.state.objects.clone();
+    all_resolved.extend(resolved.iter().cloned());
+    for object in &resolved {
+        let Some(place) = object["login_resource_place"].as_str() else {
+            continue;
+        };
+        let Some(resource) = crate::login_resource::id(object)
+            .and_then(|id| all_resolved.iter().find(|resource| &resource["id"] == id))
+        else {
+            b.diagnostics.push(
+                b.instance_diagnostic(
+                    object,
+                    fault(
+                        "CTR-013",
+                        format!("login place {place} does not resolve to a login Resource"),
+                    )
+                    .at_configuration(place),
+                ),
+            );
+            continue;
+        };
+        if let Some(pool) = b.state.objects.iter().find(|pool| {
+            &pool["id"] == crate::access::id(&resource["owner"])
+                && pool["kind"] == "Pool"
+                && pool["state"] != "retired"
+        }) && !b
+            .state
+            .objects
+            .iter()
+            .any(|path| permits(path, &request.sender, &pool["id"], &request.operation))
+        {
+            let mut route = crate::explain::ids(request, json!({"documents":project.documents}));
+            end_request(t, evidence, &route, None, "refused", "ACC-033", context)?;
+            route["loginPool"] = pool["id"].clone();
+            let diagnostic =
+                crate::explain::diagnostic(&t.state, &route, context, "refused", "ACC-033")?;
+            t.decisions.push(decision(
+                "refuse-login-pool-authorization",
+                &["ACC-033", "OPS-023"],
+                &[],
+                json!({}),
+                vec![],
+            ));
+            t.reply = json!({"accepted":false,"reason":"refused","diagnostics":[diagnostic]});
+            return Ok(Some(crate::explain::Rejection::new("refused", "ACC-033")));
+        }
+        let expected = crate::sign_in::expected_account(resource, context)?;
+        if resource["state"] == "retired"
+            || !matches!(expected, crate::sign_in::ExpectedAccount::Set { .. })
+        {
+            let why = if resource["state"] == "retired" {
+                "is retired"
+            } else {
+                "does not state signIn with a string expected account"
+            };
+            let label = crate::login_resource::label(resource);
+            b.diagnostics.push(
+                b.instance_diagnostic(
+                    object,
+                    fault("CTR-013", format!("login place {place}: {label} {why}"))
+                        .at_configuration(place),
+                ),
+            );
+        }
+    }
     if b.diagnostics.iter().any(|d| d["level"] == "error") {
         return reject(t, b.diagnostics, evidence, request, context);
     }
-    let mut all_resolved = b.state.objects.clone();
-    all_resolved.extend(resolved.iter().cloned());
     // FLEET-005 / IFC-014: defaults are open within registration, so a local-name
     // collision rejects the entire submission before publishing anything.
     for target in resolved

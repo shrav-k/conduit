@@ -71,6 +71,8 @@
     For a setup hook or a retire hook, the further setup or retirement that dispatches a new
     attempt under OPS-021 is the repeat, and its caller is the attempt's caller, under OPS-028.
     An invocation that was in progress across a restart has the outcome unknown.
+    A request found at a restart decided and not dispatched ends unavailable under REC-007,
+    not unknown.
 
 
 

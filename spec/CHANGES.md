@@ -21,3 +21,10 @@ then they are under `docs/proposals/`.
 - Added: `spec/README.md#what-the-short-forms-meaning-covers`, ruling 76 points 2 to 5: each flag names its object, commands use the current engine context, apply goes on past a sign-in and answers none, and `conduit plan` is never required (DEC-008).
 - Fixed: `spec/README.md#what-the-short-forms-meaning-covers`, a cascade's one-time Conduit is closed and removed by its target's retirement, and apply sends no close (DEC-008).
 - Changed: `spec/README.md#an-author-of-documents`, its sectioned package example, which now pins no S1 package and defines none of S1's templates (DEC-007, DEC-039, ruling 78 pt 2).
+- Added: REC-007, a request whose access decision or dispatch cannot be recorded reports unavailable, as does one found undispatched at a restart; a dispatched one whose end cannot be recorded ends unknown, unless its implementation answered with a reason and no outcome, which stands; each record is kept late (DEC-044).
+- Changed: REC-001, a request's record that cannot be kept is kept late, under REC-007 (DEC-044).
+- Changed: SEC-016, REC-007 for a read of a secret: unavailable at once, and recorded late (DEC-044).
+- Changed: OPS-023, unavailable under REC-007 comes after ACC-037's and ahead of refused (DEC-044).
+- Changed: IMP-007, a request found undispatched at a restart ends unavailable under REC-007 (DEC-044).
+- Changed: DL10 leaves storage exhaustion beyond REC-007 to each engine (DEC-044).
+- Changed: SEC-024, an IPv4 address is RFC 3986's IPv4address, `[::1]` is compared as an IPv6 address, and its restatements in `spec/schema-profile.md` and `spec/core/README.md` become citations (DEC-044).

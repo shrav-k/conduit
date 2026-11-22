@@ -1,0 +1,9 @@
+{
+  "snapshots": [],
+  "project": {
+    "files": {
+      "conduit.json": "mapped-ipv6-manifest",
+      "documents.json": "documents"
+    }
+  }
+}

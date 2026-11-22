@@ -1,0 +1,3 @@
+- name: secret-reads-hosts-as-written
+  kind: added
+  cases: [secret-reads-hosts-as-written]

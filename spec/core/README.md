@@ -468,13 +468,8 @@ sends it as the header (SEC-010, SEC-011, SEC-013); it keeps no copy and puts th
 else (SEC-017, SEC-018). Where the engine has lost a connection's values, as when it restarts,
 it reads again each secret Resource that the setup which made the connection read, for that
 setup's caller, decided by the instance's own Conduit and its filters as they stand then
-(SEC-023). A header that carries a secret, and the value that an implementation of
-`get-secret.v1` reached by `remote` returns, cross only to an `https` URL, or to an `http` URL
-whose host is a loopback address on an engine that, as configured, can neither restart on
-another machine nor run as several parts. A template is rejected whose `remote` item would carry
-one anywhere else, or that stands at a loopback host on an engine that can restart on another
-machine or run as several parts, whatever its headers; an engine configured so after such a
-template was registered sends nothing to the item (SEC-024, SEC-013, IFC-041, DL17).
+(SEC-023). Where a header that carries a secret, and the value that an implementation of
+`get-secret.v1` reached by `remote` returns, may go is SEC-024, with SEC-013, IFC-041 and DL17.
 
 ## Pending actions and account hooks
 

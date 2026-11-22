@@ -9,11 +9,12 @@ Work order 181 added the rows of the 17 promises it lacked, CTR-014, ENR-001 to 
 PND-008, PND-013 and PRV-030, read from `spec/` as of commit `6ef168a2`.
 Work order 171b added the row of PND-014, which it wrote, and requoted the rows of PND-011
 and PND-013, whose quoted text it changed.
+Work order 254 added the row of REC-007, which it wrote.
 
-Promises read: 520; safety: 412; for the coordinator: 0; others: 108. Safety by kind: access 199,
-secret 45, effect 125, result 43. Safety by layer: language 135, convention 232, interface 45.
-Safety in the seven convention files: 128 (G5’s list as ruling 39 worded it); safety of the
-convention layer anywhere: 232 (the wider reading, for the owner).
+Promises read: 521; safety: 413; for the coordinator: 0; others: 108. Safety by kind: access 200,
+secret 45, effect 125, result 43. Safety by layer: language 135, convention 233, interface 45.
+Safety in the seven convention files: 129 (G5’s list as ruling 39 worded it); safety of the
+convention layer anywhere: 233 (the wider reading, for the owner).
 
 Recount the classification rows from the repository root:
 
@@ -562,7 +563,7 @@ Read: 5 promises. Source: [spec/conventions/observation.yaml](../../spec/convent
 
 ### spec/conventions/records.yaml
 
-Read: 6 promises. Source: [spec/conventions/records.yaml](../../spec/conventions/records.yaml).
+Read: 7 promises. Source: [spec/conventions/records.yaml](../../spec/conventions/records.yaml).
 
 | ID | layer | level | kind | why a breach is unsafe | S1 traces |
 | --- | --- | --- | --- | --- | --- |
@@ -572,6 +573,7 @@ Read: 6 promises. Source: [spec/conventions/records.yaml](../../spec/conventions
 | REC-004 | convention | must | effect | `observable`: “no effect is applied a second time” — purging invocation state with records lets an old keyed request repeat its effect. | S1-purge |
 | REC-005 | convention | must | result | `then`: “in the order in which they were made at that source” — returning another order gives a false account of the recorded sequence of decisions and actions. | S1-records |
 | REC-006 | convention | must | result | `observable`: “It is never presented as complete” — presenting an incomplete history as complete gives a wrong output about the requests and effects it contains. | S1-records |
+| REC-007 | convention | must | access | `then`: “A request not yet dispatched is not dispatched” — dispatching a request whose access decision was not recorded acts on access no record shows. | — |
 
 ### spec/conventions/implicit.yaml
 

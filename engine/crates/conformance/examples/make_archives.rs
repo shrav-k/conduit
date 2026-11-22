@@ -30,7 +30,10 @@ fn json_bytes(value: &Value) -> Vec<u8> {
 // Keep the historical release's conversation surface when reading the current copies.
 fn agent_contracts_v020(path: &Path) -> Vec<Value> {
     let mut docs = documents(path);
-    docs.retain(|d| d["kind"] != "Operation" || d["metadata"]["name"] != NEW_CONVERSATION);
+    docs.retain(|d| {
+        d["kind"] != "Conduit"
+            && (d["kind"] != "Operation" || d["metadata"]["name"] != NEW_CONVERSATION)
+    });
     for doc in &mut docs {
         match doc["kind"].as_str() {
             Some("Capability") if doc["metadata"]["name"] == "conversation.v1" => {
@@ -75,7 +78,7 @@ fn agent_fixtures(root: &Path, check: bool, generated: &mut BTreeMap<String, Vec
     manifest["exports"]
         .as_array_mut()
         .unwrap()
-        .retain(|op| op != NEW_CONVERSATION);
+        .retain(|op| op != NEW_CONVERSATION && op != "turn" && op != "conversation");
     let mut wrapper = manifest["implementations"]["wrapper-v2"].take();
     let account = wrapper["implements"]
         .as_array()

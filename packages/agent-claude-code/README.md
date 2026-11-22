@@ -28,6 +28,9 @@ cargo fmt --check
 cargo run --release --bin package
 ```
 
+Built offline on the same host with the same toolchain, the archive has the same digest on
+every run.
+
 The last command builds the host wrapper and writes `dist/agent-claude-code.tar.gz` and its `.sha256`
 sidecar. It prints an absolute `ARCHIVE#SHA256` argument for `conduit install --store DIR ARCHIVE#SHA256`, while `conduit serve` holds that store.
 Install required dependencies first, then use `conduit submit --store DIR PROJECT_DIR`.
@@ -631,3 +634,15 @@ The 0.2.1 contracts extend 0.2.0 only with NAM-024's additions. They add the ope
 The same configuration and state directory
 select the same Agent home as in 0.2.0. The engine determines whether an installed Agent keeps
 its instance and sign-in when its pin moves to 0.2.1.
+
+## The standard Conduit templates
+
+From 0.2.2, `turn` grants `turn.v1` alone, and `conversation` grants both `turn.v1` and
+`new-conversation.v1`. Write `operator: {from: example.org/conduit/agent-claude-code#turn}` to
+grant root turns, or select `example.org/conduit/agent-claude-code#conversation` to let root also end a
+conversation. A later release keeps each template's operation list. A wider grant takes a new
+template (PKG-031).
+
+The Types, the Agent's home, and sign-in are as in 0.2.1. An instance keeps the release it
+resolved, so using 0.2.2 for an existing Agent requires replacing it. A replaced `.v2` Agent
+signs in again.

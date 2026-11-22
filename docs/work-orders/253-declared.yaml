@@ -1,0 +1,61 @@
+- name: the copies and pins of the Agent packages move to 0.2.2
+  kind: fixture
+  cases: [registration-live-agents]
+  paths:
+  - conformance/language/registration/live-agents/fixture.json
+  - engine/examples/s1/conduit.yaml
+  - conformance/fixtures/agents/agent-codex/conduit.yaml
+  - conformance/fixtures/agents/agent-codex/contracts.yaml
+  - conformance/fixtures/agents/agent-codex/contracts.tar.gz
+  - conformance/fixtures/agents/agent-claude-code/conduit.yaml
+  - conformance/fixtures/agents/agent-claude-code/contracts.yaml
+  - conformance/fixtures/agents/agent-claude-code/contracts.tar.gz
+- name: the copies of the Agent packages move to 0.2.2, in registration-agent-v2-packages
+  kind: fixture
+  cases: [registration-agent-v2-packages]
+  paths:
+  - conformance/fixtures/agents/agent-codex/contracts.tar.gz
+  - conformance/fixtures/agents/agent-claude-code/contracts.tar.gz
+  - conformance/language/registration/agent-v2-packages/claude-code-install.json
+  - conformance/language/registration/agent-v2-packages/codex-install.json
+- name: the copies of the Agent packages move to 0.2.2, in registration-agent-v2-account-binding
+  kind: fixture
+  cases: [registration-agent-v2-account-binding]
+  paths:
+  - conformance/fixtures/agents/agent-codex/contracts.tar.gz
+  - conformance/fixtures/agents/agent-claude-code/contracts.tar.gz
+  - conformance/language/registration/agent-v2-account-binding/claude-code-install.json
+  - conformance/language/registration/agent-v2-account-binding/codex-install.json
+  - conformance/language/registration/agent-v2-account-binding/conduit.json
+- name: the installed copies' versions move to 0.2.2
+  kind: expectation
+  operation: replace
+  cases: [registration-agent-v2-packages, registration-agent-v2-account-binding]
+  paths: ['/steps/*/expect/state/installed_packages/*/package/version']
+  before: '0.2.1'
+  after: '0.2.2'
+- name: the installed copies' digests move with them
+  kind: expectation
+  operation: replace
+  cases: [registration-agent-v2-packages, registration-agent-v2-account-binding]
+  paths: ['/steps/*/expect/state/installed_packages/*/package/digest']
+- name: each copy's documents end with the two Conduit templates
+  kind: expectation
+  operation: add
+  cases: [registration-agent-v2-packages]
+  paths:
+  - '/steps/*/expect/reply/package/project/documents/5/kind'
+  - '/steps/*/expect/reply/package/project/documents/6/kind'
+  after: Conduit
+- name: the turn template's name
+  kind: expectation
+  operation: add
+  cases: [registration-agent-v2-packages]
+  paths: ['/steps/*/expect/reply/package/project/documents/5/metadata/name']
+  after: turn
+- name: the conversation template's name
+  kind: expectation
+  operation: add
+  cases: [registration-agent-v2-packages]
+  paths: ['/steps/*/expect/reply/package/project/documents/6/metadata/name']
+  after: conversation

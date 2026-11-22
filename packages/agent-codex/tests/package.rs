@@ -55,3 +55,46 @@ fn deterministic_host_archive_metadata_and_digest() {
         ]
     );
 }
+
+#[test]
+fn standard_conduit_templates_keep_their_operations() {
+    let manifest = include_str!("../conduit.yaml");
+    let exports: Vec<_> = manifest
+        .split_once("\nexports:\n")
+        .unwrap()
+        .1
+        .lines()
+        .take_while(|line| line.starts_with("- "))
+        .collect();
+    assert!(
+        exports.ends_with(&["- turn", "- conversation"]),
+        "exports must end with turn and conversation"
+    );
+    let contracts = include_str!("../contracts.yaml");
+    for template in [
+        r#"---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: turn
+spec:
+  capability: '#conversation.v1'
+  operations: ['#turn.v1']
+"#,
+        r#"---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: conversation
+spec:
+  capability: '#conversation.v1'
+  operations: ['#turn.v1', '#new-conversation.v1']
+"#,
+    ] {
+        assert_eq!(
+            contracts.matches(template).count(),
+            1,
+            "expected one copy of:\n{template}"
+        );
+    }
+}

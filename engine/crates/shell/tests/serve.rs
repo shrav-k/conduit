@@ -72,6 +72,7 @@ fn cli(store: &Path, verb: &str, args: &[&str]) -> Value {
     let replies: Vec<Value> = String::from_utf8(output.stdout)
         .unwrap()
         .lines()
+        .filter(|line| verb != "install" || line.starts_with('{'))
         .map(|l| serde_json::from_str(l).unwrap())
         .collect();
     for reply in &replies {

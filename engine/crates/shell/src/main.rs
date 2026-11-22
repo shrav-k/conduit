@@ -47,6 +47,8 @@ fn run() -> Result<()> {
     let mut arguments_file = None;
     let mut agent = None;
     let mut setup = false;
+    let mut install_mirrors = Vec::new();
+    let mut install_dry_run = false;
     let mut init_store_option = None;
     while let Some(arg) = args.next() {
         // ANSWER is passed as given, even where it looks like an option; ACTION is an
@@ -124,6 +126,14 @@ fn run() -> Result<()> {
             "--as" if command == "tools" => {
                 as_instance = Some(args.next().ok_or("--as needs INSTANCE")?)
             }
+            "--mirror" if command == "install" => {
+                let Some(directory) = args.next() else {
+                    eprintln!("conduit install: --mirror needs DIR");
+                    std::process::exit(2);
+                };
+                install_mirrors.push(PathBuf::from(directory));
+            }
+            "--dry-run" if command == "install" => install_dry_run = true,
             "--login" if command == "sign-in" => {
                 login = Some(args.next().ok_or("--login needs NAME")?)
             }
@@ -268,6 +278,8 @@ fn run() -> Result<()> {
                 agent: agent.as_deref(),
                 setup,
                 serving_checked: contextual,
+                install_mirrors: &install_mirrors,
+                install_dry_run,
             },
         ));
     }

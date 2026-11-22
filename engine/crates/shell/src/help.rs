@@ -21,7 +21,7 @@ const COMMANDS: [(&str, &str, &str); 15] = [
     ),
     (
         "install",
-        "ARCHIVE#SHA256",
+        "[ARCHIVE#SHA256] [--mirror DIR] [--dry-run]",
         "install --store /tmp/conduit ./package.tar.gz#SHA256",
     ),
     (
@@ -68,7 +68,7 @@ const DESCRIPTIONS: [&str; 15] = [
     "Register a local project, open root's submitted Conduits and set up instances. Owns runs until exit; stop serve first. --package explicitly installs an archive before registration.",
     "Submit a project to serve, open root's submitted Conduits and set up instances. Prints each attempted step after its results; completed steps persist on failure. Relative fetch/program values must be made absolute.",
     "Replace the named template with the matching template in PROJECT_DIR, using its current revision.",
-    "Install an archive through serve. SHA256 is the archive's digest (optional sha256: prefix). Each verified archive is kept in the per-user packages directory, named by its lowercase hex digest, even if the engine refuses the install. Install dependencies first. This command changes no manifest.",
+    "Install an archive's missing dependencies first, one request per archive, then install and pin the named archive at its exact version and digest. Without an archive, restore the manifest's pins. Find dependencies in the per-user cache, at an absolute file: fetch, then in --mirror directories and configured mirrors. Keep verified archives by lowercase digest. --dry-run prints the proposed installs and pin without sending installs or writing files.",
     "Retire an instance through serve, routing Resources through their owning Pool.",
     "Unregister an object through serve using its current revision; retire live instances first.",
     "Inspect every object as root, one JSON line each. --setup shows each instance's last setup. Uses serve if the store is active. Refused inspections also cause a nonzero exit.",

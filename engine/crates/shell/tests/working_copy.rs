@@ -101,7 +101,7 @@ impl Cli<'_> {
         String::from_utf8(output.stdout)
             .unwrap()
             .lines()
-            .last()
+            .rfind(|line| verb != "install" || line.starts_with('{'))
             .map(|line| serde_json::from_str(line).unwrap())
             .unwrap_or(Value::Null)
     }

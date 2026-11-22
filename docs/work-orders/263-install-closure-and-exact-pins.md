@@ -286,4 +286,37 @@ and every check's last line. Stage nothing.
 
 ## Record
 
-Not yet run.
+Run on 2026-11-21 through Conduit itself, by the dogfood's own Agents, in Pacific time, on
+`main` with order 243 stacked as one commit while 243 waited in the merge queue; rebased onto
+`main` once 243 merged.
+
+**Worker-2's first turn** (22:15 to 22:18) stopped before any edit: decision 2 stops the walk
+at an installed package, and decision 7's test expected the repeat to report that package's own
+dependency. The coordinator decided, open to the owner's strike, that decision 2 stands (PKG-028
+has an installed package's closure installed already), and that the package's `present` line
+says `with its dependencies (PKG-028)`.
+
+**Worker-2's second turn** (22:18 to 22:36) built the walk, the sources, the exact pin, the
+restoring form, `--dry-run`, the S1 mirror and T2's one line, and stopped before the suite:
+CTR-013's rule for a client ID shared by Types at different addresses, and `confirmClientIds`,
+are not implemented by the engine's `install.v1`. The coordinator decided that this is the
+engine's gap, not this order's: the preflight runs only the core's own checks, and order 266
+builds the check in the core. **Its third turn** (22:37 to 23:10) fixed three guard findings,
+added a stop for a dependency whose manifest cannot be read, and ran the whole engine suite once
+(535 passed).
+
+**Two blind reads at once** (23:11 to 23:14), the owner's answer for A77's window:
+`turn-verifier-2.turn.v1` found four musts; the Claude reader passed it with two nits and found
+none of them. One fix turn (23:15 to 23:46), each must reproduced by a failing regression first:
+- `1.0.0+a` and `1.0.0+b`, one version under PKG-003, at one digest sent two requests; releases
+  are now keyed by address, version equality and digest, their needers combined;
+- an early miss hid a later branch's usable `file:` fetch; a miss now waits for every source;
+- a comment between a block item's address and its version made the layout unsupported; the
+  address is now found across comments and blank lines;
+- two installs on one project could overwrite each other's pin; an advisory lock on the project
+  directory now covers the final check and the rename;
+- the reader's nit: `install` prints `list Package/* as=root` for the read it sends.
+
+The reader's other nit, two tar readers in the shell, is left to a later order. The whole engine
+suite passed once more (539 passed). The gate's run on the squash is the coordinator's, at the
+merge.

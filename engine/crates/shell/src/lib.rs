@@ -5,6 +5,7 @@ pub mod diagnostics;
 pub mod http_bridge;
 mod https;
 mod identity;
+mod install;
 pub mod runner;
 pub mod server;
 pub mod sign_in;

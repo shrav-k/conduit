@@ -81,3 +81,10 @@ The Rust builder uses the pinned workspace dependencies, sorted USTAR members, z
 uid/gid/mtime, mode 0644 and gzip level 9, mtime zero, no filename and OS byte 255. The
 portable `change-t5` case supplies this archive's bytes to the pure core; the serving-store
 test fetches its file URL through public `install.v1`, sets up and reads the 2.2.0 server.
+
+## The mirror
+
+The mirror contains the bytes of [archives/filesystem.tar.gz](archives/filesystem.tar.gz)
+under the digest filename `200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160`.
+History’s CLI install uses this filesystem dependency in T2. The conformance and K3 cases
+continue to use their original archives.

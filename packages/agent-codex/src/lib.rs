@@ -1,4 +1,6 @@
 //! Client adapter. This source is copied into each independently buildable package.
+mod usage;
+
 use anyhow::{Context, Result, bail, ensure};
 use serde_json::{Value, json};
 use std::{
@@ -269,6 +271,14 @@ pub enum SignIn {
 
 const POLL: Duration = Duration::from_millis(20);
 const LOGIN_TRACK: Duration = Duration::from_millis(250);
+const OUTPUT_SCHEMA_FILE: &str = "output-schema.json";
+const OUTPUT_SCHEMA_ERROR: &str =
+    "outputSchema (AGENT_OUTPUT_SCHEMA): expected the JSON text of a schema whose type is object";
+const EXEC_STRING_LIMIT: usize = 131_072;
+// TOML can use six bytes for one character. The argument is tighter than its environment entry.
+const MAX_INSTRUCTIONS_CHARS: usize =
+    (EXEC_STRING_LIMIT - "developer_instructions=\"\"".len() - 1) / 6;
+const MAX_OUTPUT_SCHEMA_CHARS: usize = (EXEC_STRING_LIMIT - "AGENT_OUTPUT_SCHEMA=".len() - 1) / 4;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Mode {
@@ -292,6 +302,8 @@ pub struct Config {
     pub v2: bool,
     pub directory: Option<PathBuf>,
     pub effort: Option<String>,
+    pub instructions: Option<String>,
+    pub output_schema: Option<String>,
     pub state_dir: Option<PathBuf>,
     pub mode: Mode,
     pub login_directory: Option<PathBuf>,
@@ -321,6 +333,8 @@ impl Config {
             v2: mode != Mode::Agent,
             directory: None,
             effort: None,
+            instructions: None,
+            output_schema: None,
             state_dir: None,
             mode,
             login_directory: if mode == Mode::SharedLoginAgent {
@@ -359,6 +373,32 @@ impl Config {
                     boolean("AGENT_PEER_MESSAGING")?
                 };
                 c.model = std::env::var("AGENT_MODEL").ok().filter(|s| !s.is_empty());
+                c.instructions = std::env::var_os("AGENT_INSTRUCTIONS")
+                    .map(|text| {
+                        text.into_string().map_err(|_| {
+                            anyhow::anyhow!("instructions (AGENT_INSTRUCTIONS): invalid encoding")
+                        })
+                    })
+                    .transpose()?;
+                if let Some(instructions) = &c.instructions {
+                    ensure!(
+                        (1..=MAX_INSTRUCTIONS_CHARS).contains(&instructions.chars().count()),
+                        "instructions (AGENT_INSTRUCTIONS): expected 1 to {MAX_INSTRUCTIONS_CHARS} characters"
+                    );
+                }
+                if let Some(schema) = std::env::var_os("AGENT_OUTPUT_SCHEMA") {
+                    let schema = schema.into_string().ok().context(OUTPUT_SCHEMA_ERROR)?;
+                    ensure!(
+                        serde_json::from_str::<Value>(&schema)
+                            .is_ok_and(|schema| schema.is_object() && schema["type"] == "object"),
+                        "{OUTPUT_SCHEMA_ERROR}"
+                    );
+                    ensure!(
+                        (1..=MAX_OUTPUT_SCHEMA_CHARS).contains(&schema.chars().count()),
+                        "outputSchema (AGENT_OUTPUT_SCHEMA): expected 1 to {MAX_OUTPUT_SCHEMA_CHARS} characters"
+                    );
+                    c.output_schema = Some(schema);
+                }
             }
             if v2 {
                 let home = home_label(mode);
@@ -688,13 +728,29 @@ fn account_answer(result: &Value) -> Option<AccountReport> {
     }
 }
 
-async fn read_account(
+enum AppServerDeadline {
+    Account(Duration),
+    RateLimit(Instant),
+}
+
+async fn read_app_server<T>(
     c: &Config,
     home: &Path,
     tree: &ClientTree,
-    deadline: Duration,
-) -> Result<AccountReport> {
-    let until = Instant::now() + deadline;
+    deadline: AppServerDeadline,
+    method: &str,
+    params: Value,
+    decode: impl FnOnce(&Value) -> Option<T>,
+) -> Result<T> {
+    let now = Instant::now();
+    let (until, budget) = match deadline {
+        AppServerDeadline::Account(budget) => (now + budget, budget),
+        AppServerDeadline::RateLimit(until) => {
+            let budget = until.saturating_duration_since(now);
+            ensure!(!budget.is_zero(), "account hook: no time left for the read");
+            (until, budget)
+        }
+    };
     let start_error = "account hook (start): client did not start";
     ensure!(
         c.client_directory().is_dir(),
@@ -743,46 +799,54 @@ async fn read_account(
         {
             return Reply::Eof;
         }
-        step = "account/read";
-        ask(
-            &mut input,
-            &mut lines,
-            2,
-            step,
-            json!({"refreshToken": false}),
-        )
-        .await
+        step = method;
+        ask(&mut input, &mut lines, 2, step, params).await
     })
     .await;
     let mut seen = BTreeMap::new();
     let mut scan_failed = false;
     let answer = match reply {
-        Err(_) => Err(format!("no answer within {} seconds", deadline.as_secs())),
+        Err(_) => Err(format!("no answer within {} seconds", budget.as_secs())),
         Ok(Reply::Eof) => {
             // Read the tree before the exit wait, so a descendant reparented by the exit is found.
             match scan_group(pid, start) {
                 Some(found) => seen = found,
                 None => scan_failed = true,
             }
-            Err(match timeout(EXIT_WAIT, child.wait()).await {
-                Ok(Ok(status)) => exit_cause(status),
-                Ok(Err(_)) => "client exit: status unknown".into(),
-                Err(_) => "EOF before answer".into(),
-            })
+            let cause = if matches!(deadline, AppServerDeadline::RateLimit(_)) {
+                "EOF before answer".into()
+            } else {
+                match timeout(EXIT_WAIT, child.wait()).await {
+                    Ok(Ok(status)) => exit_cause(status),
+                    Ok(Err(_)) => "client exit: status unknown".into(),
+                    Err(_) => "EOF before answer".into(),
+                }
+            };
+            Err(cause)
         }
         Ok(Reply::Failed(cause)) => Err(cause),
-        Ok(Reply::Result(result)) => account_answer(&result).ok_or_else(|| "invalid answer".into()),
+        Ok(Reply::Result(result)) => decode(&result).ok_or_else(|| "invalid answer".into()),
     };
-    let stop = tree.stop_group(pid, start, seen).await;
-    let stop = if scan_failed {
-        StopReport::UNCONFIRMED
+    let tree = tree.clone();
+    let cleanup = async move {
+        let stop = tree.stop_group(pid, start, seen).await;
+        drop(input);
+        let _ = child.kill().await;
+        let _ = child.wait().await;
+        if scan_failed {
+            StopReport::UNCONFIRMED
+        } else {
+            stop
+        }
+    };
+    let stop_note = if matches!(deadline, AppServerDeadline::RateLimit(_)) {
+        // Optional metadata must not extend the turn while the probe's group is stopped.
+        tokio::spawn(cleanup);
+        None
     } else {
-        stop
+        cleanup.await.note()
     };
-    drop(input);
-    let _ = child.kill().await;
-    let _ = child.wait().await;
-    match (answer, stop.note()) {
+    match (answer, stop_note) {
         (Ok(report), None) => Ok(report),
         (Ok(_), Some(note)) => bail!("account hook (stop): {note}"),
         (Err(cause), note) => {
@@ -847,6 +911,23 @@ pub fn prepare(c: &Config) -> Result<()> {
             mcp["mcpServers"]["engine"]["timeout"] = json!(c.timeout_millis()?);
         }
         fs::write(c.cwd.join("mcp.json"), serde_json::to_vec(&mcp)?)?;
+    }
+    if let Some(schema) = &c.output_schema {
+        use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+
+        let mut file = fs::OpenOptions::new()
+            .write(true)
+            .create(true)
+            .truncate(false)
+            .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+            .open(c.cwd.join(OUTPUT_SCHEMA_FILE))?;
+        let metadata = file.metadata()?;
+        ensure!(
+            metadata.is_file() && metadata.nlink() == 1,
+            "output schema must be a regular file with exactly one link"
+        );
+        file.set_len(0)?;
+        io::Write::write_all(&mut file, schema.as_bytes())?;
     }
     Ok(())
 }
@@ -978,6 +1059,7 @@ pub fn arguments(c: &Config, thread: Option<&str>) -> Vec<String> {
             "view_image",
             "goals",
             "image_generation",
+            "memories",
         ] {
             if c.v2
                 && c.directory.is_some()
@@ -1006,6 +1088,7 @@ pub fn arguments(c: &Config, thread: Option<&str>) -> Vec<String> {
             }
             .into(),
             "project_doc_max_bytes=0".into(),
+            "skills.include_instructions=false".into(),
         ] {
             args.extend(["-c".into(), setting]);
         }
@@ -1024,6 +1107,16 @@ pub fn arguments(c: &Config, thread: Option<&str>) -> Vec<String> {
                     format!("model_reasoning_effort={}", json!(effort)),
                 ]);
             }
+        }
+        if let Some(instructions) = &c.instructions {
+            let text = json!(instructions).to_string().replace('\u{7f}', "\\u007f");
+            args.extend(["-c".into(), format!("developer_instructions={text}")]);
+        }
+        if c.output_schema.is_some() {
+            args.extend([
+                "--output-schema".into(),
+                c.cwd.join(OUTPUT_SCHEMA_FILE).display().to_string(),
+            ]);
         }
         if let Some(thread) = thread {
             args.push(thread.into());
@@ -1640,6 +1733,7 @@ pub struct FailedTurn {
     pub client_started: bool,
     pub stop: StopReport,
     v2: bool,
+    limit: Option<Value>,
 }
 
 impl std::fmt::Display for FailedTurn {
@@ -1682,6 +1776,7 @@ impl FailedTurn {
                 "turn": self.turn,
                 "cause": self.kind(),
                 "class": self.class(),
+                "limit": self.limit,
                 "clientStarted": self.client_started,
                 "survivors": self.stop.survivors,
                 "stopConfirmed": !self.stop.unconfirmed,
@@ -1775,6 +1870,10 @@ impl Stream {
             state.as_ref().is_none_or(|state| !state.closed),
             "client did not start"
         );
+        if c.output_schema.is_some() {
+            prepare(c)
+                .map_err(|_| anyhow::anyhow!("invalid configuration: cannot prepare run files"))?;
+        }
         let mut child = client_command(c, home, args)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
@@ -1962,6 +2061,8 @@ pub struct Session {
     conversation: usize,
     turns_started: usize,
     login: Option<Login>,
+    usage_totals: Option<usage::Totals>,
+    client_version: Option<Option<String>>,
 }
 impl Session {
     pub fn new(config: Config) -> Self {
@@ -1975,6 +2076,8 @@ impl Session {
             conversation: 1,
             turns_started: 0,
             login: None,
+            usage_totals: None,
+            client_version: None,
         }
     }
     pub fn tree(&self) -> ClientTree {
@@ -1995,6 +2098,7 @@ impl Session {
         self.thread = None;
         self.failed = None;
         self.turns_started = 0;
+        self.usage_totals = None;
         self.conversation += 1;
         Ok(json!({"conversation": self.conversation, "ended": ended}))
     }
@@ -2010,7 +2114,8 @@ impl Session {
             bail!("session failed at turn {k}: {cause}; implicit restart refused");
         }
         let duration = self.config.timeout;
-        let result = match timeout(duration, self.run_turn(message)).await {
+        let deadline = Instant::now() + duration;
+        let result = match tokio::time::timeout_at(deadline, self.run_turn(message)).await {
             Ok(result) => result,
             Err(_) => Err(anyhow::anyhow!(
                 "deadline: no turn boundary within {} seconds{}",
@@ -2022,19 +2127,44 @@ impl Session {
                 }
             )),
         };
-        if let Err(error) = result {
-            let lapsed = error.is::<LoginLapsed>();
-            if lapsed && self.stream.is_none() {
-                return Err(error);
+        match result {
+            Ok((mut value, totals)) => {
+                if let Some(totals) = totals {
+                    let previous = self.usage_totals.replace(totals);
+                    if let Some(counts) = totals.since(previous)
+                        && let Some(model) = self
+                            .config
+                            .model
+                            .as_deref()
+                            .filter(|model| !model.is_empty() && model.chars().count() <= 256)
+                    {
+                        if self.client_version.is_none() && Instant::now() < deadline {
+                            self.client_version =
+                                Some(usage::version(&self.config, deadline).await);
+                        }
+                        if let Some(Some(version)) = &self.client_version {
+                            value["_meta"][usage::MEMBER] = json!({
+                                "client": {"name": "codex", "version": version},
+                                "models": {model: counts}
+                            });
+                        }
+                    }
+                }
+                Ok(value)
             }
-            let cause = error.to_string();
-            self.failed = Some((self.turns_started, cause.clone()));
-            let failed = self.end_failed_turn(&cause).await;
-            return Err(if lapsed { error } else { failed });
+            Err(error) => {
+                let lapsed = error.is::<LoginLapsed>();
+                if lapsed && self.stream.is_none() {
+                    return Err(error);
+                }
+                let cause = error.to_string();
+                self.failed = Some((self.turns_started, cause.clone()));
+                let failed = self.end_failed_turn(&cause, deadline).await;
+                Err(if lapsed { error } else { failed })
+            }
         }
-        result
     }
-    async fn run_turn(&mut self, message: &str) -> Result<Value> {
+    async fn run_turn(&mut self, message: &str) -> Result<(Value, Option<usage::Totals>)> {
         let home = if self.stream.is_some() || !self.config.v2 {
             Ok(None)
         } else if self.config.mode == Mode::SharedLoginAgent {
@@ -2081,6 +2211,7 @@ impl Session {
         let mut at_start = true;
         let mut index = 0;
         let mut latest_error = None;
+        let mut totals = None;
         loop {
             let line = match stream.lines.next_line().await {
                 Ok(Some(line)) => line,
@@ -2144,6 +2275,7 @@ impl Session {
             }
             if !CLAUDE && event["type"] == "turn.completed" {
                 complete = true;
+                totals = usage::Totals::reported(&event["usage"]);
             }
         }
         if !CLAUDE {
@@ -2154,22 +2286,70 @@ impl Session {
             ensure!(reported_thread, "no thread");
             self.stream = None;
         }
-        Ok(json!({"text":text,"clientTools":tools}))
+        let mut result = json!({"text":text,"clientTools":tools});
+        if let Ok(Value::Object(structured)) = serde_json::from_str(&text) {
+            result["structured"] = Value::Object(structured);
+        }
+        Ok((result, totals))
     }
     pub async fn cancel(&mut self) -> anyhow::Error {
         self.failed = Some((self.turns_started, "cancelled".into()));
-        self.end_failed_turn("cancelled").await
+        self.end_failed_turn("cancelled", Instant::now()).await
     }
-    async fn end_failed_turn(&mut self, cause: &str) -> anyhow::Error {
+    async fn end_failed_turn(&mut self, cause: &str, deadline: Instant) -> anyhow::Error {
         let client_started = self.stream.is_some();
         let stop = self.shutdown().await;
+        let limit = if self.config.v2 && cause == "client failure: usage-limit" {
+            let window = if client_started && stop.note().is_none() {
+                self.read_rate_limits(deadline).await
+            } else {
+                None
+            };
+            Some(window.unwrap_or_else(|| usage::limit(&Value::Null)))
+        } else {
+            None
+        };
         anyhow::Error::new(FailedTurn {
             turn: self.turns_started,
             cause: cause.into(),
             client_started,
             stop,
             v2: self.config.v2,
+            limit,
         })
+    }
+
+    async fn read_rate_limits(&self, deadline: Instant) -> Option<Value> {
+        let now = Instant::now();
+        let until = deadline.min(now + Duration::from_secs(15));
+        if now >= until {
+            return None;
+        }
+        let config = self.config.clone();
+        let tree = self.tree.clone();
+        // Dropping the join handle at the deadline lets an already started probe finish cleanup.
+        let probe = tokio::spawn(async move {
+            if Instant::now() >= until {
+                return None;
+            }
+            let home = if config.mode == Mode::SharedLoginAgent {
+                link_login(&config).ok()?
+            } else {
+                client_home(&config).ok()?
+            };
+            read_app_server(
+                &config,
+                &home,
+                &tree,
+                AppServerDeadline::RateLimit(until),
+                "account/rateLimits/read",
+                json!({}),
+                |result| Some(usage::limit(result)),
+            )
+            .await
+            .ok()
+        });
+        tokio::time::timeout_at(until, probe).await.ok()?.ok()?
     }
     pub async fn retire(&mut self) -> Result<String> {
         self.retire_within(LOGOUT_DEADLINE).await
@@ -2244,7 +2424,16 @@ impl Session {
     pub async fn account_within(&mut self, deadline: Duration) -> Result<AccountReport> {
         self.hook_ready("account hook")?;
         let home = client_home(&self.config)?;
-        let report = read_account(&self.config, &home, &self.tree, deadline).await?;
+        let report = read_app_server(
+            &self.config,
+            &home,
+            &self.tree,
+            AppServerDeadline::Account(deadline),
+            "account/read",
+            json!({"refreshToken": false}),
+            account_answer,
+        )
+        .await?;
         if self.config.mode == Mode::LoginResource && report.account.is_some() {
             ensure!(
                 fs::symlink_metadata(home.join(LOGIN_FILE)).is_ok_and(|meta| meta.is_file()),
@@ -2432,6 +2621,7 @@ mod tests {
             client_started: true,
             stop,
             v2: true,
+            limit: None,
         };
         let fields = failure.fields().unwrap();
         assert_eq!(fields["failedTurn"]["survivors"], json!([41, 42, 43]));

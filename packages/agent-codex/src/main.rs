@@ -285,11 +285,15 @@ impl ServerHandler for Wrapper {
                 .unwrap()
                 .into());
             }
-            Ok(value) => {
-                let mut result = serde_json::from_value::<CallToolResult>(
-                    json!({"content":[{"type":"text","text":value["text"]}],"structuredContent":value,"isError":false}),
-                )
-                .unwrap();
+            Ok(mut value) => {
+                let meta = value
+                    .as_object_mut()
+                    .and_then(|fields| fields.remove("_meta"));
+                let mut reply = json!({"content":[{"type":"text","text":value["text"]}],"structuredContent":value,"isError":false});
+                if let Some(meta) = meta {
+                    reply["_meta"] = meta;
+                }
+                let mut result = serde_json::from_value::<CallToolResult>(reply).unwrap();
                 result.result_type = Some(ResultType::COMPLETE);
                 result
             }

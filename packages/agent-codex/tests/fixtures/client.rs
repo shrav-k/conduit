@@ -131,6 +131,33 @@ async fn plant_tree() {
 }
 
 async fn turn(args: &[String], message: &str, number: usize) {
+    if let Some(fixture) = message.strip_prefix("ORDER-260:") {
+        let fixture: Value = serde_json::from_str(fixture).unwrap();
+        emit(json!({"type":"thread.started", "thread_id":"fixture-exact-thread"}));
+        if let Some(cause) = fixture["error"].as_str() {
+            emit(json!({"type":"turn.failed", "error":{"message":cause}}));
+            return;
+        }
+        let text = if fixture["launch"] == true {
+            let schema = args
+                .iter()
+                .position(|arg| arg == "--output-schema")
+                .map(|index| std::fs::read_to_string(&args[index + 1]).unwrap());
+            json!({"args":args,"schema":schema}).to_string()
+        } else {
+            fixture["text"]
+                .as_str()
+                .unwrap_or("scripted answer")
+                .to_owned()
+        };
+        emit(json!({"type":"item.completed", "item":{"type":"agent_message", "text":text}}));
+        let mut completed = json!({"type":"turn.completed"});
+        if let Some(usage) = fixture.get("usage") {
+            completed["usage"] = usage.clone();
+        }
+        emit(completed);
+        return;
+    }
     let claude = args.iter().any(|s| s == "--input-format");
     let (url, helper) = if claude {
         let i = args.iter().position(|s| s == "--mcp-config").unwrap();
@@ -507,9 +534,18 @@ fn app_server(args: &[String]) {
         &initialize["id"],
         json!({"userAgent":"fixture"}),
     );
-    let Some(read) = requests.find(|request| request["method"] == "account/read") else {
+    let Some(read) = requests.find(|request| {
+        matches!(
+            request["method"].as_str(),
+            Some("account/read" | "account/rateLimits/read")
+        )
+    }) else {
         return;
     };
+    if read["method"] == "account/rateLimits/read" {
+        emit(json!({"id":read["id"],"result":{}}));
+        return;
+    }
     answer(
         "read",
         &read["id"],
@@ -639,16 +675,73 @@ fn login(args: &[String]) {
     }
 }
 
+fn rate_limit_server(script: &Value) {
+    for line in io::stdin().lock().lines() {
+        let request: Value = serde_json::from_str(&line.unwrap()).unwrap();
+        match request["method"].as_str() {
+            Some("initialize") => emit(json!({"id":request["id"], "result":{}})),
+            Some("account/rateLimits/read") => {
+                let blocked = std::env::var_os(agent_adapter::REFRESH_OVERRIDE_VARIABLE)
+                    .is_some_and(|value| value == agent_adapter::REFRESH_BLOCKED);
+                std::fs::write(
+                    "rate-limit-read",
+                    json!({"refreshBlocked":blocked,"pid":std::process::id()}).to_string(),
+                )
+                .unwrap();
+                if script["delayExit"] == true {
+                    unsafe { libc::signal(libc::SIGTERM, libc::SIG_IGN) };
+                    if script["eof"] == true {
+                        unsafe { libc::close(libc::STDOUT_FILENO) };
+                    } else {
+                        emit(json!({"id":request["id"], "result":script["answer"]}));
+                    }
+                    std::thread::sleep(std::time::Duration::from_secs(5));
+                    return;
+                }
+                if let Some(delay) = script["delayMillis"].as_u64() {
+                    std::thread::sleep(std::time::Duration::from_millis(delay));
+                }
+                if script["error"] == true {
+                    emit(
+                        json!({"id":request["id"], "error":{"code":-32603,"message":"scripted failure"}}),
+                    );
+                } else {
+                    emit(json!({"id":request["id"], "result":script["answer"]}));
+                }
+                return;
+            }
+            Some("initialized") => {}
+            _ => return,
+        }
+    }
+}
+
 #[tokio::main]
 async fn main() {
     let args: Vec<_> = std::env::args().skip(1).collect();
+    if args == ["--version"] {
+        let mut log = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open("version-invocations")
+            .unwrap();
+        writeln!(log, "version").unwrap();
+        let version = std::fs::read_to_string("exec-version")
+            .unwrap_or_else(|_| "codex-cli 0.167.1\n".into());
+        print!("{version}");
+        return;
+    }
     if args == ["auth", "logout"] || args == ["logout", "-c", "cli_auth_credentials_store=\"file\""]
     {
         logout(&args);
         return;
     }
     if args.first().map(String::as_str) == Some("app-server") {
-        app_server(&args);
+        if let Ok(script) = std::fs::read("usage-limits.json") {
+            rate_limit_server(&serde_json::from_slice(&script).unwrap());
+        } else {
+            app_server(&args);
+        }
         return;
     }
     if args == agent_adapter::login_arguments() {

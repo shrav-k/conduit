@@ -249,4 +249,29 @@ test changed, and why; every check's last line. Stage nothing.
 
 ## Record
 
-Not yet run.
+Run on 2026-11-22 through Conduit itself, by the dogfood's own Agents, in Pacific time, on
+`main` with orders 258, 259 and 264 stacked while they waited in the merge queue.
+
+**Worker-1's first turn** (03:39 to 03:40) stopped at the start check: the stack the coordinator
+gave it predated orders 261 and 262, so `usage.v1` was absent. The coordinator rebuilt the stack
+on `main`. **Its second turn** (03:42 to 03:58) released agent-codex 0.2.4: `codex.v4` with
+optional `instructions` and `outputSchema`; each turn's usage as IFC-051's member, the difference
+from the conversation's last running total; after a confirmed usage-limit stop, the window, its
+length and the reset time read from the app-server with refresh blocked; memories and automatic
+skill instructions off on every launch. 49 package tests and three vectors pass.
+
+**Two blind reads at once** (03:59 to 04:03): `turn-verifier-1.turn.v1` found three musts; the
+Claude reader passed it with two nits. One fix turn (04:04 to 04:14), each must reproduced first:
+- a counter first reported on a resumed turn was attributed wholly to that turn; an optional
+  counter whose earlier value is unknown is now omitted;
+- the rate-limit read could hold the reply past its deadline during cleanup; one absolute
+  deadline now bounds it;
+- the role inputs' limits admitted values Linux cannot pass to a process; `instructions` now
+  takes up to 21,841 characters and `outputSchema` up to 32,762, so each fits the 131,072-byte
+  limit after escaping, with boundary tests; Codex's documentation available here named no file
+  for additive instructions, so they stay inline;
+- the README states the limits and that an empty string or a failing schema is refused; the
+  reset time is formatted without `unsafe`.
+
+53 package tests pass; the archive reproduces. The gate's run on the squash is the
+coordinator's, at the merge.

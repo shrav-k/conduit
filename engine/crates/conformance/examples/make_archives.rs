@@ -9,7 +9,7 @@ const NEW_CONVERSATION_REF: &str = "#new-conversation.v1";
 fn shared_login_type(name: &Value) -> bool {
     matches!(
         name.as_str(),
-        Some("codex-login.v1" | "codex.v3" | "account-home.v1" | "claude-code.v3")
+        Some("codex-login.v1" | "codex.v3" | "codex.v4" | "account-home.v1" | "claude-code.v3")
     )
 }
 
@@ -44,6 +44,12 @@ fn agent_contracts_v020(path: &Path) -> Vec<Value> {
     });
     for doc in &mut docs {
         match doc["kind"].as_str() {
+            Some("Operation") if doc["metadata"]["name"] == "turn.v1" => {
+                doc["spec"]["outputSchema"]["properties"]
+                    .as_object_mut()
+                    .unwrap()
+                    .remove("structured");
+            }
             Some("Capability") if doc["metadata"]["name"] == "conversation.v1" => {
                 doc["spec"]["operations"]
                     .as_array_mut()

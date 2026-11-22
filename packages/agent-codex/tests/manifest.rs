@@ -37,6 +37,7 @@ fn wrapper_v2_path_changes_only_the_program() {
         "wrapper-v2-path",
         "login",
         "wrapper-v3",
+        "wrapper-v4",
     ];
     for (index, expected) in expected_names.iter().enumerate() {
         assert_eq!(
@@ -49,7 +50,7 @@ fn wrapper_v2_path_changes_only_the_program() {
     assert_eq!(
         items.len(),
         expected_names.len(),
-        "wrapper-v3: expected end after item, extra header line {:?}",
+        "wrapper-v4: expected end after item, extra header line {:?}",
         items.get(expected_names.len()).map(|(name, _)| name)
     );
 

@@ -59,6 +59,8 @@ fn config(parent: &std::path::Path, account_services: bool, peer_messaging: bool
         v2: false,
         directory: None,
         effort: None,
+        instructions: None,
+        output_schema: None,
         state_dir: Some(state.canonicalize().unwrap()),
         mode: agent_adapter::Mode::Agent,
         login_directory: None,
@@ -158,6 +160,7 @@ fn expected_args(c: &Config, thread: Option<&str>) -> Vec<String> {
             "view_image",
             "goals",
             "image_generation",
+            "memories",
         ] {
             a.extend(["--disable".into(), feature.into()]);
         }
@@ -177,6 +180,7 @@ fn expected_args(c: &Config, thread: Option<&str>) -> Vec<String> {
             "mcp_servers.engine.default_tools_approval_mode=\"approve\"".into(),
             "web_search=\"disabled\"".into(),
             "project_doc_max_bytes=0".into(),
+            "skills.include_instructions=false".into(),
         ] {
             a.extend(["-c".into(), s]);
         }
@@ -930,6 +934,7 @@ fn expected_v2_args(c: &Config, thread: Option<&str>) -> Vec<String> {
                 "plugins",
                 "goals",
                 "image_generation",
+                "memories",
             ]
         } else {
             &[
@@ -947,6 +952,7 @@ fn expected_v2_args(c: &Config, thread: Option<&str>) -> Vec<String> {
                 "view_image",
                 "goals",
                 "image_generation",
+                "memories",
             ]
         };
         for feature in features {
@@ -973,6 +979,7 @@ fn expected_v2_args(c: &Config, thread: Option<&str>) -> Vec<String> {
             }
             .into(),
             "project_doc_max_bytes=0".into(),
+            "skills.include_instructions=false".into(),
         ] {
             a.extend(["-c".into(), s]);
         }
@@ -1139,6 +1146,9 @@ async fn assert_failure(c: Config, message: &str, cause: &str, warmup: bool) {
                 "turn": k,
                 "cause": kind,
                 "class": class,
+                "limit": if cause == "client failure: usage-limit" {
+                    json!({"window":null,"windowMinutes":null,"resetsAt":null})
+                } else { Value::Null },
                 "clientStarted": cause != "client did not start",
                 "survivors": [],
                 "stopConfirmed": true,
@@ -1826,6 +1836,9 @@ async fn v2_failed_turn_fields_reach_the_result() {
                         "turn": 1,
                         "cause": "client-failure",
                         "class": class,
+                        "limit": if class == "usage-limit" {
+                            json!({"window":null,"windowMinutes":null,"resetsAt":null})
+                        } else { Value::Null },
                         "clientStarted": true,
                         "survivors": [],
                         "stopConfirmed": true,
@@ -4277,7 +4290,11 @@ impl LoginTestWrapper {
             .env_clear()
             .envs(&c.env)
             .env("AGENT_ACCOUNT_SERVICES", "false")
-            .env("AGENT_TURN_DEADLINE_SECONDS", "10")
+            .env(
+                "AGENT_TURN_DEADLINE_SECONDS",
+                c.timeout.as_secs().to_string(),
+            )
+            .envs(c.model.as_deref().map(|model| ("AGENT_MODEL", model)))
             .env("CONDUIT_STATE_DIR", c.state_dir.as_ref().unwrap())
             .envs(directory.map(|dir| ("AGENT_LOGIN_DIRECTORY", dir)))
             .current_dir(&c.cwd)
@@ -4739,4 +4756,375 @@ async fn v3_agents_share_only_the_login_file() {
     assert_eq!(entry_names(target.parent().unwrap()), ["auth.json"]);
     first.close().await;
     second.close().await;
+}
+
+async fn scripted_turn(wrapper: &mut LoginTestWrapper, fixture: Value) -> Value {
+    wrapper.turn(&format!("ORDER-260:{fixture}")).await
+}
+
+const USAGE_MEMBER: &str = "io.github.shrav-k.conduit/usage";
+
+#[tokio::test]
+async fn codex_turns_report_their_usage() {
+    let parent = tempfile::tempdir().unwrap();
+    let mut c = config(parent.path(), false, false);
+    c.model = Some("example-model".into());
+    let mut wrapper = LoginTestWrapper::start(&c, None, None).await;
+    let totals = json!({"input_tokens":24763, "cached_input_tokens":24448, "output_tokens":82, "reasoning_output_tokens":16});
+    let usage = |counts| {
+        json!({"client":{"name":"codex","version":"0.167.1"},
+                               "models":{"example-model":counts}})
+    };
+    let first = usage(json!({"input":24763,"cachedInput":24448,"output":82,"reasoning":16}));
+    let reply = scripted_turn(&mut wrapper, json!({"usage":totals})).await;
+    assert_eq!(
+        reply["_meta"][USAGE_MEMBER], first,
+        "first turn has no reported usage"
+    );
+    assert!(reply["structuredContent"].get("_meta").is_none());
+    let next_totals = json!({"input_tokens":24863,"cached_input_tokens":24508,"output_tokens":92,"reasoning_output_tokens":19});
+    let reply = scripted_turn(&mut wrapper, json!({"usage":next_totals})).await;
+    assert_eq!(
+        reply["_meta"][USAGE_MEMBER],
+        usage(json!({"input":100,"cachedInput":60,"output":10,"reasoning":3}))
+    );
+
+    for fixture in [
+        json!({}),
+        json!({"usage":{"input_tokens":0,"output_tokens":0}}),
+        json!({"usage":next_totals}),
+        json!({"usage":totals}),
+        json!({"error":"scripted failure"}),
+    ] {
+        let reply = scripted_turn(&mut wrapper, fixture).await;
+        assert!(reply["_meta"].get(USAGE_MEMBER).is_none());
+    }
+    assert_eq!(
+        wrapper.call("new-conversation", json!({})).await["isError"],
+        false
+    );
+    let reply = scripted_turn(
+        &mut wrapper,
+        json!({"usage":{"input_tokens":7,"output_tokens":2}}),
+    )
+    .await;
+    assert_eq!(
+        reply["_meta"][USAGE_MEMBER],
+        usage(json!({"input":7,"output":2}))
+    );
+    wrapper.close().await;
+    assert_eq!(
+        fs::read_to_string(c.cwd.join("version-invocations")).unwrap(),
+        "version\n"
+    );
+
+    for unread in [false, true] {
+        let parent = tempfile::tempdir().unwrap();
+        let mut c = config(parent.path(), false, false);
+        c.model = unread.then(|| "example-model".into());
+        if unread {
+            fs::write(c.cwd.join("exec-version"), "unreadable version\n").unwrap();
+        }
+        let mut wrapper = LoginTestWrapper::start(&c, None, None).await;
+        let reply = scripted_turn(&mut wrapper, json!({"usage":totals})).await;
+        assert_eq!(reply["isError"], false);
+        assert!(reply["_meta"].get(USAGE_MEMBER).is_none());
+        wrapper.close().await;
+    }
+}
+
+fn scripted_failed_turn(reply: &Value) -> Value {
+    assert_eq!(reply["isError"], true);
+    serde_json::from_str::<Value>(reply["content"][1]["text"].as_str().unwrap())
+        .unwrap()["failedTurn"].clone()
+}
+
+#[tokio::test]
+async fn usage_limit_reports_the_codex_window_and_reset() {
+    let parent = tempfile::tempdir().unwrap();
+    let mut c = config(parent.path(), false, false);
+    c.timeout = Duration::from_secs(1);
+    let mut wrapper = LoginTestWrapper::start(&c, None, None).await;
+    let at_reset = 1730948100;
+    let window = |percent, minutes, reset: Value| {
+        json!({
+            "usedPercent": percent, "windowDurationMins": minutes, "resetsAt": reset
+        })
+    };
+    let at_limit = |minutes, reset: Value| window(100, minutes, reset);
+    let expected =
+        |minutes, reset: Value| json!({"window":null,"windowMinutes":minutes,"resetsAt":reset});
+    let reset = json!("2024-11-07T02:55:00Z");
+    let later = json!("2024-11-07T03:55:00Z");
+    let unknown = json!({"window":null,"windowMinutes":null,"resetsAt":null});
+    for (script, limit) in [
+        (
+            json!({"answer":{"rateLimits":{"primary": at_limit(300, json!(at_reset))}}}),
+            expected(300, reset.clone()),
+        ),
+        (
+            json!({"answer":{"rateLimits":{"primary": at_limit(300, json!(at_reset)), "secondary": at_limit(1440, json!(at_reset + 3600))}}}),
+            expected(1440, later.clone()),
+        ),
+        (
+            json!({"answer":{"rateLimits":{"primary": at_limit(300, json!(at_reset))}, "rateLimitsByLimitId":{"model":{"primary":at_limit(60,json!(at_reset + 3600))}}}}),
+            expected(60, later),
+        ),
+        (
+            json!({"answer":{"rateLimits":{"primary":window(65,300,json!(at_reset)), "secondary":window(25,1440,json!(at_reset + 3600)), "rateLimitReachedType":"reached"}}}),
+            expected(300, reset),
+        ),
+        (
+            json!({"answer":{"rateLimits":{"primary":at_limit(300,Value::Null)}}}),
+            expected(300, Value::Null),
+        ),
+        (
+            json!({"answer":{"rateLimits":{"primary":window(60,300,json!(at_reset))}}}),
+            unknown.clone(),
+        ),
+        (json!({"error":true}), unknown.clone()),
+        (
+            json!({"delayMillis":2000, "answer":{"rateLimits":{"primary":at_limit(300,json!(at_reset))}}}),
+            unknown,
+        ),
+    ] {
+        fs::write(c.cwd.join("usage-limits.json"), script.to_string()).unwrap();
+        let reply = scripted_turn(&mut wrapper, json!({"error":"usage limit"})).await;
+        let failed = scripted_failed_turn(&reply);
+        assert_eq!(failed["class"], "usage-limit");
+        assert_eq!(failed["limit"], limit, "wrong usage limit window or reset");
+        let read = c.cwd.join("rate-limit-read");
+        let observed: Value = serde_json::from_slice(&fs::read(&read).unwrap()).unwrap();
+        assert_eq!(observed["refreshBlocked"], true);
+        fs::remove_file(read).unwrap();
+        assert_eq!(
+            wrapper.call("new-conversation", json!({})).await["isError"],
+            false
+        );
+    }
+    let reply = scripted_turn(&mut wrapper, json!({"error":"network"})).await;
+    assert_eq!(
+        scripted_failed_turn(&reply).get("limit"),
+        Some(&Value::Null)
+    );
+    assert!(!c.cwd.join("rate-limit-read").exists());
+    wrapper.close().await;
+}
+
+#[tokio::test]
+async fn v4_maps_instructions_and_output_schema() {
+    let parent = tempfile::tempdir().unwrap();
+    let mut c = config(parent.path(), false, false);
+    let login = parent.path().join("login");
+    fs::write(login_test_home(&login).join("auth.json"), []).unwrap();
+    let instructions = "Use a \"quoted\" response.\nKeep the report short.";
+    let schema =
+        "{\n  \"type\": \"object\", \"properties\": {\"answer\": {\"type\": \"string\"}}\n}\n";
+    c.env
+        .insert("AGENT_INSTRUCTIONS".into(), instructions.into());
+    c.env.insert("AGENT_OUTPUT_SCHEMA".into(), schema.into());
+    let mut wrapper = LoginTestWrapper::start(&c, Some("--shared-login"), Some(&login)).await;
+    for resumed in [false, true] {
+        let reply = scripted_turn(&mut wrapper, json!({"launch":true})).await;
+        assert_eq!(reply["isError"], false);
+        let evidence: Value =
+            serde_json::from_str(reply["structuredContent"]["text"].as_str().unwrap()).unwrap();
+        let args = evidence["args"].as_array().unwrap();
+        assert_eq!(args.iter().any(|arg| arg == "resume"), resumed);
+        let instruction = json!(format!("developer_instructions={}", json!(instructions)));
+        assert!(
+            args.windows(2)
+                .any(|pair| pair == [json!("-c"), instruction.clone()]),
+            "developer instructions flag missing"
+        );
+        let schema_at = args
+            .iter()
+            .position(|arg| arg == "--output-schema")
+            .unwrap();
+        assert_eq!(args[schema_at + 1], json!(c.cwd.join("output-schema.json")));
+        assert_eq!(evidence["schema"], schema);
+        assert_eq!(reply["structuredContent"]["structured"], evidence);
+    }
+    let reply = scripted_turn(&mut wrapper, json!({"text":"[1, 2]"})).await;
+    assert!(reply["structuredContent"].get("structured").is_none());
+    wrapper.close().await;
+
+    let started = c.cwd.join("client-started");
+    fs::remove_file(&started).unwrap();
+    c.env
+        .insert("AGENT_OUTPUT_SCHEMA".into(), r#"{"type":"array"}"#.into());
+    let mut wrapper = LoginTestWrapper::start(&c, Some("--shared-login"), Some(&login)).await;
+    let invalid = scripted_turn(&mut wrapper, json!({})).await;
+    assert_eq!(invalid["isError"], true);
+    assert_eq!(
+        invalid["content"][0]["text"],
+        "invalid configuration: outputSchema (AGENT_OUTPUT_SCHEMA): expected the JSON text of a schema whose type is object"
+    );
+    assert!(!started.exists());
+    wrapper.close().await;
+
+    for (v2, mode) in [
+        (false, agent_adapter::Mode::Agent),
+        (true, agent_adapter::Mode::Agent),
+        (true, agent_adapter::Mode::SharedLoginAgent),
+    ] {
+        c.v2 = v2;
+        c.mode = mode;
+        let args = arguments(&c, Some("fixture-exact-thread"));
+        assert!(
+            args.windows(2)
+                .any(|pair| pair == ["--disable", "memories"])
+        );
+        assert!(
+            args.windows(2)
+                .any(|pair| pair == ["-c", "skills.include_instructions=false"])
+        );
+        assert!(
+            !args
+                .iter()
+                .any(|arg| arg.starts_with("developer_instructions=") || arg == "--output-schema")
+        );
+    }
+}
+
+#[tokio::test]
+async fn resumed_usage_omits_new_optional_counters() {
+    let parent = tempfile::tempdir().unwrap();
+    let mut c = config(parent.path(), false, false);
+    c.model = Some("example-model".into());
+    let mut wrapper = LoginTestWrapper::start(&c, None, None).await;
+    for (report, expected) in [
+        (
+            json!({"input_tokens":30,"output_tokens":5}),
+            json!({"input":30,"output":5}),
+        ),
+        (
+            json!({"input_tokens":40,"output_tokens":8,"cached_input_tokens":20,"reasoning_output_tokens":4}),
+            json!({"input":10,"output":3}),
+        ),
+        (
+            json!({"input_tokens":45,"output_tokens":10,"cached_input_tokens":23,"reasoning_output_tokens":5}),
+            json!({"input":5,"output":2,"cachedInput":3,"reasoning":1}),
+        ),
+    ] {
+        let reply = scripted_turn(&mut wrapper, json!({"usage":report})).await;
+        assert_eq!(
+            reply["_meta"][USAGE_MEMBER]["models"]["example-model"], expected,
+            "resumed usage included an optional counter with no earlier value"
+        );
+    }
+    wrapper.close().await;
+}
+
+#[tokio::test]
+async fn rate_limit_reply_has_one_deadline_and_reaps_the_probe() {
+    for eof in [true, false] {
+        let parent = tempfile::tempdir().unwrap();
+        let mut c = config(parent.path(), false, false);
+        c.timeout = Duration::from_secs(1);
+        fs::write(c.cwd.join("usage-limits.json"), json!({
+            "eof":eof, "delayExit":true,
+            "answer":{"rateLimits":{"primary":{"usedPercent":100,"windowDurationMins":300,"resetsAt":1730948100}}}
+        }).to_string()).unwrap();
+        let mut wrapper = LoginTestWrapper::start(&c, None, None).await;
+        let started = tokio::time::Instant::now();
+        let reply = scripted_turn(&mut wrapper, json!({"error":"usage limit"})).await;
+        assert!(
+            started.elapsed() < Duration::from_millis(1800),
+            "the probe delayed the turn reply past its deadline"
+        );
+        let expected = if eof {
+            json!(null)
+        } else {
+            json!("2024-11-07T02:55:00Z")
+        };
+        assert_eq!(scripted_failed_turn(&reply)["limit"]["resetsAt"], expected);
+        let probe: Value =
+            serde_json::from_slice(&fs::read(c.cwd.join("rate-limit-read")).unwrap()).unwrap();
+        let pid = i32::try_from(probe["pid"].as_i64().unwrap()).unwrap();
+        tokio::time::timeout(Duration::from_secs(5), async {
+            while unsafe { libc::kill(pid, 0) } == 0 {
+                tokio::time::sleep(Duration::from_millis(20)).await;
+            }
+        })
+        .await
+        .expect("rate-limit probe left a process running");
+        wrapper.close().await;
+    }
+}
+
+#[tokio::test]
+async fn v4_role_bindings_fit_the_linux_exec_string_limit() {
+    const ARG_LIMIT: usize = 131_072;
+    const MAX_INSTRUCTIONS: usize = 21_841;
+    const MAX_SCHEMA: usize = 32_762;
+    let schema = |characters| {
+        let prefix = r#"{"type":"object","description":""#;
+        let description = "🙂".repeat(characters - prefix.len() - 2);
+        format!("{prefix}{description}\"}}")
+    };
+
+    for glyph in ['🙂', '\u{1f}'] {
+        let parent = tempfile::tempdir().unwrap();
+        let mut c = config(parent.path(), false, false);
+        let login = parent.path().join("login");
+        fs::write(login_test_home(&login).join("auth.json"), []).unwrap();
+        let instructions = glyph.to_string().repeat(MAX_INSTRUCTIONS);
+        let document = schema(MAX_SCHEMA);
+        assert_eq!(document.chars().count(), MAX_SCHEMA);
+        assert!("AGENT_INSTRUCTIONS=".len() + instructions.len() < ARG_LIMIT);
+        assert!("AGENT_OUTPUT_SCHEMA=".len() + document.len() < ARG_LIMIT);
+        c.env.insert("AGENT_INSTRUCTIONS".into(), instructions);
+        c.env.insert("AGENT_OUTPUT_SCHEMA".into(), document);
+        let mut wrapper = LoginTestWrapper::start(&c, Some("--shared-login"), Some(&login)).await;
+        let reply = scripted_turn(&mut wrapper, json!({"launch":true})).await;
+        assert_eq!(reply["isError"], false);
+        let args = reply["structuredContent"]["structured"]["args"]
+            .as_array()
+            .unwrap();
+        let instructions_arg = args
+            .iter()
+            .filter_map(Value::as_str)
+            .find(|arg| arg.starts_with("developer_instructions="))
+            .unwrap();
+        assert!(
+            instructions_arg.len() < ARG_LIMIT,
+            "escaped instructions exceed the exec string limit"
+        );
+        if glyph == '\u{1f}' {
+            assert_eq!(instructions_arg.len() + 1, ARG_LIMIT);
+        }
+        wrapper.close().await;
+    }
+
+    for (name, value, field, limit) in [
+        (
+            "AGENT_INSTRUCTIONS",
+            "\u{1f}".repeat(MAX_INSTRUCTIONS + 1),
+            "instructions",
+            MAX_INSTRUCTIONS,
+        ),
+        (
+            "AGENT_OUTPUT_SCHEMA",
+            schema(MAX_SCHEMA + 1),
+            "outputSchema",
+            MAX_SCHEMA,
+        ),
+    ] {
+        let parent = tempfile::tempdir().unwrap();
+        let mut c = config(parent.path(), false, false);
+        let login = parent.path().join("login");
+        fs::write(login_test_home(&login).join("auth.json"), []).unwrap();
+        c.env.insert(name.into(), value);
+        let mut wrapper = LoginTestWrapper::start(&c, Some("--shared-login"), Some(&login)).await;
+        let reply = scripted_turn(&mut wrapper, json!({})).await;
+        let expected =
+            format!("invalid configuration: {field} ({name}): expected 1 to {limit} characters");
+        assert!(
+            reply["content"][0]["text"] == expected,
+            "{field} above its transport bound was not refused at configuration"
+        );
+        assert!(!c.cwd.join("client-started").exists());
+        wrapper.close().await;
+    }
 }

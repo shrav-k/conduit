@@ -632,11 +632,13 @@
   note: 'Source row: “V: no value in a record”. Graded from holds by FR-460.'
 - id: SEC-016
   class: safety
-  standing: restated
+  standing: text changed, not rerun
+  was: restated
   model: secrets::S
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: 946c19205afdc1991f7a1e8c0a2fb8f4bd314f05ea43a8a65216c11a93232a04
-  note: 'Source row: “S: failed dispatch recording means unavailable without dispatch”. Graded from holds by FR-460.'
+  note: 'Source row: “S: failed dispatch recording means unavailable without dispatch”. Graded from holds by FR-460.
+    Work order 254 made it REC-007''s case for reads.'
 - id: SEC-017
   class: safety
   standing: searched
@@ -1436,7 +1438,9 @@
   model: records::R1
   note: 'Source row: “R1: every listed event category emits a corresponding retained record at creation.” Uses order
     115’s final checks: a cached repeat keeps its request-end record without a dispatch; occurrence coverage includes
-    the admin correction to R1. Graded from holds by FR-458.'
+    the admin correction to R1. Graded from holds by FR-458. Work order 254 changed its observable: a record that
+    cannot be kept when it occurs is kept late, under REC-007. R1 checks recording at creation and was not rerun
+    against late recording.'
 - id: REC-002
   class: safety
   standing: static
@@ -1473,6 +1477,10 @@
   note: 'Source row: “R6: a completed incomplete read identifies the exact gap.” MC7b-001: “were lost” is unclear
     against no removal except purge. Correct/Unreadable retains saved records and faults reads; R3/R6 hold on that
     reading. No correct-model refutation trace. Order 082 is to be taken, being drafted, not yet run.'
+- id: REC-007
+  class: safety
+  standing: not modelled
+  note: Written by work order 254; not yet modelled.
 - id: IMP-001
   class: safety
   standing: holds, not graded
@@ -1496,7 +1504,7 @@
   digest: 88666f1962c653f3505e4eefca2324c5a8ff69c465f123132bac14877656e13f
   note: 'Bounded source slice; no individual finding. Rerun by work order 160 on 2026-11-15 under ruling 78
     point 6: U holds, graded searched. Work order 172a changed its observable: only a call that changes nothing is sent once more under
-    IFC-046 (F46).'
+    IFC-046 (F46). Work order 254 added REC-007''s undispatched request.'
 - id: IMP-008
   class: safety
   standing: holds, not graded

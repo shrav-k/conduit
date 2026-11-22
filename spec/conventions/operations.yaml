@@ -460,12 +460,15 @@
     A request is not dispatched, and more than one of the four reasons applies to it.
   then: >-
     It reports one reason, chosen in this order: invalid if the request cannot be read;
-    otherwise refused, or unavailable where the access decision cannot be made under ACC-037;
-    then invalid; then conflict; then unavailable for any other cause. Where the access decision
-    cannot be made, nothing else about the request is examined or reported.
+    otherwise unavailable where the access decision cannot be made under ACC-037, else
+    unavailable where it cannot be recorded under REC-007, else refused; then invalid; then
+    conflict; then unavailable for any other cause. Where the access decision cannot be made,
+    nothing else about the request is examined or reported; where it cannot be recorded, nothing
+    else is reported.
   observable: >-
     A request that is not permitted reports refused whatever else is wrong with it, and its
-    result carries ACC-056's diagnostic and nothing about any other reason that applies. A
+    result carries ACC-056's diagnostic and nothing about any other reason that applies, unless
+    its access decision cannot be recorded, when it reports unavailable under REC-007. A
     request whose access decision cannot be made, because the state of the Conduits cannot
     be established, reports unavailable whatever else is wrong with it, provided it can be
     read, and its result carries no diagnostic except one naming ACC-037 and no object: the

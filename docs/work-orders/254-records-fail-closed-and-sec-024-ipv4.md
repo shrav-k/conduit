@@ -290,4 +290,30 @@ reply; and every check's last line and the ratchet's line. Stage nothing.
 
 ## Record
 
-Not yet run.
+Run on 2026-11-21 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+
+**Worker-1's first turn** (19:56 to 19:58) stopped before any edit, as the order's stop rule asks:
+as written, REC-007 had an already-dispatched invocation end unknown even where its
+implementation answered with a reason, against IFC-027 and OPS-005. The coordinator decided,
+open to the owner's strike, that the implementation's reason stands and only REC-007's wording
+changes: a reason with no outcome means nothing was done, and unknown would have OPS-012 forbid
+repeating it. IFC-027 and OPS-005 are unchanged.
+
+**Worker-1's second turn** (20:00 to 20:31) carried out the order with that amendment. The new
+SEC-024 case passed its five steps on the unchanged engine. The whole engine suite passed once:
+521 passed, 0 failed, 9 ignored.
+
+**Two blind reads at once** (20:37 to 20:40), the owner's answer for A77's window:
+`turn-verifier-1.turn.v1` found three musts, the Claude reader passed it with one should and two
+nits. One fix turn (20:44 to 20:46) applied all six:
+- the CHANGES line says "a reason and no outcome";
+- REC-007 names SEC-016 only for a read of a secret that would be dispatched, the read SEC-016's
+  `when` covers, so the Done-when line counts that phrase instead;
+- REC-007's `when` gains the restart case IMP-007 sends to it;
+- a dispatched invocation that ends unknown carries a diagnostic naming REC-007;
+- SEC-024 compares an IPv6 literal as an address;
+- REC-001's model-account row keeps `static`, which `tools/check_model_account.py` cannot mark
+  as text changed, and its note says R1 was not rerun against late recording.
+
+Order 255 builds the same rules in the engine. The gate's run on the squash is the
+coordinator's, at the merge.

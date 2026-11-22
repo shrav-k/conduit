@@ -1,0 +1,136 @@
+{
+  "id": "secret-reads-hosts-as-written",
+  "layers": [
+    "convention"
+  ],
+  "promises": [
+    "SEC-024"
+  ],
+  "title": "A secret header requires HTTPS or an HTTP loopback host as written",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "documents": "documents.json",
+    "https-manifest": "https-manifest.json",
+    "https": "https.json",
+    "short-ipv4-manifest": "short-ipv4-manifest.json",
+    "short-ipv4": "short-ipv4.json",
+    "hex-ipv4-manifest": "hex-ipv4-manifest.json",
+    "hex-ipv4": "hex-ipv4.json",
+    "octal-ipv4-manifest": "octal-ipv4-manifest.json",
+    "octal-ipv4": "octal-ipv4.json",
+    "mapped-ipv6-manifest": "mapped-ipv6-manifest.json",
+    "mapped-ipv6": "mapped-ipv6.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "https"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": []
+      }
+    },
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "short-ipv4"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "SEC-024"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "SEC-024"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "hex-ipv4"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "SEC-024"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "SEC-024"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "octal-ipv4"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "SEC-024"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "SEC-024"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "mapped-ipv6"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "SEC-024"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "SEC-024"
+        ]
+      }
+    }
+  ]
+}

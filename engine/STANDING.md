@@ -41,11 +41,11 @@ Each number counts promises. The last row counts those whose Engine source is no
 
 | Promises | language | convention | interface | all |
 | --- | ---: | ---: | ---: | ---: |
-| case passes | 149 | 162 | 27 | 338 |
+| case passes | 149 | 163 | 27 | 339 |
 | expected failure | 0 | 0 | 0 | 0 |
 | reason, no case | 54 | 17 | 1 | 72 |
 | no case, no reason | 22 | 65 | 19 | 106 |
-| all | 225 | 244 | 47 | 516 |
+| all | 225 | 245 | 47 | 517 |
 | named in engine source | 157 | 172 | 29 | 358 |
 
 ## The promises
@@ -471,6 +471,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | REC-004 | convention | must | 5 | 0 | cases | core | case passes |
 | REC-005 | convention | must | 2 | 0 | cases | core | case passes |
 | REC-006 | convention | must | 4 | 0 | cases | core | case passes |
+| REC-007 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | REV-001 | convention | must | 1 | 0 | cases | core | case passes |
 | REV-002 | convention | must | 1 | 0 | cases | core | case passes |
 | REV-003 | convention | must | 0 | 0 | reason | none | reason, no case |
@@ -542,7 +543,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | SEC-021 | language | must | 0 | 0 | outside | none | no case, no reason |
 | SEC-022 | language | must | 2 | 0 | outside | core | case passes |
 | SEC-023 | convention | must | 0 | 0 | outside | none | no case, no reason |
-| SEC-024 | convention | must | 0 | 0 | outside | core | no case, no reason |
+| SEC-024 | convention | must | 1 | 0 | outside | core | case passes |
 | SUB-001 | language | must | 7 | 0 | cases | loader, core | case passes |
 | SUB-002 | language | must | 8 | 0 | cases | core | case passes |
 | SUB-003 | language | must | 35 | 0 | cases | core | case passes |

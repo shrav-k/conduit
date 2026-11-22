@@ -1,6 +1,13 @@
 {
   "cases": [
     {
+      "id": "secret-reads-hosts-as-written",
+      "case": "conventions/secret-reads/hosts-as-written/case.yaml",
+      "promises": [
+        "SEC-024"
+      ]
+    },
+    {
       "id": "secret-reads-nonroot-optional",
       "case": "conventions/secret-reads/nonroot-optional/case.yaml",
       "promises": [

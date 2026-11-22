@@ -24,6 +24,7 @@
   observable: >-
     Each such occurrence can be found by inspecting the objects it names. Every request can be
     found with how it ended: its outcome, or its reason where it has no outcome under OPS-005.
+    A record of a request that cannot be kept when it occurs is kept late, under REC-007.
     The record of an access decision states that the request was permitted, or that it was not
     dispatched and the reason. A provider call is not a request, under PRV-005, and is
     recorded all the same, with how it ended. A read of a secret is a request, under SEC-010,
@@ -169,3 +170,36 @@
     returned, and no gap remains for it. A loss of records is not presented as a purge under
     REC-004, and no record of a purge is kept for it. Which losses of records outside the
     engine it can tell is DL8 of the implementation-defined list.
+
+- id: REC-007
+  layer: convention
+  level: must
+  when: >-
+    The record of a request's access decision, under ACC-002, or of the dispatch of its
+    invocation or of that invocation's end, under REC-001, cannot be kept, or the engine
+    finds at a restart a request decided and not dispatched.
+  then: >-
+    A request not yet dispatched is not dispatched, and reports unavailable. An invocation
+    already dispatched whose implementation answered with a reason and no outcome, under
+    IFC-027, ends with that reason; any other invocation already dispatched ends unknown.
+    Each record is kept when a record can next be kept.
+  observable: >-
+    The target's implementation receives no call for a request that is not dispatched, and its
+    result carries an error diagnostic naming this promise, or SEC-016 for a read of a secret
+    that would be dispatched, which says that the record could not be kept, under IFC-050.
+    OPS-023 puts this case after ACC-037's and before refused: the request reports unavailable
+    even where it would be refused, and its result carries no other diagnostic, but a request
+    that ACC-037 decides carries ACC-037's diagnostic alone. A request that the engine finds at
+    a restart decided and not dispatched was never dispatched: it ends unavailable, not
+    unknown. The result of an invocation already dispatched whose implementation answered
+    with a reason and no outcome carries that reason and no outcome, as IFC-027 and OPS-005
+    have it, and its end is recorded with that reason: nothing was done, so nothing is acted
+    on unrecorded. The result of any other invocation already dispatched has the outcome
+    unknown and carries a diagnostic naming this promise, which says that its end could not be
+    recorded, under IFC-050; its end is recorded as unknown, as IMP-007 has an invocation in
+    progress across a restart end.
+    The records of each, of its access decision and of how it ended among them, are kept when a
+    record can next be kept: REC-001 is met late, and not excepted. A request that only reads,
+    such as `inspect.v1`, and a read of a secret, under SEC-010, are recorded and decided as any
+    other request. SEC-016 is this promise for a read of a secret. How the engine behaves when
+    its storage is exhausted, beyond this promise, is DL10 of the implementation-defined list.

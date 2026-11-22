@@ -1,9 +1,11 @@
 mod help;
-use conduit_shell::{Config, MissingExecutor, Result, Shell, boundary, runner::Runner};
+use conduit_shell::{
+    Config, MissingExecutor, Result, Shell, boundary, runner::Runner, user_config,
+};
 use serde_json::{Value, json};
 use std::collections::BTreeMap;
 use std::io::{self, Read, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 fn run() -> Result<()> {
@@ -12,11 +14,7 @@ fn run() -> Result<()> {
         return help::print(None);
     }
     if raw == ["--version"] {
-        println!(
-            "conduit {} (commit {})",
-            env!("CARGO_PKG_VERSION"),
-            env!("CLI_GIT_COMMIT")
-        );
+        println!("{}", version_line());
         return Ok(());
     }
     let help_requested = if raw[0] == "answer" {
@@ -34,9 +32,9 @@ fn run() -> Result<()> {
         return help::print(Some(&raw[0]));
     }
     let mut args = raw.into_iter();
-    let command = args.next().ok_or(
-        "usage: conduit init|register|submit|replace|install|retire|unregister|inspect|pending|answer|sign-in|records|serve|tools|call --store DIR [ARGUMENTS]",
-    )?;
+    let command = args
+        .next()
+        .ok_or("usage: conduit COMMAND [ARGUMENTS]; run conduit --help for commands")?;
     let mut store = None;
     let mut project = None;
     let mut packages = Vec::new();
@@ -49,12 +47,28 @@ fn run() -> Result<()> {
     let mut arguments_file = None;
     let mut agent = None;
     let mut setup = false;
+    let mut init_store_option = None;
     while let Some(arg) = args.next() {
         // ANSWER is passed as given, even where it looks like an option; ACTION is an
         // engine-issued ID and goes through the normal match.
         if command == "answer" && positional.len() == 1 {
             positional.push(arg);
             continue;
+        }
+        if command == "init"
+            && matches!(
+                arg.as_str(),
+                "--label"
+                    | "--trust-domain"
+                    | "--url"
+                    | "--output-cap-bytes"
+                    | "--output-age-seconds"
+                    | "--initialize-timeout-seconds"
+                    | "--call-timeout-seconds"
+                    | "--pass-environment"
+            )
+        {
+            init_store_option.get_or_insert_with(|| arg.clone());
         }
         match arg.as_str() {
             "--help" if command == "answer" => return help::print(Some(&command)),
@@ -188,7 +202,39 @@ fn run() -> Result<()> {
             "unknown command {command:?}; run conduit --help for commands"
         ));
     }
-    let store = store.ok_or("--store DIR is required")?;
+    let repository = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
+    let contextual = store.is_none();
+    let store = match store {
+        Some(store) => store,
+        None if command == "init" => {
+            if let Some(option) = init_store_option {
+                return Err(format!("init: {option} requires --store DIR"));
+            }
+            return init_project(&repository);
+        }
+        None if matches!(command.as_str(), "serve" | "register") => {
+            return Err("--store DIR is required".into());
+        }
+        None => {
+            let runtime = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
+            match runtime.block_on(user_config::current()) {
+                Ok((file, context)) => {
+                    eprintln!(
+                        "conduit {command}: using {file:?} for store {:?} at {}",
+                        context.store,
+                        user_config::escape_line_breaks(&context.url)
+                    );
+                    context.store
+                }
+                Err(error) => {
+                    eprintln!(
+                        "conduit {command}: {error}; start conduit serve --store DIR or give --store DIR"
+                    );
+                    std::process::exit(2);
+                }
+            }
+        }
+    };
     if command != "init" && !store.join("state.json").is_file() {
         return Err("store is not initialized; run conduit init".into());
     }
@@ -210,8 +256,8 @@ fn run() -> Result<()> {
         "answer",
     ]
     .contains(&command.as_str())
+        || (contextual && command == "inspect")
     {
-        let repository = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
         let runtime = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
         return runtime.block_on(conduit_shell::author::run(
             &command,
@@ -220,13 +266,18 @@ fn run() -> Result<()> {
             &repository,
             conduit_shell::author::Options {
                 agent: agent.as_deref(),
-                ..Default::default()
+                setup,
+                serving_checked: contextual,
             },
         ));
     }
 
+    if contextual && command == "records" {
+        let runtime = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
+        return print_records(runtime.block_on(conduit_shell::server::records_client(&store))?);
+    }
+
     if command == "sign-in" {
-        let repository = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
         let runtime = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
         let mut person = conduit_shell::sign_in::Terminal;
         return runtime.block_on(conduit_shell::sign_in::run(
@@ -268,7 +319,6 @@ fn run() -> Result<()> {
         );
         return conduit_shell::author::ensure_success(&result, &asked);
     }
-    let repository = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
     let shell = match Shell::open(&store, boundary::context(&repository)?, config) {
         Ok(shell) => Arc::new(shell),
         Err(error) if command == "inspect" && error == "store already has an active shell" => {
@@ -296,7 +346,12 @@ fn run() -> Result<()> {
         let directory = store
             .canonicalize()
             .map_err(|error| format!("cannot resolve store path: {error}"))?;
-        let ready = json!({"ready":{"url":shell.config.engine_url,"store":directory}});
+        let current = user_config::EngineContext {
+            store: directory,
+            url: shell.config.engine_url.clone(),
+            version: version_line(),
+        };
+        let ready = json!({"ready":{"url":current.url,"store":current.store}});
         // DL2/DL13: token subjects come from the shared last-commit snapshot.
         shell.issue_client_token(&object_id(shell.state()?.as_ref(), "root")?)?;
         let runner = Runner::new(&shell, std::env::current_exe().map_err(|e| e.to_string())?)?;
@@ -334,6 +389,9 @@ fn run() -> Result<()> {
             .map_err(|_| "startup setup failed")??;
             if !shutdown.is_cancelled() {
                 conduit_shell::server::serve_with_ready(shell.clone(), executor.clone(), shutdown, || {
+                    if let Err(error) = current.record() {
+                        eprintln!("conduit serve: {error}");
+                    }
                     let mut stdout = io::stdout().lock();
                     if let Err(error) = writeln!(stdout, "{ready}").and_then(|()| stdout.flush()) {
                         let _ = writeln!(io::stderr().lock(), "conduit serve: cannot write ready line: {error}");
@@ -446,6 +504,50 @@ fn run() -> Result<()> {
         ))
     }
 }
+
+fn version_line() -> String {
+    format!(
+        "conduit {} (commit {})",
+        env!("CARGO_PKG_VERSION"),
+        env!("CLI_GIT_COMMIT")
+    )
+}
+
+fn init_project(repository: &Path) -> Result<()> {
+    use std::fs::{self, OpenOptions};
+    use std::io::ErrorKind;
+
+    for name in conduit_loader::MANIFEST_NAMES {
+        match fs::symlink_metadata(name) {
+            Ok(_) => {
+                eprintln!("conduit init: {name} already exists; nothing changed");
+                return Ok(());
+            }
+            Err(error) if error.kind() == ErrorKind::NotFound => {}
+            Err(error) => return Err(format!("init: cannot inspect {name}: {error}")),
+        }
+    }
+    let spec = conduit_loader::Specification::read(&repository.join("spec"))
+        .map_err(|error| error.to_string())?;
+    let contents = format!("apiVersion: {}\npackages: {{}}\n", spec.names().api_version);
+    let file = "conduit.yaml";
+    match OpenOptions::new().write(true).create_new(true).open(file) {
+        Ok(mut manifest) => {
+            if let Err(error) = manifest.write_all(contents.as_bytes()) {
+                drop(manifest);
+                let _ = fs::remove_file(file);
+                return Err(format!("init: cannot write {file}: {error}"));
+            }
+            Ok(())
+        }
+        Err(error) if error.kind() == ErrorKind::AlreadyExists => {
+            eprintln!("conduit init: {file} already exists; nothing changed");
+            Ok(())
+        }
+        Err(error) => Err(format!("init: cannot create {file}: {error}")),
+    }
+}
+
 fn read_arguments(path: &str, has_inline: bool) -> Result<Value> {
     let source = if path == "-" {
         "standard input".to_string()

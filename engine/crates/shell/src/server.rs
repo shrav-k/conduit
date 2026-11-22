@@ -1207,6 +1207,29 @@ pub async fn client(
     tool: Option<&str>,
     arguments: Value,
 ) -> Result<Value> {
+    client_inner(directory, as_instance, tool, arguments, None).await
+}
+
+pub(crate) async fn probe_root(directory: &Path, verified_url: Option<&str>) -> Result<()> {
+    let probe = client_inner(directory, None, None, json!({}), verified_url);
+    if verified_url.is_some() {
+        tokio::time::timeout(std::time::Duration::from_secs(31), probe)
+            .await
+            .map_err(|error| format!("root probe timed out: {error}"))?
+            .map_err(|cause| crate::user_config::escape_line_breaks(&cause))?;
+    } else {
+        probe.await?;
+    }
+    Ok(())
+}
+
+async fn client_inner(
+    directory: &Path,
+    as_instance: Option<&str>,
+    tool: Option<&str>,
+    arguments: Value,
+    verified_url: Option<&str>,
+) -> Result<Value> {
     use rmcp::{
         ServiceExt,
         transport::{
@@ -1214,17 +1237,29 @@ pub async fn client(
             streamable_http_client::StreamableHttpClientTransportConfig,
         },
     };
-    let config = crate::Config::for_store(directory)?;
+    let engine_url = match verified_url {
+        Some(url) => url.to_owned(),
+        None => crate::Config::for_store(directory)?.engine_url,
+    };
+    let quiet = verified_url.is_some();
     let asked = as_instance.unwrap_or("root");
     let token = client_token(directory, asked)?;
+    let display_error = |error: String| {
+        if quiet && !token.is_empty() {
+            error.replace(token.as_str(), "[redacted]")
+        } else {
+            error
+        }
+    };
     let mut initialized = None;
     for attempt in 1..=3 {
+        let mut http = reqwest::Client::builder().retry(reqwest::retry::never());
+        if quiet {
+            http = http.no_proxy().redirect(reqwest::redirect::Policy::none());
+        }
         let transport = StreamableHttpClientTransport::with_client(
-            reqwest::Client::builder()
-                .retry(reqwest::retry::never())
-                .build()
-                .map_err(|e| e.to_string())?,
-            StreamableHttpClientTransportConfig::with_uri(config.engine_url.clone())
+            http.build().map_err(|e| e.to_string())?,
+            StreamableHttpClientTransportConfig::with_uri(engine_url.clone())
                 .auth_header(token.clone())
                 .reinit_on_expired_session(false),
         );
@@ -1242,14 +1277,16 @@ pub async fn client(
             };
         let message = format!(
             "engine session initialization at {} failed after {:.3} seconds (attempt {attempt}/3): {error}; run conduit serve --store {} and check its diagnostics",
-            config.engine_url,
+            engine_url,
             started.elapsed().as_secs_f64(),
             directory.display()
         );
         if attempt == 3 {
-            return Err(message);
+            return Err(display_error(message));
         }
-        eprintln!("{message}; retrying initialization only");
+        if !quiet {
+            eprintln!("{message}; retrying initialization only");
+        }
         tokio::time::sleep(std::time::Duration::from_millis(100)).await;
     }
     let service = initialized.ok_or("engine initialization did not complete")?;
@@ -1277,7 +1314,8 @@ pub async fn client(
     // Preserve the request failure if cleanup also fails, and describe cleanup
     // failures through the same context when the request succeeded.
     let response = response.and_then(|value| shutdown.map(|_| value));
-    if tool.is_none()
+    if !quiet
+        && tool.is_none()
         && response
             .as_ref()
             .is_ok_and(|r| r["tools"].as_array().is_some_and(Vec::is_empty))
@@ -1289,5 +1327,7 @@ pub async fn client(
     if let Ok(reply) = &response {
         crate::author::note_unanswered(reply);
     }
-    response.map_err(|error| format!("{} for {asked} failed: {error}; check conduit tools and the serving engine's diagnostics; this request was not retried", tool.unwrap_or("tools/list")))
+    response.map_err(|error| {
+        display_error(format!("{} for {asked} failed: {error}; check conduit tools and the serving engine's diagnostics; this request was not retried", tool.unwrap_or("tools/list")))
+    })
 }

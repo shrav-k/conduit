@@ -201,6 +201,18 @@ cargo run --release -p conduit-shell -- inspect --store /tmp/conduit-store
 cargo run --release -p conduit-shell -- records --store /tmp/conduit-store
 ```
 
+Bare `conduit init` creates `conduit.yaml` in the current directory with the API version and
+`packages: {}`. If `conduit.yaml`, `conduit.yml` or `conduit.json` already exists, it reports
+that file and leaves it as is. This command opens no store. Use `init --store DIR` to initialize
+a private store and its root identity. The store, runner and labeling options require
+`--store DIR` with `init`.
+
+The CLI stores the current engine context and package cache in the absolute directory named by
+`CONDUIT_CONFIG_DIR`, or in `$HOME/.config/conduit` when the variable is unset or empty. When
+`install` verifies the archive's SHA-256, it keeps the bytes under `packages/HEX` in that
+directory, even if the engine refuses the install. A cache write failure is reported on standard
+error and the install continues. `install` changes no project manifest.
+
 First start uses the machine's hostname, OS and architecture, plus no custom labels unless
 `--label KEY=VALUE` is supplied. Install every required package explicitly, including S1's
 filesystem, history and registration-only agents packages. Neither registration nor first
@@ -763,8 +775,20 @@ instances. Each request prints one JSON result line, including revision inspecti
 After startup setup and listener binding, `serve` prints one ready line of the form
 `{"ready":{"store":"STORE","url":"http://127.0.0.1:3000/mcp"}}`, where STORE is the store's
 canonical path; parse it as JSON, since the order of its keys is not fixed.
+Before printing it, the CLI replaces `context.json` in the per-user directory
+with the canonical store path, URL and the line printed by `conduit --version`. The context
+stays after `serve` exits. A context write failure is reported on standard error and `serve`
+continues.
 A failed startup setup leaves `serve` listening so a missing Conduit can be submitted and the
 instance set up through it with `call`.
+
+`install`, `submit`, `replace`, `retire`, `unregister`, `inspect`, `pending`, `answer`,
+`sign-in`, `records`, `tools` and `call` use that context when `--store DIR` is omitted. They
+verify that the initialized store fixes the recorded URL and that the engine there answers as
+that store's root, then print the context file, store and URL on standard error. If the context
+is missing, invalid or stale, they exit with status 2 before sending the command and say to
+start `conduit serve --store DIR` or give `--store DIR`. An explicit `--store DIR` bypasses the
+context. `serve` and `register` require it.
 
 `conduit inspect --store DIR` works while serving as root MCP inspection requests, and locally
 when the store is not held. `conduit inspect --store DIR --setup` shows each instance's last setup

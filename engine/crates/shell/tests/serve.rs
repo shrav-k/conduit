@@ -81,6 +81,7 @@ fn cli(store: &Path, verb: &str, args: &[&str]) -> Value {
 }
 fn cli_output(store: &Path, verb: &str, args: &[&str]) -> Output {
     Command::new(env!("CARGO_BIN_EXE_conduit"))
+        .env("CONDUIT_CONFIG_DIR", store.parent().unwrap().join("config"))
         .arg(verb)
         .arg("--store")
         .arg(store)
@@ -398,7 +399,11 @@ fn spawn_server(store: &Path, stdout: Stdio) -> Server {
 
 fn server_command(store: &Path) -> Command {
     let mut command = Command::new(env!("CARGO_BIN_EXE_conduit"));
-    command.arg("serve").arg("--store").arg(store);
+    command
+        .env("CONDUIT_CONFIG_DIR", store.parent().unwrap().join("config"))
+        .arg("serve")
+        .arg("--store")
+        .arg(store);
     command
 }
 fn run_groups(store: &Path, server: &Server) -> Vec<i32> {
@@ -646,6 +651,7 @@ fn author_commands_require_serve_and_make_recorded_requests() {
         ("unregister", vec!["Pool/change-pool"]),
     ] {
         let output = Command::new(env!("CARGO_BIN_EXE_conduit"))
+            .env("CONDUIT_CONFIG_DIR", temp.path().join("config"))
             .arg(verb)
             .arg("--store")
             .arg(&store)

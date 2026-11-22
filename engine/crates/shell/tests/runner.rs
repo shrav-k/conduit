@@ -802,6 +802,7 @@ fn serve_signal_during_setup_ends_run_and_starts_no_later_part() {
     }
     let mut server = Server(
         Command::new(env!("CARGO_BIN_EXE_conduit"))
+            .env("CONDUIT_CONFIG_DIR", parent.path().join("config"))
             .arg("serve")
             .arg("--store")
             .arg(parent.path().join("store"))

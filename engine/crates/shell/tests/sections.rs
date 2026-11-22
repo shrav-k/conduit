@@ -46,6 +46,7 @@ impl Server {
         let mut command = Command::new(env!("CARGO_BIN_EXE_conduit"));
         command
             .current_dir(directory)
+            .env("CONDUIT_CONFIG_DIR", directory.join("config"))
             .arg(verb)
             .arg("--store")
             .arg(directory.join("store"))

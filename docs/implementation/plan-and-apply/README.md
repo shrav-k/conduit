@@ -29,7 +29,7 @@ engine it serves as the person's current engine context; commands use that conte
 `--store DIR` overrides it ([ruling 76, point 3](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-76/README.md)).
 This is proposed help, not today's parser. No separate context-selection command is defined.
 If no context or override is available, stop with status 2; context persistence and discovery
-are implementation work for order 243 (O8 below).
+follow O8 below.
 `conduit plan` is available and never required: apply computes its own plan, with no prior plan
 invocation or saved-plan prerequisite ([ruling 76, point 5](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-76/README.md)).
 `--withhold` belongs to batch 2 ([ruling 61, B11](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-61/README.md)).
@@ -706,7 +706,7 @@ needs no engine operation and discloses nothing new: the pin already names the b
 hash to HEX, whatever `install.v1` then answers: a copy named by its digest is never wrong.
 Nothing else writes the cache; plan and apply only read it. The cache belongs to the person
 on that machine and lies outside every project and its `.conduit/`, so every working copy
-shares it. Order 243 fixes its directory with O8's context data. It holds archives only: no
+shares it. Its location is `packages/` in O8's directory. It holds archives only: no
 credential, and nothing from the engine's store.
 
 The planner reads the archive of each package the manifest pins, of each package that an
@@ -724,13 +724,16 @@ cache and changes nothing in the engine (PKG-027).
 
 The core package has no archive (NAM-009): the planner uses the core contents of its own build,
 as the engine does. So a CLI of another version than the serving engine stops with status 2
-before it sends any request, naming both versions; order 243 fixes how the CLI learns the
-serving engine's version, with O8's context data.
+before it sends any request, naming both versions. The serving engine's version is recorded
+with O8's context data.
 
-O8: Open. Ruling 76 point 3 fixes how commands choose the engine: `conduit serve` records the engine
-it serves as the person's current context, and `--store` overrides it. Order 243 still needs
-to specify the local context's persistence/discovery and unavailable-context diagnostics. No
-additional context command is proposed here. Context data stays outside the project's kept state.
+O8: Decided. Ruling 76 point 3 and order 243 put the context in the absolute
+`CONDUIT_CONFIG_DIR`, or `$HOME/.config/conduit` when it is unset or empty. Before its ready
+line, `conduit serve --store DIR` atomically replaces `context.json` with the canonical store
+path, URL and `conduit --version` line. The last ready engine remains current after it stops.
+With no `--store DIR`, serving commands verify that the initialized store fixes that URL and
+that its root answers there. They name the context file, store and URL on standard error, or
+stop with status 2 and say to start `conduit serve --store DIR` or give `--store DIR`.
 
 ## S1 commands and counts under ruling 76
 

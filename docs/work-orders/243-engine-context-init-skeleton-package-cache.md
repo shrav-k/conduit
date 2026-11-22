@@ -275,4 +275,30 @@ Named here and not in this order:
 
 ## Record
 
-Not yet run.
+Run on 2026-11-21 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+
+**Worker-2's first turn** (20:57 to 21:12) built the per-user directory, the engine context
+that `conduit serve` records, bare serving commands' use of it, `init`'s skeleton and the
+package cache; its five new tests failed first and pass. It stopped before its last checks on
+two gaps in the repository's own checks: `tools/set_names.py` took `CONDUIT_CONFIG_DIR` for an
+unknown run identity variable, and `tools/check_docs.py` read the help's `packages/HEX` as a
+repository path. The coordinator widened the scope by exactly one exception in
+`tools/set_names.py`, in its own exact set with a near miss still rejected, and had the help
+reworded, with no change to the docs check (open to the owner's strike).
+
+**Worker-2's second turn** (21:12 to 21:42) made those two changes and finished the order. The
+whole engine suite passed once, and the default per-user directory was never created.
+
+**Two blind reads at once** (21:43 to 21:46), the owner's answer for A77's window:
+`turn-verifier-2.turn.v1` found one must and one should; the Claude reader passed it with one
+should and one nit, and found neither of the verifier's. One fix turn (21:47 to 21:54), the
+must reproduced by a failing regression first:
+- a bare command accepted a context after its store lost `engine-url.json`, since the store's
+  default URL stood in; context selection now requires the persisted URL;
+- a path holding a line break split a one-line diagnostic; such paths are now escaped;
+- the quiet root probe replaced every failure with fixed words; it now says whether the engine
+  rejected the store's token, answered with another content type or answered with an error;
+- the engine README keeps its advice to parse the ready line as JSON.
+
+Eight context tests pass. Install still writes no pin: order 263 builds DEC-048's exact pins
+and closure walk. The gate's run on the squash is the coordinator's, at the merge.

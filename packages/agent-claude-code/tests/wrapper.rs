@@ -58,6 +58,8 @@ fn config(parent: &std::path::Path, account_services: bool, peer_messaging: bool
         directory: None,
         effort: None,
         state_dir: Some(state.canonicalize().unwrap()),
+        mode: agent_adapter::Mode::Agent,
+        login_directory: None,
         configuration_error: None,
     }
 }
@@ -1012,7 +1014,8 @@ fn v2_without_directory_keeps_v1_tools_and_sandbox() {
         for peer in [false, true] {
             let parent = tempfile::tempdir().unwrap();
             let mut c = config(parent.path(), account, peer);
-            let v1_settings = agent_adapter::settings(&c);
+            let mut v2_settings = agent_adapter::settings(&c);
+            v2_settings["autoMemoryEnabled"] = json!(false);
             for thread in [None, Some("fixture-thread")] {
                 c.v2 = false;
                 let v1 = arguments(&c, thread);
@@ -1035,7 +1038,7 @@ fn v2_without_directory_keeps_v1_tools_and_sandbox() {
                     }
                 }
                 assert_eq!(v2, v1);
-                assert_eq!(agent_adapter::settings(&c), v1_settings);
+                assert_eq!(agent_adapter::settings(&c), v2_settings);
             }
         }
     }
@@ -2009,6 +2012,7 @@ async fn v2_client_home_in_state_directory_leaves_default_home_untouched() {
                 HOME_VARIABLE.into(),
                 canonical_home.to_str().unwrap().into(),
             );
+            expected.insert("CLAUDE_CODE_DISABLE_AUTO_MEMORY".into(), "1".into());
             assert_client_environment(&evidence, &expected);
             assert_eq!(evidence["home"], json!(canonical_home));
             assert_eq!(evidence["dotenv"], json!([]));
@@ -4070,4 +4074,447 @@ fn v2_stated_logins_each_match_one_url() {
             }
         }
     }
+}
+
+struct LoginTestWrapper {
+    child: tokio::process::Child,
+    input: tokio::process::ChildStdin,
+    output: tokio::io::Lines<tokio::io::BufReader<tokio::process::ChildStdout>>,
+    next_id: u64,
+}
+
+impl LoginTestWrapper {
+    async fn start(c: &Config, mode: Option<&str>, directory: Option<&Path>) -> Self {
+        use tokio::io::AsyncBufReadExt;
+        let mut child = tokio::process::Command::new(binary())
+            .args(["--client-program"])
+            .arg(&c.program)
+            .args(mode)
+            .env_clear()
+            .envs(&c.env)
+            .env("AGENT_ACCOUNT_SERVICES", "false")
+            .env("AGENT_TURN_DEADLINE_SECONDS", "10")
+            .env("CONDUIT_STATE_DIR", c.state_dir.as_ref().unwrap())
+            .envs(directory.map(|dir| ("AGENT_LOGIN_DIRECTORY", dir)))
+            .current_dir(&c.cwd)
+            .kill_on_drop(true)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null())
+            .spawn()
+            .unwrap();
+        let input = child.stdin.take().unwrap();
+        let output = tokio::io::BufReader::new(child.stdout.take().unwrap()).lines();
+        let mut wrapper = Self {
+            child,
+            input,
+            output,
+            next_id: 1,
+        };
+        let reply = wrapper.request("server/discover", json!({})).await;
+        assert!(
+            reply["result"]["supportedVersions"]
+                .as_array()
+                .is_some_and(|versions| versions.iter().any(|version| version == "2026-07-28")),
+            "wrapper discovery did not offer 2026-07-28"
+        );
+        wrapper
+    }
+
+    async fn send(&mut self, message: Value) {
+        use tokio::io::AsyncWriteExt;
+        self.input
+            .write_all(format!("{message}\n").as_bytes())
+            .await
+            .unwrap();
+    }
+
+    async fn request(&mut self, method: &str, mut params: Value) -> Value {
+        let id = self.next_id;
+        self.next_id += 1;
+        params["_meta"] = json!({
+            "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+            "io.modelcontextprotocol/clientCapabilities": {"elicitation": {"url": {}}}
+        });
+        self.send(json!({"jsonrpc": "2.0", "id": id, "method": method, "params": params}))
+            .await;
+        tokio::time::timeout(Duration::from_secs(30), async {
+            loop {
+                let line = self
+                    .output
+                    .next_line()
+                    .await
+                    .unwrap()
+                    .expect("wrapper closed without a reply");
+                let reply: Value = serde_json::from_str(&line).unwrap();
+                if reply["id"] == id {
+                    return reply;
+                }
+            }
+        })
+        .await
+        .expect("wrapper reply timed out")
+    }
+
+    async fn call(&mut self, name: &str, arguments: Value) -> Value {
+        let mut reply = self
+            .request("tools/call", json!({"name": name, "arguments": arguments}))
+            .await;
+        assert!(
+            reply.get("result").is_some(),
+            "{name} returned no result (error code {})",
+            reply["error"]["code"]
+        );
+        reply["result"].take()
+    }
+
+    async fn turn(&mut self, message: &str) -> Value {
+        self.call("turn", json!({"message": message})).await
+    }
+
+    async fn close(self) {
+        let Self {
+            mut child, input, ..
+        } = self;
+        drop(input);
+        assert!(child.wait().await.unwrap().success());
+    }
+}
+
+fn account_home(root: &Path) -> std::path::PathBuf {
+    let home = root.join("account-home");
+    fs::create_dir_all(&home).unwrap();
+    home.canonicalize().unwrap()
+}
+
+#[tokio::test]
+async fn login_resource_hooks_keep_the_account_home() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = config(parent.path(), false, false);
+    fs::write(c.cwd.join("login-url"), login_template(&stated_login())).unwrap();
+    let home = c.state_dir.as_ref().unwrap().join("account-home");
+    let mut wrapper = LoginTestWrapper::start(&c, Some("--login-resource"), None).await;
+    let reply = wrapper.request("tools/list", json!({})).await;
+    let mut tools: Vec<_> = reply["result"]["tools"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|tool| tool["name"].as_str().unwrap())
+        .collect();
+    tools.sort_unstable();
+    assert_eq!(tools, ["account", "retire", "sign-in", "sign-out"]);
+    let status = wrapper.call("account", json!({})).await;
+    assert_eq!(status["isError"], false);
+    assert!(status["structuredContent"]["account"].is_null());
+    assert_eq!(home.metadata().unwrap().permissions().mode() & 0o777, 0o700);
+    let sign_in = wrapper.call("sign-in", json!({})).await;
+    assert_eq!(sign_in["resultType"], "input_required");
+    assert_eq!(
+        wrapper.call("sign-out", json!({})).await["content"][0]["text"],
+        SIGNED_OUT
+    );
+    fs::write(home.join("marker"), []).unwrap();
+    assert_eq!(
+        wrapper.call("retire", json!({})).await["content"][0]["text"],
+        RETIRED
+    );
+    assert!(entry_names(&home).is_empty());
+    for (log, operation, count) in [
+        ("statuses.jsonl", "status", 1),
+        ("logins.jsonl", "login", 1),
+        ("logouts.jsonl", "logout", 2),
+    ] {
+        let rows = hook_lines(&c.cwd.join(log));
+        assert_eq!(rows.len(), count);
+        for row in rows {
+            assert_eq!(row["args"], json!(["auth", operation]));
+            assert!(row["environment"][HOME_VARIABLE] == json!(home));
+        }
+    }
+    assert!(!c.state_dir.as_ref().unwrap().join(HOME_NAME).exists());
+    wrapper.close().await;
+}
+
+fn account_home_evidence(reply: &Value) -> Value {
+    assert_eq!(reply["isError"], false);
+    serde_json::from_str(reply["structuredContent"]["text"].as_str().unwrap()).unwrap()
+}
+
+#[tokio::test]
+async fn v3_runs_in_the_account_home() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = config(parent.path(), false, false);
+    let login = parent.path().join("login");
+    let home = account_home(&login);
+    let mut wrapper = LoginTestWrapper::start(&c, Some("--shared-login"), Some(&login)).await;
+    for turn in 1..=2 {
+        let evidence = account_home_evidence(&wrapper.turn("ACCOUNT-HOME").await);
+        assert_eq!(evidence["home"], json!(home));
+        assert_eq!(evidence["number"], turn);
+        let args = evidence["args"].as_array().unwrap();
+        for (flag, argument) in [
+            ("--setting-sources", json!("")),
+            ("--settings", json!(c.cwd.join("settings.json"))),
+            ("--mcp-config", json!(c.cwd.join("mcp.json"))),
+        ] {
+            let at = args.iter().position(|arg| arg == flag).unwrap();
+            assert_eq!(args[at + 1], argument);
+        }
+        assert!(args.iter().any(|arg| arg == "--no-session-persistence"));
+        assert!(args.iter().any(|arg| arg == "--strict-mcp-config"));
+        assert!(entry_names(&home).is_empty());
+    }
+    wrapper.close().await;
+
+    let started = c.cwd.join("client-started");
+    fs::remove_file(&started).unwrap();
+    fs::remove_dir(&home).unwrap();
+    let outside = parent.path().join("outside");
+    fs::create_dir(&outside).unwrap();
+    let non_unicode = login.join(std::ffi::OsStr::from_bytes(b"non-unicode-\xff"));
+    for (directory, destination) in [
+        (Path::new("relative"), None),
+        (login.as_path(), Some(outside.as_path())),
+        (non_unicode.as_path(), None),
+    ] {
+        if let Some(destination) = destination {
+            symlink(destination, &home).unwrap();
+        }
+        let mut wrapper =
+            LoginTestWrapper::start(&c, Some("--shared-login"), Some(directory)).await;
+        let reply = wrapper.turn("ACCOUNT-HOME").await;
+        assert_eq!(reply["isError"], true);
+        assert!(
+            reply["content"][0]["text"]
+                .as_str()
+                .unwrap()
+                .contains("login home (CLAUDE_CONFIG_DIR):")
+        );
+        assert!(!started.exists());
+        wrapper.close().await;
+        if destination.is_some() {
+            fs::remove_file(&home).unwrap();
+        }
+    }
+}
+
+#[tokio::test]
+async fn auto_memory_stays_off() {
+    for shared in [false, true] {
+        let parent = tempfile::tempdir().unwrap();
+        let c = config(parent.path(), false, false);
+        let login = parent.path().join("login");
+        let home = if shared {
+            account_home(&login)
+        } else {
+            let home = c.state_dir.as_ref().unwrap().join(HOME_NAME);
+            fs::create_dir(&home).unwrap();
+            home.canonicalize().unwrap()
+        };
+        let settings = home.join("settings.json");
+        fs::write(&settings, r#"{"autoMemoryEnabled": true}"#).unwrap();
+        let mut wrapper = LoginTestWrapper::start(
+            &c,
+            shared.then_some("--shared-login"),
+            shared.then_some(login.as_path()),
+        )
+        .await;
+        for number in [1, 2, 1] {
+            let evidence = account_home_evidence(&wrapper.turn("ACCOUNT-HOME").await);
+            assert_eq!(evidence["number"], number);
+            assert_eq!(
+                evidence["settings"]["autoMemoryEnabled"], false,
+                "missing auto memory setting"
+            );
+            assert_eq!(
+                evidence["autoMemoryDisabled"], true,
+                "missing auto memory environment switch"
+            );
+            assert!(evidence["homeMemoryEnabled"] == true);
+            assert!(!home.join("projects").exists());
+            if number == 2 {
+                assert_eq!(
+                    wrapper.call("new-conversation", json!({})).await["isError"],
+                    false
+                );
+                fs::write(
+                    c.cwd.join("settings.json"),
+                    r#"{"autoMemoryEnabled": true}"#,
+                )
+                .unwrap();
+            }
+        }
+        wrapper.close().await;
+    }
+}
+
+#[tokio::test]
+async fn v3_retire_never_logs_out_its_login_resource() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = config(parent.path(), false, false);
+    let login = parent.path().join("login");
+    let home = account_home(&login);
+    fs::write(home.join("marker"), []).unwrap();
+    let mut wrapper = LoginTestWrapper::start(&c, Some("--shared-login"), Some(&login)).await;
+    let evidence = account_home_evidence(&wrapper.turn("ACCOUNT-HOME").await);
+    let pid = i32::try_from(evidence["pid"].as_i64().unwrap()).unwrap();
+    let retired = wrapper.call("retire", json!({})).await;
+    assert_eq!(
+        retired["content"][0]["text"],
+        "client stopped; its login and configuration directory were left to its login Resource"
+    );
+    assert!(process_gone(pid));
+    assert!(!c.cwd.join("logouts.jsonl").exists());
+    assert_eq!(entry_names(&home), ["marker"]);
+    let next = wrapper.turn("ACCOUNT-HOME").await;
+    assert_eq!(next["isError"], true);
+    assert_eq!(next["content"][0]["text"], RETIRED_REFUSAL);
+    let tools = wrapper.request("tools/list", json!({})).await;
+    let mut names: Vec<_> = tools["result"]["tools"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|tool| tool["name"].as_str().unwrap())
+        .collect();
+    names.sort_unstable();
+    assert_eq!(names, ["new-conversation", "retire", "turn"]);
+    wrapper.close().await;
+}
+
+#[tokio::test]
+async fn v3_lapsed_login_is_reported_as_the_resources() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = config(parent.path(), false, false);
+    let login = parent.path().join("login");
+    fs::create_dir(&login).unwrap();
+    let mut wrapper = LoginTestWrapper::start(&c, Some("--shared-login"), Some(&login)).await;
+    let lapse = account_home_lapse();
+    assert_eq!(wrapper.turn("ACCOUNT-HOME").await, lapse);
+    assert!(!c.cwd.join("client-started").exists());
+    account_home(&login);
+    let evidence = account_home_evidence(&wrapper.turn("ACCOUNT-HOME").await);
+    assert_eq!(evidence["number"], 1);
+    assert_eq!(wrapper.turn("ACCOUNT-HOME:authentication").await, lapse);
+    let refused = wrapper.turn("ACCOUNT-HOME").await;
+    assert!(
+        refused["content"][0]["text"]
+            .as_str()
+            .unwrap()
+            .contains("implicit restart refused")
+    );
+    let conversation = wrapper.call("new-conversation", json!({})).await;
+    assert_eq!(conversation["structuredContent"]["ended"]["turns"], 2);
+    let usage_limit = wrapper.turn("ACCOUNT-HOME:usage limit").await;
+    assert_eq!(usage_limit["isError"], true);
+    assert!(usage_limit.get("inputRequests").is_none());
+    wrapper.close().await;
+
+    let mut v2 = LoginTestWrapper::start(&c, None, None).await;
+    let reply = v2.turn("ACCOUNT-HOME:authentication").await;
+    assert_eq!(reply["isError"], true);
+    assert!(reply.get("inputRequests").is_none());
+    let failed: Value =
+        serde_json::from_str(reply["content"][1]["text"].as_str().unwrap()).unwrap();
+    assert_eq!(failed["failedTurn"]["class"], "authentication");
+    v2.close().await;
+}
+
+fn account_home_lapse() -> Value {
+    json!({"resultType":"input_required","inputRequests":{"sign-in":{
+        "method":"elicitation/create","params":{
+            "mode":"url","message":"The login Resource's Claude Code login is missing or has lapsed.",
+            "url":"https://code.claude.com/docs/en/authentication"
+        }
+    }}})
+}
+
+#[tokio::test]
+async fn v3_missing_home_between_turns_leaves_the_conversation() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = config(parent.path(), false, false);
+    let login = parent.path().join("login");
+    let home = account_home(&login);
+    let mut wrapper = LoginTestWrapper::start(&c, Some("--shared-login"), Some(&login)).await;
+    let first = account_home_evidence(&wrapper.turn("ACCOUNT-HOME").await);
+    assert_eq!(first["number"], 1);
+    fs::remove_dir(&home).unwrap();
+    assert!(
+        wrapper.turn("ACCOUNT-HOME").await == account_home_lapse(),
+        "the resumed turn reached the client after the shared home was removed"
+    );
+    account_home(&login);
+    let next = account_home_evidence(&wrapper.turn("ACCOUNT-HOME").await);
+    assert_eq!(next["number"], 2);
+    assert_eq!(next["pid"], first["pid"]);
+    let conversation = wrapper.call("new-conversation", json!({})).await;
+    assert_eq!(conversation["structuredContent"]["ended"]["turns"], 2);
+    wrapper.close().await;
+}
+
+#[tokio::test]
+async fn v3_relaunch_does_not_follow_run_config_links() {
+    for name in ["settings.json", "mcp.json"] {
+        let parent = tempfile::tempdir().unwrap();
+        let c = config(parent.path(), false, false);
+        let login = parent.path().join("login");
+        let home = account_home(&login);
+        let target = home.join("benign.txt");
+        let marker = b"shared fixture contents";
+        fs::write(&target, marker).unwrap();
+        let mut wrapper = LoginTestWrapper::start(&c, Some("--shared-login"), Some(&login)).await;
+        account_home_evidence(&wrapper.turn("ACCOUNT-HOME").await);
+        assert_eq!(
+            wrapper.call("new-conversation", json!({})).await["isError"],
+            false
+        );
+        let started = c.cwd.join("client-started");
+        fs::remove_file(&started).unwrap();
+        let run_file = c.cwd.join(name);
+        fs::remove_file(&run_file).unwrap();
+        symlink(&target, &run_file).unwrap();
+
+        let reply = wrapper.turn("ACCOUNT-HOME").await;
+        assert!(
+            fs::read(&target).unwrap() == marker,
+            "{name} overwrote a shared file"
+        );
+        assert_eq!(reply["isError"], true);
+        assert!(
+            reply["content"][0]["text"]
+                .as_str()
+                .unwrap()
+                .contains("cannot prepare run files")
+        );
+        assert!(!started.exists());
+        assert_eq!(fs::read_link(&run_file).unwrap(), target);
+        wrapper.close().await;
+    }
+}
+
+#[tokio::test]
+async fn v3_engine_mcp_authentication_does_not_report_login_lapse() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = config(parent.path(), false, false);
+    let login = parent.path().join("login");
+    account_home(&login);
+    let mut wrapper = LoginTestWrapper::start(&c, Some("--shared-login"), Some(&login)).await;
+    for message in [
+        "ACCOUNT-HOME:engine MCP server returned 401: missing credentials",
+        "ACCOUNT-HOME-EOF:MCP client for 'engine' failed to start: 401 missing login credentials",
+    ] {
+        let reply = wrapper.turn(message).await;
+        assert!(
+            reply.get("inputRequests").is_none(),
+            "engine MCP 401 raised a shared login action"
+        );
+        assert_eq!(reply["isError"], true);
+        let failed: Value =
+            serde_json::from_str(reply["content"][1]["text"].as_str().unwrap()).unwrap();
+        assert_eq!(failed["failedTurn"]["class"], "authentication");
+        assert_eq!(
+            wrapper.call("new-conversation", json!({})).await["isError"],
+            false
+        );
+    }
+    wrapper.close().await;
 }

@@ -6,8 +6,11 @@ use std::{collections::BTreeMap, fs, io::Write, path::Path};
 const NEW_CONVERSATION: &str = "new-conversation.v1";
 const NEW_CONVERSATION_REF: &str = "#new-conversation.v1";
 
-fn codex_login_type(name: &Value) -> bool {
-    name == "codex-login.v1" || name == "codex.v3"
+fn shared_login_type(name: &Value) -> bool {
+    matches!(
+        name.as_str(),
+        Some("codex-login.v1" | "codex.v3" | "account-home.v1" | "claude-code.v3")
+    )
 }
 
 fn write_fixture(path: &Path, bytes: &[u8], check: bool) {
@@ -37,7 +40,7 @@ fn agent_contracts_v020(path: &Path) -> Vec<Value> {
     docs.retain(|d| {
         d["kind"] != "Conduit"
             && (d["kind"] != "Operation" || d["metadata"]["name"] != NEW_CONVERSATION)
-            && (d["kind"] != "Type" || !codex_login_type(&d["metadata"]["name"]))
+            && (d["kind"] != "Type" || !shared_login_type(&d["metadata"]["name"]))
     });
     for doc in &mut docs {
         match doc["kind"].as_str() {
@@ -81,7 +84,7 @@ fn agent_fixtures(root: &Path, check: bool, generated: &mut BTreeMap<String, Vec
     manifest["address"] = json!("example.org/conformance/codex-no-account-hook");
     manifest["version"] = json!("0.2.0");
     manifest["exports"].as_array_mut().unwrap().retain(|op| {
-        op != NEW_CONVERSATION && op != "turn" && op != "conversation" && !codex_login_type(op)
+        op != NEW_CONVERSATION && op != "turn" && op != "conversation" && !shared_login_type(op)
     });
     let mut wrapper = manifest["implementations"]["wrapper-v2"].take();
     let account = wrapper["implements"]

@@ -1,8 +1,7 @@
-//! claude-code.v2's sign-in hooks (orders 050i and 050j): Claude Code's own status, logout and
-//! login, run in this Agent's own home alone.
+//! Claude Code's status, logout and login hooks run in the home of the instance that owns it.
 use super::{
-    ClientTree, Config, LOGOUT_DEADLINE, POLL, Session, client_command, client_home, exit_cause,
-    logout, process, signal_group,
+    ClientTree, Config, LOGOUT_DEADLINE, Mode, POLL, Session, client_command, client_home,
+    exit_cause, logout, process, signal_group,
 };
 use anyhow::{Result, anyhow, bail, ensure};
 use serde_json::Value;
@@ -105,18 +104,27 @@ async fn account_status(
 }
 
 impl Session {
+    fn login_hook_ready(&self, hook: &str) -> Result<()> {
+        ensure!(self.config.v2, "{hook}: a .v1 Agent has none");
+        ensure!(
+            self.config.mode != Mode::SharedLoginAgent,
+            "{hook}: the login Resource owns this hook"
+        );
+        if self.config.state_dir.is_none()
+            && let Some(error) = &self.config.configuration_error
+        {
+            bail!("{error}");
+        }
+        Ok(())
+    }
+
     /// The account hook: the account the client's status names in this Agent's own home.
     pub async fn account(&self) -> Result<Option<String>> {
         self.account_within(STATUS_DEADLINE).await
     }
     /// The account hook, with the status's deadline given; `account` gives STATUS_DEADLINE.
     pub async fn account_within(&self, deadline: Duration) -> Result<Option<String>> {
-        ensure!(self.config.v2, "account hook: a .v1 Agent has none");
-        if self.config.state_dir.is_none()
-            && let Some(error) = &self.config.configuration_error
-        {
-            bail!("{error}");
-        }
+        self.login_hook_ready("account hook")?;
         let home = client_home(&self.config)?;
         account_status(&self.config, &home, &self.tree, deadline).await
     }
@@ -126,12 +134,7 @@ impl Session {
     }
     /// The sign-out hook, with the logout's deadline given; `sign_out` gives LOGOUT_DEADLINE.
     pub async fn sign_out_within(&mut self, deadline: Duration) -> Result<String> {
-        ensure!(self.config.v2, "sign-out hook: a .v1 Agent has none");
-        if self.config.state_dir.is_none()
-            && let Some(error) = &self.config.configuration_error
-        {
-            bail!("{error}");
-        }
+        self.login_hook_ready("sign-out hook")?;
         if self.stream.is_some() && self.failed.is_none() {
             self.failed = Some((self.turns_started, SIGNED_OUT_CAUSE.into()));
         }
@@ -402,12 +405,7 @@ impl Session {
     }
 
     async fn start_sign_in(&mut self, deadline: Duration) -> Result<String> {
-        ensure!(self.config.v2, "sign-in hook: a .v1 Agent has none");
-        if self.config.state_dir.is_none()
-            && let Some(error) = &self.config.configuration_error
-        {
-            bail!("{error}");
-        }
+        self.login_hook_ready("sign-in hook")?;
         if let Some(login) = self.login.take() {
             login.stop();
         }

@@ -67,8 +67,13 @@ fn standard_conduit_templates_keep_their_operations() {
         .take_while(|line| line.starts_with("- "))
         .collect();
     assert!(
-        exports.ends_with(&["- turn", "- conversation"]),
-        "exports must end with turn and conversation"
+        exports.ends_with(&[
+            "- turn",
+            "- conversation",
+            "- account-home.v1",
+            "- claude-code.v3"
+        ]),
+        "template exports must immediately precede the new Types"
     );
     let contracts = include_str!("../contracts.yaml");
     for template in [
@@ -97,4 +102,60 @@ spec:
             "expected one copy of:\n{template}"
         );
     }
+}
+
+#[test]
+fn account_home_types_keep_their_shape() {
+    let contracts = include_str!("../contracts.yaml");
+    let document = |name| {
+        let name_line = format!("  name: {name}");
+        contracts
+            .split("\n---\n")
+            .find(|doc| doc.lines().any(|line| line == name_line))
+            .unwrap_or_else(|| panic!("missing Type {name}"))
+    };
+    let home = document("account-home.v1");
+    let agent = document("claude-code.v3");
+    let logins = |doc: &'static str| {
+        doc.split_once("    logins:\n")
+            .unwrap()
+            .1
+            .lines()
+            .take_while(|line| line.starts_with("    "))
+            .collect::<Vec<_>>()
+    };
+    assert!(home.contains("kind: Type\nmetadata:"));
+    assert!(home.contains("  family: Resource\n"));
+    assert!(home.contains("      account: {type: string}\n    required: [account]\n"));
+    assert!(home.contains("  signIn:\n    account: /account\n"));
+    assert!(logins(home) == logins(document("claude-code.v2")));
+    assert!(!home.contains("  offers:"));
+    assert!(home.contains("  records: {inputs: false, outputs: false}"));
+    let requirements = home
+        .split_once("  requires:\n")
+        .unwrap()
+        .1
+        .split_once("  implementation:\n")
+        .unwrap()
+        .0;
+    for hook in ["sign-in", "account", "sign-out", "retire"] {
+        let operation = format!("'github.com/shrav-k/conduit/core#{hook}-hook.v1'");
+        assert!(requirements.contains(&format!("  - {operation}\n")));
+        assert!(home.contains(&format!("    {operation}: '#login'\n")));
+    }
+    assert_eq!(requirements.lines().count(), 4);
+
+    assert!(agent.contains("kind: Type\nmetadata:"));
+    assert!(agent.contains("  family: Agent\n"));
+    assert!(agent.contains("  toolsDirectory: {directory: /directory}\n"));
+    assert!(agent.contains("  loginResource: {place: /login}\n"));
+    assert!(agent.contains("login: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}"));
+    assert!(agent.contains("required: [directory, turnDeadlineSeconds, effort, accountServices, model, peerMessaging, login]"));
+    assert!(!agent.contains("  signIn:") && !agent.contains("      account:"));
+    assert!(agent.contains("  offers: ['#conversation.v1']\n"));
+    assert!(agent.contains("  requires: ['github.com/shrav-k/conduit/core#retire-hook.v1']\n"));
+    assert_eq!(agent.matches(": '#wrapper-v3'\n").count(), 3);
+    let manifest = include_str!("../conduit.yaml");
+    assert!(manifest.contains("- conversation\n- account-home.v1\n- claude-code.v3\n"));
+    assert!(manifest.contains("AGENT_LOGIN_DIRECTORY: /login\n"));
 }

@@ -1,6 +1,6 @@
 apiVersion: github.com/shrav-k/conduit/v0
 address: example.org/conduit/agent-claude-code
-version: 0.2.2
+version: 0.2.3
 exports:
 - claude-code.v1
 - claude-code.v2
@@ -9,6 +9,8 @@ exports:
 - new-conversation.v1
 - turn
 - conversation
+- account-home.v1
+- claude-code.v3
 implementations:
   wrapper:
     implements: ['#turn.v1', '#new-conversation.v1']
@@ -39,3 +41,35 @@ implementations:
       'github.com/shrav-k/conduit/core#account-hook.v1': account
       'github.com/shrav-k/conduit/core#sign-out-hook.v1': sign-out
       'github.com/shrav-k/conduit/core#sign-in-hook.v1': sign-in
+  login:
+    implements:
+    - 'github.com/shrav-k/conduit/core#sign-in-hook.v1'
+    - 'github.com/shrav-k/conduit/core#account-hook.v1'
+    - 'github.com/shrav-k/conduit/core#sign-out-hook.v1'
+    - 'github.com/shrav-k/conduit/core#retire-hook.v1'
+    command: [bin/agent-claude-code, --login-resource]
+    plain: true
+    tools:
+      'github.com/shrav-k/conduit/core#sign-in-hook.v1': sign-in
+      'github.com/shrav-k/conduit/core#account-hook.v1': account
+      'github.com/shrav-k/conduit/core#sign-out-hook.v1': sign-out
+      'github.com/shrav-k/conduit/core#retire-hook.v1': retire
+  wrapper-v3:
+    implements:
+    - '#turn.v1'
+    - '#new-conversation.v1'
+    - 'github.com/shrav-k/conduit/core#retire-hook.v1'
+    command: [bin/agent-claude-code, --shared-login]
+    environment:
+      AGENT_DIRECTORY: /directory
+      AGENT_TURN_DEADLINE_SECONDS: /turnDeadlineSeconds
+      AGENT_EFFORT: /effort
+      AGENT_ACCOUNT_SERVICES: /accountServices
+      AGENT_MODEL: /model
+      AGENT_PEER_MESSAGING: /peerMessaging
+      AGENT_LOGIN_DIRECTORY: /login
+    plain: true
+    tools:
+      '#turn.v1': turn
+      '#new-conversation.v1': new-conversation
+      'github.com/shrav-k/conduit/core#retire-hook.v1': retire

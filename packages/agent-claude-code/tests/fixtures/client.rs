@@ -135,6 +135,37 @@ async fn plant_tree() {
 }
 
 async fn turn(args: &[String], message: &str, number: usize) {
+    if message == "ACCOUNT-HOME" {
+        let file = args.iter().position(|arg| arg == "--settings").unwrap();
+        let settings: Value =
+            serde_json::from_slice(&std::fs::read(&args[file + 1]).unwrap()).unwrap();
+        let home = std::path::PathBuf::from(std::env::var_os("CLAUDE_CONFIG_DIR").unwrap());
+        let home_settings = std::fs::read(home.join("settings.json"))
+            .ok()
+            .map(|bytes| serde_json::from_slice::<Value>(&bytes).unwrap());
+        let home_memory_enabled =
+            home_settings.is_some_and(|value| value["autoMemoryEnabled"] == true);
+        let auto_memory_disabled =
+            std::env::var_os("CLAUDE_CODE_DISABLE_AUTO_MEMORY").is_some_and(|value| value == "1");
+        if home_memory_enabled && !auto_memory_disabled && settings["autoMemoryEnabled"] != false {
+            std::fs::create_dir_all(home.join("projects/fixture/memory")).unwrap();
+        }
+        let evidence = json!({
+            "home": home, "settings": settings, "autoMemoryDisabled": auto_memory_disabled,
+            "homeMemoryEnabled": home_memory_enabled, "args": args,
+            "number": number, "pid": std::process::id()
+        });
+        emit(json!({"type":"result", "result": evidence.to_string()}));
+        return;
+    }
+    if let Some(cause) = message.strip_prefix("ACCOUNT-HOME-EOF:") {
+        emit(json!({"type":"error", "message": cause}));
+        std::process::exit(1);
+    }
+    if let Some(cause) = message.strip_prefix("ACCOUNT-HOME:") {
+        emit(json!({"type":"result", "is_error": true, "result": cause}));
+        return;
+    }
     if message == "STALE_INIT" {
         let recorded: Value = serde_json::from_str(include_str!("stale-init.json")).unwrap();
         for event in recorded["turns"][number - 1].as_array().unwrap() {

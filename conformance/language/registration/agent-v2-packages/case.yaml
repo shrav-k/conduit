@@ -103,6 +103,18 @@
                   "metadata": {
                     "name": "conversation"
                   }
+                },
+                {
+                  "kind": "Type",
+                  "metadata": {
+                    "name": "account-home.v1"
+                  }
+                },
+                {
+                  "kind": "Type",
+                  "metadata": {
+                    "name": "claude-code.v3"
+                  }
                 }
               ],
               "manifest": {
@@ -130,8 +142,8 @@
             {
               "package": {
                 "address": "example.org/conduit/agent-claude-code",
-                "version": "0.2.2",
-                "digest": "sha256:c1d5cf4b51d07d3690d154cd257fd246ffcf1ad31269dc3659162e8fcc693dfa"
+                "version": "0.2.3",
+                "digest": "sha256:06f9305db38b46b101dbf5b30d8a84943c1fff675fb69c3c6e88cb46dc3fa82b"
               }
             }
           ]
@@ -261,8 +273,8 @@
             {
               "package": {
                 "address": "example.org/conduit/agent-claude-code",
-                "version": "0.2.2",
-                "digest": "sha256:c1d5cf4b51d07d3690d154cd257fd246ffcf1ad31269dc3659162e8fcc693dfa"
+                "version": "0.2.3",
+                "digest": "sha256:06f9305db38b46b101dbf5b30d8a84943c1fff675fb69c3c6e88cb46dc3fa82b"
               }
             },
             {

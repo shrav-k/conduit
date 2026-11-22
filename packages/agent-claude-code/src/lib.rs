@@ -47,6 +47,16 @@ pub const RETIRED: &str = "client signed out and its home emptied";
 pub const RETIRED_REFUSAL: &str = "session retired; implicit restart refused";
 const POLL: Duration = Duration::from_millis(20);
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Mode {
+    Agent,
+    SharedLoginAgent,
+    LoginResource,
+}
+
+const ACCOUNT_HOME: &str = "account-home";
+const AUTO_MEMORY_SWITCH: &str = "CLAUDE_CODE_DISABLE_AUTO_MEMORY";
+
 #[derive(Clone, Debug)]
 pub struct Config {
     pub program: PathBuf,
@@ -63,10 +73,12 @@ pub struct Config {
     pub directory: Option<PathBuf>,
     pub effort: Option<String>,
     pub state_dir: Option<PathBuf>,
+    pub mode: Mode,
+    pub login_directory: Option<PathBuf>,
     pub configuration_error: Option<String>,
 }
 impl Config {
-    pub fn from_env() -> Result<Self> {
+    pub fn from_env(mode: Mode) -> Result<Self> {
         let mut c = Self {
             program: if CLAUDE { "claude" } else { "codex" }.into(),
             helper: std::env::current_exe()?,
@@ -86,10 +98,16 @@ impl Config {
             peer_messaging: false,
             model: None,
             timeout: Duration::from_secs(180),
-            v2: false,
+            v2: mode != Mode::Agent,
             directory: None,
             effort: None,
             state_dir: None,
+            mode,
+            login_directory: if mode == Mode::SharedLoginAgent {
+                std::env::var_os("AGENT_LOGIN_DIRECTORY").map(PathBuf::from)
+            } else {
+                None
+            },
             configuration_error: None,
         };
         let mut validate = || -> Result<()> {
@@ -111,27 +129,31 @@ impl Config {
                 "CONDUIT_IDENTITY_DIR".into(),
                 c.identity.display().to_string(),
             );
-            let v2 = std::env::var_os("AGENT_TURN_DEADLINE_SECONDS").is_some();
+            let v2 = c.v2 || std::env::var_os("AGENT_TURN_DEADLINE_SECONDS").is_some();
             c.v2 = v2;
-            c.account_services = boolean("AGENT_ACCOUNT_SERVICES")?;
-            c.peer_messaging = if v2 && std::env::var_os("AGENT_PEER_MESSAGING").is_none() {
-                false
-            } else {
-                boolean("AGENT_PEER_MESSAGING")?
-            };
-            c.model = std::env::var("AGENT_MODEL").ok().filter(|s| !s.is_empty());
+            if mode != Mode::LoginResource {
+                c.account_services = boolean("AGENT_ACCOUNT_SERVICES")?;
+                c.peer_messaging = if v2 && std::env::var_os("AGENT_PEER_MESSAGING").is_none() {
+                    false
+                } else {
+                    boolean("AGENT_PEER_MESSAGING")?
+                };
+                c.model = std::env::var("AGENT_MODEL").ok().filter(|s| !s.is_empty());
+            }
             if v2 {
+                let label = home_label(mode);
                 let state_dir = std::env::var_os("CONDUIT_STATE_DIR")
                     .filter(|dir| !dir.is_empty())
                     .map(PathBuf::from)
-                    .with_context(|| {
-                        format!("client home ({HOME_VARIABLE}): CONDUIT_STATE_DIR is unset")
-                    })?;
+                    .with_context(|| format!("{label}: CONDUIT_STATE_DIR is unset"))?;
                 ensure!(
                     state_dir.is_absolute(),
-                    "client home ({HOME_VARIABLE}): CONDUIT_STATE_DIR is not an absolute path"
+                    "{label}: CONDUIT_STATE_DIR is not an absolute path"
                 );
                 c.state_dir = Some(state_dir);
+                if mode == Mode::LoginResource {
+                    return Ok(());
+                }
                 let n = required("AGENT_TURN_DEADLINE_SECONDS")?;
                 ensure!(
                     !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit()),
@@ -188,22 +210,34 @@ impl Config {
             .unwrap_or(&self.cwd)
     }
 }
+
+fn home_label(mode: Mode) -> String {
+    if mode != Mode::Agent {
+        format!("login home ({HOME_VARIABLE})")
+    } else {
+        format!("client home ({HOME_VARIABLE})")
+    }
+}
+
 /// Resolve and check the client home before a .v2 launch.
 pub fn client_home(c: &Config) -> Result<PathBuf> {
     use std::io::ErrorKind::NotFound;
 
+    let label = home_label(c.mode);
     let state_dir = c
         .state_dir
         .as_ref()
-        .with_context(|| format!("client home ({HOME_VARIABLE}): CONDUIT_STATE_DIR is unset"))?;
+        .with_context(|| format!("{label}: CONDUIT_STATE_DIR is unset"))?;
     let state_dir = state_dir
         .canonicalize()
         .ok()
         .filter(|dir| dir.is_dir())
-        .with_context(|| {
-            format!("client home ({HOME_VARIABLE}): CONDUIT_STATE_DIR is not an existing directory")
-        })?;
-    let home = state_dir.join(HOME_NAME);
+        .with_context(|| format!("{label}: CONDUIT_STATE_DIR is not an existing directory"))?;
+    let home = state_dir.join(if c.mode == Mode::LoginResource {
+        ACCOUNT_HOME
+    } else {
+        HOME_NAME
+    });
     if fs::symlink_metadata(&home).is_err_and(|error| error.kind() == NotFound) {
         #[cfg(unix)]
         let created = {
@@ -212,23 +246,17 @@ pub fn client_home(c: &Config) -> Result<PathBuf> {
         };
         #[cfg(not(unix))]
         let created = fs::create_dir(&home);
-        created.map_err(|_| {
-            anyhow::anyhow!(
-                "client home ({HOME_VARIABLE}): cannot create the home in CONDUIT_STATE_DIR"
-            )
-        })?;
+        created
+            .map_err(|_| anyhow::anyhow!("{label}: cannot create the home in CONDUIT_STATE_DIR"))?;
     }
-    let home = home.canonicalize().map_err(|_| {
-        anyhow::anyhow!("client home ({HOME_VARIABLE}): the home is not a directory")
-    })?;
+    let home = home
+        .canonicalize()
+        .map_err(|_| anyhow::anyhow!("{label}: the home is not a directory"))?;
     ensure!(
         home.starts_with(&state_dir) && home != state_dir,
-        "client home ({HOME_VARIABLE}): the home resolves outside CONDUIT_STATE_DIR"
+        "{label}: the home resolves outside CONDUIT_STATE_DIR"
     );
-    ensure!(
-        home.is_dir(),
-        "client home ({HOME_VARIABLE}): the home is not a directory"
-    );
+    ensure!(home.is_dir(), "{label}: the home is not a directory");
     if !CLAUDE {
         match fs::symlink_metadata(home.join(".env")) {
             Ok(_) => bail!(
@@ -237,12 +265,65 @@ pub fn client_home(c: &Config) -> Result<PathBuf> {
             Err(error) if error.kind() == NotFound => {}
             Err(_) => bail!("client home ({HOME_VARIABLE}): cannot check the home for a .env"),
         }
-        // Codex treats a non-Unicode CODEX_HOME as unset and uses its default home.
+    }
+    if !CLAUDE || c.mode == Mode::LoginResource {
         ensure!(
             home.to_str().is_some(),
-            "client home ({HOME_VARIABLE}): the canonical home path is not valid Unicode"
+            "{label}: the canonical home path is not valid Unicode"
         );
     }
+    Ok(home)
+}
+
+#[derive(Debug)]
+pub struct LoginLapsed;
+
+impl std::fmt::Display for LoginLapsed {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("the login Resource's Claude Code login is missing or has lapsed")
+    }
+}
+
+impl std::error::Error for LoginLapsed {}
+
+fn shared_login_home(c: &Config) -> Result<PathBuf> {
+    use io::ErrorKind::NotFound;
+
+    let label = home_label(c.mode);
+    let directory = c
+        .login_directory
+        .as_deref()
+        .with_context(|| format!("{label}: AGENT_LOGIN_DIRECTORY is unset"))?;
+    ensure!(
+        directory.is_absolute(),
+        "{label}: AGENT_LOGIN_DIRECTORY is not an absolute path"
+    );
+    ensure!(
+        directory.to_str().is_some(),
+        "{label}: AGENT_LOGIN_DIRECTORY is not valid Unicode"
+    );
+    let directory = match directory.canonicalize() {
+        Ok(directory) if directory.is_dir() => directory,
+        Err(error) if error.kind() == NotFound => return Err(LoginLapsed.into()),
+        _ => bail!("{label}: AGENT_LOGIN_DIRECTORY is not an existing directory"),
+    };
+    let home = directory.join(ACCOUNT_HOME);
+    if fs::symlink_metadata(&home).is_err_and(|error| error.kind() == NotFound) {
+        return Err(LoginLapsed.into());
+    }
+    let home = home
+        .canonicalize()
+        .ok()
+        .filter(|home| home.is_dir())
+        .with_context(|| format!("{label}: account-home is not an existing directory"))?;
+    ensure!(
+        home.starts_with(&directory) && home != directory,
+        "{label}: account-home resolves outside AGENT_LOGIN_DIRECTORY"
+    );
+    ensure!(
+        home.to_str().is_some(),
+        "{label}: the canonical home path is not valid Unicode"
+    );
     Ok(home)
 }
 /// The client's own logout, run with the Agent's home alone (order 050g).
@@ -254,7 +335,7 @@ pub fn logout_arguments() -> Vec<String> {
     }
 }
 
-fn empty_home(home: &Path) -> Result<()> {
+fn empty_home(home: &Path, mode: Mode) -> Result<()> {
     fn remove_entries(home: &Path) -> io::Result<()> {
         for entry in fs::read_dir(home)? {
             let path = entry?.path();
@@ -266,8 +347,7 @@ fn empty_home(home: &Path) -> Result<()> {
         }
         Ok(())
     }
-    remove_entries(home)
-        .map_err(|_| anyhow::anyhow!("client home ({HOME_VARIABLE}): cannot empty the home"))
+    remove_entries(home).map_err(|_| anyhow::anyhow!("{}: cannot empty the home", home_label(mode)))
 }
 
 fn quote(s: &str) -> String {
@@ -303,6 +383,9 @@ pub fn settings(c: &Config) -> Value {
         allow.extend(["SendMessage", "ListAgents", "RemoteTrigger"]);
     }
     let mut settings = json!({"permissions":{"allow":allow,"deny":if c.peer_messaging {vec![]} else {vec!["SendMessage","ListAgents","RemoteTrigger"]},"defaultMode":"dontAsk"},"disableAllHooks":true,"enabledPlugins":{},"disableClaudeAiConnectors":!c.account_services});
+    if c.v2 {
+        settings["autoMemoryEnabled"] = json!(false);
+    }
     if c.v2 && c.directory.is_some() {
         settings["permissions"]["defaultMode"] = json!("bypassPermissions");
     }
@@ -313,16 +396,36 @@ pub fn settings(c: &Config) -> Value {
 }
 pub fn prepare(c: &Config) -> Result<()> {
     if CLAUDE {
-        fs::write(
-            c.cwd.join("settings.json"),
-            serde_json::to_vec(&settings(c))?,
+        write_run_file(
+            &c.cwd.join("settings.json"),
+            &serde_json::to_vec(&settings(c))?,
         )?;
         let mut mcp = json!({"mcpServers":{"engine":{"type":"http","url":c.url,"headersHelper":helper_command(c)}}});
         if c.v2 {
             mcp["mcpServers"]["engine"]["timeout"] = json!(c.timeout_millis()?);
         }
-        fs::write(c.cwd.join("mcp.json"), serde_json::to_vec(&mcp)?)?;
+        write_run_file(&c.cwd.join("mcp.json"), &serde_json::to_vec(&mcp)?)?;
     }
+    Ok(())
+}
+
+fn write_run_file(path: &Path, bytes: &[u8]) -> Result<()> {
+    use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+
+    let mut file = fs::OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(false)
+        .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+        .open(path)?;
+    // Check the opened file before truncating it. A hard link could also reach the shared home.
+    let metadata = file.metadata()?;
+    ensure!(
+        metadata.is_file() && metadata.nlink() == 1,
+        "run config must be a regular file with exactly one link"
+    );
+    file.set_len(0)?;
+    io::Write::write_all(&mut file, bytes)?;
     Ok(())
 }
 pub fn arguments(c: &Config, thread: Option<&str>) -> Vec<String> {
@@ -552,12 +655,48 @@ const ERROR_CLASSES: &[(&str, &[&str])] = &[
         ],
     ),
 ];
-fn classify(text: Option<&str>) -> &'static str {
+#[derive(Debug)]
+struct ClientFailure {
+    class: &'static str,
+    engine_mcp: bool,
+}
+
+impl std::fmt::Display for ClientFailure {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "client failure: {}", self.class)
+    }
+}
+
+impl std::error::Error for ClientFailure {}
+
+fn engine_mcp_failure(text: &str) -> bool {
+    let words: Vec<_> = text
+        .split(|ch: char| !(ch.is_ascii_alphanumeric() || ch == '-' || ch == '_'))
+        .filter(|word| !word.is_empty())
+        .collect();
+    words.windows(3).any(|phrase| {
+        matches!(
+            phrase,
+            ["engine", "mcp", "server"] | ["mcp", "server", "engine"]
+        )
+    }) || words.windows(4).any(|phrase| {
+        matches!(
+            phrase,
+            ["mcp", "client", "for", "engine"] | ["mcp", "server", "for" | "named", "engine"]
+        )
+    })
+}
+
+fn classify(text: Option<&str>) -> ClientFailure {
     let text = text.unwrap_or_default().to_ascii_lowercase();
-    ERROR_CLASSES
+    let class = ERROR_CLASSES
         .iter()
         .find(|(_, needles)| needles.iter().any(|needle| text.contains(needle)))
-        .map_or("other", |(class, _)| *class)
+        .map_or("other", |(class, _)| *class);
+    ClientFailure {
+        class,
+        engine_mcp: class == "authentication" && engine_mcp_failure(&text),
+    }
 }
 fn exit_cause(status: std::process::ExitStatus) -> String {
     if let Some(code) = status.code() {
@@ -996,6 +1135,7 @@ impl FailedTurn {
             "resume changed thread" => "resume-changed-thread",
             "client did not start" => "client-did-not-start",
             cause if cause.starts_with("client home (") => "client-home",
+            cause if cause.starts_with("login home (") => "login-home",
             _ => "unclassified",
         }
     }
@@ -1084,25 +1224,38 @@ struct Stream {
     lines: Lines<BufReader<ChildStdout>>,
 }
 impl Stream {
-    async fn boundary_failure(&mut self, class: Option<&str>) -> String {
+    async fn boundary_failure(&mut self, failure: Option<ClientFailure>) -> anyhow::Error {
         let status = timeout(EXIT_WAIT, self.child.wait()).await;
-        if let Some(class) = class {
-            return format!("client failure: {class}");
+        if let Some(failure) = failure {
+            return failure.into();
         }
-        match status {
+        anyhow::anyhow!(match status {
             Ok(Ok(status)) if !status.success() => exit_cause(status),
             Ok(Err(_)) => "client exit: status unknown".into(),
             _ => "EOF before turn boundary".into(),
-        }
+        })
     }
-    fn spawn(c: &Config, args: &[String], tree: &ClientTree) -> Result<Self> {
+    fn spawn(
+        c: &Config,
+        shared_home: Option<&Path>,
+        args: &[String],
+        tree: &ClientTree,
+    ) -> Result<Self> {
         let mut state = c.v2.then(|| tree.0.lock().unwrap());
         ensure!(
             state.as_ref().is_none_or(|state| !state.closed),
             "client did not start"
         );
-        let home = if c.v2 { Some(client_home(c)?) } else { None };
-        let mut child = client_command(c, home.as_deref(), args)
+        let private_home = (c.v2 && c.mode == Mode::Agent)
+            .then(|| client_home(c))
+            .transpose()?;
+        let mut command = client_command(c, shared_home.or(private_home.as_deref()), args);
+        if c.v2 {
+            prepare(c)
+                .map_err(|_| anyhow::anyhow!("invalid configuration: cannot prepare run files"))?;
+            command.env(AUTO_MEMORY_SWITCH, "1");
+        }
+        let mut child = command
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::null())
@@ -1196,17 +1349,38 @@ impl Session {
             )),
         };
         if let Err(error) = result {
+            if error.is::<LoginLapsed>() {
+                return Err(error);
+            }
             let cause = error.to_string();
+            let lapse = self.config.mode == Mode::SharedLoginAgent
+                && self.stream.is_some()
+                && error
+                    .downcast_ref::<ClientFailure>()
+                    .is_some_and(|failure| {
+                        failure.class == "authentication" && !failure.engine_mcp
+                    });
             self.failed = Some((self.turns_started, cause.clone()));
-            return Err(self.end_failed_turn(&cause).await);
+            let failed = self.end_failed_turn(&cause).await;
+            return Err(if lapse { LoginLapsed.into() } else { failed });
         }
         result
     }
     async fn run_turn(&mut self, message: &str) -> Result<Value> {
+        let home = if self.config.mode == Mode::SharedLoginAgent {
+            shared_login_home(&self.config).map(Some)
+        } else {
+            Ok(None)
+        };
+        if home.as_ref().is_err_and(|error| error.is::<LoginLapsed>()) {
+            return Err(LoginLapsed.into());
+        }
         self.turns_started += 1;
+        let home = home?;
         if self.stream.is_none() {
             self.stream = Some(Stream::spawn(
                 &self.config,
+                home.as_deref(),
                 &arguments(&self.config, self.thread.as_deref()),
                 &self.tree,
             )?);
@@ -1225,7 +1399,7 @@ impl Session {
             Ok::<_, anyhow::Error>(())
         }.await;
         if send.is_err() {
-            bail!("{}", stream.boundary_failure(None).await);
+            return Err(stream.boundary_failure(None).await);
         }
         let mut text = String::new();
         let mut tools = json!({"status":"not_reported","observations":[]});
@@ -1238,7 +1412,7 @@ impl Session {
             let line = match stream.lines.next_line().await {
                 Ok(Some(line)) => line,
                 Ok(None) if complete => break,
-                _ => bail!("{}", stream.boundary_failure(latest_error).await),
+                _ => return Err(stream.boundary_failure(latest_error).await),
             };
             index += 1;
             // Never persist raw client streams: they may contain authentication material.
@@ -1280,13 +1454,10 @@ impl Session {
                 latest_error = Some(classify(event["message"].as_str()));
             }
             if !CLAUDE && event["type"] == "turn.failed" {
-                bail!(
-                    "client failure: {}",
-                    classify(event["error"]["message"].as_str())
-                );
+                return Err(classify(event["error"]["message"].as_str()).into());
             }
             if CLAUDE && event["type"] == "result" && event["is_error"] == true {
-                bail!("client failure: {}", classify(event["result"].as_str()));
+                return Err(classify(event["result"].as_str()).into());
             }
             if event["type"] == "item.completed" && event["item"]["type"] == "agent_message" {
                 text = event["item"]["text"].as_str().unwrap_or_default().into();
@@ -1301,10 +1472,10 @@ impl Session {
         }
         if !CLAUDE {
             let status = stream.child.wait().await.map_err(|_| {
-                anyhow::anyhow!(latest_error.map_or_else(
-                    || "client exit: status unknown".to_owned(),
-                    |class| format!("client failure: {class}")
-                ))
+                latest_error.map_or_else(
+                    || anyhow::anyhow!("client exit: status unknown"),
+                    Into::into,
+                )
             })?;
             ensure!(status.success(), "{}", exit_cause(status));
             ensure!(reported_thread, "no thread");
@@ -1342,13 +1513,17 @@ impl Session {
         if let Some(note) = self.shutdown().await.note() {
             bail!("{note}");
         }
+        if self.config.mode == Mode::SharedLoginAgent {
+            return Ok("client stopped; its login and configuration directory were left to its login Resource".into());
+        }
         let home = client_home(&self.config)?;
         logout(&self.config, &home, &self.tree, deadline).await?;
         ensure!(
             client_home(&self.config)? == home,
-            "client home ({HOME_VARIABLE}): cannot empty the home"
+            "{}: cannot empty the home",
+            home_label(self.config.mode)
         );
-        empty_home(&home)?;
+        empty_home(&home, self.config.mode)?;
         Ok(RETIRED.into())
     }
     pub async fn shutdown(&mut self) -> StopReport {

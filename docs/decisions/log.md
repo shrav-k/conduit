@@ -524,3 +524,35 @@ Owner's words: stage 3's pass condition 4 -> "Set aside for stage 3 (Recommended
 Lands in: experiment 028's stage 3: condition 4 (no guard answers broken) is recorded as not shown and judges no order, since under ruling 70 the Agents run unconfined and no guard runs; orders pass or fail on the other conditions; the guards return with the sandbox (ruling 84)
 
 Status: accepted, not done (order 277; stage 3)
+
+## DEC-056, 2026-11-22, the 0.2.1 install ended stage 2
+
+Owner's words: stage 2's results, item 1 -> "It ended stage 2 (Recommended)"
+
+Lands in: experiment 028's stage 2 results: a registration's end condition holds as written when no amendment merged before the event says otherwise; the 0.2.1 install at 12:14 on 2026-11-20 was an upgrade of the store's Agent packages, so stage 2's registered results are turns 1 to 10, and turns 11 to 104 are reported as observations outside the stage
+
+Status: accepted, not done (a results amendment of experiment 028)
+
+## DEC-057, 2026-11-22, order 235's change was no breach
+
+Owner's words: stage 2's results, item 2 -> "No breach (Recommended)"
+
+Lands in: experiment 028's stage 2 results: the bar on orders that change the experiment's directory covers orders sent through Conduit's Fleet; order 235's link pinning (#488), made by the coordinator outside every turn under the amendment of 2026-11-21, neither breached it nor ended the stage
+
+Status: accepted, not done (a results amendment of experiment 028)
+
+## DEC-058, 2026-11-22, records exports committed by order
+
+Owner's words: stage 2's results, item 3 -> "Commit it, split by order (Recommended)"
+
+Lands in: experiment 028: each order's results directory holds its scrubbed records export, every account name replaced by its label, checked by the private-paths guard before merge; stage 2's export of 14:44 on 2026-11-21 first, then each stage's as its results are written
+
+Status: accepted, not done (a results amendment of experiment 028)
+
+## DEC-059, 2026-11-22, stage 2 ended at order 239's merge
+
+Owner's words: stage 2's results, item 4 -> "Ended at 239's merge (Recommended)"
+
+Lands in: DEC-037's "once orders 236 to 239 are in": an order the coordinator held, which sent no turn, keeps no stage open; stage 2 ended at order 239's merge, and order 237 (held under DEC-005, run later on the owner's answer) and orders 240 to 242 fall outside it
+
+Status: accepted, not done (a results amendment of experiment 028)

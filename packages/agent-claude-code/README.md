@@ -269,15 +269,16 @@ This counts toward the turn deadline. The latest error class takes precedence, t
 nonzero status/signal, then EOF. Cleanup ends the client after the cause is selected; for
 `.v2` it first stops the client's whole process tree.
 
-CLASS uses one case-insensitive, ordered substring table; the first matching class wins:
+For text failures, CLASS uses this case-insensitive table. The first matching class wins.
 
 | Class | Substrings |
 | --- | --- |
-| `usage-limit` | `usage limit`, `usage_limit`, `quota` |
+| `usage-limit` | `usage limit`, `usage_limit`, `quota`, `hit your session limit`, `hit your weekly limit`, `hit your opus limit`, `hit your sonnet limit` |
 | `rate-limit` | `rate limit`, `rate_limit`, `too many requests`, `429` |
 | `authentication` | `authentication`, `unauthorized`, `401`, `login`, `log in`, `api key`, `credential` |
 | `context-window` | `context window`, `context_window`, `context length`, `context_length`, `prompt is too long` |
 | `network` | `network`, `connection`, `disconnected`, `error sending request`, `timed out`, `timeout`, `dns`, `getaddrinfo`, `econnreset`, `econnrefused`, `enotfound`, `unreachable`, `fetch failed` |
+| `structured-output` | Result subtype `error_max_structured_output_retries` |
 | `other` | No match or no text |
 
 These substrings are an initial list tested with synthetic failures, not real failures.
@@ -288,7 +289,7 @@ client or poisoning a session.
 
 ## The .v2 failed turn's fields
 
-When a `.v2` turn fails, the result's `content` holds the failure text followed by a
+When a `.v2` or later turn fails, the result's `content` holds the failure text followed by a
 second text block containing one JSON object, `{"failedTurn":{...}}`. The `failedTurn`
 object has these fields.
 
@@ -300,6 +301,7 @@ object has these fields.
 | `clientStarted` | Whether the session held a client when the failure was recorded, before stopping it |
 | `survivors` | The PIDs that outlived the stop in ascending order, or an empty list |
 | `stopConfirmed` | `true` if the stop was confirmed, otherwise `false` |
+| `limit` | For `usage-limit`, the window and reset report described [below](#a-usage-limits-window-and-reset). Otherwise `null`. |
 
 | Cause | Cause text |
 | --- | --- |
@@ -672,6 +674,74 @@ and acknowledge the notice to lift the one-at-a-time rule. The Resource's own si
 holds model work for all its Agents. The `.v3` retire hook stops its client and leaves the
 shared directory and login to the Resource.
 
+## The .v4 Agent
+
+`claude-code.v4` adds `instructions` and `outputSchema` to the shared-login Agent. Set either
+place to `null` to omit it. Registration rejects an empty string. The limits leave room for
+four UTF-8 bytes per character, the variable name, the equals sign, and the terminator within
+Linux's 131,072-byte limit per environment entry.
+
+- `instructions` takes 1 to 32,763 characters. The wrapper writes it byte for byte to
+  `instructions.md` in the run's private directory and passes the file to
+  `--append-system-prompt-file`. A link at that destination is refused.
+- `outputSchema` takes 1 to 32,762 characters. Write JSON text because the run variable
+  carries a string (MAN-017). The wrapper checks that it parses as an object with
+  `"type": "object"` and passes the original text as one `--json-schema` argument. If that
+  check fails, every turn reports `invalid configuration: outputSchema (AGENT_OUTPUT_SCHEMA):
+  expected the JSON text of a schema whose type is object` and starts no client.
+
+When Claude Code returns an object in `structured_output`, the turn returns it in
+`structured` and leaves `text` unchanged. The subtype
+`error_max_structured_output_retries` fails the turn with class `structured-output`.
+
+## Usage in each turn's result
+
+The wrapper reports per-model usage from the client's `modelUsage` in
+`_meta["io.github.shrav-k.conduit/usage"]` (IFC-051). The engine keeps it in the call's end
+record. Both successful and failed client results can report usage. The client version
+comes from the latest `system/init` event in that process.
+
+The first report uses the client's totals. Later reports subtract the same model's last
+cumulative counts in that process. A model absent from the previous report starts at its
+reported totals. Models whose deltas are all zero are omitted. `input` includes input,
+cache reads and cache creation. `cachedInput` counts cache reads, and `reasoning` is the
+thinking already included in `output`. When a cache counter appears or disappears for
+the same model across two reports, that model is omitted for the turn because its total
+input delta cannot be measured. A reasoning counter is omitted when its delta cannot be
+measured. After a missing or malformed `modelUsage` report, the next valid report
+establishes a new baseline without emitting usage. A new conversation starts a new
+process and baseline.
+
+There is no usage member without a valid client version or a usable `modelUsage` report,
+if a cumulative count fell, or if the report would contain zero models or more than 16.
+
+## A usage limit's window and reset
+
+On a client failure, a `rejected` rate-limit event for the turn gives class `usage-limit`.
+An `allowed_warning` leaves the turn unchanged. A turn with a successful result still
+succeeds after a rejected event. Text in the client's `result` or `errors` array identifies
+the window as `session`,
+`weekly`, `opus` or `sonnet`. Without any of those words the window is `null`.
+`windowMinutes` is always `null`.
+
+The last rejected event's `resetsAt` is interpreted as seconds and as milliseconds since
+the Unix epoch. If exactly one reading falls after the start of the turn and within
+eight days, the report includes that time in RFC 3339 UTC. Otherwise `resetsAt` is
+`null`. The wrapper makes no additional request and uses no reset time from the text.
+DEC-046 pauses only that account's lanes until the reported reset.
+
+## Model, effort and what stays off
+
+| Place or setting | Client argument or setting | Default or effect |
+| --- | --- | --- |
+| `model` | `--model` | `''` uses the client's default model |
+| `effort` on `.v2` and later | `--effort` | `''` uses the client's default effort |
+| Auto memory on `.v2` and later | `autoMemoryEnabled: false` and `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` | Off on every launch |
+| Hooks and plugins | `disableAllHooks: true` and `enabledPlugins: {}` | Off |
+| Sub-agent tools | Omitted from `--tools` | Off |
+| Slash commands and skills | `--disable-slash-commands` | Off |
+| Setting sources | `--setting-sources ""` | User, project and local settings omitted. Whether project `CLAUDE.md` is read awaits the first real turns. |
+
 ## The standard Conduit templates
 
 From 0.2.2, `turn` grants `turn.v1` alone, and `conversation` grants both `turn.v1` and
@@ -690,3 +760,9 @@ old Agent automatically. If it remains retired, wait for shutdown confirmation o
 it before reusing the name. A tombstone can also block name reuse (LIF-041). Set up and sign in
 each account's Resource once per machine, then register and set up the `.v3` Agents that refer
 to it.
+
+## Moving to 0.2.4
+
+Install the 0.2.4 archive, update the package pin, and replace each Agent that should use
+the new release. A `.v4` Agent that replaces a `.v3` Agent can use the same `login`
+Resource without another sign-in.

@@ -250,4 +250,26 @@ existing test changed, and why; every check's last line. Stage nothing.
 
 ## Record
 
-Not yet run.
+Run on 2026-11-22 through Conduit itself, by the dogfood's own Agents, in Pacific time, on
+`main` with orders 258, 259, 264 and 260 stacked while they waited in the merge queue; it carries
+the rules order 260's fix turn settled (the coordinator's, open to the owner's strike).
+
+**Worker-1's turn** (04:24 to 04:40) released agent-claude-code 0.2.4: `claude-code.v4` with
+optional `instructions`, passed by a run-local file written without following links through
+`--append-system-prompt-file`, and `outputSchema` through `--json-schema`, each limited to fit
+Linux's per-string limit; each turn's usage as IFC-051's member from `modelUsage`'s cumulative
+counts, cache reads and writes inside `input`; the four limit phrases and the rejected event
+giving `usage-limit` with its window and reset. 51 package tests and three vectors pass.
+
+**Two blind reads at once** (04:41 to 04:44): `turn-verifier-1.turn.v1` found three musts; the
+Claude reader passed it. One fix turn (04:45 to 04:49), each must reproduced first, each by the
+rule never to report a count that cannot be measured:
+- a cache counter first seen on a resumed turn inflated `input`; a model's report is suppressed
+  for a turn whose components are not comparable with the previous report;
+- a missing or unreadable report cleared the baseline, so the next one re-reported cumulative
+  counts; the baseline is now re-established without attributing them to one turn;
+- the limit phrases inside the SDK error result's `errors` were missed; they are now read too,
+  keeping raw client text out of the reply.
+
+54 package tests pass; the archive reproduces. The gate's run on the squash is the
+coordinator's, at the merge.

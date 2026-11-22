@@ -9,7 +9,14 @@ const NEW_CONVERSATION_REF: &str = "#new-conversation.v1";
 fn shared_login_type(name: &Value) -> bool {
     matches!(
         name.as_str(),
-        Some("codex-login.v1" | "codex.v3" | "codex.v4" | "account-home.v1" | "claude-code.v3")
+        Some(
+            "codex-login.v1"
+                | "codex.v3"
+                | "codex.v4"
+                | "account-home.v1"
+                | "claude-code.v3"
+                | "claude-code.v4"
+        )
     )
 }
 

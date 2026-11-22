@@ -111,8 +111,8 @@
             {
               "package": {
                 "address": "example.org/conduit/agent-claude-code",
-                "version": "0.2.3",
-                "digest": "sha256:06f9305db38b46b101dbf5b30d8a84943c1fff675fb69c3c6e88cb46dc3fa82b"
+                "version": "0.2.4",
+                "digest": "sha256:6eb6249cd483afcb98b9999649809a7fa8df60f87a3614ebe663dd71c7cd2cca"
               }
             }
           ]
@@ -137,8 +137,8 @@
             {
               "package": {
                 "address": "example.org/conduit/agent-claude-code",
-                "version": "0.2.3",
-                "digest": "sha256:06f9305db38b46b101dbf5b30d8a84943c1fff675fb69c3c6e88cb46dc3fa82b"
+                "version": "0.2.4",
+                "digest": "sha256:6eb6249cd483afcb98b9999649809a7fa8df60f87a3614ebe663dd71c7cd2cca"
               }
             },
             {

@@ -1829,6 +1829,24 @@ class GateTests(unittest.TestCase):
         with mock.patch.object(set_names, 'ROOT', root):
             self.assertEqual(set_names.files(['engine']), [source])
 
+    def test_set_names_allows_only_the_exact_cli_config_variable(self):
+        names, _ = set_names.read_names()
+        fixture = '\n'.join([
+            *(names[key] for key in ('corePackage', 'apiVersion', 'metaPrefix')),
+            *(f'`{names[key]}`' for key in set_names.IDENTITY_KEYS),
+            'CONDUIT_CONFIG_DIR',
+        ]) + '\n'
+        source = self.write('engine/source.rs', fixture)
+        with mock.patch.object(set_names, 'ROOT', self.root):
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(set_names.check(['engine']), 0)
+
+            source.write_text(fixture + 'CONDUIT_CONFIG_DIRS\n', encoding='utf-8')
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                self.assertEqual(set_names.check(['engine']), 1)
+            self.assertIn("variable 'CONDUIT_CONFIG_DIRS'", output.getvalue())
+
     def test_target_cache_refuses_a_held_lock(self):
         cache = self.parent / 'cache'
         cache.mkdir()

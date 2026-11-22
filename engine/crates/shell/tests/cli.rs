@@ -248,6 +248,7 @@ fn https_serve_options_fail_before_writing_address_or_roots() {
     ];
     for (args, expected) in cases {
         let output = Command::new(env!("CARGO_BIN_EXE_conduit"))
+            .env("CONDUIT_CONFIG_DIR", parent.path().join("config"))
             .arg("serve")
             .arg("--store")
             .arg(&store)
@@ -273,6 +274,7 @@ fn https_serve_options_fail_before_writing_address_or_roots() {
     ] {
         std::fs::write(&root, content).unwrap();
         let output = Command::new(env!("CARGO_BIN_EXE_conduit"))
+            .env("CONDUIT_CONFIG_DIR", parent.path().join("config"))
             .arg("serve")
             .arg("--store")
             .arg(&store)
@@ -297,6 +299,7 @@ fn https_serve_options_fail_before_writing_address_or_roots() {
     )
     .unwrap();
     let output = Command::new(env!("CARGO_BIN_EXE_conduit"))
+        .env("CONDUIT_CONFIG_DIR", parent.path().join("config"))
         .arg("serve")
         .arg("--store")
         .arg(&store)
@@ -339,6 +342,7 @@ fn https_serve_options_fail_before_writing_address_or_roots() {
         .unwrap(),
     );
     let output = Command::new(env!("CARGO_BIN_EXE_conduit"))
+        .env("CONDUIT_CONFIG_DIR", parent.path().join("config"))
         .arg("serve")
         .arg("--store")
         .arg(&store)
@@ -367,6 +371,7 @@ fn https_refuses_loopback_dns_names_before_writing_address_or_roots() {
         )
         .unwrap();
         let output = Command::new(env!("CARGO_BIN_EXE_conduit"))
+            .env("CONDUIT_CONFIG_DIR", parent.path().join("config"))
             .arg("serve")
             .arg("--store")
             .arg(&store)
@@ -404,6 +409,7 @@ fn serve_management_commands_and_fixed_audience() {
     let url = format!("http://127.0.0.1:{port}/mcp");
     command(&store, "init", &["--url", &url]);
     let different = Command::new(env!("CARGO_BIN_EXE_conduit"))
+        .env("CONDUIT_CONFIG_DIR", parent.path().join("config"))
         .args([
             "serve",
             "--store",
@@ -424,6 +430,7 @@ fn serve_management_commands_and_fixed_audience() {
     }
     let mut server = Server(
         Command::new(env!("CARGO_BIN_EXE_conduit"))
+            .env("CONDUIT_CONFIG_DIR", parent.path().join("config"))
             .arg("serve")
             .arg("--store")
             .arg(&store)
@@ -889,6 +896,7 @@ fn root_defaults_allow_startup_setup_and_inspection_while_serving() {
     let stderr = parent.path().join("serve.stderr");
     let mut server = Server(
         Command::new(env!("CARGO_BIN_EXE_conduit"))
+            .env("CONDUIT_CONFIG_DIR", parent.path().join("config"))
             .arg("serve")
             .arg("--store")
             .arg(&store)

@@ -112,10 +112,13 @@ pub fn context(repository: &Path) -> Result<Context> {
 /// Metadata discovery for an explicit public install request. The engine reads and
 /// validates these archive bytes again; this command admits no package itself.
 pub fn install_arguments(argument: &str) -> Result<Value> {
-    named_install_arguments(argument).map(|(_, arguments)| arguments)
+    named_install_arguments(argument, |_, _| {}).map(|(_, arguments)| arguments)
 }
 
-pub(crate) fn named_install_arguments(argument: &str) -> Result<(&str, Value)> {
+pub(crate) fn named_install_arguments(
+    argument: &str,
+    keep_verified_bytes: impl FnOnce(&str, &[u8]),
+) -> Result<(&str, Value)> {
     let (authored_path, hash) = argument
         .rsplit_once('#')
         .ok_or("install needs ARCHIVE#SHA256")?;
@@ -130,12 +133,14 @@ pub(crate) fn named_install_arguments(argument: &str) -> Result<(&str, Value)> {
             path.display()
         )
     })?;
-    let digest = format!("sha256:{}", hash.strip_prefix("sha256:").unwrap_or(hash));
+    let hex = hash.strip_prefix("sha256:").unwrap_or(hash);
+    let digest = format!("sha256:{hex}");
     if conduit_core::packages::bytes_digest(&bytes) != digest {
         return Err(format!(
             "install archive {path:?}: package archive digest mismatch; use the SHA-256 of these exact archive bytes"
         ));
     }
+    keep_verified_bytes(hex, &bytes);
     let manifest = archive_metadata::manifest(&bytes)?;
     Ok((
         authored_path,

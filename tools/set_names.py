@@ -18,7 +18,7 @@ them. This tool keeps the two in step.
             define;
           - a name that appears nowhere;
           - a variable whose name begins as those of `identity` do, with `CONDUIT_`, and that
-            is none of them nor an explicitly allowed build test switch.
+            is none of them nor an explicitly allowed CLI variable or build test switch.
         The check reads text and knows nothing of YAML. It takes a token of the form
         `<dotted name>/<key>` to be a `_meta` key, and an address whose last part is the
         core package's last part to be meant as the core package.
@@ -71,6 +71,8 @@ FOREIGN_META_PREFIXES = ("io.modelcontextprotocol/",)
 # Build-only switches are not run identity variables. Keep this exception exact so
 # other CONDUIT_ spellings, including identity typos, still fail the check.
 BUILD_TEST_VARIABLES = {"CONDUIT_TEST_NPM", "CONDUIT_VECTOR_THREADS"}
+# Names the CLI's per-user directory (order 243, K3's O8).
+CLI_VARIABLES = {"CONDUIT_CONFIG_DIR"}
 # A run of characters that can make up a name, a reference or a path.
 TOKEN = re.compile(r"[A-Za-z0-9._/#:-]+")
 DNS_NAME = re.compile(r"[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+")
@@ -249,7 +251,8 @@ def check(roots: list[str]) -> int:
             for m in VARIABLE.finditer(line):
                 token = m.group(0)
                 if (any(token.startswith(s) for s in stems)
-                        and token not in variables and token not in BUILD_TEST_VARIABLES):
+                        and token not in variables and token not in BUILD_TEST_VARIABLES
+                        and token not in CLI_VARIABLES):
                     found.append(f"variable {token!r} begins as those of `identity` do and is "
                                  f"neither {' nor '.join(sorted(variables))}")
             for old in retired:

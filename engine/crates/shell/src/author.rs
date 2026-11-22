@@ -334,6 +334,32 @@ async fn revision(directory: &Path, object: &Value) -> Result<Value> {
 pub struct Options<'a> {
     pub agent: Option<&'a str>,
     pub setup: bool,
+    pub serving_checked: bool,
+}
+
+/// Establish the serving path without opening the live store for writing or recovery.
+pub(crate) async fn require_serving(
+    directory: &Path,
+    endpoint: &url::Url,
+    quiet: bool,
+) -> Result<()> {
+    let host = match endpoint.host().ok_or("missing engine host")? {
+        url::Host::Ipv6(ip) => ip.to_string(),
+        host => host.to_string(),
+    };
+    let port = endpoint
+        .port_or_known_default()
+        .ok_or("missing engine port")?;
+    tokio::time::timeout(
+        std::time::Duration::from_secs(2),
+        tokio::net::TcpStream::connect((host.as_str(), port)),
+    )
+    .await
+    .map_err(|_| "conduit serve must hold this store: connection timed out")?
+    .map_err(|_| "conduit serve must hold this store: cannot connect to engine")?;
+    server::probe_root(directory, quiet.then_some(endpoint.as_str()))
+        .await
+        .map_err(|error| format!("conduit serve must hold this store: {error}"))
 }
 
 pub async fn run(
@@ -354,30 +380,11 @@ pub async fn run(
             args.len()
         ));
     }
-    // Establish the serving path before doing any local workflow work. This never
-    // opens the live store for writing or recovery.
-    let endpoint = url::Url::parse(&crate::Config::for_store(directory)?.engine_url)
-        .map_err(|_| "invalid engine URL")?;
-    let host = match endpoint.host().ok_or("missing engine host")? {
-        url::Host::Ipv6(ip) => ip.to_string(),
-        _ => endpoint
-            .host_str()
-            .ok_or("missing engine host")?
-            .to_string(),
-    };
-    let port = endpoint
-        .port_or_known_default()
-        .ok_or("missing engine port")?;
-    tokio::time::timeout(
-        std::time::Duration::from_secs(2),
-        tokio::net::TcpStream::connect((host.as_str(), port)),
-    )
-    .await
-    .map_err(|_| "conduit serve must hold this store: connection timed out")?
-    .map_err(|_| "conduit serve must hold this store: cannot connect to engine")?;
-    server::client(directory, None, None, json!({}))
-        .await
-        .map_err(|e| format!("conduit serve must hold this store: {e}"))?;
+    if !options.serving_checked {
+        let endpoint = url::Url::parse(&crate::Config::for_store(directory)?.engine_url)
+            .map_err(|_| "invalid engine URL")?;
+        require_serving(directory, &endpoint, false).await?;
+    }
     match command {
         "pending" => {
             let actions = list_pending(directory, options.agent).await?;
@@ -431,7 +438,8 @@ pub async fn run(
                 return Err("install needs ARCHIVE#SHA256".into());
             }
             let tool = "management.install.v1";
-            let (archive, request) = boundary::named_install_arguments(&args[0])?;
+            let (archive, request) =
+                boundary::named_install_arguments(&args[0], crate::user_config::cache_archive)?;
             let mut reply = server::client(directory, None, Some(tool), request).await?;
             author_diagnostics(&mut reply, None, archive, true);
             println!("{reply}");

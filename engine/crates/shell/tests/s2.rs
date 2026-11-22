@@ -754,6 +754,7 @@ impl S2 {
             WAIT,
             Command::new(env!("CARGO_BIN_EXE_conduit"))
                 .env_clear()
+                .env("CONDUIT_CONFIG_DIR", self.temp.path().join("config"))
                 .arg(verb)
                 .arg("--store")
                 .arg(&self.store)
@@ -820,6 +821,7 @@ impl S2 {
         let mut child = Command::new(env!("CARGO_BIN_EXE_conduit"))
             .env_clear()
             .env("S2_LINEAR_API_KEY", &self.decoy)
+            .env("CONDUIT_CONFIG_DIR", self.temp.path().join("config"))
             .args(["serve", "--store"])
             .arg(&self.store)
             .stdout(fs::File::create(&stdout).unwrap())

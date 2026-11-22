@@ -9,6 +9,7 @@ pub mod runner;
 pub mod server;
 pub mod sign_in;
 mod store;
+pub mod user_config;
 use chrono::{DateTime, SecondsFormat, Utc};
 use conduit_core::{Context, Input, State, Transition};
 pub use identity::RunIdentity;
@@ -66,11 +67,27 @@ impl Default for Config {
 impl Config {
     /// Read public endpoints and certificate roots without opening/recovering a live store.
     pub fn for_store(directory: &Path) -> Result<Self> {
+        Self::read_store(directory, false)
+    }
+
+    fn for_context(directory: &Path) -> Result<Self> {
+        Self::read_store(directory, true)
+    }
+
+    fn read_store(directory: &Path, require_fixed_url: bool) -> Result<Self> {
         let path = directory.join("engine-url.json");
         let mut config = Self::default();
-        if path.try_exists().map_err(|e| e.to_string())? {
-            config.engine_url = serde_json::from_slice(&store::private_read(&path)?)
-                .map_err(|_| "invalid stored engine URL")?;
+        if require_fixed_url || path.try_exists().map_err(|e| e.to_string())? {
+            let read_url = store::private_read(&path).and_then(|bytes| {
+                serde_json::from_slice(&bytes).map_err(|_| "invalid stored engine URL".into())
+            });
+            config.engine_url = read_url.map_err(|error| {
+                if require_fixed_url {
+                    format!("cannot read fixed URL file {path:?}: {error}")
+                } else {
+                    error
+                }
+            })?;
         }
         config.read_https(directory)?;
         Ok(config)
@@ -209,27 +226,32 @@ pub struct Shell {
     trace: Mutex<Option<Vec<Transition>>>,
 }
 
+fn local_engine_url(address: &str) -> Result<url::Url> {
+    let url = url::Url::parse(address).map_err(|_| "invalid engine URL")?;
+    let loopback = matches!(url.host(), Some(url::Host::Domain("localhost")))
+        || matches!(url.host(), Some(url::Host::Ipv4(ip)) if ip == std::net::Ipv4Addr::LOCALHOST)
+        || matches!(url.host(), Some(url::Host::Ipv6(ip)) if ip == std::net::Ipv6Addr::LOCALHOST);
+    if url.scheme() != "http"
+        || !loopback
+        || !url.username().is_empty()
+        || url.password().is_some()
+        || url.fragment().is_some()
+        || url.query().is_some()
+        || url.path() != "/mcp"
+        || url.port_or_known_default() == Some(0)
+    {
+        return Err(
+            "this shell requires an HTTP engine address at 127.0.0.1, localhost or ::1".into(),
+        );
+    }
+    Ok(url)
+}
+
 impl Shell {
     pub fn open(directory: &Path, context: Context, mut config: Config) -> Result<Self> {
         let started = Instant::now();
         // DL2/DL13: Store hands its one parsed committed snapshot to identity and recovery.
-        let url = url::Url::parse(&config.engine_url).map_err(|_| "invalid engine URL")?;
-        let loopback = matches!(url.host(), Some(url::Host::Domain("localhost")))
-            || matches!(url.host(), Some(url::Host::Ipv4(ip)) if ip == std::net::Ipv4Addr::LOCALHOST)
-            || matches!(url.host(), Some(url::Host::Ipv6(ip)) if ip == std::net::Ipv6Addr::LOCALHOST);
-        if url.scheme() != "http"
-            || !loopback
-            || !url.username().is_empty()
-            || url.password().is_some()
-            || url.fragment().is_some()
-            || url.query().is_some()
-            || url.path() != "/mcp"
-            || url.port_or_known_default() == Some(0)
-        {
-            return Err(
-                "this shell requires an HTTP engine address at 127.0.0.1, localhost or ::1".into(),
-            );
-        }
+        local_engine_url(&config.engine_url)?;
         let store = Store::open(directory)?;
         let address = store.directory.join("engine-url.json");
         let address_exists = address.try_exists().map_err(|e| e.to_string())?;

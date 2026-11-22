@@ -276,4 +276,22 @@ Named here and not in this order:
 
 ## Record
 
-Not yet run.
+Run on 2026-11-21 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+
+**Worker-1's turn** (20:51 to 21:30) added the standard Conduit templates `turn` and
+`conversation` to both Agent packages and released them as 0.2.2, with their contract copies,
+archive pins and three vectors updated (37 declared changes, no flips). Each package's new
+regression failed on 0.2.1 and passes on 0.2.2. Each host archive reproduced its digest on two
+offline builds, and all 45 fixture archives reproduced. The Claude Code package's 37 tests, the
+Codex package's 39 and the whole engine suite (522 passed, 9 ignored) passed once.
+
+**Two blind reads at once** (21:30 to 21:36), the owner's answer for A77's window:
+`turn-verifier-1.turn.v1` passed it, rebuilding both archives twice to the reported digests; the
+Claude reader passed it with one nit. Its nit, recorded here and left to the next package
+release, since each README is inside its package's archive and copies, so a wording change moves
+every digest: the new README section could name the `operator: {from: ...#conversation}` form
+in the same words as `turn`'s, list the steps to move an existing `.v2` Agent to 0.2.2 (install,
+move the pin, replace, sign in again), and point to the section on what `new-conversation.v1`
+does. No fix turn was needed.
+
+The gate's run on the squash is the coordinator's, at the merge.

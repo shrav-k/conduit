@@ -12,7 +12,7 @@ use std::{
     io::{BufRead, Write},
     path::{Path, PathBuf},
     process::Command,
-    sync::Arc,
+    sync::{Arc, OnceLock},
     time::{Duration, Instant},
 };
 fn repo() -> PathBuf {
@@ -65,6 +65,17 @@ fn scripted_filesystem() {
     }
 }
 fn pack(name: &str) -> String {
+    static ARCHIVES: OnceLock<BTreeMap<&str, String>> = OnceLock::new();
+    ARCHIVES.get_or_init(|| {
+        ["agent-claude-code", "agent-codex"]
+            .into_iter()
+            .map(|name| (name, build_archive(name)))
+            .collect()
+    })[name]
+        .clone()
+}
+
+fn build_archive(name: &str) -> String {
     let path = repo().join("packages").join(name);
     assert!(
         Command::new("cargo")
@@ -97,6 +108,131 @@ fn cli(store: &Path, verb: &str, args: &[&str]) -> Value {
     assert!(o.status.success(), "{}", String::from_utf8_lossy(&o.stderr));
     serde_json::from_slice(&o.stdout).unwrap()
 }
+
+#[test]
+fn agent_package_templates_resolve_through_the_engine() {
+    let root = repo();
+    let spec = conduit_loader::Specification::read(&root.join("spec")).unwrap();
+    for (name, agent_type) in [
+        ("agent-claude-code", "claude-code.v2"),
+        ("agent-codex", "codex.v2"),
+    ] {
+        let parent = tempfile::tempdir().unwrap();
+        let shell = Shell::open(
+            &parent.path().join("store"),
+            boundary::context(&root).unwrap(),
+            Config::default(),
+        )
+        .unwrap();
+        shell
+            .submit(
+                json!({
+                    "kind": "first-start",
+                    "machine": conduit_shell::local_machine(BTreeMap::new()).unwrap(),
+                }),
+                &MissingExecutor,
+            )
+            .unwrap();
+        boundary::install_package(&shell, &root, &pack(name)).unwrap();
+
+        let address = format!("example.org/conduit/{name}");
+        let state = shell.state().unwrap();
+        let installed = state
+            .installed_packages
+            .iter()
+            .find(|installed| installed.package.address == address)
+            .unwrap();
+        let project_dir = parent.path().join("project");
+        fs::create_dir(&project_dir).unwrap();
+        let api = &spec.names().api_version;
+        fs::write(
+            project_dir.join("conduit.json"),
+            serde_json::to_vec(&json!({
+                "apiVersion": api,
+                "packages": {
+                    &address: {
+                        "version": installed.package.version,
+                        "digest": installed.package.digest,
+                    }
+                },
+            }))
+            .unwrap(),
+        )
+        .unwrap();
+        let qualified_type = format!("{address}#{agent_type}");
+        fs::write(
+            project_dir.join("agents.json"),
+            serde_json::to_vec(&json!({
+                "apiVersion": api,
+                "fleet": "operators",
+                "agents": {
+                    "turn-agent": {
+                        "type": qualified_type,
+                        "config": {"account": null},
+                        "operator": {"from": format!("{address}#turn")},
+                    },
+                    "conversation-agent": {
+                        "type": qualified_type,
+                        "config": {"account": null},
+                        "operator": {"from": format!("{address}#conversation")},
+                    }
+                },
+            }))
+            .unwrap(),
+        )
+        .unwrap();
+        let project = boundary::project(&project_dir, &spec).unwrap();
+        let root_id = id(&shell, "root");
+        let route = state
+            .objects
+            .iter()
+            .find(|o| o["local_name"] == "management" && o["consumer"] == root_id)
+            .unwrap();
+        let registered = shell
+            .submit(
+                json!({
+                    "kind": "register-project",
+                    "snapshots": [],
+                    "builtin": shell.context.builtin,
+                    "project": project,
+                    "request": {
+                        "sender": root_id,
+                        "caller": root_id,
+                        "conduit": route["id"],
+                        "target": route["target"],
+                        "operation": format!("{}#register.v1", shell.context.core_package),
+                    },
+                }),
+                &MissingExecutor,
+            )
+            .unwrap();
+        assert_eq!(registered["accepted"], true, "{name}: {registered}");
+
+        let state = shell.state().unwrap();
+        for (conduit_name, operations) in [
+            (
+                "turn-agent--operator",
+                json!([format!("{address}#turn.v1")]),
+            ),
+            (
+                "conversation-agent--operator",
+                json!([
+                    format!("{address}#turn.v1"),
+                    format!("{address}#new-conversation.v1"),
+                ]),
+            ),
+        ] {
+            let conduit = state
+                .objects
+                .iter()
+                .find(|o| o["kind"] == "Conduit" && o["name"] == conduit_name)
+                .unwrap();
+            assert_eq!(conduit["capability"], format!("{address}#conversation.v1"));
+            assert_eq!(conduit["operations"], operations);
+        }
+    }
+}
+
 #[test]
 fn live_s1_scripted_agents_call_engine_with_distinct_run_identities() {
     // IFC-012/IFC-033: preserve every assertion through the shared setup.
@@ -154,7 +290,7 @@ fn setup_s1(parent: &Path) -> (Arc<Shell>, PathBuf, Duration) {
         } else {
             "claude-code.v1"
         };
-        fs::write(template.join("conduit.yaml"),format!("apiVersion: {}\npackages:\n  example.org/conduit/{name}:\n    version: 0.2.1\n    digest: sha256:{}\n",spec_api(&root),package.rsplit_once('#').unwrap().1)).unwrap();
+        fs::write(template.join("conduit.yaml"),format!("apiVersion: {}\npackages:\n  example.org/conduit/{name}:\n    version: 0.2.2\n    digest: sha256:{}\n",spec_api(&root),package.rsplit_once('#').unwrap().1)).unwrap();
         fs::write(template.join("template.yaml"),format!("apiVersion: {}\nkind: Agent\nmetadata:\n  name: test-template\nspec:\n  type: example.org/conduit/{name}#{ty}\n  config:\n    accountServices: false\n    peerMessaging: false\n",spec_api(&root))).unwrap();
         let out = Command::new(env!("CARGO_BIN_EXE_conduit"))
             .args(["register", "--store"])

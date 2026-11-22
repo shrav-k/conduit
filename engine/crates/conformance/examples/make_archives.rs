@@ -16,6 +16,7 @@ fn shared_login_type(name: &Value) -> bool {
                 | "account-home.v1"
                 | "claude-code.v3"
                 | "claude-code.v4"
+                | "claude-code.v5"
         )
     )
 }

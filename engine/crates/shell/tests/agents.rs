@@ -286,9 +286,9 @@ fn setup_s1(parent: &Path) -> (Arc<Shell>, PathBuf, Duration) {
         let template = parent.join(format!("template-{name}"));
         fs::create_dir(&template).unwrap();
         let (ty, version) = if name == "agent-codex" {
-            ("codex.v1", "0.2.4")
+            ("codex.v1", "0.2.5")
         } else {
-            ("claude-code.v1", "0.2.4")
+            ("claude-code.v1", "0.2.5")
         };
         fs::write(template.join("conduit.yaml"),format!("apiVersion: {}\npackages:\n  example.org/conduit/{name}:\n    version: {version}\n    digest: sha256:{}\n",spec_api(&root),package.rsplit_once('#').unwrap().1)).unwrap();
         fs::write(template.join("template.yaml"),format!("apiVersion: {}\nkind: Agent\nmetadata:\n  name: test-template\nspec:\n  type: example.org/conduit/{name}#{ty}\n  config:\n    accountServices: false\n    peerMessaging: false\n",spec_api(&root))).unwrap();
@@ -1161,4 +1161,106 @@ fn claude_code_v4_registers_through_the_engine() {
             assert_eq!(agent["config"].get("outputSchema"), Some(&Value::Null));
         }
     }
+}
+
+#[test]
+fn claude_code_v5_registers_through_the_engine() {
+    let repository = repo();
+    let spec = conduit_loader::Specification::read(&repository.join("spec")).unwrap();
+    let parent = tempfile::tempdir().unwrap();
+    let shell = Shell::open(
+        &parent.path().join("store"),
+        boundary::context(&repository).unwrap(),
+        Config::default(),
+    )
+    .unwrap();
+    shell.submit(
+        json!({"kind": "first-start", "machine": conduit_shell::local_machine(BTreeMap::new()).unwrap()}),
+        &MissingExecutor,
+    )
+    .unwrap();
+    boundary::install_package(&shell, &repository, &pack("agent-claude-code")).unwrap();
+
+    let address = "example.org/conduit/agent-claude-code";
+    let state = shell.state().unwrap();
+    let installed = state
+        .installed_packages
+        .iter()
+        .find(|installed| installed.package.address == address)
+        .unwrap();
+    let project_dir = parent.path().join("project");
+    fs::create_dir(&project_dir).unwrap();
+    let api = &spec.names().api_version;
+    for (file, content) in [
+        (
+            "conduit.json",
+            json!({
+                "apiVersion": api, "packages": {address: {
+                    "version": installed.package.version, "digest": installed.package.digest
+                }}
+            }),
+        ),
+        (
+            "agents.json",
+            json!({
+                "apiVersion": api, "fleet": "operators",
+                "pools": {"logins": {"type": "github.com/shrav-k/conduit/core#pool.v1"}},
+                "resources": {
+                    "login": {
+                        "type": format!("{address}#account-home.v1"),
+                        "owner": "logins", "config": {"account": "account-a"}
+                    }
+                },
+                "agents": {
+                    "agent-a": {"type": format!("{address}#claude-code.v5"), "config": {"login": "login"}},
+                }
+            }),
+        ),
+    ] {
+        fs::write(
+            project_dir.join(file),
+            serde_json::to_vec(&content).unwrap(),
+        )
+        .unwrap();
+    }
+
+    let project = boundary::project(&project_dir, &spec).unwrap();
+    let root_id = id(&shell, "root");
+    let route = state
+        .objects
+        .iter()
+        .find(|object| object["local_name"] == "management" && object["consumer"] == root_id)
+        .unwrap();
+    let reply = shell
+        .submit(
+            json!({
+                "kind": "register-project",
+                "snapshots": [],
+                "builtin": shell.context.builtin,
+                "project": project,
+                "request": {
+                    "sender": root_id, "caller": root_id, "conduit": route["id"],
+                    "target": route["target"],
+                    "operation": format!("{}#register.v1", shell.context.core_package),
+                },
+            }),
+            &MissingExecutor,
+        )
+        .unwrap();
+    assert_eq!(reply["accepted"], true, "{reply}");
+    let state = shell.state().unwrap();
+    let template = state
+        .objects
+        .iter()
+        .find(|object| {
+            object["kind"] == "Agent"
+                && object["name"] == "agent-a--t"
+                && object.get("spec").is_some()
+        })
+        .expect("missing resolved Agent template");
+    let setup = format!("{}#setup-hook.v1", shell.context.core_package);
+    assert_eq!(
+        template["resolved_implementations"][setup]["selection"],
+        format!("{address}#wrapper-v5")
+    );
 }

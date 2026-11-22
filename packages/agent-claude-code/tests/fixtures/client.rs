@@ -683,6 +683,57 @@ fn login() {
 #[tokio::main]
 async fn main() {
     let args: Vec<_> = std::env::args().skip(1).collect();
+    if let [command, output] = args.as_slice()
+        && command == "version-fixture-child"
+    {
+        let address = std::fs::read_to_string("version-listener").unwrap();
+        let mut stream = std::net::TcpStream::connect(address.trim()).unwrap();
+        writeln!(stream, "{}", std::process::id()).unwrap();
+        if output == "@launch-oversize" {
+            print!("{}", "x".repeat(257));
+            std::io::stdout().flush().unwrap();
+        }
+        std::thread::sleep(std::time::Duration::from_secs(30));
+        return;
+    }
+    if args == ["--version"] {
+        let mut log = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open("version-invocations")
+            .unwrap();
+        writeln!(log, "version").unwrap();
+        let version = std::fs::read_to_string("exec-version")
+            .unwrap_or_else(|_| "2.1.318 (Claude Code)\n".into());
+        match version.as_str() {
+            "@home" => {
+                let expected = std::path::PathBuf::from(
+                    std::fs::read_to_string("expected-version-home").unwrap(),
+                );
+                if std::env::var_os("CLAUDE_CONFIG_DIR").as_deref() != Some(expected.as_os_str()) {
+                    std::process::exit(1);
+                }
+                println!("2.1.318 (Claude Code)");
+            }
+            "@launch-timeout" | "@launch-oversize" => {
+                std::fs::write("version-launcher-pid", std::process::id().to_string()).unwrap();
+                std::process::Command::new(std::env::current_exe().unwrap())
+                    .args(["version-fixture-child", version.as_str()])
+                    .spawn()
+                    .unwrap()
+                    .wait()
+                    .unwrap();
+            }
+            "@exit" => {
+                println!("2.1.318");
+                std::process::exit(1);
+            }
+            "@silent" => std::thread::sleep(std::time::Duration::from_secs(30)),
+            "@oversize" => print!("2.1.318 {}", "x".repeat(256)),
+            _ => print!("{version}"),
+        }
+        return;
+    }
     if args == ["auth", "logout"] || args == ["logout", "-c", "cli_auth_credentials_store=\"file\""]
     {
         logout(&args);

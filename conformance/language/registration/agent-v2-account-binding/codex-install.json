@@ -1,8 +1,8 @@
 {
   "name": "contracts.tar.gz",
   "address": "example.org/conduit/agent-codex",
-  "version": "0.2.4",
-  "digest": "sha256:ae99b03f3a71c907ece150e469726edc415b44855359160cb6b706d67cf9ea6c",
+  "version": "0.2.5",
+  "digest": "sha256:acaba1e431793bf5d5ae40df1d115851a69e3019004959ae2402464894b20a5e",
   "directory": "file:///pinned/codex/",
   "completion": {
     "status": "complete",

@@ -1,8 +1,8 @@
 # agent-codex
 
-Maintainer: the Conduit project's owner. Native-client launch baseline: Codex 0.167.0, from
-experiment 009. Work orders 023 and 024 tested this package with its scripted client only;
-the admin's [real-client closeout](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)
+Maintainer: the Conduit project's owner. Lowest tested client: Codex 0.167.1. Work orders 023
+and 024 tested this package with its scripted client only.
+The admin's [real-client closeout](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)
 and [increment 4 log](../../docs/implementation/first-build/log-increment-4.md) record subsequent trials on 2026-11-10.
 
 This standalone Rust crate has no dependency on another repository directory. Its lockfile
@@ -950,6 +950,29 @@ Every launch passes `--disable memories` and `-c skills.include_instructions=fal
 memories and automatic skill instructions off. A skill named in the message can still load.
 The existing flags keep hooks, plugins, multi-agent tools, rules and AGENTS.md discovery off.
 
+## The vendor client
+
+The lowest client version this release was tested with is Codex 0.167.1.
+The package's digest covers the wrapper and this bound, not the client.
+The wrapper finds `codex` on the PATH of the machine where it runs (PRV-019).
+Use the vendor's instructions to install or update the client. [Codex](https://github.com/openai/codex)
+
+Codex `.v3` and `.v4` check the client. The other Types and login Resources do not run the check (TPL-012).
+The setup hook runs one `--version` with a five-second deadline and a 256-byte output limit.
+Here `P` is the absolute path of the client found and `V` is its reported SemVer version.
+
+```text
+client: codex V at P; lowest tested 0.167.1
+client: codex V at P is older than 0.167.1, the lowest version this release was tested with; update it by the vendor's own route
+client: codex at P gave no version this release can read from --version; the lowest version it was tested with is 0.167.1
+client: codex not found on PATH; install 0.167.1 or later by the vendor's own route
+```
+
+The last three results fail the hook. The engine names the hook part in its failed setup reply.
+A later engine change will include the hook text in that reply. A failed hook runs again at
+the next setup. A succeeded hook is kept, so replace an Agent to check a later client (OPS-021,
+OPS-028).
+
 ## The standard Conduit templates
 
 From 0.2.2, `turn` grants `turn.v1` alone, and `conversation` grants both `turn.v1` and
@@ -975,3 +998,8 @@ name (LIF-041). Then sign in each account's login Resource once per machine and 
 
 Install the 0.2.4 archive, move the pin, and replace each Agent that should use the release.
 A `.v4` Agent replacing a `.v3` Agent can use the same `login` Resource without another sign-in.
+
+## Moving to 0.2.5
+
+Install the 0.2.5 archive, move the project pin to its version and digest, and replace each
+Agent that should check its client.

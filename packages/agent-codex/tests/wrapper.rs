@@ -4282,10 +4282,22 @@ struct LoginTestWrapper {
 
 impl LoginTestWrapper {
     async fn start(c: &Config, mode: Option<&str>, directory: Option<&Path>) -> Self {
+        Self::start_with_program(c, mode, directory, Some(&c.program)).await
+    }
+
+    async fn start_with_program(
+        c: &Config,
+        mode: Option<&str>,
+        directory: Option<&Path>,
+        program: Option<&Path>,
+    ) -> Self {
         use tokio::io::AsyncBufReadExt;
         let mut child = tokio::process::Command::new(binary())
-            .args(["--client-program"])
-            .arg(&c.program)
+            .args(
+                program
+                    .into_iter()
+                    .flat_map(|path| [std::ffi::OsStr::new("--client-program"), path.as_os_str()]),
+            )
             .args(mode)
             .env_clear()
             .envs(&c.env)
@@ -4385,10 +4397,16 @@ impl LoginTestWrapper {
 fn login_test_config(parent: &Path) -> Config {
     let mut c = config(parent, false, false);
     let program = c.cwd.join("scripted-turn");
+    symlink(
+        env!("CARGO_BIN_EXE_scripted-client"),
+        c.cwd.join("version-client"),
+    )
+    .unwrap();
     fs::write(
         &program,
         r#"#!/bin/sh
 case "$1" in
+    --version) exec ./version-client --version ;;
     logout) : > unexpected-logout; exit 0 ;;
     exec) : > client-started ;;
     *) exit 2 ;;
@@ -5127,4 +5145,234 @@ async fn v4_role_bindings_fit_the_linux_exec_string_limit() {
         assert!(!c.cwd.join("client-started").exists());
         wrapper.close().await;
     }
+}
+
+#[tokio::test]
+async fn setup_reports_and_checks_the_client() {
+    const CLIENT: &str = "codex";
+    const MIN: &str = "0.167.1";
+    let cases = [
+        ("0.167.1", 0, true),
+        ("0.168.0+test", 0, true),
+        ("0.167.0", 0, false),
+        ("0.167.1-alpha.1", 0, false),
+        ("01.1.1", 1, false),
+        ("0.167.1-alpha.01", 1, false),
+        ("not-semver", 1, false),
+        ("@exit", 1, false),
+        ("@silent", 1, false),
+        ("@oversize", 1, false),
+        ("0.167.1", 2, true),
+        ("0.167.1", 3, false),
+    ];
+    for (version, kind, succeeds) in cases {
+        let parent = tempfile::tempdir().unwrap();
+        let mut c = config(parent.path(), false, false);
+        let search = c.cwd.join("path");
+        fs::create_dir(&search).unwrap();
+        c.env.insert("PATH".into(), search.to_str().unwrap().into());
+        let login = parent.path().join("login");
+        login_test_home(&login);
+        let path = match kind {
+            2 | 3 => search.join(CLIENT),
+            _ => c.cwd.join("client-link"),
+        };
+        if kind != 3 {
+            symlink(&c.program, &path).unwrap();
+        }
+        let stdout = if version.starts_with('@') {
+            version.to_owned()
+        } else {
+            format!("codex-cli {version} extra text\n")
+        };
+        fs::write(c.cwd.join("exec-version"), stdout).unwrap();
+        let explicit = (kind < 2).then(|| Path::new("client-link"));
+        let mut wrapper = LoginTestWrapper::start_with_program(
+            &c,
+            Some("--shared-login"),
+            Some(&login),
+            explicit,
+        )
+        .await;
+        let reply = wrapper.call("setup", json!({})).await;
+        let wanted = match kind {
+            3 => format!(
+                "client: {CLIENT} not found on PATH; install {MIN} or later by the vendor's own route"
+            ),
+            1 => format!(
+                "client: {CLIENT} at {} gave no version this release can read from --version; the lowest version it was tested with is {MIN}",
+                path.display()
+            ),
+            _ if succeeds => format!(
+                "client: {CLIENT} {version} at {}; lowest tested {MIN}",
+                path.display()
+            ),
+            _ => format!(
+                "client: {CLIENT} {version} at {} is older than {MIN}, the lowest version this release was tested with; update it by the vendor's own route",
+                path.display()
+            ),
+        };
+        let client = json!({"type":"text","text":wanted});
+        let blocks = if succeeds {
+            json!([{"type":"text","text":"auth.json linked to the login Resource's file"}, client])
+        } else {
+            json!([client])
+        };
+        assert_eq!(
+            reply["isError"], !succeeds,
+            "setup status for {version}, case {kind}"
+        );
+        assert!(
+            reply["content"] == blocks,
+            "setup text for {version}, case {kind}"
+        );
+        let auth = c
+            .state_dir
+            .as_ref()
+            .unwrap()
+            .join(HOME_NAME)
+            .join("auth.json");
+        assert_eq!(fs::symlink_metadata(&auth).is_ok(), succeeds);
+        if succeeds {
+            assert_eq!(
+                fs::read_link(auth).unwrap(),
+                login_test_home(&login).join("auth.json")
+            );
+        }
+        assert_eq!(c.cwd.join("version-invocations").exists(), kind != 3);
+        if kind != 3 {
+            assert_eq!(
+                fs::read_to_string(c.cwd.join("version-invocations")).unwrap(),
+                "version\n"
+            );
+        }
+        wrapper.close().await;
+    }
+}
+
+#[tokio::test]
+async fn setup_probe_uses_the_turn_home() {
+    let parent = tempfile::tempdir().unwrap();
+    let mut c = config(parent.path(), false, false);
+    c.env.insert("PATH".into(), c.cwd.to_str().unwrap().into());
+    let login = parent.path().join("login");
+    login_test_home(&login);
+    let expected = c
+        .state_dir
+        .as_ref()
+        .unwrap()
+        .canonicalize()
+        .unwrap()
+        .join(HOME_NAME);
+    fs::write(
+        c.cwd.join("expected-version-home"),
+        expected.as_os_str().as_bytes(),
+    )
+    .unwrap();
+    fs::write(c.cwd.join("exec-version"), "@home").unwrap();
+    let mut wrapper = LoginTestWrapper::start(&c, Some("--shared-login"), Some(&login)).await;
+    let reply = wrapper.call("setup", json!({})).await;
+    assert_eq!(
+        reply["isError"], false,
+        "version probe omitted the Agent CODEX_HOME or saw the login link before setup"
+    );
+    assert!(fs::symlink_metadata(expected.join("auth.json")).is_ok());
+    wrapper.close().await;
+}
+
+#[tokio::test]
+async fn setup_probe_refuses_invalid_login_bindings_first() {
+    let mut observed = Vec::new();
+    for binding in ["missing", "relative", "absent-directory", "file"] {
+        let parent = tempfile::tempdir().unwrap();
+        let mut c = config(parent.path(), false, false);
+        c.env.insert("PATH".into(), c.cwd.to_str().unwrap().into());
+        let absent = parent.path().join("absent");
+        let file = parent.path().join("file");
+        fs::write(&file, []).unwrap();
+        let login = match binding {
+            "missing" => None,
+            "relative" => Some(Path::new("relative")),
+            "absent-directory" => Some(absent.as_path()),
+            _ => Some(file.as_path()),
+        };
+        let mut wrapper = LoginTestWrapper::start(&c, Some("--shared-login"), login).await;
+        let reply = wrapper.call("setup", json!({})).await;
+        let names_binding = reply["content"][0]["text"]
+            .as_str()
+            .unwrap()
+            .contains("AGENT_LOGIN_DIRECTORY");
+        let probed = c.cwd.join("version-invocations").exists();
+        observed.push((
+            binding,
+            reply["isError"].as_bool().unwrap(),
+            names_binding,
+            probed,
+        ));
+        wrapper.close().await;
+    }
+    assert_eq!(
+        observed,
+        [
+            ("missing", true, true, false),
+            ("relative", true, true, false),
+            ("absent-directory", true, true, false),
+            ("file", true, true, false),
+        ],
+        "invalid login bindings must be refused before executing the client"
+    );
+}
+
+#[tokio::test]
+async fn setup_probe_stops_the_launcher_and_its_child() {
+    use tokio::io::{AsyncBufReadExt, AsyncReadExt, BufReader};
+
+    let mut observed = Vec::new();
+    for mode in ["@launch-timeout", "@launch-oversize"] {
+        let parent = tempfile::tempdir().unwrap();
+        let mut c = config(parent.path(), false, false);
+        c.env.insert("PATH".into(), c.cwd.to_str().unwrap().into());
+        let login = parent.path().join("login");
+        login_test_home(&login);
+        fs::write(c.cwd.join("exec-version"), mode).unwrap();
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        fs::write(
+            c.cwd.join("version-listener"),
+            listener.local_addr().unwrap().to_string(),
+        )
+        .unwrap();
+        let mut wrapper = LoginTestWrapper::start(&c, Some("--shared-login"), Some(&login)).await;
+        let (reply, connected) = tokio::join!(
+            wrapper.call("setup", json!({})),
+            tokio::time::timeout(Duration::from_secs(10), listener.accept())
+        );
+        assert_eq!(reply["isError"], true);
+        let mut child = BufReader::new(connected.unwrap().unwrap().0);
+        let mut child_id = String::new();
+        child.read_line(&mut child_id).await.unwrap();
+        let child_id: i32 = child_id.trim().parse().unwrap();
+        let stopped = matches!(
+            tokio::time::timeout(Duration::from_secs(1), child.read_u8()).await,
+            Ok(Err(error)) if error.kind() == std::io::ErrorKind::UnexpectedEof
+        );
+        if !stopped {
+            // Clean up the scripted child when this regression is run before the fix.
+            unsafe { libc::kill(child_id, libc::SIGKILL) };
+        }
+        let launcher: i32 = fs::read_to_string(c.cwd.join("version-launcher-pid"))
+            .unwrap()
+            .parse()
+            .unwrap();
+        let reaped = unsafe { libc::kill(launcher, 0) } == -1;
+        observed.push((mode, stopped, reaped));
+        wrapper.close().await;
+    }
+    assert_eq!(
+        observed,
+        [
+            ("@launch-timeout", true, true),
+            ("@launch-oversize", true, true),
+        ],
+        "version probe left a scripted child or launcher running"
+    );
 }

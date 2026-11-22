@@ -46,6 +46,12 @@ impl ServerHandler for Wrapper {
         let empty_tool = |name: &str, description: &str| {
             serde_json::from_value(json!({"name":name,"description":description,"inputSchema":{"type":"object","properties":{},"additionalProperties":false}})).unwrap()
         };
+        if self.2 == Mode::SharedLoginAgent {
+            tools.push(empty_tool(
+                "setup",
+                "Check the client version and report its path.",
+            ));
+        }
         if self.1 {
             let description = match self.2 {
                 Mode::Agent => {
@@ -173,19 +179,25 @@ impl ServerHandler for Wrapper {
             };
             return Ok(result.into());
         }
-        if r.name == "retire" && self.1 {
+        if (r.name == "retire" && self.1) || (r.name == "setup" && self.2 == Mode::SharedLoginAgent)
+        {
             if r.arguments.as_ref().is_some_and(|args| !args.is_empty()) {
                 return Err(ErrorData::invalid_params("expected no arguments", None));
             }
             let mut session = tokio::select! {
                 biased;
                 _ = context.ct.cancelled() => {
-                    return Err(ErrorData::internal_error("retire cancelled", None));
+                    return Err(ErrorData::internal_error(format!("{} cancelled", r.name), None));
                 }
                 session = self.0.lock() => session,
             };
             // Once the hook has the session, no cancellation cuts the sign-out.
-            let result = match session.retire().await {
+            let answer = if r.name == "setup" {
+                session.setup_shared_login().await
+            } else {
+                session.retire().await
+            };
+            let result = match answer {
                 Ok(text) => {
                     let mut result = serde_json::from_value::<CallToolResult>(
                         json!({"content":[{"type":"text","text":text}],"isError":false}),
@@ -371,7 +383,7 @@ async fn run() -> Result<()> {
     };
     let mut config = Config::from_env(mode)?;
     if let Some(program) = program {
-        config.program = PathBuf::from(program);
+        config.set_client_program(std::path::Path::new(program));
     }
     if mode != Mode::LoginResource
         && config.configuration_error.is_none()

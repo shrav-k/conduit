@@ -73,6 +73,7 @@ fn standard_conduit_templates_keep_their_operations() {
             "- account-home.v1",
             "- claude-code.v3",
             "- claude-code.v4",
+            "- claude-code.v5",
         ]),
         "template exports must immediately precede the new Types"
     );
@@ -191,4 +192,47 @@ fn claude_code_v4_keeps_its_shape() {
     let item = manifest.split_once("  wrapper-v4:\n").unwrap().1;
     assert!(item.contains("AGENT_INSTRUCTIONS: /instructions"));
     assert!(item.contains("AGENT_OUTPUT_SCHEMA: /outputSchema"));
+}
+
+#[test]
+fn claude_code_v5_keeps_its_shape() {
+    let contracts = include_str!("../contracts.yaml");
+    let contract = |name| {
+        contracts
+            .split("\n---\n")
+            .find(|doc| doc.lines().any(|line| line == format!("  name: {name}")))
+    };
+    let v4 = contract("claude-code.v4").unwrap();
+    let v5 = contract("claude-code.v5").expect("missing Type claude-code.v5");
+    let setup = "github.com/shrav-k/conduit/core#setup-hook.v1";
+    let retire = "github.com/shrav-k/conduit/core#retire-hook.v1";
+    let addition = "    The setup hook gives the path and version of the client it finds, and fails where the\n    client is missing, gives no version, or is older than the lowest version the package was\n    tested with.\n";
+    let expected = v4
+        .replace("claude-code.v4", "claude-code.v5")
+        .replace("wrapper-v4", "wrapper-v5")
+        .replace("\nspec:", &format!("\n{addition}spec:"))
+        .replace(
+            &format!("requires: ['{retire}']"),
+            &format!("requires: ['{setup}', '{retire}']"),
+        )
+        .replace(
+            &format!("    '{retire}': '#wrapper-v5'"),
+            &format!("    '{setup}': '#wrapper-v5'\n    '{retire}': '#wrapper-v5'"),
+        );
+    assert_eq!(v5.trim_end(), expected.trim_end());
+
+    let manifest = include_str!("../conduit.yaml");
+    assert!(manifest.contains("- claude-code.v4\n- claude-code.v5\n"));
+    let (_, items) = manifest.split_once("  wrapper-v4:\n").unwrap();
+    let (v4, v5) = items.split_once("  wrapper-v5:\n").unwrap();
+    let expected = v4
+        .replace(
+            &format!("    - '{retire}'"),
+            &format!("    - '{setup}'\n    - '{retire}'"),
+        )
+        .replace(
+            &format!("      '{retire}': retire"),
+            &format!("      '{setup}': setup\n      '{retire}': retire"),
+        );
+    assert_eq!(v5.trim_end(), expected.trim_end());
 }

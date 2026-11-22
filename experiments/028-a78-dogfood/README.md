@@ -87,6 +87,7 @@ The raw export leaves at the next condensation; the results then link its last v
 | --- | --- |
 | [README.md](README.md) | Method as run and its limits |
 | [results-2026-11-12.md](results-2026-11-12.md) | Dated observation of order 042 |
+| [results-2026-11-21-stage-2.md](results-2026-11-21-stage-2.md) | Stage 2's dated results, 2026-11-21: orders 217 to 239, from the records export and the coordinator's call results |
 | [inputs/records-2026-11-12.jsonl](inputs/records-2026-11-12.jsonl) | Engine's raw records; IDs, operations, times, attempts, outcomes and access decisions, without request inputs |
 | [inputs/measures.jsonl](inputs/measures.jsonl) | Harness's run measures |
 | [inputs/fleet/conduit.yaml](inputs/fleet/conduit.yaml) | Fleet project's manifest template |

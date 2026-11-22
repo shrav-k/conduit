@@ -31,7 +31,7 @@ struct Options {
 }
 
 impl Options {
-    fn parse(args: Vec<String>) -> Result<Self> {
+    fn parse(args: Vec<String>, command: &str) -> Result<Self> {
         let mut project = None;
         let mut store = None;
         if let Some(flag) = args.iter().find(|arg| APPROVALS.contains(&arg.as_str())) {
@@ -55,7 +55,7 @@ impl Options {
                 }
                 _ => {
                     return Err(format!(
-                        "unexpected argument {arg:?}; run conduit plan --help"
+                        "unexpected argument {arg:?}; run conduit {command} --help"
                     ));
                 }
             }
@@ -67,19 +67,23 @@ impl Options {
     }
 }
 
-pub async fn command(
-    args: Vec<String>,
-    repository: &Path,
-    version: &str,
-    crate_version: &str,
-) -> i32 {
-    match run(args, repository, version, crate_version).await {
-        Ok(plan) => {
-            print!("{}", plan.text());
-            i32::from(!plan.stops.is_empty()) * 2
-        }
+pub async fn command(args: Vec<String>, repository: &Path, version: &str) -> i32 {
+    invoke(args, repository, version, false).await
+}
+
+pub async fn apply_command(args: Vec<String>, repository: &Path, version: &str) -> i32 {
+    invoke(args, repository, version, true).await
+}
+
+async fn invoke(args: Vec<String>, repository: &Path, version: &str, applying: bool) -> i32 {
+    let command = if applying { "apply" } else { "plan" };
+    match run(args, repository, version, command, applying).await {
+        Ok(code) => code,
         Err((code, error)) => {
-            eprintln!("conduit plan: {}", user_config::escape_line_breaks(&error));
+            eprintln!(
+                "conduit {command}: {}",
+                user_config::escape_line_breaks(&error)
+            );
             code
         }
     }
@@ -89,10 +93,11 @@ async fn run(
     args: Vec<String>,
     repository: &Path,
     version: &str,
-    crate_version: &str,
-) -> std::result::Result<Plan, (i32, String)> {
+    command: &str,
+    applying: bool,
+) -> std::result::Result<i32, (i32, String)> {
     let local = |error: String| (2, error);
-    let options = Options::parse(args).map_err(local)?;
+    let options = Options::parse(args, command).map_err(local)?;
     let spec = conduit_loader::Specification::read(&repository.join("spec"))
         .map_err(|error| local(error.to_string()))?;
     let mut project = boundary::project(&options.project, &spec).map_err(local)?;
@@ -107,23 +112,36 @@ async fn run(
         .iter()
         .any(|stop| stop.ends_with(" SEC-001"))
     {
-        return Ok(compare(&prepared.desired, &ledger, &Engine::default()));
+        print!(
+            "{}",
+            compare(&prepared.desired, &ledger, &Engine::default()).text()
+        );
+        return Ok(2);
     }
-    let client = connect(options.store, version, crate_version).await?;
+    let client = connect(options.store, version, command).await?;
     let engine = read_engine(&client, &context.core_package)
         .await
-        .map_err(|error| (1, error));
-    let _ = client.cancel().await;
-    let engine = engine?;
+        .map_err(|error| (1, error))?;
     let desired = load_desired(prepared, &engine, &ledger).map_err(local)?;
-    Ok(compare(&desired, &ledger, &engine))
+    let plan = compare(&desired, &ledger, &engine);
+    let code = if applying {
+        apply::execute(&options.project, &plan, ledger, async |tool, args, key| {
+            apply::send(&client, tool, args, key).await
+        })
+        .await
+    } else {
+        print!("{}", plan.text());
+        i32::from(!plan.stops.is_empty()) * 2
+    };
+    let _ = client.cancel().await;
+    Ok(code)
 }
 
 fn differs(planner: &str, serving: &str) -> (i32, String) {
     (
         2,
         format!(
-            "planner version {planner:?} differs from serving engine version {serving:?}; use the matching conduit build"
+            "CLI version {planner:?} differs from serving engine {serving:?}; nothing was sent; use the matching conduit build"
         ),
     )
 }
@@ -131,7 +149,7 @@ fn differs(planner: &str, serving: &str) -> (i32, String) {
 async fn connect(
     store: Option<PathBuf>,
     version: &str,
-    crate_version: &str,
+    command: &str,
 ) -> std::result::Result<RunningService<RoleClient, ()>, (i32, String)> {
     let contextual = store.is_none();
     let invalid_context = |cause: String| {
@@ -180,20 +198,18 @@ async fn connect(
         .await
         .map_err(|_| client_error("MCP initialize timed out".into()))?
         .map_err(|_| client_error("MCP initialize failed".into()))?;
+    let peer = service.peer_info();
+    let info = peer.as_ref().and_then(|p| p.server_info.as_ref());
+    if !info.is_some_and(|info| info.name == "conduit" && info.version == server::wire_version()) {
+        let actual = info
+            .map(|info| format!("{} {}", info.name, info.version))
+            .unwrap_or_default();
+        let error = differs(server::wire_version(), &actual);
+        let _ = service.cancel().await;
+        return Err(error);
+    }
     if let Some(file) = label {
-        eprintln!("conduit plan: using {file:?} for store {store:?} at {address}");
-    } else {
-        let peer = service.peer_info();
-        let actual = peer
-            .as_ref()
-            .and_then(|peer| peer.server_info.as_ref())
-            .map(|info| info.version.as_str())
-            .unwrap_or("");
-        if actual != crate_version {
-            let error = differs(crate_version, actual);
-            let _ = service.cancel().await;
-            return Err(error);
-        }
+        eprintln!("conduit {command}: using {file:?} for store {store:?} at {address}");
     }
     Ok(service)
 }
@@ -265,21 +281,30 @@ async fn read_engine(client: &RunningService<RoleClient, ()>, core: &str) -> Res
     let mut inspect_routes = BTreeMap::new();
     let op = json!(format!("{core}#inspect.v1"));
     let listing_op = json!(format!("{core}#list.v1"));
+    let open_op = json!(format!("{core}#open.v1"));
+    let access = Name::new("Resource", "access");
     for conduit in array(&root_view["inventory"]["consumes"]) {
         let owner_id = text(&conduit["target"]["id"]);
-        if conduit["state"] != "ready" || !array(&conduit["operations"]).contains(&op) {
+        if conduit["state"] != "ready" {
             continue;
         }
         let Some(name) = names.get(owner_id) else {
             continue;
         };
         let local = text(&conduit["localName"]);
+        let operations = array(&conduit["operations"]);
+        if name == &access && local == "access" && operations.contains(&open_op) {
+            engine.access_conduit = conduit["conduit"]["id"].as_str().map(str::to_owned);
+        }
+        if !operations.contains(&op) {
+            continue;
+        }
         if matches!(name.kind.as_str(), "Pool" | "Fleet") {
             engine
                 .routes
                 .entry(name.clone())
                 .or_insert_with(|| local.to_owned());
-            if array(&conduit["operations"]).contains(&listing_op) {
+            if operations.contains(&listing_op) {
                 let members = call(
                     client,
                     &format!("{local}.list.v1"),
@@ -293,7 +318,7 @@ async fn read_engine(client: &RunningService<RoleClient, ()>, core: &str) -> Res
                         .or_insert_with(|| format!("{local}.inspect.v1"));
                 }
             }
-        } else if matches!(name.name.as_str(), "management" | "access") {
+        } else if name.name == "management" {
             engine.routes.insert(name.clone(), local.into());
         }
     }
@@ -365,7 +390,7 @@ async fn read_engine(client: &RunningService<RoleClient, ()>, core: &str) -> Res
     Ok(engine)
 }
 
-fn name_refs(value: &Value, names: &BTreeMap<&str, Name>) -> Value {
+pub(super) fn name_refs(value: &Value, names: &BTreeMap<&str, Name>) -> Value {
     match value {
         Value::Object(fields)
             if fields.len() == 2 && fields.contains_key("kind") && fields.contains_key("id") =>
@@ -386,7 +411,7 @@ fn name_refs(value: &Value, names: &BTreeMap<&str, Name>) -> Value {
     }
 }
 
-fn compact_definition(declared: &Value) -> Value {
+pub(super) fn compact_definition(declared: &Value) -> Value {
     let spec = declared.get("spec");
     let mut definition = spec.cloned().unwrap_or_else(|| json!({}));
     for field in ["description", "annotations"] {
@@ -463,6 +488,7 @@ impl Ledger {
                 "tombstones",
                 "plans",
                 "journals",
+                "journalUpdate",
             ]
             .contains(&key.as_str())
             {
@@ -504,10 +530,93 @@ impl Ledger {
                 return Err(invalid(&format!("/plans/{index}"), "invalid plan digest"));
             }
         }
+        let journal_update = value
+            .get("journalUpdate")
+            .map(|update| {
+                update
+                    .as_u64()
+                    .ok_or_else(|| invalid("/journalUpdate", "expected a counter"))
+            })
+            .transpose()?
+            .unwrap_or(0);
         let mut ledger = Self {
             files: value["files"].clone(),
             tombstones: array(&value["tombstones"]).to_vec(),
+            plans: array(&value["plans"]).to_vec(),
+            journals: value["journals"].as_object().unwrap().clone(),
+            journal_update,
+            registration_flags: BTreeMap::new(),
             ..Self::default()
+        };
+        let current_digest = bytes_digest(value.to_string().as_bytes());
+        let mut recovered = None;
+        for (digest, location) in &ledger.journals {
+            let hex = digest.trim_start_matches("sha256:");
+            if location != &format!(".conduit/results/{hex}.yaml") {
+                continue;
+            }
+            let results = file.parent().unwrap().join("results");
+            let journal = results.join(format!("{hex}.yaml"));
+            if !fs::symlink_metadata(&results).is_ok_and(|meta| meta.is_dir())
+                || !fs::symlink_metadata(&journal).is_ok_and(|meta| meta.is_file())
+            {
+                return Err(invalid("/journals", "expected a regular journal file"));
+            }
+            let kept = boundary::value(&journal).map_err(|error| invalid("/journals", &error))?;
+            let update = &kept["ledgerUpdate"];
+            if update["from"] == current_digest {
+                let next = &update["state"];
+                if recovered.is_some()
+                    || journal_update == u64::MAX
+                    || array(&kept["entries"]).last().is_none_or(|entry| {
+                        entry["result"]["outcome"] != "succeeded"
+                            || entry.get("verificationFailed").is_some()
+                    })
+                    || next["journalUpdate"].as_u64() != journal_update.checked_add(1)
+                    || ["format", "files", "plans", "journals"]
+                        .iter()
+                        .any(|key| next[*key] != value[*key])
+                    || !next["objects"].is_array()
+                    || !next["tombstones"].is_array()
+                {
+                    return Err(invalid("/journals", "invalid or competing ledger update"));
+                }
+                recovered = Some(next.clone());
+            }
+            for entry in array(&kept["entries"]) {
+                let Some(flag) = entry["flag"].as_str() else {
+                    continue;
+                };
+                let Some((flag, operand)) = flag.split_once(' ').filter(|(flag, operand)| {
+                    APPROVALS.contains(flag)
+                        && !operand.is_empty()
+                        && !operand.contains(char::is_whitespace)
+                }) else {
+                    return Err(invalid("/journals", "unknown registration flag"));
+                };
+                let approval = Approval {
+                    flag: flag.into(),
+                    operand: operand.into(),
+                };
+                for object in array(&entry["result"]["objects"])
+                    .iter()
+                    .chain(entry["result"].get("object"))
+                {
+                    if let Some(id) = object["id"].as_str() {
+                        ledger
+                            .registration_flags
+                            .insert(id.to_owned(), approval.clone());
+                    }
+                }
+            }
+        }
+        let value = if let Some(recovered) = recovered {
+            ledger.journal_update = recovered["journalUpdate"].as_u64().unwrap();
+            ledger.recovered_update = true;
+            ledger.tombstones = array(&recovered["tombstones"]).to_vec();
+            recovered
+        } else {
+            value
         };
         let mut ids = BTreeSet::new();
         for (index, row) in array(&value["objects"]).iter().enumerate() {
@@ -753,6 +862,10 @@ fn prepare_desired(project: Project, context: &Context) -> Result<Prepared<'_>> 
     let mut desired = Desired {
         project,
         objects: BTreeMap::new(),
+        nested: Vec::new(),
+        core_address: context.core_package.clone(),
+        core_pin: json!({"address":context.core_package,
+            "version":context.builtin.as_ref().and_then(|p|p.manifest.as_ref()).and_then(|m|m.get("version"))}),
         stops: BTreeSet::new(),
         available_archives: BTreeMap::new(),
     };
@@ -1156,6 +1269,20 @@ fn resolve_objects(
         .iter()
         .filter_map(|row| Some((Name::object(row)?, row)))
         .collect();
+    for (name, object) in &all {
+        let Some(nested) = object.get("nested") else {
+            continue;
+        };
+        let Some(parent) = names.get(text(&nested["parent"])) else {
+            continue;
+        };
+        desired.nested.push(NestedRegistration {
+            parent: parent.clone(),
+            local: text(&nested["name"]).into(),
+            name: name.clone(),
+            resolved: resolved_view(object, &names, Value::Null)?,
+        });
+    }
     let mut resolved = Vec::new();
     for (name, document) in authored {
         let object = all
@@ -1201,7 +1328,6 @@ fn resolve_objects(
     }
     for (name, document, object) in resolved {
         let defined = name_refs(object, &names);
-        let definition = compact_definition(&defined);
         let held = &object["held"];
         let implementations = conduit_core::registration::inspected_implementations(object, core)
             .unwrap_or(Value::Null);
@@ -1284,28 +1410,11 @@ fn resolve_objects(
                     .and_then(|(s, n)| env.scopes[s].contracts.get(n))
                     .is_some_and(|doc| doc["spec"]["startsModelWork"] == true)
             });
-        let mut packages = object["packages"].clone();
-        conduit_core::registration::inspect_project_documents(object, &mut packages)?;
         desired.objects.insert(
             name,
             DesiredObject {
                 document,
-                resolved: ObservedObject {
-                    id: text(&object["id"]).into(),
-                    revision: text(&object["revision"]).into(),
-                    state: if object.get("spec").is_some() {
-                        "template".into()
-                    } else {
-                        text(&object["state"]).into()
-                    },
-                    definition,
-                    packages: array(&packages).to_vec(),
-                    status: Value::Null,
-                    inventory: Value::Null,
-                    implementations,
-                    made_by_engine: false,
-                    unknown_endings: BTreeMap::new(),
-                },
+                resolved: resolved_view(object, &names, implementations)?,
                 own_tools,
                 controls,
                 reached_documents,
@@ -1315,4 +1424,29 @@ fn resolve_objects(
         );
     }
     Ok(())
+}
+
+fn resolved_view(
+    object: &Value,
+    names: &BTreeMap<&str, Name>,
+    implementations: Value,
+) -> Result<ObservedObject> {
+    let mut packages = object["packages"].clone();
+    conduit_core::registration::inspect_project_documents(object, &mut packages)?;
+    Ok(ObservedObject {
+        id: text(&object["id"]).into(),
+        revision: text(&object["revision"]).into(),
+        state: if object.get("spec").is_some() {
+            "template".into()
+        } else {
+            text(&object["state"]).into()
+        },
+        definition: compact_definition(&name_refs(object, names)),
+        packages: array(&packages).to_vec(),
+        status: Value::Null,
+        inventory: Value::Null,
+        implementations,
+        made_by_engine: false,
+        unknown_endings: BTreeMap::new(),
+    })
 }

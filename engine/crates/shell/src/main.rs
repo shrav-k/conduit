@@ -35,17 +35,24 @@ fn run() -> Result<()> {
     let command = args
         .next()
         .ok_or("usage: conduit COMMAND [ARGUMENTS]; run conduit --help for commands")?;
-    if command == "plan" {
+    if matches!(command.as_str(), "plan" | "apply") {
         let repository = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
         let code = match tokio::runtime::Runtime::new() {
-            Ok(runtime) => runtime.block_on(conduit_shell::plan::command(
-                args.collect(),
-                &repository,
-                &version_line(),
-                env!("CARGO_PKG_VERSION"),
-            )),
+            Ok(runtime) => {
+                let version = version_line();
+                let args = args.collect();
+                if command == "plan" {
+                    runtime.block_on(conduit_shell::plan::command(args, &repository, &version))
+                } else {
+                    runtime.block_on(conduit_shell::plan::apply_command(
+                        args,
+                        &repository,
+                        &version,
+                    ))
+                }
+            }
             Err(error) => {
-                eprintln!("conduit plan: cannot start client: {error}");
+                eprintln!("conduit {command}: cannot start client: {error}");
                 1
             }
         };

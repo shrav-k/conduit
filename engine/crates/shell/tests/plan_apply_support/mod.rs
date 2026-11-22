@@ -1,3 +1,6 @@
+#[allow(dead_code)]
+pub mod cli;
+
 use crate::package_target::package_target_dir;
 use conduit_shell::{
     Config, Execution, Executor, MissingExecutor, RunIdentity, Shell, boundary, runner::Runner,
@@ -19,7 +22,10 @@ use std::{
     net::{Ipv4Addr, TcpListener},
     path::{Path, PathBuf},
     process::Command,
-    sync::{Arc, Mutex, Weak},
+    sync::{
+        Arc, Mutex, Weak,
+        atomic::{AtomicBool, Ordering},
+    },
     time::Duration,
 };
 use tokio::{sync::oneshot, task::JoinHandle, time::timeout};
@@ -139,6 +145,7 @@ pub fn installs() -> Vec<Install> {
 #[derive(Default)]
 struct Filesystem {
     runs: Mutex<BTreeSet<String>>,
+    fail_setup: Arc<AtomicBool>,
 }
 
 struct AgentPrograms {
@@ -309,6 +316,11 @@ impl Executor for Filesystem {
             .and_then(|op| op.rsplit('#').next())
         {
             Some("run.v1") if intent["inputs"]["item"]["package"]["identifier"] == FILESYSTEM => {
+                if self.fail_setup.swap(false, Ordering::SeqCst) {
+                    return Ok(Execution::SetupReport(
+                        json!({"kind":"run","outcome":"failed"}),
+                    ));
+                }
                 runs.insert(subject.into());
                 json!({"kind":"run","outcome":"succeeded"})
             }
@@ -356,12 +368,19 @@ pub struct Engine {
     server: JoinHandle<conduit_shell::Result<()>>,
     _runner: OwnedRunner,
     _store: tempfile::TempDir,
+    #[allow(dead_code)]
+    fail_setup: Arc<AtomicBool>,
 }
 
 impl Engine {
     #[allow(dead_code)] // Used by the planner integration tests.
     pub fn directory(&self) -> PathBuf {
         self._store.path().join("store")
+    }
+
+    #[allow(dead_code)] // Used by the apply integration tests.
+    pub fn fail_next_setup(&self) {
+        self.fail_setup.store(true, Ordering::SeqCst);
     }
 
     pub async fn start() -> Self {
@@ -414,9 +433,13 @@ impl Engine {
             Runner::new(&shell, PathBuf::from(env!("CARGO_BIN_EXE_conduit"))).unwrap(),
         ));
         let programs = tokio::task::spawn_blocking(scripted_agents).await.unwrap();
+        let fail_setup = Arc::new(AtomicBool::new(false));
         let executor = Arc::new(server::ServingExecutor::new(Arc::new(ReplayExecutor {
             runner: runner.0.as_ref().unwrap().executor(),
-            filesystem: Filesystem::default(),
+            filesystem: Filesystem {
+                fail_setup: fail_setup.clone(),
+                ..Filesystem::default()
+            },
             agents: Mutex::default(),
             shell: Arc::downgrade(&shell),
             programs,
@@ -462,6 +485,7 @@ impl Engine {
             server,
             _runner: runner,
             _store: store,
+            fail_setup,
         }
     }
 
@@ -536,7 +560,7 @@ fn symbolic_id(name: &str) -> bool {
     name.starts_with("00000000-0000-4000-8000-") && name.len() == 36
 }
 
-#[derive(Default)]
+#[derive(Clone, Default)]
 struct Bindings(BTreeMap<String, String>);
 
 impl Bindings {
@@ -556,7 +580,7 @@ impl Bindings {
     }
 }
 
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct Symbols {
     ids: Bindings,
     names: Bindings,
@@ -1060,6 +1084,17 @@ pub async fn replay_visit(
     cases: &[Value],
     mut before_case: impl FnMut(&Engine, &Value, &Symbols),
 ) -> Replay {
+    replay_while(cases, |engine, case, symbols| {
+        before_case(engine, case, symbols);
+        true
+    })
+    .await
+}
+
+pub async fn replay_while(
+    cases: &[Value],
+    mut before_case: impl FnMut(&Engine, &Value, &Symbols) -> bool,
+) -> Replay {
     let started = chrono::Utc::now().timestamp();
     let engine = Engine::start().await;
     let initial = result(&engine.call("management.list.v1", json!({}), None).await);
@@ -1116,7 +1151,9 @@ pub async fn replay_visit(
             );
             first.get_or_insert("- /engine/packages NAM-011".into());
         }
-        before_case(&engine, case, &symbols);
+        if !before_case(&engine, case, &symbols) {
+            break;
+        }
         let mut sent = 0;
         let mut matched = 0;
         for (i, request) in list(&case["requests"]).iter().enumerate() {
@@ -1275,4 +1312,147 @@ pub async fn replay_visit(
     }
     engine.close().await;
     report
+}
+
+#[allow(dead_code)] // Used by the apply integration tests.
+pub fn check_apply_case(
+    engine: &Engine,
+    case: &Value,
+    seed: &Symbols,
+    entries: &[Value],
+    ledger: &Value,
+    digest: &str,
+) {
+    let rows = tokio::task::block_in_place(|| {
+        tokio::runtime::Handle::current()
+            .block_on(async { result(&engine.call("management.list.v1", json!({}), None).await) })
+    });
+    let rows = list(&rows["objects"]);
+    let mut symbols = seed.clone();
+    symbols.bind_base(rows);
+    let mut replay = Replay {
+        lines: BTreeSet::new(),
+        started: 0,
+    };
+    let case_id = case["id"].as_str().unwrap();
+    for (index, (request, entry)) in list(&case["requests"]).iter().zip(entries).enumerate() {
+        let step = (index + 1).to_string();
+        let arguments = symbols
+            .arguments(request, case)
+            .expect("earlier request symbols");
+        assert_eq!(
+            entry["arguments"],
+            safe_projection(&arguments),
+            "arguments at step {step}"
+        );
+        assert_eq!(entry["flag"], request["flag"]);
+        let actual = &entry["result"];
+        for (member, expected) in request["result"].as_object().unwrap() {
+            match member.as_str() {
+                "objects" => replay.compare_objects(
+                    &mut symbols,
+                    case_id,
+                    &step,
+                    "/result/objects",
+                    expected,
+                    &actual[member],
+                ),
+                "view" => {
+                    let row = json!({"kind":expected[0],"name":expected[1],"template":expected[4]=="template"});
+                    let view = compact(&row, actual, rows);
+                    replay.compare_view(
+                        &mut symbols,
+                        case_id,
+                        &step,
+                        "/result/view",
+                        expected,
+                        &view,
+                    );
+                }
+                "tombstones" => replay.compare_tombstones(
+                    &mut symbols,
+                    case_id,
+                    &step,
+                    "/result/tombstones",
+                    expected,
+                    &actual[member],
+                ),
+                "packages" => assert_eq!(
+                    pin_order(expected),
+                    pin_order(&actual[member]),
+                    "pins at step {step}"
+                ),
+                _ => assert!(
+                    symbols.matches(expected, &actual[member]),
+                    "{case_id} step {step} result member {member}"
+                ),
+            }
+        }
+    }
+    for want in list(&case["kept"]["objects"]) {
+        let id = symbols
+            .ids
+            .get(want[2].as_str().unwrap())
+            .expect("known kept ID");
+        let got = list(&ledger["objects"])
+            .iter()
+            .find(|row| row[2] == id)
+            .expect("ledger object");
+        assert!(symbols.matches(&want[0], &got[0]));
+        assert!(symbols.matches(&want[1], &got[1]));
+        assert!(
+            symbols.bind_revision(&want[2], &want[3], &got[3]),
+            "kept object's revision"
+        );
+        assert_eq!(got[4], want[4], "kept object's lifecycle");
+        assert!(
+            symbols.matches(&safe_projection(&want[5]), &got[5]),
+            "kept definition of {}",
+            want[1]
+        );
+        assert_eq!(pin_order(&want[6]), pin_order(&got[6]));
+    }
+    replay.compare_tombstones(
+        &mut symbols,
+        case_id,
+        "-",
+        "/kept/tombstones",
+        &case["kept"]["tombstones"],
+        &ledger["tombstones"],
+    );
+    assert!(
+        replay.lines.is_empty(),
+        "mapped golden reply or ledger mismatch"
+    );
+    let records = tokio::task::block_in_place(|| {
+        tokio::runtime::Handle::current().block_on(async {
+            result(
+                &engine
+                    .call(
+                        "management.inspect.v1",
+                        json!({"object":{"kind":"Interface","name":"root"}}),
+                        None,
+                    )
+                    .await,
+            )
+        })
+    });
+    let prefix = format!("plan:{digest}:");
+    let sent: Vec<_> = list(&records["records"])
+        .iter()
+        .filter(|record| {
+            record["type"] == "access-decision"
+                && record["data"]["idempotencyKey"]
+                    .as_str()
+                    .is_some_and(|key| key.starts_with(&prefix))
+        })
+        .map(|record| &record["data"]["tool"])
+        .collect();
+    assert_eq!(
+        sent,
+        entries
+            .iter()
+            .map(|entry| &entry["tool"])
+            .collect::<Vec<_>>()
+    );
 }

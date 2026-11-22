@@ -330,7 +330,7 @@ impl ServerHandler for Handler {
         )
     }
     fn get_info(&self) -> ServerConfig {
-        serde_json::from_value(json!({"protocolVersion":"2026-07-28","capabilities":{"tools":{"listChanged":true},"extensions":{format!("{}implementation-interface",self.shell.context.meta_prefix):{"revision":"v0"}}},"serverInfo":{"name":"conduit","version":env!("CARGO_PKG_VERSION")}})).unwrap()
+        serde_json::from_value(json!({"protocolVersion":"2026-07-28","capabilities":{"tools":{"listChanged":true},"extensions":{format!("{}implementation-interface",self.shell.context.meta_prefix):{"revision":"v0"}}},"serverInfo":{"name":"conduit","version":wire_version()}})).unwrap()
     }
     async fn initialize(
         &self,
@@ -1330,4 +1330,8 @@ async fn client_inner(
     response.map_err(|error| {
         display_error(format!("{} for {asked} failed: {error}; check conduit tools and the serving engine's diagnostics; this request was not retried", tool.unwrap_or("tools/list")))
     })
+}
+
+pub(crate) fn wire_version() -> &'static str {
+    concat!(env!("CARGO_PKG_VERSION"), "+", env!("CLI_GIT_COMMIT"))
 }

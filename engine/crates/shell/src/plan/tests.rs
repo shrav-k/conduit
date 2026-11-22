@@ -22,6 +22,9 @@ impl Default for Desired {
                 directory: None,
             },
             objects: BTreeMap::new(),
+            nested: Vec::new(),
+            core_address: "github.com/shrav-k/conduit/core".into(),
+            core_pin: Value::Null,
             stops: BTreeSet::new(),
             available_archives: BTreeMap::new(),
         }
@@ -229,13 +232,27 @@ fn row_07_foreign_retirement_waits_for_shutdown() {
 }
 
 #[test]
-fn row_08_registered_falls_through_to_row_27() {
+fn row_08_registered_is_verified_and_set_up() {
     let mut f = Fixture::default();
     let name = Name::new("Resource", "reader");
     let instance = object("registered", json!({}));
     f.observed(&name, instance.clone());
     f.want(&name, instance);
-    f.line("stop Resource/reader state=registered rule=none -");
+    f.line(&format!(
+        "1 management.inspect.v1 Resource/reader expected={ID} neither flag=- LIF-013"
+    ));
+    f.line(&format!(
+        "2 management.set-up.v1 Resource/reader expected={ID} neither flag=- TPL-012"
+    ));
+    f.kept.registration_flags.insert(
+        ID.into(),
+        Approval {
+            flag: "--replace".into(),
+            operand: "original-reader".into(),
+        },
+    );
+    f.line("stop Resource/reader state=registered requires=--replace original-reader LIF-013");
+    assert!(compare(&f.file, &f.kept, &f.engine).steps.is_empty());
 }
 
 #[test]
@@ -482,6 +499,15 @@ fn row_21_subset_closes_lists_lifts_and_activates_without_a_flag() {
     f.line("3 access.lift.v1 Tombstone/project expected=(step 2) neither flag=- ACC-053");
     f.line("4 management.register.v1 Conduit/project expected=(step 4) adds flag=- SCT-007");
     f.line("6 access.open.v1 Conduit/project expected=(step 4) widens flag=- LIF-037");
+    let plan = compare(&f.file, &f.kept, &f.engine);
+    assert!(matches!(&plan.steps[2].action.binding,
+        Some(apply::Binding::Tombstone { closed: 1, listed: 2, object }) if object == ID));
+    assert!(plan.steps[4].action.check.is_some());
+    assert!(
+        plan.steps
+            .iter()
+            .all(|step| !matches!(step.action.effect, apply::Effect::Unspecified))
+    );
 }
 
 #[test]

@@ -507,6 +507,22 @@ absolute-path `directory` is printed as `{"pathSha256":"HEX"}`, as document line
 plan text holds no path (see [Kept state and privacy](#kept-state-and-privacy)).
 This distinguishes otherwise similar plans without disclosing prohibited values.
 Full arguments are journaled only in safe form.
+After each sent step, apply prints `result N OUTCOME JSON`. The compact, sorted JSON
+keeps the members of `structuredContent` except `records`, `recordGaps` and
+`recordsComplete`. It adds `outcome`, `reason`, `invocation` and `pendingAction` from
+`_meta` without their key prefix. The journal keeps the same projection, with absolute
+paths fingerprinted as described in [Kept state and privacy](#kept-state-and-privacy).
+Immediately after each successful setup's result, print its new sign-in actions (PND-005)
+from the result's `pendingAction` in returned order as `panel action ID: sign-in required`,
+once per ID. Apply waits up to 150 seconds per request. On timeout it reports unknown delivery
+and names the bound, step, and key on stderr.
+
+If a read after printing disagrees with the expected ID, definition or packages, apply prints
+`verify N failed KIND/NAME place=POINTER` after the result. The pointer names the first
+difference. Apply prints the range of unsent steps, when present, and exits 1.
+The journal keeps the verification failure beside the reply so repeating the same plan uses
+a new attempt.
+
 Affects lines follow all steps, then differences, then flags sorted by flag and operand.
 The last line is `ready`, `no changes`, or `stopped`.
 

@@ -41,10 +41,15 @@ class FakeRunner:
         self.package_names = {}
         self.resolved_packages = {}
 
-    def __call__(self, args, *, cwd, env, timeout, log, redact):
-        self.calls.append(dict(args=list(args), cwd=cwd, env=dict(env), timeout=timeout, log=log))
+    def __call__(self, args, *, cwd, env, timeout, log, redact, cancel=None, on_launch=None):
+        if cancel is not None and cancel.event.is_set():
+            return gate.CommandResult(None, cancelled=True)
+        if on_launch is not None:
+            on_launch()
+        call = dict(args=list(args), cwd=cwd, env=dict(env), timeout=timeout, log=log)
+        self.calls.append(call)
         if self.inspect:
-            self.inspect(self.calls[-1])
+            self.inspect(call)
         if len(args) > 1 and args[1] == 'locate-project':
             manifest = args[-1]
             workspace = self.workspaces.get(manifest, manifest)
@@ -1198,7 +1203,8 @@ class GateTests(unittest.TestCase):
         record = self.record()
         self.assertEqual(set(record), {'format', 'tool', 'started', 'finished', 'result', 'base',
                          'merge_base', 'head', 'branch', 'contains_base', 'behind', 'tree', 'changed_paths',
-                         'platform', 'python', 'python_packages', 'environment', 'settings', 'gates'})
+                         'platform', 'python', 'python_packages', 'environment', 'settings', 'gates',
+                         'stopped_at', 'load_average'})
         self.assertEqual(record['format'], 1)
         self.assertEqual(record['tool'], 'tools/gate.py')
         self.assertEqual(record['result'], 'PASS')
@@ -1211,7 +1217,7 @@ class GateTests(unittest.TestCase):
                          CARGO_TERM_COLOR='never', CARGO_BUILD_JOBS='6', RUST_TEST_THREADS='4'))
         for row in record['gates']:
             self.assertEqual(set(row), {'name', 'directory', 'command', 'required', 'result',
-                                       'reason', 'why', 'partial', 'exit', 'seconds', 'log'})
+                                       'reason', 'why', 'partial', 'exit', 'seconds', 'log', 'started'})
             self.assertIn(row['result'] + ' ' + row['name'], output)
             if row['command']:
                 self.assertIn(row['command'], output)
@@ -1545,7 +1551,9 @@ class GateTests(unittest.TestCase):
             if call['args'][1] == 'test':
                 self.assertEqual(call['env']['RUST_TEST_THREADS'], '3')
             self.assertFalse(planted.keys() & call['env'].keys())
-        self.assertEqual(self.record()['settings'], dict(jobs=5, test_threads=3, all=True, target_cache=None))
+        self.assertEqual(self.record()['settings'], dict(
+            jobs=5, test_threads=3, all=True, target_cache=None, merge_queue=False,
+            one_at_a_time=False, side_jobs=None, side_test_threads=None))
         self.assertEqual(self.record()['environment']['set'],
                          dict(CARGO_NET_OFFLINE='true', RUSTUP_AUTO_INSTALL='0', CARGO_TERM_COLOR='never',
                               CARGO_BUILD_JOBS='5', RUST_TEST_THREADS='3'))
@@ -1930,6 +1938,481 @@ class GateTests(unittest.TestCase):
                     self.assertIn('tool tests', output.splitlines()[-1].split('not run: ')[1])
                 if changed:
                     changed.unlink()
+
+    def queue_fixture(self):
+        self.crates('engine', 'packages/provider-file', 'packages/provider-keychain')
+        self.write('engine/src/example.rs', 'fn reads() { let _ = "packages/provider-file"; }')
+        self.write('packages/provider-file/README.md', 'changed\n')
+        self.write('packages/provider-keychain/README.md', 'changed\n')
+        self.write('tools/check_roadmap.py', '# changed\n')
+        return ['tool tests', *[f'{directory} {verb}'
+                               for directory in ('rust packages/provider-file',
+                                                 'rust packages/provider-keychain', 'engine')
+                               for verb in ('fmt', 'clippy', 'test')]]
+
+    def queue_call(self, call):
+        args = call['args']
+        if args[1:3] == ['-m', 'unittest']:
+            return 'tool tests'
+        if args[1] in ('fmt', 'clippy', 'test'):
+            directory = call['cwd'].relative_to(self.root).as_posix()
+            return (directory if directory == 'engine' else 'rust ' + directory) + ' ' + args[1]
+        if args[1] == 'tools/check_docs.py':
+            return 'docs'
+        if args[1] == 'metadata':
+            return 'rust discovery'
+        if args[-1] == 'version':
+            return 'secrets version'
+        return None
+
+    def queue_runner(self, handle):
+        fake = self.fake
+
+        def run(args, **kwargs):
+            name = self.queue_call(dict(args=args, **kwargs))
+            call = lambda: fake(args, **kwargs)
+            return handle(name, args, kwargs, call)
+        self.fake = run
+
+    def test_without_merge_queue_keeps_todays_rows(self):
+        expected = self.queue_fixture()
+        calls = []
+        active = threading.Lock()
+
+        def check(name, args, kwargs, fallback):
+            self.assertTrue(active.acquire(blocking=False))
+            try:
+                calls.append(name)
+                if name in expected:
+                    self.assertEqual(kwargs['env']['CARGO_BUILD_JOBS'], '6')
+                    self.assertEqual(kwargs['env'].get('RUST_TEST_THREADS'),
+                                     '4' if name.endswith(' test') else None)
+                return fallback()
+            finally:
+                active.release()
+
+        self.queue_runner(check)
+        self.assertEqual(self.invoke()[0], 0)
+        self.assertEqual([name for name in calls if name in expected], expected)
+        self.assertIsNone(self.record()['stopped_at'])
+        for row in self.record()['gates']:
+            if row['result'] == 'PASS':
+                self.assertRegex(row['started'], r'^\d{4}-.*(?:Z|\+00:00)$')
+            else:
+                self.assertIsNone(row['started'])
+
+    def test_merge_queue_runs_the_cheap_rows_first(self):
+        original = self.queue_fixture()
+        self.assertEqual(self.invoke('--merge-queue')[0], 0)
+        calls = [self.queue_call(call) for call in self.fake.calls]
+        relevant = [name for name in calls if name in original]
+        cheap = [name for name in original if name.endswith((' fmt', ' clippy'))]
+        self.assertEqual(relevant[:len(cheap)], cheap)
+        self.assertCountEqual(relevant[len(cheap):], set(original) - set(cheap))
+        self.assertEqual(self.record()['settings'], dict(
+            jobs=6, test_threads=4, all=False, target_cache=None, merge_queue=True,
+            one_at_a_time=False, side_jobs=3, side_test_threads=2))
+        self.assertIsNone(self.record()['stopped_at'])
+
+    def test_merge_queue_stops_at_the_first_required_failure(self):
+        self.queue_fixture()
+        self.write('packages/zzz/Cargo.toml', '[package]\nname="zzz"\nversion="0.1.0"\n')
+        fake = self.fake
+        for failure in ('rust discovery', 'docs', 'rust packages/provider-file fmt',
+                        'rust packages/provider-file clippy', 'rust packages/provider-file test',
+                        'engine test', 'tool tests'):
+            with self.subTest(failure=failure):
+                self.fake = fake
+                seen = []
+
+                def fail(name, args, kwargs, fallback):
+                    seen.append(name)
+                    if name == failure:
+                        if 'on_launch' in kwargs:
+                            kwargs['on_launch']()
+                        kwargs['log'].write_text('failed fixture\n')
+                        return gate.CommandResult(1, 'failed fixture\n',
+                                                  timed_out=failure.endswith(' clippy'))
+                    if failure in ('engine test', 'tool tests') and name in (
+                            'engine test', 'tool tests', 'rust packages/provider-keychain test'):
+                        kwargs['on_launch']()
+                        self.assertTrue(kwargs['cancel'].event.wait(3))
+                        kwargs['log'].write_text('cancelled fixture\n')
+                        return gate.CommandResult(0, cancelled=True)
+                    return fallback()
+
+                self.queue_runner(fail)
+                code, output, _ = self.invoke('--merge-queue', installed='gitleaks')
+                self.assertEqual(code, 1)
+                self.assertEqual(self.record()['stopped_at'], failure)
+                why = "not run: the merge queue's gate stops at its first required failure, " + failure
+                omitted = [row for row in self.record()['gates'] if row['why'] == why]
+                for row in omitted:
+                    self.assertIsNone(row['started'])
+                    self.assertNotIn(row['name'], seen)
+                self.assertEqual(self.row(failure)['result'], 'FAIL')
+                self.assertNotIn('rust packages/zzz test', seen)
+                if failure not in ('engine test', 'tool tests'):
+                    self.assertGreater(len(omitted), 0)
+                    self.assertNotIn('engine test', seen)
+                if failure in ('rust discovery', 'docs'):
+                    self.assertNotIn('secrets version', seen)
+                self.assertIn(f'stopped at {failure} under --merge-queue, so ', output.splitlines()[-1])
+                self.assertIn('required, not run: none;', output.splitlines()[-1])
+                if failure.endswith(' clippy'):
+                    self.assertIn('ended after 90 minutes', self.row(failure)['why'])
+                if failure not in ('engine test', 'tool tests'):
+                    self.assertFalse(any(name == 'tool tests' for name in seen))
+
+    def queue_processes(self, directory, failing=None):
+        script = self.parent / 'queue-stand-in.py'
+        script.write_text("""import os, pathlib, signal, sys, time
+root, name, failing = pathlib.Path(sys.argv[1]), sys.argv[2], sys.argv[3]
+child = os.fork()
+if child == 0:
+    def ended(sig, frame):
+        (root / (name + '.ended')).touch()
+        os._exit(0)
+    signal.signal(signal.SIGTERM, ended)
+    (root / (name + '.ready')).touch()
+    time.sleep(30)
+    os._exit(3)
+signal.signal(signal.SIGTERM, lambda sig, frame: None)
+print('stand-in running', flush=True)
+if name == failing:
+    deadline = time.monotonic() + 3
+    while len(list(root.glob('*.ready'))) < 3 and time.monotonic() < deadline:
+        time.sleep(0.01)
+    os.kill(child, signal.SIGTERM)
+    os.waitpid(child, 0)
+    sys.exit(1)
+os.waitpid(child, 0)
+""")
+        names = {'engine test': 'engine', 'tool tests': 'tools',
+                 'rust packages/provider-keychain test': 'side'}
+
+        def stand_in(name, args, kwargs, fallback):
+            if name not in names:
+                return fallback()
+            return gate.run_command([sys.executable, str(script), str(directory), names[name],
+                                     names.get(failing, '-')], **dict(kwargs, timeout=4))
+
+        return names, stand_in
+
+    def test_merge_queue_ends_the_rows_still_running(self):
+        self.queue_fixture()
+        fake = self.fake
+        for failing in ('engine test', 'tool tests'):
+            with self.subTest(failing=failing):
+                directory = self.parent / ('stand-ins-' + failing.replace(' ', '-'))
+                directory.mkdir()
+                names, stand_in = self.queue_processes(directory, failing)
+                self.fake = fake
+                self.queue_runner(stand_in)
+                started = time.monotonic()
+                with mock.patch.object(gate, 'GRACE', 1):
+                    code, output, _ = self.invoke('--merge-queue')
+                self.assertEqual(code, 1)
+                self.assertLess(time.monotonic() - started, 6)
+                self.assertEqual(self.record()['stopped_at'], failing)
+                for row_name, name in names.items():
+                    self.assertTrue((directory / (name + '.ended')).exists(), name)
+                    if row_name == failing:
+                        continue
+                    row = self.row(row_name)
+                    self.assertEqual(row['result'], 'NOT RUN')
+                    self.assertIsNotNone(row['started'])
+                    self.assertIsNotNone(row['seconds'])
+                    self.assertIn("with its process group: the merge queue's gate stops at its "
+                                  f'first required failure, {failing}; its log is partial', row['why'])
+                    self.assertIn('stand-in running', (self.root / row['log']).read_text())
+                self.assertIn('so 2 rows did not run', output.splitlines()[-1])
+
+    def test_merge_queue_ends_the_failing_rows_own_group(self):
+        self.queue_fixture()
+        ready = self.parent / 'orphan-group'
+        ended = self.parent / 'orphan-ended'
+        script = """import os, pathlib, signal, sys, time
+ready, ended = map(pathlib.Path, sys.argv[1:])
+if os.fork() == 0:
+    def stop(sig, frame):
+        ended.touch()
+        os._exit(0)
+    signal.signal(signal.SIGTERM, stop)
+    os.close(1)
+    os.close(2)
+    ready.write_text(str(os.getpgrp()))
+    time.sleep(15)
+    os._exit(0)
+deadline = time.monotonic() + 3
+while not ready.exists() and time.monotonic() < deadline:
+    time.sleep(0.01)
+print('stand-in failed with a child still running', flush=True)
+sys.exit(7)
+"""
+
+        def stand_in(name, args, kwargs, fallback):
+            if name == 'tool tests':
+                return gate.run_command([sys.executable, '-c', script, str(ready), str(ended)],
+                                        **kwargs)
+            return fallback()
+
+        self.queue_runner(stand_in)
+        cache = self.parent / 'cache'
+        try:
+            with mock.patch.object(gate, 'GRACE', 1):
+                self.assertEqual(self.invoke('--merge-queue', '--target-cache', str(cache))[0], 1)
+            row = self.row('tool tests')
+            self.assertEqual((row['result'], row['exit']), ('FAIL', 7))
+            self.assertIn('stand-in failed with a child still running',
+                          (self.root / row['log']).read_text())
+            self.assertTrue(ended.exists(), 'failing row returned with its own group still running')
+            self.assertFalse((cache / 'gate.lock').exists())
+        finally:
+            if ready.exists() and not ended.exists():
+                try:
+                    os.killpg(int(ready.read_text()), signal.SIGTERM)
+                except ProcessLookupError:
+                    pass
+
+    def test_merge_queue_launches_the_engine_before_its_companions(self):
+        self.queue_fixture()
+        launches = []
+        side_launched = threading.Event()
+        real_popen = subprocess.Popen
+        marker = 'queue-launch-order'
+
+        def observe(args, **kwargs):
+            process = real_popen(args, **kwargs)
+            if marker in args:
+                launches.append(args[-1])
+                if args[-1] == 'tool tests':
+                    side_launched.set()
+            return process
+
+        def stand_in(name, args, kwargs, fallback):
+            if name == 'engine test':
+                side_launched.wait(0.5)
+            if name in ('engine test', 'tool tests'):
+                return gate.run_command([sys.executable, '-c', 'pass', marker, name], **kwargs)
+            return fallback()
+
+        self.queue_runner(stand_in)
+        with mock.patch.object(gate.subprocess, 'Popen', side_effect=observe):
+            self.assertEqual(self.invoke('--merge-queue')[0], 0)
+        self.assertEqual(launches, ['engine test', 'tool tests'])
+
+    def test_merge_queue_cancellation_before_launch_has_no_start_or_log(self):
+        self.queue_fixture()
+        ready = self.parent / 'side-about-to-run'
+        marker = self.parent / 'side-launched'
+
+        def stand_in(name, args, kwargs, fallback):
+            if name == 'engine test':
+                script = ('from pathlib import Path; import sys, time\n'
+                          'deadline = time.monotonic() + 3\n'
+                          'while not Path(sys.argv[1]).exists() and time.monotonic() < deadline:\n'
+                          '    time.sleep(0.01)\n'
+                          'sys.exit(7 if Path(sys.argv[1]).exists() else 8)')
+                return gate.run_command([sys.executable, '-c', script, str(ready)], **kwargs)
+            if name == 'tool tests':
+                ready.touch()
+                self.assertTrue(kwargs['cancel'].event.wait(3))
+                script = 'from pathlib import Path; import sys; Path(sys.argv[1]).touch()'
+                return gate.run_command([sys.executable, '-c', script, str(marker)], **kwargs)
+            return fallback()
+
+        self.queue_runner(stand_in)
+        self.assertEqual(self.invoke('--merge-queue')[0], 1)
+        self.assertEqual(self.row('engine test')['exit'], 7)
+        self.assertFalse(marker.exists())
+        row = self.row('tool tests')
+        self.assertEqual((row['started'], row['seconds'], row['log']), (None, None, None))
+        self.assertEqual(row['result'], 'NOT RUN')
+        self.assertEqual(row['why'], "not run: the merge queue's gate stops at its first "
+                         "required failure, engine test")
+        self.assertEqual(list(self.record_path().parent.glob('logs/*/*tool-tests.log')), [])
+
+    def test_merge_queue_does_not_require_secrets_without_a_version_check(self):
+        self.add_commit()
+        self.fake.version = 'v0.0.0\n'
+        self.fake.responses['tools/check_docs.py'] = gate.CommandResult(1)
+        self.assertEqual(self.invoke('--merge-queue', installed='gitleaks')[0], 1)
+        self.assertFalse(any(self.queue_call(call) == 'secrets version' for call in self.fake.calls))
+        row = self.row('secrets')
+        self.assertFalse(row['required'])
+        self.assertEqual(row['why'], "not run: the merge queue's gate stops at its first "
+                         "required failure, docs")
+
+    def test_merge_queue_runs_test_rows_beside_the_engine_test(self):
+        original = self.queue_fixture()
+        self.write('packages/extra/Cargo.toml', '[package]\nname="extra"\nversion="0.1.0"\n')
+        before = 'rust packages/provider-file test'
+        side = {'tool tests', 'rust packages/provider-keychain test', 'rust packages/extra test'}
+        engine = threading.Event()
+        ended = set()
+        callbacks = {}
+        active = set()
+        largest = []
+        lock = threading.Lock()
+        fake = self.fake
+
+        def overlap(name, args, kwargs, fallback):
+            if name not in side | {before, 'engine test'}:
+                return fallback()
+            kwargs['on_launch']()
+            with lock:
+                callbacks[name] = kwargs['env']
+                active.add(name)
+                largest.append(len(active & side))
+            if name == 'engine test':
+                self.assertIn(before, ended)
+                engine.set()
+                deadline = time.monotonic() + 3
+                while not side <= ended and time.monotonic() < deadline:
+                    time.sleep(0.01)
+                self.assertTrue(side <= ended)
+            elif name in side:
+                self.assertTrue(engine.wait(3))
+                self.assertIn('engine test', active)
+                time.sleep(0.04)
+            result = fallback()
+            with lock:
+                ended.add(name)
+                active.remove(name)
+            return result
+
+        self.queue_runner(overlap)
+        self.assertEqual(self.invoke('--merge-queue')[0], 0)
+        self.assertEqual(max(largest), 2)
+        for name in ({before, 'engine test'} | (side - {'tool tests'})):
+            side_row = name in side
+            self.assertEqual(callbacks[name]['CARGO_BUILD_JOBS'], '3' if side_row else '6')
+            self.assertEqual(callbacks[name]['RUST_TEST_THREADS'], '2' if side_row else '4')
+            row = self.row(name)
+            self.assertIsNotNone(row['started'])
+            if side_row:
+                self.assertTrue(row['command'].startswith('CARGO_BUILD_JOBS=3 RUST_TEST_THREADS=2 '))
+        numbered = [self.row(name)['log'] for name in ('tool tests', 'rust packages/extra test',
+                                                        before, 'rust packages/provider-keychain test',
+                                                        'engine test')]
+        self.assertEqual(numbered, sorted(numbered))
+        self.fake = fake
+        code, plan, _ = self.invoke('--plan', '--merge-queue')
+        self.assertEqual(code, 0)
+        relevant = [line for line in plan.splitlines() if line.startswith('WOULD RUN')
+                    and any(line.startswith(f'WOULD RUN {name}:') for name in original)]
+        self.assertTrue(next(line for line in relevant if before in line).endswith(
+            "; before the engine test, since the engine's sources read its directory"))
+        self.assertTrue(next(line for line in relevant if 'tool tests' in line).endswith(
+            '; beside the engine test'))
+
+        # Without an engine row the same pool has two places and keeps the full budget.
+        (self.root / 'engine/src/example.rs').unlink()
+        overlapping = threading.Barrier(2, timeout=3)
+
+        def no_engine(name, args, kwargs, fallback):
+            if name in ('tool tests', 'rust packages/extra test'):
+                kwargs['on_launch']()
+                overlapping.wait()
+            if name in side | {before}:
+                self.assertEqual(kwargs['env']['CARGO_BUILD_JOBS'], '6')
+                if name != 'tool tests':
+                    self.assertEqual(kwargs['env']['RUST_TEST_THREADS'], '4')
+            self.assertNotEqual(name, 'engine test')
+            return fallback()
+
+        self.queue_runner(no_engine)
+        self.assertEqual(self.invoke('--merge-queue')[0], 0)
+        self.assertIsNone(self.record()['settings']['side_jobs'])
+
+    def test_merge_queue_interrupt_ends_every_running_row(self):
+        self.queue_fixture()
+        directory = self.parent / 'interrupt-stand-ins'
+        directory.mkdir()
+        names, stand_in = self.queue_processes(directory)
+        self.queue_runner(stand_in)
+        lock_dir = self.parent / 'cache'
+        stop = threading.Event()
+
+        def interrupt():
+            while not stop.wait(0.01):
+                if len(list(directory.glob('*.ready'))) == len(names):
+                    os.kill(os.getpid(), signal.SIGTERM)
+                    return
+
+        interpose = threading.Thread(target=interrupt, daemon=True)
+        interpose.start()
+        try:
+            with mock.patch.object(gate, 'GRACE', 1):
+                code, output, _ = self.invoke('--merge-queue', '--target-cache', str(lock_dir))
+        finally:
+            stop.set()
+            interpose.join()
+        self.assertEqual(code, 130)
+        self.assertEqual(self.record()['result'], 'incomplete')
+        self.assertIsNone(self.record()['finished'])
+        self.assertIsNotNone(self.record()['load_average']['end'])
+        self.assertFalse((lock_dir / 'gate.lock').exists())
+        for row, name in names.items():
+            self.assertIn(row, output.splitlines()[-1])
+            self.assertTrue((directory / (name + '.ended')).exists())
+            entry = self.row(row)
+            self.assertEqual(entry['result'], 'NOT RUN')
+            self.assertIsNotNone(entry['started'])
+            self.assertIn('stand-in running', (self.root / entry['log']).read_text())
+
+    def test_merge_queue_one_at_a_time_keeps_the_stop(self):
+        original = self.queue_fixture()
+        self.assertEqual(self.invoke('--merge-queue', '--one-at-a-time')[0], 0)
+        calls = [call for call in self.fake.calls if self.queue_call(call) in original]
+        expected = sorted(original, key=lambda name: name == 'tool tests' or name.endswith(' test'))
+        self.assertEqual([self.queue_call(call) for call in calls], expected)
+        for call in calls:
+            self.assertEqual(call['env']['CARGO_BUILD_JOBS'], '6')
+            if self.queue_call(call).endswith(' test'):
+                self.assertEqual(call['env']['RUST_TEST_THREADS'], '4')
+        self.assertIsNone(self.record()['settings']['side_jobs'])
+        self.fake.responses['fmt'] = gate.CommandResult(1, 'fmt failed\n')
+        self.assertEqual(self.invoke('--merge-queue', '--one-at-a-time')[0], 1)
+        self.assertEqual(self.record()['stopped_at'], 'rust packages/provider-file fmt')
+        code, output, _ = self.invoke('--plan', '--merge-queue', '--one-at-a-time')
+        self.assertEqual(code, 0)
+        self.assertNotIn('; beside the engine test', output)
+        self.assertNotIn('; before the engine test', output)
+        with self.assertRaises(SystemExit) as error:
+            self.invoke('--one-at-a-time')
+        self.assertEqual(error.exception.code, 2)
+
+    def test_load_average_in_every_record(self):
+        self.queue_fixture()
+        for expected, options, fail in ((0, (), False), (1, (), True),
+                                        (1, ('--merge-queue',), True)):
+            with self.subTest(options=options, fail=fail):
+                if fail:
+                    self.fake.responses['tools/check_docs.py'] = gate.CommandResult(1)
+                with mock.patch.object(gate.os, 'getloadavg', side_effect=[(18.104, 16.2, 15),
+                                                                           (12.302, 16.8, 15.1)]), \
+                        mock.patch.object(gate.os, 'cpu_count', return_value=12):
+                    code, output, _ = self.invoke(*options)
+                self.assertEqual(code, expected)
+                self.assertEqual(self.record()['load_average'], dict(
+                    cores=12, start=[18.1, 16.2, 15], end=[12.3, 16.8, 15.1]))
+                lines = output.splitlines()
+                self.assertEqual(lines[next(i for i, line in enumerate(lines)
+                                            if line.startswith('Environment:')) + 1],
+                                 "Load: 18.10 16.20 15.00 (1, 5 and 15 minutes) on 12 cores "
+                                 "at the start; the record also keeps the end's.")
+        with mock.patch.object(gate.os, 'getloadavg', side_effect=OSError):
+            self.assertIn('Load: not available on this machine, so the record holds none.',
+                          self.invoke()[1])
+        self.assertIsNone(self.record()['load_average']['start'])
+        self.assertIsNone(self.record()['load_average']['end'])
+        self.record_path().unlink()
+        with mock.patch.object(gate.os, 'getloadavg') as load:
+            self.assertNotIn('Load:', self.invoke('--plan')[1])
+            load.assert_not_called()
+        self.assertFalse(self.record_path().exists())
 
     def test_rust_own_paths_only_reports_the_dependency_and_read_routes(self):
         spike = 'experiments/011-short-form-spike'

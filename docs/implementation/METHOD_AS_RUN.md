@@ -374,7 +374,8 @@ checkpoints, as 049a1, 080 and 144 are.
 
 The lane coordinator runs one heavy, engine-building order per machine; the admin ran at most two
 engine orders on Windows until 070 merged. On the Mac dispatch only below load 8, with `JOBS` and
-`TT` capped. No input reads the load: check by hand with `sysctl -n vm.loadavg`, whose first number
+`TT` capped. Each gate record holds the load average at its start and end (DEC-062);
+nothing else reads it: check by hand with `sysctl -n vm.loadavg`, whose first number
 is the one-minute load. Under load, rerun timing-sensitive shell tests with `RUST_TEST_THREADS=2`.
 
 ## Failure modes

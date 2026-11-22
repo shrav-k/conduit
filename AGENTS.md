@@ -187,7 +187,9 @@ What each check needs:
   never fetches, pushes or calls GitHub. It fails a commit since the base whose author or
   committer is not `Conduit work order <work-orders@conduit.invalid>`.
   `--target-cache DIR` uses one target directory per Rust directory, rebuilds the tree's own
-  crates, and holds `DIR/gate.lock` for the run. The tool tests run with `--all` or when a change
+  crates, and holds `DIR/gate.lock` for the run. `--merge-queue` runs the cheap rows first,
+  stops at the first required failure and runs test rows side by side; every record holds the
+  load average (DEC-062). The tool tests run with `--all` or when a change
   touches `tools/`, `.github/workflows/`, or a Rust source, `Cargo.toml` or `Cargo.lock` under
   `packages/` or `experiments/`.
   With `--derive-private-names` it derives the private names from the machine it runs on,

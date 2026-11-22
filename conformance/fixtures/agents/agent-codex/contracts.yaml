@@ -197,3 +197,96 @@ metadata:
 spec:
   capability: '#conversation.v1'
   operations: ['#turn.v1', '#new-conversation.v1']
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: codex-login.v1
+  description: >-
+    Keeps one account's Codex login on one machine in the Resource's state directory, for
+    its Agents on any plan. Only the Resource's own hooks sign it in and out.
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      account: {type: string}
+    required: [account]
+    additionalProperties: false
+  signIn:
+    account: /account
+    logins:
+    - name: browser
+      return: redirect
+      authorization: 'https://auth.openai.com/oauth/authorize'
+      clientId: 'app_EMoamEEZ73f0CkXaXp7hrann'
+      redirect: {host: 127.0.0.1, ports: [1455, 1457], path: '/auth/callback'}
+      carried: true
+      issuer: 'https://auth.openai.com'
+    - name: device
+      return: device
+      authorization: 'https://auth.openai.com/codex/device'
+      clientId: 'app_EMoamEEZ73f0CkXaXp7hrann'
+  requires:
+  - 'github.com/shrav-k/conduit/core#sign-in-hook.v1'
+  - 'github.com/shrav-k/conduit/core#account-hook.v1'
+  - 'github.com/shrav-k/conduit/core#sign-out-hook.v1'
+  - 'github.com/shrav-k/conduit/core#retire-hook.v1'
+  implementation:
+    'github.com/shrav-k/conduit/core#sign-in-hook.v1': '#login'
+    'github.com/shrav-k/conduit/core#account-hook.v1': '#login'
+    'github.com/shrav-k/conduit/core#sign-out-hook.v1': '#login'
+    'github.com/shrav-k/conduit/core#retire-hook.v1': '#login'
+  records: {inputs: false, outputs: false}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: codex.v3
+  description: >-
+    Runs an explicit native-client conversation in the directory that `directory` names, or in
+    a private directory of the run's own when it is null. When the configuration names a directory,
+    the client's own tools are on: shell, code execution, file edits and network, with the
+    client's sandbox and approval prompts off. On the engine's own runner, they run as the
+    engine's operating-system user and nothing confines them in v0. They reach every file,
+    process, network address, credential and
+    signed-in account that user can reach: the engine's store, root's client token, this run's
+    token, the user's git and cloud credentials, and the user's own client logins with their
+    connectors and apps. That reach does not pass through Conduit: no Conduit grants, limits or
+    records it (ruling 70). On the login Resource's node, the engine's own runner supplies
+    the Agent's state directory and the login Resource's directory (PRV-029).
+    The client's own browser, desktop-control, goal, image-generation,
+    hook and plugin tools stay off, and so do its multi-agent features, although Codex
+    still offers its collaboration tools. Apps follow accountServices, and so does hosted
+    search when a directory is named. The shell can still reach the same services and the user's
+    browser and desktop, so accountServices false shapes only the client's tool list. With
+    directory null the client has codex.v1's tools and sandbox. A turn longer than
+    turnDeadlineSeconds fails and ends the conversation, and the engine's call timeout
+    (`conduit serve --call-timeout-seconds`) must be longer.
+    Its login is its login Resource's, linked into the Agent's own state directory.
+    The retire hook stops the client and empties the Agent's home without logging out.
+spec:
+  family: Agent
+  schema:
+    type: object
+    properties:
+      directory: {type: [string, 'null'], default: null}
+      turnDeadlineSeconds: {type: integer, minimum: 1, maximum: 604800, default: 180}
+      effort: {type: string, default: ''}
+      accountServices: {type: boolean, default: false}
+      model: {type: string, default: ''}
+      login: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}
+    required: [directory, turnDeadlineSeconds, effort, accountServices, model, login]
+    additionalProperties: false
+  toolsDirectory: {directory: /directory}
+  loginResource: {place: /login}
+  offers: ['#conversation.v1']
+  requires:
+  - 'github.com/shrav-k/conduit/core#setup-hook.v1'
+  - 'github.com/shrav-k/conduit/core#retire-hook.v1'
+  implementation:
+    '#turn.v1': '#wrapper-v3'
+    '#new-conversation.v1': '#wrapper-v3'
+    'github.com/shrav-k/conduit/core#setup-hook.v1': '#wrapper-v3'
+    'github.com/shrav-k/conduit/core#retire-hook.v1': '#wrapper-v3'
+  records: {inputs: false, outputs: false}

@@ -6,6 +6,10 @@ use std::{collections::BTreeMap, fs, io::Write, path::Path};
 const NEW_CONVERSATION: &str = "new-conversation.v1";
 const NEW_CONVERSATION_REF: &str = "#new-conversation.v1";
 
+fn codex_login_type(name: &Value) -> bool {
+    name == "codex-login.v1" || name == "codex.v3"
+}
+
 fn write_fixture(path: &Path, bytes: &[u8], check: bool) {
     if check {
         assert_eq!(fs::read(path).unwrap(), bytes, "{}", path.display());
@@ -33,6 +37,7 @@ fn agent_contracts_v020(path: &Path) -> Vec<Value> {
     docs.retain(|d| {
         d["kind"] != "Conduit"
             && (d["kind"] != "Operation" || d["metadata"]["name"] != NEW_CONVERSATION)
+            && (d["kind"] != "Type" || !codex_login_type(&d["metadata"]["name"]))
     });
     for doc in &mut docs {
         match doc["kind"].as_str() {
@@ -75,10 +80,9 @@ fn agent_fixtures(root: &Path, check: bool, generated: &mut BTreeMap<String, Vec
     let mut manifest = documents(&codex.join("conduit.yaml")).remove(0);
     manifest["address"] = json!("example.org/conformance/codex-no-account-hook");
     manifest["version"] = json!("0.2.0");
-    manifest["exports"]
-        .as_array_mut()
-        .unwrap()
-        .retain(|op| op != NEW_CONVERSATION && op != "turn" && op != "conversation");
+    manifest["exports"].as_array_mut().unwrap().retain(|op| {
+        op != NEW_CONVERSATION && op != "turn" && op != "conversation" && !codex_login_type(op)
+    });
     let mut wrapper = manifest["implementations"]["wrapper-v2"].take();
     let account = wrapper["implements"]
         .as_array()

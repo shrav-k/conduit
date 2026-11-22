@@ -98,3 +98,62 @@ spec:
         );
     }
 }
+
+#[test]
+fn codex_login_types_keep_their_shape() {
+    let contracts = include_str!("../contracts.yaml");
+    let type_document = |name: &str| {
+        let name_line = format!("  name: {name}");
+        contracts
+            .split("\n---\n")
+            .find(|document| document.lines().any(|line| line == name_line))
+            .unwrap_or_else(|| panic!("missing Type {name}"))
+    };
+    let login = type_document("codex-login.v1");
+    let agent = type_document("codex.v3");
+    let logins = |document: &'static str| {
+        document
+            .split_once("    logins:\n")
+            .unwrap()
+            .1
+            .lines()
+            .take_while(|line| line.starts_with("    "))
+            .collect::<Vec<_>>()
+    };
+    assert!(login.contains("kind: Type\n"));
+    assert!(login.contains("  family: Resource\n"));
+    assert!(login.contains("      account: {type: string}\n    required: [account]\n"));
+    assert!(login.contains("    account: /account\n"));
+    assert!(logins(login) == logins(type_document("codex.v2")));
+    assert!(!login.contains("  offers:"));
+    assert!(login.contains("  records: {inputs: false, outputs: false}"));
+    for hook in ["sign-in", "account", "sign-out", "retire"] {
+        let operation = format!("'github.com/shrav-k/conduit/core#{hook}-hook.v1'");
+        assert!(login.contains(&format!("  - {operation}\n")));
+        assert!(login.contains(&format!("    {operation}: '#login'\n")));
+    }
+    assert!(agent.contains("kind: Type\n"));
+    assert!(agent.contains("  family: Agent\n"));
+    assert!(agent.contains("  toolsDirectory: {directory: /directory}\n"));
+    assert!(agent.contains("  loginResource: {place: /login}\n"));
+    assert!(agent.contains("login: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}"));
+    assert!(agent.contains(
+        "required: [directory, turnDeadlineSeconds, effort, accountServices, model, login]"
+    ));
+    assert!(!agent.contains("  signIn:") && !agent.contains("      account:"));
+    assert!(agent.contains("  offers: ['#conversation.v1']\n"));
+    let requires = agent
+        .split_once("  requires:\n")
+        .unwrap()
+        .1
+        .split_once("  implementation:\n")
+        .unwrap()
+        .0;
+    assert_eq!(
+        requires,
+        "  - 'github.com/shrav-k/conduit/core#setup-hook.v1'\n  - 'github.com/shrav-k/conduit/core#retire-hook.v1'\n"
+    );
+    let manifest = include_str!("../conduit.yaml");
+    assert!(manifest.contains("- codex.v2\n- codex-login.v1\n- codex.v3\n"));
+    assert!(manifest.contains("AGENT_LOGIN_DIRECTORY: /login\n"));
+}

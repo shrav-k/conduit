@@ -60,6 +60,8 @@ fn config(parent: &std::path::Path, account_services: bool, peer_messaging: bool
         directory: None,
         effort: None,
         state_dir: Some(state.canonicalize().unwrap()),
+        mode: agent_adapter::Mode::Agent,
+        login_directory: None,
         configuration_error: None,
     }
 }
@@ -4256,4 +4258,485 @@ async fn v2_refresh_override_reaches_only_the_account_check() {
     }
     assert!(request_state.starts_with("agent-codex-login-"));
     wait_for_login_exit(login_pid(&logins[0])).await;
+}
+
+struct LoginTestWrapper {
+    child: tokio::process::Child,
+    input: tokio::process::ChildStdin,
+    output: tokio::io::Lines<tokio::io::BufReader<tokio::process::ChildStdout>>,
+    next_id: u64,
+}
+
+impl LoginTestWrapper {
+    async fn start(c: &Config, mode: Option<&str>, directory: Option<&Path>) -> Self {
+        use tokio::io::AsyncBufReadExt;
+        let mut child = tokio::process::Command::new(binary())
+            .args(["--client-program"])
+            .arg(&c.program)
+            .args(mode)
+            .env_clear()
+            .envs(&c.env)
+            .env("AGENT_ACCOUNT_SERVICES", "false")
+            .env("AGENT_TURN_DEADLINE_SECONDS", "10")
+            .env("CONDUIT_STATE_DIR", c.state_dir.as_ref().unwrap())
+            .envs(directory.map(|dir| ("AGENT_LOGIN_DIRECTORY", dir)))
+            .current_dir(&c.cwd)
+            .kill_on_drop(true)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null())
+            .spawn()
+            .unwrap();
+        let input = child.stdin.take().unwrap();
+        let output = tokio::io::BufReader::new(child.stdout.take().unwrap()).lines();
+        let mut wrapper = Self {
+            child,
+            input,
+            output,
+            next_id: 1,
+        };
+        let reply = wrapper.request("server/discover", json!({})).await;
+        assert!(
+            reply["result"]["supportedVersions"]
+                .as_array()
+                .is_some_and(|versions| versions.iter().any(|version| version == "2026-07-28")),
+            "wrapper discovery did not offer 2026-07-28"
+        );
+        wrapper
+    }
+
+    async fn send(&mut self, message: Value) {
+        use tokio::io::AsyncWriteExt;
+        self.input
+            .write_all(format!("{message}\n").as_bytes())
+            .await
+            .unwrap();
+    }
+
+    async fn request(&mut self, method: &str, mut params: Value) -> Value {
+        let id = self.next_id;
+        self.next_id += 1;
+        params["_meta"] = json!({
+            "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+            "io.modelcontextprotocol/clientCapabilities": {}
+        });
+        self.send(json!({"jsonrpc": "2.0", "id": id, "method": method, "params": params}))
+            .await;
+        tokio::time::timeout(Duration::from_secs(30), async {
+            loop {
+                let line = self
+                    .output
+                    .next_line()
+                    .await
+                    .unwrap()
+                    .expect("wrapper closed without a reply");
+                let reply: Value = serde_json::from_str(&line).unwrap();
+                if reply["id"] == id {
+                    return reply;
+                }
+            }
+        })
+        .await
+        .expect("wrapper reply timed out")
+    }
+
+    async fn call(&mut self, name: &str, arguments: Value) -> Value {
+        let mut reply = self
+            .request("tools/call", json!({"name": name, "arguments": arguments}))
+            .await;
+        assert!(
+            reply.get("result").is_some(),
+            "{name} returned no result (error code {})",
+            reply["error"]["code"]
+        );
+        reply["result"].take()
+    }
+
+    async fn turn(&mut self, message: &str) -> Value {
+        self.call("turn", json!({"message": message})).await
+    }
+
+    async fn close(self) {
+        let Self {
+            mut child, input, ..
+        } = self;
+        drop(input);
+        assert!(child.wait().await.unwrap().success());
+    }
+}
+
+fn login_test_config(parent: &Path) -> Config {
+    let mut c = config(parent, false, false);
+    let program = c.cwd.join("scripted-turn");
+    fs::write(
+        &program,
+        r#"#!/bin/sh
+case "$1" in
+    logout) : > unexpected-logout; exit 0 ;;
+    exec) : > client-started ;;
+    *) exit 2 ;;
+esac
+printf '%s\n' "$@" > argv.txt
+message=$(cat)
+printf '%s\n' '{"type":"thread.started","thread_id":"test-thread"}'
+case "$message" in
+    SHARE)
+        target=$(readlink "$CODEX_HOME/auth.json") || exit 3
+        printf 'new fixture bytes' > "$target.tmp" || exit 4
+        mv "$target.tmp" "$target" || exit 5
+        printf '%s\n' '{"type":"turn.completed"}'
+        ;;
+    OK) printf '%s\n' '{"type":"turn.completed"}' ;;
+    PREFIX:*)
+        printf '{"type":"error","message":"%s"}\n' "${message#PREFIX:}"
+        exit 1
+        ;;
+    *)
+        printf '{"type":"turn.failed","error":{"message":"%s"}}\n' "$message"
+        ;;
+esac
+"#,
+    )
+    .unwrap();
+    fs::set_permissions(&program, fs::Permissions::from_mode(0o700)).unwrap();
+    c.program = program;
+    c
+}
+
+fn login_test_home(root: &Path) -> std::path::PathBuf {
+    let home = root.join("codex-home");
+    fs::create_dir_all(&home).unwrap();
+    home.canonicalize().unwrap()
+}
+
+#[tokio::test]
+async fn login_resource_hooks_keep_their_own_home() {
+    let _port = LOGIN_PORT.lock().await;
+    let parent = tempfile::tempdir().unwrap();
+    let c = config(parent.path(), false, false);
+    let state = c.state_dir.as_ref().unwrap();
+    let home = state.join("codex-home");
+    let mut wrapper = LoginTestWrapper::start(&c, Some("--login-resource"), None).await;
+    let tools = wrapper.request("tools/list", json!({})).await;
+    let mut names: Vec<_> = tools["result"]["tools"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|value| value["name"].as_str().unwrap())
+        .collect();
+    names.sort_unstable();
+    assert_eq!(names, ["account", "retire", "sign-in", "sign-out"]);
+
+    write_login_script(&c.cwd, json!({}));
+    let reply = wrapper.call("sign-in", json!({})).await;
+    assert_eq!(reply["resultType"], "input_required");
+    assert_eq!(
+        fs::metadata(&home).unwrap().permissions().mode() & 0o777,
+        0o700
+    );
+    assert!(!state.join(HOME_NAME).exists());
+    let login_log = account_log(&c.cwd, "logins.jsonl");
+    assert!(login_log[0]["home"] == json!(home));
+    assert_eq!(
+        login_log[0]["args"],
+        json!(agent_adapter::login_arguments())
+    );
+
+    write_account_script(&c.cwd, json!({"answer": chatgpt(json!("fixture-account"))}));
+    let missing = wrapper.call("account", json!({})).await;
+    assert_eq!(missing["isError"], true);
+    assert_eq!(
+        missing["content"][0]["text"],
+        "login home (CODEX_HOME): the login is not kept in auth.json, so a managed setting may have chosen another store; no Agent can share it"
+    );
+    fs::write(home.join("auth.json"), []).unwrap();
+    let connected = wrapper.call("account", json!({})).await;
+    assert_eq!(connected["isError"], false);
+    assert_eq!(connected["structuredContent"]["account"], "fixture-account");
+    let reads = account_log(&c.cwd, "account-reads.jsonl");
+    assert_eq!(reads.len(), 2);
+    for read in reads {
+        assert!(read["home"] == json!(home));
+        assert!(read["environment"][REFRESH_OVERRIDE_VARIABLE] == REFRESH_BLOCKED);
+    }
+    let requests = account_log(&c.cwd, "account-requests.jsonl");
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|request| request["method"] == "account/read"
+                && request["params"] == json!({"refreshToken": false}))
+            .count(),
+        2
+    );
+
+    let out = wrapper.call("sign-out", json!({})).await;
+    assert_eq!(
+        out["content"][0]["text"],
+        "client signed out of the login Resource; revocation at the vendor is unconfirmed"
+    );
+    let retired = wrapper.call("retire", json!({})).await;
+    assert_eq!(retired["isError"], false);
+    assert!(entry_names(&home).is_empty());
+    let logouts = recorded_logouts(&c.cwd);
+    assert_eq!(logouts.len(), 2);
+    assert!(logouts.iter().all(|logout| logout["home"] == json!(home)));
+    wrapper.close().await;
+}
+
+#[tokio::test]
+async fn v3_links_auth_json_and_refuses_others() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = login_test_config(parent.path());
+    let login = parent.path().join("login");
+    fs::create_dir(&login).unwrap();
+    let mut wrapper = LoginTestWrapper::start(&c, Some("--shared-login"), Some(&login)).await;
+    let missing_home = "login home (AGENT_LOGIN_DIRECTORY): codex-home is not an existing directory; set up or sign in the login Resource first";
+    let setup = wrapper.call("setup", json!({})).await;
+    assert_eq!(setup["content"][0]["text"], missing_home);
+    let launch = wrapper.turn("OK").await;
+    assert!(
+        launch["content"][0]["text"]
+            .as_str()
+            .unwrap()
+            .contains(missing_home)
+    );
+    let failed: Value =
+        serde_json::from_str(launch["content"][1]["text"].as_str().unwrap()).unwrap();
+    assert_eq!(failed["failedTurn"]["cause"], "login-home");
+    assert!(!c.cwd.join("client-started").exists());
+    wrapper.call("new-conversation", json!({})).await;
+
+    let target = login_test_home(&login).join("auth.json");
+    let home = c.state_dir.as_ref().unwrap().join(HOME_NAME);
+    let auth = home.join("auth.json");
+    let setup = wrapper.call("setup", json!({})).await;
+    assert_eq!(
+        setup["content"][0]["text"],
+        "auth.json linked to the login Resource's file"
+    );
+    assert_eq!(fs::read_link(&auth).unwrap(), target);
+    assert!(!auth.exists());
+    assert!(!c.cwd.join("client-started").exists());
+
+    fs::write(&target, "resource fixture bytes").unwrap();
+    fs::remove_file(&auth).unwrap();
+    fs::write(&auth, "agent fixture bytes").unwrap();
+    for tool in ["setup", "turn"] {
+        let reply = if tool == "turn" {
+            wrapper.turn("OK").await
+        } else {
+            wrapper.call(tool, json!({})).await
+        };
+        assert_eq!(reply["isError"], true);
+        assert!(reply["content"][0]["text"].as_str().unwrap().contains(
+            "client home (CODEX_HOME): auth.json is a file, not the login Resource's link; the wrapper replaces no login"
+        ));
+        assert!(fs::read(&auth).unwrap() == b"agent fixture bytes");
+        assert!(fs::read(&target).unwrap() == b"resource fixture bytes");
+        if tool == "turn" {
+            wrapper.call("new-conversation", json!({})).await;
+        }
+    }
+    fs::remove_file(&auth).unwrap();
+    let other = home.join("other");
+    fs::write(&other, "other fixture bytes").unwrap();
+    symlink(&other, &auth).unwrap();
+    for tool in ["setup", "turn"] {
+        let reply = if tool == "turn" {
+            wrapper.turn("OK").await
+        } else {
+            wrapper.call(tool, json!({})).await
+        };
+        assert_eq!(reply["isError"], true);
+        assert!(reply["content"][0]["text"].as_str().unwrap().contains(
+            "client home (CODEX_HOME): auth.json links somewhere other than the login Resource's file"
+        ));
+        assert_eq!(fs::read_link(&auth).unwrap(), other);
+        assert!(fs::read(&target).unwrap() == b"resource fixture bytes");
+        assert!(fs::read(&other).unwrap() == b"other fixture bytes");
+        assert!(!c.cwd.join("client-started").exists());
+        if tool == "turn" {
+            wrapper.call("new-conversation", json!({})).await;
+        }
+    }
+    fs::remove_file(&auth).unwrap();
+    let terminal_dot = target.join(".");
+    symlink(&terminal_dot, &auth).unwrap();
+    let setup = wrapper.call("setup", json!({})).await;
+    assert_eq!(setup["isError"], true, "setup accepted auth.json/.");
+    assert!(setup["content"][0]["text"].as_str().unwrap().contains(
+        "client home (CODEX_HOME): auth.json links somewhere other than the login Resource's file"
+    ));
+    assert_eq!(
+        fs::read_link(&auth).unwrap().as_os_str(),
+        terminal_dot.as_os_str()
+    );
+    assert!(!c.cwd.join("client-started").exists());
+
+    fs::remove_file(&auth).unwrap();
+    let reply = wrapper.turn("OK").await;
+    assert_eq!(reply["isError"], false);
+    assert_eq!(fs::read_link(&auth).unwrap(), target);
+    let args = fs::read_to_string(c.cwd.join("argv.txt")).unwrap();
+    let lines: Vec<_> = args.lines().collect();
+    assert_eq!(
+        lines[lines.iter().rposition(|line| *line == "--disable").unwrap() + 1],
+        "use_agent_identity"
+    );
+    assert!(lines.contains(&"--strict-config"));
+    wrapper.close().await;
+}
+
+#[tokio::test]
+async fn v3_retire_never_logs_out_its_login_resource() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = login_test_config(parent.path());
+    let login = parent.path().join("login");
+    let target = login_test_home(&login).join("auth.json");
+    fs::write(&target, "resource fixture bytes").unwrap();
+    let modified = fs::metadata(&target).unwrap().modified().unwrap();
+    let mut wrapper = LoginTestWrapper::start(&c, Some("--shared-login"), Some(&login)).await;
+    assert_eq!(wrapper.turn("OK").await["isError"], false);
+    let home = c.state_dir.as_ref().unwrap().join(HOME_NAME);
+    fs::write(home.join("history"), "agent fixture bytes").unwrap();
+    let result = wrapper.call("retire", json!({})).await;
+    assert_eq!(
+        result["content"][0]["text"],
+        "client stopped and its home emptied; the login was left to its login Resource"
+    );
+    assert!(entry_names(&home).is_empty());
+    assert!(!c.cwd.join("unexpected-logout").exists());
+    assert!(fs::read(&target).unwrap() == b"resource fixture bytes");
+    assert!(fs::metadata(&target).unwrap().modified().unwrap() == modified);
+    let next = wrapper.turn("OK").await;
+    assert_eq!(next["isError"], true);
+    assert!(
+        next["content"][0]["text"]
+            .as_str()
+            .unwrap()
+            .contains(RETIRED_REFUSAL)
+    );
+    let sign_out = wrapper
+        .request("tools/call", json!({"name": "sign-out", "arguments": {}}))
+        .await;
+    assert_eq!(sign_out["error"]["code"], -32602);
+    wrapper.close().await;
+}
+
+#[tokio::test]
+async fn v3_lapsed_login_is_reported_as_the_resources() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = login_test_config(parent.path());
+    let login = parent.path().join("login");
+    let target = login_test_home(&login).join("auth.json");
+    let mut wrapper = LoginTestWrapper::start(&c, Some("--shared-login"), Some(&login)).await;
+    let lapse = json!({"resultType":"input_required","inputRequests":{"sign-in":{
+        "method":"elicitation/create","params":{
+            "mode":"url","message":"The login Resource's Codex login is missing or has lapsed.",
+            "url":"https://learn.chatgpt.com/docs/auth"
+        }
+    }}});
+    assert_eq!(wrapper.turn("OK").await, lapse);
+    assert!(!c.cwd.join("client-started").exists());
+    fs::write(&target, []).unwrap();
+    assert_eq!(wrapper.turn("OK").await["isError"], false);
+    for cause in [
+        "login expired",
+        "log in again",
+        "credential unavailable",
+        "refresh token expired",
+        "refresh_token expired",
+        "sign in again",
+        "signed in to another account",
+        "PREFIX:refresh token expired",
+    ] {
+        assert_eq!(wrapper.turn(cause).await, lapse);
+        let refused = wrapper.turn("OK").await;
+        assert!(
+            refused["content"][0]["text"]
+                .as_str()
+                .unwrap()
+                .contains("implicit restart refused")
+        );
+        assert_eq!(
+            wrapper.call("new-conversation", json!({})).await["isError"],
+            false
+        );
+    }
+    for (cause, class) in [
+        ("usage limit", "usage-limit"),
+        ("401", "authentication"),
+        ("engine MCP server returned 401", "authentication"),
+        (
+            "engine MCP server returned 401: missing credentials",
+            "authentication",
+        ),
+        (
+            "PREFIX:MCP server engine returned 401: missing credentials",
+            "authentication",
+        ),
+        (
+            "MCP client for 'engine' failed to start: 401 missing credentials",
+            "authentication",
+        ),
+    ] {
+        let reply = wrapper.turn(cause).await;
+        assert!(
+            reply.get("inputRequests").is_none(),
+            "unexpected login action for {cause}"
+        );
+        assert_eq!(reply["isError"], true);
+        let text = reply["content"][1]["text"].as_str().unwrap();
+        let result: Value = serde_json::from_str(text).unwrap();
+        assert_eq!(result["failedTurn"]["class"], class);
+        wrapper.call("new-conversation", json!({})).await;
+    }
+    wrapper.close().await;
+    let mut v2 = LoginTestWrapper::start(&c, None, None).await;
+    let reply = v2.turn("refresh token expired").await;
+    assert_eq!(reply["isError"], true);
+    let detail: Value =
+        serde_json::from_str(reply["content"][1]["text"].as_str().unwrap()).unwrap();
+    assert_eq!(detail["failedTurn"]["class"], "authentication");
+    assert!(reply.get("inputRequests").is_none());
+    v2.close().await;
+}
+
+#[tokio::test]
+async fn v3_agents_share_only_the_login_file() {
+    let parent = tempfile::tempdir().unwrap();
+    let login = parent.path().join("login");
+    let target = login_test_home(&login).join("auth.json");
+    fs::write(&target, "old fixture bytes").unwrap();
+    let mut configs = Vec::new();
+    for name in ["first", "second"] {
+        let dir = parent.path().join(name);
+        fs::create_dir(&dir).unwrap();
+        configs.push(login_test_config(&dir));
+    }
+    let mut first =
+        LoginTestWrapper::start(&configs[0], Some("--shared-login"), Some(&login)).await;
+    let mut second =
+        LoginTestWrapper::start(&configs[1], Some("--shared-login"), Some(&login)).await;
+    for (wrapper, c, marker) in [
+        (&mut first, &configs[0], "first"),
+        (&mut second, &configs[1], "second"),
+    ] {
+        assert_eq!(wrapper.call("setup", json!({})).await["isError"], false);
+        let home = c.state_dir.as_ref().unwrap().join(HOME_NAME);
+        fs::write(home.join("history"), marker).unwrap();
+        assert_eq!(fs::read_link(home.join("auth.json")).unwrap(), target);
+    }
+    assert_eq!(first.turn("SHARE").await["isError"], false);
+    assert_eq!(second.turn("OK").await["isError"], false);
+    for (c, marker) in configs.iter().zip(["first", "second"]) {
+        let home = c.state_dir.as_ref().unwrap().join(HOME_NAME);
+        let auth = home.join("auth.json");
+        assert_eq!(fs::read_link(&auth).unwrap(), target);
+        assert!(fs::read(auth).unwrap() == b"new fixture bytes");
+        assert_eq!(fs::read_to_string(home.join("history")).unwrap(), marker);
+    }
+    assert_eq!(entry_names(target.parent().unwrap()), ["auth.json"]);
+    first.close().await;
+    second.close().await;
 }

@@ -6,17 +6,18 @@ the admin's [real-client closeout](https://github.com/shrav-k/conduit/blob/077fa
 and [increment 4 log](../../docs/implementation/first-build/log-increment-4.md) record subsequent trials on 2026-11-10.
 
 This standalone Rust crate has no dependency on another repository directory. Its lockfile
-and pinned toolchain travel with it. Its manifest exports two Agent Types and a conversation
-capability with two explicit operations, `turn.v1` and `new-conversation.v1`. The plain MCP
-wrapper exposes `turn` and `new-conversation`. Each `.v2` item also exposes the hook tools
-`retire`, `account`, `sign-out` and `sign-in`. The manifest maps each versioned operation or
-hook to its tool. In `.v1`, both reach inputs are required booleans.
+and pinned toolchain travel with it. Its manifest exports three Agent Types, a login Resource
+Type, and a conversation capability with two explicit operations, `turn.v1` and
+`new-conversation.v1`. The plain Agent wrapper exposes `turn` and `new-conversation`. Each
+`.v2` item also exposes the hook tools `retire`, `account`, `sign-out` and `sign-in`.
+The manifest maps each versioned operation or hook to its tool. In `.v1`, both reach inputs
+are required booleans.
 Authors may omit `model`: the engine fills its empty-string default, leaving the native
 client's default in force. MAN-017 requires the bound scalar to be required in the resolved
 configuration, so the Type's required list includes model. This is the logged nearest sound
 reading of work order 023's optional model input.
-Setup initializes the wrapper and starts no native client or model work. Inputs and outputs
-are excluded from Conduit records by the Type.
+Agent setup initializes the wrapper and starts no model work. Inputs and outputs are
+excluded from Conduit records by the Types.
 
 Run these commands in this directory:
 
@@ -820,14 +821,96 @@ The same configuration and state directory
 select the same Agent home as in 0.2.0. The engine determines whether an installed Agent keeps
 its instance and sign-in when its pin moves to 0.2.1.
 
+## The login Resource
+
+`codex-login.v1` is a Pool-owned Resource for one Codex account on one machine. Its `account`
+is the expected account, on any subscription plan Codex supports. The Resource needs the
+engine's own runner and keeps a private `codex-home` in its state directory. Its `sign-in`
+hook starts `codex login` there with the file store pinned. Its `account` hook asks `account/read`
+with refresh blocked and checks that a reported login lives in a regular `auth.json`. A managed
+setting that stores the login elsewhere prevents its Agents from sharing it.
+
+Root sends `sign-in.v1` to the Resource through its owning Pool. A re-sign-in deletes the old
+login before the browser step, so a turn in the meantime can report a lapse. Sign-out runs
+`codex logout` in the Resource's home. Revocation at the vendor is best effort. Retirement also
+empties that home. Retire and unregister the Resource's Agents before retiring the Resource.
+
+## The .v3 Agent
+
+`codex.v3` takes a `login` reference. On the Resource's node, the engine's own runner passes
+its state directory in `AGENT_LOGIN_DIRECTORY`. The setup hook and each launch link the Agent's
+`client-home/auth.json` to the Resource's `codex-home/auth.json`. Setup starts no client and can
+create the link before the target exists. The wrapper refuses an existing file or a link to
+another destination without replacing it. The Agent retires by stopping its client and emptying
+its home, including the link. The Resource's hooks own sign-in and sign-out.
+
+Agents share the login file, its lock and temp files, and the account's usage limits. Each Agent
+keeps its own `config.toml`, history, sessions, SQLite stores and conversation context. Use local
+disk. Windows links are unchecked. Each launch disables `use_agent_identity`. Its behavior
+needs review at each Codex bump.
+
+Parallel turns rely on Codex's file guards and OpenAI's refresh-token reuse window (DEC-046).
+A refresh collision on a 401 path can fail one turn. A stop mid-exchange or sleep past expiry can
+end the login for every Agent. A refresh failure that fails no turn goes unseen, so the first
+reported failure may already mean that the login is gone. Follow OpenAI's guidance and the live
+login's behavior during the shared-login trial. An Agent's own unconfined tools can still log out
+the shared login through `CODEX_HOME` (ruling 70).
+
+A dangling link reports a lapse before any client starts and leaves the conversation alone.
+A client authentication failure that names the login ends the conversation and reports the lapse
+through IFC-016. Usage limits and an engine MCP 401 keep their ordinary failed result. A lapse
+raises one unanswered sign-in action and one one-at-a-time notice on the Resource. The report
+holds no Agent. The Resource's own sign-in hold, if it has one, holds every Agent's model work.
+Root acknowledges the notice through the Resource's Pool to lift the one-at-a-time rule.
+
+### Set up a shared login
+
+Install the 0.2.3 archive and pin it in the project's `conduit.yaml`. Submit a project with
+this short-form document, using the expected account in `config.account`.
+
+```yaml
+apiVersion: github.com/shrav-k/conduit/v0
+fleet: operators
+pools:
+  logins:
+    type: github.com/shrav-k/conduit/core#pool.v1
+resources:
+  codex-login:
+    type: example.org/conduit/agent-codex#codex-login.v1
+    owner: logins
+    config: {account: operator@example.invalid}
+agents:
+  codex-worker:
+    type: example.org/conduit/agent-codex#codex.v3
+    config: {login: codex-login}
+    operator: {from: example.org/conduit/agent-codex#turn}
+```
+
+The Agent and the Resource use the engine's runner. Leave `runtime` unset and place the Agent
+on the Resource's node. With the engine's own machine provider, both default to its local
+node. An Agent with a runtime provider or a different node fails setup under PRV-029.
+
+As root, use `logins.set-up.v1` for `Resource/codex-login` and complete sign-in through
+`logins.sign-in.v1` before setting up any of its Agents. Then use `operators.set-up.v1` for
+`Agent/codex-worker`.
+
 ## The standard Conduit templates
 
 From 0.2.2, `turn` grants `turn.v1` alone, and `conversation` grants both `turn.v1` and
-`new-conversation.v1`. Write `operator: {from: example.org/conduit/agent-codex#turn}` to
-grant root turns, or select `example.org/conduit/agent-codex#conversation` to let root also end a
+[`new-conversation.v1`](#a-new-conversation-both-versions). Write
+`operator: {from: example.org/conduit/agent-codex#turn}` to grant root turns. Write
+`operator: {from: example.org/conduit/agent-codex#conversation}` to let root also end a
 conversation. A later release keeps each template's operation list. A wider grant takes a new
 template (PKG-031).
 
-The Types, the Agent's home, and sign-in are as in 0.2.1. An instance keeps the release it
-resolved, so using 0.2.2 for an existing Agent requires replacing it. A replaced `.v2` Agent
-signs in again.
+The 0.2.2 templates left the 0.2.1 Types, homes, and sign-in in place.
+
+## Moving to 0.2.3
+
+Install the 0.2.3 archive, move the pin, and replace each Agent that should use the new release.
+An instance keeps the release it resolved. A replaced `.v2` Agent signs in again. To move to
+`.v3`, retire each `.v2` Agent first to log out its own login. Confirmed shutdown removes the
+old Agent automatically (LIF-035). If it still exists in the retired state, wait for shutdown
+confirmation or unregister it before reusing the name (LIF-017). A tombstone can also block the
+name (LIF-041). Then sign in each account's login Resource once per machine and register the
+`.v3` Agents that refer to it.

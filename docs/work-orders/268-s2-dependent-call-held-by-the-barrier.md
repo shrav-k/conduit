@@ -168,4 +168,19 @@ Named here and not in this order:
 
 ## Record
 
-Not yet run.
+Run on 2026-11-22 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+
+**Worker-2's turn** (02:20 to 02:40): the barrier's arm and wait now take their bounds from
+`WAIT` (20 s and 10 s), outside any short timeout, and one two-second bound,
+`AWARE_REQUEST_DEADLINE`, starts only once the stub reports the read reached, covering the close
+and the release. Every assertion is kept, in its order. The mutation runs gave the results the
+order names: a delayed read fails today and passes now; removing the close fails the later read's
+refusal before and after; a slow hold fails at the kept bound. The whole s2 file passed, nine
+tests, three focused runs alone.
+
+**Two blind reads at once** (02:40 to 02:44): `turn-verifier-2.turn.v1` passed it by its diff
+(its own rerun could not build the fixtures read-only); the Claude reader passed it with one nit,
+left to a later order: the two derived bounds and the constant could say in a comment why each is
+what it is. No fix turn.
+
+The gate's run on the squash is the coordinator's, at the merge.

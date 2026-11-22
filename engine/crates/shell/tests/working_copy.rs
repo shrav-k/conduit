@@ -4,6 +4,9 @@
 #[path = "../../../../packages/git/tests/support/mod.rs"]
 mod scratch_git;
 
+mod package_target;
+
+use package_target::package_target_dir;
 use scratch_git::Scratch;
 use serde_json::{Value, json};
 use std::{
@@ -21,6 +24,7 @@ fn pack(repository: &Path) -> (String, String) {
     let package = repository.join("packages/git");
     let output = Command::new("cargo")
         .current_dir(&package)
+        .envs(package_target_dir(&package).map(|dir| ("CARGO_TARGET_DIR", dir)))
         .env("CARGO_NET_OFFLINE", "true")
         .args([
             "run",

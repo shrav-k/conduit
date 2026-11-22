@@ -1,3 +1,4 @@
+mod package_target;
 mod plan_apply_support;
 
 use conduit_loader::{Syntax, read_text};

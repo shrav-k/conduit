@@ -104,6 +104,17 @@ pub(crate) fn install(
     builtin: Project,
     context: &Context,
 ) -> Result<Option<crate::explain::Rejection>> {
+    install_with_confirmation(t, input, snapshots, builtin, context, &[])
+}
+
+pub(crate) fn install_with_confirmation(
+    t: &mut Transition,
+    input: ArchiveInput,
+    snapshots: Vec<Snapshot>,
+    builtin: Project,
+    context: &Context,
+    confirmed: &[serde_json::Value],
+) -> Result<Option<crate::explain::Rejection>> {
     let mut diagnostics = vec![];
     if !input.digest.strip_prefix("sha256:").is_some_and(|h| {
         h.len() == 64
@@ -369,6 +380,11 @@ pub(crate) fn install(
     ));
     if !diagnostics.is_empty() {
         return Ok(Some(reject(t, diagnostics)));
+    }
+    if let Some(rejection) =
+        crate::client_ids::install_rejection(t, &package, &entries[..entries.len() - 1], confirmed)
+    {
+        return Ok(Some(rejection));
     }
     t.decisions.push(decision(
         "install-archive",

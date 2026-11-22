@@ -273,4 +273,36 @@ Named here and not in this order:
 
 ## Record
 
-Not yet run.
+Run on 2026-11-22 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+
+**Worker-2's first four turns** (02:45 to 03:04) each stopped before a change the order's text
+did not settle, and the coordinator decided each, open to the owner's strike:
+- order 263's merged preflight steps the core over the engine's whole state, so every CTR-013
+  collision the core finds, among archives in hand or with a held Type, stops the CLI's install
+  in its preflight with exit 2; `install.v1` sent directly still reports conflict;
+- `archive_file` is read only by the internal fixture path, so the portable case passes its
+  archives inline, the smallest contracts-only archives that show the collision;
+- the portable format's invoke gains an optional `archive` member for it;
+- `confirmClientIds` inputs are recorded on the dispatching request's and invocation's records,
+  not a keyed repeat's.
+The fourth turn built the order: a Type sharing a client ID with a held Type at another address
+reports conflict naming both and what root sends to confirm; `confirmClientIds` is root's alone;
+submission and replacement check the same; the 11-step case and three regressions pass.
+
+**Two blind reads at once** (03:05 to 03:10), the owner's answer for A77's window:
+`turn-verifier-2.turn.v1` found two musts and a should; the Claude reader passed it with one
+should. One fix turn (03:11 to 03:17), each must reproduced first:
+- a name clash (OBJ-025) returned early and hid the CTR-013 conflict; both are now reported;
+- two held submissions at one address with one Type name and client ID collapsed into one
+  diagnostic; matches are now kept per holder;
+- the root-only refusal is shown to come before any archive admission;
+- the portable format's `archive` member is now described and schema-checked member by member.
+
+At the merge the gate's whole suite failed two existing portable cases,
+`sections-located-shared-fleet` and `sections-located-supplied-fleet`, whose step 3 ended invalid:
+the reordered early return let OBJ-002 reach the default-Conduit check, which then reported
+IFC-014. A fix turn by worker-1 applied the existing default-Conduit exception to same-kind Pool
+and Fleet clashes too, with a regression that failed first; both cases report conflict under
+OBJ-002 again, and the whole vectors target and the core's tests pass.
+
+The gate's run on the squash is the coordinator's, at the merge.

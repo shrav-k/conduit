@@ -11,6 +11,45 @@
     "request": {
       "type": "object"
     },
+    "archive": {
+      "type": "object",
+      "description": "Archive evidence for install.v1. A mismatch with the request's address, version, or digest is an embedding error, not a reply.",
+      "additionalProperties": false,
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "digest": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string",
+          "description": "Archive label used in diagnostics."
+        },
+        "completion": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "const": "complete"
+            },
+            "bytes": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              }
+            }
+          },
+          "required": ["status", "bytes"]
+        }
+      },
+      "required": ["address", "version", "digest", "name", "completion"]
+    },
     "key": {
       "type": [
         "string",

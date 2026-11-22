@@ -2232,6 +2232,7 @@ pub(crate) fn prepare(
     });
     let mut diagnostics = vec![];
     let mut named = BTreeMap::<(String, String), usize>::new();
+    let mut clashing_containers = BTreeMap::new();
     let mut display = None;
     for (index, doc) in project.documents.iter().enumerate() {
         if packages::contract(doc) {
@@ -2250,18 +2251,21 @@ pub(crate) fn prepare(
                 } else if let Some(existing) = t.state.objects.iter().find(|o| {
                     o.get("spec").is_none()
                         && o["name"] == name
-                        && o["kind"] != kind
                         && ["Pool", "Fleet"].iter().any(|k| o["kind"] == *k)
                 }) {
-                    diagnostics.push(diagnostic(
-                        "OBJ-025",
-                        name,
-                        &format!(
-                            "{kind}/{name} clashes with {}/{}",
-                            existing["kind"], existing["name"]
-                        ),
-                        "error",
-                    ));
+                    clashing_containers.insert((kind, name), &existing["id"]);
+                    // The same-kind clash is diagnosed below under OBJ-002.
+                    if existing["kind"] != kind {
+                        diagnostics.push(diagnostic(
+                            "OBJ-025",
+                            name,
+                            &format!(
+                                "{kind}/{name} clashes with {}/{}",
+                                existing["kind"], existing["name"]
+                            ),
+                            "error",
+                        ));
+                    }
                 }
             }
 
@@ -2565,7 +2569,7 @@ pub(crate) fn prepare(
             );
         }
     }
-    if b.diagnostics.iter().any(|d| d["level"] == "error") {
+    if b.diagnostics.iter().any(invalid_registration_fault) {
         return reject(t, b.diagnostics, evidence, request, context);
     }
     // FLEET-005 / IFC-014: defaults are open within registration, so a local-name
@@ -2574,12 +2578,21 @@ pub(crate) fn prepare(
         .iter()
         .filter(|o| ["Pool", "Fleet"].iter().any(|k| o["kind"] == *k))
     {
+        let clashing_container = clashing_containers
+            .get(&(
+                target["kind"].as_str().unwrap_or_default(),
+                target["name"].as_str().unwrap_or_default(),
+            ))
+            .copied();
         if let Some(other) = all_resolved.iter().find(|o| {
             o["kind"] == "Conduit"
                 && crate::access::id(&o["consumer"]) == &root["id"]
                 && o["state"] != "closed"
                 && o["state"] != "retired"
                 && o["local_name"] == target["name"]
+                // A conflicting container cannot open a second default.
+                && !(o["provenance"]["cause"] == "default"
+                    && clashing_container == Some(crate::access::id(&o["target"])))
         }) {
             let visible = b.state.objects.iter().any(|p| {
                 permits(
@@ -2611,7 +2624,7 @@ pub(crate) fn prepare(
                 .push(b.instance_diagnostic(path, fault(rule, text)));
         }
     }
-    if b.diagnostics.iter().any(|d| d["level"] == "error") {
+    if b.diagnostics.iter().any(invalid_registration_fault) {
         return reject(t, b.diagnostics, evidence, request, context);
     }
     let mut matching_state = b.state.clone();
@@ -2629,6 +2642,27 @@ pub(crate) fn prepare(
                 prior_sort_key: None,
             });
         }
+    }
+    // Replace checks the original state after deciding whether the trial changes anything.
+    let client_conflicts = if request.operation == context.qualified("replace.v1") {
+        Vec::new()
+    } else {
+        crate::client_ids::submission_diagnostics(
+            &b.state,
+            &b.snapshots,
+            project.manifest.as_ref(),
+            &project.documents,
+        )
+    };
+    if !client_conflicts.is_empty() {
+        return reject_with_client_conflicts(
+            t,
+            b.diagnostics,
+            client_conflicts,
+            evidence,
+            request,
+            context,
+        );
     }
     if b.diagnostics.iter().any(|d| d["level"] == "error") {
         return reject(t, b.diagnostics, evidence, request, context);
@@ -2810,9 +2844,25 @@ pub(crate) fn prepare(
     t.reply = json!({"accepted":true,"objects":registered,"diagnostics":b.diagnostics});
     Ok(None)
 }
+fn invalid_registration_fault(diagnostic: &ReportedFault) -> bool {
+    diagnostic["level"] == "error"
+        && !matches!(diagnostic.rule.as_str(), "OBJ-002" | "OBJ-025" | "LIF-041")
+}
+
 fn reject(
     t: &mut Transition,
+    diagnostics: Vec<ReportedFault>,
+    evidence: &Evidence,
+    request: &Request,
+    context: &Context,
+) -> Result<Option<crate::explain::Rejection>> {
+    reject_with_client_conflicts(t, diagnostics, Vec::new(), evidence, request, context)
+}
+
+fn reject_with_client_conflicts(
+    t: &mut Transition,
     mut diagnostics: Vec<ReportedFault>,
+    client_conflicts: Vec<Value>,
     evidence: &Evidence,
     request: &Request,
     context: &Context,
@@ -2823,14 +2873,15 @@ fn reject(
             .unwrap_or_else(|| d.diagnostic.to_string())
     });
     diagnostics.dedup();
-    let invalid = diagnostics.iter().any(|d| {
-        d["level"] == "error" && d.rule != "OBJ-002" && d.rule != "OBJ-025" && d.rule != "LIF-041"
-    });
+    let invalid = diagnostics.iter().any(invalid_registration_fault);
     let reason = if invalid { "invalid" } else { "conflict" };
     let mut promises = diagnostics
         .iter()
         .map(|d| d.rule.as_str())
         .collect::<BTreeSet<_>>();
+    if !client_conflicts.is_empty() {
+        promises.insert("CTR-013");
+    }
     promises.extend([
         "SUB-001",
         "SUB-003",
@@ -2846,11 +2897,9 @@ fn reject(
     ));
     let rule = diagnostics
         .iter()
-        .find(|d| {
-            d["level"] == "error"
-                && (!invalid || !["OBJ-002", "OBJ-025", "LIF-041"].contains(&d.rule.as_str()))
-        })
+        .find(|d| d["level"] == "error" && (!invalid || invalid_registration_fault(d)))
         .map(|d| d.rule.as_str())
+        .or_else(|| (!client_conflicts.is_empty()).then_some("CTR-013"))
         .ok_or("registration rejection lacks a deciding rule")?;
     end_request(
         t,
@@ -2862,6 +2911,8 @@ fn reject(
         context,
     )?;
     let rejection = crate::explain::Rejection::new(reason, rule);
+    let mut diagnostics = serde_json::to_value(diagnostics).map_err(|e| e.to_string())?;
+    diagnostics.as_array_mut().unwrap().extend(client_conflicts);
     t.reply = json!({"accepted":false,"reason":reason,"diagnostics":diagnostics});
     Ok(Some(rejection))
 }

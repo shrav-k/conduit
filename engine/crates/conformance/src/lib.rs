@@ -915,6 +915,603 @@ mod explanation_regressions {
         assert_eq!(refusal["named"]["objects"], json!(["local"]));
     }
 
+    const SHARED_ID: &str = "placeholder-shared";
+    const CLIENT_PACKAGE: &str = "example.org/package";
+    const CLIENT_PROJECT: &str = "example.org/project";
+    const OTHER_CLIENT_ADDRESS: &str = "example.org/other";
+
+    fn client_type(context: &Context, name: &str, client_id: &str) -> Value {
+        let api = &context.builtin.as_ref().unwrap().documents[0]["apiVersion"];
+        let hooks = ["sign-in-hook.v1", "account-hook.v1", "sign-out-hook.v1"]
+            .map(|hook| format!("{}#{hook}", context.core_package));
+        json!({"apiVersion":api,"kind":"Type","metadata":{"name":name},"spec":{
+            "family":"Agent","requires":hooks,
+            "schema":{"type":"object","properties":{"account":{"type":["string","null"]}},
+                      "required":["account"]},
+            "signIn":{"account":"/account","logins":[{"name":"device","return":"device",
+                "authorization":"https://example.org/device","clientId":client_id}]}
+        }})
+    }
+
+    fn client_project(context: &Context, address: &str, name: &str, client_id: &str) -> Value {
+        let ty = client_type(context, "signed.v1", client_id);
+        let api = &ty["apiVersion"];
+        let hooks = ty["spec"]["requires"].as_array().unwrap();
+        let implementation: serde_json::Map<_, _> = hooks
+            .iter()
+            .map(|hook| (hook.as_str().unwrap().into(), json!("#hooks")))
+            .collect();
+        json!({"manifest":{"apiVersion":api,"address":address,
+            "implementations":{"hooks":{"implements":hooks,"command":["test-hooks"]}}},
+            "documents":[ty,{"apiVersion":api,"kind":"Agent","metadata":{"name":name},
+                "spec":{"type":"#signed.v1","config":{"account":null},"implementation":implementation}}]})
+    }
+
+    fn client_archive(
+        context: &Context,
+        address: &str,
+        version: &str,
+        types: &[&str],
+    ) -> conduit_core::archives::ArchiveInput {
+        let encoder = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());
+        let mut archive = tar::Builder::new(encoder);
+        let api = &context.builtin.as_ref().unwrap().documents[0]["apiVersion"];
+        let documents: Vec<_> = types
+            .iter()
+            .map(|name| client_type(context, name, SHARED_ID))
+            .collect();
+        for (name, value) in [
+            (
+                "conduit.json",
+                json!({"apiVersion":api,"address":address,"version":version}),
+            ),
+            ("types.json", json!(documents)),
+        ] {
+            let bytes = serde_json::to_vec(&value).unwrap();
+            let mut header = tar::Header::new_ustar();
+            header.set_size(bytes.len() as u64);
+            header.set_mode(0o644);
+            archive
+                .append_data(&mut header, name, bytes.as_slice())
+                .unwrap();
+        }
+        let bytes = archive.into_inner().unwrap().finish().unwrap();
+        conduit_core::archives::ArchiveInput {
+            name: "client-types.tar.gz".into(),
+            address: address.into(),
+            version: version.into(),
+            digest: conduit_core::packages::bytes_digest(&bytes),
+            directory: None,
+            completion: conduit_core::archives::FetchCompletion::Complete { bytes },
+        }
+    }
+
+    fn client_install_args(archive: &conduit_core::archives::ArchiveInput) -> Value {
+        json!({"address":archive.address,"version":archive.version,"digest":archive.digest,
+            "fetch":"file:///fixture/client-types.tar.gz"})
+    }
+
+    fn install_client_archive(
+        state: &State,
+        context: &Context,
+        archive: conduit_core::archives::ArchiveInput,
+        confirmed: Option<&[&str]>,
+    ) -> conduit_core::Transition {
+        let mut args = client_install_args(&archive);
+        if let Some(confirmed) = confirmed {
+            args["confirmClientIds"] = json!(confirmed);
+        }
+        call(state, context, "management.install.v1", args, Some(archive))
+    }
+
+    fn client_id_rejection(
+        result: &conduit_core::Transition,
+        state: &State,
+        context: &Context,
+        reason: &str,
+    ) {
+        assert_eq!(
+            result.reply["_meta"][format!("{}reason", context.meta_prefix)],
+            reason
+        );
+        assert_eq!(
+            result.reply["structuredContent"]["diagnostics"][0]["ruleId"],
+            "CTR-013"
+        );
+        assert!(result.state.objects == state.objects);
+        assert!(result.state.installed_packages == state.installed_packages);
+        assert_eq!(result.state.invocations, state.invocations);
+    }
+
+    fn client_id_succeeded(result: &conduit_core::Transition, context: &Context) {
+        assert_eq!(
+            result.reply["_meta"][format!("{}outcome", context.meta_prefix)],
+            "succeeded"
+        );
+    }
+
+    #[test]
+    fn install_reports_a_client_id_shared_across_addresses() {
+        let (state, context) = started();
+        let installed = install_client_archive(
+            &state,
+            &context,
+            client_archive(&context, CLIENT_PACKAGE, "0.1.0", &["signed.v1"]),
+            None,
+        );
+        client_id_succeeded(&installed, &context);
+        let registered = call(
+            &state,
+            &context,
+            "management.register.v1",
+            client_project(&context, CLIENT_PROJECT, "signed-template", SHARED_ID),
+            None,
+        );
+        client_id_succeeded(&registered, &context);
+        for (held, address, place) in [
+            (
+                &installed.state,
+                CLIENT_PACKAGE,
+                format!("installed package {CLIENT_PACKAGE} 0.1.0"),
+            ),
+            (
+                &registered.state,
+                CLIENT_PROJECT,
+                "a submitted project held by a template or instance".into(),
+            ),
+        ] {
+            let result = install_client_archive(
+                held,
+                &context,
+                client_archive(&context, OTHER_CLIENT_ADDRESS, "0.1.0", &["signed.v1"]),
+                None,
+            );
+            client_id_rejection(&result, held, &context, "conflict");
+            assert_eq!(
+                result.reply["structuredContent"]["diagnostics"],
+                json!([{
+                    "ruleId":"CTR-013","level":"error","message":{"text":format!(
+                        "Client ID {SHARED_ID} is stated by Type {OTHER_CLIENT_ADDRESS}#signed.v1 in this package and by Type {address}#signed.v1 in {place}, at another address; root may confirm the sharing by sending install.v1 for this package with confirmClientIds listing {SHARED_ID}.")}
+                }])
+            );
+        }
+        let same_address = install_client_archive(
+            &installed.state,
+            &context,
+            client_archive(
+                &context,
+                CLIENT_PACKAGE,
+                "0.2.0",
+                &["signed.v1", "sibling.v1"],
+            ),
+            None,
+        );
+        client_id_succeeded(&same_address, &context);
+        assert_eq!(same_address.state.installed_packages.len(), 2);
+        assert!(
+            same_address
+                .records
+                .iter()
+                .all(|r| r["data"].get("inputs").is_none())
+        );
+    }
+
+    #[test]
+    fn duplicate_fleet_conflicts_without_colliding_with_its_own_default() {
+        let (state, context) = started();
+        let api = &context.builtin.as_ref().unwrap().documents[0]["apiVersion"];
+        let project = json!({"manifest":{"apiVersion":api,"address":"example.org/fleets"},
+            "documents":[{"apiVersion":api,"kind":"Fleet","metadata":{"name":"maintainers"},
+                "from":format!("{}#fleet", context.core_package)}]});
+        let held = call(
+            &state,
+            &context,
+            "management.register.v1",
+            project.clone(),
+            None,
+        );
+        client_id_succeeded(&held, &context);
+
+        let duplicate = call(
+            &held.state,
+            &context,
+            "management.register.v1",
+            project,
+            None,
+        );
+        let rules: Vec<_> = duplicate.reply["structuredContent"]["diagnostics"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|diagnostic| diagnostic["ruleId"].as_str().unwrap())
+            .collect();
+        assert_eq!(
+            duplicate.reply["_meta"][format!("{}reason", context.meta_prefix)],
+            "conflict",
+            "diagnostic rules: {rules:?}"
+        );
+        assert_eq!(rules, ["OBJ-002"]);
+        assert_eq!(duplicate.state.objects, held.state.objects);
+        assert_eq!(duplicate.state.invocations, held.state.invocations);
+        assert!(duplicate.external_intents.is_empty());
+    }
+
+    #[test]
+    fn client_id_conflicts_include_pool_fleet_name_clashes() {
+        let (state, context) = started();
+        let mut held = client_project(&context, CLIENT_PROJECT, "held-template", SHARED_ID);
+        let api = held["manifest"]["apiVersion"].clone();
+        held["documents"].as_array_mut().unwrap().extend([
+            json!({"apiVersion":api,"kind":"Pool","metadata":{"name":"pool-template"},
+                "spec":{"type":format!("{}#pool.v1", context.core_package)}}),
+            json!({"apiVersion":api,"kind":"Pool","metadata":{"name":"clashing"},
+                "from":"pool-template"}),
+        ]);
+        let held = call(&state, &context, "management.register.v1", held, None);
+        client_id_succeeded(&held, &context);
+
+        let mut proposed =
+            client_project(&context, OTHER_CLIENT_ADDRESS, "new-template", SHARED_ID);
+        proposed["documents"].as_array_mut().unwrap().push(
+            json!({"apiVersion":api,"kind":"Fleet","metadata":{"name":"clashing"},
+                "from":format!("{}#fleet", context.core_package)}),
+        );
+        let result = call(
+            &held.state,
+            &context,
+            "management.register.v1",
+            proposed.clone(),
+            None,
+        );
+        assert_eq!(
+            result.reply["_meta"][format!("{}reason", context.meta_prefix)],
+            "conflict"
+        );
+        let rules: Vec<_> = result.reply["structuredContent"]["diagnostics"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|diagnostic| diagnostic["ruleId"].as_str().unwrap())
+            .collect();
+        assert_eq!(rules, ["OBJ-025", "CTR-013"]);
+        assert_eq!(result.state.objects, held.state.objects);
+        assert_eq!(result.state.invocations, held.state.invocations);
+
+        proposed["documents"][1]["spec"]["type"] = json!("#missing.v1");
+        let invalid = call(
+            &held.state,
+            &context,
+            "management.register.v1",
+            proposed,
+            None,
+        );
+        assert_eq!(
+            invalid.reply["_meta"][format!("{}reason", context.meta_prefix)],
+            "invalid"
+        );
+        assert!(
+            invalid.reply["structuredContent"]["diagnostics"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .all(|diagnostic| diagnostic["ruleId"] != "CTR-013")
+        );
+    }
+
+    #[test]
+    fn client_id_diagnostics_keep_distinct_held_submissions() {
+        let (mut state, context) = started();
+        for (name, description) in [
+            ("first", "First release"),
+            ("second", "Second release"),
+            ("first-copy", "First release"),
+        ] {
+            let mut project = client_project(&context, CLIENT_PROJECT, name, SHARED_ID);
+            project["documents"][0]["metadata"]["description"] = json!(description);
+            let held = call(&state, &context, "management.register.v1", project, None);
+            client_id_succeeded(&held, &context);
+            state = held.state;
+        }
+        for result in [
+            install_client_archive(
+                &state,
+                &context,
+                client_archive(&context, OTHER_CLIENT_ADDRESS, "0.1.0", &["signed.v1"]),
+                None,
+            ),
+            call(
+                &state,
+                &context,
+                "management.register.v1",
+                client_project(&context, OTHER_CLIENT_ADDRESS, "new-template", SHARED_ID),
+                None,
+            ),
+        ] {
+            client_id_rejection(&result, &state, &context, "conflict");
+            let diagnostics = result.reply["structuredContent"]["diagnostics"]
+                .as_array()
+                .unwrap();
+            assert_eq!(
+                diagnostics.len(),
+                2,
+                "one report per held submission digest"
+            );
+            assert_eq!(diagnostics[0], diagnostics[1]);
+        }
+    }
+
+    #[test]
+    fn install_confirm_client_ids_is_roots_alone() {
+        let (mut state, context) = started();
+        let root = state
+            .objects
+            .iter()
+            .find(|o| o["name"] == "root")
+            .unwrap()
+            .clone();
+        let mut guest = root.clone();
+        guest["id"] = json!("guest");
+        guest["name"] = json!("guest");
+        guest["from"] = json!("guest-template");
+        guest["first_start"] = json!(false);
+        let mut path = state
+            .objects
+            .iter()
+            .find(|o| o["consumer"] == root["id"] && o["local_name"] == "management")
+            .unwrap()
+            .clone();
+        path["id"] = json!("guest-management");
+        path["consumer"] = json!("guest");
+        state.objects.extend([guest, path]);
+        state
+            .invocations
+            .push(json!({"id":"parent","target":"guest","caller":root["id"],
+            "sender":root["id"],"state":"in-progress","hook":true}));
+        let archive = client_archive(&context, CLIENT_PACKAGE, "0.1.0", &["signed.v1"]);
+        let mut malformed = archive.clone();
+        let bytes = b"not an archive".to_vec();
+        malformed.digest = conduit_core::packages::bytes_digest(&bytes);
+        malformed.completion = conduit_core::archives::FetchCompletion::Complete { bytes };
+        let mut args = client_install_args(&malformed);
+        args["confirmClientIds"] = json!([]);
+        for serving in [None, Some("parent".into())] {
+            let result = conduit_core::step(
+                &state,
+                Input::Invoke {
+                    evidence: Evidence {
+                        time: "2026-11-09T13:00:00Z".into(),
+                        ids: (0..20)
+                            .map(|n| format!("00000000-0000-4000-8046-a0004242{n:04}"))
+                            .collect(),
+                        revisions: vec![],
+                        suffixes: vec![],
+                    },
+                    request: AccessRequest {
+                        identity: Identity::Instance { id: "guest".into() },
+                        tool: "management.install.v1".into(),
+                        arguments: args.clone(),
+                        serving,
+                        readable: true,
+                        authority_readable: true,
+                        client_capabilities: None,
+                        sign_in_login: None,
+                        sign_in_return: None,
+                    },
+                    key: None,
+                    archive: Some(malformed.clone()),
+                },
+                &context,
+            )
+            .unwrap();
+            client_id_rejection(&result, &state, &context, "refused");
+            assert!(result.decisions.iter().all(|decision| !matches!(
+                decision.action.as_str(),
+                "verify-archive-digest" | "unpack-archive"
+            )));
+            assert!(
+                result.reply["structuredContent"]["diagnostics"][0]["properties"]["refusal"]
+                    .is_object()
+            );
+        }
+        let installed = install_client_archive(&state, &context, archive, None);
+        client_id_succeeded(&installed, &context);
+        let held = &installed.state;
+        let other = client_archive(&context, OTHER_CLIENT_ADDRESS, "0.1.0", &["signed.v1"]);
+        let direct = conduit_core::step(
+            held,
+            Input::InstallArchive {
+                archive: other.clone(),
+                snapshots: vec![],
+                builtin: context.builtin.clone().unwrap(),
+            },
+            &context,
+        )
+        .unwrap();
+        assert_eq!(direct.reply["reason"], "conflict");
+        assert_eq!(direct.reply["diagnostics"][0]["ruleId"], "CTR-013");
+        let invalid = install_client_archive(
+            held,
+            &context,
+            other.clone(),
+            Some(&[SHARED_ID, "placeholder-unused"]),
+        );
+        client_id_rejection(&invalid, held, &context, "invalid");
+        assert_eq!(
+            invalid.reply["structuredContent"]["diagnostics"],
+            json!([{
+                "ruleId":"CTR-013","level":"error","message":{"text":"confirmClientIds lists placeholder-unused, which no Type of this package shares with a Type at another address; list only shared client IDs."}
+            }])
+        );
+        let keyed_install = |state: &State| {
+            let mut arguments = client_install_args(&other);
+            arguments["confirmClientIds"] = json!([SHARED_ID]);
+            conduit_core::step(
+                state,
+                Input::Invoke {
+                    evidence: Evidence {
+                        time: "2026-11-09T13:00:00Z".into(),
+                        ids: (0..20)
+                            .map(|n| {
+                                format!(
+                                    "00000000-0000-4000-8046-a0004243{:04}",
+                                    state.allocated_ids.len() + n
+                                )
+                            })
+                            .collect(),
+                        revisions: vec![],
+                        suffixes: vec![],
+                    },
+                    request: AccessRequest {
+                        identity: Identity::Instance {
+                            id: root["id"].as_str().unwrap().into(),
+                        },
+                        tool: "management.install.v1".into(),
+                        arguments,
+                        serving: None,
+                        readable: true,
+                        authority_readable: true,
+                        client_capabilities: None,
+                        sign_in_login: None,
+                        sign_in_return: None,
+                    },
+                    key: Some("confirm-install".into()),
+                    archive: Some(other.clone()),
+                },
+                &context,
+            )
+            .unwrap()
+        };
+        let confirmed = keyed_install(held);
+        client_id_succeeded(&confirmed, &context);
+        assert_eq!(confirmed.state.installed_packages.len(), 2);
+        let invocation = &confirmed.reply["_meta"][format!("{}invocation", context.meta_prefix)];
+        let mut record_count = 0;
+        for record in &confirmed.records {
+            if record["data"]["invocation"] == *invocation {
+                record_count += 1;
+                assert_eq!(
+                    record["data"]["inputs"],
+                    json!({"confirmClientIds":[SHARED_ID]})
+                );
+            }
+        }
+        assert_eq!(record_count, 5);
+        let repeated = keyed_install(&confirmed.state);
+        client_id_succeeded(&repeated, &context);
+        assert!(
+            repeated
+                .records
+                .iter()
+                .any(|record| record["type"] == "access-decision"
+                    && record["data"]["invocation"] == *invocation)
+        );
+        assert!(
+            repeated
+                .records
+                .iter()
+                .all(|record| record["data"].get("inputs").is_none())
+        );
+        let unchanged = install_client_archive(
+            &confirmed.state,
+            &context,
+            other,
+            Some(&["placeholder-unused"]),
+        );
+        client_id_succeeded(&unchanged, &context);
+        assert!(unchanged.state.installed_packages == confirmed.state.installed_packages);
+    }
+
+    fn client_replace(
+        state: &State,
+        context: &Context,
+        project: &Value,
+    ) -> conduit_core::Transition {
+        let name = &project["documents"][1]["metadata"]["name"];
+        let stored = state
+            .objects
+            .iter()
+            .find(|o| o["name"] == *name && o.get("spec").is_some())
+            .unwrap();
+        call(
+            state,
+            context,
+            "management.replace.v1",
+            json!({
+                "template":project["documents"][1],"contracts":[project["documents"][0]],
+                "manifest":project["manifest"],"revision":stored["revision"],
+            }),
+            None,
+        )
+    }
+
+    #[test]
+    fn submission_reports_a_client_id_shared_across_addresses() {
+        let (state, context) = started();
+        let old = client_project(
+            &context,
+            OTHER_CLIENT_ADDRESS,
+            "replaceable",
+            "placeholder-unused",
+        );
+        let baseline = call(&state, &context, "management.register.v1", old, None);
+        client_id_succeeded(&baseline, &context);
+        let held_project = client_project(&context, CLIENT_PROJECT, "held-template", SHARED_ID);
+        let registered = call(
+            &baseline.state,
+            &context,
+            "management.register.v1",
+            held_project.clone(),
+            None,
+        );
+        client_id_succeeded(&registered, &context);
+        let archive = client_archive(&context, CLIENT_PACKAGE, "0.1.0", &["signed.v1"]);
+        let installed = install_client_archive(&baseline.state, &context, archive.clone(), None);
+        client_id_succeeded(&installed, &context);
+        for (held, address, place) in [
+            (
+                &installed.state,
+                CLIENT_PACKAGE,
+                format!("installed package {CLIENT_PACKAGE} 0.1.0"),
+            ),
+            (
+                &registered.state,
+                CLIENT_PROJECT,
+                "a submitted project held by a template or instance".into(),
+            ),
+        ] {
+            let submission =
+                client_project(&context, OTHER_CLIENT_ADDRESS, "new-template", SHARED_ID);
+            let replacement =
+                client_project(&context, OTHER_CLIENT_ADDRESS, "replaceable", SHARED_ID);
+            for result in [
+                call(held, &context, "management.register.v1", submission, None),
+                client_replace(held, &context, &replacement),
+            ] {
+                client_id_rejection(&result, held, &context, "conflict");
+                assert_eq!(
+                    result.reply["structuredContent"]["diagnostics"],
+                    json!([{
+                        "ruleId":"CTR-013","level":"error","message":{"text":format!(
+                            "Client ID {SHARED_ID} is stated by Type {OTHER_CLIENT_ADDRESS}#signed.v1 in this project and by Type {address}#signed.v1 in {place}, at another address; a submission accepts no confirmation: give the Type another client ID, or have root install the project as a package with confirmClientIds listing {SHARED_ID}.")}
+                    }])
+                );
+            }
+        }
+        let same = call(
+            &registered.state,
+            &context,
+            "management.register.v1",
+            client_project(&context, CLIENT_PROJECT, "same-address", SHARED_ID),
+            None,
+        );
+        client_id_succeeded(&same, &context);
+        let confirmed = install_client_archive(&same.state, &context, archive, Some(&[SHARED_ID]));
+        client_id_succeeded(&confirmed, &context);
+        let noop = client_replace(&confirmed.state, &context, &held_project);
+        client_id_succeeded(&noop, &context);
+        assert_eq!(noop.state.objects, confirmed.state.objects);
+    }
+
     #[test]
     fn install_generic_diagnostics_name_the_invoking_tool() {
         use conduit_core::archives::{ArchiveInput, FetchCompletion};

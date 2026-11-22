@@ -867,3 +867,10 @@ The core receives framed documents from file-based registration and installation
 Authored provenance travels with the loader's project; stored objects and wire values are
 framed. Order 244 maps canonical diagnostic locations to the authored text and adds SARIF
 `properties.translation`.
+
+## Client IDs shared across addresses (order 266)
+
+From order 266, `install.v1`, `register.v1` and `replace.v1` compare client IDs with held
+Types at other addresses under CTR-013. Only root acting on its own behalf can confirm
+sharing. The `install-archive` input (`conduit register --package`) confirms nothing.
+A request that changes nothing answers as before.

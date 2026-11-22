@@ -71,6 +71,10 @@ pub const REFUSAL_CAUSES: &[(&str, &str)] = &[
         "Only root on its own behalf registers a submission containing an Agent.",
     ),
     (
+        "CTR-013",
+        "Only root may confirm a shared client ID in install.v1's confirmClientIds.",
+    ),
+    (
         "IFC-021",
         "A Resource makes requests only for an invocation it serves.",
     ),

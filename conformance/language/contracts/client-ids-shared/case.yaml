@@ -1,0 +1,836 @@
+id: contracts-client-ids-shared
+title: Client IDs shared across held package and submission addresses
+profile: first-build
+layers:
+- language
+- convention
+- interface
+promises:
+- CTR-013
+initial:
+  recipe: empty
+files: {}
+steps:
+- input:
+    kind: first-start
+    evidence:
+      time: '2026-11-22T12:00:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000001
+      - 00000000-0000-4000-8000-000000000002
+      - 00000000-0000-4000-8000-000000000003
+      - 00000000-0000-4000-8000-000000000004
+      - 00000000-0000-4000-8000-000000000005
+      - 00000000-0000-4000-8000-000000000006
+      - 00000000-0000-4000-8000-000000000007
+      - 00000000-0000-4000-8000-000000000008
+      - 00000000-0000-4000-8000-000000000009
+      - 00000000-0000-4000-8000-000000000010
+      - 00000000-0000-4000-8000-000000000011
+      - 00000000-0000-4000-8000-000000000012
+      - 00000000-0000-4000-8000-000000000013
+      - 00000000-0000-4000-8000-000000000014
+      - 00000000-0000-4000-8000-000000000015
+      - 00000000-0000-4000-8000-000000000016
+      - 00000000-0000-4000-8000-000000000017
+      - 00000000-0000-4000-8000-000000000018
+      - 00000000-0000-4000-8000-000000000019
+      - 00000000-0000-4000-8000-000000000020
+      - 00000000-0000-4000-8000-000000000021
+      - 00000000-0000-4000-8000-000000000022
+      - 00000000-0000-4000-8000-000000000023
+      - 00000000-0000-4000-8000-000000000024
+      revisions:
+      - initial-0
+      - initial-1
+      - initial-2
+      - initial-3
+      - initial-4
+      - initial-5
+      - initial-6
+      - initial-7
+      suffixes:
+      - abc01
+      - abc02
+      - abc03
+    machine:
+      hostname: sample.example
+      state: reachable
+      labels:
+        kubernetes.io/hostname: sample.example
+        kubernetes.io/os: linux
+        kubernetes.io/arch: arm64
+    trustDomain: vectors-266.example
+  expect:
+    reply:
+      started: true
+    external_intents: []
+    required_promises:
+    - FST-001
+    state:
+      started: true
+    record_facts:
+    - type: object-change
+- input:
+    kind: invoke
+    evidence:
+      time: '2026-11-22T12:01:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000100
+      - 00000000-0000-4000-8000-000000000101
+      - 00000000-0000-4000-8000-000000000102
+      - 00000000-0000-4000-8000-000000000103
+      - 00000000-0000-4000-8000-000000000104
+      - 00000000-0000-4000-8000-000000000105
+      - 00000000-0000-4000-8000-000000000106
+      - 00000000-0000-4000-8000-000000000107
+      - 00000000-0000-4000-8000-000000000108
+      - 00000000-0000-4000-8000-000000000109
+      - 00000000-0000-4000-8000-000000000110
+      - 00000000-0000-4000-8000-000000000111
+      - 00000000-0000-4000-8000-000000000112
+      - 00000000-0000-4000-8000-000000000113
+      - 00000000-0000-4000-8000-000000000114
+      - 00000000-0000-4000-8000-000000000115
+      - 00000000-0000-4000-8000-000000000116
+      - 00000000-0000-4000-8000-000000000117
+      - 00000000-0000-4000-8000-000000000118
+      - 00000000-0000-4000-8000-000000000119
+      - 00000000-0000-4000-8000-000000000120
+      - 00000000-0000-4000-8000-000000000121
+      - 00000000-0000-4000-8000-000000000122
+      - 00000000-0000-4000-8000-000000000123
+      - 00000000-0000-4000-8000-000000000124
+      - 00000000-0000-4000-8000-000000000125
+      - 00000000-0000-4000-8000-000000000126
+      - 00000000-0000-4000-8000-000000000127
+      revisions:
+      - registration-1-0
+      - registration-1-1
+      - registration-1-2
+      - registration-1-3
+      - registration-1-4
+      - registration-1-5
+      - registration-1-6
+      - registration-1-7
+      - registration-1-8
+      - registration-1-9
+      - registration-1-10
+      - registration-1-11
+      suffixes:
+      - a1000
+      - a1001
+      - a1002
+      - a1003
+      - a1004
+      - a1005
+      - a1006
+      - a1007
+    request:
+      identity:
+        kind: instance
+        id: 00000000-0000-4000-8000-000000000005
+      tool: management.register.v1
+      arguments:
+        manifest:
+          apiVersion: github.com/shrav-k/conduit/v0
+          address: example.org/conformance/client-ids
+          implementations:
+            hooks:
+              implements:
+              - github.com/shrav-k/conduit/core#sign-in-hook.v1
+              - github.com/shrav-k/conduit/core#account-hook.v1
+              - github.com/shrav-k/conduit/core#sign-out-hook.v1
+              command:
+              - test-hooks
+        documents:
+        - apiVersion: github.com/shrav-k/conduit/v0
+          kind: Type
+          metadata:
+            name: signed.v1
+          spec:
+            family: Agent
+            requires:
+            - github.com/shrav-k/conduit/core#sign-in-hook.v1
+            - github.com/shrav-k/conduit/core#account-hook.v1
+            - github.com/shrav-k/conduit/core#sign-out-hook.v1
+            schema:
+              type: object
+              properties:
+                account:
+                  type:
+                  - string
+                  - 'null'
+              required:
+              - account
+            signIn:
+              account: /account
+              logins:
+              - name: login-1
+                return: device
+                authorization: https://example.org/device-1
+                clientId: placeholder-shared
+              - name: login-2
+                return: device
+                authorization: https://example.org/device-2
+                clientId: placeholder-one-address
+        - apiVersion: github.com/shrav-k/conduit/v0
+          kind: Agent
+          metadata:
+            name: held-agent
+          spec:
+            type: '#signed.v1'
+            config:
+              account: null
+            implementation:
+              github.com/shrav-k/conduit/core#sign-in-hook.v1: '#hooks'
+              github.com/shrav-k/conduit/core#account-hook.v1: '#hooks'
+              github.com/shrav-k/conduit/core#sign-out-hook.v1: '#hooks'
+        - apiVersion: github.com/shrav-k/conduit/v0
+          kind: Conduit
+          metadata:
+            name: install-link
+          spec:
+            capability: github.com/shrav-k/conduit/core#object-management.v1
+            operations:
+            - github.com/shrav-k/conduit/core#install.v1
+        - apiVersion: github.com/shrav-k/conduit/v0
+          kind: Interface
+          metadata:
+            name: guest-template
+          spec:
+            type: github.com/shrav-k/conduit/core#interface.v1
+            conduits:
+              install:
+                from: install-link
+                target:
+                  kind: Resource
+                  name: management
+        - apiVersion: github.com/shrav-k/conduit/v0
+          kind: Interface
+          metadata:
+            name: guest
+          from: guest-template
+  expect:
+    reply:
+      _meta:
+        io.github.shrav-k.conduit/outcome: succeeded
+    external_intents: []
+- input:
+    kind: invoke
+    evidence:
+      time: '2026-11-22T12:02:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000200
+      - 00000000-0000-4000-8000-000000000201
+      - 00000000-0000-4000-8000-000000000202
+      - 00000000-0000-4000-8000-000000000203
+      - 00000000-0000-4000-8000-000000000204
+      - 00000000-0000-4000-8000-000000000205
+      - 00000000-0000-4000-8000-000000000206
+      - 00000000-0000-4000-8000-000000000207
+    request:
+      identity:
+        kind: instance
+        id: 00000000-0000-4000-8000-000000000005
+      tool: management.install.v1
+      arguments:
+        address: example.org/conformance/client-id-package
+        version: 0.1.0
+        digest: sha256:7a743d5cc143ebb0ec32d2b2cb663a1cb63193ae9091cbe2adfd404fb10602a3
+        fetch: file:///fixture/client-id-package.tar.gz
+    archive:
+      address: example.org/conformance/client-id-package
+      version: 0.1.0
+      digest: sha256:7a743d5cc143ebb0ec32d2b2cb663a1cb63193ae9091cbe2adfd404fb10602a3
+      name: client-id-package.tar.gz
+      completion:
+        status: complete
+        bytes: [31, 139, 8, 0, 0, 0, 0, 0, 2, 255, 237, 148, 75, 79, 220, 48, 16, 128, 243, 83, 144, 185, 110, 94,
+          128, 22, 105, 111, 61, 114, 71, 189, 160, 61, 12, 246, 144, 152, 77, 108, 215, 143, 168, 128, 242, 223,
+          25, 39, 98, 41, 61, 148, 94, 64, 84, 157, 239, 226, 196, 243, 244, 216, 51, 210, 26, 149, 116, 172, 238,
+          131, 53, 197, 7, 209, 16, 219, 139, 139, 101, 37, 126, 95, 155, 118, 187, 61, 126, 47, 251, 109, 115,
+          222, 54, 197, 73, 83, 124, 2, 41, 68, 240, 20, 190, 248, 63, 121, 18, 224, 244, 119, 244, 65, 91, 35,
+          118, 162, 211, 177, 79, 183, 149, 180, 99, 29, 122, 15, 83, 121, 168, 229, 250, 66, 234, 169, 17, 27,
+          1, 74, 121, 12, 129, 52, 241, 39, 140, 110, 192, 202, 250, 46, 171, 220, 89, 63, 130, 145, 88, 203, 65,
+          163, 137, 165, 86, 165, 3, 121, 128, 14, 201, 106, 58, 250, 111, 170, 182, 106, 196, 92, 48, 95, 132,
+          248, 224, 240, 67, 155, 255, 253, 254, 167, 110, 191, 124, 219, 255, 205, 229, 246, 236, 140, 251, 255,
+          11, 246, 255, 65, 27, 69, 106, 215, 244, 106, 232, 111, 196, 8, 10, 34, 136, 221, 147, 48, 48, 34, 73,
+          130, 238, 12, 170, 106, 106, 197, 188, 17, 193, 161, 204, 178, 59, 24, 245, 240, 64, 210, 111, 29, 205,
+          6, 50, 244, 248, 35, 105, 26, 36, 98, 119, 243, 167, 144, 210, 122, 60, 205, 30, 75, 109, 202, 222, 218,
+          67, 246, 187, 121, 215, 2, 164, 180, 137, 102, 208, 223, 91, 44, 49, 108, 122, 53, 217, 83, 242, 178,
+          199, 113, 57, 90, 238, 17, 74, 222, 222, 222, 163, 204, 217, 59, 111, 29, 250, 168, 115, 254, 84, 191,
+          53, 218, 171, 226, 141, 8, 209, 107, 211, 145, 166, 73, 195, 32, 246, 243, 124, 60, 177, 202, 226, 23,
+          139, 125, 46, 17, 69, 190, 50, 111, 252, 136, 250, 229, 115, 35, 6, 219, 105, 147, 203, 116, 44, 240,
+          178, 83, 182, 75, 17, 99, 242, 249, 210, 20, 78, 90, 230, 251, 128, 20, 123, 235, 245, 35, 196, 245, 54,
+          251, 24, 93, 216, 213, 245, 175, 179, 122, 85, 94, 28, 172, 163, 250, 42, 95, 168, 27, 64, 98, 111, 7,
+          133, 190, 12, 61, 228, 68, 103, 202, 155, 7, 53, 195, 48, 12, 195, 48, 12, 195, 48, 12, 195, 48, 12, 195,
+          48, 12, 195, 48, 12, 195, 48, 12, 195, 252, 11, 60, 3, 201, 213, 214, 227, 0, 40, 0, 0]
+  expect:
+    reply:
+      _meta:
+        io.github.shrav-k.conduit/reason: conflict
+      structuredContent:
+        diagnostics:
+        - ruleId: CTR-013
+          level: error
+          message:
+            text: Client ID placeholder-shared is stated by Type example.org/conformance/client-id-package#signed.v1
+              in this package and by Type example.org/conformance/client-ids#signed.v1 in a submitted project held
+              by a template or instance, at another address; root may confirm the sharing by sending install.v1
+              for this package with confirmClientIds listing placeholder-shared.
+    external_intents: []
+- input:
+    kind: invoke
+    evidence:
+      time: '2026-11-22T12:03:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000300
+      - 00000000-0000-4000-8000-000000000301
+      - 00000000-0000-4000-8000-000000000302
+      - 00000000-0000-4000-8000-000000000303
+      - 00000000-0000-4000-8000-000000000304
+      - 00000000-0000-4000-8000-000000000305
+      - 00000000-0000-4000-8000-000000000306
+      - 00000000-0000-4000-8000-000000000307
+    request:
+      identity:
+        kind: instance
+        id: 00000000-0000-4000-8000-000000000005
+      tool: management.list.v1
+      arguments: {}
+  expect:
+    reply:
+      structuredContent:
+        packages: []
+    external_intents: []
+- input:
+    kind: invoke
+    evidence:
+      time: '2026-11-22T12:04:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000400
+      - 00000000-0000-4000-8000-000000000401
+      - 00000000-0000-4000-8000-000000000402
+      - 00000000-0000-4000-8000-000000000403
+      - 00000000-0000-4000-8000-000000000404
+      - 00000000-0000-4000-8000-000000000405
+      - 00000000-0000-4000-8000-000000000406
+      - 00000000-0000-4000-8000-000000000407
+    request:
+      identity:
+        kind: instance
+        id: 00000000-0000-4000-8000-000000000005
+      tool: management.install.v1
+      arguments:
+        address: example.org/conformance/client-id-package
+        version: 0.1.0
+        digest: sha256:7a743d5cc143ebb0ec32d2b2cb663a1cb63193ae9091cbe2adfd404fb10602a3
+        fetch: file:///fixture/client-id-package.tar.gz
+        confirmClientIds:
+        - placeholder-shared
+        - placeholder-unshared
+    archive:
+      address: example.org/conformance/client-id-package
+      version: 0.1.0
+      digest: sha256:7a743d5cc143ebb0ec32d2b2cb663a1cb63193ae9091cbe2adfd404fb10602a3
+      name: client-id-package.tar.gz
+      completion:
+        status: complete
+        bytes: [31, 139, 8, 0, 0, 0, 0, 0, 2, 255, 237, 148, 75, 79, 220, 48, 16, 128, 243, 83, 144, 185, 110, 94,
+          128, 22, 105, 111, 61, 114, 71, 189, 160, 61, 12, 246, 144, 152, 77, 108, 215, 143, 168, 128, 242, 223,
+          25, 39, 98, 41, 61, 148, 94, 64, 84, 157, 239, 226, 196, 243, 244, 216, 51, 210, 26, 149, 116, 172, 238,
+          131, 53, 197, 7, 209, 16, 219, 139, 139, 101, 37, 126, 95, 155, 118, 187, 61, 126, 47, 251, 109, 115,
+          222, 54, 197, 73, 83, 124, 2, 41, 68, 240, 20, 190, 248, 63, 121, 18, 224, 244, 119, 244, 65, 91, 35,
+          118, 162, 211, 177, 79, 183, 149, 180, 99, 29, 122, 15, 83, 121, 168, 229, 250, 66, 234, 169, 17, 27,
+          1, 74, 121, 12, 129, 52, 241, 39, 140, 110, 192, 202, 250, 46, 171, 220, 89, 63, 130, 145, 88, 203, 65,
+          163, 137, 165, 86, 165, 3, 121, 128, 14, 201, 106, 58, 250, 111, 170, 182, 106, 196, 92, 48, 95, 132,
+          248, 224, 240, 67, 155, 255, 253, 254, 167, 110, 191, 124, 219, 255, 205, 229, 246, 236, 140, 251, 255,
+          11, 246, 255, 65, 27, 69, 106, 215, 244, 106, 232, 111, 196, 8, 10, 34, 136, 221, 147, 48, 48, 34, 73,
+          130, 238, 12, 170, 106, 106, 197, 188, 17, 193, 161, 204, 178, 59, 24, 245, 240, 64, 210, 111, 29, 205,
+          6, 50, 244, 248, 35, 105, 26, 36, 98, 119, 243, 167, 144, 210, 122, 60, 205, 30, 75, 109, 202, 222, 218,
+          67, 246, 187, 121, 215, 2, 164, 180, 137, 102, 208, 223, 91, 44, 49, 108, 122, 53, 217, 83, 242, 178,
+          199, 113, 57, 90, 238, 17, 74, 222, 222, 222, 163, 204, 217, 59, 111, 29, 250, 168, 115, 254, 84, 191,
+          53, 218, 171, 226, 141, 8, 209, 107, 211, 145, 166, 73, 195, 32, 246, 243, 124, 60, 177, 202, 226, 23,
+          139, 125, 46, 17, 69, 190, 50, 111, 252, 136, 250, 229, 115, 35, 6, 219, 105, 147, 203, 116, 44, 240,
+          178, 83, 182, 75, 17, 99, 242, 249, 210, 20, 78, 90, 230, 251, 128, 20, 123, 235, 245, 35, 196, 245, 54,
+          251, 24, 93, 216, 213, 245, 175, 179, 122, 85, 94, 28, 172, 163, 250, 42, 95, 168, 27, 64, 98, 111, 7,
+          133, 190, 12, 61, 228, 68, 103, 202, 155, 7, 53, 195, 48, 12, 195, 48, 12, 195, 48, 12, 195, 48, 12, 195,
+          48, 12, 195, 48, 12, 195, 48, 12, 195, 252, 11, 60, 3, 201, 213, 214, 227, 0, 40, 0, 0]
+  expect:
+    reply:
+      _meta:
+        io.github.shrav-k.conduit/reason: invalid
+      structuredContent:
+        diagnostics:
+        - ruleId: CTR-013
+          level: error
+          message:
+            text: confirmClientIds lists placeholder-unshared, which no Type of this package shares with a Type
+              at another address; list only shared client IDs.
+    external_intents: []
+- input:
+    kind: invoke
+    evidence:
+      time: '2026-11-22T12:05:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000500
+      - 00000000-0000-4000-8000-000000000501
+      - 00000000-0000-4000-8000-000000000502
+      - 00000000-0000-4000-8000-000000000503
+      - 00000000-0000-4000-8000-000000000504
+      - 00000000-0000-4000-8000-000000000505
+      - 00000000-0000-4000-8000-000000000506
+      - 00000000-0000-4000-8000-000000000507
+    request:
+      identity:
+        kind: instance
+        id: 00000000-0000-4000-8000-000000000005
+      tool: management.install.v1
+      arguments:
+        address: example.org/conformance/client-id-package
+        version: 0.1.0
+        digest: sha256:7a743d5cc143ebb0ec32d2b2cb663a1cb63193ae9091cbe2adfd404fb10602a3
+        fetch: file:///fixture/client-id-package.tar.gz
+        confirmClientIds:
+        - placeholder-shared
+    archive:
+      address: example.org/conformance/client-id-package
+      version: 0.1.0
+      digest: sha256:7a743d5cc143ebb0ec32d2b2cb663a1cb63193ae9091cbe2adfd404fb10602a3
+      name: client-id-package.tar.gz
+      completion:
+        status: complete
+        bytes: [31, 139, 8, 0, 0, 0, 0, 0, 2, 255, 237, 148, 75, 79, 220, 48, 16, 128, 243, 83, 144, 185, 110, 94,
+          128, 22, 105, 111, 61, 114, 71, 189, 160, 61, 12, 246, 144, 152, 77, 108, 215, 143, 168, 128, 242, 223,
+          25, 39, 98, 41, 61, 148, 94, 64, 84, 157, 239, 226, 196, 243, 244, 216, 51, 210, 26, 149, 116, 172, 238,
+          131, 53, 197, 7, 209, 16, 219, 139, 139, 101, 37, 126, 95, 155, 118, 187, 61, 126, 47, 251, 109, 115,
+          222, 54, 197, 73, 83, 124, 2, 41, 68, 240, 20, 190, 248, 63, 121, 18, 224, 244, 119, 244, 65, 91, 35,
+          118, 162, 211, 177, 79, 183, 149, 180, 99, 29, 122, 15, 83, 121, 168, 229, 250, 66, 234, 169, 17, 27,
+          1, 74, 121, 12, 129, 52, 241, 39, 140, 110, 192, 202, 250, 46, 171, 220, 89, 63, 130, 145, 88, 203, 65,
+          163, 137, 165, 86, 165, 3, 121, 128, 14, 201, 106, 58, 250, 111, 170, 182, 106, 196, 92, 48, 95, 132,
+          248, 224, 240, 67, 155, 255, 253, 254, 167, 110, 191, 124, 219, 255, 205, 229, 246, 236, 140, 251, 255,
+          11, 246, 255, 65, 27, 69, 106, 215, 244, 106, 232, 111, 196, 8, 10, 34, 136, 221, 147, 48, 48, 34, 73,
+          130, 238, 12, 170, 106, 106, 197, 188, 17, 193, 161, 204, 178, 59, 24, 245, 240, 64, 210, 111, 29, 205,
+          6, 50, 244, 248, 35, 105, 26, 36, 98, 119, 243, 167, 144, 210, 122, 60, 205, 30, 75, 109, 202, 222, 218,
+          67, 246, 187, 121, 215, 2, 164, 180, 137, 102, 208, 223, 91, 44, 49, 108, 122, 53, 217, 83, 242, 178,
+          199, 113, 57, 90, 238, 17, 74, 222, 222, 222, 163, 204, 217, 59, 111, 29, 250, 168, 115, 254, 84, 191,
+          53, 218, 171, 226, 141, 8, 209, 107, 211, 145, 166, 73, 195, 32, 246, 243, 124, 60, 177, 202, 226, 23,
+          139, 125, 46, 17, 69, 190, 50, 111, 252, 136, 250, 229, 115, 35, 6, 219, 105, 147, 203, 116, 44, 240,
+          178, 83, 182, 75, 17, 99, 242, 249, 210, 20, 78, 90, 230, 251, 128, 20, 123, 235, 245, 35, 196, 245, 54,
+          251, 24, 93, 216, 213, 245, 175, 179, 122, 85, 94, 28, 172, 163, 250, 42, 95, 168, 27, 64, 98, 111, 7,
+          133, 190, 12, 61, 228, 68, 103, 202, 155, 7, 53, 195, 48, 12, 195, 48, 12, 195, 48, 12, 195, 48, 12, 195,
+          48, 12, 195, 48, 12, 195, 48, 12, 195, 252, 11, 60, 3, 201, 213, 214, 227, 0, 40, 0, 0]
+  expect:
+    reply:
+      _meta:
+        io.github.shrav-k.conduit/outcome: succeeded
+    external_intents: []
+    record_facts:
+    - type: access-decision
+      data:
+        operation: github.com/shrav-k/conduit/core#install.v1
+        inputs:
+          confirmClientIds:
+          - placeholder-shared
+    - type: invocation-dispatched
+      data:
+        operation: github.com/shrav-k/conduit/core#install.v1
+        inputs:
+          confirmClientIds:
+          - placeholder-shared
+    - type: object-change
+      data:
+        operation: github.com/shrav-k/conduit/core#install.v1
+        inputs:
+          confirmClientIds:
+          - placeholder-shared
+    - type: invocation-ended
+      data:
+        operation: github.com/shrav-k/conduit/core#install.v1
+        inputs:
+          confirmClientIds:
+          - placeholder-shared
+    - type: request-ended
+      data:
+        operation: github.com/shrav-k/conduit/core#install.v1
+        inputs:
+          confirmClientIds:
+          - placeholder-shared
+- input:
+    kind: invoke
+    evidence:
+      time: '2026-11-22T12:06:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000600
+      - 00000000-0000-4000-8000-000000000601
+      - 00000000-0000-4000-8000-000000000602
+      - 00000000-0000-4000-8000-000000000603
+      - 00000000-0000-4000-8000-000000000604
+      - 00000000-0000-4000-8000-000000000605
+      - 00000000-0000-4000-8000-000000000606
+      - 00000000-0000-4000-8000-000000000607
+      - 00000000-0000-4000-8000-000000000608
+      - 00000000-0000-4000-8000-000000000609
+      - 00000000-0000-4000-8000-000000000610
+      - 00000000-0000-4000-8000-000000000611
+      - 00000000-0000-4000-8000-000000000612
+      - 00000000-0000-4000-8000-000000000613
+      - 00000000-0000-4000-8000-000000000614
+      - 00000000-0000-4000-8000-000000000615
+      - 00000000-0000-4000-8000-000000000616
+      - 00000000-0000-4000-8000-000000000617
+      - 00000000-0000-4000-8000-000000000618
+      - 00000000-0000-4000-8000-000000000619
+      - 00000000-0000-4000-8000-000000000620
+      - 00000000-0000-4000-8000-000000000621
+      - 00000000-0000-4000-8000-000000000622
+      - 00000000-0000-4000-8000-000000000623
+      - 00000000-0000-4000-8000-000000000624
+      - 00000000-0000-4000-8000-000000000625
+      - 00000000-0000-4000-8000-000000000626
+      - 00000000-0000-4000-8000-000000000627
+      revisions:
+      - registration-6-0
+      - registration-6-1
+      - registration-6-2
+      - registration-6-3
+      - registration-6-4
+      - registration-6-5
+      - registration-6-6
+      - registration-6-7
+      - registration-6-8
+      - registration-6-9
+      - registration-6-10
+      - registration-6-11
+      suffixes:
+      - a6000
+      - a6001
+      - a6002
+      - a6003
+      - a6004
+      - a6005
+      - a6006
+      - a6007
+    request:
+      identity:
+        kind: instance
+        id: 00000000-0000-4000-8000-000000000005
+      tool: management.register.v1
+      arguments:
+        manifest:
+          apiVersion: github.com/shrav-k/conduit/v0
+          address: example.org/conformance/client-ids-other
+          implementations:
+            hooks:
+              implements:
+              - github.com/shrav-k/conduit/core#sign-in-hook.v1
+              - github.com/shrav-k/conduit/core#account-hook.v1
+              - github.com/shrav-k/conduit/core#sign-out-hook.v1
+              command:
+              - test-hooks
+        documents:
+        - apiVersion: github.com/shrav-k/conduit/v0
+          kind: Type
+          metadata:
+            name: signed.v1
+          spec:
+            family: Agent
+            requires:
+            - github.com/shrav-k/conduit/core#sign-in-hook.v1
+            - github.com/shrav-k/conduit/core#account-hook.v1
+            - github.com/shrav-k/conduit/core#sign-out-hook.v1
+            schema:
+              type: object
+              properties:
+                account:
+                  type:
+                  - string
+                  - 'null'
+              required:
+              - account
+            signIn:
+              account: /account
+              logins:
+              - name: login-1
+                return: device
+                authorization: https://example.org/device-1
+                clientId: placeholder-shared
+        - apiVersion: github.com/shrav-k/conduit/v0
+          kind: Agent
+          metadata:
+            name: rejected-agent
+          spec:
+            type: '#signed.v1'
+            config:
+              account: null
+            implementation:
+              github.com/shrav-k/conduit/core#sign-in-hook.v1: '#hooks'
+              github.com/shrav-k/conduit/core#account-hook.v1: '#hooks'
+              github.com/shrav-k/conduit/core#sign-out-hook.v1: '#hooks'
+  expect:
+    reply:
+      _meta:
+        io.github.shrav-k.conduit/reason: conflict
+      structuredContent:
+        diagnostics:
+        - ruleId: CTR-013
+          level: error
+          message:
+            text: 'Client ID placeholder-shared is stated by Type example.org/conformance/client-ids-other#signed.v1
+              in this project and by Type example.org/conformance/client-id-package#signed.v1 in installed package
+              example.org/conformance/client-id-package 0.1.0, at another address; a submission accepts no confirmation:
+              give the Type another client ID, or have root install the project as a package with confirmClientIds
+              listing placeholder-shared.'
+        - ruleId: CTR-013
+          level: error
+          message:
+            text: 'Client ID placeholder-shared is stated by Type example.org/conformance/client-ids-other#signed.v1
+              in this project and by Type example.org/conformance/client-ids#signed.v1 in a submitted project held
+              by a template or instance, at another address; a submission accepts no confirmation: give the Type
+              another client ID, or have root install the project as a package with confirmClientIds listing placeholder-shared.'
+    external_intents: []
+- input:
+    kind: invoke
+    evidence:
+      time: '2026-11-22T12:07:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000700
+      - 00000000-0000-4000-8000-000000000701
+      - 00000000-0000-4000-8000-000000000702
+      - 00000000-0000-4000-8000-000000000703
+      - 00000000-0000-4000-8000-000000000704
+      - 00000000-0000-4000-8000-000000000705
+      - 00000000-0000-4000-8000-000000000706
+      - 00000000-0000-4000-8000-000000000707
+      - 00000000-0000-4000-8000-000000000708
+      - 00000000-0000-4000-8000-000000000709
+      - 00000000-0000-4000-8000-000000000710
+      - 00000000-0000-4000-8000-000000000711
+      - 00000000-0000-4000-8000-000000000712
+      - 00000000-0000-4000-8000-000000000713
+      - 00000000-0000-4000-8000-000000000714
+      - 00000000-0000-4000-8000-000000000715
+      - 00000000-0000-4000-8000-000000000716
+      - 00000000-0000-4000-8000-000000000717
+      - 00000000-0000-4000-8000-000000000718
+      - 00000000-0000-4000-8000-000000000719
+      - 00000000-0000-4000-8000-000000000720
+      - 00000000-0000-4000-8000-000000000721
+      - 00000000-0000-4000-8000-000000000722
+      - 00000000-0000-4000-8000-000000000723
+      - 00000000-0000-4000-8000-000000000724
+      - 00000000-0000-4000-8000-000000000725
+      - 00000000-0000-4000-8000-000000000726
+      - 00000000-0000-4000-8000-000000000727
+      revisions:
+      - registration-7-0
+      - registration-7-1
+      - registration-7-2
+      - registration-7-3
+      - registration-7-4
+      - registration-7-5
+      - registration-7-6
+      - registration-7-7
+      - registration-7-8
+      - registration-7-9
+      - registration-7-10
+      - registration-7-11
+      suffixes:
+      - a7000
+      - a7001
+      - a7002
+      - a7003
+      - a7004
+      - a7005
+      - a7006
+      - a7007
+    request:
+      identity:
+        kind: instance
+        id: 00000000-0000-4000-8000-000000000005
+      tool: management.register.v1
+      arguments:
+        manifest:
+          apiVersion: github.com/shrav-k/conduit/v0
+          address: example.org/conformance/client-ids
+          implementations:
+            hooks:
+              implements:
+              - github.com/shrav-k/conduit/core#sign-in-hook.v1
+              - github.com/shrav-k/conduit/core#account-hook.v1
+              - github.com/shrav-k/conduit/core#sign-out-hook.v1
+              command:
+              - test-hooks
+        documents:
+        - apiVersion: github.com/shrav-k/conduit/v0
+          kind: Type
+          metadata:
+            name: signed.v1
+          spec:
+            family: Agent
+            requires:
+            - github.com/shrav-k/conduit/core#sign-in-hook.v1
+            - github.com/shrav-k/conduit/core#account-hook.v1
+            - github.com/shrav-k/conduit/core#sign-out-hook.v1
+            schema:
+              type: object
+              properties:
+                account:
+                  type:
+                  - string
+                  - 'null'
+              required:
+              - account
+            signIn:
+              account: /account
+              logins:
+              - name: login-1
+                return: device
+                authorization: https://example.org/device-1
+                clientId: placeholder-one-address
+        - apiVersion: github.com/shrav-k/conduit/v0
+          kind: Agent
+          metadata:
+            name: same-address-agent
+          spec:
+            type: '#signed.v1'
+            config:
+              account: null
+            implementation:
+              github.com/shrav-k/conduit/core#sign-in-hook.v1: '#hooks'
+              github.com/shrav-k/conduit/core#account-hook.v1: '#hooks'
+              github.com/shrav-k/conduit/core#sign-out-hook.v1: '#hooks'
+  expect:
+    reply:
+      _meta:
+        io.github.shrav-k.conduit/outcome: succeeded
+    external_intents: []
+- input:
+    kind: invoke
+    evidence:
+      time: '2026-11-22T12:08:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000800
+      - 00000000-0000-4000-8000-000000000801
+      - 00000000-0000-4000-8000-000000000802
+      - 00000000-0000-4000-8000-000000000803
+      - 00000000-0000-4000-8000-000000000804
+      - 00000000-0000-4000-8000-000000000805
+      - 00000000-0000-4000-8000-000000000806
+      - 00000000-0000-4000-8000-000000000807
+      - 00000000-0000-4000-8000-000000000808
+      - 00000000-0000-4000-8000-000000000809
+      - 00000000-0000-4000-8000-000000000810
+      - 00000000-0000-4000-8000-000000000811
+      - 00000000-0000-4000-8000-000000000812
+      - 00000000-0000-4000-8000-000000000813
+      - 00000000-0000-4000-8000-000000000814
+      - 00000000-0000-4000-8000-000000000815
+      - 00000000-0000-4000-8000-000000000816
+      - 00000000-0000-4000-8000-000000000817
+      - 00000000-0000-4000-8000-000000000818
+      - 00000000-0000-4000-8000-000000000819
+    request:
+      identity:
+        kind: instance
+        id: 00000000-0000-4000-8000-000000000005
+      tool: management.set-up.v1
+      arguments:
+        instance:
+          kind: Interface
+          name: guest
+  expect:
+    reply:
+      _meta:
+        io.github.shrav-k.conduit/outcome: succeeded
+    external_intents: []
+- input:
+    kind: invoke
+    evidence:
+      time: '2026-11-22T12:09:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000900
+      - 00000000-0000-4000-8000-000000000901
+      - 00000000-0000-4000-8000-000000000902
+      - 00000000-0000-4000-8000-000000000903
+      - 00000000-0000-4000-8000-000000000904
+      - 00000000-0000-4000-8000-000000000905
+      - 00000000-0000-4000-8000-000000000906
+      - 00000000-0000-4000-8000-000000000907
+    request:
+      identity:
+        kind: instance
+        id: 00000000-0000-4000-8000-000000000005
+      tool: management.inspect.v1
+      arguments:
+        object:
+          kind: Interface
+          name: guest
+  expect:
+    reply:
+      _meta:
+        io.github.shrav-k.conduit/outcome: succeeded
+    external_intents: []
+  capture:
+    guest: /reply/structuredContent/id
+- input:
+    kind: invoke
+    evidence:
+      time: '2026-11-22T12:10:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000001000
+      - 00000000-0000-4000-8000-000000001001
+      - 00000000-0000-4000-8000-000000001002
+      - 00000000-0000-4000-8000-000000001003
+      - 00000000-0000-4000-8000-000000001004
+      - 00000000-0000-4000-8000-000000001005
+      - 00000000-0000-4000-8000-000000001006
+      - 00000000-0000-4000-8000-000000001007
+    request:
+      identity:
+        kind: instance
+        id: $guest
+      tool: install.install.v1
+      arguments:
+        address: example.org/conformance/client-id-package
+        version: 0.1.0
+        digest: sha256:7a743d5cc143ebb0ec32d2b2cb663a1cb63193ae9091cbe2adfd404fb10602a3
+        fetch: file:///fixture/client-id-package.tar.gz
+        confirmClientIds: []
+    archive:
+      address: example.org/conformance/client-id-package
+      version: 0.1.0
+      digest: sha256:7a743d5cc143ebb0ec32d2b2cb663a1cb63193ae9091cbe2adfd404fb10602a3
+      name: client-id-package.tar.gz
+      completion:
+        status: complete
+        bytes: [31, 139, 8, 0, 0, 0, 0, 0, 2, 255, 237, 148, 75, 79, 220, 48, 16, 128, 243, 83, 144, 185, 110, 94,
+          128, 22, 105, 111, 61, 114, 71, 189, 160, 61, 12, 246, 144, 152, 77, 108, 215, 143, 168, 128, 242, 223,
+          25, 39, 98, 41, 61, 148, 94, 64, 84, 157, 239, 226, 196, 243, 244, 216, 51, 210, 26, 149, 116, 172, 238,
+          131, 53, 197, 7, 209, 16, 219, 139, 139, 101, 37, 126, 95, 155, 118, 187, 61, 126, 47, 251, 109, 115,
+          222, 54, 197, 73, 83, 124, 2, 41, 68, 240, 20, 190, 248, 63, 121, 18, 224, 244, 119, 244, 65, 91, 35,
+          118, 162, 211, 177, 79, 183, 149, 180, 99, 29, 122, 15, 83, 121, 168, 229, 250, 66, 234, 169, 17, 27,
+          1, 74, 121, 12, 129, 52, 241, 39, 140, 110, 192, 202, 250, 46, 171, 220, 89, 63, 130, 145, 88, 203, 65,
+          163, 137, 165, 86, 165, 3, 121, 128, 14, 201, 106, 58, 250, 111, 170, 182, 106, 196, 92, 48, 95, 132,
+          248, 224, 240, 67, 155, 255, 253, 254, 167, 110, 191, 124, 219, 255, 205, 229, 246, 236, 140, 251, 255,
+          11, 246, 255, 65, 27, 69, 106, 215, 244, 106, 232, 111, 196, 8, 10, 34, 136, 221, 147, 48, 48, 34, 73,
+          130, 238, 12, 170, 106, 106, 197, 188, 17, 193, 161, 204, 178, 59, 24, 245, 240, 64, 210, 111, 29, 205,
+          6, 50, 244, 248, 35, 105, 26, 36, 98, 119, 243, 167, 144, 210, 122, 60, 205, 30, 75, 109, 202, 222, 218,
+          67, 246, 187, 121, 215, 2, 164, 180, 137, 102, 208, 223, 91, 44, 49, 108, 122, 53, 217, 83, 242, 178,
+          199, 113, 57, 90, 238, 17, 74, 222, 222, 222, 163, 204, 217, 59, 111, 29, 250, 168, 115, 254, 84, 191,
+          53, 218, 171, 226, 141, 8, 209, 107, 211, 145, 166, 73, 195, 32, 246, 243, 124, 60, 177, 202, 226, 23,
+          139, 125, 46, 17, 69, 190, 50, 111, 252, 136, 250, 229, 115, 35, 6, 219, 105, 147, 203, 116, 44, 240,
+          178, 83, 182, 75, 17, 99, 242, 249, 210, 20, 78, 90, 230, 251, 128, 20, 123, 235, 245, 35, 196, 245, 54,
+          251, 24, 93, 216, 213, 245, 175, 179, 122, 85, 94, 28, 172, 163, 250, 42, 95, 168, 27, 64, 98, 111, 7,
+          133, 190, 12, 61, 228, 68, 103, 202, 155, 7, 53, 195, 48, 12, 195, 48, 12, 195, 48, 12, 195, 48, 12, 195,
+          48, 12, 195, 48, 12, 195, 48, 12, 195, 252, 11, 60, 3, 201, 213, 214, 227, 0, 40, 0, 0]
+  expect:
+    reply:
+      _meta:
+        io.github.shrav-k.conduit/reason: refused
+      structuredContent:
+        diagnostics:
+        - ruleId: CTR-013
+          level: error
+    external_intents: []

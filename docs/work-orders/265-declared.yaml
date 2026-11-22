@@ -1,0 +1,4 @@
+# Added case for work order 265.
+- name: registration-implementations-inspected
+  kind: added
+  cases: [registration-implementations-inspected]

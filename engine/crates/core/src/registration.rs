@@ -137,6 +137,146 @@ fn diagnostic(rule: &str, name: &str, text: &str, level: &str) -> ReportedFault 
         prior_sort_key: None,
     }
 }
+
+fn package_item(context: &Value) -> Value {
+    let mut item = json!({"address":context["address"]});
+    for key in ["version", "digest"] {
+        if let Some(value) = context.get(key) {
+            item[key] = value.clone();
+        }
+    }
+    item
+}
+
+fn inspected_item(item: &Value) -> Value {
+    fn mask_input(input: &mut Value) {
+        if input["isSecret"] == true {
+            for field in ["value", "default"] {
+                if let Some(literal) = input.get_mut(field) {
+                    *literal = json!("(secret: not shown)");
+                }
+            }
+        }
+    }
+
+    fn mask_variables(parent: &mut Value) {
+        if let Some(variables) = parent.get_mut("variables").and_then(Value::as_object_mut) {
+            variables.values_mut().for_each(mask_input);
+        }
+    }
+
+    fn mask_input_list(parent: &mut Value, field: &str) {
+        if let Some(inputs) = parent.get_mut(field).and_then(Value::as_array_mut) {
+            for input in inputs {
+                mask_input(input);
+                mask_variables(input);
+            }
+        }
+    }
+
+    let mut item = item.clone();
+    if let Some(package) = item.get_mut("package") {
+        for field in [
+            "runtimeArguments",
+            "packageArguments",
+            "environmentVariables",
+        ] {
+            mask_input_list(package, field);
+        }
+        if let Some(transport) = package.get_mut("transport") {
+            mask_input_list(transport, "headers");
+        }
+    }
+    if let Some(remote) = item.get_mut("remote") {
+        mask_input_list(remote, "headers");
+        mask_variables(remote);
+    }
+    item
+}
+
+/// TPL-004 and NAM-009: report the item's held scope, not a new resolution.
+pub(crate) fn inspected_implementations(object: &Value, core: &str) -> Option<Value> {
+    if object["kind"] == "Conduit" || object["first_start"] == true {
+        return None;
+    }
+    let contexts = object.pointer("/held/contexts")?.as_object()?;
+    let implementations = object.get("resolved_implementations")?.as_object()?;
+    let selections = implementations
+        .iter()
+        .filter_map(|(operation, implementation)| {
+            let selected = if implementation["source"] == "engine" {
+                json!({
+                    "selection": format!("{core}#engine"),
+                    "package": package_item(contexts.get("core")?),
+                })
+            } else {
+                let scope = implementation["scope"].as_str()?;
+                json!({
+                    "selection": implementation["selection"].as_str()?,
+                    "package": package_item(contexts.get(scope)?),
+                    "item": inspected_item(implementation.get("item")?),
+                })
+            };
+            Some((operation.clone(), selected))
+        })
+        .collect();
+    Some(Value::Object(selections))
+}
+
+#[cfg(test)]
+#[test]
+fn inspection_masks_only_marked_input_literals() {
+    let marked = |value: &str, default: &str| json!({"isSecret":true,"value":value,"default":default,"placeholder":"sample"});
+    let package = |value: &str, default: &str| {
+        let mut argument = marked(value, default);
+        argument["type"] = json!("named");
+        argument["name"] = json!("--example");
+        let mut header = marked(value, default);
+        header["name"] = json!("X-Example");
+        header["variables"]["nested"] = marked(value, default);
+        json!({"implements":["#read.v1"],"package":{
+            "registryType":"npm","identifier":"example",
+            "transport":{"type":"streamable-http","url":"https://example.org/mcp",
+                "headers":[header]},
+            "runtimeArguments":[argument],
+            "packageArguments":[argument,{"type":"named","name":"--public","isSecret":false,
+                "value":"public value","default":"public default"}],
+            "environmentVariables":[header,{"name":"WITHOUT_LITERAL","isSecret":true}]
+        }})
+    };
+    let remote = |value: &str, default: &str| {
+        let mut header = marked(value, default);
+        header["name"] = json!("X-Example");
+        header["variables"]["nested"] = marked(value, default);
+        json!({"implements":["#other.v1"],"remote":{
+            "type":"streamable-http","url":"https://example.org/mcp",
+            "headers":[header], "variables":{"nested":marked(value, default)}
+        }})
+    };
+    let command = json!({"implements":["#command.v1"],"command":["example","public argument"]});
+    let object = json!({"kind":"Resource","held":{"contexts":{"project":{"address":"example.org/demo"}}},
+    "resolved_implementations":{
+        "example.org/demo#read.v1":{"selection":"example.org/demo#reader","scope":"project",
+            "item":package("sample value", "sample default")},
+        "example.org/demo#other.v1":{"selection":"example.org/demo#other","scope":"project",
+            "item":remote("sample value", "sample default")},
+        "example.org/demo#command.v1":{"selection":"example.org/demo#command","scope":"project",
+            "item":command}
+    }});
+    let inspection =
+        inspected_implementations(&object, "example.org/fixture-engine-package").unwrap();
+    let marker = "(secret: not shown)";
+    assert!(
+        inspection["example.org/demo#read.v1"]["item"] == package(marker, marker),
+        "inspection must mask marked Package input literals and preserve the rest of the item"
+    );
+    assert!(
+        inspection["example.org/demo#other.v1"]["item"] == remote(marker, marker),
+        "inspection must mask marked Remote input literals and preserve the rest of the item"
+    );
+    assert_eq!(inspection["example.org/demo#command.v1"]["item"], command);
+}
+
 impl Held {
     fn select(&self, reference: &str, kind: &str, core: &str) -> Checked<(Self, Value, String)> {
         let own = format!("{}#", self.environment.scopes[&self.scope].address);
@@ -194,16 +334,7 @@ impl Held {
         }
         let packages = scopes
             .into_iter()
-            .map(|scope| {
-                let context = &self.contexts[&scope];
-                let mut item = json!({"address":context["address"]});
-                for key in ["version", "digest"] {
-                    if let Some(value) = context.get(key) {
-                        item[key] = value.clone();
-                    }
-                }
-                item
-            })
+            .map(|scope| package_item(&self.contexts[&scope]))
             .collect::<Vec<_>>();
         Ok(json!(packages))
     }

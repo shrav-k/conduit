@@ -312,6 +312,23 @@ metadata:
     other part (CTR-014, LIF-013).
     The optional output logins holds the logins its object's Type states, present where that
     Type states signIn (CTR-013).
+    The optional output `implementations` is present for a template or an instance, other than
+    a Conduit, a Conduit template or an object that first start makes (FST-001). It has one
+    member for each operation for which the object has an implementation selected under
+    TPL-004, its hooks among them, named by the operation's qualified reference. The member's
+    `selection` is the qualified reference of that implementation, and
+    `github.com/shrav-k/conduit/core#engine` for the engine. Its `package` is the item of
+    `packages` that holds the implementation, which tells apart the releases of one address
+    and the submissions at one address, as a qualified reference does not (SUB-008, NAM-009).
+    Its `item`, absent for the engine, is the implementation item as the object holds it
+    under NAM-009, a program given as a relative path shown as it was resolved and is run
+    (SUB-010, MAN-010), so two submissions with one digest, read from two directories, are
+    told apart. The item is shown as held, with each `value` and `default` of a Package or
+    Remote input marked `isSecret: true` replaced by the string "(secret: not shown)".
+    Every other literal an author wrote in an item, including a command's arguments, is
+    visible to anyone authorized to inspect the object, so secrets belong in secret
+    references (SEC-021). The `implementations` output stays in the reply and its retained
+    repeats and is omitted from recorded outputs (REC-002).
 spec:
   inputSchema:
     type: object
@@ -359,6 +376,23 @@ spec:
             - address
             - version
             additionalProperties: false
+      implementations:
+        type: object
+        propertyNames:
+          $ref: github.com/shrav-k/conduit/core#qualified-reference.v1
+        additionalProperties:
+          type: object
+          properties:
+            selection:
+              $ref: github.com/shrav-k/conduit/core#qualified-reference.v1
+            package:
+              $ref: '#/properties/packages/items'
+            item:
+              $ref: github.com/shrav-k/conduit/core#implementation-item.v1
+          required:
+          - selection
+          - package
+          additionalProperties: false
       declared:
         type: object
       status:

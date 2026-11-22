@@ -412,9 +412,12 @@ pub(crate) fn record_content(t: &Transition, c: &Context, data: &mut Value) -> R
             continue;
         }
         if let Some(mut value) = value {
-            // Pending inspection evidence is scoped to the reply, including its repeats.
-            // Shared records keep the rest of the inspection output.
+            // Implementation selections and pending inspection evidence stay in the
+            // reply and its retained repeats.
             if setting == "outputs" && op == c.qualified("inspect.v1") {
+                if let Some(outputs) = value.as_object_mut() {
+                    outputs.remove("implementations");
+                }
                 if let Some(status) = value.get_mut("status").and_then(Value::as_object_mut) {
                     status.remove("pending");
                 }
@@ -3517,6 +3520,56 @@ mod tests {
                 .get("pending")
                 .is_none()
         );
+    }
+
+    #[test]
+    fn inspection_implementations_stay_out_of_shared_records_and_in_replies() {
+        let (mut setup, c) = interrupted_setup();
+        let subject = setup
+            .state
+            .objects
+            .iter_mut()
+            .find(|o| o["id"] == "o1")
+            .unwrap();
+        let package = json!({"address":"example.org/demo","version":"0.1.0"});
+        let item = json!({"implements":["#read.v1"],"command":["example","public argument"]});
+        subject["type"] = json!(c.qualified("type.v1"));
+        subject["held"] = json!({
+            "scope":"core",
+            "environment":c.core_environment,
+            "indexes":{"core":c.core_environment.scopes["core"].contracts},
+            "contexts":{"project":package},
+        });
+        subject["packages"] = json!([package]);
+        subject["resolved_implementations"]["example.org/demo#read.v1"] = json!({
+            "selection":"example.org/demo#reader","scope":"project","item":item,
+        });
+
+        let time = "2026-11-16T12:29:59Z";
+        let original = inspect_setup(&setup.state, &c, "root", time, Some("inspect-once"));
+        assert_eq!(original.reply["isError"], false);
+        let outputs = &original.reply["structuredContent"];
+        assert_eq!(
+            outputs["implementations"]["example.org/demo#read.v1"]["item"],
+            item
+        );
+        let repeated = inspect_setup(&original.state, &c, "root", time, Some("inspect-once"));
+        assert_eq!(repeated.reply["structuredContent"], *outputs);
+        for (records, event) in [
+            (&original.records, "invocation-ended"),
+            (&original.records, "request-ended"),
+            (&repeated.records, "request-ended"),
+        ] {
+            let output = &records.iter().find(|r| r["type"] == event).unwrap()["data"]["outputs"];
+            assert_eq!(
+                output["id"], "o1",
+                "the Pool Type records inspection outputs"
+            );
+            assert!(
+                output.get("implementations").is_none(),
+                "{event} must omit the reply's implementation selections"
+            );
+        }
     }
 
     #[test]

@@ -560,6 +560,10 @@ pub(crate) fn execute(
             })
             .collect::<Result<_>>()?;
         outputs = json!({"id":o["id"],"revision":o["revision"],"packages":o.get("packages").cloned().unwrap_or_else(|| json!([{ "address":c.core_package,"version":c.builtin.as_ref().and_then(|b| b.manifest.as_ref()).map(|m|m["version"].clone()).unwrap_or(Value::Null)}])),"declared":declared,"status":status,"records":records,"recordGaps":t.state.record_gaps,"recordsComplete":t.state.record_gaps.is_empty()});
+        if let Some(implementations) = registration::inspected_implementations(&o, &c.core_package)
+        {
+            outputs["implementations"] = implementations;
+        }
         if o.get("spec").is_none() && o["kind"] != "Conduit" {
             outputs["inventory"] = crate::inventory::read(&t.state, &o, c)?;
         }

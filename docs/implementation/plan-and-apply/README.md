@@ -1,16 +1,15 @@
-# Plan and apply: the CLI reference
+# Plan and apply: the design and golden cases
 
 Not binding. The specification in spec/ alone binds.
 
-This is the proposed CLI reference for spec batch 1, K3, with hand-written golden cases.
+This is the proposed design of plan and apply for spec batch 1, K3, with hand-written golden cases.
 It describes tooling, not additional language promises or engine behavior. Its five approval
 and command readings follow [ruling 76, points 1–5](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-76/README.md).
 A builder follows the specification where this reference and it differ. No program has produced
 these expected plans. Order 241 sent their requests to the serving engine.
 [Experiment 029 records the results](../../../experiments/029-a84-plan-apply/results-2026-11-21.md). The remaining cases are listed under
 [Safety cases for 052a's convergence check](#safety-cases-for-052as-convergence-check).
-What ships to the rerun's fresh author is the rerun preparation's decision, not this reference
-([ruling 53, point 9](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-53/README.md)).
+Authors get the [CLI format guide](../../../engine/CLI.md), and this page, written from S1's tasks, stays out of the fresh author's pack.
 
 ## Commands
 

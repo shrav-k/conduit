@@ -278,4 +278,21 @@ and the measurement plan's new lines.
 
 ## Record
 
-Not yet run.
+Run on 2026-11-22 through Conduit itself, by the dogfood's own Agents, in Pacific time, on
+`main` with orders 265, 267 and 245 stacked while they waited in the merge queue; its text was
+amended first for DEC-048 and for K3 as order 245 corrected it.
+
+**Worker-2's turn** (05:28 to 05:37) wrote `engine/CLI.md`, the CLI format reference an author
+reads, from the shipped help and code (the engine context, `init`, `install` as order 263 built
+it, `plan` as order 245 built it), with `apply` and the approval flags marked not yet built, and
+dated the measurement plan's amendment. All 190 tool tests and the exclusion check pass.
+
+**Two blind reads at once** (05:37 to 05:42): `turn-verifier-2.turn.v1` found seven musts and two
+shoulds where the guide said more or other than the CLI does; the Claude reader passed it with
+one should. One fix turn (05:42 to 05:48) applied all ten: install's exit statuses by cause; a pin
+holding `fetch` is refused, not edited; the dry-run line; a transport failure's lines; nested
+replacement; replacement previews and retirement recovery marked planned; every emitted line
+form; serve's context write; kept state's format and absence; and a first-run walkthrough from an
+empty directory to a printed plan.
+
+The gate's run on the squash is the coordinator's, at the merge.

@@ -1,4 +1,7 @@
 //! Client adapter. This source is copied into each independently buildable package.
+mod limit;
+mod usage;
+
 use anyhow::{Context, Result, bail, ensure};
 use serde_json::{Value, json};
 use std::{
@@ -7,13 +10,15 @@ use std::{
     path::{Path, PathBuf},
     process::Stdio,
     sync::{Arc, Mutex},
-    time::Duration,
+    time::{Duration, SystemTime},
 };
 use tokio::{
     io::{AsyncBufReadExt, AsyncWriteExt, BufReader, Lines},
     process::{Child, ChildStdin, ChildStdout},
     time::{Instant, sleep_until, timeout},
 };
+
+pub use usage::MEMBER as USAGE_MEMBER;
 
 pub const CLAUDE: bool = true;
 pub const WRAPPER: &str = if CLAUDE {
@@ -75,6 +80,8 @@ pub struct Config {
     pub state_dir: Option<PathBuf>,
     pub mode: Mode,
     pub login_directory: Option<PathBuf>,
+    pub instructions: Option<String>,
+    pub output_schema: Option<String>,
     pub configuration_error: Option<String>,
 }
 impl Config {
@@ -108,6 +115,8 @@ impl Config {
             } else {
                 None
             },
+            instructions: None,
+            output_schema: None,
             configuration_error: None,
         };
         let mut validate = || -> Result<()> {
@@ -139,6 +148,15 @@ impl Config {
                     boolean("AGENT_PEER_MESSAGING")?
                 };
                 c.model = std::env::var("AGENT_MODEL").ok().filter(|s| !s.is_empty());
+                c.instructions = role_input("AGENT_INSTRUCTIONS", "instructions")?;
+                c.output_schema = role_input("AGENT_OUTPUT_SCHEMA", "outputSchema")?;
+                if let Some(schema) = &c.output_schema {
+                    ensure!(
+                        serde_json::from_str::<Value>(schema)
+                            .is_ok_and(|schema| schema.is_object() && schema["type"] == "object"),
+                        "{OUTPUT_SCHEMA_ERROR}"
+                    );
+                }
             }
             if v2 {
                 let label = home_label(mode);
@@ -211,6 +229,20 @@ impl Config {
     }
 }
 
+const OUTPUT_SCHEMA_ERROR: &str =
+    "outputSchema (AGENT_OUTPUT_SCHEMA): expected the JSON text of a schema whose type is object";
+
+fn role_input(key: &str, place: &str) -> Result<Option<String>> {
+    match std::env::var(key) {
+        Ok(value) => Ok(Some(value)),
+        Err(std::env::VarError::NotPresent) => Ok(None),
+        Err(std::env::VarError::NotUnicode(_)) if key == "AGENT_OUTPUT_SCHEMA" => {
+            bail!("{OUTPUT_SCHEMA_ERROR}")
+        }
+        Err(std::env::VarError::NotUnicode(_)) => bail!("{place} ({key}): invalid encoding"),
+    }
+}
+
 fn home_label(mode: Mode) -> String {
     if mode != Mode::Agent {
         format!("login home ({HOME_VARIABLE})")
@@ -275,8 +307,10 @@ pub fn client_home(c: &Config) -> Result<PathBuf> {
     Ok(home)
 }
 
-#[derive(Debug)]
-pub struct LoginLapsed;
+#[derive(Debug, Default)]
+pub struct LoginLapsed {
+    pub usage: Option<Value>,
+}
 
 impl std::fmt::Display for LoginLapsed {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -304,12 +338,12 @@ fn shared_login_home(c: &Config) -> Result<PathBuf> {
     );
     let directory = match directory.canonicalize() {
         Ok(directory) if directory.is_dir() => directory,
-        Err(error) if error.kind() == NotFound => return Err(LoginLapsed.into()),
+        Err(error) if error.kind() == NotFound => return Err(LoginLapsed::default().into()),
         _ => bail!("{label}: AGENT_LOGIN_DIRECTORY is not an existing directory"),
     };
     let home = directory.join(ACCOUNT_HOME);
     if fs::symlink_metadata(&home).is_err_and(|error| error.kind() == NotFound) {
-        return Err(LoginLapsed.into());
+        return Err(LoginLapsed::default().into());
     }
     let home = home
         .canonicalize()
@@ -405,6 +439,9 @@ pub fn prepare(c: &Config) -> Result<()> {
             mcp["mcpServers"]["engine"]["timeout"] = json!(c.timeout_millis()?);
         }
         write_run_file(&c.cwd.join("mcp.json"), &serde_json::to_vec(&mcp)?)?;
+        if let Some(instructions) = &c.instructions {
+            write_run_file(&c.cwd.join("instructions.md"), instructions.as_bytes())?;
+        }
     }
     Ok(())
 }
@@ -462,6 +499,15 @@ pub fn arguments(c: &Config, thread: Option<&str>) -> Vec<String> {
         args.extend(["--cd".into(), c.client_directory().display().to_string()]);
     }
     if CLAUDE {
+        if c.instructions.is_some() {
+            args.extend([
+                "--append-system-prompt-file".into(),
+                c.cwd.join("instructions.md").display().to_string(),
+            ]);
+        }
+        if let Some(schema) = &c.output_schema {
+            args.extend(["--json-schema".into(), schema.clone()]);
+        }
         args.extend(
             [
                 "--tools",
@@ -659,6 +705,25 @@ const ERROR_CLASSES: &[(&str, &[&str])] = &[
 struct ClientFailure {
     class: &'static str,
     engine_mcp: bool,
+    window: Option<&'static str>,
+    resets_at: Option<String>,
+    usage: Option<Value>,
+}
+
+impl ClientFailure {
+    fn with_rejection(mut self, resets_at: Option<&Value>, started: SystemTime) -> Self {
+        if let Some(resets_at) = resets_at {
+            self.class = "usage-limit";
+            self.engine_mcp = false;
+            self.resets_at = limit::reset_time(resets_at, started);
+        }
+        self
+    }
+
+    fn limit(&self) -> Option<Value> {
+        (self.class == "usage-limit")
+            .then(|| json!({"window":self.window,"windowMinutes":null,"resetsAt":self.resets_at}))
+    }
 }
 
 impl std::fmt::Display for ClientFailure {
@@ -687,15 +752,28 @@ fn engine_mcp_failure(text: &str) -> bool {
     })
 }
 
-fn classify(text: Option<&str>) -> ClientFailure {
-    let text = text.unwrap_or_default().to_ascii_lowercase();
-    let class = ERROR_CLASSES
-        .iter()
-        .find(|(_, needles)| needles.iter().any(|needle| text.contains(needle)))
-        .map_or("other", |(class, _)| *class);
+fn classify<'a>(messages: impl IntoIterator<Item = &'a str>) -> ClientFailure {
+    let messages: Vec<_> = messages.into_iter().map(str::to_ascii_lowercase).collect();
+    let window = messages.iter().find_map(|text| limit::window(text));
+    let class = if window.is_some() {
+        "usage-limit"
+    } else {
+        ERROR_CLASSES
+            .iter()
+            .find(|(_, needles)| {
+                messages
+                    .iter()
+                    .any(|text| needles.iter().any(|needle| text.contains(needle)))
+            })
+            .map_or("other", |(class, _)| *class)
+    };
     ClientFailure {
         class,
-        engine_mcp: class == "authentication" && engine_mcp_failure(&text),
+        engine_mcp: class == "authentication"
+            && messages.iter().any(|text| engine_mcp_failure(text)),
+        window,
+        resets_at: None,
+        usage: None,
     }
 }
 fn exit_cause(status: std::process::ExitStatus) -> String {
@@ -1107,6 +1185,8 @@ pub struct FailedTurn {
     pub cause: String,
     pub client_started: bool,
     pub stop: StopReport,
+    pub usage: Option<Value>,
+    limit: Option<Value>,
     v2: bool,
 }
 
@@ -1153,6 +1233,7 @@ impl FailedTurn {
                 "clientStarted": self.client_started,
                 "survivors": self.stop.survivors,
                 "stopConfirmed": !self.stop.unconfirmed,
+                "limit": self.limit,
             }})
         })
     }
@@ -1222,6 +1303,7 @@ struct Stream {
     child: Child,
     input: Option<ChildStdin>,
     lines: Lines<BufReader<ChildStdout>>,
+    usage: usage::Usage,
 }
 impl Stream {
     async fn boundary_failure(&mut self, failure: Option<ClientFailure>) -> anyhow::Error {
@@ -1270,6 +1352,7 @@ impl Stream {
             input: child.stdin.take(),
             lines: BufReader::new(child.stdout.take().context("client did not start")?).lines(),
             child,
+            usage: usage::Usage::default(),
         })
     }
 }
@@ -1353,27 +1436,34 @@ impl Session {
                 return Err(error);
             }
             let cause = error.to_string();
+            let failure = error.downcast_ref::<ClientFailure>();
             let lapse = self.config.mode == Mode::SharedLoginAgent
                 && self.stream.is_some()
-                && error
-                    .downcast_ref::<ClientFailure>()
-                    .is_some_and(|failure| {
-                        failure.class == "authentication" && !failure.engine_mcp
-                    });
+                && failure.is_some_and(|failure| {
+                    failure.class == "authentication" && !failure.engine_mcp
+                });
             self.failed = Some((self.turns_started, cause.clone()));
-            let failed = self.end_failed_turn(&cause).await;
-            return Err(if lapse { LoginLapsed.into() } else { failed });
+            let failed = self.end_failed_turn(&cause, failure).await;
+            return Err(if lapse {
+                LoginLapsed {
+                    usage: failure.and_then(|failure| failure.usage.clone()),
+                }
+                .into()
+            } else {
+                failed
+            });
         }
         result
     }
     async fn run_turn(&mut self, message: &str) -> Result<Value> {
+        let started = SystemTime::now();
         let home = if self.config.mode == Mode::SharedLoginAgent {
             shared_login_home(&self.config).map(Some)
         } else {
             Ok(None)
         };
         if home.as_ref().is_err_and(|error| error.is::<LoginLapsed>()) {
-            return Err(LoginLapsed.into());
+            return Err(LoginLapsed::default().into());
         }
         self.turns_started += 1;
         let home = home?;
@@ -1407,17 +1497,30 @@ impl Session {
         let mut reported_thread = false;
         let mut at_start = true;
         let mut index = 0;
-        let mut latest_error = None;
+        let mut latest_error: Option<ClientFailure> = None;
+        let mut rejected = None;
         loop {
             let line = match stream.lines.next_line().await {
                 Ok(Some(line)) => line,
                 Ok(None) if complete => break,
-                _ => return Err(stream.boundary_failure(latest_error).await),
+                _ => {
+                    let failure =
+                        latest_error.map(|error| error.with_rejection(rejected.as_ref(), started));
+                    return Err(stream.boundary_failure(failure).await);
+                }
             };
             index += 1;
             // Never persist raw client streams: they may contain authentication material.
             let event: Value = serde_json::from_str(&line)
                 .map_err(|_| anyhow::anyhow!("invalid client output"))?;
+            if event["type"] == "system" && event["subtype"] == "init" {
+                stream.usage.init(&event);
+            }
+            if event["type"] == "rate_limit_event"
+                && event["rate_limit_info"]["status"] == "rejected"
+            {
+                rejected = Some(event["rate_limit_info"]["resetsAt"].clone());
+            }
             if event["type"] == "thread.started" {
                 let id = event["thread_id"]
                     .as_str()
@@ -1456,15 +1559,37 @@ impl Session {
             if !CLAUDE && event["type"] == "turn.failed" {
                 return Err(classify(event["error"]["message"].as_str()).into());
             }
-            if CLAUDE && event["type"] == "result" && event["is_error"] == true {
-                return Err(classify(event["result"].as_str()).into());
-            }
             if event["type"] == "item.completed" && event["item"]["type"] == "agent_message" {
                 text = event["item"]["text"].as_str().unwrap_or_default().into();
             }
             if CLAUDE && event["type"] == "result" {
-                text = event["result"].as_str().unwrap_or_default().into();
-                break;
+                let usage = stream.usage.result(&event);
+                let structured_failure = event["subtype"] == "error_max_structured_output_retries";
+                if structured_failure || event["is_error"] == true {
+                    let errors = event["errors"]
+                        .as_array()
+                        .into_iter()
+                        .flatten()
+                        .filter_map(Value::as_str);
+                    let mut failure = classify(event["result"].as_str().into_iter().chain(errors));
+                    if structured_failure {
+                        failure.class = "structured-output";
+                        failure.engine_mcp = false;
+                    }
+                    failure.usage = usage;
+                    return Err(failure.with_rejection(rejected.as_ref(), started).into());
+                }
+                let mut result = json!({
+                    "text":event["result"].as_str().unwrap_or_default(),
+                    "clientTools":tools
+                });
+                if event["structured_output"].is_object() {
+                    result["structured"] = event["structured_output"].clone();
+                }
+                if let Some(usage) = usage {
+                    result["_meta"][USAGE_MEMBER] = usage;
+                }
+                return Ok(result);
             }
             if !CLAUDE && event["type"] == "turn.completed" {
                 complete = true;
@@ -1485,9 +1610,13 @@ impl Session {
     }
     pub async fn cancel(&mut self) -> anyhow::Error {
         self.failed = Some((self.turns_started, "cancelled".into()));
-        self.end_failed_turn("cancelled").await
+        self.end_failed_turn("cancelled", None).await
     }
-    async fn end_failed_turn(&mut self, cause: &str) -> anyhow::Error {
+    async fn end_failed_turn(
+        &mut self,
+        cause: &str,
+        failure: Option<&ClientFailure>,
+    ) -> anyhow::Error {
         let client_started = self.stream.is_some();
         let stop = self.shutdown().await;
         anyhow::Error::new(FailedTurn {
@@ -1495,6 +1624,8 @@ impl Session {
             cause: cause.into(),
             client_started,
             stop,
+            usage: failure.and_then(|failure| failure.usage.clone()),
+            limit: failure.and_then(ClientFailure::limit),
             v2: self.config.v2,
         })
     }
@@ -1568,6 +1699,8 @@ mod tests {
             cause: "cancelled".into(),
             client_started: true,
             stop,
+            usage: None,
+            limit: None,
             v2: true,
         };
         let fields = failure.fields().unwrap();

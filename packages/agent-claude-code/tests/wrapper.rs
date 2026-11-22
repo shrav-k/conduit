@@ -60,6 +60,8 @@ fn config(parent: &std::path::Path, account_services: bool, peer_messaging: bool
         state_dir: Some(state.canonicalize().unwrap()),
         mode: agent_adapter::Mode::Agent,
         login_directory: None,
+        instructions: None,
+        output_schema: None,
         configuration_error: None,
     }
 }
@@ -1159,6 +1161,11 @@ async fn assert_failure(c: Config, message: &str, cause: &str, warmup: bool) {
                 "clientStarted": cause != "client did not start",
                 "survivors": [],
                 "stopConfirmed": true,
+                "limit": if class == Some("usage-limit") {
+                    json!({"window":null,"windowMinutes":null,"resetsAt":null})
+                } else {
+                    Value::Null
+                },
             }})
         );
     } else {
@@ -1839,6 +1846,11 @@ async fn v2_failed_turn_fields_reach_the_result() {
                         "clientStarted": true,
                         "survivors": [],
                         "stopConfirmed": true,
+                        "limit": if class == "usage-limit" {
+                            json!({"window":null,"windowMinutes":null,"resetsAt":null})
+                        } else {
+                            Value::Null
+                        },
                     }})
                 );
             }
@@ -4085,6 +4097,15 @@ struct LoginTestWrapper {
 
 impl LoginTestWrapper {
     async fn start(c: &Config, mode: Option<&str>, directory: Option<&Path>) -> Self {
+        Self::start_with_role(c, mode, directory, &[]).await
+    }
+
+    async fn start_with_role(
+        c: &Config,
+        mode: Option<&str>,
+        directory: Option<&Path>,
+        role: &[(&str, &str)],
+    ) -> Self {
         use tokio::io::AsyncBufReadExt;
         let mut child = tokio::process::Command::new(binary())
             .args(["--client-program"])
@@ -4096,6 +4117,7 @@ impl LoginTestWrapper {
             .env("AGENT_TURN_DEADLINE_SECONDS", "10")
             .env("CONDUIT_STATE_DIR", c.state_dir.as_ref().unwrap())
             .envs(directory.map(|dir| ("AGENT_LOGIN_DIRECTORY", dir)))
+            .envs(role.iter().copied())
             .current_dir(&c.cwd)
             .kill_on_drop(true)
             .stdin(Stdio::piped())
@@ -4517,4 +4539,395 @@ async fn v3_engine_mcp_authentication_does_not_report_login_lapse() {
         );
     }
     wrapper.close().await;
+}
+
+async fn scripted_result(wrapper: &mut LoginTestWrapper, events: &[Value]) -> Value {
+    wrapper.turn(&format!("EVENTS:{}", json!(events))).await
+}
+
+fn reported_usage(reply: &Value) -> &Value {
+    assert!(reply["structuredContent"].get("_meta").is_none());
+    &reply["_meta"]["io.github.shrav-k.conduit/usage"]
+}
+
+#[tokio::test]
+async fn claude_turns_report_their_usage() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = config(parent.path(), false, false);
+    let mut wrapper = LoginTestWrapper::start(&c, None, None).await;
+    let init = json!({"type":"system","subtype":"init","claude_code_version":"2.1.8"});
+    let first = json!({"type":"result","result":"first","modelUsage":{
+        "model-a":{"inputTokens":20,"cacheReadInputTokens":100,"cacheCreationInputTokens":40,
+            "outputTokens":60},
+        "model-b":{"inputTokens":5,"outputTokens":7}
+    }});
+    let reply = scripted_result(&mut wrapper, &[init.clone(), first.clone()]).await;
+    assert_eq!(reply["structuredContent"]["text"], "first");
+    assert_eq!(
+        reported_usage(&reply),
+        &json!({
+            "client":{"name":"claude-code","version":"2.1.8"},
+            "models":{"model-a":{"input":160,"cachedInput":100,"output":60},
+                      "model-b":{"input":5,"output":7}}
+        })
+    );
+
+    let second = json!({"type":"result","result":"second","modelUsage":{
+        "model-a":{"inputTokens":30,"cacheReadInputTokens":120,"cacheCreationInputTokens":45,
+            "outputTokens":90,"thinkingTokens":20},
+        "model-b":{"inputTokens":5,"outputTokens":7}
+    }});
+    let reply = scripted_result(&mut wrapper, std::slice::from_ref(&second)).await;
+    assert_eq!(
+        reported_usage(&reply)["models"],
+        json!({"model-a":{"input":35,"cachedInput":20,"output":30}})
+    );
+
+    let failed = json!({"type":"result","is_error":true,"result":"fixed failure","modelUsage":{
+        "model-a":{"inputTokens":35,"cacheReadInputTokens":125,"cacheCreationInputTokens":45,
+            "outputTokens":100,"thinkingTokens":25}
+    }});
+    let reply = scripted_result(&mut wrapper, &[failed]).await;
+    assert_eq!(reply["isError"], true);
+    assert_eq!(
+        reported_usage(&reply)["models"],
+        json!({"model-a":{"input":10,"cachedInput":5,"output":10,"reasoning":5}})
+    );
+
+    wrapper.call("new-conversation", json!({})).await;
+    let reply = scripted_result(&mut wrapper, std::slice::from_ref(&first)).await;
+    assert!(reported_usage(&reply).is_null(), "no version");
+    let reply = scripted_result(&mut wrapper, &[init.clone(), second]).await;
+    assert_eq!(
+        reported_usage(&reply)["models"]["model-a"],
+        json!({"input":35,"cachedInput":20,"output":30})
+    );
+    let reply = scripted_result(&mut wrapper, std::slice::from_ref(&first)).await;
+    assert!(reported_usage(&reply).is_null(), "a count fell");
+    let reply = scripted_result(
+        &mut wrapper,
+        &[json!({"type":"result","result":"no usage"})],
+    )
+    .await;
+    assert!(reported_usage(&reply).is_null(), "no modelUsage");
+
+    wrapper.call("new-conversation", json!({})).await;
+    let reply = scripted_result(&mut wrapper, &[init, first]).await;
+    assert_eq!(reported_usage(&reply)["models"]["model-a"]["input"], 160);
+    wrapper.close().await;
+}
+
+fn failed_fields(reply: &Value) -> Value {
+    assert_eq!(reply["isError"], true);
+    let body: Value = serde_json::from_str(reply["content"][1]["text"].as_str().unwrap()).unwrap();
+    body["failedTurn"].clone()
+}
+
+#[tokio::test]
+async fn cache_components_must_be_comparable_on_resume() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = config(parent.path(), false, false);
+    let mut wrapper = LoginTestWrapper::start(&c, None, None).await;
+    let init = json!({"type":"system","subtype":"init","claude_code_version":"2.1.8"});
+    let mut observed = Vec::new();
+    for counter in ["cacheReadInputTokens", "cacheCreationInputTokens"] {
+        for appears in [true, false] {
+            let mut first = json!({"type":"result","modelUsage":{
+                "changing":{"inputTokens":10,"outputTokens":1},
+                "stable":{"inputTokens":5,"outputTokens":2}
+            }});
+            let mut next = json!({"type":"result","modelUsage":{
+                "changing":{"inputTokens":if appears { 20 } else { 120 },"outputTokens":2},
+                "stable":{"inputTokens":8,"outputTokens":3}
+            }});
+            if appears {
+                next["modelUsage"]["changing"][counter] = json!(100);
+            } else {
+                first["modelUsage"]["changing"][counter] = json!(100);
+            }
+            scripted_result(&mut wrapper, &[init.clone(), first]).await;
+            let reply = scripted_result(&mut wrapper, &[next]).await;
+            observed.push((counter, appears, reported_usage(&reply)["models"].clone()));
+            wrapper.call("new-conversation", json!({})).await;
+        }
+    }
+    wrapper.close().await;
+    let expected = json!({"stable":{"input":3,"output":1}});
+    assert!(
+        observed.iter().all(|(_, _, models)| models == &expected),
+        "reported a model with incomparable cache counts: {observed:?}"
+    );
+}
+
+#[tokio::test]
+async fn usage_after_an_unreadable_report_only_reestablishes_the_baseline() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = config(parent.path(), false, false);
+    let mut wrapper = LoginTestWrapper::start(&c, None, None).await;
+    let init = json!({"type":"system","subtype":"init","claude_code_version":"2.1.8"});
+    let result = |input, output| {
+        json!({"type":"result","modelUsage":{
+            "model":{"inputTokens":input,"outputTokens":output}
+        }})
+    };
+    let mut after_gap = Vec::new();
+    for gap in [
+        json!({"type":"result"}),
+        json!({"type":"result","modelUsage":{"model":{"inputTokens":"unreadable"}}}),
+    ] {
+        let first = scripted_result(&mut wrapper, &[init.clone(), result(10, 1)]).await;
+        assert_eq!(reported_usage(&first)["models"]["model"]["input"], 10);
+        let gap_reply = scripted_result(&mut wrapper, &[gap]).await;
+        assert!(reported_usage(&gap_reply).is_null());
+        let baseline = scripted_result(&mut wrapper, &[result(30, 3)]).await;
+        after_gap.push(reported_usage(&baseline).clone());
+        let measured = scripted_result(&mut wrapper, &[result(40, 4)]).await;
+        assert_eq!(
+            reported_usage(&measured)["models"]["model"],
+            json!({"input":10,"output":1})
+        );
+        wrapper.call("new-conversation", json!({})).await;
+    }
+    wrapper.close().await;
+    assert_eq!(after_gap, [Value::Null, Value::Null]);
+}
+
+#[tokio::test]
+async fn sdk_error_strings_classify_usage_limits_and_keep_engine_mcp_excluded() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = config(parent.path(), false, false);
+    let login = parent.path().join("login");
+    account_home(&login);
+    let mut wrapper = LoginTestWrapper::start(&c, Some("--shared-login"), Some(&login)).await;
+    let mut limits = Vec::new();
+    for (word, summary) in [
+        ("session", Value::Null),
+        ("weekly", json!("usage limit")),
+        ("Opus", Value::Null),
+        ("Sonnet", Value::Null),
+    ] {
+        let error = format!("You’ve hit your {word} limit · resets 1am");
+        let reply = scripted_result(
+            &mut wrapper,
+            &[
+                json!({"type":"result","subtype":"error_during_execution","is_error":true,
+                "result":summary,"errors":[error]}),
+            ],
+        )
+        .await;
+        assert!(!reply.to_string().contains(&error));
+        let fields = failed_fields(&reply);
+        limits.push(json!([fields["class"], fields["limit"]["window"]]));
+        wrapper.call("new-conversation", json!({})).await;
+    }
+    let mcp_error = "engine MCP server returned 401: log in required";
+    let reply = scripted_result(
+        &mut wrapper,
+        &[
+            json!({"type":"result","subtype":"error_during_execution","is_error":true,
+            "errors":[mcp_error]}),
+        ],
+    )
+    .await;
+    assert!(reply.get("inputRequests").is_none());
+    assert!(!reply.to_string().contains(mcp_error));
+    let mcp_class = failed_fields(&reply)["class"].clone();
+    wrapper.close().await;
+
+    assert_eq!(
+        limits,
+        ["session", "weekly", "opus", "sonnet"].map(|window| json!(["usage-limit", window]))
+    );
+    assert_eq!(mcp_class, "authentication");
+}
+
+#[tokio::test]
+async fn usage_limit_reports_the_claude_window_and_reset() {
+    use std::time::{SystemTime, UNIX_EPOCH};
+    let parent = tempfile::tempdir().unwrap();
+    let c = config(parent.path(), false, false);
+    let mut wrapper = LoginTestWrapper::start(&c, None, None).await;
+    for word in ["session", "weekly", "Opus", "Sonnet"] {
+        for apostrophe in ["'", "’"] {
+            let failure = json!({"type":"result","is_error":true,
+                "result":format!("You{apostrophe}ve hit your {word} limit · resets 1am (America/Los_Angeles)")});
+            let fields = failed_fields(&scripted_result(&mut wrapper, &[failure]).await);
+            assert_eq!(fields["class"], "usage-limit", "window {word}");
+            assert_eq!(
+                fields["limit"],
+                json!({
+                    "window":word.to_ascii_lowercase(),"windowMinutes":null,"resetsAt":null
+                })
+            );
+            wrapper.call("new-conversation", json!({})).await;
+        }
+    }
+
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let reset = now + 3600;
+    let rejected = |time| {
+        json!({"type":"rate_limit_event","rate_limit_info":{
+            "status":"rejected","resetsAt":time
+        }})
+    };
+    let failure = json!({"type":"result","is_error":true,"result":"request failed"});
+    let mut observed = None;
+    for time in [reset, reset * 1000, now + 30 * 86400, now - 3600] {
+        let fields = failed_fields(
+            &scripted_result(
+                &mut wrapper,
+                &[rejected(now + 7200), rejected(time), failure.clone()],
+            )
+            .await,
+        );
+        assert_eq!(fields["class"], "usage-limit");
+        assert_eq!(fields["limit"]["window"], Value::Null);
+        assert_eq!(fields["limit"]["windowMinutes"], Value::Null);
+        let actual = &fields["limit"]["resetsAt"];
+        if time == reset {
+            let utc = actual.as_str().expect("reset in seconds");
+            assert_eq!(utc.len(), 20);
+            assert!(utc.ends_with('Z'));
+            observed = Some(actual.clone());
+        } else if time == reset * 1000 {
+            assert_eq!(Some(actual), observed.as_ref());
+        } else {
+            assert!(actual.is_null());
+        }
+        wrapper.call("new-conversation", json!({})).await;
+    }
+    let completed = scripted_result(
+        &mut wrapper,
+        &[
+            rejected(reset),
+            json!({"type":"result","result":"completed"}),
+        ],
+    )
+    .await;
+    assert_eq!(completed["isError"], false);
+
+    let warning = json!({"type":"rate_limit_event","rate_limit_info":{
+        "status":"allowed_warning","resetsAt":reset
+    }});
+    let fields = failed_fields(&scripted_result(&mut wrapper, &[warning, failure]).await);
+    assert_eq!(fields["class"], "other");
+    assert_eq!(fields.get("limit"), Some(&Value::Null));
+    wrapper.close().await;
+}
+
+#[tokio::test]
+async fn v4_maps_instructions_and_output_schema() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = config(parent.path(), false, false);
+    let login = parent.path().join("login");
+    let home = account_home(&login);
+    let instructions = format!("{}{}", "𐐀".repeat(32_759), "\"\\\n\t");
+    let schema_prefix = r#"{"type":"object","description":""#;
+    let schema_suffix = r#""}"#;
+    let schema_body = "𐐀".repeat(32_762 - schema_prefix.len() - schema_suffix.len() - 4);
+    let schema_text = format!("{schema_prefix}{schema_body}\\\"\\\\{schema_suffix}");
+    assert_eq!(instructions.chars().count(), 32_763);
+    assert_eq!(schema_text.chars().count(), 32_762);
+    assert!(instructions.len() + "AGENT_INSTRUCTIONS".len() + 2 <= 131_072);
+    assert!(schema_text.len() + "AGENT_OUTPUT_SCHEMA".len() + 2 <= 131_072);
+    let role = [
+        ("AGENT_INSTRUCTIONS", instructions.as_str()),
+        ("AGENT_OUTPUT_SCHEMA", schema_text.as_str()),
+    ];
+    let mut wrapper =
+        LoginTestWrapper::start_with_role(&c, Some("--shared-login"), Some(&login), &role).await;
+    for _ in 0..2 {
+        let evidence = account_home_evidence(&wrapper.turn("ACCOUNT-HOME").await);
+        let args = evidence["args"].as_array().unwrap();
+        for (flag, value) in [
+            (
+                "--append-system-prompt-file",
+                json!(c.cwd.join("instructions.md")),
+            ),
+            ("--json-schema", json!(schema_text)),
+        ] {
+            let at = args.iter().position(|arg| arg == flag).expect(flag);
+            assert!(
+                args[at + 1] == value,
+                "{flag} did not have the expected value"
+            );
+        }
+        assert!(fs::read(c.cwd.join("instructions.md")).unwrap() == instructions.as_bytes());
+        assert!(entry_names(&home).is_empty());
+        wrapper.call("new-conversation", json!({})).await;
+    }
+    for (value, expected) in [
+        (json!({"report":"done"}), json!({"report":"done"})),
+        (json!([]), Value::Null),
+    ] {
+        let reply = scripted_result(
+            &mut wrapper,
+            &[json!({
+                "type":"result","result":"unchanged text","structured_output":value
+            })],
+        )
+        .await;
+        assert_eq!(reply["structuredContent"]["text"], "unchanged text");
+        if expected.is_null() {
+            assert!(reply["structuredContent"].get("structured").is_none());
+        } else {
+            assert_eq!(reply["structuredContent"]["structured"], expected);
+        }
+    }
+    let reply = scripted_result(
+        &mut wrapper,
+        &[json!({
+            "type":"result","is_error":true,"subtype":"error_max_structured_output_retries",
+            "result":"other error"
+        })],
+    )
+    .await;
+    assert_eq!(failed_fields(&reply)["class"], "structured-output");
+    wrapper.close().await;
+
+    let started = c.cwd.join("client-started");
+    fs::remove_file(&started).unwrap();
+    let instructions_file = c.cwd.join("instructions.md");
+    fs::remove_file(&instructions_file).unwrap();
+    let shared_file = home.join("untouched.md");
+    fs::write(&shared_file, "shared file").unwrap();
+    symlink(&shared_file, &instructions_file).unwrap();
+    let mut linked =
+        LoginTestWrapper::start_with_role(&c, Some("--shared-login"), Some(&login), &role).await;
+    assert_eq!(linked.turn("ACCOUNT-HOME").await["isError"], true);
+    assert!(!started.exists());
+    assert_eq!(fs::read_to_string(&shared_file).unwrap(), "shared file");
+    linked.close().await;
+    fs::remove_file(&instructions_file).unwrap();
+
+    let mut invalid = LoginTestWrapper::start_with_role(
+        &c,
+        Some("--shared-login"),
+        Some(&login),
+        &[("AGENT_OUTPUT_SCHEMA", r#"{"type":"array"}"#)],
+    )
+    .await;
+    for _ in 0..2 {
+        let reply = invalid.turn("ACCOUNT-HOME").await;
+        assert_eq!(
+            reply["content"][0]["text"],
+            "invalid configuration: outputSchema (AGENT_OUTPUT_SCHEMA): expected the JSON text of a schema whose type is object"
+        );
+        assert!(!started.exists());
+    }
+    invalid.close().await;
+
+    let mut v3 = LoginTestWrapper::start(&c, Some("--shared-login"), Some(&login)).await;
+    let evidence = account_home_evidence(&v3.turn("ACCOUNT-HOME").await);
+    assert!(
+        evidence["args"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|arg| arg != "--append-system-prompt-file" && arg != "--json-schema")
+    );
+    v3.close().await;
 }

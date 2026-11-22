@@ -71,7 +71,8 @@ fn standard_conduit_templates_keep_their_operations() {
             "- turn",
             "- conversation",
             "- account-home.v1",
-            "- claude-code.v3"
+            "- claude-code.v3",
+            "- claude-code.v4",
         ]),
         "template exports must immediately precede the new Types"
     );
@@ -158,4 +159,36 @@ fn account_home_types_keep_their_shape() {
     let manifest = include_str!("../conduit.yaml");
     assert!(manifest.contains("- conversation\n- account-home.v1\n- claude-code.v3\n"));
     assert!(manifest.contains("AGENT_LOGIN_DIRECTORY: /login\n"));
+}
+
+#[test]
+fn claude_code_v4_keeps_its_shape() {
+    let contracts = include_str!("../contracts.yaml");
+    let v4 = contracts
+        .split("\n---\n")
+        .find(|doc| doc.lines().any(|line| line == "  name: claude-code.v4"))
+        .expect("missing Type claude-code.v4");
+    for (place, limit) in [("instructions", 32763), ("outputSchema", 32762)] {
+        assert!(v4.contains(&format!(
+            "      {place}: {{type: [string, 'null'], minLength: 1, maxLength: {limit}, default: null}}"
+        )));
+    }
+    assert!(v4.contains("required: [directory, turnDeadlineSeconds, effort, accountServices, model, peerMessaging, login, instructions, outputSchema]"));
+    assert!(v4.contains("  loginResource: {place: /login}\n"));
+    assert_eq!(v4.matches(": '#wrapper-v4'\n").count(), 3);
+    let turn = contracts
+        .split("\n---\n")
+        .find(|doc| doc.lines().any(|line| line == "  name: turn.v1"))
+        .unwrap();
+    assert!(turn.contains("      structured: {type: object}\n"));
+    assert!(
+        !turn
+            .lines()
+            .any(|line| line.contains("required:") && line.contains("structured"))
+    );
+    let manifest = include_str!("../conduit.yaml");
+    assert!(manifest.contains("- claude-code.v3\n- claude-code.v4\n"));
+    let item = manifest.split_once("  wrapper-v4:\n").unwrap().1;
+    assert!(item.contains("AGENT_INSTRUCTIONS: /instructions"));
+    assert!(item.contains("AGENT_OUTPUT_SCHEMA: /outputSchema"));
 }

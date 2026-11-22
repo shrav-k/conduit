@@ -135,6 +135,12 @@ async fn plant_tree() {
 }
 
 async fn turn(args: &[String], message: &str, number: usize) {
+    if let Some(events) = message.strip_prefix("EVENTS:") {
+        for event in serde_json::from_str::<Vec<Value>>(events).unwrap() {
+            emit(event);
+        }
+        return;
+    }
     if message == "ACCOUNT-HOME" {
         let file = args.iter().position(|arg| arg == "--settings").unwrap();
         let settings: Value =

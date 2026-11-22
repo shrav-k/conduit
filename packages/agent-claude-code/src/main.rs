@@ -1,12 +1,14 @@
 use agent_adapter::sign_in::{CAPTURE_VARIABLE, SIGN_IN_MESSAGE, SIGN_IN_RETURN_REFUSED, capture};
-use agent_adapter::{Config, FailedTurn, LoginLapsed, Mode, Session, WRAPPER, header, prepare};
+use agent_adapter::{
+    Config, FailedTurn, LoginLapsed, Mode, Session, USAGE_MEMBER, WRAPPER, header, prepare,
+};
 use anyhow::Result;
 use rmcp::{
     ErrorData, RoleServer, ServerHandler, Service, ServiceExt,
     model::*,
     service::{NotificationContext, RequestContext},
 };
-use serde_json::json;
+use serde_json::{Value, json};
 use std::{
     path::{Path, PathBuf},
     sync::{
@@ -250,7 +252,7 @@ impl ServerHandler for Wrapper {
         };
         let result = match turn {
             Err(error) if error.is::<LoginLapsed>() => {
-                return Ok(serde_json::from_value::<InputRequiredResult>(json!({
+                let mut result = serde_json::from_value::<InputRequiredResult>(json!({
                     "resultType": "input_required",
                     "inputRequests": {"sign-in": {
                         "method": "elicitation/create",
@@ -260,30 +262,48 @@ impl ServerHandler for Wrapper {
                             "url": "https://code.claude.com/docs/en/authentication"
                         }
                     }}
-                })).unwrap().into());
+                })).unwrap();
+                result.meta = error
+                    .downcast::<LoginLapsed>()
+                    .unwrap()
+                    .usage
+                    .map(usage_meta);
+                return Ok(result.into());
             }
-            Ok(value) => {
-                let mut result = serde_json::from_value::<CallToolResult>(
-                    json!({"content":[{"type":"text","text":value["text"]}],"structuredContent":value,"isError":false}),
-                )
-                .unwrap();
+            Ok(mut value) => {
+                let meta = value.as_object_mut().unwrap().remove("_meta");
+                let mut reply = json!({"content":[{"type":"text","text":value["text"]}],"structuredContent":value,"isError":false});
+                if let Some(meta) = meta {
+                    reply["_meta"] = meta;
+                }
+                let mut result = serde_json::from_value::<CallToolResult>(reply).unwrap();
                 result.result_type = Some(ResultType::COMPLETE);
                 result
             }
             Err(error) => {
                 let mut content = vec![ContentBlock::text(error.to_string())];
-                if let Some(fields) = error
-                    .downcast_ref::<FailedTurn>()
-                    .and_then(FailedTurn::fields)
-                {
+                let failed = error.downcast_ref::<FailedTurn>();
+                if let Some(fields) = failed.and_then(FailedTurn::fields) {
                     content.push(ContentBlock::text(fields.to_string()));
                 }
-                CallToolResult::error(content)
+                let mut result = CallToolResult::error(content);
+                result.meta = failed
+                    .and_then(|failed| failed.usage.clone())
+                    .map(usage_meta);
+                result
             }
         };
         Ok(result.into())
     }
 }
+
+fn usage_meta(report: Value) -> MetaObject {
+    MetaObject(serde_json::Map::from_iter([(
+        USAGE_MEMBER.to_owned(),
+        report,
+    )]))
+}
+
 struct WrapperProtocol(Wrapper);
 
 impl Service<RoleServer> for WrapperProtocol {

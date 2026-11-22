@@ -292,4 +292,23 @@ Named here and not in this order:
 
 ## Record
 
-Not yet run.
+Run on 2026-11-22 through Conduit itself, by the dogfood's own Agents, in Pacific time, on
+`main` with order 265 stacked while it waited in the merge queue.
+
+**Worker-2's first turn** (03:18 to 03:19) stopped before any edit: keeping `documents` out of
+recorded outputs, as order 265 keeps `implementations` out, needs `requests.rs`'s record
+projection, which the scope excluded. The coordinator widened the scope by that projection alone
+(open to the owner's strike). **Its second turn** (03:19 to 03:27) built the order: the submitted
+project's item of `packages` gains `documents`, each held contract document's kind, name and the
+SHA-256 of its RFC 8785 form, by the canonicalizer the submission digest uses; replies and
+retained repeats keep it, recorded outputs omit it. Both inspection cases and 171 core tests pass.
+
+**Two blind reads at once** (03:28 to 03:30): `turn-verifier-2.turn.v1` recomputed all seven
+digests by hand and found one must; the Claude reader passed it with one nit. One fix turn (03:31
+to 03:34):
+- the output schema accepted `documents` under an implementation's `package`; it now rejects it
+  there and keeps it on the submitted-project item;
+- an object holding a project with no held index now inspects without `documents` instead of
+  failing the request.
+
+The gate's run on the squash is the coordinator's, at the merge.

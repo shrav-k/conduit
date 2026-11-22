@@ -148,6 +148,46 @@ fn package_item(context: &Value) -> Value {
     item
 }
 
+pub(crate) fn inspect_project_documents(object: &Value, packages: &mut Value) -> Result<()> {
+    let Some(project) = object.pointer("/held/contexts/project") else {
+        return Ok(());
+    };
+    let (Some(address), Some(digest)) = (project["address"].as_str(), project["digest"].as_str())
+    else {
+        return Ok(());
+    };
+    let Some(package) = packages.as_array_mut().and_then(|items| {
+        items
+            .iter_mut()
+            .find(|item| item["address"] == address && item["digest"] == digest)
+    }) else {
+        return Ok(());
+    };
+    let Some(index) = object
+        .pointer("/held/indexes/project")
+        .and_then(Value::as_object)
+    else {
+        return Ok(());
+    };
+    let mut documents: Vec<_> = index
+        .values()
+        .filter(|doc| packages::contract(doc))
+        .collect();
+    documents.sort_by_key(|doc| (doc["kind"].as_str(), doc["metadata"]["name"].as_str()));
+    let entries = documents
+        .into_iter()
+        .map(|doc| {
+            Ok(json!({
+                "kind": doc["kind"],
+                "name": doc["metadata"]["name"],
+                "digest": packages::document_digest(doc)?,
+            }))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    package["documents"] = Value::Array(entries);
+    Ok(())
+}
+
 fn inspected_item(item: &Value) -> Value {
     fn mask_input(input: &mut Value) {
         if input["isSecret"] == true {

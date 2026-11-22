@@ -1,0 +1,4 @@
+# Added case for work order 267.
+- name: registration-contract-documents-inspected
+  kind: added
+  cases: [registration-contract-documents-inspected]

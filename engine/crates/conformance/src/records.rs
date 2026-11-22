@@ -182,7 +182,22 @@ pub(super) fn transition(
             .iter()
             .find(|o| o["id"] == output["id"])
             .ok_or("LIF-013: inspected object absent")?;
-        if output["revision"] != o["revision"] || output["packages"] != o.get("packages").cloned().unwrap_or_else(|| json!([{ "address":context.core_package,"version":context.builtin.as_ref().and_then(|b|b.manifest.as_ref()).map(|m|m["version"].clone()).unwrap_or(Value::Null)}])) { return Err("LIF-013: inspection omitted object identities or packages".into()); }
+        let mut packages = output["packages"].clone();
+        if let Some(items) = packages.as_array_mut() {
+            for item in items.iter_mut().filter_map(Value::as_object_mut) {
+                item.remove("documents");
+            }
+        }
+        let stored_packages = o.get("packages").cloned().unwrap_or_else(|| {
+            json!([{
+                "address": context.core_package,
+                "version": context.builtin.as_ref().and_then(|b| b.manifest.as_ref())
+                    .map(|m| m["version"].clone()).unwrap_or(Value::Null),
+            }])
+        });
+        if output["revision"] != o["revision"] || packages != stored_packages {
+            return Err("LIF-013: inspection omitted object identities or packages".into());
+        }
         if o.get("state").is_some() && output["status"]["state"] != o["state"] {
             return Err("LIF-013: inspection omitted lifecycle state".into());
         }
@@ -352,6 +367,42 @@ mod tests {
         assert!(builtin_output(&operation, &output, &c).is_ok());
         output["status"]["state"] = json!("invented-template-state");
         assert!(builtin_output(&operation, &output, &c).is_err());
+    }
+
+    #[test]
+    fn builtin_output_schema_rejects_documents_in_implementation_packages() {
+        let repository = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let spec = Specification::read(&repository.join("spec")).unwrap();
+        let c = Context {
+            core_package: spec.names().core_package.clone(),
+            core_environment: schemas::environment(
+                &repository,
+                &json!({"environment":{"scopes":{}}}),
+                &spec,
+            )
+            .unwrap(),
+            ..context()
+        };
+        let operation = json!(format!("{}#inspect.v1", c.core_package));
+        let digest = format!("sha256:{}", "1".repeat(64));
+        let package = json!({"address":"example.org/demo","digest":digest});
+        let documents = json!([{"kind":"Schema","name":"note.v1","digest":digest}]);
+        let read = "example.org/demo#read.v1";
+        let mut output = json!({
+            "id":"object","revision":"r1","packages":[package],"declared":{},"records":[],
+            "implementations":{read:{"selection":"example.org/demo#reader","package":package}}
+        });
+        output["packages"][0]["documents"] = documents.clone();
+        builtin_output(&operation, &output, &c)
+            .expect("documents are valid on a submission package");
+
+        output["implementations"][read]["package"]["documents"] = documents;
+        let error = builtin_output(&operation, &output, &c)
+            .expect_err("the schema must reject documents on an implementation's package");
+        assert!(
+            error.contains("built-in output violates outputSchema"),
+            "{error}"
+        );
     }
 
     #[test]

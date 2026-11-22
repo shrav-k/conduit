@@ -248,4 +248,28 @@ last line. Stage nothing.
 
 ## Record
 
-Not yet run.
+Run on 2026-11-22 through Conduit itself, by the dogfood's own Agents, in Pacific time, on
+`main` with orders 257 and 258 stacked while they waited in the merge queue; it follows them as
+built, with the coordinator's amendments during their builds (open to the owner's strike).
+
+**Worker-1's turn** (02:35 to 03:00) released agent-codex 0.2.3: a `codex-login.v1` Resource Type
+keeping one account's `codex-home`, with the sign-in, account, sign-out and retire hooks, and a
+`codex.v3` Agent Type whose own home links only `auth.json` to the Resource's file, made and
+checked at setup and every launch, removed at retirement, the target kept; a lapse reported in
+IFC-016's URL form; `use_agent_identity` off. Seven regressions failed first and pass; 45
+package tests and three vectors pass; two offline builds give one archive digest.
+
+**Two blind reads at once** (03:00 to 03:05), the owner's answer for A77's window:
+`turn-verifier-1.turn.v1` found two musts and confirmed that the library's empty
+`elicitationId` is harmless, the engine reading the result's type, method and mode; the Claude
+reader passed it with one should and two nits. One fix turn (03:05 to 03:10), each must reproduced
+first:
+- a link ending in `auth.json/.` passed setup though it reaches no file; the raw last component is
+  now checked;
+- an engine MCP 401 with login wording could read as the shared login's lapse; the engine's MCP
+  failures are now excluded from that branch;
+- the README gains a worked setup (a Resource in a Pool, a `.v3` Agent on its node, the Resource
+  signed in first, and moving from `.v2`), and a missing login home says to set up or sign in the
+  Resource first.
+
+The gate's run on the squash is the coordinator's, at the merge.

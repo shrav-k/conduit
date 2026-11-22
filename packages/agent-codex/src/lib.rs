@@ -270,6 +270,13 @@ pub enum SignIn {
 const POLL: Duration = Duration::from_millis(20);
 const LOGIN_TRACK: Duration = Duration::from_millis(250);
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Mode {
+    Agent,
+    SharedLoginAgent,
+    LoginResource,
+}
+
 #[derive(Clone, Debug)]
 pub struct Config {
     pub program: PathBuf,
@@ -286,10 +293,12 @@ pub struct Config {
     pub directory: Option<PathBuf>,
     pub effort: Option<String>,
     pub state_dir: Option<PathBuf>,
+    pub mode: Mode,
+    pub login_directory: Option<PathBuf>,
     pub configuration_error: Option<String>,
 }
 impl Config {
-    pub fn from_env() -> Result<Self> {
+    pub fn from_env(mode: Mode) -> Result<Self> {
         let mut c = Self {
             program: if CLAUDE { "claude" } else { "codex" }.into(),
             helper: std::env::current_exe()?,
@@ -309,10 +318,16 @@ impl Config {
             peer_messaging: false,
             model: None,
             timeout: Duration::from_secs(180),
-            v2: false,
+            v2: mode != Mode::Agent,
             directory: None,
             effort: None,
             state_dir: None,
+            mode,
+            login_directory: if mode == Mode::SharedLoginAgent {
+                std::env::var_os("AGENT_LOGIN_DIRECTORY").map(PathBuf::from)
+            } else {
+                None
+            },
             configuration_error: None,
         };
         let mut validate = || -> Result<()> {
@@ -334,27 +349,31 @@ impl Config {
                 "CONDUIT_IDENTITY_DIR".into(),
                 c.identity.display().to_string(),
             );
-            let v2 = std::env::var_os("AGENT_TURN_DEADLINE_SECONDS").is_some();
+            let v2 = c.v2 || std::env::var_os("AGENT_TURN_DEADLINE_SECONDS").is_some();
             c.v2 = v2;
-            c.account_services = boolean("AGENT_ACCOUNT_SERVICES")?;
-            c.peer_messaging = if v2 && std::env::var_os("AGENT_PEER_MESSAGING").is_none() {
-                false
-            } else {
-                boolean("AGENT_PEER_MESSAGING")?
-            };
-            c.model = std::env::var("AGENT_MODEL").ok().filter(|s| !s.is_empty());
+            if mode != Mode::LoginResource {
+                c.account_services = boolean("AGENT_ACCOUNT_SERVICES")?;
+                c.peer_messaging = if v2 && std::env::var_os("AGENT_PEER_MESSAGING").is_none() {
+                    false
+                } else {
+                    boolean("AGENT_PEER_MESSAGING")?
+                };
+                c.model = std::env::var("AGENT_MODEL").ok().filter(|s| !s.is_empty());
+            }
             if v2 {
+                let home = home_label(mode);
                 let state_dir = std::env::var_os("CONDUIT_STATE_DIR")
                     .filter(|dir| !dir.is_empty())
                     .map(PathBuf::from)
-                    .with_context(|| {
-                        format!("client home ({HOME_VARIABLE}): CONDUIT_STATE_DIR is unset")
-                    })?;
+                    .with_context(|| format!("{home}: CONDUIT_STATE_DIR is unset"))?;
                 ensure!(
                     state_dir.is_absolute(),
-                    "client home ({HOME_VARIABLE}): CONDUIT_STATE_DIR is not an absolute path"
+                    "{home}: CONDUIT_STATE_DIR is not an absolute path"
                 );
                 c.state_dir = Some(state_dir);
+                if mode == Mode::LoginResource {
+                    return Ok(());
+                }
                 let n = required("AGENT_TURN_DEADLINE_SECONDS")?;
                 ensure!(
                     !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit()),
@@ -411,22 +430,38 @@ impl Config {
             .unwrap_or(&self.cwd)
     }
 }
-/// Resolve and check the client home before a .v2 launch.
+
+const LOGIN_HOME_NAME: &str = "codex-home";
+const LOGIN_FILE: &str = "auth.json";
+const LOGIN_DIRECTORY_LABEL: &str = "login home (AGENT_LOGIN_DIRECTORY)";
+
+fn home_label(mode: Mode) -> String {
+    if mode == Mode::LoginResource {
+        "login home (CODEX_HOME)".into()
+    } else {
+        format!("client home ({HOME_VARIABLE})")
+    }
+}
+
+/// Resolve and check the instance's own home before starting a client.
 pub fn client_home(c: &Config) -> Result<PathBuf> {
     use std::io::ErrorKind::NotFound;
 
+    let label = home_label(c.mode);
     let state_dir = c
         .state_dir
         .as_ref()
-        .with_context(|| format!("client home ({HOME_VARIABLE}): CONDUIT_STATE_DIR is unset"))?;
+        .with_context(|| format!("{label}: CONDUIT_STATE_DIR is unset"))?;
     let state_dir = state_dir
         .canonicalize()
         .ok()
         .filter(|dir| dir.is_dir())
-        .with_context(|| {
-            format!("client home ({HOME_VARIABLE}): CONDUIT_STATE_DIR is not an existing directory")
-        })?;
-    let home = state_dir.join(HOME_NAME);
+        .with_context(|| format!("{label}: CONDUIT_STATE_DIR is not an existing directory"))?;
+    let home = state_dir.join(if c.mode == Mode::LoginResource {
+        LOGIN_HOME_NAME
+    } else {
+        HOME_NAME
+    });
     if fs::symlink_metadata(&home).is_err_and(|error| error.kind() == NotFound) {
         #[cfg(unix)]
         let created = {
@@ -435,37 +470,104 @@ pub fn client_home(c: &Config) -> Result<PathBuf> {
         };
         #[cfg(not(unix))]
         let created = fs::create_dir(&home);
-        created.map_err(|_| {
-            anyhow::anyhow!(
-                "client home ({HOME_VARIABLE}): cannot create the home in CONDUIT_STATE_DIR"
-            )
-        })?;
+        created
+            .map_err(|_| anyhow::anyhow!("{label}: cannot create the home in CONDUIT_STATE_DIR"))?;
     }
-    let home = home.canonicalize().map_err(|_| {
-        anyhow::anyhow!("client home ({HOME_VARIABLE}): the home is not a directory")
-    })?;
+    let home = home
+        .canonicalize()
+        .map_err(|_| anyhow::anyhow!("{label}: the home is not a directory"))?;
     ensure!(
         home.starts_with(&state_dir) && home != state_dir,
-        "client home ({HOME_VARIABLE}): the home resolves outside CONDUIT_STATE_DIR"
+        "{label}: the home resolves outside CONDUIT_STATE_DIR"
     );
-    ensure!(
-        home.is_dir(),
-        "client home ({HOME_VARIABLE}): the home is not a directory"
-    );
+    ensure!(home.is_dir(), "{label}: the home is not a directory");
     if !CLAUDE {
         match fs::symlink_metadata(home.join(".env")) {
             Ok(_) => bail!(
-                "client home ({HOME_VARIABLE}): the home holds a .env, which Codex would read into its environment; the wrapper refuses it, since the Agent holds no API key (ruling 83)"
+                "{label}: the home holds a .env, which Codex would read into its environment; the wrapper refuses it, since the Agent holds no API key (ruling 83)"
             ),
             Err(error) if error.kind() == NotFound => {}
-            Err(_) => bail!("client home ({HOME_VARIABLE}): cannot check the home for a .env"),
+            Err(_) => bail!("{label}: cannot check the home for a .env"),
         }
         // Codex treats a non-Unicode CODEX_HOME as unset and uses its default home.
         ensure!(
             home.to_str().is_some(),
-            "client home ({HOME_VARIABLE}): the canonical home path is not valid Unicode"
+            "{label}: the canonical home path is not valid Unicode"
         );
     }
+    Ok(home)
+}
+
+fn link_login(c: &Config) -> Result<PathBuf> {
+    use std::io::ErrorKind::{AlreadyExists, NotFound};
+
+    let directory = c.login_directory.as_deref().context(
+        "login home (AGENT_LOGIN_DIRECTORY): the runner did not give the login Resource's directory",
+    )?;
+    ensure!(
+        directory.is_absolute(),
+        "{LOGIN_DIRECTORY_LABEL}: the directory path is not absolute"
+    );
+    let directory = directory
+        .canonicalize()
+        .ok()
+        .filter(|dir| dir.is_dir())
+        .with_context(|| {
+            format!("{LOGIN_DIRECTORY_LABEL}: the directory is not an existing directory")
+        })?;
+    let login_home = directory
+        .join(LOGIN_HOME_NAME)
+        .canonicalize()
+        .ok()
+        .filter(|dir| dir.is_dir())
+        .with_context(|| {
+            format!("{LOGIN_DIRECTORY_LABEL}: codex-home is not an existing directory; set up or sign in the login Resource first")
+        })?;
+    ensure!(
+        login_home.starts_with(&directory) && login_home != directory,
+        "{LOGIN_DIRECTORY_LABEL}: codex-home resolves outside the login Resource's directory"
+    );
+    ensure!(
+        login_home.to_str().is_some(),
+        "{LOGIN_DIRECTORY_LABEL}: the canonical home path is not valid Unicode"
+    );
+    let target = login_home.join(LOGIN_FILE);
+    let home = client_home(c)?;
+    let link = home.join(LOGIN_FILE);
+    if fs::symlink_metadata(&link).is_err_and(|error| error.kind() == NotFound) {
+        match std::os::unix::fs::symlink(&target, &link) {
+            Ok(()) => return Ok(home),
+            Err(error) if error.kind() == AlreadyExists => {}
+            Err(_) => bail!(
+                "client home ({HOME_VARIABLE}): cannot link auth.json to the login Resource's file"
+            ),
+        }
+    }
+    let existing = match fs::read_link(&link) {
+        Ok(existing) => existing,
+        Err(_) if fs::symlink_metadata(&link).is_ok_and(|meta| !meta.file_type().is_symlink()) => {
+            bail!(
+                "client home ({HOME_VARIABLE}): auth.json is a file, not the login Resource's link; the wrapper replaces no login"
+            );
+        }
+        Err(_) => bail!("client home ({HOME_VARIABLE}): cannot check auth.json"),
+    };
+    // Path components would hide a trailing slash or dot, which cannot resolve to the file.
+    let final_component = existing
+        .as_os_str()
+        .as_encoded_bytes()
+        .rsplit(|byte| *byte == b'/')
+        .next();
+    ensure!(
+        final_component == Some(LOGIN_FILE.as_bytes())
+            && home
+                .join(existing)
+                .parent()
+                .and_then(|dir| dir.canonicalize().ok())
+                .as_deref()
+                == Some(&login_home),
+        "client home ({HOME_VARIABLE}): auth.json links somewhere other than the login Resource's file"
+    );
     Ok(home)
 }
 /// The client's own logout, run with the Agent's home alone (order 050g).
@@ -501,7 +603,7 @@ pub struct AccountReport {
     pub text: String,
 }
 
-fn empty_home(home: &Path) -> Result<()> {
+fn empty_home(home: &Path, mode: Mode) -> Result<()> {
     fn remove_entries(home: &Path) -> io::Result<()> {
         for entry in fs::read_dir(home)? {
             let path = entry?.path();
@@ -513,8 +615,7 @@ fn empty_home(home: &Path) -> Result<()> {
         }
         Ok(())
     }
-    remove_entries(home)
-        .map_err(|_| anyhow::anyhow!("client home ({HOME_VARIABLE}): cannot empty the home"))
+    remove_entries(home).map_err(|_| anyhow::anyhow!("{}: cannot empty the home", home_label(mode)))
 }
 
 enum Reply {
@@ -886,6 +987,9 @@ pub fn arguments(c: &Config, thread: Option<&str>) -> Vec<String> {
             }
             args.extend(["--disable".into(), feature.into()]);
         }
+        if c.mode == Mode::SharedLoginAgent {
+            args.extend(["--disable".into(), "use_agent_identity".into()]);
+        }
         for setting in [
             format!("mcp_servers.engine.url={}", json!(c.url)),
             format!(
@@ -929,6 +1033,15 @@ pub fn arguments(c: &Config, thread: Option<&str>) -> Vec<String> {
     args
 }
 const EXIT_WAIT: Duration = Duration::from_secs(2);
+const LOGIN_LAPSE_TEXTS: &[&str] = &[
+    "login",
+    "log in",
+    "credential",
+    "refresh token",
+    "refresh_token",
+    "sign in again",
+    "signed in to another account",
+];
 const ERROR_CLASSES: &[(&str, &[&str])] = &[
     ("usage-limit", &["usage limit", "usage_limit", "quota"]),
     (
@@ -937,15 +1050,7 @@ const ERROR_CLASSES: &[(&str, &[&str])] = &[
     ),
     (
         "authentication",
-        &[
-            "authentication",
-            "unauthorized",
-            "401",
-            "login",
-            "log in",
-            "api key",
-            "credential",
-        ],
+        &["authentication", "unauthorized", "401", "api key"],
     ),
     (
         "context-window",
@@ -976,12 +1081,55 @@ const ERROR_CLASSES: &[(&str, &[&str])] = &[
         ],
     ),
 ];
-fn classify(text: Option<&str>) -> &'static str {
+/// A shared login could not be used. No client message is carried to the caller.
+#[derive(Debug)]
+pub struct LoginLapsed;
+
+impl std::fmt::Display for LoginLapsed {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("client failure: authentication")
+    }
+}
+
+impl std::error::Error for LoginLapsed {}
+
+fn engine_mcp_failure(text: &str) -> bool {
+    let words: Vec<_> = text
+        .split(|ch: char| !(ch.is_ascii_alphanumeric() || ch == '-' || ch == '_'))
+        .filter(|word| !word.is_empty())
+        .collect();
+    words.windows(3).any(|phrase| {
+        matches!(
+            phrase,
+            ["engine", "mcp", "server"] | ["mcp", "server", "engine"]
+        )
+    }) || words.windows(4).any(|phrase| {
+        matches!(
+            phrase,
+            ["mcp", "client", "for", "engine"] | ["mcp", "server", "for" | "named", "engine"]
+        )
+    })
+}
+
+fn client_failure(text: Option<&str>, mode: Mode) -> anyhow::Error {
     let text = text.unwrap_or_default().to_ascii_lowercase();
-    ERROR_CLASSES
+    let lapse = LOGIN_LAPSE_TEXTS.iter().any(|needle| text.contains(needle));
+    let class = ERROR_CLASSES
         .iter()
-        .find(|(_, needles)| needles.iter().any(|needle| text.contains(needle)))
-        .map_or("other", |(class, _)| *class)
+        .find(|(class, needles)| {
+            (*class == "authentication" && lapse)
+                || needles.iter().any(|needle| text.contains(needle))
+        })
+        .map_or("other", |(class, _)| *class);
+    if mode == Mode::SharedLoginAgent
+        && class == "authentication"
+        && lapse
+        && !engine_mcp_failure(&text)
+    {
+        LoginLapsed.into()
+    } else {
+        anyhow::anyhow!("client failure: {class}")
+    }
 }
 fn exit_cause(status: std::process::ExitStatus) -> String {
     if let Some(code) = status.code() {
@@ -1519,6 +1667,7 @@ impl FailedTurn {
             "resume changed thread" => "resume-changed-thread",
             "client did not start" => "client-did-not-start",
             cause if cause.starts_with("client home (") => "client-home",
+            cause if cause.starts_with("login home (") => "login-home",
             _ => "unclassified",
         }
     }
@@ -1609,25 +1758,24 @@ struct Stream {
     lines: Lines<BufReader<ChildStdout>>,
 }
 impl Stream {
-    async fn boundary_failure(&mut self, class: Option<&str>) -> String {
+    async fn boundary_failure(&mut self, failure: Option<anyhow::Error>) -> anyhow::Error {
         let status = timeout(EXIT_WAIT, self.child.wait()).await;
-        if let Some(class) = class {
-            return format!("client failure: {class}");
+        if let Some(failure) = failure {
+            return failure;
         }
-        match status {
+        anyhow::anyhow!(match status {
             Ok(Ok(status)) if !status.success() => exit_cause(status),
             Ok(Err(_)) => "client exit: status unknown".into(),
             _ => "EOF before turn boundary".into(),
-        }
+        })
     }
-    fn spawn(c: &Config, args: &[String], tree: &ClientTree) -> Result<Self> {
+    fn spawn(c: &Config, home: Option<&Path>, args: &[String], tree: &ClientTree) -> Result<Self> {
         let mut state = c.v2.then(|| tree.0.lock().unwrap());
         ensure!(
             state.as_ref().is_none_or(|state| !state.closed),
             "client did not start"
         );
-        let home = if c.v2 { Some(client_home(c)?) } else { None };
-        let mut child = client_command(c, home.as_deref(), args)
+        let mut child = client_command(c, home, args)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::null())
@@ -1875,17 +2023,37 @@ impl Session {
             )),
         };
         if let Err(error) = result {
+            let lapsed = error.is::<LoginLapsed>();
+            if lapsed && self.stream.is_none() {
+                return Err(error);
+            }
             let cause = error.to_string();
             self.failed = Some((self.turns_started, cause.clone()));
-            return Err(self.end_failed_turn(&cause).await);
+            let failed = self.end_failed_turn(&cause).await;
+            return Err(if lapsed { error } else { failed });
         }
         result
     }
     async fn run_turn(&mut self, message: &str) -> Result<Value> {
+        let home = if self.stream.is_some() || !self.config.v2 {
+            Ok(None)
+        } else if self.config.mode == Mode::SharedLoginAgent {
+            link_login(&self.config).and_then(|home| match fs::metadata(home.join(LOGIN_FILE)) {
+                Ok(metadata) if metadata.is_file() => Ok(Some(home)),
+                Err(error) if error.kind() == io::ErrorKind::NotFound => Err(LoginLapsed.into()),
+                _ => bail!("{LOGIN_DIRECTORY_LABEL}: auth.json is not accessible as a file"),
+            })
+        } else {
+            client_home(&self.config).map(Some)
+        };
+        if home.as_ref().is_err_and(|error| error.is::<LoginLapsed>()) {
+            return Err(LoginLapsed.into());
+        }
         self.turns_started += 1;
         if self.stream.is_none() {
             self.stream = Some(Stream::spawn(
                 &self.config,
+                home?.as_deref(),
                 &arguments(&self.config, self.thread.as_deref()),
                 &self.tree,
             )?);
@@ -1904,7 +2072,7 @@ impl Session {
             Ok::<_, anyhow::Error>(())
         }.await;
         if send.is_err() {
-            bail!("{}", stream.boundary_failure(None).await);
+            return Err(stream.boundary_failure(None).await);
         }
         let mut text = String::new();
         let mut tools = json!({"status":"not_reported","observations":[]});
@@ -1917,7 +2085,7 @@ impl Session {
             let line = match stream.lines.next_line().await {
                 Ok(Some(line)) => line,
                 Ok(None) if complete => break,
-                _ => bail!("{}", stream.boundary_failure(latest_error).await),
+                _ => return Err(stream.boundary_failure(latest_error).await),
             };
             index += 1;
             // Never persist raw client streams: they may contain authentication material.
@@ -1956,16 +2124,16 @@ impl Session {
                 at_start = false;
             }
             if event["type"] == "error" {
-                latest_error = Some(classify(event["message"].as_str()));
+                latest_error = Some(client_failure(event["message"].as_str(), self.config.mode));
             }
             if !CLAUDE && event["type"] == "turn.failed" {
-                bail!(
-                    "client failure: {}",
-                    classify(event["error"]["message"].as_str())
-                );
+                return Err(client_failure(
+                    event["error"]["message"].as_str(),
+                    self.config.mode,
+                ));
             }
             if CLAUDE && event["type"] == "result" && event["is_error"] == true {
-                bail!("client failure: {}", classify(event["result"].as_str()));
+                return Err(client_failure(event["result"].as_str(), self.config.mode));
             }
             if event["type"] == "item.completed" && event["item"]["type"] == "agent_message" {
                 text = event["item"]["text"].as_str().unwrap_or_default().into();
@@ -1980,10 +2148,7 @@ impl Session {
         }
         if !CLAUDE {
             let status = stream.child.wait().await.map_err(|_| {
-                anyhow::anyhow!(latest_error.map_or_else(
-                    || "client exit: status unknown".to_owned(),
-                    |class| format!("client failure: {class}")
-                ))
+                latest_error.unwrap_or_else(|| anyhow::anyhow!("client exit: status unknown"))
             })?;
             ensure!(status.success(), "{}", exit_cause(status));
             ensure!(reported_thread, "no thread");
@@ -2009,6 +2174,20 @@ impl Session {
     pub async fn retire(&mut self) -> Result<String> {
         self.retire_within(LOGOUT_DEADLINE).await
     }
+
+    pub fn setup_shared_login(&self) -> Result<&'static str> {
+        ensure!(
+            self.config.mode == Mode::SharedLoginAgent,
+            "setup hook: no login Resource binding"
+        );
+        if let Some(error) = &self.config.configuration_error {
+            bail!("{error}");
+        }
+        ensure!(!self.retired, "{RETIRED_REFUSAL}");
+        link_login(&self.config)?;
+        Ok("auth.json linked to the login Resource's file")
+    }
+
     /// The retire hook, with the logout's deadline given; `retire` gives LOGOUT_DEADLINE.
     pub async fn retire_within(&mut self, deadline: Duration) -> Result<String> {
         ensure!(self.config.v2, "retire hook: a .v1 Agent has none");
@@ -2022,17 +2201,34 @@ impl Session {
             bail!("{note}");
         }
         let home = client_home(&self.config)?;
+        if self.config.mode == Mode::SharedLoginAgent {
+            empty_home(&home, self.config.mode)?;
+            return Ok(
+                "client stopped and its home emptied; the login was left to its login Resource"
+                    .into(),
+            );
+        }
         logout(&self.config, &home, &self.tree, deadline).await?;
         ensure!(
             client_home(&self.config)? == home,
-            "client home ({HOME_VARIABLE}): cannot empty the home"
+            "{}: cannot empty the home",
+            home_label(self.config.mode)
         );
-        empty_home(&home)?;
-        Ok(RETIRED.into())
+        empty_home(&home, self.config.mode)?;
+        Ok(if self.config.mode == Mode::LoginResource {
+            "client signed out and the login Resource's home emptied"
+        } else {
+            RETIRED
+        }
+        .into())
     }
     /// The checks the account and sign-out hooks make first, as the retire hook does.
     fn hook_ready(&self, hook: &str) -> Result<()> {
         ensure!(self.config.v2, "{hook}: a .v1 Agent has none");
+        ensure!(
+            self.config.mode != Mode::SharedLoginAgent,
+            "{hook}: the login Resource owns this hook"
+        );
         if self.config.state_dir.is_none()
             && let Some(error) = &self.config.configuration_error
         {
@@ -2048,7 +2244,14 @@ impl Session {
     pub async fn account_within(&mut self, deadline: Duration) -> Result<AccountReport> {
         self.hook_ready("account hook")?;
         let home = client_home(&self.config)?;
-        read_account(&self.config, &home, &self.tree, deadline).await
+        let report = read_account(&self.config, &home, &self.tree, deadline).await?;
+        if self.config.mode == Mode::LoginResource && report.account.is_some() {
+            ensure!(
+                fs::symlink_metadata(home.join(LOGIN_FILE)).is_ok_and(|meta| meta.is_file()),
+                "login home (CODEX_HOME): the login is not kept in auth.json, so a managed setting may have chosen another store; no Agent can share it"
+            );
+        }
+        Ok(report)
     }
     pub async fn sign_out(&mut self) -> Result<String> {
         self.sign_out_within(LOGOUT_DEADLINE).await
@@ -2061,7 +2264,12 @@ impl Session {
         }
         let home = client_home(&self.config)?;
         logout(&self.config, &home, &self.tree, deadline).await?;
-        Ok(SIGNED_OUT.into())
+        Ok(if self.config.mode == Mode::LoginResource {
+            "client signed out of the login Resource; revocation at the vendor is unconfirmed"
+        } else {
+            SIGNED_OUT
+        }
+        .into())
     }
     pub async fn sign_in(&mut self, call: SignInCall) -> Result<SignIn> {
         self.sign_in_within(call, LOGIN_URL_DEADLINE).await
@@ -2079,7 +2287,11 @@ impl Session {
                 .filter(|login| login.request_state == request_state)
                 .context(STATE_UNKNOWN)?;
             return match &*login.outcome.lock().unwrap() {
-                None => Ok(SignIn::Text(LOGIN_WAITING.into())),
+                None => Ok(SignIn::Text(if self.config.mode == Mode::LoginResource {
+                    "sign-in hook (browser): the browser login is waiting in the login Resource's home"
+                } else {
+                    LOGIN_WAITING
+                }.into())),
                 Some(Ok(())) => Ok(SignIn::Text(LOGIN_ENDED.into())),
                 Some(Err(cause)) => bail!("{LOGIN_ENDED}: {cause}"),
             };
@@ -2094,6 +2306,9 @@ impl Session {
             match asked.get("name").and_then(Value::as_str) {
                 Some(BROWSER_LOGIN) => {}
                 Some(DEVICE_LOGIN) => bail!("{DEVICE_REFUSAL}"),
+                _ if self.config.mode == Mode::LoginResource => bail!(
+                    "sign-in hook: PND-010: the asked-for login is not one that codex-login.v1 states; it states browser and device"
+                ),
                 _ => bail!("{LOGIN_UNKNOWN}"),
             }
         }

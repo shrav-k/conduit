@@ -285,12 +285,12 @@ fn setup_s1(parent: &Path) -> (Arc<Shell>, PathBuf, Duration) {
         cli(&catalog_store, "init", &[]);
         let template = parent.join(format!("template-{name}"));
         fs::create_dir(&template).unwrap();
-        let ty = if name == "agent-codex" {
-            "codex.v1"
+        let (ty, version) = if name == "agent-codex" {
+            ("codex.v1", "0.2.3")
         } else {
-            "claude-code.v1"
+            ("claude-code.v1", "0.2.2")
         };
-        fs::write(template.join("conduit.yaml"),format!("apiVersion: {}\npackages:\n  example.org/conduit/{name}:\n    version: 0.2.2\n    digest: sha256:{}\n",spec_api(&root),package.rsplit_once('#').unwrap().1)).unwrap();
+        fs::write(template.join("conduit.yaml"),format!("apiVersion: {}\npackages:\n  example.org/conduit/{name}:\n    version: {version}\n    digest: sha256:{}\n",spec_api(&root),package.rsplit_once('#').unwrap().1)).unwrap();
         fs::write(template.join("template.yaml"),format!("apiVersion: {}\nkind: Agent\nmetadata:\n  name: test-template\nspec:\n  type: example.org/conduit/{name}#{ty}\n  config:\n    accountServices: false\n    peerMessaging: false\n",spec_api(&root))).unwrap();
         let out = Command::new(env!("CARGO_BIN_EXE_conduit"))
             .args(["register", "--store"])
@@ -734,5 +734,108 @@ fn cli_admits_alternate_and_linked_package_manifests() {
         let shell =
             Shell::open(&store, boundary::context(&root).unwrap(), Config::default()).unwrap();
         assert_eq!(shell.state().unwrap().installed_packages.len(), 1);
+    }
+}
+
+#[test]
+fn codex_login_resource_registers_through_the_engine() {
+    let repository = repo();
+    let spec = conduit_loader::Specification::read(&repository.join("spec")).unwrap();
+    let parent = tempfile::tempdir().unwrap();
+    let shell = Shell::open(
+        &parent.path().join("store"),
+        boundary::context(&repository).unwrap(),
+        Config::default(),
+    )
+    .unwrap();
+    shell.submit(
+        json!({"kind": "first-start", "machine": conduit_shell::local_machine(BTreeMap::new()).unwrap()}),
+        &MissingExecutor,
+    )
+    .unwrap();
+    boundary::install_package(&shell, &repository, &pack("agent-codex")).unwrap();
+
+    let address = "example.org/conduit/agent-codex";
+    let state = shell.state().unwrap();
+    let installed = state
+        .installed_packages
+        .iter()
+        .find(|installed| installed.package.address == address)
+        .unwrap();
+    let project_dir = parent.path().join("project");
+    fs::create_dir(&project_dir).unwrap();
+    let api = &spec.names().api_version;
+    for (file, content) in [
+        (
+            "conduit.json",
+            json!({
+                "apiVersion": api, "packages": {address: {
+                    "version": installed.package.version, "digest": installed.package.digest
+                }}
+            }),
+        ),
+        (
+            "agents.json",
+            json!({
+                "apiVersion": api, "fleet": "operators",
+                "pools": {"logins": {"type": "github.com/shrav-k/conduit/core#pool.v1"}},
+                "resources": {
+                    "login": {
+                        "type": format!("{address}#codex-login.v1"),
+                        "owner": "logins", "config": {"account": "account-a"}
+                    }
+                },
+                "agents": {
+                    "agent-a": {"type": format!("{address}#codex.v3"), "config": {"login": "login"}},
+                    "agent-b": {"type": format!("{address}#codex.v3"), "config": {"login": "login"}}
+                }
+            }),
+        ),
+    ] {
+        fs::write(
+            project_dir.join(file),
+            serde_json::to_vec(&content).unwrap(),
+        )
+        .unwrap();
+    }
+
+    let project = boundary::project(&project_dir, &spec).unwrap();
+    let root_id = id(&shell, "root");
+    let route = state
+        .objects
+        .iter()
+        .find(|object| object["local_name"] == "management" && object["consumer"] == root_id)
+        .unwrap();
+    let reply = shell
+        .submit(
+            json!({
+                "kind": "register-project",
+                "snapshots": [],
+                "builtin": shell.context.builtin,
+                "project": project,
+                "request": {
+                    "sender": root_id, "caller": root_id, "conduit": route["id"],
+                    "target": route["target"],
+                    "operation": format!("{}#register.v1", shell.context.core_package),
+                },
+            }),
+            &MissingExecutor,
+        )
+        .unwrap();
+    assert_eq!(reply["accepted"], true, "{reply}");
+    let state = shell.state().unwrap();
+    let login = id(&shell, "login");
+    for name in ["agent-a", "agent-b"] {
+        let agent = state
+            .objects
+            .iter()
+            .find(|object| {
+                object["kind"] == "Agent" && object["name"] == name && object.get("spec").is_none()
+            })
+            .unwrap();
+        assert_eq!(
+            agent["config"]["login"],
+            json!({"id": login, "kind": "Resource"})
+        );
     }
 }

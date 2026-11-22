@@ -40,33 +40,41 @@
   layer: language
   level: must
   when: >-
-    An instance document supplies, under `arguments`, a value for a name that is not an input
-    its template declares.
+    An instance document supplies, under `arguments` or under `values`, a value for a name that
+    is not an input its template declares, or supplies one input under both.
   then: >-
     The document is rejected.
   observable: >-
-    Resolving returns a diagnostic naming the undeclared argument.
+    For a name that is not a declared input, resolving returns a diagnostic naming it and the
+    section, `arguments` or `values`, that holds it. Where an input is under both, the diagnostic
+    names the input and both sections. The diagnostic gives the JSON Pointer of each offending
+    entry in its document.
 
 - id: INS-004
   layer: language
   level: must
   when: >-
-    An instance document omits an input that its template declares with no `default` and
-    without marking it `optional: true`.
+    An instance document omits, under both `arguments` and `values`, an input that its template
+    declares with no `default` and without marking it `optional: true`.
   then: >-
     The document is rejected.
   observable: >-
-    Resolving returns a diagnostic naming the missing input.
+    Resolving returns a diagnostic naming the missing input. An input given under either
+    section is supplied, under INS-006 to INS-009 and INS-019, as an argument is.
 
 - id: INS-005
   layer: language
   level: must
   when: >-
-    An argument does not satisfy the `schema` its input declares.
+    An argument, or the value of the value Resource that a `values` entry names, does not
+    satisfy the `schema` its input declares.
   then: >-
-    No instance is made, and the document that supplies the argument is rejected.
+    No instance is made. The document that supplies the input under `arguments` or `values`
+    is rejected.
   observable: >-
-    Resolving returns a diagnostic naming the input and the part of the schema the value fails.
+    Resolving returns a diagnostic naming the input, the place that supplied it and the part
+    of the schema the value fails. For a `values` entry, it names the value Resource and never
+    holds the value (OBJ-009).
 
 - id: INS-006
   layer: language
@@ -181,14 +189,35 @@
   then: >-
     The instance holds the complete resolved definition and configuration, including the nested
     instantiations its template declared. The arguments are not kept as a separate layer.
+    Nor are its `values` entries kept as a separate layer. Its source map keys each place a
+    value filled by its JSON Pointer into `declared` and gives the resolved form of its value
+    Resource (OBJ-009). A nested instantiation in the held definition has the scalar supplied
+    by `values` at its input under `arguments`, as a supplied argument would be held. It holds
+    no `values` map there. The holder's source map gives each such argument's source at the
+    pointer to that argument, including when an outer input forwarded the value to it. The
+    engine keeps that value's original resolved node constraint, if any, and the original
+    document, entry pointer and Resource reference as written for replacement diagnostics.
   observable: >-
     Inspecting the instance returns its definition and configuration with every destination
     filled, and nothing that says which values came from arguments other than the template it
-    came from. A replacement for one of its nested instances, made under LIF-009, is made from
-    the nested instantiation as the instance holds it, and from the template that its `from`
-    names as that template then stands. Every value that a schema governed is held as SCH-009
-    filled it, so the declared part of an inspection result shows `{depth: 1}` where an argument
-    gave `{}` for an input whose schema states that default.
+    came from; its source map says which came from `values`, and `inspect.v1` shows it under
+    `values` while the source map has entries. A control that changes or removes the value at
+    a mapped place under REV-007 removes its source map entry, including where the control
+    writes an enclosing setting. A place whose value stays the same keeps its source.
+
+    A replacement for one of its nested instances, made under LIF-009, is made from the nested
+    instantiation as the instance holds it, and from the template that its `from` names as that
+    template then stands. It takes the held scalar and carries the same source Resource ID to
+    each place it fills. It resolves no source name and reads no source Resource. It checks
+    the original node constraint against the replacement's placement and checks that the
+    current template declares each held input. It applies the input and destination schema
+    checks, including forwarded destinations, to that template and Type under OBJ-009,
+    INS-003, INS-005 and INS-014. If a check fails, LIF-009 and OBJ-023 govern
+    the result, with the original entry and the failing place named under OBJ-009.
+
+    Every value that a schema governed is held as SCH-009 filled it, so the declared part of
+    an inspection result shows `{depth: 1}` where an argument gave `{}` for an input whose
+    schema states that default.
 
 - id: INS-014
   layer: language
@@ -224,8 +253,9 @@
   layer: language
   level: must
   when: >-
-    The same template is instantiated twice with the same arguments while the same objects
-    exist.
+    The same template is instantiated twice with the same arguments and `values` entries while
+    the same objects exist. Where the instantiations use held nested inputs, their held value
+    sources and node constraints are the same too.
   then: >-
     The two results are the same, apart from generated names and IDs.
   observable: >-

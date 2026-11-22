@@ -120,6 +120,9 @@
     Every reference the instance holds, including those that came from its template, is resolved
     at that moment, and the instance stores the resolved form in its place:
     `{kind: <Kind>, id: <ID>}`, the kind and the ID of the object the reference resolved to.
+    A `values` entry is a reference too: it is resolved at that moment, and the instance stores
+    the value that its value Resource holds at each destination of its input, as INS-006
+    assigns an argument, and the entry's resolved form only in its source map (INS-013).
   observable: >-
     The resolved instance holds the resolved form for each reference, however the reference was
     written: as a bare name, with its kind, as a reference to a Pool's entry or as an entry
@@ -128,6 +131,36 @@
     reference schema accepts it, so the stored configuration still satisfies the schema of the
     instance's type, and a submitted document that writes it is rejected with a diagnostic
     naming where it is written. What a request that writes it reports is LIF-031.
+    A `values` entry must name a Resource of the core Type `value.v1` that `system` owns and
+    that is not retired. Where that Resource states a `node`, its resolved node must be the
+    placement of each instance whose input the value supplies. An instance with no placement
+    takes no value tied to a node. The value must satisfy the input's schema (INS-005).
+    No reference schema may govern any input or place the value fills (OBJ-021), so a value
+    never stands for an object or a secret, whose place takes a reference to a secret Resource
+    alone (SEC-001). This check follows the value through every destination, including all
+    forwarding through nested arguments and into applied requirement arguments (INS-012,
+    NAM-019). It applies before a scalar could be resolved as a reference at any such place.
+    A nested instantiation's `values` entries are checked when its holder is instantiated, as
+    part of making the nested instance (CON-002, POOL-002). Holding a nested definition does
+    not itself supply the value to an input of the holder.
+
+    If a check fails, the document is rejected and the registration reports invalid under
+    OBJ-023. There is no second attempt that uses another source, and nothing falls back to the
+    input's `default` or takes an optional input as left out. The diagnostic names the
+    original document, the entry's place (`/values/<input>` in a framed instance document, or
+    the JSON Pointer to the entry in the document that contains the nested instantiation), the
+    value Resource as written and the check that fails. If the check fails at a receiving
+    input or destination, the diagnostic also gives that place's JSON Pointer in the receiving
+    definition. If no value Resource has the authored name on initial resolution, the diagnostic
+    gives its registration by root as the remedy. No diagnostic about a `values` entry, and
+    no record of the registration, holds the value. Each names the value Resource.
+
+    From then on the value is configuration, shown and recorded where configuration is
+    (`inspect.v1`, REC-002). The instance keeps the value it was made with except where a
+    control changes its configuration under REV-007. Retiring the value Resource or registering
+    another under its name changes no instance, under OBJ-010. A replacement made from a new
+    document resolves that document's `values` entries. A replacement under LIF-009 takes the
+    held values and sources under INS-013.
 
 - id: OBJ-010
   layer: language
@@ -190,10 +223,11 @@
     `consumer` and `target` are required for those families. A Resource's owner is a Pool, and
     an Agent's owner is a Fleet, each written as a bare name because its kind is fixed
     (OBJ-006). `placement` may be left out and PLC-002 chooses it; `runtime` may be left out
-    under PRV-006. The document may have `metadata` and, under `arguments`, values for its
-    template's inputs. A Fleet has neither standard arguments nor `arguments` (FLEET-001). A
-    Conduit's consumer is an Interface, Agent or Resource; its target is an Interface, Agent,
-    Resource, Pool or Fleet. `as` is its local name, a name under OBJ-022.
+    under PRV-006. The document may have `metadata` and, under `arguments` or `values`
+    (OBJ-009), values for its template's inputs. A Fleet has no standard arguments, no
+    `arguments` and no `values` (FLEET-001). A Conduit's consumer is an Interface, Agent or
+    Resource; its target is an Interface, Agent, Resource, Pool or Fleet. `as` is its local
+    name, a name under OBJ-022.
   observable: >-
     Leaving out `arguments` supplies no arguments, as an empty map does. Leaving out `metadata`
     gives no name and OBJ-003 names the instance. A standard argument is accepted whatever
@@ -211,8 +245,8 @@
     A document holds a nested instantiation: a declared Conduit or a Pool's entry.
   then: >-
     It has no `kind`, no `metadata` and no `spec`. A declared Conduit holds `from`, and may hold
-    `arguments`, `target` and `optional: true`. A Pool's entry holds `from`, and may hold
-    `arguments` and `optional: true`.
+    `arguments`, `values`, `target` and `optional: true`. A Pool's entry holds `from`, and may
+    hold `arguments`, `values` and `optional: true`.
   observable: >-
     A nested instantiation that carries `kind`, `metadata` or `spec` is rejected with a
     diagnostic naming it, and so is one with no `from`. What `from` may be is INS-025. One that

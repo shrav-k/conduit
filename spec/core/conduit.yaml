@@ -35,9 +35,10 @@ exports:
   - pending-action.v1
   - evidence-item.v1
   - refusal.v1
-  # The templates that first start instantiates (templates.yaml).
+  # Templates (templates.yaml).
   - system
   - node
+  - value
   - management
   - access
   - root
@@ -47,6 +48,7 @@ exports:
   - interface.v1
   - pool.v1
   - node.v1
+  - value.v1
   - management.v1
   - access.v1
   # Capabilities (capabilities.yaml).
@@ -135,6 +137,7 @@ exports:
   - template-reference.v1
   - declared-conduit.v1
   - pool-entry.v1
+  - value-entries.v1
   - contract.v1
   - type-spec.v1
   - sign-in-login.v1

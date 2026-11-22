@@ -20,16 +20,16 @@ everything the promises say it exports, and everything first start needs.
 | [conduit.yaml](conduit.yaml) | The package's manifest: its address, its version, its exports and its one implementation, the engine itself |
 | [operations.yaml](operations.yaml) | The 38 Operation contracts: every management verb, the setup, retire and sign-in hooks, the operations that the engine invokes by provider calls, and the one operation of a secret Resource |
 | [capabilities.yaml](capabilities.yaml) | The 8 Capability contracts: what `management`, `access`, Pools and Fleets offer, and the four provider capabilities: a runtime provider, the machine provider, a package-source provider and a secret Resource |
-| [types.yaml](types.yaml) | The 6 Type contracts: the basic Interface, Pool and Fleet types, and the types of a node, of `management` and of `access` |
+| [types.yaml](types.yaml) | The 7 Type contracts: the basic Interface, Pool and Fleet types, and the types of a node, of a value, of `management` and of `access` |
 | [requirements.yaml](requirements.yaml) | The 2 Requirement contracts: the bound of a right to open, and the shared-host requirement |
 | [references.yaml](references.yaml) | The 13 reference schemas: the Schema contracts that make a value a reference (OBJ-021), a secret reference among them (SEC-001). Each also accepts the resolved form `{kind, id}`, which only the engine writes |
 | [results.yaml](results.yaml) | 12 Schema contracts: an object as a result names it, a diagnostic, a condition, a record, a call's usage, an inventory, a tombstone, opening provenance and a trust domain |
-| [templates.yaml](templates.yaml) | The 17 templates: first-start objects and Conduits, defaults, scoped administration and explicit cascades |
+| [templates.yaml](templates.yaml) | The 18 templates: first-start objects and Conduits, defaults, scoped administration, explicit cascades and a value Resource |
 
-The package also exports the 51 Schema contracts under [spec/schemas](../schemas/README.md),
+The package also exports the 52 Schema contracts under [spec/schemas](../schemas/README.md),
 which are the schemas of documents themselves. They are part of this package because a `$ref`
 from one schema to another names a Schema contract (SCH-015), and because `register.v1` states
-its inputs with them. In all the package exports 145 documents, 75 of them Schema contracts,
+its inputs with them. In all the package exports 150 documents, 77 of them Schema contracts,
 and has one implementation, which is also an export (PKG-019).
 
 A document of the core package refers to another by its full address, as
@@ -63,7 +63,7 @@ The convention, which follows the names the promises already use (`local-directo
 | Operation | The verb, in the imperative, as the commands of `kubectl` and `docker` are named. Words are joined by hyphens | `register.v1`, `set-up.v1` |
 | Hook | Named for the invocation it belongs to, then `-hook` | `setup-hook.v1`, `retire-hook.v1` |
 | Type, Capability, Requirement, Schema | A noun, with hyphens | `node.v1`, `access-control.v1`, `bound.v1`, `resource-reference.v1` |
-| Template | The name of the first-start object made from it, except `node`, which FST-005 names; Conduit templates name their consumer and target or their use | `system`, `root`, `root-access` |
+| Template | Templates of first-start objects usually take the object's name. FST-005 names `node`. Other templates, such as `value`, name their purpose. Conduit templates name their consumer and target or their use | `system`, `root`, `value`, `root-access` |
 | Every contract | Ends in its compatibility version, written `v` and a whole number (CTR-001) | `.v1` |
 
 No two exports share a name, whatever their kinds (PKG-012). That is why the Type of the
@@ -364,7 +364,9 @@ machine the request comes from (IFC-042).
 
 `inspect.v1` returns `id`, `revision`, `packages`, `declared`, `status` and `records`,
 plus `inventory` for instances other than Conduits, opening `provenance` for Conduits,
-`inventory.scope` for Interfaces and Agents, and `inventory.administrators` for Pools (LIF-013, ACC-044).
+`inventory.scope` for Interfaces and Agents, `inventory.administrators` for Pools (LIF-013,
+ACC-044), and `values` for an instance that a `values` entry filled and whose source map
+still has entries (INS-013).
 `inventory.ownTools` is present for every Agent: whether its Type states `toolsDirectory`,
 its pointer and whether a directory is named, with the directory and `enforcement: neither`
 when it is. The reach is neither enforced nor mediated in this version, whatever the runtime
@@ -550,6 +552,7 @@ its binding and labels are fixed when made (PLC-008, ENR-010).
 | --- | --- | --- |
 | `system` | Pool template | FST-001, FST-005 |
 | `node` | Resource template | FST-001, FST-005, PLC-008, PLC-026 |
+| `value` | Resource template | OBJ-009, ACC-057 |
 | `management` | Resource template | FST-001, FST-005 |
 | `access` | Resource template | FST-001, FST-005 |
 | `root` | Interface template | FST-001, FST-002, FST-005 |
@@ -558,6 +561,7 @@ its binding and labels are fixed when made (PLC-008, ENR-010).
 | `interface.v1` | Type | TPL-002: the template `root` needs a type; the basic Interface type |
 | `pool.v1` | Type | TPL-002: a Pool template needs a type; the basic Pool type, and the type of `system`; CTR-004 |
 | `node.v1` | Type | PLC-008, PLC-026 |
+| `value.v1` | Type | OBJ-009, INS-013, ACC-057 |
 | `management.v1` | Type | TPL-002, ACC-033 |
 | `access.v1` | Type | TPL-002, ACC-006 |
 | `object-management.v1` | Capability | OPS-019, ACC-033 |
@@ -648,6 +652,7 @@ its binding and labels are fixed when made (PLC-008, ENR-010).
 | `template-reference.v1` | Schema of a document's part | INS-025, INS-002, FST-005 |
 | `declared-conduit.v1` | Schema of a document's part | OBJ-014 |
 | `pool-entry.v1` | Schema of a document's part | OBJ-014, POOL-009 |
+| `value-entries.v1` | Schema of a document's part | INS-003, OBJ-009 |
 | `contract.v1` | Schema of a document | CTR-001 |
 | `type-spec.v1` | Schema of a document's part | CTR-004; `signIn`, its logins and its three hooks, CTR-013; Agent `toolsDirectory`, CTR-014; Agent `loginResource` with exactly one required `place` pointer, never beside `signIn`, CTR-013 |
 | `sign-in-login.v1` | Schema of one literal login a Type states | CTR-013 |

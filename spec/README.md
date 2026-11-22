@@ -221,21 +221,21 @@ lists each S1 promise's vectors, or the reason it has none.
 | [promises/enrollment.yaml](promises/enrollment.yaml) | Managed machine enrollment, provider evidence, root admission and refusal, expiry, fixed labels and removal questions (rulings 50, 51, 52, 56 and 68); six contracts live, capability and engine bindings staged for 049a and 049b | Draft; 12 promises; no vectors yet |
 | [promises/pending.yaml](promises/pending.yaml) | Pending actions, scope delivery, evidence, answers, sign-in, setup, notices and enrollment | Draft; 14 promises; no vectors yet |
 | [promises/secrets.yaml](promises/secrets.yaml) | Secrets: how a document marks one, which Resources hold one and what else their type may offer, who may have one read, how the engine reads one before a run or a connection, and again once it has lost a connection's values, and where the value may go, a header that carries one among it | Draft; 24 promises; vectors test slices of 2 promises |
-| [core/](core/README.md) | The core package, written out as documents: what it exports, and the promise that needs each export | Draft; 145 documents exported and 1 implementation, which is also an export |
+| [core/](core/README.md) | The core package, written out as documents: what it exports, and the promise that needs each export | Draft; 150 documents exported and 1 implementation, which is also an export |
 | [core/conduit.yaml](core/conduit.yaml) | The core package's manifest: its address, its version, its exports and its one implementation, the engine itself | Draft |
-| [core/operations.yaml](core/operations.yaml) | The Operation contracts: every management verb, the setup, retire and sign-in hooks, the operations of the three provider capabilities that the engine invokes by provider calls, and `get-secret.v1` | Draft; 37 contracts |
+| [core/operations.yaml](core/operations.yaml) | The Operation contracts: every management verb, the setup, retire and sign-in hooks, the operations of the three provider capabilities that the engine invokes by provider calls, and `get-secret.v1` | Draft; 38 contracts |
 | [core/capabilities.yaml](core/capabilities.yaml) | The Capability contracts: what `management`, `access`, Pools and Fleets offer, and the four provider capabilities | Draft; 8 contracts |
-| [core/types.yaml](core/types.yaml) | The Type contracts: the basic Interface, Pool and Fleet types, and the types of a node, of `management` and of `access` | Draft; 6 contracts |
+| [core/types.yaml](core/types.yaml) | The Type contracts: the basic Interface, Pool and Fleet types, and the types of a node, of a value Resource, of `management` and of `access` | Draft; 7 contracts |
 | [core/requirements.yaml](core/requirements.yaml) | The Requirement contracts `bound.v1` and `shared-host.v1`, which the engine applies itself | Draft; 2 contracts |
 | [core/references.yaml](core/references.yaml) | The reference schemas: the Schema contracts that make a value a reference, `secret-reference.v1` among them | Draft; 13 contracts |
 | [core/results.yaml](core/results.yaml) | Also pending-action.v1, evidence-item.v1 and refusal.v1; the Schema contracts `object.v1`, `diagnostic.v1`, `condition.v1`, `record.v1`, `usage.v1`, `inventory.v1`, `tombstone.v1`, `provenance.v1` and `trust-domain.v1`: an object as a result names it, a diagnostic, a condition, a record, a call's usage, an inventory, a tombstone, opening provenance and a trust domain | Draft; 12 contracts |
-| [core/templates.yaml](core/templates.yaml) | The core templates, including those of the five first-start objects and root's declared Conduits | Draft; 17 templates |
-| [schemas/](schemas/README.md) | The JSON Schemas of every document and of the manifest, each a Schema contract of the core package; which schema to use; and what a schema cannot express | Draft; 51 contracts in 9 files |
+| [core/templates.yaml](core/templates.yaml) | The core templates, including those of the five first-start objects, root's declared Conduits and a value Resource | Draft; 18 templates |
+| [schemas/](schemas/README.md) | The JSON Schemas of every document and of the manifest, each a Schema contract of the core package; which schema to use; and what a schema cannot express | Draft; 52 contracts in 9 files |
 | [schemas/document.yaml](schemas/document.yaml) | `document.v1`: any template, instance or contract document | Draft; 1 contract |
 | [schemas/sectioned.yaml](schemas/sectioned.yaml) | `sectioned.v1` and the parts of the short form | Draft; 9 contracts |
 | [schemas/envelope.yaml](schemas/envelope.yaml) | `apiVersion`, what every document carries, and `metadata` | Draft; 5 contracts |
 | [schemas/templates.yaml](schemas/templates.yaml) | A template document and the parts of its `spec` | Draft; 7 contracts |
-| [schemas/instances.yaml](schemas/instances.yaml) | An instance document of each family, the value of `from`, and the two nested instantiations | Draft; 4 contracts |
+| [schemas/instances.yaml](schemas/instances.yaml) | An instance document of each family, the value of `from`, the two nested instantiations, and `value-entries.v1` for their `values` entries | Draft; 5 contracts |
 | [schemas/contracts.yaml](schemas/contracts.yaml) | A contract document of each of the five kinds, an applied requirement and one literal login | Draft; 7 contracts |
 | [schemas/schema.yaml](schemas/schema.yaml) | `schema.v1`: the schema profile written as a schema | Draft; 1 contract |
 | [schemas/manifest.yaml](schemas/manifest.yaml) | `manifest.v1` and `implementation-item.v1`: the manifest and one implementation item; and `server-package.v1` and `server-remote.v1`: a Package and a Remote of server.json | Draft; 4 contracts |
@@ -363,6 +363,11 @@ records it when it has a request to send, and then sends its requests; `conduit 
 prints the same plan, sends none of its requests and records no plan; the reads it makes to
 compute the plan are inspections, which change nothing and are recorded as any request is
 (REC-001). Plan is available and never required.
+A plan resolves each `values` entry from the value Resources it inspects, under OBJ-009,
+and a plan and its record name each value by its value Resource and hold no value. Where an
+entry does not resolve, the plan stops at its document, naming the place, the value Resource
+and `conduit value set <name>`: that command registers a value Resource as root, from the
+person's terminal, showing the value as typed and saving it only on y.
 In v0 the command is the approval. Every dangerous act needs a named flag, recorded with
 the plan when used: `--reopen`, `--recreate`, `--prune`, `--replace`, `--adopt`, and the
 cascade flags `--with-resources` and `--with-agents`. Each flag names one object by its

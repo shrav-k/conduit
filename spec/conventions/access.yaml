@@ -882,15 +882,16 @@
   layer: convention
   level: must
   when: >-
-    A registration or `register-replacement.v1` would make an Agent.
+    A registration or `register-replacement.v1` would make an Agent, or a Resource of the core
+    Type `value.v1`.
   then: >-
     It is dispatched only where root sends it on its own behalf, in SEC-008's form;
     otherwise it is not dispatched and reports refused.
   observable: >-
-    This applies to every Agent in a submission, including one whose Fleet is in that
-    submission. Having both Conduits in ACC-033 row 1A is insufficient for another actor or
-    an onward request serving root. A refused submission registers nothing. Root still needs
-    the authorizing Conduits in ACC-033.
+    This applies to every Agent and every such Resource in a submission, including an Agent
+    whose Fleet is in that submission. Having both Conduits in ACC-033 row 1 or 1A is
+    insufficient for another actor or an onward request serving root. A refused submission
+    registers nothing. Root still needs the authorizing Conduits in ACC-033.
 
 - id: ACC-056
   layer: convention

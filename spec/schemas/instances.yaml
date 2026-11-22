@@ -3,7 +3,7 @@
 #
 # Promises encoded:
 #   instance.v1            OBJ-013 (`from`, the standard arguments of the family as top-level
-#                          keys, and `arguments`; `owner`, `consumer` and `target` are
+#                          keys, and `arguments` and `values`; `owner`, `consumer` and `target` are
 #                          required, and `placement` and `runtime` may be left out), INS-001
 #                          (no `spec`), OBJ-018, OBJ-004, POOL-001 (a Resource states its
 #                          `owner`), PLC-006 (no `placement` on an Interface, a Pool or a
@@ -16,6 +16,8 @@
 #   declared-conduit.v1    OBJ-014 (no `consumer`), OBJ-015
 #   pool-entry.v1          OBJ-014 (no `owner`, no `placement` and no `runtime`), POOL-009,
 #                          POOL-012, OBJ-015
+#   value-entries.v1       INS-003, OBJ-009 (input names mapped to `{kind: Resource, name}`;
+#                          the engine checks the input and resolves the value Resource)
 #
 # Open, as OBJ-019 exempts: everything inside `arguments`. Because of that, a standard
 # argument written under `arguments` (OBJ-013) is not caught here.
@@ -34,15 +36,15 @@
 #
 # Not expressed here, and checked by the engine: that `from` resolves to a template of the
 # right kind (INS-002, OBJ-007), and not to a template that first start alone instantiates
-# (FST-006); that the arguments fit the template's inputs (INS-003 to INS-005, INS-009) and the
-# resulting configuration its type (INS-014); that a reference resolves (OBJ-009), and to an
-# instance of an accepted kind (CON-027); that `runtime` names a runtime provider (PRV-006),
-# and that a provider is given no other placement and no `runtime` (PRV-002); placement
-# (PLC-001, PLC-002, PLC-007, PLC-018, PRV-015); that the target offers the capability
-# (CON-021); the shared-host requirement and filters (PLC-013, CON-022); that a Conduit whose
-# template applies the bound of a right to open has `access` as its target (CON-028); retired
-# ends (CON-025); tool names (IFC-014); and that `{entry: name}` is written only in an entry
-# of a Pool template, and is rejected anywhere else (POOL-005).
+# (FST-006); that the inputs supplied under `arguments` and `values` fit the template
+# (INS-003 to INS-005, INS-009) and the resulting configuration fits its type (INS-014);
+# that a reference resolves (OBJ-009), and to an instance of an accepted kind (CON-027); that
+# `runtime` names a runtime provider (PRV-006), and that a provider is given no other placement
+# and no `runtime` (PRV-002); placement (PLC-001, PLC-002, PLC-007, PLC-018, PRV-015); that the
+# target offers the capability (CON-021); the shared-host requirement and filters (PLC-013,
+# CON-022); that a Conduit whose template applies the bound of a right to open has `access`
+# as its target (CON-028); retired ends (CON-025); tool names (IFC-014); and that `{entry: name}`
+# is written only in an entry of a Pool template, and is rejected anywhere else (POOL-005).
 # Standing: draft specification; see spec/README.md for status and coverage.
 #
 # This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
@@ -74,6 +76,8 @@ spec:
           $ref: github.com/shrav-k/conduit/core#template-reference.v1
         arguments:
           type: object
+        values:
+          $ref: github.com/shrav-k/conduit/core#value-entries.v1
       required:
       - apiVersion
       - kind
@@ -96,6 +100,8 @@ spec:
           $ref: github.com/shrav-k/conduit/core#resource-reference.v1
         arguments:
           type: object
+        values:
+          $ref: github.com/shrav-k/conduit/core#value-entries.v1
         owner:
           $ref: github.com/shrav-k/conduit/core#fleet-reference.v1
       required:
@@ -123,6 +129,8 @@ spec:
           $ref: github.com/shrav-k/conduit/core#resource-reference.v1
         arguments:
           type: object
+        values:
+          $ref: github.com/shrav-k/conduit/core#value-entries.v1
       required:
       - apiVersion
       - kind
@@ -142,6 +150,8 @@ spec:
           $ref: github.com/shrav-k/conduit/core#template-reference.v1
         arguments:
           type: object
+        values:
+          $ref: github.com/shrav-k/conduit/core#value-entries.v1
       required:
       - apiVersion
       - kind
@@ -164,6 +174,8 @@ spec:
           $ref: github.com/shrav-k/conduit/core#target-reference.v1
         arguments:
           type: object
+        values:
+          $ref: github.com/shrav-k/conduit/core#value-entries.v1
         as:
           $ref: github.com/shrav-k/conduit/core#name.v1
       required:
@@ -239,6 +251,7 @@ spec:
     from: {$ref: github.com/shrav-k/conduit/core#template-reference.v1}
     target: {$ref: github.com/shrav-k/conduit/core#target-reference.v1}
     arguments: {type: object}
+    values: {$ref: github.com/shrav-k/conduit/core#value-entries.v1}
     optional: {type: boolean}
   required: [from]
   additionalProperties: false
@@ -257,6 +270,25 @@ spec:
   properties:
     from: {$ref: github.com/shrav-k/conduit/core#template-reference.v1}
     arguments: {type: object}
+    values: {$ref: github.com/shrav-k/conduit/core#value-entries.v1}
     optional: {type: boolean}
   required: [from]
   additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: value-entries.v1
+  description: >-
+    The `values` of an instance document or a nested instantiation, keyed by the input to
+    supply. Each entry names a value Resource (INS-003, OBJ-009).
+spec:
+  type: object
+  propertyNames: {$ref: github.com/shrav-k/conduit/core#name.v1}
+  additionalProperties:
+    type: object
+    properties:
+      kind: {const: Resource}
+      name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+    required: [kind, name]
+    additionalProperties: false

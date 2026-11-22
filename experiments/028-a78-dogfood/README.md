@@ -1022,3 +1022,106 @@ reach every working copy and every login, and can log a shared login out for all
 what the account is charged or what is left of its week, and they leave out the coordinator and
 the [S3, S7 and S10](../../ROADMAP.md#scenarios) tests. A refresh failure that fails no turn is not seen. Blind is only what
 each message carries. One Mac shows nothing about another machine.
+
+## Amendment of 2026-11-22: stage 3 under DEC-068 to DEC-071
+
+Amended on 2026-11-22 (PST), before stage 3's first turn, by the owner's answers of that day:
+[DEC-068](../../docs/decisions/log.md#dec-068-2026-11-22-the-second-account-sitting-runs-by-hand-tonight),
+[DEC-069](../../docs/decisions/log.md#dec-069-2026-11-22-pairs-1-and-2-and-one-reader-take-turns-first),
+[DEC-070](../../docs/decisions/log.md#dec-070-2026-11-22-stage-3-is-judged-on-access) and
+[DEC-071](../../docs/decisions/log.md#dec-071-2026-11-22-the-claude-reader-reads-text-facing-orders),
+with
+[DEC-072](../../docs/decisions/log.md#dec-072-2026-11-22-the-s1-chain-merges-next) and
+[DEC-073](../../docs/decisions/log.md#dec-073-2026-11-22-v0s-seven-items-full-v0-by-the-end-of-the-year)
+where they bear on what stage 3 measures. The rest of stage 3's registration stands, but two
+passages are out of date: the owner has answered items 1 and 4 of
+[stage 2's results](results-2026-11-21-stage-2.md#for-the-owner) by DEC-056 and DEC-059, and
+item 3 by DEC-058, so stage 3's results commit their scrubbed records export, split by order.
+*Coordinator's* marks a line open to the owner's strike (ruling 92, point 6).
+
+**The sitting, by hand** (DEC-068). Step 4, and step 7 for the second accounts, go so:
+
+- The coordinator writes the login Resources of `second-chatgpt` and `second-claude` into copies
+  outside the repository, every line but each one's `account:` line, which the owner types in
+  their own editor. *Coordinator's*: the coordinator writes that line with its placeholder, and
+  the owner types the account over it.
+- The coordinator never opens a copy after. It checks each copy's mode and that no placeholder is
+  left; step 7 then submits the copy. Unlike the other documents, these two copies are not read
+  back against their values. *Coordinator's*: the mode must be 600, and counts that print no
+  line show one `account:` line and no placeholder. If any check fails, the coordinator submits
+  nothing and tells the owner.
+- Before the sign-ins, the owner gives each account's plan and weekly reset day, by label.
+  *Coordinator's*: the coordinator keeps them in its notes (private). The per-account measures
+  add, for each account that runs Agents, its tokens per week counted from its reset day, and a
+  result numbers the weeks and gives none of their dates.
+- Each of these steps is a gap. `value.v1` (DEC-076) replaces the copies and their checks once
+  it lands, by a dated amendment.
+
+**Who takes turns** (DEC-069). The sitting still signs in every account and sets up every Agent
+(steps 7 and 8). Pairs 1 and 2 and `reader-a` take turns first. Pair 3 and `drafter` are sent no
+turn until orders 280 to 282 have merged and one day's engine gates average under 20 minutes.
+*Coordinator's*: that day is any whole calendar day, PST, after the last of the three merges.
+Its engine gates are the Mac's `tools/gate.py` runs whose `engine test` row passed, and the day
+has at least one. Each one's seconds are its record's `finished` less its `started`. A dated
+amendment shows the merges and that day before pair 3's or `drafter`'s first turn.
+
+Pair 4 stays held by [DEC-054's measure](#pair-4-by-measurement), read as no window reached: no
+five consecutive orders have shown it yet. *Coordinator's*: its five orders count from pair 3's
+first turn, since before it `second-chatgpt` carries no turn.
+
+While pair 3 waits, no turn runs on `second-chatgpt`. Where stage 3's first five orders hold no
+turn of pair 3, the result says so, and that the turns at once on both ChatGPT accounts, which
+the claims ask, are not shown. *Coordinator's*: stage 3's claims are then not shown, and the five
+do not move.
+
+**The verdict** (DEC-070). An order of stage 3 passes when conditions 1, 3, 5, 8, 11 and 12
+hold, and one of them not shown fails it. Conditions 6 and 9 are measured, and each result
+reports them for each order, but they judge none. Condition 10 judges nothing until each Agent
+package names every reason a turn lacks `usage`. Conditions 2 and 7 judge no order, since
+DEC-070 names neither, and condition 4 stays set aside (DEC-055). *Coordinator's*: the README
+that counts is the installed release's, 0.2.4. A README that names every reason comes only in a
+later release, whose install ends stage 3 (below), so condition 10 judges no order of stage 3
+unless a dated amendment, merged before the first turn it judges, says otherwise. Each result
+reports conditions 2, 7 and 10 as it reports 6 and 9.
+
+So, while their conditions judge nothing, three things are not shown: claim 2 of
+[stage 3's claim](#stage-3s-claim), which rests on condition 10; the bounded set-up time and the
+records of every turn that stage 3 takes from [the claim](#claim) of orders 2 and 3, which rest
+on conditions 2 and 7; and fresh reads, which condition 9 reports. Claim 4 rests on condition 12
+alone. *Coordinator's*: the access that DEC-070 judges is what its listed conditions show;
+stage 3 still claims nothing about access as D57 means it.
+
+**What ends stage 3** (DEC-070). DEC-070 asks this amendment to say which store upgrade, if any,
+does not end the stage. *Coordinator's*: none. Each upgrade that
+[What ends stage 3](#what-ends-stage-3) names ends the stage. So does an install of agent-codex
+or agent-claude-code 0.2.5 or later into the dogfood store after stage 3's first turn, even with
+no instance moved: for those releases, this replaces the registration's "an archive installed
+with no instance moved is none". Step 2's install, before the first turn, ends nothing, whatever
+release `main` then carries. A later dated amendment, merged before the install, may say otherwise.
+
+**The reads** (DEC-071, amending DEC-050). The verifier of the order's pair reads every order,
+blind. `reader-a` also reads, blind and at the same time, an order that changes `spec/`, a
+diagnostic or refusal, agent- or owner-facing package text, or a README, and one fix turn covers
+both reads. An engine-internal order merges on its verifier's clean read and the gate. Claim 4 is
+then a claim about the orders with both reads; with no such order among stage 3's first five
+orders, claim 4 is not shown. *Coordinator's*:
+
+- an engine-internal order is read as any order outside the four kinds above;
+- before an order's first read is dispatched, the coordinator records whether `reader-a` reads
+  it and by which part of DEC-071, and the result gives it;
+- for an order with one read, condition 12 asks only that the verifier's message name the
+  checkpoint's commit it reads, and the per-order measures give that read's span alone;
+- each verifier's turn message says whether `reader-a` reads the order, since `verifier-role`'s
+  text, written under DEC-050, says that the Claude reader reads the same change at the same
+  time. The documents keep that text, so that they stay as order 277 checked them, each role
+  text by its hash.
+
+**What DEC-072 and DEC-073 bear on.** DEC-072 orders the merges, the S1 chain (orders 245 to 250)
+ahead of every engine order not on the sitting's path; it judges nothing and adds no measure.
+DEC-073 adds machines, accounts and usage wherever measurement shows they speed the work.
+*Coordinator's*: so the per-stage measures add, with no pass condition, the orders merged per
+day, PST, and each day's mean seconds of its engine gates, read as above. An Agent added takes
+new documents and an amendment, as [the registration](#pair-4-by-measurement) says, and so does
+an Agent placed on another machine. An account added changes the account map, which ends stage 3
+unless a dated amendment merged before says otherwise. Stage 3 still claims nothing about speed
+(D54).

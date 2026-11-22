@@ -104,13 +104,16 @@
     whether it exists. An answer not accepted by the kind reports invalid and names the
     answering operation: sign-in.v1 for sign-in, admit-machine.v1 and refuse-machine.v1
     for enrollment, and refuse-machine.v1 for machine. answer.v1 accepts
-    dismissed for setup, acknowledged for notice and kept for machine-removal (PND-008). It
-    has no outputs and dispatches no hook or model work. Already answered actions report
-    conflict (PND-003). Where subjects have different inspection targets, authorization
-    follows the subject the kind defines for answering: the notice's Fleet under PND-007. A
-    setup action touches a secret only through its setup operation; dismissing it dispatches
-    nothing. Root alone answers an action whose answer itself touches a secret. For an action
-    already answered, the raised-at test uses its retained subjects and the Interface's
+    dismissed for setup, acknowledged for notice and kept for machine-removal (PND-008).
+    Only root answers a notice that PND-005 raises for a login Resource; another caller's
+    answer reports refused.
+    It has no outputs and dispatches no hook or model work. Already answered actions report
+    conflict (PND-003). Where subjects of a PND-007 notice have different inspection targets,
+    its Fleet authorizes the answer. A PND-005 notice for a login Resource is answered
+    through that Resource's owning Pool. A setup action touches a secret only through its
+    setup operation; dismissing it dispatches nothing. Root alone answers an action whose
+    answer itself touches a secret. For an action already answered, the raised-at test uses
+    its retained subjects and the Interface's
     current scope; it is no longer listed, but an authorized further answer reports conflict
     under PND-003.
 
@@ -137,7 +140,8 @@
     account-hook.v1 part that
     sign-in.v1 dispatches before sign-in-hook.v1 reports a different account; or its
     implementation sends URL-mode elicitation outside sign-in.v1; or its contract reports a
-    missing or lapsed login.
+    missing or lapsed login; or the contract of an Agent of a login Resource (CTR-013) reports
+    one, and that Resource has a string at its account pointer.
   then: >-
     A sign-in action is raised for the instance, with expiry, unless one is unanswered
     (PND-001). Evidence names the expected account, the login started by name and return, device
@@ -150,6 +154,12 @@
     io.github.shrav-k.conduit/pendingAction, with a diagnostic naming PND-005 and that the
     instance awaits sign-in to its expected account, without naming that account (PND-004). The
     hold is the instance's, not the action's: an expiry lifts nothing.
+    For an Agent of a login Resource, the instance is that Resource: the action is raised
+    for it. An Agent's report holds no instance: a refresh collision can fail one call while
+    the login is good. The Resource's own hold under this promise or PND-011's SignInUndone
+    condition also holds every operation that starts model work on each Agent of it, any
+    unanswered action of the Resource in pendingAction, its diagnostic naming that hold's
+    promise and the Resource, whose login awaits sign-in.
   observable: >-
     Every held request is final. Nothing is queued, resumed or dispatched after it ends; the
     caller sends a new request. A mid-call URL elicitation ends that call unknown under
@@ -157,8 +167,31 @@
     implementation that carries Conduit's keys ends the call failed or unknown, as it can
     tell, with an error diagnostic naming PND-005; a plain one reports it only by a URL
     request, under IFC-016. No action is raised for a Type without signIn or with a null
-    account setting; its call ends as that form ends it, with an explicit diagnostic. After
-    expiry a new sign-in is raised on the next held request or setup, never by expiry alone.
+    account setting, but for an Agent whose login place refers to a login Resource with a
+    string account, whose lapse raises that Resource's action as this promise says; its
+    call ends as that form ends it, with an explicit diagnostic. After expiry a new sign-in
+    is raised on the next held request or setup, never by expiry alone.
+    Where such an Agent's call that started model work reports it, the engine also raises
+    one notice for the login Resource, unless one is unanswered: its subjects are the
+    Resource and the Agent, and its evidence names the Agent, the call and its invocation.
+    When a call reports a lapsed login of a login Resource, its result and record name the
+    action, then the notice, in pendingAction where those IDs exist, whether the report
+    raised them or found them unanswered (IFC-025). The diagnostic for a reporting Agent
+    names the login Resource and says that the report may be a refresh collision while the
+    login is good, that the Agent may send its request again, and that if the login is gone,
+    root sends sign-in.v1 to sign in that Resource. When a notice applies, the diagnostic
+    also says that the login now takes one call that starts model work at a time until
+    root answers the notice. Until then such an operation on an Agent of that Resource,
+    while one on any of them runs, is not dispatched and reports unavailable,
+    with the notice's ID in pendingAction and a diagnostic naming PND-005, the Resource
+    and the running call, saying that a call on this login reported its login lapsed,
+    that the request may be sent again once that call ends, and that root lifts this by
+    answering the notice acknowledged. Where the Resource's hold also applies, both are
+    reported, the hold first, in the diagnostic, naming that hold's promise and the Resource
+    and stating the one-at-a-time rule. pendingAction lists only IDs that exist, the hold's
+    first. The notice's expiry lifts nothing: after it, the next call held back raises a new
+    notice, never expiry alone.
+    Otherwise calls on one login run in parallel.
 
 - id: PND-010
   layer: convention
@@ -170,8 +203,11 @@
     through the Agent's owning Fleet or the Resource's owning Pool (ACC-033). A caller other
     than root signs in only an Agent of a Fleet in its scope; Resources remain root's.
     expectedId follows LIF-037. The Type must state signIn with a string expected account,
-    otherwise the permitted request reports invalid. A Conduit whose consumer is not an
-    Interface cannot be opened listing sign-in.v1; the open reports refused.
+    otherwise the permitted request reports invalid. For an Agent of a login Resource
+    (CTR-013), the diagnostic names PND-010 and that Resource, and says that root sends
+    sign-in.v1 for that Resource, which signs in all its Agents.
+    A Conduit whose consumer is not an Interface cannot be opened listing sign-in.v1;
+    the open reports refused.
     Before dispatching any part, a signInLogin naming no login the Type states reports invalid,
     with a diagnostic naming PND-010 and the stated login names; one naming a stated login
     reports invalid where the instance's sign-in-hook.v1 is a plain hook, its implementation

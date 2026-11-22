@@ -799,12 +799,13 @@
   note: Bounded source slice; no individual finding.
 - id: LIF-021
   class: safety
-  standing: holds, not graded
+  standing: text changed, not rerun
+  was: holds, not graded
   model: lifecycle::P
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: 4db0fd5f52823ecef5f8fd76eabbcca3fd68686b2361a3c8aa0a314f4234f387
   note: 'MC6 partial exclusion: “LIF-021/TPL-012 cancellation (OPS-027)”; “optional setup parts” are also absent.
-    MC6 partial exclusion: “LIF-021 cycles/Fleets”.'
+    MC6 partial exclusion: “LIF-021 cycles/Fleets”. Work order 257 added a login Resource to its PRV-020 sentence.'
 - id: LIF-022
   class: safety
   standing: static

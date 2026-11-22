@@ -422,8 +422,9 @@
     this request retries it. A member whose shutdown is confirmed has been removed (LIF-035) and
     gets no retirement invocation. A setup, retirement or change still in progress makes the
     member's retirement report conflict under REV-014 and holds back its successors and the
-    container. Retiring a runtime provider still named by an instance inside or outside the Pool
-    reports conflict under PRV-020. For a Pool this extends the reverse of POOL-013's setup
+    container. Retiring a runtime provider still named by an instance, or a login Resource
+    still referred to by an Agent, inside or outside the Pool, reports conflict under
+    PRV-020. For a Pool this extends the reverse of POOL-013's setup
     order from entries to all owned Resources. For a Fleet it orders all owned Agents by their
     references and Conduits; the runtime dependency applies only to Resources. Retire hooks may
     still reach successors because CON-008 closes a Conduit only when its target retires. The

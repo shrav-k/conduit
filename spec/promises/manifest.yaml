@@ -356,7 +356,9 @@
     the way to it required, or that this schema does not confine, by `type`, `enum` or `const`,
     to a string, a number, a boolean or null, in itself or in each branch of its `anyOf` or
     `oneOf`, a `$ref` standing for the schema it leads to, unless `secret-reference.v1` governs
-    the place under SEC-001; or the item binds an input that the Package or the Remote marks
+    the place under SEC-001, or the pointer, given by `environment`, leads to the login
+    place of that type under CTR-013, whose variable PRV-029 fills; or the item binds an
+    input that the Package or the Remote marks
     `isRequired: true` to a place whose schema admits null.
   then: >-
     The template is rejected.

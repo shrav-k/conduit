@@ -635,7 +635,7 @@ its binding and labels are fixed when made (PLC-008, ENR-010).
 | `declared-conduit.v1` | Schema of a document's part | OBJ-014 |
 | `pool-entry.v1` | Schema of a document's part | OBJ-014, POOL-009 |
 | `contract.v1` | Schema of a document | CTR-001 |
-| `type-spec.v1` | Schema of a document's part | CTR-004; `signIn`, its logins and its three hooks, CTR-013; Agent `toolsDirectory`, CTR-014 |
+| `type-spec.v1` | Schema of a document's part | CTR-004; `signIn`, its logins and its three hooks, CTR-013; Agent `toolsDirectory`, CTR-014; Agent `loginResource` with exactly one required `place` pointer, never beside `signIn`, CTR-013 |
 | `sign-in-login.v1` | Schema of one literal login a Type states | CTR-013 |
 | `capability-spec.v1` | Schema of a document's part | CTR-003 |
 | `operation-spec.v1` | Schema of a document's part | CTR-002, CTR-006, CTR-009, CTR-012 |

@@ -1,0 +1,276 @@
+# Instances of the conduit-core Fleet for stage 3 of A78, written by work order 277 for the
+# Agent packages 0.2.4. The coordinator fills the <...> values into a copy outside the
+# repository. Accounts go by label; each <NAME-account> is that account as its client names it.
+# The Fleet conduit-core is stage 2's, kept on the store, and `owner: conduit-core` names it:
+# these documents declare none, since a second would be rejected (OBJ-002).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Pool
+metadata:
+  name: logins
+from: login-pool
+---
+# The accounts' logins, owned by the Pool, one per account on this machine (DEC-042, DEC-046).
+# None is primary-claude's: that account is the coordinator's alone (DEC-050, DEC-053, DEC-054).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: primary-chatgpt
+from: codex-account
+owner: logins
+arguments:
+  account: <primary-chatgpt-account>
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: second-chatgpt
+from: codex-account
+owner: logins
+arguments:
+  account: <second-chatgpt-account>
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: second-claude
+from: claude-account
+owner: logins
+arguments:
+  account: <second-claude-account>
+---
+# Pairs 1 and 2 on the primary ChatGPT account, 3 and 4 on the second (DEC-046); pair 4
+# is set up and sent no turn until a dated amendment lets it (DEC-054).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: worker-1
+from: worker-role
+owner: conduit-core
+arguments:
+  directory: <slot-1>
+  login: primary-chatgpt
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: verifier-1
+from: verifier-role
+owner: conduit-core
+arguments:
+  directory: <slot-1>
+  login: primary-chatgpt
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: worker-2
+from: worker-role
+owner: conduit-core
+arguments:
+  directory: <slot-2>
+  login: primary-chatgpt
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: verifier-2
+from: verifier-role
+owner: conduit-core
+arguments:
+  directory: <slot-2>
+  login: primary-chatgpt
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: worker-3
+from: worker-role
+owner: conduit-core
+arguments:
+  directory: <slot-3>
+  login: second-chatgpt
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: verifier-3
+from: verifier-role
+owner: conduit-core
+arguments:
+  directory: <slot-3>
+  login: second-chatgpt
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: worker-4
+from: worker-role
+owner: conduit-core
+arguments:
+  directory: <slot-4>
+  login: second-chatgpt
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: verifier-4
+from: verifier-role
+owner: conduit-core
+arguments:
+  directory: <slot-4>
+  login: second-chatgpt
+---
+# The reader of every pair and the drafter, on the second Claude account (DEC-050, DEC-053).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: reader-a
+from: reader-role
+owner: conduit-core
+arguments:
+  directory: <slot-r>
+  login: second-claude
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: drafter
+from: drafter-role
+owner: conduit-core
+arguments:
+  directory: <slot-d>
+  login: second-claude
+---
+# Root's explicit route to the Pool of the logins.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: root-logins
+from: logins-admin
+consumer:
+  kind: Interface
+  name: root
+target:
+  kind: Pool
+  name: logins
+---
+# Root's route to each Agent: turn.v1 and new-conversation.v1 (order 253).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: root-worker-1
+from: example.org/conduit/agent-codex#conversation
+consumer:
+  kind: Interface
+  name: root
+target:
+  kind: Agent
+  name: worker-1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: root-verifier-1
+from: example.org/conduit/agent-codex#conversation
+consumer:
+  kind: Interface
+  name: root
+target:
+  kind: Agent
+  name: verifier-1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: root-worker-2
+from: example.org/conduit/agent-codex#conversation
+consumer:
+  kind: Interface
+  name: root
+target:
+  kind: Agent
+  name: worker-2
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: root-verifier-2
+from: example.org/conduit/agent-codex#conversation
+consumer:
+  kind: Interface
+  name: root
+target:
+  kind: Agent
+  name: verifier-2
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: root-worker-3
+from: example.org/conduit/agent-codex#conversation
+consumer:
+  kind: Interface
+  name: root
+target:
+  kind: Agent
+  name: worker-3
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: root-verifier-3
+from: example.org/conduit/agent-codex#conversation
+consumer:
+  kind: Interface
+  name: root
+target:
+  kind: Agent
+  name: verifier-3
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: root-worker-4
+from: example.org/conduit/agent-codex#conversation
+consumer:
+  kind: Interface
+  name: root
+target:
+  kind: Agent
+  name: worker-4
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: root-verifier-4
+from: example.org/conduit/agent-codex#conversation
+consumer:
+  kind: Interface
+  name: root
+target:
+  kind: Agent
+  name: verifier-4
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: root-reader-a
+from: example.org/conduit/agent-claude-code#conversation
+consumer:
+  kind: Interface
+  name: root
+target:
+  kind: Agent
+  name: reader-a
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: root-drafter
+from: example.org/conduit/agent-claude-code#conversation
+consumer:
+  kind: Interface
+  name: root
+target:
+  kind: Agent
+  name: drafter

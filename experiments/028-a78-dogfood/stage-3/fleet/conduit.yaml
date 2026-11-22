@@ -1,0 +1,11 @@
+# The conduit-core project's manifest for stage 3 of A78, written by work order 277 for the
+# Agent packages 0.2.4. The coordinator fills the <...> values into a copy outside the
+# repository and submits that copy; this file is not submittable as it stands.
+apiVersion: github.com/shrav-k/conduit/v0
+packages:
+  example.org/conduit/agent-codex:
+    version: <codex-version>
+    digest: sha256:<codex-digest>
+  example.org/conduit/agent-claude-code:
+    version: <claude-version>
+    digest: sha256:<claude-digest>

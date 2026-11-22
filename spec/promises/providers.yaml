@@ -20,11 +20,12 @@
   level: must
   when: >-
     A Type contract offers a provider capability: `runtime-provider.v1`, `machine-provider.v1`,
-    `package-source.v1` or `secret-provider.v1`.
+    `package-source.v1` or `secret-provider.v1`, or lists `run.v2` under `requires`.
   then: >-
     Its family is Resource, and it offers no other provider capability. A Type contract that
     offers one and is of another family, or that offers two, is rejected when its package is
-    installed or its project is submitted.
+    installed or its project is submitted. One that lists `run.v2` under `requires` and does
+    not offer `runtime-provider.v1` is rejected in the same way.
   observable: >-
     Installation or submission returns a diagnostic naming the Type and the capabilities. A
     provider is therefore a Resource like any other: it has an owner and a placement, it is made
@@ -37,7 +38,13 @@
     picks a provider by registering a Resource of its type, configured as that provider needs,
     such as a Docker context: PRV-006 says how an instance names its runtime provider, PRV-013
     which machine provider and package-source providers serve, and SEC-005 what the type of a
-    secret Resource is.
+    secret Resource is. `runtime-provider.v1` does not list `run.v2`, so a provider that
+    implements only `run.v1` stays valid: a runtime provider implements `run.v2` where its type
+    lists it under `requires`, and TPL-004 then gives each instance an implementation of it.
+    Wherever a promise names the operations of `runtime-provider.v1`, as PRV-004, PRV-005,
+    PKG-020 and PKG-030 do, `run.v2` is among them; and wherever a promise or an Operation's
+    description names `run.v1` as the call that asks for, starts or gives the inputs of a run,
+    as PRV-011, PRV-019, PRV-030, SEC-018 and `stop.v1` do, a call of `run.v2` is meant too.
 
 - id: PRV-002
   layer: convention
@@ -208,10 +215,11 @@
     report the run running.
   then: >-
     Where the runtime provider reports the run `stopped`, the engine asks it for the run with
-    `run.v1`, giving `instance`, the instance's ID, which names the run; `item`, that
-    implementation item; in `packageArguments` and `environment`, under the names that the item
-    gives them, the values that the item's `packageArguments` and `environment` take from the
-    instance's configuration, each as a string: a string as it is, a number in the form that
+    `run.v1`, or with `run.v2` as below, giving `instance`, the instance's ID, which names the
+    run; `item`, that implementation item; in `packageArguments` and `environment`, under the
+    names that the item gives them, the values that the item's `packageArguments` and
+    `environment` take from the instance's configuration, each as a string: a string as it is,
+    a number in the form that
     RFC 8785 gives it, and a boolean as `true` or `false`; in `secrets`, apart from them, under
     its own `environment` and `packageArguments` and by the same names, the values read under
     SEC-010; in `identity`, what the mechanism of DL13 gives the run, under the names that
@@ -222,11 +230,22 @@
     variable bound to that place the login Resource's directory path in place of the resolved
     reference (PRV-029).
     The engine then reaches the server at the `url` that the run returns or, on its own runner,
-    over the process's stdio. It asks no runtime provider other than its own runner for the run
-    of a `command` item whose program the manifest gives as a relative path, under MAN-010,
-    whether or not SUB-010 has resolved it against a directory: that part ends failed, and
-    nothing is run. Where the runtime provider reports the run `unknown`, the engine asks for no
-    run, and the part is not dispatched and reports unavailable.
+    over the process's stdio. Where the item states `platforms`, its program is the one for the
+    pair of the instance's node, under MAN-010. For a `command` item whose program the manifest
+    gives as a relative path, whether or not SUB-010 has resolved it against a directory, the
+    engine asks no runtime provider other than its own runner for the run, unless the item is
+    a package's and states `platforms`; then it asks another only with `run.v2`, never with
+    `run.v1`, giving `run.v1`'s inputs, and in `program` that program's path from the archive's
+    root, and in `archive` the `digest`, `size` and `urls` of the package's archive as the
+    engine keeps it. The engine keeps each installed package's archive exactly as it was
+    distributed, for as long as the package is installed, and `urls` holds first a `file` URL
+    of that copy. For a `command` item whose program the manifest gives as a relative path,
+    with a runtime provider other than the engine's own runner, that part ends failed and
+    nothing is run where the item is not a package's item that states `platforms`, or where
+    it is such an item and the provider does not implement `run.v2` under PRV-001. The
+    diagnostic names the item, the provider and which of the two holds. Where the runtime
+    provider reports the run `unknown`, the engine asks for no run, and the part is not
+    dispatched and reports unavailable.
   observable: >-
     An item is run where it is reached by `command` or `package`; one reached by `remote` is
     connected to under IFC-041. The run is asked for only once the parts before it in TPL-012
@@ -243,9 +262,16 @@
     applied by whoever composes the command line. No value of a variable of the engine's own
     environment is given in the run's inputs, under SEC-020; what the engine's own runner passes
     to the process beside them is PRV-023. A program at a relative path is a file on the machine
-    the engine runs on, under MAN-010, which another runtime provider would not find. Where the
-    runtime provider reports the run running, nothing is asked for and the part counts as
-    succeeded, so a further setup leaves a running run as it is. Where it reports `unknown`, as
+    the engine runs on, under MAN-010, which another runtime provider would not find. A
+    package's item that states `platforms` is the exception: a provider that implements
+    `run.v2` takes the archive to the run's machine and checks it there, under PRV-019, and
+    `run.v1` promises a provider never such an item. The kept copy's SHA-256 is the package's
+    digest, under PKG-004, and every runtime provider runs on the engine's machine, under
+    PRV-002, so it can read that copy. A submitted project has no archive, so only the
+    engine's own runner runs its `command` items whose programs are given as relative paths.
+    Where the engine keeps the copy is DL7. Where the runtime provider reports the run
+    running, nothing is asked for and the part counts as succeeded,
+    so a further setup leaves a running run as it is. Where it reports `unknown`, as
     where it cannot reach the run's machine while the machine provider still reports that
     machine reachable, a run may still be running there, and asking for another could start a
     second that presents as the same instance, as Kubernetes warns that making a Pod again on
@@ -556,7 +582,7 @@
   layer: convention
   level: must
   when: >-
-    A runtime provider is asked with `run.v1` to run an item for an instance.
+    A runtime provider is asked with `run.v1` or `run.v2` to run an item for an instance.
   then: >-
     Where a run that it started for the ID may still be running, including one it is still
     starting under an earlier `run.v1`, it starts no other run. One it restarted under PRV-010
@@ -567,7 +593,14 @@
     it runs the item on the machine given in `machine`, and on no other. Where it cannot run the
     item on that machine, the run ends failed, and nothing is run. Values of `secrets` and
     `identity` in a call that starts no run reach no run and are kept nowhere, under PRV-011 and
-    PRV-022.
+    PRV-022. Where a call of `run.v2` proceeds to a new start under these rules, the provider
+    checks the archive on that machine before each unpacking. It first checks that the byte
+    length is the `size` of `archive`. Where the length matches, it then checks that the
+    SHA-256 of those bytes is its `digest`. Where either check fails, it runs nothing and the
+    run ends failed, its diagnostic naming the length given and the one found, or the digest
+    given and the one found, for the check that failed. Where both checks pass, it unpacks the
+    archive into a directory of that run's own and runs `program` from it, in place of the
+    first string of the item's `command`, the other strings being its arguments.
   observable: >-
     An instance runs on the machine of its placement, so an absolute path in its configuration
     is a path on that machine, under PLC-020, and two instances whose nodes report one
@@ -579,7 +612,9 @@
     is part of its contract, as which registry types it runs is under PRV-012. The machine
     provider places an instance under the selector of PLC-007, which, for one that has an item
     that is run and names no `runtime`, holds the hostname of the machine that `local`
-    represents.
+    represents. How the archive's bytes reach that machine, and where the provider keeps them,
+    is its contract; a check before each unpacking, and not only on arrival, finds bytes
+    altered since.
 
 - id: PRV-020
   layer: convention
@@ -919,13 +954,13 @@
   level: must
   when: >-
     A runtime provider other than the engine's own runner reports a `url` for a run, in the
-    result of `run.v1` or of `inspect-run.v1`.
+    result of `run.v1`, `run.v2` or `inspect-run.v1`.
   then: >-
     What answers at that `url` proves by TLS, before it is sent anything, that it serves the
     instance, with the certificate that `identity` held in `tls.crt` when that run started,
-    including where `run.v1` answers with an existing run under PRV-019. That certificate
-    names the instance's ID, whether it is the run's gate or the runtime provider's own end
-    of its channel to the run's machine.
+    including where `run.v1` or `run.v2` answers with an existing run under PRV-019. That
+    certificate names the instance's ID, whether it is the run's gate or the runtime provider's
+    own end of its channel to the run's machine.
   observable: >-
     This is the server's side of the check that IFC-017 has the engine make before it sends
     anything, `server/discover` among it: the engine checks the certificate against the

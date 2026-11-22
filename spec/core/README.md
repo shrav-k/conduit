@@ -18,7 +18,7 @@ everything the promises say it exports, and everything first start needs.
 | File | Holds |
 | --- | --- |
 | [conduit.yaml](conduit.yaml) | The package's manifest: its address, its version, its exports and its one implementation, the engine itself |
-| [operations.yaml](operations.yaml) | The 37 Operation contracts: every management verb, the setup, retire and sign-in hooks, the operations of the three provider capabilities that the engine invokes by provider calls, and the one operation of a secret Resource |
+| [operations.yaml](operations.yaml) | The 38 Operation contracts: every management verb, the setup, retire and sign-in hooks, the operations that the engine invokes by provider calls, and the one operation of a secret Resource |
 | [capabilities.yaml](capabilities.yaml) | The 8 Capability contracts: what `management`, `access`, Pools and Fleets offer, and the four provider capabilities: a runtime provider, the machine provider, a package-source provider and a secret Resource |
 | [types.yaml](types.yaml) | The 6 Type contracts: the basic Interface, Pool and Fleet types, and the types of a node, of `management` and of `access` |
 | [requirements.yaml](requirements.yaml) | The 2 Requirement contracts: the bound of a right to open, and the shared-host requirement |
@@ -146,6 +146,7 @@ set up by `open.v1` and retired by `close.v1`.
 | `account-hook.v1` | No capability: required by a signIn Type | The engine, as a part of sign-in or setup | CTR-013, PND-011 |
 | `sign-out-hook.v1` | No capability: required by a signIn Type | The engine, as a part of sign-in or setup | CTR-013, PND-011 |
 | `run.v1` | `runtime-provider.v1` | The engine, by a provider call | PRV-007, PRV-011, PRV-012, PRV-022, PRV-025, PRV-028 |
+| `run.v2` | No capability: required by a runtime provider's type | The engine, by a provider call | PRV-001, PRV-007, PRV-019 |
 | `stop.v1` | `runtime-provider.v1` | The engine, by a provider call | PRV-008, PRV-021, PRV-027, LIF-036 |
 | `inspect-run.v1` | `runtime-provider.v1` | The engine, by a provider call | PRV-009, PRV-027, PRV-028, IFC-017 |
 | `list-machines.v1` | `machine-provider.v1` | The engine, by a provider call | PRV-014 |
@@ -157,14 +158,14 @@ set up by `open.v1` and retired by `close.v1`.
 | `get-secret.v1` | `secret-provider.v1` | The engine's reads alone, which are requests through the instance's own Conduit | SEC-005 to SEC-007, SEC-010, SEC-023, PRV-026 |
 
 No Operation contract states a default implementation (CTR-002), and `engine` implements none
-of these fifteen (MAN-012, SEC-020): a template selects an implementation for each that it needs,
+of these sixteen (MAN-012, SEC-020): a template selects an implementation for each that it needs,
 or its type's default does (TPL-004). A provider call is not a request: no Conduit permits it, no access
 decision is made for it, and it is recorded (PRV-005). So no Conduit lists an operation of
 `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1` (PRV-004). A Conduit may
 list `get-secret.v1`, and only the root Interface opens one, for a Resource or an Agent
 (SEC-008); no actor's request for it is dispatched and no tool is presented for it (SEC-007,
 IFC-012). None of the provider operations, nor `get-secret.v1`, states an `effect`, apart
-from run.v1, stop.v1 and the three enrollment provider operations (ENR-002, ENR-007,
+from run.v1, run.v2, stop.v1 and the three enrollment provider operations (ENR-002, ENR-007,
 ENR-008).
 
 ### How to read the columns
@@ -419,7 +420,7 @@ none: it succeeds with the running run's current `url`, or ends unknown where it
 the existing run keeps the identity and certificate it received when it started (PRV-011,
 PRV-022, PRV-028). A stop succeeds only once no process of a run of the ID still runs in the
 unit by which the provider stops it and no run is being started, and prevents any start or
-restart until `run.v1` next asks (PRV-030). A provider's contract
+restart until `run.v1` or `run.v2` next asks (PRV-030). A provider's contract
 may promise to carry out every stop it still owes on a machine before starting any run there:
 a start that finds an owed stop fails, naming it, and may be retried once that stop is carried
 out (PRV-019, PRV-021). An instance that has
@@ -427,10 +428,11 @@ an item that is run and names no `runtime` is placed only on the machine the eng
 whose `kubernetes.io/hostname` its label selector then also holds (PLC-007). A runtime provider, the
 machine provider and a package-source provider run on the engine's own runner, on `local`
 (PRV-002). The engine asks no runtime provider other than its own runner to run a `command` item
-whose program is a relative path (PRV-007). Its own runner passes a process the variables
-`HOME`, `LOGNAME`, `PATH`, `SHELL`, `TERM` and `USER` of the engine's environment or, on an
-operating system on which a process needs others in their place, such as Windows, those that
-DL16 names, each only where its value does not begin with `()`; the further variables that a
+whose program is a relative path, except for a package's item that states `platforms`, which
+another runtime provider runs through `run.v2` (PRV-007). Its own runner passes a process
+the variables `HOME`, `LOGNAME`, `PATH`, `SHELL`, `TERM` and `USER` of the engine's environment
+or, on an operating system on which a process needs others in their place, such as Windows,
+those that DL16 names, each only where its value does not begin with `()`; the further variables that a
 list set on the runner names; and what the item binds or `identity` gives, which wins; and
 nothing else of the engine's environment (PRV-023). A runtime provider is given, in `run.v1`'s
 `identity`, what the run needs to reach the engine and prove which instance it is, under names
@@ -579,6 +581,7 @@ its binding and labels are fixed when made (PLC-008, ENR-010).
 | `setup-hook.v1` | Operation | TPL-017, TPL-003 |
 | `retire-hook.v1` | Operation | TPL-018, TPL-003 |
 | `run.v1` | Operation | PRV-007, PRV-011, PRV-022, PRV-025, PRV-028 |
+| `run.v2` | Operation | PRV-001, PRV-007, PRV-019 |
 | `stop.v1` | Operation | PRV-008, PRV-021, PRV-027, LIF-036 |
 | `inspect-run.v1` | Operation | PRV-009, PRV-027, IFC-017 |
 | `list-machines.v1` | Operation | PRV-014 |

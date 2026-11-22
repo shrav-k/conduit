@@ -147,7 +147,9 @@ metadata:
     `url` proves by TLS, with the run's certificate, that it serves the instance; its contract
     names the means, and how long the gate takes to close a server's stream once the connection
     from the enforcement point has gone silent. No Conduit lists these operations: the engine
-    alone invokes them.
+    alone invokes them. A runtime provider may also implement `run.v2`, which runs a package's
+    item that states `platforms` on another machine: this capability does not list it, and the
+    provider's type lists it under `requires` (PRV-001).
 spec:
   operations:
     - github.com/shrav-k/conduit/core#run.v1

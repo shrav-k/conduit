@@ -89,13 +89,18 @@
     the union of the `nodeSelector` that the instance's type and each implementation item
     selected for it state and, where the instance names no `runtime`, the label
     `kubernetes.io/hostname` with the value that `local`'s status holds. Where no item that is
-    run is selected for it, the selector is empty, since nothing of the instance runs.
+    run is selected for it, the selector is empty, since nothing of the instance runs. Or,
+    where an item that is run and is selected for the instance states `platforms`, the fixed
+    `kubernetes.io/os` and `kubernetes.io/arch` of the node are not one of its pairs.
   then: >-
     The instance is not instantiated.
   observable: >-
     Resolving returns a diagnostic naming the label, the node and which of the type, the item
-    or the engine's own runner gives the label, before any effect. A label that is
-    absent from the node's fixed labels does not match. PLC-025 keeps the type and the
+    or the engine's own runner gives the label, before any effect. For `platforms`, the
+    diagnostic names the item, the node's pair and the listed pairs; a node that lacks either
+    label matches none. The pairs are no selector: `linux/amd64` and `darwin/arm64` admit
+    neither `linux/arm64` nor `darwin/amd64`. A label that is absent from the node's fixed labels
+    does not match. PLC-025 keeps the type and the
     items from naming one label with two values; where the type or an item names
     `kubernetes.io/hostname` with another value for an instance that runs on the engine's own
     runner, no node matches. The label of the engine's own runner is added as Kubernetes

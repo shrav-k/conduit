@@ -75,6 +75,7 @@ exports:
   - setup-hook.v1
   - retire-hook.v1
   - run.v1
+  - run.v2
   - stop.v1
   - inspect-run.v1
   - list-machines.v1

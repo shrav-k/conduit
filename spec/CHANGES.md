@@ -41,3 +41,9 @@ then they are under `docs/proposals/`.
 - Changed: PRV-020 and LIF-021, a login Resource with an Agent reports conflict at retirement (DEC-042).
 - Changed: `login Resource`, `notice`, `state directory` and the limit at spec/README.md#pending-actions-sign-in-and-the-network on a Resource's login (DEC-042).
 - Changed: IFC-016, a URL request outside sign-in.v1 from an Agent of a login Resource raises PND-005 for that Resource, the form in which a plain turn reports a lapsed login (DEC-042, DEC-046).
+- Changed: MAN-010 and MAN-013, a relative-path item may state `platforms`, `<os>/<arch>` pairs, each pair's program in the archive, or the package is rejected (DEC-049).
+- Changed: PLC-007, such an item is placed only on a node whose os and arch are a listed pair (DEC-049).
+- Changed: PRV-007, another runtime provider runs a package's such item only through `run.v2`, given the program and the kept archive's descriptor; any other relative-path item still runs on the engine's machine alone (DEC-049).
+- Changed: PRV-019, for a new `run.v2` start the provider checks the archive's byte length and then its SHA-256 on the machine before each unpacking, and on a mismatch runs nothing and fails, naming both lengths or both digests (DEC-049).
+- Added: `run.v2`, which a runtime provider implements by its type's `requires` (PRV-001), and `platforms` in `implementation-item.v1` (DEC-049).
+- Changed: MAN-009 and PKG-019 admit `platforms` and keep the platform-pair requirement without `nodeSelector`; PRV-028 and IFC-017 apply the run URL and its certificate check to `run.v2`; REC-002 names the instance in the `run.v2` record's `subject` (DEC-049).

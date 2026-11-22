@@ -1,0 +1,4 @@
+# Added case for work order 271.
+- name: change-revisions-returned
+  kind: added
+  cases: [change-revisions-returned]

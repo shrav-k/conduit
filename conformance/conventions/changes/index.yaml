@@ -35,6 +35,17 @@
       "safety_rows": []
     },
     {
+      "id": "change-revisions-returned",
+      "case": "conventions/changes/revisions-returned/case.yaml",
+      "promises": [
+        "REV-001",
+        "FLEET-005",
+        "LIF-009",
+        "OPS-009"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "change-t4",
       "case": "conventions/changes/t4/case.yaml",
       "promises": [

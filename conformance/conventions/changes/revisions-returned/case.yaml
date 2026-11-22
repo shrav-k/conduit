@@ -1,0 +1,1011 @@
+{
+  "id": "change-revisions-returned",
+  "title": "Registration and nested replacement return revisions that inspection agrees with",
+  "layers": [
+    "convention"
+  ],
+  "promises": [
+    "REV-001",
+    "FLEET-005",
+    "LIF-009",
+    "OPS-009"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {},
+  "steps": [
+    {
+      "input": {
+        "kind": "first-start",
+        "evidence": {
+          "time": "2026-11-22T12:00:01Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000000001", "00000000-0000-4000-8000-000000000002",
+            "00000000-0000-4000-8000-000000000003", "00000000-0000-4000-8000-000000000004",
+            "00000000-0000-4000-8000-000000000005", "00000000-0000-4000-8000-000000000006",
+            "00000000-0000-4000-8000-000000000007", "00000000-0000-4000-8000-000000000008",
+            "00000000-0000-4000-8000-000000000009", "00000000-0000-4000-8000-000000000010",
+            "00000000-0000-4000-8000-000000000011", "00000000-0000-4000-8000-000000000012",
+            "00000000-0000-4000-8000-000000000013", "00000000-0000-4000-8000-000000000014",
+            "00000000-0000-4000-8000-000000000015", "00000000-0000-4000-8000-000000000016",
+            "00000000-0000-4000-8000-000000000017", "00000000-0000-4000-8000-000000000018",
+            "00000000-0000-4000-8000-000000000019", "00000000-0000-4000-8000-000000000020",
+            "00000000-0000-4000-8000-000000000021", "00000000-0000-4000-8000-000000000022",
+            "00000000-0000-4000-8000-000000000023", "00000000-0000-4000-8000-000000000024"
+          ],
+          "revisions": [
+            "evidence-1-01",
+            "evidence-1-02",
+            "evidence-1-03",
+            "evidence-1-04",
+            "evidence-1-05",
+            "evidence-1-06",
+            "evidence-1-07",
+            "evidence-1-08"
+          ],
+          "suffixes": [
+            "fst01",
+            "fst02",
+            "fst03"
+          ]
+        },
+        "machine": {
+          "hostname": "vector.example",
+          "labels": {
+            "kubernetes.io/hostname": "vector.example",
+            "kubernetes.io/os": "linux",
+            "kubernetes.io/arch": "amd64"
+          },
+          "state": "reachable"
+        },
+        "trustDomain": "vectors.example"
+      },
+      "expect": {
+        "external_intents": [],
+        "reply": {
+          "started": true
+        },
+        "state": {
+          "started": true
+        },
+        "record_facts": [],
+        "required_promises": [
+          "FST-001"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-22T12:00:02Z",
+          "ids": [
+            "00000000-0000-4000-a002-000000000001", "00000000-0000-4000-a002-000000000002",
+            "00000000-0000-4000-a002-000000000003", "00000000-0000-4000-a002-000000000004",
+            "00000000-0000-4000-a002-000000000005", "00000000-0000-4000-a002-000000000006",
+            "00000000-0000-4000-a002-000000000007", "00000000-0000-4000-a002-000000000008",
+            "00000000-0000-4000-a002-000000000009", "00000000-0000-4000-a002-000000000010",
+            "00000000-0000-4000-a002-000000000011", "00000000-0000-4000-a002-000000000012",
+            "00000000-0000-4000-a002-000000000013", "00000000-0000-4000-a002-000000000014",
+            "00000000-0000-4000-a002-000000000015", "00000000-0000-4000-a002-000000000016",
+            "00000000-0000-4000-a002-000000000017", "00000000-0000-4000-a002-000000000018",
+            "00000000-0000-4000-a002-000000000019", "00000000-0000-4000-a002-000000000020",
+            "00000000-0000-4000-a002-000000000021", "00000000-0000-4000-a002-000000000022",
+            "00000000-0000-4000-a002-000000000023", "00000000-0000-4000-a002-000000000024",
+            "00000000-0000-4000-a002-000000000025", "00000000-0000-4000-a002-000000000026",
+            "00000000-0000-4000-a002-000000000027", "00000000-0000-4000-a002-000000000028",
+            "00000000-0000-4000-a002-000000000029", "00000000-0000-4000-a002-000000000030",
+            "00000000-0000-4000-a002-000000000031", "00000000-0000-4000-a002-000000000032",
+            "00000000-0000-4000-a002-000000000033", "00000000-0000-4000-a002-000000000034",
+            "00000000-0000-4000-a002-000000000035", "00000000-0000-4000-a002-000000000036",
+            "00000000-0000-4000-a002-000000000037", "00000000-0000-4000-a002-000000000038",
+            "00000000-0000-4000-a002-000000000039", "00000000-0000-4000-a002-000000000040"
+          ],
+          "revisions": [
+            "evidence-2-01",
+            "evidence-2-02",
+            "evidence-2-03",
+            "evidence-2-04",
+            "evidence-2-05",
+            "evidence-2-06",
+            "evidence-2-07",
+            "evidence-2-08"
+          ],
+          "suffixes": [
+            "make1",
+            "make2",
+            "make3"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.register.v1",
+          "arguments": {
+            "manifest": {
+              "apiVersion": "github.com/shrav-k/conduit/v0",
+              "address": "example.org/revisions"
+            },
+            "documents": [
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Pool",
+                "metadata": {
+                  "name": "team-t"
+                },
+                "spec": {
+                  "type": "github.com/shrav-k/conduit/core#pool.v1"
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Pool",
+                "metadata": {
+                  "name": "team"
+                },
+                "from": "team-t"
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Fleet",
+                "metadata": {
+                  "name": "crew"
+                },
+                "from": "github.com/shrav-k/conduit/core#fleet"
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Interface",
+                "metadata": {
+                  "name": "holder-t"
+                },
+                "spec": {
+                  "type": "github.com/shrav-k/conduit/core#interface.v1",
+                  "conduits": {
+                    "slot": {
+                      "from": "github.com/shrav-k/conduit/core#root-pool",
+                      "target": {
+                        "kind": "Pool",
+                        "name": "team"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Interface",
+                "metadata": {
+                  "name": "holder"
+                },
+                "from": "holder-t"
+              }
+            ]
+          }
+        },
+        "key": "revisions-registration"
+      },
+      "expect": {
+        "external_intents": [],
+        "reply": {
+          "isError": false,
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          },
+          "structuredContent": {
+            "objects": [
+              {
+                "kind": "Interface",
+                "name": "holder-t"
+              },
+              {
+                "kind": "Pool",
+                "name": "team-t"
+              },
+              {
+                "kind": "Fleet",
+                "name": "crew"
+              },
+              {
+                "kind": "Interface",
+                "name": "holder"
+              },
+              {
+                "kind": "Conduit",
+                "nested": {
+                  "name": "slot"
+                }
+              },
+              {
+                "kind": "Pool",
+                "name": "team"
+              },
+              {
+                "kind": "Conduit"
+              },
+              {
+                "kind": "Conduit"
+              }
+            ]
+          }
+        }
+      },
+      "capture": {
+        "registeredObjects": "/reply/structuredContent/objects",
+        "registration": "/reply/_meta/io.github.shrav-k.conduit~1invocation",
+        "teamTemplateId": "/reply/structuredContent/objects/1/id",
+        "teamTemplateRevision": "/reply/structuredContent/objects/1/revision",
+        "holderTemplateId": "/reply/structuredContent/objects/0/id",
+        "holderTemplateRevision": "/reply/structuredContent/objects/0/revision",
+        "teamId": "/reply/structuredContent/objects/5/id",
+        "teamRevision": "/reply/structuredContent/objects/5/revision",
+        "crewId": "/reply/structuredContent/objects/2/id",
+        "crewRevision": "/reply/structuredContent/objects/2/revision",
+        "holderId": "/reply/structuredContent/objects/3/id",
+        "holderRevision": "/reply/structuredContent/objects/3/revision",
+        "slotId": "/reply/structuredContent/objects/4/id",
+        "slotRevision": "/reply/structuredContent/objects/4/revision",
+        "slotName": "/reply/structuredContent/objects/4/name",
+        "teamDefaultId": "/reply/structuredContent/objects/7/id",
+        "teamDefaultRevision": "/reply/structuredContent/objects/7/revision",
+        "teamDefaultName": "/reply/structuredContent/objects/7/name",
+        "crewDefaultId": "/reply/structuredContent/objects/6/id",
+        "crewDefaultRevision": "/reply/structuredContent/objects/6/revision",
+        "crewDefaultName": "/reply/structuredContent/objects/6/name"
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-22T12:00:03Z",
+          "ids": [
+            "00000000-0000-4000-a003-000000000001", "00000000-0000-4000-a003-000000000002",
+            "00000000-0000-4000-a003-000000000003", "00000000-0000-4000-a003-000000000004",
+            "00000000-0000-4000-a003-000000000005", "00000000-0000-4000-a003-000000000006",
+            "00000000-0000-4000-a003-000000000007", "00000000-0000-4000-a003-000000000008"
+          ],
+          "revisions": [],
+          "suffixes": []
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.inspect.v1",
+          "arguments": {
+            "object": {
+              "kind": "Pool",
+              "name": "team-t"
+            }
+          }
+        }
+      },
+      "expect": {
+        "external_intents": [],
+        "reply": {
+          "isError": false,
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          },
+          "structuredContent": {
+            "id": "$teamTemplateId",
+            "revision": "$teamTemplateRevision"
+          }
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-22T12:00:04Z",
+          "ids": [
+            "00000000-0000-4000-a004-000000000001", "00000000-0000-4000-a004-000000000002",
+            "00000000-0000-4000-a004-000000000003", "00000000-0000-4000-a004-000000000004",
+            "00000000-0000-4000-a004-000000000005", "00000000-0000-4000-a004-000000000006",
+            "00000000-0000-4000-a004-000000000007", "00000000-0000-4000-a004-000000000008"
+          ],
+          "revisions": [],
+          "suffixes": []
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.inspect.v1",
+          "arguments": {
+            "object": {
+              "kind": "Interface",
+              "name": "holder-t"
+            }
+          }
+        }
+      },
+      "expect": {
+        "external_intents": [],
+        "reply": {
+          "isError": false,
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          },
+          "structuredContent": {
+            "id": "$holderTemplateId",
+            "revision": "$holderTemplateRevision"
+          }
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-22T12:00:05Z",
+          "ids": [
+            "00000000-0000-4000-a005-000000000001", "00000000-0000-4000-a005-000000000002",
+            "00000000-0000-4000-a005-000000000003", "00000000-0000-4000-a005-000000000004",
+            "00000000-0000-4000-a005-000000000005", "00000000-0000-4000-a005-000000000006",
+            "00000000-0000-4000-a005-000000000007", "00000000-0000-4000-a005-000000000008"
+          ],
+          "revisions": [],
+          "suffixes": []
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.inspect.v1",
+          "arguments": {
+            "object": {
+              "kind": "Pool",
+              "name": "team"
+            }
+          }
+        }
+      },
+      "expect": {
+        "external_intents": [],
+        "reply": {
+          "isError": false,
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          },
+          "structuredContent": {
+            "id": "$teamId",
+            "revision": "$teamRevision"
+          }
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-22T12:00:06Z",
+          "ids": [
+            "00000000-0000-4000-a006-000000000001", "00000000-0000-4000-a006-000000000002",
+            "00000000-0000-4000-a006-000000000003", "00000000-0000-4000-a006-000000000004",
+            "00000000-0000-4000-a006-000000000005", "00000000-0000-4000-a006-000000000006",
+            "00000000-0000-4000-a006-000000000007", "00000000-0000-4000-a006-000000000008"
+          ],
+          "revisions": [],
+          "suffixes": []
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.inspect.v1",
+          "arguments": {
+            "object": {
+              "kind": "Fleet",
+              "name": "crew"
+            }
+          }
+        }
+      },
+      "expect": {
+        "external_intents": [],
+        "reply": {
+          "isError": false,
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          },
+          "structuredContent": {
+            "id": "$crewId",
+            "revision": "$crewRevision"
+          }
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-22T12:00:07Z",
+          "ids": [
+            "00000000-0000-4000-a007-000000000001", "00000000-0000-4000-a007-000000000002",
+            "00000000-0000-4000-a007-000000000003", "00000000-0000-4000-a007-000000000004",
+            "00000000-0000-4000-a007-000000000005", "00000000-0000-4000-a007-000000000006",
+            "00000000-0000-4000-a007-000000000007", "00000000-0000-4000-a007-000000000008"
+          ],
+          "revisions": [],
+          "suffixes": []
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.inspect.v1",
+          "arguments": {
+            "object": {
+              "kind": "Interface",
+              "name": "holder"
+            }
+          }
+        }
+      },
+      "expect": {
+        "external_intents": [],
+        "reply": {
+          "isError": false,
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          },
+          "structuredContent": {
+            "id": "$holderId",
+            "revision": "$holderRevision"
+          }
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-22T12:00:08Z",
+          "ids": [
+            "00000000-0000-4000-a008-000000000001", "00000000-0000-4000-a008-000000000002",
+            "00000000-0000-4000-a008-000000000003", "00000000-0000-4000-a008-000000000004",
+            "00000000-0000-4000-a008-000000000005", "00000000-0000-4000-a008-000000000006",
+            "00000000-0000-4000-a008-000000000007", "00000000-0000-4000-a008-000000000008"
+          ],
+          "revisions": [],
+          "suffixes": []
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.inspect.v1",
+          "arguments": {
+            "object": {
+              "kind": "Conduit",
+              "name": "$slotName"
+            }
+          }
+        }
+      },
+      "expect": {
+        "external_intents": [],
+        "reply": {
+          "isError": false,
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          },
+          "structuredContent": {
+            "id": "$slotId",
+            "revision": "$slotRevision"
+          }
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-22T12:00:09Z",
+          "ids": [
+            "00000000-0000-4000-a009-000000000001", "00000000-0000-4000-a009-000000000002",
+            "00000000-0000-4000-a009-000000000003", "00000000-0000-4000-a009-000000000004",
+            "00000000-0000-4000-a009-000000000005", "00000000-0000-4000-a009-000000000006",
+            "00000000-0000-4000-a009-000000000007", "00000000-0000-4000-a009-000000000008"
+          ],
+          "revisions": [],
+          "suffixes": []
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.inspect.v1",
+          "arguments": {
+            "object": {
+              "kind": "Conduit",
+              "name": "$teamDefaultName"
+            }
+          }
+        }
+      },
+      "expect": {
+        "external_intents": [],
+        "reply": {
+          "isError": false,
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          },
+          "structuredContent": {
+            "id": "$teamDefaultId",
+            "revision": "$teamDefaultRevision",
+            "provenance": {
+              "cause": "default"
+            },
+            "declared": {
+              "target": {
+                "kind": "Pool",
+                "id": "$teamId"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-22T12:00:10Z",
+          "ids": [
+            "00000000-0000-4000-a00a-000000000001", "00000000-0000-4000-a00a-000000000002",
+            "00000000-0000-4000-a00a-000000000003", "00000000-0000-4000-a00a-000000000004",
+            "00000000-0000-4000-a00a-000000000005", "00000000-0000-4000-a00a-000000000006",
+            "00000000-0000-4000-a00a-000000000007", "00000000-0000-4000-a00a-000000000008"
+          ],
+          "revisions": [],
+          "suffixes": []
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.inspect.v1",
+          "arguments": {
+            "object": {
+              "kind": "Conduit",
+              "name": "$crewDefaultName"
+            }
+          }
+        }
+      },
+      "expect": {
+        "external_intents": [],
+        "reply": {
+          "isError": false,
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          },
+          "structuredContent": {
+            "id": "$crewDefaultId",
+            "revision": "$crewDefaultRevision",
+            "provenance": {
+              "cause": "default"
+            },
+            "declared": {
+              "target": {
+                "kind": "Fleet",
+                "id": "$crewId"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-22T12:00:11Z",
+          "ids": [
+            "00000000-0000-4000-a00b-000000000001", "00000000-0000-4000-a00b-000000000002",
+            "00000000-0000-4000-a00b-000000000003", "00000000-0000-4000-a00b-000000000004",
+            "00000000-0000-4000-a00b-000000000005", "00000000-0000-4000-a00b-000000000006",
+            "00000000-0000-4000-a00b-000000000007", "00000000-0000-4000-a00b-000000000008",
+            "00000000-0000-4000-a00b-000000000009", "00000000-0000-4000-a00b-000000000010",
+            "00000000-0000-4000-a00b-000000000011", "00000000-0000-4000-a00b-000000000012"
+          ],
+          "revisions": [
+            "evidence-11-01",
+            "evidence-11-02",
+            "evidence-11-03",
+            "evidence-11-04",
+            "evidence-11-05",
+            "evidence-11-06",
+            "evidence-11-07",
+            "evidence-11-08"
+          ],
+          "suffixes": [
+            "redo1",
+            "redo2",
+            "redo3"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.register.v1",
+          "arguments": {
+            "manifest": {
+              "apiVersion": "github.com/shrav-k/conduit/v0",
+              "address": "example.org/revisions"
+            },
+            "documents": [
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Pool",
+                "metadata": {
+                  "name": "team-t"
+                },
+                "spec": {
+                  "type": "github.com/shrav-k/conduit/core#pool.v1"
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Pool",
+                "metadata": {
+                  "name": "team"
+                },
+                "from": "team-t"
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Fleet",
+                "metadata": {
+                  "name": "crew"
+                },
+                "from": "github.com/shrav-k/conduit/core#fleet"
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Interface",
+                "metadata": {
+                  "name": "holder-t"
+                },
+                "spec": {
+                  "type": "github.com/shrav-k/conduit/core#interface.v1",
+                  "conduits": {
+                    "slot": {
+                      "from": "github.com/shrav-k/conduit/core#root-pool",
+                      "target": {
+                        "kind": "Pool",
+                        "name": "team"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Interface",
+                "metadata": {
+                  "name": "holder"
+                },
+                "from": "holder-t"
+              }
+            ]
+          }
+        },
+        "key": "revisions-registration"
+      },
+      "expect": {
+        "external_intents": [],
+        "reply": {
+          "isError": false,
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded",
+            "io.github.shrav-k.conduit/invocation": "$registration"
+          },
+          "structuredContent": {
+            "objects": "$registeredObjects"
+          }
+        },
+        "record_facts": [
+          {
+            "type": "access-decision",
+            "data": {
+              "invocation": "$registration",
+              "permitted": true
+            }
+          },
+          {
+            "type": "request-ended",
+            "data": {
+              "invocation": "$registration",
+              "outcome": "succeeded"
+            }
+          }
+        ],
+        "absent": [
+          "/records/2"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-22T12:00:12Z",
+          "ids": [
+            "00000000-0000-4000-a00c-000000000001", "00000000-0000-4000-a00c-000000000002",
+            "00000000-0000-4000-a00c-000000000003", "00000000-0000-4000-a00c-000000000004",
+            "00000000-0000-4000-a00c-000000000005", "00000000-0000-4000-a00c-000000000006",
+            "00000000-0000-4000-a00c-000000000007", "00000000-0000-4000-a00c-000000000008"
+          ],
+          "revisions": [],
+          "suffixes": []
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.open.v1",
+          "arguments": {
+            "conduit": {
+              "kind": "Conduit",
+              "name": "$slotName"
+            }
+          }
+        }
+      },
+      "expect": {
+        "external_intents": [],
+        "reply": {
+          "isError": false,
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          }
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-22T12:00:13Z",
+          "ids": [
+            "00000000-0000-4000-a00d-000000000001", "00000000-0000-4000-a00d-000000000002",
+            "00000000-0000-4000-a00d-000000000003", "00000000-0000-4000-a00d-000000000004",
+            "00000000-0000-4000-a00d-000000000005", "00000000-0000-4000-a00d-000000000006",
+            "00000000-0000-4000-a00d-000000000007", "00000000-0000-4000-a00d-000000000008",
+            "00000000-0000-4000-a00d-000000000009", "00000000-0000-4000-a00d-000000000010",
+            "00000000-0000-4000-a00d-000000000011", "00000000-0000-4000-a00d-000000000012"
+          ],
+          "revisions": [],
+          "suffixes": []
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.close.v1",
+          "arguments": {
+            "conduit": {
+              "kind": "Conduit",
+              "name": "$slotName"
+            }
+          }
+        }
+      },
+      "expect": {
+        "external_intents": [],
+        "reply": {
+          "isError": false,
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          }
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-22T12:00:14Z",
+          "ids": [
+            "00000000-0000-4000-a00e-000000000001", "00000000-0000-4000-a00e-000000000002",
+            "00000000-0000-4000-a00e-000000000003", "00000000-0000-4000-a00e-000000000004",
+            "00000000-0000-4000-a00e-000000000005", "00000000-0000-4000-a00e-000000000006",
+            "00000000-0000-4000-a00e-000000000007", "00000000-0000-4000-a00e-000000000008"
+          ],
+          "revisions": [],
+          "suffixes": []
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.list.v1",
+          "arguments": {}
+        }
+      },
+      "expect": {
+        "external_intents": [],
+        "reply": {
+          "isError": false,
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          },
+          "structuredContent": {
+            "tombstones": [
+              {
+                "object": {
+                  "kind": "Conduit",
+                  "name": "$slotName",
+                  "id": "$slotId"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "capture": {
+        "slotTombstone": "/reply/structuredContent/tombstones/0/id"
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-22T12:00:15Z",
+          "ids": [
+            "00000000-0000-4000-a00f-000000000001", "00000000-0000-4000-a00f-000000000002",
+            "00000000-0000-4000-a00f-000000000003", "00000000-0000-4000-a00f-000000000004",
+            "00000000-0000-4000-a00f-000000000005", "00000000-0000-4000-a00f-000000000006",
+            "00000000-0000-4000-a00f-000000000007", "00000000-0000-4000-a00f-000000000008"
+          ],
+          "revisions": [],
+          "suffixes": []
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.lift.v1",
+          "arguments": {
+            "id": "$slotTombstone"
+          }
+        }
+      },
+      "expect": {
+        "external_intents": [],
+        "reply": {
+          "isError": false,
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          }
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-22T12:00:16Z",
+          "ids": [
+            "00000000-0000-4000-a010-000000000001", "00000000-0000-4000-a010-000000000002",
+            "00000000-0000-4000-a010-000000000003", "00000000-0000-4000-a010-000000000004",
+            "00000000-0000-4000-a010-000000000005", "00000000-0000-4000-a010-000000000006",
+            "00000000-0000-4000-a010-000000000007", "00000000-0000-4000-a010-000000000008",
+            "00000000-0000-4000-a010-000000000009", "00000000-0000-4000-a010-000000000010",
+            "00000000-0000-4000-a010-000000000011", "00000000-0000-4000-a010-000000000012",
+            "00000000-0000-4000-a010-000000000013", "00000000-0000-4000-a010-000000000014",
+            "00000000-0000-4000-a010-000000000015", "00000000-0000-4000-a010-000000000016",
+            "00000000-0000-4000-a010-000000000017", "00000000-0000-4000-a010-000000000018",
+            "00000000-0000-4000-a010-000000000019", "00000000-0000-4000-a010-000000000020",
+            "00000000-0000-4000-a010-000000000021", "00000000-0000-4000-a010-000000000022",
+            "00000000-0000-4000-a010-000000000023", "00000000-0000-4000-a010-000000000024"
+          ],
+          "revisions": [
+            "evidence-16-01"
+          ],
+          "suffixes": [
+            "next1"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.register-replacement.v1",
+          "arguments": {
+            "instance": {
+              "kind": "Interface",
+              "name": "holder"
+            },
+            "nested": "slot"
+          }
+        }
+      },
+      "expect": {
+        "external_intents": [],
+        "reply": {
+          "isError": false,
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          },
+          "structuredContent": {
+            "object": {
+              "kind": "Conduit"
+            }
+          }
+        }
+      },
+      "capture": {
+        "replacementName": "/reply/structuredContent/object/name",
+        "replacementId": "/reply/structuredContent/object/id",
+        "replacementRevision": "/reply/structuredContent/object/revision"
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-22T12:00:17Z",
+          "ids": [
+            "00000000-0000-4000-a011-000000000001", "00000000-0000-4000-a011-000000000002",
+            "00000000-0000-4000-a011-000000000003", "00000000-0000-4000-a011-000000000004",
+            "00000000-0000-4000-a011-000000000005", "00000000-0000-4000-a011-000000000006",
+            "00000000-0000-4000-a011-000000000007", "00000000-0000-4000-a011-000000000008"
+          ],
+          "revisions": [],
+          "suffixes": []
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.inspect.v1",
+          "arguments": {
+            "object": {
+              "kind": "Conduit",
+              "name": "$replacementName"
+            }
+          }
+        }
+      },
+      "expect": {
+        "external_intents": [],
+        "reply": {
+          "isError": false,
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          },
+          "structuredContent": {
+            "id": "$replacementId",
+            "revision": "$replacementRevision"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -178,7 +178,8 @@ ENR-008).
   closing name no revision and advance none: they change an instance's lifecycle state, not
   its definition or configuration (REV-012). `replace.v1` returns the template's revision
   after the request in the output `revision`, which is the one it had where the request
-  changed nothing (SUB-009).
+  changed nothing (SUB-009); `register.v1` and `register-replacement.v1` give each object
+  they made its revision beside its ID (REV-001).
 - **Controls.** The core package has none. A control of another package states `changes`, a
   map from the name of an input to the JSON Pointer, into the configuration, of the setting
   that input sets, in which no two pointers are equal and none lies inside another, compared

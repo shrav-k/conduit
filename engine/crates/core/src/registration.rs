@@ -2715,7 +2715,8 @@ pub(crate) fn prepare(
         .map(|o| {
             // object.v1 names the enclosing instance, not the core's storage slot
             // (INS-016). An ordinary object has no nested member.
-            let mut result = json!({"kind":o["kind"],"name":o["name"],"id":o["id"]});
+            let mut result =
+                json!({"kind":o["kind"],"name":o["name"],"id":o["id"],"revision":o["revision"]});
             if let Some(nested) = o.get("nested") {
                 result["nested"] = json!({"instance":nested["parent"],"name":nested["name"]});
             }
@@ -2769,7 +2770,7 @@ pub(crate) fn prepare(
             "capability":template["spec"]["capability"],"operations":template["spec"]["operations"],
             "open":true,"provenance":{"cause":"default"}});
         b.state.objects.push(object);
-        registered.push(json!({"kind":"Conduit","name":name,"id":id}));
+        registered.push(json!({"kind":"Conduit","name":name,"id":id,"revision":revision}));
         for (action, previous, state) in [
             ("registered", Value::Null, "registered"),
             ("lifecycle-changed", json!("registered"), "ready"),
@@ -3296,7 +3297,7 @@ pub(crate) fn replacement(
         return Ok(json!({"rule":"LIF-041","tombstone":stone}));
     }
     let object = resolved.first().ok_or("replacement produced no object")?;
-    let result = json!({"object":{"kind":object["kind"],"name":object["name"],"id":object["id"]},"diagnostics":[]});
+    let result = json!({"object":{"kind":object["kind"],"name":object["name"],"id":object["id"],"revision":object["revision"]},"diagnostics":[]});
     let p = b
         .state
         .objects

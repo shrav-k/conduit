@@ -311,4 +311,31 @@ assertions and its lines with them; every check's last line.
 
 ## Record
 
-Not yet run.
+Run on 2026-11-21 and 22 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+
+**Worker-1's first two turns** (23:10 to 23:14) each stopped before any edit, as the stop rule
+asks, and the coordinator decided each, open to the owner's strike:
+- a read of a secret could carry the value in usage's strings, which SEC-015 forbids its record:
+  IFC-051 does not apply to a read of a secret, whose usage is not kept, checked or relayed;
+- the portable runner allows `required_promises` only on a step that builds state: decision 8's
+  sentence asking for it on the request and completion steps was withdrawn.
+
+**Worker-1's third turn** (23:14 to 23:49) carried out the order: IFC-051, `usage.v1`, REC-002's
+sentence and the expected-failure case `requests-usage-kept`, which fails at step 7 on today's
+engine. The whole engine suite passed once (527 passed).
+
+**Two blind reads at once** (23:49 to 23:54), the owner's answer for A77's window:
+`turn-verifier-1.turn.v1` found three musts and a should; the Claude reader passed it with two
+nits. One fix turn (23:55 to 00:21) applied them all, the coordinator deciding each:
+- every read of a secret is excluded, under SEC-010, SEC-013 and SEC-023;
+- the engine checks the member's shape only; what its strings say is the implementation's, which
+  names no account and holds no secret in them, as IFC-051 now says;
+- a malformed member's warning locates the failure at the last member whose name the schema
+  fixes and gives its `keywordLocation`, never a key or value the report chose;
+- the case asserts the counters an input leaves out stay absent and the warning quotes no value;
+- REC-002, the definitions row and its CHANGES line name the secret-read exception.
+
+The whole engine suite then failed once at `s2_dependent_call_after_close`, which this order's
+files do not reach; run alone three times (00:21 to 00:24) it passed each time, so it is taken
+for a flake under the machine's load, and the gate's run at the merge settles it. Order 262
+builds IFC-051 in the engine. The gate's run on the squash is the coordinator's, at the merge.

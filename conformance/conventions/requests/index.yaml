@@ -964,6 +964,14 @@
       ]
     },
     {
+      "id": "requests-usage-kept",
+      "case": "conventions/requests/usage-kept/case.yaml",
+      "promises": [
+        "IFC-051",
+        "REC-002"
+      ]
+    },
+    {
       "id": "requests-write-capability-error",
       "case": "conventions/requests/write-capability-error/case.yaml",
       "promises": [

@@ -18,7 +18,7 @@ mod client_ids;
 #[cfg(feature = "differential")]
 mod differential;
 pub mod explain;
-mod inventory;
+pub mod inventory;
 pub mod lifecycle;
 mod login_resource;
 #[cfg(test)]

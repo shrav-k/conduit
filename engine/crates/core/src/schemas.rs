@@ -861,7 +861,7 @@ impl<'a> SchemaPosition<'a> {
 type SecretPositions<'a> = BTreeSet<(&'a str, *const Value, *const Value, bool)>;
 
 impl Environment {
-    fn secret_paths(
+    pub fn secret_paths(
         &self,
         scope: &str,
         root: &Value,

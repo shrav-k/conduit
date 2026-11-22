@@ -148,7 +148,7 @@ fn package_item(context: &Value) -> Value {
     item
 }
 
-pub(crate) fn inspect_project_documents(object: &Value, packages: &mut Value) -> Result<()> {
+pub fn inspect_project_documents(object: &Value, packages: &mut Value) -> Result<()> {
     let Some(project) = object.pointer("/held/contexts/project") else {
         return Ok(());
     };
@@ -235,7 +235,7 @@ fn inspected_item(item: &Value) -> Value {
 }
 
 /// TPL-004 and NAM-009: report the item's held scope, not a new resolution.
-pub(crate) fn inspected_implementations(object: &Value, core: &str) -> Option<Value> {
+pub fn inspected_implementations(object: &Value, core: &str) -> Option<Value> {
     if object["kind"] == "Conduit" || object["first_start"] == true {
         return None;
     }

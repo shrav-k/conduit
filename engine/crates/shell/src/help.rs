@@ -1,4 +1,4 @@
-const COMMANDS: [(&str, &str, &str); 15] = [
+const COMMANDS: [(&str, &str, &str); 16] = [
     (
         "init",
         "[--label KEY=VALUE] [--trust-domain DOMAIN]",
@@ -62,8 +62,9 @@ const COMMANDS: [(&str, &str, &str); 15] = [
         "TOOL [ARGUMENTS-JSON | --arguments-file PATH|-]",
         "call --store /tmp/conduit management.inspect.v1 '{\"object\":{\"kind\":\"Interface\",\"name\":\"root\"}}'",
     ),
+    ("plan", "[PROJECT_DIR]", "plan ./project"),
 ];
-const DESCRIPTIONS: [&str; 15] = [
+const DESCRIPTIONS: [&str; 16] = [
     "Create the project's conduit.yaml skeleton unless a manifest already exists. With --store, initialize a private store and root identity instead.",
     "Register a local project, open root's submitted Conduits and set up instances. Owns runs until exit; stop serve first. --package explicitly installs an archive before registration.",
     "Submit a project to serve, open root's submitted Conduits and set up instances. Prints each attempted step after its results; completed steps persist on failure. Relative fetch/program values must be made absolute.",
@@ -79,6 +80,7 @@ const DESCRIPTIONS: [&str; 15] = [
     "Hold the store, set up registered instances and serve MCP on its fixed loopback URL. With an https address, also serve /mcp for that address on a second loopback listener. Records the current context before printing its JSON ready line. SIGTERM or Ctrl-C ends runs.",
     "List tools presented to root or a named instance. Set up the instance first and open its Conduits if its list is empty.",
     "Call a presented root tool once through serve. Arguments must be a JSON object (default {}). --arguments-file - reads standard input to its end. Failed or unknown outcomes cause a nonzero exit.",
+    "Read the project and engine as root, and print the requests apply would send.",
 ];
 pub fn print(command: Option<&str>) -> Result<(), String> {
     if let Some(name) = command {

@@ -35,6 +35,25 @@ fn run() -> Result<()> {
     let command = args
         .next()
         .ok_or("usage: conduit COMMAND [ARGUMENTS]; run conduit --help for commands")?;
+    if command == "plan" {
+        let repository = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let code = match tokio::runtime::Runtime::new() {
+            Ok(runtime) => runtime.block_on(conduit_shell::plan::command(
+                args.collect(),
+                &repository,
+                &version_line(),
+                env!("CARGO_PKG_VERSION"),
+            )),
+            Err(error) => {
+                eprintln!("conduit plan: cannot start client: {error}");
+                1
+            }
+        };
+        if code != 0 {
+            std::process::exit(code);
+        }
+        return Ok(());
+    }
     let mut store = None;
     let mut project = None;
     let mut packages = Vec::new();

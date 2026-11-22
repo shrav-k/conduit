@@ -332,7 +332,7 @@ pub(crate) fn instance_type_and_package(o: &Value, c: &Context) -> Result<(Value
     Ok((ty, name))
 }
 
-fn own_tools(o: &Value, c: &Context) -> Result<Value> {
+pub fn own_tools(o: &Value, c: &Context) -> Result<Value> {
     let ty = instance_type(o, c)?;
     let Some(pointer) = ty["spec"]["toolsDirectory"]["directory"].as_str() else {
         return Ok(json!({"stated":false}));

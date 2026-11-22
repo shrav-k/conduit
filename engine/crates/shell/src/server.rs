@@ -1127,7 +1127,7 @@ fn client_token(directory: &Path, asked: &str) -> Result<String> {
     .map_err(|_| "invalid client token file".into())
 }
 
-fn root_client_token(directory: &Path) -> Result<String> {
+pub(crate) fn root_client_token(directory: &Path) -> Result<String> {
     let id = crate::store::private_read(&directory.join(crate::ROOT_CLIENT_ID_FILE)).map_err(
         |_| "root client identity is unavailable. Restart conduit serve with this build.",
     )?;

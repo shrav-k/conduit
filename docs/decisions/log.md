@@ -396,3 +396,51 @@ Lands in: cites DEC-004 and DEC-008; work orders 240 (the example replaced), 249
 243 waits for the review's answer
 
 Status: accepted, not done (orders 240, 249, 251)
+
+## DEC-040, 2026-11-21, the S1 chain's init, templates and pins
+
+Owner's words: bare `conduit init` -> "Skeleton manifest only (Recommended)"; root's turn Conduits -> "Templates in Agent pkgs 0.2.2 (Recommended)"; install's pin rule -> "We should research resolvers as this is a key part of conduit, we should not build hacks around this"
+
+Lands in: work order 243 (init writes only `apiVersion` and `packages: {}`; no pin writing), work order 253 (the Agent packages' `turn` and `conversation` templates); a resolver design after research, before the S1 rerun's pin
+
+Status: accepted, not done (orders 243, 253; the resolver)
+
+## DEC-041, 2026-11-21, model checking's first slice now
+
+Owner's words: order 237 -> "First slice now, as filler (Recommended)"
+
+Lands in: DEC-005's sequence read as priority for 237's first slice only; later slices after S2 and the runtime-provider stream
+
+Status: accepted, not done (order 237)
+
+## DEC-042, 2026-11-21, model logins are Pool-owned Resources
+
+Owner's words: a model login as a Pool-owned Resource -> "Pool-owned login Resource (Recommended)"; the Claude half -> "Account home per machine (Recommended)"; the Codex half -> "No business plan, what? How would we support our existing accounts for pro? This is not a real solution we should support every subscription type"; the second-account sitting -> "Hold it; decouple the S1 pin (Recommended)"
+
+Lands in: IN_FORCE.md topic 1 ("subscription and context are its own" becomes "context is its own; its login may be a Pool's Resource"); a spec order (CTR-013, the .v2 Types' login place; retire and sign-out hooks log out only a login the instance owns); package orders for both Agent packages, for every subscription type; the second-account sitting after them; the S1 rerun's pin does not wait for it
+
+Status: accepted, not done (the spec and package orders, the sitting)
+
+## DEC-043, 2026-11-21, the sign-in freeze ends in sequence
+
+Owner's words: the freeze's end -> "Lift in sequence (Recommended)"; late account checks -> "Late answers change nothing (Recommended)"
+
+Lands in: cites DEC-023; PND and OPS-013 (a late answer leaves an ended sign-in as it ended, and its diagnostic names the way out); the carried-return orders wait for a remote node's need (A81); the Fleet-wide sign-in command is closed
+
+Status: accepted, not done (a spec and engine order)
+
+## DEC-044, 2026-11-21, records fail closed, and research before deciding
+
+Owner's words: SEC-016 -> "Unavailable now, record late (Recommended)"; any request whose record cannot be kept -> "Can this work in parallel? Then we should do spec and engine now"; a remote runtime's program (PRV-007) -> "Research it first"
+
+Lands in: cites ruling 41 and DEC-014: SEC-016 becomes one case of a general rule (a request not yet dispatched whose record cannot be kept reports unavailable, naming the promise, and is recorded once records can be kept; a dispatched one whose end cannot be recorded ends unknown at recovery); SEC-024's IPv4 is RFC 3986's IPv4address; a spec order and an engine order now; PRV-007 after its research
+
+Status: accepted, not done (the spec and engine orders; the research)
+
+## DEC-045, 2026-11-21, the shared Agent contracts, the schedule, and stage 2's record
+
+Owner's words: where the shared Agent contracts live -> "A contracts-only agent package (Recommended)"; the schedule -> "Add capacity first"; stage 2's readings -> "Confirm both (Recommended)"
+
+Lands in: a package rule: the core package exports only what the engine implements, invokes or needs at first start; an `agent` package at the address move (DEC-035); the login and package orders and the second-account sitting come before the S1 chain where they contend; experiment 028's stage 2 results stand
+
+Status: accepted, not done (the agent package; the capacity work)

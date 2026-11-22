@@ -30,11 +30,16 @@ pub(super) fn run(step: &Step<'_>) -> Result<(Value, State)> {
                         .map(|d| d.root.to_json())
                         .collect::<Vec<_>>()
                 );
-                let t = conduit_core::step(
+                let mut t = conduit_core::step(
                     state,
                     serde_json::from_value(core_input).map_err(|e| e.to_string())?,
                     context,
                 )?;
+                if let Some(diagnostics) = t.reply["diagnostics"].as_array_mut() {
+                    for diagnostic in diagnostics {
+                        project.locate_diagnostic(diagnostic);
+                    }
+                }
                 next = t.state.clone();
                 serde_json::to_value(t).map_err(|e| e.to_string())?
             }

@@ -456,3 +456,42 @@ fn a_schema_rejection_carries_the_keyword_location() {
     assert_eq!(diagnostic.pointer.as_deref(), Some("/apiVersion"));
     assert!(diagnostic.keyword_location().unwrap().ends_with("/const"));
 }
+
+#[test]
+fn a_supplied_owner_location_uses_the_document_that_stated_fleet() {
+    let dir = tempfile::tempdir().unwrap();
+    let version = api();
+    let authored = format!(
+        "apiVersion: {version}\nfleet: maintainers\n---\napiVersion: {version}\nagents:\n  worker: {{from: worker-template}}\n"
+    );
+    write(dir.path(), "owners.yaml", &authored);
+    let project = read_project(dir.path(), specification()).unwrap();
+    let mut fault = serde_json::json!({
+        "ruleId": "FLEET-002",
+        "level": "error",
+        "properties": {"document": "worker"},
+        "locations": [{"logicalLocations": [{"fullyQualifiedName": "/owner"}]}],
+        "message": {"text": "owner must name a Fleet"},
+    });
+    project.locate_diagnostic(&mut fault);
+    assert_eq!(
+        fault,
+        serde_json::json!({
+            "ruleId": "FLEET-002",
+            "level": "error",
+            "properties": {
+                "document": 1,
+                "file": dir.path().join("owners.yaml").display().to_string(),
+                "translation": {"rule": "SCT-006", "document": "worker"},
+            },
+            "locations": [{
+                "physicalLocation": {
+                    "artifactLocation": {"uri": dir.path().join("owners.yaml").display().to_string()},
+                    "region": {"startLine": 2, "startColumn": 8}
+                },
+                "logicalLocations": [{"fullyQualifiedName": "/fleet"}],
+            }],
+            "message": {"text": "owner must name a Fleet"},
+        })
+    );
+}

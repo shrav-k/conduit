@@ -15,6 +15,9 @@
           "minLength": 1
         }
       },
+      "translation_absent": {
+        "type": "boolean"
+      },
       "keyword_location": {
         "type": "boolean"
       },

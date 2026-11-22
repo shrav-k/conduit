@@ -42,7 +42,7 @@ fn load(
     spec: &Specification,
     reverse_files: bool,
     framed: bool,
-) -> Result<Project> {
+) -> Result<(conduit_loader::Project, Option<String>)> {
     let mut bytes = recipe
         .files
         .iter()
@@ -72,11 +72,15 @@ fn load(
         }
     }
     let p = read_submitted_files(&bytes, spec).map_err(|e| e.to_string())?;
-    Ok(Project {
-        manifest: p.manifest.map(|d| d.root.to_json()),
-        documents: p.documents.iter().map(|d| d.root.to_json()).collect(),
-        directory: recipe.directory,
-    })
+    Ok((p, recipe.directory))
+}
+
+fn wire_project(project: &conduit_loader::Project, directory: Option<String>) -> Project {
+    Project {
+        manifest: project.manifest.as_ref().map(|d| d.root.to_json()),
+        documents: project.documents.iter().map(|d| d.root.to_json()).collect(),
+        directory,
+    }
 }
 #[derive(Clone, Copy)]
 pub(super) struct Registration<'a> {
@@ -110,12 +114,13 @@ pub(super) fn run(
                 return Err("snapshot archive evidence digest differs".into());
             }
         }
+        let (loaded, directory) = load(recipe.project, base, files, spec, false, false)?;
         snapshots.push(Snapshot {
             source: recipe.source,
             address: recipe.address,
             version: recipe.version,
             digest: recipe.digest,
-            project: load(recipe.project, base, files, spec, false, false)?,
+            project: wire_project(&loaded, directory),
         });
     }
     for artifact in fixture.artifacts {
@@ -136,7 +141,7 @@ pub(super) fn run(
         }
     }
     let builtin = builtin(spec)?;
-    let mut project = load(
+    let (loaded, directory) = load(
         fixture.project,
         base,
         files,
@@ -144,6 +149,7 @@ pub(super) fn run(
         registration.is_some_and(|input| input.order == 2),
         registration.is_some_and(|input| input.framed),
     )?;
+    let mut project = wire_project(&loaded, directory);
     if registration.is_some_and(|input| input.order == 1) {
         project.documents.reverse();
     }
@@ -165,7 +171,13 @@ pub(super) fn run(
             project,
         }
     };
-    conduit_core::step(state, input, context)
+    let mut transition = conduit_core::step(state, input, context)?;
+    if let Some(diagnostics) = transition.reply["diagnostics"].as_array_mut() {
+        for diagnostic in diagnostics {
+            loaded.locate_diagnostic(diagnostic);
+        }
+    }
+    Ok(transition)
 }
 
 pub(super) fn builtin(spec: &Specification) -> Result<Project> {

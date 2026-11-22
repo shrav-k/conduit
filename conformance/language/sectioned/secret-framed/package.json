@@ -1,0 +1,24 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "kind": "Interface",
+  "metadata": {
+    "name": "auditor"
+  },
+  "spec": {
+    "type": "github.com/shrav-k/conduit/core#interface.v1",
+    "config": {
+      "sample": null
+    },
+    "inputs": {
+      "example": {
+        "schema": {
+          "$ref": "github.com/shrav-k/conduit/core#secret-reference.v1"
+        },
+        "to": [
+          "/config/sample"
+        ],
+        "default": "synthetic-value-for-redaction"
+      }
+    }
+  }
+}

@@ -694,7 +694,10 @@
       "promise": "SCH-019",
       "vectors": [
         "schema-invalid-default",
-        "schema-map-default"
+        "schema-map-default",
+        "sections-secret-framed",
+        "sections-secret-sectioned",
+        "sections-secret-long-chain"
       ]
     },
     {
@@ -769,7 +772,8 @@
     {
       "promise": "SUB-004",
       "vectors": [
-        "registration-duplicate"
+        "registration-duplicate",
+        "sections-secret-unresolved-duplicate"
       ]
     },
     {
@@ -1190,7 +1194,10 @@
         "release-changes-default-rejected",
         "release-removes-default-rejected",
         "release-equal-default-accepted",
-        "release-reorders-default-rejected"
+        "release-reorders-default-rejected",
+        "sections-secret-framed",
+        "sections-secret-sectioned",
+        "sections-secret-long-chain"
       ]
     },
     {
@@ -2746,6 +2753,164 @@
       "promise": "OBS-006",
       "vectors": [],
       "reason": "Inspection is covered by records-inspection, but no isolated authority/effect-neutrality pair is tagged for this complete promise. Add it in the coverage follow-up."
+    },
+    {
+      "promise": "SCT-001",
+      "vectors": [
+        "sectioned-manifest-is-framed",
+        "sectioned-missing-kind",
+        "sectioned-mixed-json",
+        "sectioned-pool-inline",
+        "sectioned-unknown-key",
+        "sectioned-version-only",
+        "sectioned-wire-framed-only"
+      ]
+    },
+    {
+      "promise": "SCT-002",
+      "vectors": [
+        "sectioned-inherited-unknown-version",
+        "sectioned-manifest-version",
+        "sectioned-missing-version",
+        "sectioned-stated-version",
+        "sectioned-unknown-version"
+      ]
+    },
+    {
+      "promise": "SCT-003",
+      "vectors": [
+        "sectioned-archive-install",
+        "sectioned-atomic-set",
+        "sectioned-inline-equivalence",
+        "sectioned-mixed-json",
+        "sectioned-name-collision"
+      ]
+    },
+    {
+      "promise": "SCT-004",
+      "vectors": [
+        "sectioned-consumes-referenced",
+        "sectioned-fleet-shared",
+        "sectioned-literal-values",
+        "sectioned-pure-order"
+      ]
+    },
+    {
+      "promise": "SCT-005",
+      "vectors": [
+        "sectioned-archive-install",
+        "sectioned-no-fleet-template",
+        "sectioned-template-families"
+      ]
+    },
+    {
+      "promise": "SCT-006",
+      "vectors": [
+        "sectioned-definition-forms",
+        "sectioned-inline-equivalence",
+        "sectioned-instance-metadata",
+        "sectioned-pool-inline",
+        "sectioned-reference-forms",
+        "sectioned-resource-owner"
+      ]
+    },
+    {
+      "promise": "SCT-007",
+      "vectors": [
+        "sectioned-consumes-bound",
+        "sectioned-consumes-forms",
+        "sectioned-consumes-inline",
+        "sectioned-consumes-referenced"
+      ]
+    },
+    {
+      "promise": "SCT-008",
+      "vectors": [
+        "sectioned-conduits",
+        "sectioned-consumes-bound",
+        "sectioned-consumes-reserved",
+        "sectioned-member-faults",
+        "sections-located-syntax"
+      ]
+    },
+    {
+      "promise": "SCT-009",
+      "vectors": [
+        "sectioned-operator-inline",
+        "sectioned-operator-referenced",
+        "sectioned-pool-operator"
+      ]
+    },
+    {
+      "promise": "SCT-011",
+      "vectors": [
+        "sectioned-archive-install",
+        "sectioned-fleet-conflict",
+        "sectioned-fleet-duplicate-key",
+        "sectioned-fleet-file-boundary",
+        "sectioned-fleet-framed",
+        "sectioned-fleet-shared",
+        "sectioned-fleet-with-schema-fault",
+        "sectioned-inline-equivalence",
+        "sectioned-member-faults",
+        "sections-located-shared-fleet",
+        "sections-located-supplied-fleet",
+        "sections-located-supplied-owner"
+      ]
+    },
+    {
+      "promise": "SCT-013",
+      "vectors": [
+        "sectioned-member-faults",
+        "sectioned-names"
+      ]
+    },
+    {
+      "promise": "SCT-014",
+      "vectors": [
+        "sectioned-consumes-reserved",
+        "sectioned-fleet-conflict",
+        "sectioned-fleet-duplicate-key",
+        "sectioned-fleet-with-schema-fault",
+        "sectioned-inherited-unknown-version",
+        "sectioned-member-faults",
+        "sectioned-missing-version",
+        "sectioned-names",
+        "sectioned-unknown-key",
+        "sectioned-unknown-version",
+        "sections-equivalent-capability",
+        "sections-located-capability",
+        "sections-located-duplicate",
+        "sections-located-existing",
+        "sections-located-generated-schema",
+        "sections-located-nested-member",
+        "sections-located-operator",
+        "sections-located-shared-fleet",
+        "sections-located-standard-reference",
+        "sections-located-supplied-fleet",
+        "sections-located-supplied-owner",
+        "sections-located-syntax",
+        "sections-located-template-body",
+        "sections-secret-long-chain",
+        "sections-secret-sectioned"
+      ]
+    },
+    {
+      "promise": "SCT-015",
+      "vectors": [
+        "sectioned-inline-equivalence",
+        "sectioned-pool-inline",
+        "sections-equivalent-all-sections",
+        "sections-equivalent-capability",
+        "sections-equivalent-mixed",
+        "sections-equivalent-shared-fleet"
+      ]
+    },
+    {
+      "promise": "SCT-016",
+      "vectors": [
+        "sectioned-conduits"
+      ]
     }
   ],
   "s1_coverage_source": "conformance/s1-promises.yaml; case tags show slices, reasons record remaining coverage"

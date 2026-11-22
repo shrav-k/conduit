@@ -1,0 +1,503 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "kind": "Type",
+  "metadata": {
+    "name": "private-config.v1"
+  },
+  "spec": {
+    "family": "Interface",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "sample": {
+          "$ref": "#/$defs/entry-0"
+        }
+      },
+      "$defs": {
+        "entry-0": {
+          "$ref": "#/$defs/entry-1"
+        },
+        "entry-1": {
+          "$ref": "#/$defs/entry-2"
+        },
+        "entry-2": {
+          "$ref": "#/$defs/entry-3"
+        },
+        "entry-3": {
+          "$ref": "#/$defs/entry-4"
+        },
+        "entry-4": {
+          "$ref": "#/$defs/entry-5"
+        },
+        "entry-5": {
+          "$ref": "#/$defs/entry-6"
+        },
+        "entry-6": {
+          "$ref": "#/$defs/entry-7"
+        },
+        "entry-7": {
+          "$ref": "#/$defs/entry-8"
+        },
+        "entry-8": {
+          "$ref": "#/$defs/entry-9"
+        },
+        "entry-9": {
+          "$ref": "#/$defs/entry-10"
+        },
+        "entry-10": {
+          "$ref": "#/$defs/entry-11"
+        },
+        "entry-11": {
+          "$ref": "#/$defs/entry-12"
+        },
+        "entry-12": {
+          "$ref": "#/$defs/entry-13"
+        },
+        "entry-13": {
+          "$ref": "#/$defs/entry-14"
+        },
+        "entry-14": {
+          "$ref": "#/$defs/entry-15"
+        },
+        "entry-15": {
+          "$ref": "#/$defs/entry-16"
+        },
+        "entry-16": {
+          "$ref": "#/$defs/entry-17"
+        },
+        "entry-17": {
+          "$ref": "#/$defs/entry-18"
+        },
+        "entry-18": {
+          "$ref": "#/$defs/entry-19"
+        },
+        "entry-19": {
+          "$ref": "#/$defs/entry-20"
+        },
+        "entry-20": {
+          "$ref": "#/$defs/entry-21"
+        },
+        "entry-21": {
+          "$ref": "#/$defs/entry-22"
+        },
+        "entry-22": {
+          "$ref": "#/$defs/entry-23"
+        },
+        "entry-23": {
+          "$ref": "#/$defs/entry-24"
+        },
+        "entry-24": {
+          "$ref": "#/$defs/entry-25"
+        },
+        "entry-25": {
+          "$ref": "#/$defs/entry-26"
+        },
+        "entry-26": {
+          "$ref": "#/$defs/entry-27"
+        },
+        "entry-27": {
+          "$ref": "#/$defs/entry-28"
+        },
+        "entry-28": {
+          "$ref": "#/$defs/entry-29"
+        },
+        "entry-29": {
+          "$ref": "#/$defs/entry-30"
+        },
+        "entry-30": {
+          "$ref": "#/$defs/entry-31"
+        },
+        "entry-31": {
+          "$ref": "#/$defs/entry-32"
+        },
+        "entry-32": {
+          "$ref": "#/$defs/entry-33"
+        },
+        "entry-33": {
+          "$ref": "#/$defs/entry-34"
+        },
+        "entry-34": {
+          "$ref": "#/$defs/entry-35"
+        },
+        "entry-35": {
+          "$ref": "#/$defs/entry-36"
+        },
+        "entry-36": {
+          "$ref": "#/$defs/entry-37"
+        },
+        "entry-37": {
+          "$ref": "#/$defs/entry-38"
+        },
+        "entry-38": {
+          "$ref": "#/$defs/entry-39"
+        },
+        "entry-39": {
+          "$ref": "#/$defs/entry-40"
+        },
+        "entry-40": {
+          "$ref": "#/$defs/entry-41"
+        },
+        "entry-41": {
+          "$ref": "#/$defs/entry-42"
+        },
+        "entry-42": {
+          "$ref": "#/$defs/entry-43"
+        },
+        "entry-43": {
+          "$ref": "#/$defs/entry-44"
+        },
+        "entry-44": {
+          "$ref": "#/$defs/entry-45"
+        },
+        "entry-45": {
+          "$ref": "#/$defs/entry-46"
+        },
+        "entry-46": {
+          "$ref": "#/$defs/entry-47"
+        },
+        "entry-47": {
+          "$ref": "#/$defs/entry-48"
+        },
+        "entry-48": {
+          "$ref": "#/$defs/entry-49"
+        },
+        "entry-49": {
+          "$ref": "#/$defs/entry-50"
+        },
+        "entry-50": {
+          "$ref": "#/$defs/entry-51"
+        },
+        "entry-51": {
+          "$ref": "#/$defs/entry-52"
+        },
+        "entry-52": {
+          "$ref": "#/$defs/entry-53"
+        },
+        "entry-53": {
+          "$ref": "#/$defs/entry-54"
+        },
+        "entry-54": {
+          "$ref": "#/$defs/entry-55"
+        },
+        "entry-55": {
+          "$ref": "#/$defs/entry-56"
+        },
+        "entry-56": {
+          "$ref": "#/$defs/entry-57"
+        },
+        "entry-57": {
+          "$ref": "#/$defs/entry-58"
+        },
+        "entry-58": {
+          "$ref": "#/$defs/entry-59"
+        },
+        "entry-59": {
+          "$ref": "#/$defs/entry-60"
+        },
+        "entry-60": {
+          "$ref": "#/$defs/entry-61"
+        },
+        "entry-61": {
+          "$ref": "#/$defs/entry-62"
+        },
+        "entry-62": {
+          "$ref": "#/$defs/entry-63"
+        },
+        "entry-63": {
+          "$ref": "#/$defs/entry-64"
+        },
+        "entry-64": {
+          "$ref": "#/$defs/entry-65"
+        },
+        "entry-65": {
+          "$ref": "#/$defs/entry-66"
+        },
+        "entry-66": {
+          "$ref": "#/$defs/entry-67"
+        },
+        "entry-67": {
+          "$ref": "#/$defs/entry-68"
+        },
+        "entry-68": {
+          "$ref": "#/$defs/entry-69"
+        },
+        "entry-69": {
+          "$ref": "#/$defs/entry-70"
+        },
+        "entry-70": {
+          "$ref": "#/$defs/entry-71"
+        },
+        "entry-71": {
+          "$ref": "#/$defs/entry-72"
+        },
+        "entry-72": {
+          "$ref": "#/$defs/entry-73"
+        },
+        "entry-73": {
+          "$ref": "#/$defs/entry-74"
+        },
+        "entry-74": {
+          "$ref": "#/$defs/entry-75"
+        },
+        "entry-75": {
+          "$ref": "#/$defs/entry-76"
+        },
+        "entry-76": {
+          "$ref": "#/$defs/entry-77"
+        },
+        "entry-77": {
+          "$ref": "#/$defs/entry-78"
+        },
+        "entry-78": {
+          "$ref": "#/$defs/entry-79"
+        },
+        "entry-79": {
+          "$ref": "#/$defs/entry-80"
+        },
+        "entry-80": {
+          "$ref": "#/$defs/entry-81"
+        },
+        "entry-81": {
+          "$ref": "#/$defs/entry-82"
+        },
+        "entry-82": {
+          "$ref": "#/$defs/entry-83"
+        },
+        "entry-83": {
+          "$ref": "#/$defs/entry-84"
+        },
+        "entry-84": {
+          "$ref": "#/$defs/entry-85"
+        },
+        "entry-85": {
+          "$ref": "#/$defs/entry-86"
+        },
+        "entry-86": {
+          "$ref": "#/$defs/entry-87"
+        },
+        "entry-87": {
+          "$ref": "#/$defs/entry-88"
+        },
+        "entry-88": {
+          "$ref": "#/$defs/entry-89"
+        },
+        "entry-89": {
+          "$ref": "#/$defs/entry-90"
+        },
+        "entry-90": {
+          "$ref": "#/$defs/entry-91"
+        },
+        "entry-91": {
+          "$ref": "#/$defs/entry-92"
+        },
+        "entry-92": {
+          "$ref": "#/$defs/entry-93"
+        },
+        "entry-93": {
+          "$ref": "#/$defs/entry-94"
+        },
+        "entry-94": {
+          "$ref": "#/$defs/entry-95"
+        },
+        "entry-95": {
+          "$ref": "#/$defs/entry-96"
+        },
+        "entry-96": {
+          "$ref": "#/$defs/entry-97"
+        },
+        "entry-97": {
+          "$ref": "#/$defs/entry-98"
+        },
+        "entry-98": {
+          "$ref": "#/$defs/entry-99"
+        },
+        "entry-99": {
+          "$ref": "#/$defs/entry-100"
+        },
+        "entry-100": {
+          "$ref": "#/$defs/entry-101"
+        },
+        "entry-101": {
+          "$ref": "#/$defs/entry-102"
+        },
+        "entry-102": {
+          "$ref": "#/$defs/entry-103"
+        },
+        "entry-103": {
+          "$ref": "#/$defs/entry-104"
+        },
+        "entry-104": {
+          "$ref": "#/$defs/entry-105"
+        },
+        "entry-105": {
+          "$ref": "#/$defs/entry-106"
+        },
+        "entry-106": {
+          "$ref": "#/$defs/entry-107"
+        },
+        "entry-107": {
+          "$ref": "#/$defs/entry-108"
+        },
+        "entry-108": {
+          "$ref": "#/$defs/entry-109"
+        },
+        "entry-109": {
+          "$ref": "#/$defs/entry-110"
+        },
+        "entry-110": {
+          "$ref": "#/$defs/entry-111"
+        },
+        "entry-111": {
+          "$ref": "#/$defs/entry-112"
+        },
+        "entry-112": {
+          "$ref": "#/$defs/entry-113"
+        },
+        "entry-113": {
+          "$ref": "#/$defs/entry-114"
+        },
+        "entry-114": {
+          "$ref": "#/$defs/entry-115"
+        },
+        "entry-115": {
+          "$ref": "#/$defs/entry-116"
+        },
+        "entry-116": {
+          "$ref": "#/$defs/entry-117"
+        },
+        "entry-117": {
+          "$ref": "#/$defs/entry-118"
+        },
+        "entry-118": {
+          "$ref": "#/$defs/entry-119"
+        },
+        "entry-119": {
+          "$ref": "#/$defs/entry-120"
+        },
+        "entry-120": {
+          "$ref": "#/$defs/entry-121"
+        },
+        "entry-121": {
+          "$ref": "#/$defs/entry-122"
+        },
+        "entry-122": {
+          "$ref": "#/$defs/entry-123"
+        },
+        "entry-123": {
+          "$ref": "#/$defs/entry-124"
+        },
+        "entry-124": {
+          "$ref": "#/$defs/entry-125"
+        },
+        "entry-125": {
+          "$ref": "#/$defs/entry-126"
+        },
+        "entry-126": {
+          "$ref": "#/$defs/entry-127"
+        },
+        "entry-127": {
+          "$ref": "#/$defs/entry-128"
+        },
+        "entry-128": {
+          "$ref": "#/$defs/entry-129"
+        },
+        "entry-129": {
+          "$ref": "#/$defs/entry-130"
+        },
+        "entry-130": {
+          "$ref": "#/$defs/entry-131"
+        },
+        "entry-131": {
+          "$ref": "#/$defs/entry-132"
+        },
+        "entry-132": {
+          "$ref": "#/$defs/entry-133"
+        },
+        "entry-133": {
+          "$ref": "#/$defs/entry-134"
+        },
+        "entry-134": {
+          "$ref": "#/$defs/entry-135"
+        },
+        "entry-135": {
+          "$ref": "#/$defs/entry-136"
+        },
+        "entry-136": {
+          "$ref": "#/$defs/entry-137"
+        },
+        "entry-137": {
+          "$ref": "#/$defs/entry-138"
+        },
+        "entry-138": {
+          "$ref": "#/$defs/entry-139"
+        },
+        "entry-139": {
+          "$ref": "#/$defs/entry-140"
+        },
+        "entry-140": {
+          "$ref": "#/$defs/entry-141"
+        },
+        "entry-141": {
+          "$ref": "#/$defs/entry-142"
+        },
+        "entry-142": {
+          "$ref": "#/$defs/entry-143"
+        },
+        "entry-143": {
+          "$ref": "#/$defs/entry-144"
+        },
+        "entry-144": {
+          "$ref": "#/$defs/entry-145"
+        },
+        "entry-145": {
+          "$ref": "#/$defs/entry-146"
+        },
+        "entry-146": {
+          "$ref": "#/$defs/entry-147"
+        },
+        "entry-147": {
+          "$ref": "#/$defs/entry-148"
+        },
+        "entry-148": {
+          "$ref": "#/$defs/entry-149"
+        },
+        "entry-149": {
+          "$ref": "#/$defs/entry-150"
+        },
+        "entry-150": {
+          "$ref": "#/$defs/entry-151"
+        },
+        "entry-151": {
+          "$ref": "#/$defs/entry-152"
+        },
+        "entry-152": {
+          "$ref": "#/$defs/entry-153"
+        },
+        "entry-153": {
+          "$ref": "#/$defs/entry-154"
+        },
+        "entry-154": {
+          "$ref": "#/$defs/entry-155"
+        },
+        "entry-155": {
+          "$ref": "#/$defs/entry-156"
+        },
+        "entry-156": {
+          "$ref": "#/$defs/entry-157"
+        },
+        "entry-157": {
+          "$ref": "#/$defs/entry-158"
+        },
+        "entry-158": {
+          "$ref": "#/$defs/entry-159"
+        },
+        "entry-159": {
+          "$ref": "#/$defs/entry-160"
+        },
+        "entry-160": {
+          "$ref": "github.com/shrav-k/conduit/core#secret-reference.v1"
+        }
+      }
+    }
+  }
+}

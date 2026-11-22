@@ -1,0 +1,296 @@
+{
+  "id": "sections-secret-framed",
+  "layers": [
+    "language",
+    "convention"
+  ],
+  "promises": [
+    "SEC-003",
+    "SEC-004",
+    "PKG-023",
+    "SCH-019"
+  ],
+  "title": "SEC-003 with framed registration and archive input",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "conduit.json": "conduit.json",
+    "contracts.json": "contracts.json",
+    "authored.json": "authored.json",
+    "archive.json": "archive.json",
+    "package.tar.gz": "package.tar.gz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "first-start",
+        "evidence": {
+          "time": "2026-11-09T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000000001",
+            "00000000-0000-4000-8000-000000000002",
+            "00000000-0000-4000-8000-000000000003",
+            "00000000-0000-4000-8000-000000000004",
+            "00000000-0000-4000-8000-000000000005",
+            "00000000-0000-4000-8000-000000000006",
+            "00000000-0000-4000-8000-000000000007",
+            "00000000-0000-4000-8000-000000000008",
+            "00000000-0000-4000-8000-000000000009",
+            "00000000-0000-4000-8000-000000000010",
+            "00000000-0000-4000-8000-000000000011",
+            "00000000-0000-4000-8000-000000000012",
+            "00000000-0000-4000-8000-000000000013",
+            "00000000-0000-4000-8000-000000000014",
+            "00000000-0000-4000-8000-000000000015",
+            "00000000-0000-4000-8000-000000000016",
+            "00000000-0000-4000-8000-000000000017",
+            "00000000-0000-4000-8000-000000000018",
+            "00000000-0000-4000-8000-000000000019",
+            "00000000-0000-4000-8000-000000000020",
+            "00000000-0000-4000-8000-000000000021",
+            "00000000-0000-4000-8000-000000000022",
+            "00000000-0000-4000-8000-000000000023",
+            "00000000-0000-4000-8000-000000000024"
+          ],
+          "revisions": [
+            "r1",
+            "r2",
+            "r3",
+            "r4",
+            "r5",
+            "r6",
+            "r7",
+            "r8"
+          ],
+          "suffixes": [
+            "abc01",
+            "abc02",
+            "abc03"
+          ]
+        },
+        "machine": {
+          "hostname": " WORKSTATION.Example ",
+          "labels": {
+            "kubernetes.io/hostname": "workstation.example",
+            "kubernetes.io/os": "darwin",
+            "kubernetes.io/arch": "arm64",
+            "example.org/role": "test"
+          },
+          "state": "reachable"
+        },
+        "trustDomain": "vectors-040.example"
+      },
+      "expect": {
+        "reply": {
+          "started": true
+        },
+        "state": {
+          "started": true
+        },
+        "record_facts": [],
+        "external_intents": [],
+        "required_promises": [
+          "FST-001"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-21T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-a002-000000000001",
+            "00000000-0000-4000-a002-000000000002",
+            "00000000-0000-4000-a002-000000000003",
+            "00000000-0000-4000-a002-000000000004",
+            "00000000-0000-4000-a002-000000000005",
+            "00000000-0000-4000-a002-000000000006",
+            "00000000-0000-4000-a002-000000000007",
+            "00000000-0000-4000-a002-000000000008"
+          ],
+          "revisions": [
+            "sectioned-2-0",
+            "sectioned-2-1",
+            "sectioned-2-2",
+            "sectioned-2-3",
+            "sectioned-2-4",
+            "sectioned-2-5",
+            "sectioned-2-6",
+            "sectioned-2-7",
+            "sectioned-2-8",
+            "sectioned-2-9",
+            "sectioned-2-10",
+            "sectioned-2-11",
+            "sectioned-2-12",
+            "sectioned-2-13",
+            "sectioned-2-14",
+            "sectioned-2-15",
+            "sectioned-2-16",
+            "sectioned-2-17",
+            "sectioned-2-18",
+            "sectioned-2-19",
+            "sectioned-2-20",
+            "sectioned-2-21"
+          ],
+          "suffixes": [
+            "s0000",
+            "s0001",
+            "s0002",
+            "s0003",
+            "s0004",
+            "s0005",
+            "s0006",
+            "s0007",
+            "s0008",
+            "s0009",
+            "s0010",
+            "s0011",
+            "s0012",
+            "s0013",
+            "s0014",
+            "s0015",
+            "s0016",
+            "s0017",
+            "s0018",
+            "s0019"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.register.v1",
+          "arguments": {
+            "manifest": {
+              "apiVersion": "github.com/shrav-k/conduit/v0",
+              "address": "example.org/conformance/sections-secret-framed"
+            },
+            "documents": [
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Type",
+                "metadata": {
+                  "name": "private-config.v1"
+                },
+                "spec": {
+                  "family": "Interface",
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "sample": {
+                        "$ref": "github.com/shrav-k/conduit/core#secret-reference.v1"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Interface",
+                "metadata": {
+                  "name": "auditor--t"
+                },
+                "spec": {
+                  "type": "#private-config.v1",
+                  "config": {
+                    "sample": "synthetic-value-for-redaction"
+                  }
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Interface",
+                "metadata": {
+                  "name": "auditor"
+                },
+                "from": "auditor--t"
+              }
+            ]
+          },
+          "readable": true,
+          "authority_readable": true
+        }
+      },
+      "expect": {
+        "record_facts": [],
+        "external_intents": [],
+        "absent": [
+          {
+            "text": "synthetic-value-for-redaction",
+            "under": [
+              "/reply",
+              "/records",
+              "/state"
+            ]
+          }
+        ],
+        "reply": {
+          "isError": true,
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "invalid"
+          },
+          "structuredContent": {
+            "diagnostics": [
+              {
+                "ruleId": "INS-014",
+                "level": "error",
+                "locations": [
+                  {
+                    "logicalLocations": [
+                      {
+                        "fullyQualifiedName": "/objects/auditor--t/spec/config/sample"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "ruleId": "OBJ-008",
+                "level": "note"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "archive.json"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "SCH-019",
+              "level": "error"
+            }
+          ]
+        },
+        "stateUnchanged": true,
+        "record_facts": [],
+        "external_intents": [],
+        "required_promises": [
+          "PKG-023",
+          "SCH-019"
+        ],
+        "absent": [
+          {
+            "text": "synthetic-value-for-redaction",
+            "under": [
+              "/reply",
+              "/records",
+              "/state"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

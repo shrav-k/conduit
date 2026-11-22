@@ -19,6 +19,7 @@ pub struct TranslationSource {
     pub file: String,
     pub document: usize,
     pub pointer: String,
+    pub position: crate::Position,
 }
 
 /// The rule and authored places of a generated document or supplied Fleet owner.
@@ -26,6 +27,7 @@ pub struct TranslationSource {
 pub struct Translation {
     pub rule: &'static str,
     pub sources: Vec<TranslationSource>,
+    pub(crate) owner: Option<TranslationSource>,
 }
 
 #[derive(Default)]
@@ -191,7 +193,7 @@ pub(crate) fn translate(
                     output: &mut output,
                     faults,
                 };
-                expansion.expand(fleet.map(|(name, _)| name));
+                expansion.expand(fleet);
             } else {
                 let translation = fleet
                     .and_then(|(name, place)| framed_owner(&mut document, name, place, faults));
@@ -219,10 +221,10 @@ fn check_file_fleets(
     let first_label = first_name.unwrap_or("declaration");
     for (document, name) in declarations {
         let label = name.unwrap_or("declaration");
-        faults.push(fault(document, "SCT-011", "/fleet", format!(
+        faults.push(with_related(fault(document, "SCT-011", "/fleet", format!(
             "a second fleet {label} in the file; the first fleet {first_label} is in document {} at /fleet",
             first.index
-        )));
+        )), &source(first, "/fleet")));
     }
     first_name.map(|name| (name.to_owned(), source(first, "/fleet")))
 }
@@ -232,6 +234,7 @@ fn source(document: &Document, pointer: &str) -> TranslationSource {
         file: document.file.clone(),
         document: document.index,
         pointer: pointer.into(),
+        position: document.root.locate(pointer).position,
     }
 }
 
@@ -248,6 +251,20 @@ fn fault(
         .at(document.root.locate(pointer).position)
 }
 
+fn with_related(mut fault: Diagnostic, source: &TranslationSource) -> Diagnostic {
+    use crate::diagnostic::{AuthoredLocation, DiagnosticOrigin};
+    fault.set_origin(DiagnosticOrigin {
+        translation: None,
+        related: vec![AuthoredLocation {
+            file: source.file.clone(),
+            document: source.document,
+            pointer: source.pointer.clone(),
+            position: source.position,
+        }],
+    });
+    fault
+}
+
 fn framed_owner(
     document: &mut Document,
     fleet: &str,
@@ -260,7 +277,7 @@ fn framed_owner(
         return None;
     }
     if let Some(owner) = document.root.get("owner") {
-        check_owner(document, owner, fleet, "/owner", faults);
+        check_owner(document, owner, fleet, place, "/owner", faults);
         return None;
     }
     let owner = string(fleet, &document.root);
@@ -269,7 +286,8 @@ fn framed_owner(
     }
     Some(Translation {
         rule: "SCT-011",
-        sources: vec![place.clone()],
+        sources: vec![source(document, "")],
+        owner: Some(place.clone()),
     })
 }
 
@@ -277,6 +295,7 @@ fn check_owner(
     document: &Document,
     owner: &Node,
     fleet: &str,
+    fleet_place: &TranslationSource,
     pointer: &str,
     faults: &mut Vec<Diagnostic>,
 ) {
@@ -286,11 +305,14 @@ fn check_owner(
     if let Some(name) = name
         && name != fleet
     {
-        faults.push(fault(
-            document,
-            "SCT-011",
-            pointer,
-            format!("the file's /fleet names {fleet}, but the Agent's owner is {name}"),
+        faults.push(with_related(
+            fault(
+                document,
+                "SCT-011",
+                pointer,
+                format!("the file's /fleet names {fleet}, but the Agent's owner is {name}"),
+            ),
+            fleet_place,
         ));
     }
 }
@@ -305,7 +327,7 @@ struct Expansion<'a> {
 }
 
 impl Expansion<'_> {
-    fn expand(&mut self, fleet: Option<&str>) {
+    fn expand(&mut self, fleet: Option<(&str, &TranslationSource)>) {
         let root = &self.document.root;
         for (section, family) in FAMILIES {
             let templates = root
@@ -350,7 +372,7 @@ impl Expansion<'_> {
         family: &str,
         name: &str,
         item: &Node,
-        fleet: Option<&str>,
+        fleet: Option<(&str, &TranslationSource)>,
     ) {
         if !self.member_faults.blocks(place) {
             self.base_instance(place, family, name, item, fleet);
@@ -416,22 +438,25 @@ impl Expansion<'_> {
         family: &str,
         name: &str,
         item: &Node,
-        fleet: Option<&str>,
+        fleet: Option<(&str, &TranslationSource)>,
     ) {
         let mut fields = copy(item, &["arguments", "owner", "placement", "runtime"]);
+        let mut supplied_owner = None;
         if family == "Agent"
-            && let Some(fleet) = fleet
+            && let Some((fleet, fleet_place)) = fleet
         {
             if let Some(owner) = item.get("owner") {
                 check_owner(
                     self.document,
                     owner,
                     fleet,
+                    fleet_place,
                     &format!("{place}/owner"),
                     self.faults,
                 );
             } else {
                 fields.push(("owner".into(), string(fleet, item)));
+                supplied_owner = Some(fleet_place.clone());
             }
         }
         let origin = (place, "SCT-006");
@@ -450,7 +475,9 @@ impl Expansion<'_> {
             ],
         );
         fields.push(("from".into(), from));
-        self.emit(origin, family, name, Some(item), fields);
+        if let Some(translation) = self.emit(origin, family, name, Some(item), fields) {
+            translation.owner = supplied_owner;
+        }
     }
 
     fn conduit(
@@ -503,7 +530,7 @@ impl Expansion<'_> {
         name: &str,
         metadata: Option<&Node>,
         fields: Members,
-    ) {
+    ) -> Option<&mut Translation> {
         if name.len() > 63 {
             self.faults.push(fault(
                 self.document,
@@ -511,7 +538,7 @@ impl Expansion<'_> {
                 pointer,
                 format!("the generated name {name} has more than 63 characters"),
             ));
-            return;
+            return None;
         }
         // A dependent instance would have the same invalid name in its from field.
         if fields.iter().any(|(key, value)| {
@@ -520,13 +547,11 @@ impl Expansion<'_> {
                     .as_str()
                     .is_some_and(|value| value == format!("{name}--t") && value.len() > 63)
         }) {
-            return;
+            return None;
         }
         // Name checks still run without a usable version. No frame can be emitted
         // in that case, and the authored version or manifest supplies the diagnostic.
-        let Some(version) = self.version else {
-            return;
-        };
+        let version = self.version?;
         let anchor = self.document.root.locate(pointer);
         let mut meta = vec![("name".into(), string(name, anchor))];
         if let Some(item) = metadata {
@@ -547,8 +572,10 @@ impl Expansion<'_> {
             Some(Translation {
                 rule,
                 sources: vec![source(self.document, pointer)],
+                owner: None,
             }),
         );
+        self.output.translations.last_mut()?.as_mut()
     }
 }
 

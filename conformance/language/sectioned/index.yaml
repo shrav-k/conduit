@@ -343,6 +343,174 @@
         "SUB-005",
         "OPS-033"
       ]
+    },
+    {
+      "id": "sections-equivalent-all-sections",
+      "case": "language/sectioned/equivalent-all-sections/case.yaml",
+      "promises": [
+        "SCT-015"
+      ]
+    },
+    {
+      "id": "sections-equivalent-capability",
+      "case": "language/sectioned/equivalent-capability/case.yaml",
+      "promises": [
+        "SCT-015",
+        "CON-021",
+        "SCT-014"
+      ]
+    },
+    {
+      "id": "sections-equivalent-mixed",
+      "case": "language/sectioned/equivalent-mixed/case.yaml",
+      "promises": [
+        "SCT-015"
+      ]
+    },
+    {
+      "id": "sections-equivalent-shared-fleet",
+      "case": "language/sectioned/equivalent-shared-fleet/case.yaml",
+      "promises": [
+        "SCT-015"
+      ]
+    },
+    {
+      "id": "sections-located-capability",
+      "case": "language/sectioned/located-capability/case.yaml",
+      "promises": [
+        "SCT-014",
+        "CON-021"
+      ]
+    },
+    {
+      "id": "sections-located-duplicate",
+      "case": "language/sectioned/located-duplicate/case.yaml",
+      "promises": [
+        "SCT-014",
+        "NAM-027"
+      ]
+    },
+    {
+      "id": "sections-located-existing",
+      "case": "language/sectioned/located-existing/case.yaml",
+      "promises": [
+        "SCT-014",
+        "OBJ-002"
+      ]
+    },
+    {
+      "id": "sections-located-generated-schema",
+      "case": "language/sectioned/located-generated-schema/case.yaml",
+      "promises": [
+        "SCT-014",
+        "SUB-005"
+      ]
+    },
+    {
+      "id": "sections-located-nested-member",
+      "case": "language/sectioned/located-nested-member/case.yaml",
+      "promises": [
+        "SCT-014",
+        "INS-002"
+      ]
+    },
+    {
+      "id": "sections-located-operator",
+      "case": "language/sectioned/located-operator/case.yaml",
+      "promises": [
+        "SCT-014",
+        "IFC-014"
+      ]
+    },
+    {
+      "id": "sections-located-shared-fleet",
+      "case": "language/sectioned/located-shared-fleet/case.yaml",
+      "promises": [
+        "SCT-014",
+        "SCT-011",
+        "OBJ-002"
+      ]
+    },
+    {
+      "id": "sections-located-standard-reference",
+      "case": "language/sectioned/located-standard-reference/case.yaml",
+      "promises": [
+        "SCT-014",
+        "OBJ-009"
+      ]
+    },
+    {
+      "id": "sections-located-supplied-fleet",
+      "case": "language/sectioned/located-supplied-fleet/case.yaml",
+      "promises": [
+        "SCT-014",
+        "SCT-011",
+        "OBJ-002"
+      ]
+    },
+    {
+      "id": "sections-located-supplied-owner",
+      "case": "language/sectioned/located-supplied-owner/case.yaml",
+      "promises": [
+        "SCT-011",
+        "SCT-014"
+      ]
+    },
+    {
+      "id": "sections-located-syntax",
+      "case": "language/sectioned/located-syntax/case.yaml",
+      "promises": [
+        "SCT-014",
+        "SCT-008"
+      ]
+    },
+    {
+      "id": "sections-located-template-body",
+      "case": "language/sectioned/located-template-body/case.yaml",
+      "promises": [
+        "SCT-014",
+        "TPL-002"
+      ]
+    },
+    {
+      "id": "sections-secret-framed",
+      "case": "language/sectioned/secret-framed/case.yaml",
+      "promises": [
+        "SEC-003",
+        "SEC-004",
+        "PKG-023",
+        "SCH-019"
+      ]
+    },
+    {
+      "id": "sections-secret-long-chain",
+      "case": "language/sectioned/secret-long-chain/case.yaml",
+      "promises": [
+        "SEC-003",
+        "SEC-004",
+        "PKG-023",
+        "SCH-019",
+        "SCT-014"
+      ]
+    },
+    {
+      "id": "sections-secret-sectioned",
+      "case": "language/sectioned/secret-sectioned/case.yaml",
+      "promises": [
+        "SEC-003",
+        "SEC-004",
+        "PKG-023",
+        "SCH-019",
+        "SCT-014"
+      ]
+    },
+    {
+      "id": "sections-secret-unresolved-duplicate",
+      "case": "language/sectioned/secret-unresolved-duplicate/case.yaml",
+      "promises": [
+        "SEC-003",
+        "SUB-004"
+      ]
     }
   ]
 }

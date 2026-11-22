@@ -126,9 +126,9 @@ fn every_valid_example_is_accepted() {
     for directory in directories {
         let project = read_project(&directory, specification())
             .unwrap_or_else(|faults| panic!("{}: {faults}", directory.display()));
-        if project.translations().iter().any(Option::is_some) {
-            // The sectioned test checks the contents of the expansion.
-            continue;
+        for document in &project.documents {
+            specification().check(document, Role::Document).unwrap();
+            assert!(document.root.get("kind").is_some());
         }
         // Every file of the directory is read: the manifest, and each document of the others.
         let mut documents = 0;
@@ -137,11 +137,15 @@ fn every_valid_example_is_accepted() {
             if file.file_name().is_some_and(|n| n == "conduit.yaml") {
                 assert!(project.manifest.is_some(), "{}", file.display());
             } else {
-                documents += read.len();
+                documents += read.iter().filter(|d| d.root.get("kind").is_some()).count();
             }
         }
         assert_eq!(
-            project.documents.len(),
+            project
+                .translations()
+                .iter()
+                .filter(|origin| origin.is_none())
+                .count(),
             documents,
             "{}",
             directory.display()
@@ -175,29 +179,7 @@ fn promise_of(name: &str) -> String {
 #[test]
 fn every_invalid_example_is_rejected_by_the_step_its_name_gives() {
     let expected = expected_verdicts();
-    let all_files = files_in(&examples().join("invalid"));
-    let files: Vec<_> = all_files
-        .iter()
-        .filter(|file| !name_of(file).contains("-sectioned-"))
-        .cloned()
-        .collect();
-    for file in all_files
-        .iter()
-        .filter(|file| name_of(file).contains("-sectioned-"))
-    {
-        let schema = specification()
-            .contract_validator("sectioned.v1")
-            .expect("sectioned schema");
-        let documents = read_file(file).expect("strict sectioned syntax");
-        assert!(!documents.is_empty());
-        for document in documents {
-            assert!(
-                !schema.is_valid(&document.root.to_json()),
-                "{} was accepted",
-                file.display()
-            );
-        }
-    }
+    let files = files_in(&examples().join("invalid"));
     let names: Vec<String> = files
         .iter()
         .map(|f| f.file_name().unwrap().to_string_lossy().into_owned())
@@ -209,6 +191,48 @@ fn every_invalid_example_is_rejected_by_the_step_its_name_gives() {
     );
     for (file, name) in files.iter().zip(&names) {
         let promise = promise_of(name);
+        if let Some((_, example)) = name.split_once("-sectioned-") {
+            let keys: &[&str] = match example {
+                "missing-kind.yaml" => &["/metadata", "/spec"],
+                "unknown-key.yaml" => &["/agnts"],
+                "fleet-template.yaml" => &["/templates/fleets"],
+                "inline-inputs.yaml" => &["/interfaces/console/inputs"],
+                "type-and-from.yaml" => &["/interfaces/console/type", "/interfaces/console/from"],
+                "bare-target.yaml" => &["/agents/worker/consumes/files/to"],
+                "mixed-consumes.yaml" => &[
+                    "/agents/worker/consumes/files/from",
+                    "/agents/worker/consumes/files/capability",
+                    "/agents/worker/consumes/files/operations",
+                ],
+                "pool-operator.yaml" => &["/pools/team/operator"],
+                "double-hyphen.yaml" => &["/interfaces/bad--name"],
+                "reserved-local.yaml" => &["/agents/worker/consumes/operator"],
+                _ => panic!("{name}: declare the authored key"),
+            };
+            let project = tempfile::tempdir().unwrap();
+            let manifest = format!("apiVersion: {}\n", specification().names().api_version);
+            std::fs::write(project.path().join("conduit.yaml"), manifest).unwrap();
+            let authored = project.path().join(name);
+            std::fs::copy(file, &authored).unwrap();
+            let faults = read_project(project.path(), specification()).expect_err(name);
+            assert!(faults.0.iter().all(|fault| fault.rule == rules::SUB_005));
+            assert!(
+                faults.0.iter().any(|fault| {
+                    fault.file.as_deref() == authored.to_str()
+                        && fault
+                            .pointer
+                            .as_deref()
+                            .is_some_and(|pointer| keys.contains(&pointer))
+                        && fault.position.is_some()
+                        && fault
+                            .keyword_location()
+                            .is_some_and(|keyword| keyword.starts_with('/'))
+                }),
+                "{name}: {faults}"
+            );
+            assert_eq!(expected[name], "schema");
+            continue;
+        }
         let step = match read_file(file) {
             Err(faults) => {
                 // Rejected when read: the rule is the promise the file is named for.

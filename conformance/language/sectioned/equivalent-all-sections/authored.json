@@ -1,0 +1,78 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "fleet": "maintainers",
+  "interfaces": {
+    "auditor": {
+      "type": "github.com/shrav-k/conduit/core#interface.v1"
+    },
+    "visitor": {
+      "from": "visit",
+      "consumes": {
+        "list": {
+          "from": "catalog",
+          "to": {
+            "kind": "Pool",
+            "name": "library"
+          }
+        }
+      }
+    }
+  },
+  "agents": {
+    "worker": {
+      "type": "#worker.v1"
+    }
+  },
+  "resources": {
+    "ledger": {
+      "type": "#ledger.v1",
+      "owner": "library"
+    }
+  },
+  "pools": {
+    "library": {
+      "type": "github.com/shrav-k/conduit/core#pool.v1"
+    }
+  },
+  "templates": {
+    "interfaces": {
+      "visit": {
+        "type": "github.com/shrav-k/conduit/core#interface.v1"
+      }
+    },
+    "agents": {
+      "participate": {
+        "type": "#worker.v1"
+      }
+    },
+    "resources": {
+      "record": {
+        "type": "#ledger.v1"
+      }
+    },
+    "pools": {
+      "collect": {
+        "type": "github.com/shrav-k/conduit/core#pool.v1"
+      }
+    },
+    "conduits": {
+      "catalog": {
+        "capability": "github.com/shrav-k/conduit/core#pool-management.v1",
+        "operations": []
+      }
+    }
+  },
+  "conduits": {
+    "standalone": {
+      "from": "catalog",
+      "consumer": {
+        "kind": "Interface",
+        "name": "auditor"
+      },
+      "target": {
+        "kind": "Pool",
+        "name": "library"
+      }
+    }
+  }
+}

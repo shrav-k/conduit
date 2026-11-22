@@ -209,7 +209,16 @@
           "reason": "invalid",
           "diagnostics": [
             {
-              "ruleId": "FLEET-003"
+              "ruleId": "FLEET-003",
+              "locations": [
+                {
+                  "logicalLocations": [
+                    {
+                      "fullyQualifiedName": "/objects/a/owner"
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },

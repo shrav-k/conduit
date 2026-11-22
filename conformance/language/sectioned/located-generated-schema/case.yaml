@@ -1,0 +1,76 @@
+{
+  "id": "sections-located-generated-schema",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-014",
+    "SUB-005"
+  ],
+  "title": "A generated Agent with no owner points to its definition",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.yaml": "authored.yaml"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.yaml"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "locations": [
+              {
+                "physicalLocation": {
+                  "artifactLocation": {
+                    "uri": "authored.yaml"
+                  },
+                  "region": {
+                    "startLine": 3,
+                    "startColumn": 11
+                  }
+                },
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/agents/worker"
+                  }
+                ]
+              }
+            ],
+            "properties": {
+              "file": "authored.yaml",
+              "document": 1,
+              "translation": {
+                "rule": "SCT-006",
+                "document": "worker"
+              }
+            }
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "instance.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "required",
+            "contract": "instance.v1",
+            "pointer": "/$defs/agent/required",
+            "root_schema": "instance.v1"
+          }
+        ]
+      }
+    }
+  ]
+}

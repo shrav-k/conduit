@@ -2,7 +2,7 @@
 use crate::packages::{self, Catalog, Project, Snapshot};
 use crate::schemas::Environment;
 use crate::{
-    Allocation, Context, Evidence, Request, Result, Transition, authorized_path, decision,
+    Allocation, Context, Evidence, Request, Result, State, Transition, authorized_path, decision,
     end_request, permits,
 };
 use serde::{Deserialize, Serialize};
@@ -26,12 +26,35 @@ struct Held {
 struct Fault {
     rule: &'static str,
     text: String,
+    pointer: Option<FaultPointer>,
+}
+
+#[derive(Debug)]
+enum FaultPointer {
+    Instance(String),
+    Configuration(String),
+}
+
+impl Fault {
+    fn at_argument(mut self, argument: &str) -> Self {
+        self.pointer = Some(FaultPointer::Instance(format!(
+            "/{}",
+            crate::schemas::token(argument)
+        )));
+        self
+    }
+
+    fn at_configuration(mut self, pointer: &str) -> Self {
+        self.pointer = Some(FaultPointer::Configuration(format!("/config{pointer}")));
+        self
+    }
 }
 type Checked<T> = std::result::Result<T, Fault>;
 fn fault(rule: &'static str, text: impl Into<String>) -> Fault {
     Fault {
         rule,
         text: text.into(),
+        pointer: None,
     }
 }
 fn items(v: &Value, key: &str) -> Vec<(String, Value)> {
@@ -58,6 +81,7 @@ fn list(v: &Value, key: &str) -> Vec<String> {
 pub(crate) struct ReportedFault {
     pub(crate) rule: String,
     pub(crate) diagnostic: Value,
+    pub(crate) prior_sort_key: Option<String>,
 }
 impl ReportedFault {
     pub(crate) fn received(diagnostic: Value) -> Result<Self> {
@@ -65,7 +89,31 @@ impl ReportedFault {
             .as_str()
             .ok_or("incoming registration fault lacks its rule")?
             .into();
-        Ok(Self { rule, diagnostic })
+        Ok(Self {
+            rule,
+            diagnostic,
+            prior_sort_key: None,
+        })
+    }
+
+    fn catalog(diagnostic: Value) -> Result<Self> {
+        let mut fault = Self::received(diagnostic)?;
+        let mut prior = fault.diagnostic.clone();
+        if prior["properties"]["document"].is_string() {
+            let properties = prior["properties"].as_object_mut().unwrap();
+            properties.remove("document");
+            if properties.is_empty() {
+                prior.as_object_mut().unwrap().remove("properties");
+            }
+        } else if prior
+            .pointer("/locations/0/logicalLocations/0/fullyQualifiedName")
+            .and_then(Value::as_str)
+            .is_some_and(|location| location.starts_with("/objects/"))
+        {
+            prior.as_object_mut().unwrap().remove("locations");
+        }
+        fault.prior_sort_key = Some(prior.to_string());
+        Ok(fault)
     }
 }
 impl std::ops::Deref for ReportedFault {
@@ -86,6 +134,7 @@ fn diagnostic(rule: &str, name: &str, text: &str, level: &str) -> ReportedFault 
     ReportedFault {
         rule: rule.into(),
         diagnostic: json!({"ruleId":rule,"level":level,"message":{"text":format!("{name}: {text}")},"locations":[{"logicalLocations":[{"fullyQualifiedName":format!("/objects/{}", name.replace('~', "~0").replace('/', "~1"))}]}]}),
+        prior_sort_key: None,
     }
 }
 impl Held {
@@ -157,9 +206,6 @@ impl Held {
             })
             .collect::<Vec<_>>();
         Ok(json!(packages))
-    }
-    fn valid(&self, schema: &Value, value: &Value, core: &str) -> Result<bool> {
-        self.environment.valid(&self.scope, schema, value, core)
     }
     fn valid_in(&self, root: &Value, schema: &Value, value: &Value, core: &str) -> Result<bool> {
         fn locate(root: &Value, wanted: &Value, at: String) -> Option<String> {
@@ -301,12 +347,111 @@ struct Builder<'a> {
     suffix: usize,
     objects: Vec<Value>,
     diagnostics: Vec<ReportedFault>,
+    sources: BTreeMap<String, InstanceSource>,
     templates: Vec<Value>,
     reserved_names: BTreeSet<(String, String)>,
     snapshots: Vec<Snapshot>,
     trusted: bool,
 }
+
+#[derive(Clone)]
+struct DocumentPlace {
+    name: String,
+    pointer: String,
+}
+
+impl DocumentPlace {
+    fn locate(&self, mut diagnostic: ReportedFault, suffix: &str) -> ReportedFault {
+        // Added locations must not change which existing rule decides the reply.
+        diagnostic.prior_sort_key = Some(diagnostic.diagnostic.to_string());
+        packages::object_location(
+            &mut diagnostic.diagnostic,
+            &self.name,
+            &format!("{}{suffix}", self.pointer),
+        );
+        diagnostic
+    }
+}
+
+struct InstanceSource {
+    declaration: Option<DocumentPlace>,
+    template: Option<String>,
+    authored_arguments: BTreeSet<String>,
+}
+
 impl Builder<'_> {
+    fn declaration_place(
+        &self,
+        document: &Value,
+        parent: Option<(&Value, &str, &str)>,
+    ) -> Option<DocumentPlace> {
+        if let Some((parent, slot, name)) = parent {
+            let source = self.sources.get(parent["id"].as_str()?)?;
+            if let Some(template) = &source.template {
+                return Some(DocumentPlace {
+                    name: template.clone(),
+                    pointer: format!("/spec/{slot}/{}", crate::schemas::token(name)),
+                });
+            }
+            return source.declaration.clone();
+        }
+        Some(DocumentPlace {
+            name: document["metadata"]["name"].as_str()?.to_owned(),
+            pointer: String::new(),
+        })
+    }
+
+    fn instance_diagnostic(&self, object: &Value, fault: Fault) -> ReportedFault {
+        let diagnostic = diagnostic(
+            fault.rule,
+            object["name"].as_str().unwrap_or("unnamed"),
+            &fault.text,
+            "error",
+        );
+        let Some(source) = object["id"].as_str().and_then(|id| self.sources.get(id)) else {
+            return diagnostic;
+        };
+        match fault.pointer {
+            Some(FaultPointer::Configuration(pointer)) => {
+                if let Some(declaration) = &source.declaration {
+                    for (input, spec) in items(object, "_inputs") {
+                        if source.authored_arguments.contains(&input)
+                            && let Some(suffix) = list(&spec, "to").iter().find_map(|destination| {
+                                pointer
+                                    .strip_prefix(destination.as_str())
+                                    .filter(|p| p.is_empty() || p.starts_with('/'))
+                            })
+                        {
+                            return declaration.locate(
+                                diagnostic,
+                                &format!("/arguments/{}{suffix}", crate::schemas::token(&input)),
+                            );
+                        }
+                    }
+                }
+                if let Some(template) = &source.template {
+                    return DocumentPlace {
+                        name: template.clone(),
+                        pointer: "/spec".into(),
+                    }
+                    .locate(diagnostic, &pointer);
+                }
+            }
+            Some(FaultPointer::Instance(pointer)) => {
+                if let Some(declaration) = &source.declaration {
+                    return declaration.locate(diagnostic, &pointer);
+                }
+            }
+            None => {}
+        }
+        if let Some(declaration) = &source.declaration
+            && !declaration.pointer.is_empty()
+        {
+            return declaration.locate(diagnostic, "");
+        }
+        diagnostic
+    }
+
     fn template(
         &self,
         from: &Value,
@@ -473,12 +618,22 @@ impl Builder<'_> {
         parent: Option<(&Value, &str, &str)>,
         depth: usize,
     ) -> Result<()> {
+        let declaration = self.declaration_place(document, parent);
+        let expanded_fault = |rule, name, text, suffix: &str| {
+            let diagnostic = diagnostic(rule, name, text, "error");
+            if parent.is_some()
+                && let Some(declaration) = &declaration
+            {
+                return declaration.locate(diagnostic, suffix);
+            }
+            diagnostic
+        };
         if depth > 128 {
-            self.diagnostics.push(diagnostic(
+            self.diagnostics.push(expanded_fault(
                 "SUB-011",
                 "nested instantiation",
                 "DL10 nesting 128 exceeded",
-                "error",
+                "",
             ));
             return Ok(());
         }
@@ -492,11 +647,11 @@ impl Builder<'_> {
                         .any(|k| !["apiVersion", "kind", "metadata", "from"].contains(&k.as_str()))
                 }))
         {
-            self.diagnostics.push(diagnostic(
+            self.diagnostics.push(expanded_fault(
                 "FLEET-001",
                 label,
                 "Fleet must instantiate core#fleet with no arguments",
-                "error",
+                "",
             ));
             return Ok(());
         }
@@ -505,7 +660,7 @@ impl Builder<'_> {
             Ok(t) => t,
             Err(f) => {
                 self.diagnostics
-                    .push(diagnostic(f.rule, label, &f.text, "error"));
+                    .push(expanded_fault(f.rule, label, &f.text, "/from"));
                 return Ok(());
             }
         };
@@ -517,11 +672,11 @@ impl Builder<'_> {
                 .iter()
                 .any(|n| s == format!("{}#{n}", self.context.core_package))
         }) {
-            self.diagnostics.push(diagnostic(
+            self.diagnostics.push(expanded_fault(
                 "FST-006",
                 label,
                 "protected core template",
-                "error",
+                "/from",
             ));
             return Ok(());
         }
@@ -584,7 +739,7 @@ impl Builder<'_> {
         })();
         if let Err(f) = apply {
             self.diagnostics
-                .push(diagnostic(f.rule, label, &f.text, "error"));
+                .push(expanded_fault(f.rule, label, &f.text, ""));
             return Ok(());
         }
         let name = if let Some(name) = document["metadata"]["name"].as_str() {
@@ -598,6 +753,29 @@ impl Builder<'_> {
             )?
         };
         let (id, revision) = self.allocate()?;
+        let submitted_template = self.templates.iter().find(|candidate| {
+            if let Some(id) = from["id"].as_str() {
+                candidate["id"] == id
+            } else {
+                h.scope == "project"
+                    && candidate["kind"] == kind
+                    && candidate["name"] == template["metadata"]["name"]
+            }
+        });
+        self.sources.insert(
+            id.clone(),
+            InstanceSource {
+                declaration,
+                template: submitted_template
+                    .and_then(|t| t["name"].as_str())
+                    .map(str::to_owned),
+                authored_arguments: document["arguments"]
+                    .as_object()
+                    .into_iter()
+                    .flat_map(|arguments| arguments.keys().cloned())
+                    .collect(),
+            },
+        );
         let inputs = spec.get("inputs").cloned().unwrap_or(json!({}));
         let mut object = spec;
         object
@@ -839,7 +1017,23 @@ impl References<'_> {
                 && name.ends_with("reference.v1")
                 && !["qualified-reference.v1", "template-reference.v1"].contains(&name)
             {
-                let resolved = match self.resolve(value, fixed_kind(name), pool, authored) {
+                let resolution = self
+                    .resolve(value, fixed_kind(name), pool, authored)
+                    .map_err(|mut fault| {
+                        if name == "secret-reference.v1" {
+                            let withheld = conduit_loader::secret::WITHHELD_VALUE;
+                            if fault.text.starts_with("unresolved reference ") {
+                                // The unresolved-reference note keeps its existing classification.
+                                fault.text = format!("unresolved reference: {withheld}");
+                            } else if fault.text.starts_with("reference ")
+                                || fault.text.starts_with("no entry ")
+                            {
+                                fault.text = withheld.into();
+                            }
+                        }
+                        fault
+                    });
+                let resolved = match resolution {
                     Err(f)
                         if f.rule == "OBJ-009"
                             && f.text.contains("unresolved reference")
@@ -1116,10 +1310,9 @@ fn resolve_instance(
     // FLEET-002 / OBJ-013: the Agent's fixed owner is a Fleet, never a Pool.
     if kind == "Agent" {
         if o.get("owner").is_none() {
-            return Err(fault(
-                "FLEET-002",
-                "owner is required and must name a Fleet",
-            ));
+            return Err(
+                fault("FLEET-002", "owner is required and must name a Fleet").at_argument("owner"),
+            );
         }
         standards.push(("owner", Some("Fleet")));
     }
@@ -1132,21 +1325,24 @@ fn resolve_instance(
         o[key] = refs
             .resolve(&o[key], k, entry_pool, !implicit && !trusted)
             .map_err(|f| {
-                if kind == "Agent" && key == "owner" {
+                let fault = if kind == "Agent" && key == "owner" {
                     fault("FLEET-002", format!("owner must name a Fleet: {}", f.text))
                 } else {
                     f
-                }
+                };
+                fault.at_argument(key)
             })?;
         let target = all
             .iter()
             .find(|v| v["id"] == o[key]["id"])
-            .ok_or_else(|| fault("OBJ-009", "missing referenced instance"))?;
+            .ok_or_else(|| fault("OBJ-009", "missing referenced instance").at_argument(key))?;
         if key == "consumer" && target["kind"] == "Fleet" {
-            return Err(fault("FLEET-004", "a Fleet is never a consumer or caller"));
+            return Err(
+                fault("FLEET-004", "a Fleet is never a consumer or caller").at_argument(key)
+            );
         }
         if key == "owner" && kind == "Agent" && target["kind"] != "Fleet" {
-            return Err(fault("FLEET-002", "owner is not a Fleet"));
+            return Err(fault("FLEET-002", "owner is not a Fleet").at_argument(key));
         }
         if target["state"] == "retired" {
             return Err(fault(
@@ -1160,10 +1356,11 @@ fn resolve_instance(
                     "CON-025"
                 },
                 format!("{key} {} is retired", target["name"]),
-            ));
+            )
+            .at_argument(key));
         }
         if key == "owner" && kind == "Resource" && target["kind"] != "Pool" {
-            return Err(fault("POOL-001", "owner is not a Pool"));
+            return Err(fault("POOL-001", "owner is not a Pool").at_argument(key));
         }
     }
     let mut config_schema = None;
@@ -1184,14 +1381,17 @@ fn resolve_instance(
             return Err(fault(
                 "INS-014",
                 format!("configuration fails Type {q}: {failure}"),
-            ));
+            )
+            .at_configuration(&failure.instance_pointer));
         }
         o["config"] = refs.schema(&th, schema, schema, &config, entry_pool, !trusted, 0)?;
-        if !th
-            .valid(schema, &o["config"], core)
+        if let Some(failure) = th
+            .environment
+            .failure_at(&th.scope, schema, "", &o["config"], core)
             .map_err(|e| fault("INS-014", e))?
         {
-            return Err(fault("INS-014", "stored configuration fails Type"));
+            return Err(fault("INS-014", "stored configuration fails Type")
+                .at_configuration(&failure.instance_pointer));
         }
         config_schema = Some(schema.clone());
         type_scope = Some(th);
@@ -1280,11 +1480,13 @@ fn resolve_instance(
         }
     }
     if let (Some(schema), Some(th)) = (&config_schema, &type_scope)
-        && !th
-            .valid(schema, &o["config"], core)
+        && let Some(failure) = th
+            .environment
+            .failure_at(&th.scope, schema, "", &o["config"], core)
             .map_err(|e| fault("INS-014", e))?
     {
-        return Err(fault("INS-014", "stored configuration fails Type"));
+        return Err(fault("INS-014", "stored configuration fails Type")
+            .at_configuration(&failure.instance_pointer));
     }
     // Resolve the retained nested declarations as well as the instantiated children.
     for (local, mut declaration) in items(&o, "conduits") {
@@ -1298,32 +1500,39 @@ fn resolve_instance(
         let placement = supplied_placement.unwrap_or(json!("local"));
         let placement = refs
             .resolve(&placement, Some("Resource"), entry_pool, !trusted)
-            .map_err(|f| fault("PLC-001", f.text))?;
+            .map_err(|f| fault("PLC-001", f.text).at_argument("placement"))?;
         let node = all
             .iter()
             .find(|n| n["id"] == placement["id"])
-            .ok_or_else(|| fault("PLC-001", "unknown node"))?;
+            .ok_or_else(|| fault("PLC-001", "unknown node").at_argument("placement"))?;
         if node["type"] != format!("{core}#node.v1") {
-            return Err(fault("PLC-001", "placement is not a node"));
+            return Err(fault("PLC-001", "placement is not a node").at_argument("placement"));
         }
         if node["state"] == "retired" {
-            return Err(fault("PLC-018", "placement is retired"));
+            return Err(fault("PLC-018", "placement is retired").at_argument("placement"));
         }
         o["placement"] = placement;
         if let Some(runtime) = &supplied_runtime {
-            let runtime = refs.resolve(runtime, Some("Resource"), entry_pool, !trusted)?;
+            let runtime = refs
+                .resolve(runtime, Some("Resource"), entry_pool, !trusted)
+                .map_err(|fault| fault.at_argument("runtime"))?;
             let provider = all
                 .iter()
                 .find(|n| n["id"] == runtime["id"])
-                .ok_or_else(|| fault("PRV-006", "unknown runtime provider"))?;
+                .ok_or_else(|| {
+                    fault("PRV-006", "unknown runtime provider").at_argument("runtime")
+                })?;
             if provider["kind"] != "Resource"
                 || provider["state"] == "retired"
-                || !offered(provider, core)?.contains(&format!("{core}#runtime-provider.v1"))
+                || !offered(provider, core)
+                    .map_err(|fault| fault.at_argument("runtime"))?
+                    .contains(&format!("{core}#runtime-provider.v1"))
             {
                 return Err(fault(
                     "PRV-006",
                     format!("runtime {runtime} is not a live runtime provider"),
-                ));
+                )
+                .at_argument("runtime"));
             }
             o["runtime"] = runtime;
         }
@@ -1678,9 +1887,147 @@ fn refuse_root_registration(
     ));
     let route = crate::explain::ids(request, json!({"documents":documents}));
     end_request(t, evidence, &route, None, "refused", "ACC-054", context)?;
-    let diagnostic = crate::explain::diagnostic(&t.state, &route, context, "refused", "ACC-054")?;
+    let mut diagnostic =
+        crate::explain::diagnostic(&t.state, &route, context, "refused", "ACC-054")?;
+    if let Some(root) = t
+        .state
+        .objects
+        .iter()
+        .find(|o| o["from"] == context.qualified("root"))
+        && let Some(name) = documents
+            .iter()
+            .find(|document| root_consumed(&t.state, document, root))
+            .and_then(|document| document["metadata"]["name"].as_str())
+    {
+        packages::object_location(&mut diagnostic, name, "");
+    }
     t.reply = json!({"accepted":false,"reason":"refused","diagnostics":[diagnostic]});
     Ok(Some(crate::explain::Rejection::new("refused", "ACC-054")))
+}
+
+fn diagnostic_documents(
+    project: &Project,
+    builtin: &Project,
+    snapshots: &[Snapshot],
+    state: &State,
+    core: &str,
+) -> Vec<Value> {
+    let (environment, indexes) = Catalog::diagnostic_context(builtin, snapshots, project);
+    let withhold_arguments = |instance: &mut Value| {
+        if let Some(arguments) = instance.get_mut("arguments") {
+            *arguments = json!(conduit_loader::secret::WITHHELD_VALUE);
+        }
+    };
+    let redact_arguments = |instance: &mut Value, kind: &str| {
+        let Some(from) = instance
+            .get("from")
+            .filter(|from| from.get("kind").is_none_or(|explicit| explicit == kind))
+            .and_then(|from| from.as_str().or_else(|| from["name"].as_str()))
+        else {
+            withhold_arguments(instance);
+            return;
+        };
+        let local = from.strip_prefix('#').unwrap_or(from);
+        let redact = |instance: &mut Value,
+                      template: &Value,
+                      environment: &crate::schemas::Environment,
+                      scope: &str| {
+            for (name, input) in items(&template["spec"], "inputs") {
+                if let Some(value) = instance
+                    .get_mut("arguments")
+                    .and_then(|args| args.get_mut(&name))
+                {
+                    environment.withhold_values(
+                        scope,
+                        &input["schema"],
+                        &input["schema"],
+                        value,
+                        core,
+                    );
+                }
+            }
+        };
+        if from.contains('#') && !from.starts_with('#') {
+            if let Ok((scope, name)) = packages::resolve_name(
+                &environment,
+                &indexes,
+                "project",
+                from,
+                &format!("Template:{kind}"),
+                core,
+            ) {
+                redact(instance, &indexes[&scope][&name], &environment, &scope);
+                return;
+            }
+        } else if let Some(template) = project.documents.iter().find(|template| {
+            template["kind"] == kind
+                && template["metadata"]["name"] == local
+                && template.get("spec").is_some()
+        }) {
+            redact(instance, template, &environment, "project");
+            return;
+        } else if let Some(template) = state.objects.iter().find(|template| {
+            template["kind"] == kind && template["name"] == local && template.get("spec").is_some()
+        }) && let Ok(held) = serde_json::from_value::<Held>(template["held"].clone())
+        {
+            redact(instance, template, &held.environment, &held.scope);
+            return;
+        }
+        withhold_arguments(instance);
+    };
+    let mut documents = project.documents.clone();
+    for document in &mut documents {
+        environment.withhold_defaults("project", document, core);
+        let kind = document["kind"].as_str().unwrap_or_default().to_owned();
+        if document.get("from").is_some() {
+            redact_arguments(document, &kind);
+            continue;
+        }
+        let spec = &mut document["spec"];
+        let config_type = spec["type"].as_str().and_then(|reference| {
+            packages::resolve_name(&environment, &indexes, "project", reference, "Type", core).ok()
+        });
+        if let Some(config) = spec.get_mut("config") {
+            if let Some((scope, name)) = config_type {
+                let schema = &indexes[&scope][&name]["spec"]["schema"];
+                environment.withhold_values(&scope, schema, schema, config, core);
+            } else {
+                *config = json!(conduit_loader::secret::WITHHELD_VALUE);
+            }
+        }
+        for (slot, family) in [("entries", "Resource"), ("conduits", "Conduit")] {
+            if let Some(members) = spec.get_mut(slot).and_then(Value::as_object_mut) {
+                for instance in members.values_mut() {
+                    redact_arguments(instance, family);
+                }
+            }
+        }
+        if let Some(requirements) = spec.get_mut("requirements").and_then(Value::as_object_mut) {
+            for applied in requirements.values_mut() {
+                if let Some(reference) = applied["requirement"].as_str()
+                    && let Ok((scope, name)) = packages::resolve_name(
+                        &environment,
+                        &indexes,
+                        "project",
+                        reference,
+                        "Requirement",
+                        core,
+                    )
+                {
+                    for (input, definition) in items(&indexes[&scope][&name]["spec"], "inputs") {
+                        if let Some(value) = applied
+                            .get_mut("arguments")
+                            .and_then(|args| args.get_mut(&input))
+                        {
+                            let schema = &definition["schema"];
+                            environment.withhold_values(&scope, schema, schema, value, core);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    documents
 }
 
 /// Resolve and stage a submission, also used for one-template replacement.
@@ -1717,8 +2064,16 @@ pub(crate) fn prepare(
         ));
         let route = crate::explain::ids(request, json!({"documents":project.documents}));
         end_request(t, evidence, &route, None, "refused", "ACC-057", context)?;
-        let diagnostic =
+        let mut diagnostic =
             crate::explain::diagnostic(&t.state, &route, context, "refused", "ACC-057")?;
+        if let Some(name) = project
+            .documents
+            .iter()
+            .find(|document| document["kind"] == "Agent" && document.get("from").is_some())
+            .and_then(|document| document["metadata"]["name"].as_str())
+        {
+            packages::object_location(&mut diagnostic, name, "");
+        }
         t.reply = json!({"accepted":false,"reason":"refused","diagnostics":[diagnostic]});
         return Ok(Some(crate::explain::Rejection::new("refused", "ACC-057")));
     }
@@ -1740,8 +2095,9 @@ pub(crate) fn prepare(
         )
     });
     let mut diagnostics = vec![];
-    let mut named = BTreeMap::<(String, String), Value>::new();
-    for doc in &project.documents {
+    let mut named = BTreeMap::<(String, String), usize>::new();
+    let mut display = None;
+    for (index, doc) in project.documents.iter().enumerate() {
         if packages::contract(doc) {
             continue;
         }
@@ -1774,11 +2130,23 @@ pub(crate) fn prepare(
             }
 
             let key = (kind.to_owned(), name.to_owned());
-            if let Some(previous) = named.insert(key, doc.clone()) {
+            if let Some(previous) = named.insert(key, index) {
+                let display = display.get_or_insert_with(|| {
+                    diagnostic_documents(
+                        &project,
+                        &builtin,
+                        &snapshots,
+                        &t.state,
+                        &context.core_package,
+                    )
+                });
                 diagnostics.push(diagnostic(
                     "SUB-004",
                     name,
-                    &format!("duplicate documents {previous} and {doc}"),
+                    &format!(
+                        "duplicate documents {} and {}",
+                        display[previous], display[index]
+                    ),
                     "error",
                 ));
             }
@@ -1788,12 +2156,21 @@ pub(crate) fn prepare(
                 .iter()
                 .find(|o| o["kind"] == kind && o["name"] == name)
             {
+                let display = display.get_or_insert_with(|| {
+                    diagnostic_documents(
+                        &project,
+                        &builtin,
+                        &snapshots,
+                        &t.state,
+                        &context.core_package,
+                    )
+                });
                 diagnostics.push(diagnostic(
                     "OBJ-002",
                     name,
                     &format!(
-                        "submitted object {doc} clashes with existing {}",
-                        existing["id"]
+                        "submitted object {} clashes with existing {}",
+                        display[index], existing["id"]
                     ),
                     "error",
                 ));
@@ -1813,7 +2190,7 @@ pub(crate) fn prepare(
                 .cloned()
                 .unwrap_or_default()
                 .into_iter()
-                .map(ReportedFault::received)
+                .map(ReportedFault::catalog)
                 .collect::<Result<Vec<_>>>()?,
         );
         return reject(t, diagnostics, evidence, request, context);
@@ -1824,7 +2201,7 @@ pub(crate) fn prepare(
             .cloned()
             .unwrap_or_default()
             .into_iter()
-            .map(ReportedFault::received)
+            .map(ReportedFault::catalog)
             .collect::<Result<Vec<_>>>()?,
     );
     let mut indexes = BTreeMap::from([
@@ -1853,6 +2230,7 @@ pub(crate) fn prepare(
         suffix: 0,
         objects: vec![],
         diagnostics,
+        sources: BTreeMap::new(),
         templates: vec![],
         reserved_names: named.keys().cloned().collect(),
         snapshots,
@@ -1898,12 +2276,7 @@ pub(crate) fn prepare(
         };
         match table {
             Ok(table) => b.objects[i]["resolved_implementations"] = table,
-            Err(f) => b.diagnostics.push(diagnostic(
-                f.rule,
-                o["name"].as_str().unwrap(),
-                &f.text,
-                "error",
-            )),
+            Err(f) => b.diagnostics.push(b.instance_diagnostic(o, f)),
         }
         b.objects[i]["packages"] = held.package_list(
             &b.objects[i],
@@ -1937,12 +2310,7 @@ pub(crate) fn prepare(
     for object in &b.objects {
         match resolve_instance(object, &all, context, false) {
             Ok(o) => resolved.push(o),
-            Err(f) => b.diagnostics.push(diagnostic(
-                f.rule,
-                object["name"].as_str().unwrap(),
-                &f.text,
-                "error",
-            )),
+            Err(f) => b.diagnostics.push(b.instance_diagnostic(object, f)),
         }
     }
     // The parent keeps the declaration used for a future nested replacement,
@@ -1971,12 +2339,7 @@ pub(crate) fn prepare(
                 0,
             ) {
                 Ok(value) => parent[slot][local]["arguments"][&name] = value,
-                Err(f) => b.diagnostics.push(diagnostic(
-                    f.rule,
-                    child["name"].as_str().unwrap(),
-                    &f.text,
-                    "error",
-                )),
+                Err(f) => b.diagnostics.push(b.instance_diagnostic(child, f)),
             }
         }
         if slot == "conduits"
@@ -2045,12 +2408,8 @@ pub(crate) fn prepare(
     }
     for path in resolved.iter().filter(|o| o["kind"] == "Conduit") {
         if let Some((rule, text)) = check_conduit(path, &all_resolved, context)? {
-            b.diagnostics.push(diagnostic(
-                rule,
-                path["name"].as_str().unwrap_or(""),
-                &text,
-                "error",
-            ));
+            b.diagnostics
+                .push(b.instance_diagnostic(path, fault(rule, text)));
         }
     }
     if b.diagnostics.iter().any(|d| d["level"] == "error") {
@@ -2060,14 +2419,15 @@ pub(crate) fn prepare(
     matching_state.objects.extend(resolved.iter().cloned());
     for object in &resolved {
         if let Some(stone) = crate::inventory::matching(&matching_state, object) {
+            let mut diagnostic =
+                crate::inventory::diagnostic(&b.state, &json!(request.caller), stone, context);
+            if let Some(name) = object["name"].as_str() {
+                packages::object_location(&mut diagnostic, name, "");
+            }
             b.diagnostics.push(ReportedFault {
                 rule: "LIF-041".into(),
-                diagnostic: crate::inventory::diagnostic(
-                    &b.state,
-                    &json!(request.caller),
-                    stone,
-                    context,
-                ),
+                diagnostic,
+                prior_sort_key: None,
             });
         }
     }
@@ -2258,7 +2618,11 @@ fn reject(
     request: &Request,
     context: &Context,
 ) -> Result<Option<crate::explain::Rejection>> {
-    diagnostics.sort_by_key(|d| d.diagnostic.to_string());
+    diagnostics.sort_by_key(|d| {
+        d.prior_sort_key
+            .clone()
+            .unwrap_or_else(|| d.diagnostic.to_string())
+    });
     diagnostics.dedup();
     let invalid = diagnostics.iter().any(|d| {
         d["level"] == "error" && d.rule != "OBJ-002" && d.rule != "OBJ-025" && d.rule != "LIF-041"
@@ -2591,6 +2955,7 @@ pub(crate) fn replacement(
         suffix: 0,
         objects: vec![],
         diagnostics: vec![],
+        sources: BTreeMap::new(),
         templates: vec![],
         reserved_names: BTreeSet::new(),
         snapshots: packages::catalog_entries(&t.state, t.state.preinstalled_snapshots.clone()),

@@ -1,0 +1,11 @@
+{
+  "snapshots": [],
+  "project": {
+    "files": {
+      "a.json": "a.json",
+      "b.json": "b.json",
+      "basis.json": "basis.json",
+      "conduit.json": "conduit.json"
+    }
+  }
+}

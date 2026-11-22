@@ -2,7 +2,8 @@
 use crate::registration::ReportedFault;
 use crate::{Context, Result, Transition, decision, packages::*};
 use conduit_loader::{
-    Document, FileRole, Names, Specification, Syntax, read_archive_files, read_bytes,
+    Document, FileRole, Names, Specification, Syntax, diagnostic_result, read_archive_files,
+    read_bytes,
 };
 use flate2::read::MultiGzDecoder;
 use serde::{Deserialize, Serialize};
@@ -47,6 +48,7 @@ fn diagnostic(rule: &str, message: impl Into<String>) -> ReportedFault {
     ReportedFault {
         rule: rule.into(),
         diagnostic: json!({"ruleId":rule,"level":"error","message":{"text":message.into()}}),
+        prior_sort_key: None,
     }
 }
 fn reject(t: &mut Transition, diagnostics: Vec<ReportedFault>) -> crate::explain::Rejection {
@@ -254,7 +256,11 @@ pub(crate) fn install(
         Err(errors) => {
             return Ok(Some(reject(
                 t,
-                errors.0.iter().map(loader_diagnostic).collect(),
+                errors
+                    .0
+                    .iter()
+                    .map(|error| ReportedFault::received(diagnostic_result(error)))
+                    .collect::<Result<Vec<_>>>()?,
             )));
         }
     };
@@ -270,7 +276,7 @@ pub(crate) fn install(
         }
     }
     let project = Project {
-        manifest: loaded.manifest.map(|d| d.root.to_json()),
+        manifest: loaded.manifest.as_ref().map(|d| d.root.to_json()),
         documents: loaded.documents.iter().map(|d| d.root.to_json()).collect(),
         directory: input.directory,
     };
@@ -302,12 +308,15 @@ pub(crate) fn install(
     entries.push(package.clone());
     // Resolve as a package scope, not as a submitted project: exports, dependencies and
     // every document are checked with the same semantics as the existing catalog.
-    let resolution =
-        Catalog::new(builtin, entries.clone(), &context.core_package)?.resolve(&Project {
+    let candidate = format!("snapshot-{}", entries.len() - 1);
+    let resolution = Catalog::new(builtin, entries.clone(), &context.core_package)?.resolve_at(
+        &Project {
             manifest: None,
             documents: vec![],
             directory: None,
-        })?;
+        },
+        &candidate,
+    )?;
     t.decisions.extend(resolution.decisions);
     if resolution.reply["accepted"] != true {
         let mut diagnostics = resolution.reply["diagnostics"]
@@ -318,6 +327,7 @@ pub(crate) fn install(
             .map(ReportedFault::received)
             .collect::<Result<Vec<_>>>()?;
         for d in &mut diagnostics {
+            loaded.locate_diagnostic(&mut d.diagnostic);
             if d.rule == "PKG-006" {
                 d.rule = "PKG-028".into();
                 d.diagnostic["ruleId"] = json!("PKG-028");
@@ -329,7 +339,6 @@ pub(crate) fn install(
     // including each release's own dependency pins (NAM-014, SCH-015).
     let env = serde_json::from_value(resolution.reply["environment"].clone())
         .map_err(|e| e.to_string())?;
-    let candidate = format!("snapshot-{}", entries.len() - 1);
     // NAM-024 applies in either installation order, only within one contract name.
     for (i, installed) in entries[..entries.len() - 1]
         .iter()
@@ -376,31 +385,6 @@ pub(crate) fn install(
         .push(InstalledPackage { package, files });
     Ok(None)
 }
-fn loader_diagnostic(d: &conduit_loader::Diagnostic) -> ReportedFault {
-    let mut fault = diagnostic(d.rule, d.message.to_string());
-    let v = &mut fault.diagnostic;
-    v["properties"] = json!({"file":d.file,"document":d.document});
-    let mut location = json!({});
-    if let Some(pointer) = &d.pointer {
-        location["logicalLocations"] = json!([{"fullyQualifiedName":pointer}]);
-    }
-    if let Some(file) = &d.file {
-        location["physicalLocation"] = json!({"artifactLocation":{"uri":file}});
-    }
-    if let Some(position) = d.position {
-        location["physicalLocation"]["region"] =
-            json!({"startLine":position.line,"startColumn":position.column});
-    }
-    v["locations"] = json!([location]);
-    if let Some(k) = d.keyword_location() {
-        v["properties"]["keywordLocation"] = json!(k);
-    }
-    if let Some(k) = d.absolute_keyword_location() {
-        v["properties"]["absoluteKeywordLocation"] = json!(k);
-    }
-    fault
-}
-
 type ArchiveResult<T> = std::result::Result<T, (&'static str, String)>;
 fn malformed(message: impl ToString) -> (&'static str, String) {
     ("PKG-022", message.to_string())

@@ -286,10 +286,10 @@ fn schema_diagnostic(document: &Document, failure: Failure, authored_member: boo
     .in_document(document.index)
     .at_pointer(pointer)
     .at(position);
-    diagnostic.schema_location = Some(Box::new(SchemaLocation {
+    diagnostic.set_schema_location(SchemaLocation {
         keyword_location: failure.keyword_location,
         absolute_keyword_location: failure.absolute_keyword_location,
-    }));
+    });
     diagnostic
 }
 
@@ -326,9 +326,9 @@ fn validator(
             Json::String(format!("#/$defs/{}", token(name))),
         );
     }
-    compile(&schema).map_err(|d| Diagnostic {
-        message: format!("{name}: {}", d.message).into_boxed_str(),
-        ..d
+    compile(&schema).map_err(|mut d| {
+        d.message = format!("{name}: {}", d.message).into_boxed_str();
+        d
     })
 }
 
@@ -612,7 +612,9 @@ fn describe(error: &jsonschema::ValidationError<'_>) -> Failure {
             || "the bundle".to_string(),
             |t| t.replace("~1", "/").replace("~0", "~"),
         );
-    let mut message = error.to_string();
+    let mut protected = vec![];
+    protected_schema_values(error, &mut protected);
+    let mut message = crate::secret::validation_message(error, &protected);
     if message.chars().count() > 200 {
         message = message.chars().take(197).collect::<String>() + "...";
     }
@@ -635,6 +637,29 @@ fn describe(error: &jsonschema::ValidationError<'_>) -> Failure {
     }
 }
 
+fn protected_schema_values<'a>(
+    error: &'a jsonschema::ValidationError<'_>,
+    protected: &mut Vec<&'a Json>,
+) {
+    let points_to_secret = error
+        .schema_path()
+        .as_str()
+        .contains("/$defs/secret-reference.v1/")
+        || error.absolute_keyword_location().is_some_and(|uri| {
+            uri.as_str().contains("/$defs/secret-reference.v1/")
+                || uri.as_str().ends_with("#secret-reference.v1")
+        });
+    if points_to_secret {
+        protected.push(error.instance());
+    } else if let ValidationErrorKind::AnyOf { context }
+    | ValidationErrorKind::OneOfNotValid { context } = error.kind()
+    {
+        for child in context.iter().flatten() {
+            protected_schema_values(child, protected);
+        }
+    }
+}
+
 fn depth(pointer: &str) -> usize {
     pointer.matches('/').count()
 }
@@ -642,6 +667,29 @@ fn depth(pointer: &str) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn only_the_secret_reference_failure_withholds_its_value() {
+        let schema = serde_json::json!({
+            "properties": {
+                "protected": {"$ref": "#/$defs/secret-reference.v1"},
+                "secret-reference.v1": {"type": "object"},
+            },
+            "$defs": {"secret-reference.v1": {"type": "object"}},
+        });
+        let validator = compile(&schema).unwrap();
+        let sample = "synthetic-value-for-redaction";
+        for (field, protected) in [("protected", true), ("secret-reference.v1", false)] {
+            let instance = serde_json::json!({(field): sample});
+            let failure = first_failure(&validator, &instance).unwrap();
+            assert_eq!(failure.instance_path, format!("/{field}"));
+            assert_eq!(failure.message.contains(sample), !protected, "{field}");
+            assert_eq!(
+                failure.message.contains(crate::secret::WITHHELD_VALUE),
+                protected
+            );
+        }
+    }
 
     #[test]
     fn a_known_absolute_keyword_location_is_kept() {

@@ -2600,7 +2600,7 @@ def main():
             by_dir.setdefault(path.parent, []).append((path, loaded.get(path, [])))
     if sectioned_directories:
         print(f"   {len(sectioned_directories)} sectioned example projects were schema-checked; "
-              "translation, export resolution and semantic rules await the translator "
+              "the engine tests translate and register them in engine/crates/loader/tests/examples.rs and engine/crates/shell/tests/by_rule.rs "
               "(orders 043a and 043b).")
     local, private, own_items = {}, 0, {}
     for directory, files in by_dir.items():

@@ -4,6 +4,8 @@
 
 use std::fmt;
 
+use serde_json::{Value, json};
+
 /// A place in a file: a line and a column, both counted from 1, the column in characters.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Position {
@@ -36,11 +38,15 @@ pub struct Diagnostic {
     pub pointer: Option<String>,
     /// Where that place, or the fault, is in the file.
     pub position: Option<Position>,
-    /// The failing schema keyword's locations, carried in SARIF's `properties` by a shell.
-    /// Stored together behind one pointer to keep ordinary diagnostics small.
-    pub schema_location: Option<Box<SchemaLocation>>,
+    details: Option<Box<DiagnosticDetails>>,
     /// What is wrong, in words.
     pub message: Box<str>,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+struct DiagnosticDetails {
+    schema_location: Option<SchemaLocation>,
+    origin: Option<DiagnosticOrigin>,
 }
 
 /// JSON Schema 2020-12's keyword locations for a rejection by a schema (SUB-005).
@@ -52,6 +58,26 @@ pub struct SchemaLocation {
     pub absolute_keyword_location: Option<String>,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) struct DiagnosticOrigin {
+    pub translation: Option<(&'static str, String)>,
+    pub related: Vec<AuthoredLocation>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) struct AuthoredLocation {
+    pub file: String,
+    pub document: usize,
+    pub pointer: String,
+    pub position: Position,
+}
+
+impl AuthoredLocation {
+    pub fn result(&self) -> Value {
+        location(Some(&self.file), Some(&self.pointer), Some(self.position))
+    }
+}
+
 impl Diagnostic {
     pub fn new(rule: &'static str, message: impl Into<String>) -> Self {
         Diagnostic {
@@ -60,22 +86,35 @@ impl Diagnostic {
             document: None,
             pointer: None,
             position: None,
-            schema_location: None,
+            details: None,
             message: message.into().into_boxed_str(),
         }
     }
 
+    /// The failing schema keyword's locations, where the rejection came from validation.
+    pub fn schema_location(&self) -> Option<&SchemaLocation> {
+        self.details.as_deref()?.schema_location.as_ref()
+    }
+
+    pub(crate) fn set_schema_location(&mut self, location: SchemaLocation) {
+        self.details
+            .get_or_insert_with(Box::default)
+            .schema_location = Some(location);
+    }
+
+    pub(crate) fn set_origin(&mut self, origin: DiagnosticOrigin) {
+        self.details.get_or_insert_with(Box::default).origin = Some(origin);
+    }
+
     /// `keywordLocation` for a schema rejection, to be serialized in SARIF's `properties`.
     pub fn keyword_location(&self) -> Option<&str> {
-        self.schema_location
-            .as_deref()
+        self.schema_location()
             .map(|location| location.keyword_location.as_str())
     }
 
     /// `absoluteKeywordLocation` where the schema's absolute base URI is known.
     pub fn absolute_keyword_location(&self) -> Option<&str> {
-        self.schema_location
-            .as_deref()
+        self.schema_location()
             .and_then(|location| location.absolute_keyword_location.as_deref())
     }
 
@@ -104,6 +143,61 @@ impl Diagnostic {
     }
 }
 
+/// Write a loader diagnostic as a SARIF result.
+pub fn diagnostic_result(diagnostic: &Diagnostic) -> Value {
+    let mut result = json!({
+        "ruleId": diagnostic.rule,
+        "level": "error",
+        "message": {"text": diagnostic.message},
+        "locations": [location(diagnostic.file.as_deref(), diagnostic.pointer.as_deref(), diagnostic.position)],
+        "properties": {"file": diagnostic.file, "document": diagnostic.document},
+    });
+    if let Some(keyword) = diagnostic.keyword_location() {
+        result["properties"]["keywordLocation"] = json!(keyword);
+    }
+    if let Some(absolute) = diagnostic.absolute_keyword_location() {
+        result["properties"]["absoluteKeywordLocation"] = json!(absolute);
+    }
+    if let Some(origin) = diagnostic
+        .details
+        .as_deref()
+        .and_then(|details| details.origin.as_ref())
+    {
+        add_origin(&mut result, origin);
+    }
+    result
+}
+
+pub(crate) fn add_origin(result: &mut Value, origin: &DiagnosticOrigin) {
+    if let Some((rule, document)) = &origin.translation {
+        result["properties"]["translation"] = json!({"rule": rule, "document": document});
+    }
+    if !origin.related.is_empty() {
+        result["relatedLocations"] = json!(
+            origin
+                .related
+                .iter()
+                .map(AuthoredLocation::result)
+                .collect::<Vec<_>>()
+        );
+    }
+}
+
+fn location(file: Option<&str>, pointer: Option<&str>, position: Option<Position>) -> Value {
+    let mut result = json!({});
+    if let Some(pointer) = pointer {
+        result["logicalLocations"] = json!([{"fullyQualifiedName": pointer}]);
+    }
+    if let Some(file) = file {
+        result["physicalLocation"] = json!({"artifactLocation": {"uri": file}});
+    }
+    if let Some(position) = position {
+        result["physicalLocation"]["region"] = json!({
+            "startLine": position.line, "startColumn": position.column
+        });
+    }
+    result
+}
 impl fmt::Display for Diagnostic {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut place = Vec::new();

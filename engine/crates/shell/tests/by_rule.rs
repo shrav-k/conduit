@@ -294,12 +294,7 @@ fn by_rule_examples_through_public_routes() {
         observed.insert(name.to_string(), outcome);
     }
 
-    let excluded = [
-        "sectioned-project",
-        "sectioned-package",
-        "first-start",
-        "project",
-    ];
+    let excluded = ["first-start", "project"];
     for path in entries(&examples, "valid") {
         if !path.is_dir() {
             continue;
@@ -313,7 +308,13 @@ fn by_rule_examples_through_public_routes() {
         }
         let set = format!("valid/{name}");
         assert!(
-            ["equal-defaults", "files-package"].contains(&name),
+            [
+                "equal-defaults",
+                "files-package",
+                "sectioned-project",
+                "sectioned-package"
+            ]
+            .contains(&name),
             "{set}: directory is neither sent nor excluded"
         );
         let shell = fresh(&set, &repository, &temp.path().join(name));
@@ -325,14 +326,83 @@ fn by_rule_examples_through_public_routes() {
                 common.class = "scaffold";
                 common
             }
+        } else if name == "sectioned-package" {
+            let api = &specification.names().api_version;
+            let operations = ["ticket.list.v1", "ticket.assign.v1", "ticket.resolve.v1"];
+            let exports = std::iter::once("queue.v1")
+                .chain(operations)
+                .collect::<Vec<_>>();
+            let mut contracts = vec![json!({
+                "apiVersion": api,
+                "kind": "Capability",
+                "metadata": {"name": "queue.v1"},
+                "spec": {"operations": operations.map(|name| format!("#{name}"))},
+            })];
+            contracts.extend(operations.map(|name| {
+                json!({
+                    "apiVersion": api,
+                    "kind": "Operation",
+                    "metadata": {"name": name},
+                    "spec": {"inputSchema": {"type": "object"}, "outputSchema": {"type": "object"}},
+                })
+            }));
+            let dependency = archive(
+                temp.path(),
+                "ticket-queue.tar.gz",
+                vec![
+                    (
+                        "conduit.json",
+                        serde_json::to_vec(&json!({
+                            "apiVersion": api,
+                            "address": "example.org/ticket-queue",
+                            "version": "0.1.0",
+                            "exports": exports,
+                        }))
+                        .expect("a JSON value serializes"),
+                    ),
+                    (
+                        "contracts.json",
+                        serde_json::to_vec(&contracts).expect("JSON values serialize"),
+                    ),
+                ],
+            );
+            let mut prerequisite = install(&shell, &set, &dependency);
+            if prerequisite.class == "accepted" {
+                let mut manifest = read_file(&path.join("conduit.yaml")).unwrap()[0]
+                    .root
+                    .to_json();
+                manifest["packages"]["example.org/ticket-queue"]["digest"] = json!(dependency.1);
+                let package = archive(
+                    temp.path(),
+                    "sectioned.tar.gz",
+                    vec![
+                        ("conduit.json", serde_json::to_vec(&manifest).unwrap()),
+                        (
+                            "templates.yaml",
+                            fs::read(path.join("templates.yaml")).unwrap(),
+                        ),
+                    ],
+                );
+                install(&shell, &set, &package)
+            } else {
+                prerequisite.class = "scaffold";
+                prerequisite
+            }
         } else {
             let project = read_project(&path, &specification)
                 .unwrap_or_else(|e| panic!("{set}: read_project failed: {e}"));
-            let manifest = project
+            let mut manifest = project
                 .manifest
                 .unwrap_or_else(|| panic!("{set}: read_project gave no manifest"))
                 .root
                 .to_json();
+            if name == "sectioned-project" {
+                assert!(
+                    scaffold(&shell, &set, &archives).is_none(),
+                    "{set}: dependency install failed"
+                );
+                manifest["packages"]["example.org/files"]["digest"] = json!(archives[1].1);
+            }
             invoke(
                 &shell,
                 &set,

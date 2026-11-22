@@ -1,0 +1,26 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Agent",
+    "metadata": {
+      "name": "basis"
+    },
+    "spec": {
+      "type": "#worker.v1"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "worker.v1"
+    },
+    "spec": {
+      "family": "Agent",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false
+      }
+    }
+  }
+]

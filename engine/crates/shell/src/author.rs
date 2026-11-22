@@ -1,5 +1,5 @@
 //! Author workflows: every management action is a root MCP request to the serving engine.
-use crate::{Result, boundary, server, store};
+use crate::{Result, boundary, diagnostics, server, store};
 use serde::Deserialize;
 use serde_json::{Value, json};
 use std::path::Path;
@@ -227,6 +227,46 @@ async fn call(directory: &Path, tool: &str, args: Value) -> Result<Value> {
     ensure_success(&reply, &format!("request to {tool}"))?;
     Ok(reply)
 }
+fn read_author_project(
+    command: &str,
+    argument: &str,
+    spec: &conduit_loader::Specification,
+) -> Result<conduit_loader::Project> {
+    conduit_loader::read_project(Path::new(argument), spec).map_err(|errors| {
+        let diagnostics: Vec<_> = errors.0.iter().map(conduit_loader::diagnostic_result).collect();
+        diagnostics::print_diagnostics(&diagnostics, argument, false);
+        println!("{}", json!({"accepted":false,"reason":"invalid","diagnostics":diagnostics}));
+        format!("{command}: cannot load project {argument}: {} diagnostics above; correct its documents and manifest before retrying", diagnostics.len())
+    })
+}
+
+fn author_diagnostics(
+    reply: &mut Value,
+    source: Option<(&conduit_loader::Project, Option<&str>)>,
+    path: &str,
+    archive: bool,
+) {
+    if succeeded(reply) {
+        return;
+    }
+    if let Some(rejections) = diagnostics::diagnostics(reply) {
+        if let Some((project, template)) = source {
+            for diagnostic in rejections.iter_mut() {
+                // The replacement preflight's generic diagnostic concerns the one requested template.
+                if diagnostic["ruleId"] == "SUB-009"
+                    && diagnostic.get("locations").is_none()
+                    && let Some(name) = template
+                {
+                    let name = name.replace('~', "~0").replace('/', "~1");
+                    diagnostic["locations"] = json!([{"logicalLocations":[{"fullyQualifiedName":format!("/objects/{name}")}]}]);
+                }
+                project.locate_diagnostic(diagnostic);
+            }
+        }
+        diagnostics::print_diagnostics(rejections, path, archive);
+    }
+}
+
 async fn list_pending(directory: &Path, agent: Option<&str>) -> Result<Vec<Value>> {
     let mut reply = server::client(directory, None, Some("management.list.v1"), json!({})).await?;
     if !succeeded(&reply) {
@@ -390,12 +430,12 @@ pub async fn run(
             if args.len() != 1 {
                 return Err("install needs ARCHIVE#SHA256".into());
             }
-            call(
-                directory,
-                "management.install.v1",
-                boundary::install_arguments(&args[0])?,
-            )
-            .await?;
+            let tool = "management.install.v1";
+            let (archive, request) = boundary::named_install_arguments(&args[0])?;
+            let mut reply = server::client(directory, None, Some(tool), request).await?;
+            author_diagnostics(&mut reply, None, archive, true);
+            println!("{reply}");
+            ensure_success(&reply, &format!("request to {tool}"))?;
         }
         "replace" => {
             if args.len() != 2 {
@@ -404,9 +444,13 @@ pub async fn run(
             let object = named(&args[1])?;
             let spec = conduit_loader::Specification::read(&repository.join("spec"))
                 .map_err(|e| e.to_string())?;
-            let project = boundary::project(Path::new(&args[0]), &spec).map_err(|error| format!("{command}: cannot load project {}: {error}; correct its documents and manifest before retrying", args[0]))?;
-            let templates: Vec<_> = project
+            let project = read_author_project(command, &args[0], &spec)?;
+            let documents: Vec<_> = project
                 .documents
+                .iter()
+                .map(|document| document.root.to_json())
+                .collect();
+            let templates: Vec<_> = documents
                 .iter()
                 .filter(|d| {
                     d["kind"] == object["kind"]
@@ -418,11 +462,20 @@ pub async fn run(
                 return Err("project must contain exactly one matching template".into());
             }
             let rev = revision(directory, &object).await?;
-            let mut input = json!({"template":templates[0],"contracts":project.documents.iter().filter(|d| conduit_core::packages::contract(d)).collect::<Vec<_>>(),"revision":rev});
-            if let Some(manifest) = project.manifest {
-                input["manifest"] = manifest;
+            let mut input = json!({"template":templates[0],"contracts":documents.iter().filter(|d| conduit_core::packages::contract(d)).collect::<Vec<_>>(),"revision":rev});
+            if let Some(manifest) = &project.manifest {
+                input["manifest"] = manifest.root.to_json();
             }
-            call(directory, "management.replace.v1", input).await?;
+            let tool = "management.replace.v1";
+            let mut reply = server::client(directory, None, Some(tool), input).await?;
+            author_diagnostics(
+                &mut reply,
+                Some((&project, object["name"].as_str())),
+                &args[0],
+                false,
+            );
+            println!("{reply}");
+            ensure_success(&reply, &format!("request to {tool}"))?;
         }
         "retire" | "unregister" => {
             if args.len() != 1 {
@@ -452,17 +505,23 @@ pub async fn run(
             }
             let spec = conduit_loader::Specification::read(&repository.join("spec"))
                 .map_err(|e| e.to_string())?;
-            let project = boundary::project(Path::new(&args[0]), &spec).map_err(|error| format!("{command}: cannot load project {}: {error}; correct its documents and manifest before retrying", args[0]))?;
-            let mut input = json!({"documents":project.documents});
-            if let Some(manifest) = project.manifest {
-                input["manifest"] = manifest;
+            let project = read_author_project(command, &args[0], &spec)?;
+            let documents: Vec<_> = project
+                .documents
+                .iter()
+                .map(|document| document.root.to_json())
+                .collect();
+            let mut input = json!({"documents":documents});
+            if let Some(manifest) = &project.manifest {
+                input["manifest"] = manifest.root.to_json();
             }
             if requires_directory(&input) {
                 return Err("a submission through the serving engine takes absolute values only: relative fetch or program needs a directory".into());
             }
             let mut steps = Vec::new();
+            let source = (&project, args[0].as_str());
             let result: Result<()> = async {
-            let reply = submit_step(directory, "management.register.v1", input, "registration".into(), &mut steps).await?;
+            let reply = submit_step(directory, "management.register.v1", input, "registration".into(), &mut steps, source).await?;
             let created = reply["structuredContent"]["objects"]
                 .as_array()
                 .ok_or("registration omitted objects")?;
@@ -480,7 +539,7 @@ pub async fn run(
                     && reference(&o["consumer"]) == &root["id"]
                     && created.iter().any(|n| n["id"] == o["id"])
             }) {
-                submit_step(directory, "access.open.v1", json!({"conduit":o["name"]}), format!("open Conduit/{}", o["name"].as_str().unwrap_or("?")), &mut steps).await?;
+                submit_step(directory, "access.open.v1", json!({"conduit":o["name"]}), format!("open Conduit/{}", o["name"].as_str().unwrap_or("?")), &mut steps, source).await?;
             }
             for kind in ["Pool", "Fleet", "Resource", "Agent", "Interface"] {
                 for o in objects.iter().filter(|o| {
@@ -503,6 +562,7 @@ pub async fn run(
                         json!({"instance":object}),
                         step,
                         &mut steps,
+                        source,
                     )
                     .await?;
                 }
@@ -525,9 +585,11 @@ async fn submit_step(
     args: Value,
     step: String,
     steps: &mut Vec<Value>,
+    (project, path): (&conduit_loader::Project, &str),
 ) -> Result<Value> {
     match server::client(directory, None, Some(tool), args).await {
-        Ok(reply) => {
+        Ok(mut reply) => {
+            author_diagnostics(&mut reply, Some((project, None)), path, false);
             println!("{reply}");
             steps.push(json!({"step":step,"outcome":outcome(&reply)}));
             ensure_success(&reply, &step)?;

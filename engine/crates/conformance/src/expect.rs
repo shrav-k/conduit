@@ -254,6 +254,11 @@ pub(super) fn check(
                     return Err(format!("diagnostic does not state {word}"));
                 }
             }
+            if assertion["translation_absent"] == true
+                && d["properties"].get("translation").is_some()
+            {
+                return Err("unexpected translation property".into());
+            }
             if assertion["keyword_location"] == true {
                 let pointer = d["properties"]["keywordLocation"]
                     .as_str()

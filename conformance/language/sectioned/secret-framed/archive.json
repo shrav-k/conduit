@@ -1,0 +1,10 @@
+{
+  "address": "example.org/conformance/sections-secret-framed",
+  "completion": {
+    "file": "package.tar.gz",
+    "status": "complete"
+  },
+  "digest": "sha256:1582d5d6517c78393414fa57024d3ef5404acb43f544a500b7ae983768899137",
+  "name": "package.tar.gz",
+  "version": "0.1.0"
+}

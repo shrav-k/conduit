@@ -1,6 +1,7 @@
 //! Durable boundary for the pure core, with an optional owned stdio runner.
 pub mod author;
 pub mod boundary;
+pub mod diagnostics;
 pub mod http_bridge;
 mod https;
 mod identity;

@@ -83,7 +83,7 @@ impl ServerHandler for Wrapper {
         if self.2 == Mode::SharedLoginAgent {
             tools.push(empty_tool(
                 "setup",
-                "Link the Agent's home to the login Resource's login file.",
+                "Check the client version and link the Agent's home to the login Resource's login file.",
             ));
         }
         if self.2 != Mode::LoginResource {
@@ -116,17 +116,16 @@ impl ServerHandler for Wrapper {
                 session = self.0.lock() => session,
             };
             let answer = if r.name == "setup" {
-                session.setup_shared_login().map(str::to_owned)
+                session.setup_shared_login().await
             } else {
                 // Once the hook has the session, no cancellation cuts the sign-out.
-                session.retire().await
+                session.retire().await.map(|text| vec![text])
             };
             let result = match answer {
-                Ok(text) => {
-                    let mut result = serde_json::from_value::<CallToolResult>(
-                        json!({"content":[{"type":"text","text":text}],"isError":false}),
-                    )
-                    .unwrap();
+                Ok(texts) => {
+                    let mut result = CallToolResult::success(
+                        texts.into_iter().map(ContentBlock::text).collect(),
+                    );
                     result.result_type = Some(ResultType::COMPLETE);
                     result
                 }
@@ -375,7 +374,7 @@ async fn run() -> Result<()> {
     };
     let mut config = Config::from_env(mode)?;
     if let Some(program) = program {
-        config.program = PathBuf::from(program);
+        config.set_client_program(std::path::Path::new(program));
     }
     if config.configuration_error.is_none() && prepare(&config).is_err() {
         config.configuration_error = Some("invalid configuration: cannot prepare run files".into());

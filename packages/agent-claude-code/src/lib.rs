@@ -1,4 +1,5 @@
 //! Client adapter. This source is copied into each independently buildable package.
+mod client_version;
 mod limit;
 mod usage;
 
@@ -221,6 +222,10 @@ impl Config {
             .checked_mul(1000)
             .context("turnDeadlineSeconds: milliseconds overflow")
     }
+    pub fn set_client_program(&mut self, program: &Path) {
+        self.program = self.client_directory().join(program);
+    }
+
     fn client_directory(&self) -> &Path {
         self.directory
             .as_deref()
@@ -1244,7 +1249,16 @@ fn append_stop_note(text: Option<String>, note: &str) -> String {
 }
 
 fn client_command(c: &Config, home: Option<&Path>, args: &[String]) -> tokio::process::Command {
-    let mut cmd = tokio::process::Command::new(&c.program);
+    client_command_at(c, &c.program, home, args)
+}
+
+fn client_command_at(
+    c: &Config,
+    program: &Path,
+    home: Option<&Path>,
+    args: &[String],
+) -> tokio::process::Command {
+    let mut cmd = tokio::process::Command::new(program);
     if c.v2 {
         cmd.process_group(0);
     }
@@ -1629,6 +1643,27 @@ impl Session {
             v2: self.config.v2,
         })
     }
+    pub async fn setup_shared_login(&self) -> Result<String> {
+        ensure!(
+            self.config.mode == Mode::SharedLoginAgent,
+            "setup hook: no login Resource binding"
+        );
+        if let Some(error) = &self.config.configuration_error {
+            bail!("{error}");
+        }
+        ensure!(!self.retired, "{RETIRED_REFUSAL}");
+        let home = shared_login_home(&self.config).map_err(|error| {
+            if error.is::<LoginLapsed>() {
+                anyhow::anyhow!(
+                    "login home (AGENT_LOGIN_DIRECTORY): account-home is not an existing directory; set up or sign in the login Resource first"
+                )
+            } else {
+                error
+            }
+        })?;
+        client_version::check(&self.config, &home).await
+    }
+
     pub async fn retire(&mut self) -> Result<String> {
         self.retire_within(LOGOUT_DEADLINE).await
     }

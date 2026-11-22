@@ -1,11 +1,11 @@
 # agent-claude-code
 
-Maintainer: the Conduit project's owner. Native-client launch baseline: Claude Code 2.1.318, from
-experiment 009. Work orders 023 and 024 tested this package with its scripted client only; the real
-client closeout is still required. No client version command or model was run for this order.
+Maintainer: the Conduit project's owner. Lowest tested client: Claude Code 2.1.318. Work orders
+023 and 024 tested this package with its scripted client only. Experiment 027 used Claude Code
+2.1.318. The version checks added in 0.2.5 use the scripted client in tests.
 
 This standalone Rust crate has no dependency on another repository directory. Its lockfile
-and pinned toolchain travel with it. Its manifest exports three Agent Types, an account home
+and pinned toolchain travel with it. Its manifest exports five Agent Types, an account home
 Resource Type, and a conversation capability with two explicit operations, `turn.v1` and
 `new-conversation.v1`. The plain MCP wrapper
 exposes `turn` and `new-conversation`. The `.v2` item also exposes the hook tools `retire`, `account`,
@@ -694,6 +694,13 @@ When Claude Code returns an object in `structured_output`, the turn returns it i
 `structured` and leaves `text` unchanged. The subtype
 `error_max_structured_output_retries` fails the turn with class `structured-output`.
 
+## The .v5 Agent
+
+`claude-code.v5` uses the `.v4` configuration and accepts the same `login` Resource.
+It requires `setup-hook.v1` before `retire-hook.v1` and defaults each operation and hook
+to `wrapper-v5`. The item uses the same command and bindings as `wrapper-v4` and maps
+the setup hook to `setup`. Setup checks the client before any turn.
+
 ## Usage in each turn's result
 
 The wrapper reports per-model usage from the client's `modelUsage` in
@@ -742,6 +749,31 @@ DEC-046 pauses only that account's lanes until the reported reset.
 | Slash commands and skills | `--disable-slash-commands` | Off |
 | Setting sources | `--setting-sources ""` | User, project and local settings omitted. Whether project `CLAUDE.md` is read awaits the first real turns. |
 
+## The vendor client
+
+The lowest client version this release was tested with is Claude Code 2.1.318.
+The package's digest covers the wrapper and this bound, not the client.
+The wrapper finds `claude` on the PATH of the machine where it runs (PRV-019).
+Use the vendor's instructions to install or update the client. The native install updates
+itself. The wrapper leaves that behavior in place. [Claude Code setup](https://code.claude.com/docs/en/setup)
+
+Claude Code `.v5` checks the client. The other Types and login Resources do not run the
+check (TPL-012).
+The setup hook runs one `--version` with a five-second deadline and a 256-byte output limit.
+Here `P` is the absolute path of the client found and `V` is its reported SemVer version.
+
+```text
+client: claude V at P; lowest tested 2.1.318
+client: claude V at P is older than 2.1.318, the lowest version this release was tested with; update it by the vendor's own route
+client: claude at P gave no version this release can read from --version; the lowest version it was tested with is 2.1.318
+client: claude not found on PATH; install 2.1.318 or later by the vendor's own route
+```
+
+The last three results fail the hook. The engine names the hook part in its failed setup reply.
+A later engine change will include the hook text in that reply. A failed hook runs again at
+the next setup. A succeeded hook is kept, so replace an Agent to check a later client (OPS-021,
+OPS-028).
+
 ## The standard Conduit templates
 
 From 0.2.2, `turn` grants `turn.v1` alone, and `conversation` grants both `turn.v1` and
@@ -766,3 +798,9 @@ to it.
 Install the 0.2.4 archive, update the package pin, and replace each Agent that should use
 the new release. A `.v4` Agent that replaces a `.v3` Agent can use the same `login`
 Resource without another sign-in.
+
+## Moving to 0.2.5
+
+Install the 0.2.5 archive, move the project pin to its version and digest, and replace each
+Agent that should check its client. A Claude Code `.v4` Agent replaced by a `.v5` Agent
+with the same `login` does not sign in again.

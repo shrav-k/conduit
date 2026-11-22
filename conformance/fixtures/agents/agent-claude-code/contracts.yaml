@@ -326,3 +326,63 @@ spec:
     '#new-conversation.v1': '#wrapper-v4'
     'github.com/shrav-k/conduit/core#retire-hook.v1': '#wrapper-v4'
   records: {inputs: false, outputs: false}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: claude-code.v5
+  description: >-
+    Runs an explicit native-client conversation in the directory that `directory` names, or in
+    a private directory of the run's own when it is null. When the configuration names a directory,
+    the client's own tools are on: Bash, Read, Edit, Write, Glob, Grep and WebFetch, which give
+    shell, code execution, file edits and network, with the client's sandbox and approval
+    prompts off. On the engine's own runner, they run as the engine's operating-system user and
+    nothing confines them in v0. They reach every file, process,
+    network address, credential and signed-in account that user can reach: the engine's store,
+    root's client token, this run's token, the user's git and cloud credentials, and the user's
+    own client logins with their connectors and apps. That reach does not pass through
+    Conduit: no Conduit grants, limits or records it (ruling 70). On the login Resource's node,
+    the engine's own runner supplies the Agent's state directory and the login Resource's
+    directory (PRV-029). The client's sub-agent,
+    scheduling, hook and plugin tools stay off. claude.ai connectors follow accountServices,
+    and so does WebSearch when a directory is named; SendMessage, ListAgents and RemoteTrigger
+    follow peerMessaging. The shell can still reach the same services and the user's browser
+    and desktop, so accountServices false shapes only the client's tool list. With directory
+    null the client has claude-code.v1's tools and sandbox. A turn longer than
+    turnDeadlineSeconds fails
+    and ends the conversation, and the engine's call timeout
+    (`conduit serve --call-timeout-seconds`) must be longer.
+    The client runs in the login Resource's configuration directory, shared by that
+    Resource's Agents. The retire hook stops the client without logging out.
+    `instructions` is appended to the client's system prompt. `outputSchema`, the JSON text
+    of a JSON Schema whose `type` is `object`, is the schema the client validates its final
+    output against, which the turn returns in `structured`.
+    The setup hook gives the path and version of the client it finds, and fails where the
+    client is missing, gives no version, or is older than the lowest version the package was
+    tested with.
+spec:
+  family: Agent
+  schema:
+    type: object
+    properties:
+      directory: {type: [string, 'null'], default: null}
+      turnDeadlineSeconds: {type: integer, minimum: 1, maximum: 604800, default: 180}
+      effort: {type: string, default: ''}
+      accountServices: {type: boolean, default: false}
+      model: {type: string, default: ''}
+      peerMessaging: {type: boolean, default: false}
+      login: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}
+      instructions: {type: [string, 'null'], minLength: 1, maxLength: 32763, default: null}
+      outputSchema: {type: [string, 'null'], minLength: 1, maxLength: 32762, default: null}
+    required: [directory, turnDeadlineSeconds, effort, accountServices, model, peerMessaging, login, instructions, outputSchema]
+    additionalProperties: false
+  toolsDirectory: {directory: /directory}
+  loginResource: {place: /login}
+  offers: ['#conversation.v1']
+  requires: ['github.com/shrav-k/conduit/core#setup-hook.v1', 'github.com/shrav-k/conduit/core#retire-hook.v1']
+  implementation:
+    '#turn.v1': '#wrapper-v5'
+    '#new-conversation.v1': '#wrapper-v5'
+    'github.com/shrav-k/conduit/core#setup-hook.v1': '#wrapper-v5'
+    'github.com/shrav-k/conduit/core#retire-hook.v1': '#wrapper-v5'
+  records: {inputs: false, outputs: false}

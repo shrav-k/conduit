@@ -1,4 +1,5 @@
 //! Client adapter. This source is copied into each independently buildable package.
+mod client_version;
 mod usage;
 
 use anyhow::{Context, Result, bail, ensure};
@@ -463,6 +464,10 @@ impl Config {
             .checked_mul(1000)
             .context("turnDeadlineSeconds: milliseconds overflow")
     }
+    pub fn set_client_program(&mut self, program: &Path) {
+        self.program = self.client_directory().join(program);
+    }
+
     fn client_directory(&self) -> &Path {
         self.directory
             .as_deref()
@@ -485,6 +490,10 @@ fn home_label(mode: Mode) -> String {
 
 /// Resolve and check the instance's own home before starting a client.
 pub fn client_home(c: &Config) -> Result<PathBuf> {
+    resolve_client_home(c, true)
+}
+
+fn resolve_client_home(c: &Config, create: bool) -> Result<PathBuf> {
     use std::io::ErrorKind::NotFound;
 
     let label = home_label(c.mode);
@@ -502,7 +511,8 @@ pub fn client_home(c: &Config) -> Result<PathBuf> {
     } else {
         HOME_NAME
     });
-    if fs::symlink_metadata(&home).is_err_and(|error| error.kind() == NotFound) {
+    let missing = fs::symlink_metadata(&home).is_err_and(|error| error.kind() == NotFound);
+    if missing && create {
         #[cfg(unix)]
         let created = {
             use std::os::unix::fs::DirBuilderExt;
@@ -513,14 +523,19 @@ pub fn client_home(c: &Config) -> Result<PathBuf> {
         created
             .map_err(|_| anyhow::anyhow!("{label}: cannot create the home in CONDUIT_STATE_DIR"))?;
     }
-    let home = home
-        .canonicalize()
-        .map_err(|_| anyhow::anyhow!("{label}: the home is not a directory"))?;
-    ensure!(
-        home.starts_with(&state_dir) && home != state_dir,
-        "{label}: the home resolves outside CONDUIT_STATE_DIR"
-    );
-    ensure!(home.is_dir(), "{label}: the home is not a directory");
+    let home = if missing && !create {
+        home
+    } else {
+        let home = home
+            .canonicalize()
+            .map_err(|_| anyhow::anyhow!("{label}: the home is not a directory"))?;
+        ensure!(
+            home.starts_with(&state_dir) && home != state_dir,
+            "{label}: the home resolves outside CONDUIT_STATE_DIR"
+        );
+        ensure!(home.is_dir(), "{label}: the home is not a directory");
+        home
+    };
     if !CLAUDE {
         match fs::symlink_metadata(home.join(".env")) {
             Ok(_) => bail!(
@@ -538,9 +553,7 @@ pub fn client_home(c: &Config) -> Result<PathBuf> {
     Ok(home)
 }
 
-fn link_login(c: &Config) -> Result<PathBuf> {
-    use std::io::ErrorKind::{AlreadyExists, NotFound};
-
+fn login_home(c: &Config) -> Result<PathBuf> {
     let directory = c.login_directory.as_deref().context(
         "login home (AGENT_LOGIN_DIRECTORY): the runner did not give the login Resource's directory",
     )?;
@@ -571,6 +584,13 @@ fn link_login(c: &Config) -> Result<PathBuf> {
         login_home.to_str().is_some(),
         "{LOGIN_DIRECTORY_LABEL}: the canonical home path is not valid Unicode"
     );
+    Ok(login_home)
+}
+
+fn link_login(c: &Config) -> Result<PathBuf> {
+    use std::io::ErrorKind::{AlreadyExists, NotFound};
+
+    let login_home = login_home(c)?;
     let target = login_home.join(LOGIN_FILE);
     let home = client_home(c)?;
     let link = home.join(LOGIN_FILE);
@@ -1790,7 +1810,16 @@ fn append_stop_note(text: Option<String>, note: &str) -> String {
 }
 
 fn client_command(c: &Config, home: Option<&Path>, args: &[String]) -> tokio::process::Command {
-    let mut cmd = tokio::process::Command::new(&c.program);
+    client_command_at(c, &c.program, home, args)
+}
+
+fn client_command_at(
+    c: &Config,
+    program: &Path,
+    home: Option<&Path>,
+    args: &[String],
+) -> tokio::process::Command {
+    let mut cmd = tokio::process::Command::new(program);
     if c.v2 {
         cmd.process_group(0);
     }
@@ -2355,7 +2384,7 @@ impl Session {
         self.retire_within(LOGOUT_DEADLINE).await
     }
 
-    pub fn setup_shared_login(&self) -> Result<&'static str> {
+    pub async fn setup_shared_login(&self) -> Result<Vec<String>> {
         ensure!(
             self.config.mode == Mode::SharedLoginAgent,
             "setup hook: no login Resource binding"
@@ -2364,8 +2393,14 @@ impl Session {
             bail!("{error}");
         }
         ensure!(!self.retired, "{RETIRED_REFUSAL}");
+        login_home(&self.config)?;
+        let home = resolve_client_home(&self.config, false)?;
+        let client = client_version::check(&self.config, &home).await?;
         link_login(&self.config)?;
-        Ok("auth.json linked to the login Resource's file")
+        Ok(vec![
+            "auth.json linked to the login Resource's file".into(),
+            client,
+        ])
     }
 
     /// The retire hook, with the logout's deadline given; `retire` gives LOGOUT_DEADLINE.

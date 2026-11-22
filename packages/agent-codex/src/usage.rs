@@ -1,11 +1,8 @@
 use serde_json::{Value, json};
-use std::{io, process::Stdio, time::Duration};
-use tokio::{
-    io::AsyncReadExt,
-    time::{Instant, timeout_at},
-};
+use std::time::Duration;
+use tokio::time::Instant;
 
-use super::{Config, client_command};
+use super::{Config, client_command, client_version::probe};
 
 pub(super) const MEMBER: &str = "io.github.shrav-k.conduit/usage";
 
@@ -67,37 +64,18 @@ impl Totals {
 
 pub(super) async fn version(config: &Config, turn_deadline: Instant) -> Option<String> {
     let deadline = (Instant::now() + Duration::from_secs(5)).min(turn_deadline);
-    let probe = timeout_at(deadline, async {
-        let mut child = client_command(config, None, &["--version".into()])
-            .stdin(Stdio::null())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::null())
-            .spawn()?;
-        let mut bytes = Vec::new();
-        child
-            .stdout
-            .take()
-            .ok_or(io::ErrorKind::BrokenPipe)?
-            .take(257)
-            .read_to_end(&mut bytes)
-            .await?;
-        if bytes.len() > 256 || !child.wait().await?.success() {
-            return Ok::<_, io::Error>(None);
-        }
-        let version = std::str::from_utf8(&bytes)
-            .ok()
-            .and_then(|text| text.strip_prefix("codex-cli "))
-            .and_then(|text| text.split_ascii_whitespace().next())
-            .filter(|word| {
-                (1..=64).contains(&word.len())
-                    && word
-                        .bytes()
-                        .all(|byte| byte.is_ascii_alphanumeric() || b".+-".contains(&byte))
-            });
-        Ok(version.map(str::to_owned))
-    })
-    .await;
-    probe.ok()?.ok()?
+    let command = client_command(config, None, &["--version".into()]);
+    let bytes = probe(command, deadline).await?;
+    let version = std::str::from_utf8(&bytes)
+        .ok()?
+        .strip_prefix("codex-cli ")?
+        .split_ascii_whitespace()
+        .next()?;
+    ((1..=64).contains(&version.len())
+        && version
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || b".+-".contains(&byte)))
+    .then(|| version.to_owned())
 }
 
 fn windows(bucket: &Value) -> impl Iterator<Item = &Value> {

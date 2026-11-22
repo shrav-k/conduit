@@ -11,10 +11,6 @@
     {
       "id": "requests-repeat-failed-earlier-unanswered",
       "reason": "OPS-012, F13 of ruling 78 point 6: the first build records failed when a new attempt is answered failed while an earlier attempt has no answer; review order 22, the engine following SO-B, makes it pass and removes this entry"
-    },
-    {
-      "id": "requests-usage-kept",
-      "reason": "IFC-051: the first build keeps no usage member in the record of an invocation's end and drops none with a warning; order 262 makes it pass and removes this entry"
     }
   ]
 }

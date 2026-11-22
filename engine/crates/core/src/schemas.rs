@@ -443,6 +443,43 @@ impl std::fmt::Display for SchemaFailure {
 }
 
 impl Environment {
+    /// Report only schema-defined coordinates. Validator messages and dynamic
+    /// instance keys may contain data from a malformed usage report.
+    pub(crate) fn first_core_failure(
+        &self,
+        core: &str,
+        name: &str,
+        value: &Value,
+    ) -> Result<Option<(String, String)>> {
+        let (scope, _) = self
+            .scopes
+            .iter()
+            .find(|(_, scope)| scope.address == core)
+            .ok_or("missing core schema scope")?;
+        let contract = self.resolve(scope, &format!("#{name}"), core)?;
+        let schema = self.schema(&contract)?;
+        let published = self.publish_schema(scope, schema, core)?;
+        let validator = standalone_validator(&published, value)?;
+        let Some(failure) = validator
+            .iter_errors(value)
+            .min_by(|a, b| a.instance_path().as_str().cmp(b.instance_path().as_str()))
+        else {
+            return Ok(None);
+        };
+
+        let mut fixed = String::new();
+        let mut node = schema;
+        for token in failure.instance_path().as_str().split('/').skip(1) {
+            let Some(property) = node["properties"].pointer(&format!("/{token}")) else {
+                break;
+            };
+            fixed.push('/');
+            fixed.push_str(token);
+            node = property;
+        }
+        Ok(Some((fixed, failure.evaluation_path().as_str().into())))
+    }
+
     pub(crate) fn failure_at(
         &self,
         scope: &str,

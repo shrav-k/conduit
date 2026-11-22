@@ -31,6 +31,7 @@ mod revisions;
 pub mod schemas;
 mod secrets;
 mod sign_in;
+mod usage;
 
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};

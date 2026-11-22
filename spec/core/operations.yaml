@@ -946,12 +946,13 @@ metadata:
     starting any run there, a start that finds an owed stop fails, naming it, and may be
     retried once that stop is carried out (PRV-019, PRV-021). `item` is the implementation
     item, reached by `command` or `package`, and never a `command` item whose program is a
-    relative path, which
-    only the engine's own runner runs. `packageArguments` and `environment` hold, under the
-    names the item gives, the values that its `packageArguments` and `environment` take from the
-    instance's configuration, each as a string: a string as it is, a number in the form RFC 8785
-    gives it, and a boolean as `true` or `false`; a place that holds null gives no variable and
-    no argument. `secrets` holds apart from them, under `environment` and `packageArguments` and
+    relative path, which only the engine's own runner runs, or, for a package's item that states
+    `platforms`, a provider asked with `run.v2` (PRV-007). `packageArguments` and `environment`
+    hold, under the names the item gives, the values that its `packageArguments` and
+    `environment` take from the instance's configuration, each as a string: a string as it is,
+    a number in the form RFC 8785 gives it, and a boolean as `true` or `false`; a place that
+    holds null gives no variable and no argument. `secrets` holds apart from them, under
+    `environment` and `packageArguments` and
     by the same names, the value of each secret the engine read for the run, which the provider
     delivers as the variable or the argument of that name, puts nowhere else, and keeps where
     its contract says; a name is in `environment` or in `secrets.environment`, never both, and
@@ -1045,6 +1046,95 @@ spec:
   effect: >-
     Starts the run of the item for the instance on the machine given in `machine`, under its
     runtime provider's own means, or answers with its existing run under PRV-019.
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: run.v2
+  description: >-
+    Run a package's implementation item that states `platforms`. The rules for `run.v1`'s
+    inputs, call and result apply here, except that `item` is a `command` item whose program
+    is a relative path. `program` is the path from the archive's root to the program for
+    the node's pair. `archive` gives the `digest`, `size` in bytes and `urls` of the
+    package's archive as the engine keeps it, with the kept copy's `file` URL first (PRV-007).
+    For a new start, the provider checks the archive on the run's machine before each
+    unpacking, first its byte length and then its SHA-256. On a mismatch it runs nothing and
+    the run ends failed, naming the length or digest given and the one found (PRV-019).
+    How the bytes reach that machine and where they are kept is the provider's contract
+    (PRV-019). A runtime provider implements this operation where its type lists it under
+    `requires` (PRV-001). The engine invokes it by a provider call (PRV-005).
+spec:
+  inputSchema:
+    type: object
+    properties:
+      instance: {$ref: github.com/shrav-k/conduit/core#id.v1}
+      item: {$ref: github.com/shrav-k/conduit/core#implementation-item.v1}
+      packageArguments:
+        type: object
+        additionalProperties: {type: string}
+      environment:
+        type: object
+        additionalProperties: {type: string}
+      secrets:
+        type: object
+        properties:
+          environment:
+            type: object
+            additionalProperties: {type: string}
+          packageArguments:
+            type: object
+            additionalProperties: {type: string}
+      identity:
+        type: object
+        properties:
+          environment:
+            type: object
+            properties:
+              CONDUIT_URL: {type: string, format: uri}
+              CONDUIT_IDENTITY_DIR: {type: string, minLength: 1}
+            required: [CONDUIT_URL, CONDUIT_IDENTITY_DIR]
+            additionalProperties: false
+          files:
+            type: object
+            properties:
+              ca.crt: {type: string, minLength: 1}
+              jwks.json: {type: string, minLength: 1}
+              engine-id: {type: string, minLength: 1}
+              token: {type: string, minLength: 1}
+              tls.crt: {type: string, minLength: 1}
+              tls.key: {type: string, minLength: 1}
+            required: [ca.crt, jwks.json, engine-id, token]
+            additionalProperties: false
+        required: [environment, files]
+        additionalProperties: false
+      machine:
+        type: object
+        properties:
+          hostname: {type: string, minLength: 1}
+          labels: {$ref: github.com/shrav-k/conduit/core#labels.v1}
+        required: [hostname, labels]
+      program: {type: string, minLength: 1}
+      archive:
+        type: object
+        properties:
+          digest: {$ref: github.com/shrav-k/conduit/core#digest.v1}
+          size: {type: integer, minimum: 1}
+          urls:
+            type: array
+            items: {type: string, format: uri}
+            minItems: 1
+        required: [digest, size, urls]
+        additionalProperties: false
+    required: [instance, item, identity, machine, program, archive]
+  outputSchema:
+    type: object
+    properties:
+      url: {type: string, format: uri}
+    required: [url]
+  effect: >-
+    On a new start, checks the archive's size and then its digest on the machine given in
+    `machine` before each unpacking, then starts the run of `program` for the instance there,
+    under its runtime provider's own means. It may answer with the existing run under PRV-019.
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation

@@ -158,7 +158,8 @@
     `implementations` is a map keyed by each implementation's name. An item holds the keys that
     PKG-019 and PKG-020 name, and no other: `implements`; exactly one of `command`, `package`
     and `remote`; and, where they are given, `plain`, `keyed`, `tools`, `supports`,
-    `nodeSelector`, `environment`, `packageArguments` and `headers`.
+    `nodeSelector`, `environment`, `packageArguments`, `headers` and `platforms` as MAN-010
+    allows.
   observable: >-
     An item with two of `command`, `package` and `remote`, with none of them, or with any other
     key, such as `url` or `graph`, is rejected with a diagnostic naming the item. What leaving
@@ -186,9 +187,13 @@
     declares. `packageArguments` is a map from an argument that the Package declares in its own
     `packageArguments`, named by its `name`, with its dashes, where it is a named argument and
     by its `valueHint` where it is positional, and `headers` a map from the name of a header
-    that the Remote declares, to such a pointer. `nodeSelector` is a label selector. `plain` is
-    a boolean. `keyed` is the list of PKG-020. `tools` is the map of PKG-020, and each of its
-    values is a non-empty string.
+    that the Remote declares, to such a pointer. `nodeSelector` is a label selector.
+    `platforms` is a list of one or more pairs, no pair twice, each `<os>/<arch>` in the values
+    that `kubernetes.io/os` and `kubernetes.io/arch` take under PRV-014, such as `linux/arm64`.
+    It is stated only beside a `command` whose program is a relative path, and that pair's
+    program is then `platforms/<os>/<arch>/` followed by that path. `plain` is a boolean.
+    `keyed` is the list of PKG-020. `tools` is the map of PKG-020, and each of its values is a
+    non-empty string.
   observable: >-
     A `command` written as one string, a `package` whose `transport` is `sse`, one of any
     `registryType` but `oci` that states no `fileSha256`, an `oci` one whose `identifier`
@@ -212,8 +217,9 @@
     `plain` out. A key of `nodeSelector` is a label and not a name, under OBJ-022. A program
     given as a relative path is taken from the directory the manifest was read from, which for
     a package is the root of its archive, and only the engine's own runner runs it, under
-    PRV-007, so a server meant to run on another machine is published as a `package` item,
-    pinned as above; no shell reads the list. Where the manifest was handed over without a
+    PRV-007, unless its item is a package's and states `platforms`, so a server meant to run on
+    another machine is a package's item that states `platforms` or is published as a `package`
+    item, pinned as above; no shell reads the list. Where the manifest was handed over without a
     directory, as MAN-006 describes, an item whose program is a relative path is rejected. A
     program is a relative path where it holds a `/` and does not begin with one; one that
     holds no `/` is a name and not a path, and is found as the one who starts it finds
@@ -223,7 +229,9 @@
     PRV-025, and otherwise ends the run failed, under PRV-012. Which places a pointer may name
     is MAN-017, and which names `environment` may not bind is MAN-018. What a pointer to a
     place that `secret-reference.v1` governs yields is SEC-010 and SEC-013, and to which URL a
-    header that carries a secret may go is SEC-024.
+    header that carries a secret may go is SEC-024. `platforms` beside `package` or `remote` or
+    beside a program that is not a relative path, empty, or with a pair written twice or not
+    as `<os>/<arch>`, is rejected with a diagnostic naming the item.
 
 - id: MAN-011
   layer: language
@@ -289,13 +297,18 @@
     A package's archive is read.
   then: >-
     The manifest lies at the root of the archive, with no directory around it, and the
-    package's documents lie beside it, as MAN-011 states.
+    package's documents lie beside it, as MAN-011 states. For each pair that the `platforms`
+    of an implementation item of its manifest lists, it holds that pair's program, at the
+    path MAN-010 gives, as a regular file whose owner may execute it.
   observable: >-
     An archive whose root holds no manifest, or holds one only inside a directory, is rejected
     when the package is installed, with a diagnostic naming the archive. Unpacking the archive
-    into an empty directory gives the project's directory as it was published. What the
-    archive file itself must be is PKG-022, and which reason the installation reports is
-    PKG-023.
+    into an empty directory gives the project's directory as it was published. An archive
+    that lacks one is rejected when the package is installed, with a diagnostic naming the
+    item, the pair and the path. The digest of PKG-004, taken over the archive as distributed
+    (PKG-022), fixes every such program, so one address and version has one digest whichever
+    node runs it (PKG-025). What the archive file itself must be is PKG-022, and which reason
+    the installation reports is PKG-023.
 
 - id: MAN-014
   layer: language

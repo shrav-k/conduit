@@ -57,8 +57,9 @@
   subject: Packages
   document: >-
     Where packages are stored, how they are removed, whether the engine keeps a cache of the
-    archives it fetches, and how the user names a mirror, each of which gives the same bytes
-    under PKG-026; and which of the tar formats and extensions an engine reads in an archive
+    archives it fetches beyond the copy of each installed package's archive that it keeps
+    under PRV-007, and how the user names a mirror, each of which gives the same bytes under
+    PKG-026; and which of the tar formats and extensions an engine reads in an archive
     under PKG-022. Also how the engine is handed a directory under SUB-010, such as by a
     command or a call, and for which actor it then registers.
 - id: DL8

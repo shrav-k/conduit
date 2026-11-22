@@ -68,8 +68,8 @@
     and for a read for a provider's run that PRV-026 asks for again, it is the setup that last
     asked for that run. A provider call's record names none. The records of an invocation's
     parts are those whose invocation or invocation served is that invocation, whatever their
-    source, under REC-005. A record of `run.v1`, `stop.v1` or `inspect-run.v1` names in the
-    CloudEvent's `subject` the instance whose run it is, so inspecting that instance finds it,
+    source, under REC-005. A record of `run.v1`, `run.v2`, `stop.v1` or `inspect-run.v1` names in
+    the CloudEvent's `subject` the instance whose run it is, so inspecting that instance finds it,
     under LIF-013. The record of a change that no request asked for itself, such as a Conduit
     closed under CON-008 or an instance removed under LIF-035, holds as its invocation the
     invocation within which the change happened, and that invocation's caller; where it happened

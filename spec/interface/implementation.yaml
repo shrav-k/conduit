@@ -447,11 +447,12 @@
   then: >-
     An item reached by `command` or `package` is run for the instance under PRV-007, and the
     engine reaches it over Streamable HTTP at the `url` that its runtime provider last reported
-    for the run, in the result of `run.v1` or of `inspect-run.v1`; only the engine's own runner
-    returns none, and the engine reaches the process it starts over stdio. An item reached by
-    `remote` is reached over Streamable HTTP at the URL of its Remote, under IFC-041. To a run's
-    `url`, and to an item reached by `remote` that is not `plain`, the engine sends nothing,
-    `server/discover` among it, until the server's side has proved who it is, under PRV-028 for
+    for the run, in the result of `run.v1`, `run.v2` or `inspect-run.v1`; only the engine's own
+    runner returns none, and the engine reaches the process it starts over stdio. An item
+    reached by `remote` is reached over Streamable HTTP at the URL of its Remote, under
+    IFC-041. To a run's `url`, and to an item reached by `remote` that is not `plain`, the engine
+    sends nothing, `server/discover` among it, until the server's side has proved who it is,
+    under PRV-028 for
     a run and by TLS for the host of its URL for such an item, it follows no HTTP redirect from
     either, and it presents on every HTTP request the proof of an enforcement point, by the
     mechanism of DL13, over a connection that keeps the request and its result confidential and
@@ -461,8 +462,10 @@
     certificate that names the instance's ID, under PRV-028, whether the run's gate or the
     runtime provider's own end of its channel to the process that it started serves it, and a
     token in the form of a JWT-SVID names the instance's ID as its audience, never the `url`,
-    which may change. Toward an item reached by `remote`, TLS proves the host of its URL,
-    against the roots that DL13 states for it, and the form of the proof is IFC-041's. TLS, or
+    which may change. Where `run.v1` or `run.v2` answers with an existing run, the server's side
+    presents the certificate that the run received when it started (PRV-028). Toward an item
+    reached by `remote`, TLS proves the host of its URL, against the roots that DL13 states for
+    it, and the form of the proof is IFC-041's. TLS, or
     the runtime provider's own channel, which PRV-025 has keep what crosses it confidential and
     unaltered, carries the request, so a value that a secret Resource's server on another
     machine returns reaches the engine unread and unaltered. In this version the engine is the

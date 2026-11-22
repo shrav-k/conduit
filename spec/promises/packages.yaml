@@ -170,13 +170,15 @@
     `package` item may state `environment`, a `package` item `packageArguments`, and a `remote`
     item `headers`, each giving the places in the instance's configuration that supply values.
     An item that leaves out `supports` supports no requirement, and one that leaves out
-    `nodeSelector` puts no rule on where its instances are placed.
+    `nodeSelector` contributes no labels to the selector. Where it states `platforms`, its
+    platform pairs still apply under PLC-007.
   observable: >-
     Whether an implementation implements an operation, supports a filter or can run on a node is
     answered from the manifest, without starting it: the last by matching its `nodeSelector`,
-    with its type's, against the labels of the node, under PLC-007. The keys of an item and
-    their values are MAN-009 and MAN-010, and which places a pointer may name is MAN-017. Which
-    kinds of `package` a runtime provider can run is part of its contract, under PRV-012. The
+    with its type's, against the labels of the node, and matching its `platforms` where
+    stated, under PLC-007. The keys of an item and their values are MAN-009 and MAN-010, and
+    which places a pointer may name is MAN-017. Which kinds of `package` a runtime provider
+    can run is part of its contract, under PRV-012. The
     one implementation that is reached by none of the three is the engine itself, in the core
     package's own manifest, under MAN-012.
 

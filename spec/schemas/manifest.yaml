@@ -16,8 +16,9 @@
 #                           `command`, `package` and `remote`; a Package pinned by `fileSha256`,
 #                           or an `oci` one by a digest in its `identifier`; `environment` with
 #                           `command` or `package`, `packageArguments` with `package` and
-#                           `headers` with `remote`), PKG-019, PKG-020 (a plain item gives
-#                           `tools` and no `supports`, and an item that is not plain gives no
+#                           `headers` with `remote`; `platforms` with `command`), PKG-019, PKG-020
+#                           (a plain item gives `tools` and no `supports`, and an item that is
+#                           not plain gives no
 #                           `tools`), OBJ-016, TPL-003, IFC-043 (an item that is not plain
 #                           names no `Authorization` in its `headers`), IFC-044 (an item that
 #                           is not plain and is reached by `remote` stands at an `https` URL)
@@ -157,8 +158,9 @@ metadata:
     no `tools` and no `keyed`, and, where it is reached by `remote`, stands at an `https` URL, since
     the engine connects to no other, and names no `Authorization`, in any case of its letters, in
     `headers`, since the engine presents its own proof in that header.
-    `supports` and `nodeSelector`, a label selector, may each be left out. A template is
-    rejected where an item selected for it binds in `environment` a variable that `identity`
+    `supports` and `nodeSelector`, a label selector, may each be left out. An item may list
+    `platforms` beside `command`, whose program must be a relative path under MAN-010. A template
+    is rejected where an item selected for it binds in `environment` a variable that `identity`
     carries in `run.v1`, or where a `remote` item selected for it carries a secret, in a header
     or as the value of `get-secret.v1`, to an `http` URL that the engine does not accept for
     one, or stands at a loopback host that the engine does not accept; none is in this schema,
@@ -171,6 +173,11 @@ spec:
       type: array
       items: {type: string, minLength: 1}
       minItems: 1
+    platforms:
+      type: array
+      items: {type: string, pattern: '^[a-z0-9]+/[a-z0-9]+$'}
+      minItems: 1
+      uniqueItems: true
     package: {$ref: github.com/shrav-k/conduit/core#server-package.v1}
     remote: {$ref: github.com/shrav-k/conduit/core#server-remote.v1}
     plain: {type: boolean}
@@ -197,6 +204,7 @@ spec:
   dependentRequired:
     packageArguments: [package]
     headers: [remote]
+    platforms: [command]
   dependentSchemas:
     environment:
       not: {required: [remote]}

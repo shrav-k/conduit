@@ -88,7 +88,33 @@ pub(crate) fn preflight(
         };
         // Validate the new project before comparing revisions (OPS-023).
         let trial = replacement(s, args, c, a)?;
-        if trial.reply["accepted"] != true {
+        let accepted = trial.reply["accepted"] == true;
+        let unchanged = accepted
+            && template(&trial.state, args).is_some_and(|new| {
+                ["spec", "metadata", "packages"]
+                    .into_iter()
+                    .all(|field| new[field] == o[field])
+            });
+        if !unchanged && (accepted || trial.reply["reason"] == "conflict") {
+            let installed = packages::catalog_entries(s, s.preinstalled_snapshots.clone());
+            let conflicts = crate::client_ids::submission_diagnostics(
+                s,
+                &installed,
+                args.get("manifest"),
+                args["contracts"].as_array().into_iter().flatten(),
+            );
+            if !conflicts.is_empty() {
+                let mut diagnostics = trial.reply["diagnostics"]
+                    .as_array()
+                    .cloned()
+                    .unwrap_or_default();
+                diagnostics.extend(conflicts);
+                let mut rejection = PreflightRejection::new("conflict", "CTR-013");
+                rejection.diagnostics = Some(json!(diagnostics));
+                return Ok(Some(rejection));
+            }
+        }
+        if !accepted {
             return Ok(Some(PreflightRejection::new("invalid", "SUB-009")));
         }
         if o["revision"] != args["revision"] {

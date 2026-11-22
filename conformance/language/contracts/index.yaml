@@ -1,6 +1,13 @@
 {
   "cases": [
     {
+      "id": "contracts-client-ids-shared",
+      "case": "language/contracts/client-ids-shared/case.yaml",
+      "promises": [
+        "CTR-013"
+      ]
+    },
+    {
       "id": "contracts-control-without-revision",
       "case": "language/contracts/control-without-revision/case.yaml",
       "promises": [

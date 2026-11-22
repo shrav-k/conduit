@@ -570,8 +570,12 @@ nonplain implementation variation. They describe independent established context
 language operations. The runner checks that the core transition changes no objects or
 packages after those observations.
 
-`invoke` takes current access inputs and an optional idempotency `key`. It returns a pending
-invocation and dispatch intent, or an IFC-025 result (a baseline protocol error for an
+`invoke` takes current access inputs, an optional idempotency `key`, and optional `archive`
+evidence for `install.v1`. An archive requires `address`, `version`, `digest`, `name`
+and `completion`. The `name` labels the archive in diagnostics. The `completion` requires
+`status: "complete"` and `bytes`, an array of integers from 0 to 255. The evidence must match
+the request's address, version and digest. A mismatch is an embedding error with no reply.
+It returns a pending invocation and dispatch intent, or an IFC-025 result (a baseline protocol error for an
 unpresented tool). `complete` supplies an invocation ID, attempt number and `result`,
 `protocol-error` (including optional `data`) or `missing` completion. A safe -32020 repair yields a
 `refresh-tools-and-call` intent within the same attempt, at most once. `cancel` is a trusted

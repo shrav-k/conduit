@@ -363,12 +363,31 @@ pub(crate) fn record_content(t: &Transition, c: &Context, data: &mut Value) -> R
             }
         }
     }
-    let arguments = data
+    let mut arguments = data
         .as_object_mut()
         .unwrap()
         .remove("arguments")
         .filter(|v| !v.is_null())
         .or_else(|| invocation.map(|v| v["arguments"].clone()));
+    if data["operation"] == c.qualified("install.v1") {
+        // A dispatch record is written before it appears in this transition's records.
+        // An ending record for a retained repeat has an outcome or reason but no dispatch here.
+        let is_dispatch =
+            data["attempt"].is_number() && data["outcome"].is_null() && data["reason"].is_null();
+        let dispatched_here = t.records.iter().any(|record| {
+            record["type"] == "invocation-dispatched"
+                && record["data"]["invocation"] == data["invocation"]
+        });
+        if invocation.is_some()
+            && (is_dispatch || dispatched_here)
+            && let Some(inputs) = arguments
+                .as_ref()
+                .and_then(crate::client_ids::confirmation_inputs)
+        {
+            data["inputs"] = inputs;
+        }
+        arguments = None;
+    }
     let outputs = data
         .as_object_mut()
         .unwrap()
@@ -1584,12 +1603,15 @@ fn invoke_inner(
             input_required: vec![],
             validated_reason: None,
         };
-        let rejection = crate::archives::install(
+        let rejection = crate::archives::install_with_confirmation(
             &mut trial,
             input,
             t.state.preinstalled_snapshots.clone(),
             c.builtin.clone().ok_or("missing built-in project")?,
             c,
+            args["confirmClientIds"]
+                .as_array()
+                .map_or(&[], Vec::as_slice),
         )?;
         if let Some(rejection) = rejection {
             t.decisions
@@ -1841,6 +1863,21 @@ fn invoke_inner(
         }
         finish(t, a, c, i, "succeeded", json!({}), json!([]), None)?;
     } else if let Some(mut trial) = installation {
+        if let Some(inputs) = crate::client_ids::confirmation_inputs(&route["arguments"])
+            && let Some(access) = t.records.iter_mut().rev().find(|record| {
+                record["type"] == "access-decision" && record["data"]["invocation"] == id
+            })
+        {
+            access["data"]["inputs"] = inputs;
+            if let Some(stored) = t
+                .state
+                .records
+                .iter_mut()
+                .find(|record| record["id"] == access["id"])
+            {
+                *stored = access.clone();
+            }
+        }
         // DL2: restore untouched existing file contents by move, preserving format version 1.
         for (existing, checked) in t
             .state

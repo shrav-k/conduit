@@ -14,6 +14,7 @@
 pub mod access;
 pub mod archives;
 mod cascade;
+mod client_ids;
 #[cfg(feature = "differential")]
 mod differential;
 pub mod explain;

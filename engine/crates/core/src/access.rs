@@ -903,6 +903,12 @@ fn evaluate_path(
     {
         return Ok(Verdict::reason("refused", "ACC-057"));
     }
+    if op == context.qualified("install.v1")
+        && request.arguments.get("confirmClientIds").is_some()
+        && (instance["id"] != root["id"] || request.serving.is_some())
+    {
+        return Ok(Verdict::reason("refused", "CTR-013"));
+    }
     if op == context.qualified("get-secret.v1") {
         return Ok(Verdict::reason("refused", "SEC-007"));
     }

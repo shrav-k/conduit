@@ -1,0 +1,4 @@
+# Added case for work order 266.
+- name: contracts-client-ids-shared
+  kind: added
+  cases: [contracts-client-ids-shared]

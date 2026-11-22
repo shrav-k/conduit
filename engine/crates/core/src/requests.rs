@@ -1929,8 +1929,13 @@ pub(crate) fn finish(
         content,
         None,
     );
-    if v["notices"].as_array().is_some_and(|ids| !ids.is_empty()) {
-        t.reply["_meta"][mark(c, "pendingAction")] = v["notices"].clone();
+    let raised_sign_in = v["setup"]
+        .get("raised")
+        .or_else(|| v["sign_in"].get("raised"));
+    let mut pending_actions = v["notices"].as_array().cloned().unwrap_or_default();
+    pending_actions.extend(raised_sign_in.cloned());
+    if !pending_actions.is_empty() {
+        t.reply["_meta"][mark(c, "pendingAction")] = json!(pending_actions);
     }
     if v["sign_in_wait"]["meta"].is_object() {
         t.reply["_meta"][mark(c, "signInLogin")] = v["sign_in_wait"]["meta"].clone();
@@ -1955,7 +1960,7 @@ pub(crate) fn finish(
         a,
         c,
         "invocation-ended",
-        json!({"target":v["target"],"caller":v["caller"],"consumer":v["sender"],"conduit":v["conduit"],"operation":v["operation"],"invocation":v["id"],"attempt":v["attempt"],"outcome":outcome,"outputs":if outcome == "succeeded" { outputs.clone() } else { Value::Null }}),
+        json!({"target":v["target"],"caller":v["caller"],"consumer":v["sender"],"conduit":v["conduit"],"operation":v["operation"],"invocation":v["id"],"attempt":v["attempt"],"outcome":outcome,"outputs":if outcome == "succeeded" { outputs.clone() } else { Value::Null },"pendingAction":raised_sign_in.map(|id| [id])}),
     )?;
     end(
         t,
@@ -2506,7 +2511,6 @@ pub(crate) fn cancel(
                 .remove("undo");
         }
         t.state.invocations[i]["sign_in"]["phase"] = json!("ended");
-        sign_in::link_raised_action(t, i)?;
     } else if invocation["operation"] == c.qualified("sign-out-hook.v1")
         && let Some(parent) = invocation.get("setup_parent")
         && t.state.invocations.iter().any(|v| {
@@ -2581,9 +2585,6 @@ pub(crate) fn recover(t: &mut Transition, evidence: &Evidence, c: &Context) -> R
                 json!([]),
                 Some(vec![cause]),
             )?;
-            if t.state.invocations[i]["operation"] == c.qualified("sign-in.v1") {
-                sign_in::link_raised_action(t, i)?;
-            }
             let v = &t.state.invocations[i];
             if v["hook"] == true
                 && v["operation"] == c.qualified("sign-out-hook.v1")
@@ -2612,7 +2613,6 @@ pub(crate) fn recover(t: &mut Transition, evidence: &Evidence, c: &Context) -> R
                     )?;
                 }
             }
-            crate::lifecycle::record_setup_sign_in(t, i)?;
         }
     }
     t.decisions.push(decision(

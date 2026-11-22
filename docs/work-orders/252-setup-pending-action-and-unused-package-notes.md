@@ -275,4 +275,25 @@ Named here and not in this order:
 
 ## Record
 
-Not yet run.
+Run on 2026-11-21 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+
+**Worker-2's turn** (15:24 to 15:47) closed both gaps:
+- a `set-up.v1` or `sign-in.v1` that raises a sign-in action now names it in its result's
+  `pendingAction`, the same ID the ending record holds;
+- a successful `register.v1` or `replace.v1` now returns its registration's unused-package
+  notes.
+
+Order 241's live replay now matches all 60 requests with no mismatch. The whole engine suite
+passed once.
+
+**`turn-verifier-2.turn.v1`** (15:48 to 15:53) found one must: the legacy register-project
+reply that the CLI prints had changed too. Worker-2 put it back byte for byte (15:53 to 15:57).
+162 core tests, the regressions and the replay pass.
+
+**The Claude reader** (15:58 to 16:03) passed it. Its nit, recorded here: `finish` now writes
+`pendingAction` into the `invocation-ended` record itself. So a set-up ended by
+`lifecycle::cancel`, which never wrote the action before, now names the action it raised. That
+fits PND-012 and decision 1's "whichever route ends it". Records for set-ups and sign-ins ended
+by `settle`, `recover`, `end_sign_in` or `cancel` otherwise hold what they held.
+
+The gate's run on the squash is the coordinator's, at the merge.

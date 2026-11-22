@@ -524,6 +524,78 @@ pub(crate) fn execute(
                 .map(|v| &v["id"])
                 .collect::<Vec<_>>()
         );
+        if o.get("spec").is_none() {
+            // REV-009 / REV-010: retained invocation state outlasts record purges.
+            let mut effects = Vec::new();
+            for invocation in t
+                .state
+                .invocations
+                .iter()
+                .filter(|v| v["target"] == o["id"])
+            {
+                let Some(changes) = invocation["contract"]["spec"]["changes"].as_object() else {
+                    continue;
+                };
+                let running = invocation["state"] == "in-progress";
+                let attempt = if running {
+                    let Some(previous) = invocation.get("previous") else {
+                        continue;
+                    };
+                    previous
+                } else {
+                    invocation
+                };
+                let succeeded = attempt["state"] == "succeeded";
+                let unknown = attempt["state"] == "unknown"
+                    || succeeded
+                        && (attempt["reconciled_control"] == true
+                            || attempt["ended"]["outcome"] == "unknown");
+                let ended = (succeeded || unknown) && requests::control_attempt_dispatched(attempt);
+                let retry_order = if running && requests::control_attempt_dispatched(invocation) {
+                    invocation["control_dispatched"].as_u64()
+                } else {
+                    None
+                };
+                for (input, pointer) in changes {
+                    let Some(pointer) = pointer.as_str() else {
+                        continue;
+                    };
+                    let (order, unknown) =
+                        if ended && requests::control_input_supplied(attempt, input) {
+                            (&attempt["control_dispatched"], unknown)
+                        } else if let Some(order) = attempt["control_uncertainty"].get(input) {
+                            (order, true)
+                        } else {
+                            continue;
+                        };
+                    effects.push((
+                        retry_order.or_else(|| order.as_u64()),
+                        invocation,
+                        pointer,
+                        unknown,
+                    ));
+                }
+            }
+            // Older state without dispatch numbers keeps its stored invocation order.
+            effects.sort_by_key(|(order, ..)| *order);
+            let mut settings = serde_json::Map::new();
+            for (_, invocation, pointer, unknown) in effects {
+                if unknown {
+                    settings.insert(pointer.into(), json!({
+                        "state":"unknown","control":invocation["operation"],"invocation":invocation["id"]
+                    }));
+                } else {
+                    // A descendant extends the pointer by at least one whole token.
+                    settings.retain(|key, _| {
+                        key.strip_prefix(pointer)
+                            .is_none_or(|suffix| !suffix.is_empty() && !suffix.starts_with('/'))
+                    });
+                }
+            }
+            if !settings.is_empty() {
+                status["settings"] = Value::Object(settings);
+            }
+        }
         if o.get("spec").is_none()
             && let Some(holder) = pending::own_interface(&t.state, &v["caller"], &v["sender"])
         {

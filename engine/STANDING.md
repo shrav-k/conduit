@@ -41,12 +41,12 @@ Each number counts promises. The last row counts those whose Engine source is no
 
 | Promises | language | convention | interface | all |
 | --- | ---: | ---: | ---: | ---: |
-| case passes | 149 | 163 | 28 | 340 |
+| case passes | 149 | 164 | 28 | 341 |
 | expected failure | 0 | 0 | 0 | 0 |
 | reason, no case | 54 | 17 | 1 | 72 |
-| no case, no reason | 22 | 65 | 19 | 106 |
+| no case, no reason | 22 | 64 | 19 | 105 |
 | all | 225 | 245 | 48 | 518 |
-| named in engine source | 157 | 173 | 31 | 361 |
+| named in engine source | 157 | 174 | 31 | 362 |
 
 ## The promises
 
@@ -231,7 +231,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | LIF-010 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | LIF-011 | convention | must | 2 | 0 | outside | core | case passes |
 | LIF-012 | convention | must | 3 | 0 | cases | core | case passes |
-| LIF-013 | convention | must | 17 | 0 | cases | core, shell | case passes |
+| LIF-013 | convention | must | 18 | 0 | cases | core, shell | case passes |
 | LIF-014 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | LIF-015 | convention | must | 0 | 0 | outside | core | no case, no reason |
 | LIF-016 | convention | must not | 0 | 0 | outside | none | no case, no reason |
@@ -344,7 +344,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | OPS-011 | convention | must | 1 | 0 | cases | core | case passes |
 | OPS-012 | convention | must | 26 | 2 | cases | core | case passes |
 | OPS-013 | convention | must | 5 | 0 | cases | core, shell | case passes |
-| OPS-014 | convention | must | 7 | 0 | cases | core | case passes |
+| OPS-014 | convention | must | 8 | 0 | cases | core | case passes |
 | OPS-018 | convention | must not | 4 | 0 | cases | core | case passes |
 | OPS-019 | convention | must | 1 | 0 | cases | shell | case passes |
 | OPS-020 | convention | must | 0 | 0 | outside | none | no case, no reason |
@@ -480,8 +480,8 @@ Each number counts promises. The last row counts those whose Engine source is no
 | REV-005 | convention | must not | 0 | 0 | reason | none | reason, no case |
 | REV-006 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | REV-007 | convention | must | 0 | 0 | outside | none | no case, no reason |
-| REV-009 | convention | must | 0 | 0 | outside | none | no case, no reason |
-| REV-010 | convention | must | 3 | 0 | outside | core | case passes |
+| REV-009 | convention | must | 1 | 0 | outside | core | case passes |
+| REV-010 | convention | must | 4 | 0 | outside | core | case passes |
 | REV-011 | convention | must | 0 | 0 | reason | core | reason, no case |
 | REV-012 | convention | must not | 2 | 0 | outside | core | case passes |
 | REV-014 | convention | must | 8 | 0 | cases | core | case passes |

@@ -391,7 +391,9 @@ shutdown of a retired instance (LIF-014, LIF-024) and `conditions`, each in the 
 Kubernetes `metav1.Condition`, `condition.v1` (LIF-011, OBS-002, OBS-003), among them the
 condition `Running` of an instance whose item is run (PRV-009), and `unreconciled`, the engine's
 ID for each invocation whose outcome is unknown and that was dispatched to the instance or names
-it (LIF-013). The status of a node holds its fixed labels and, for an admitted node, the
+it (LIF-013). `settings` holds each setting a control left unknown, by its JSON Pointer, with the
+control and the invocation, until a later control settles it (REV-009, REV-010). The status of a
+node holds its fixed labels and, for an admitted node, the
 provider/machine/hostname triple and enrollment (PLC-008, PLC-026, ENR-010). `records` is a list of `record.v1`, each a CloudEvent whose `data` holds
 the fields of a record (REC-002).
 
@@ -703,7 +705,7 @@ its binding and labels are fixed when made (PLC-008, ENR-010).
   each requirement of a Conduit the implementation that applies it, is settled; the keys that
   hold them are not. Not fixed either: where the result of inspecting a Conduit states, for
   each restriction, enforced or mediated (ACC-027); the key that holds a node's labels in
-  its status (PLC-026); where the word unknown stands against a setting (REV-009); how the
+  its status (PLC-026); how the
   status names a setup and its outcome, what retired an instance and which event closed a
   Conduit (LIF-004, LIF-005, CON-008, CON-011); where an instance's `from` is reported
   (FST-005); and how a gap in the records is shown (REC-006). These are settled with the

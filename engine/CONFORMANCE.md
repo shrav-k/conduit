@@ -148,8 +148,9 @@ polls the account on each retry (orders 048a-5b, 048a-5d and 048a-5ef; row
 DL18 in "Choices still required").
 Declare-lost.v1 and control dispatch remain unfinished public invocation paths.
 Control reconciliation records the outcome and what was checked, leaving configuration and
-revision unchanged (OPS-014, REV-010). Inspection does not yet report individual settings
-as unknown (REV-009). Agent reconciliation uses the owning Fleet, with management as the
+revision unchanged (OPS-014, REV-010). From order 270, inspection's `status.settings` shows
+each setting a control left unknown, after reconciliation too (REV-009,
+`change-unknown-setting`). Agent reconciliation uses the owning Fleet, with management as the
 retired-owner fallback (ACC-033).
 Startup inspects every published operation's held contract, using the publisher's resolved
 scope, and treats a contract with changes as an unfinished control regardless of its type or

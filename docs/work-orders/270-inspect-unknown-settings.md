@@ -289,4 +289,22 @@ Named here and not in this order:
 
 ## Record
 
-Not yet run.
+Run on 2026-11-22 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+
+**Worker-1's turn** (05:28 to 05:39) added `inspect.v1`'s `status.settings`: each setting a
+control left unknown, by its JSON Pointer, with the control and its invocation, kept through
+reconciliation until a later control or a replacement settles it, no value shown. Both new unit
+tests failed first and pass; the 14-step case `change-unknown-setting` passes.
+
+**Two blind reads at once** (05:39 to 05:44): `turn-verifier-1.turn.v1` found four musts; the
+Claude reader passed it with one nit, the coordinator's. One fix turn (05:44 to 05:53), each must
+reproduced first, the scope widened by the record projection orders 265 and 267 used:
+- a failed retry erased the unknown setting its earlier attempt left; it is now kept;
+- an attempt that never reached the control (cancelled in discovery, or rolled back after a
+  record fault) could create or revive an entry; only dispatched attempts count, in their order;
+- a defaulted input the caller omitted counted as set; only inputs the caller supplied count;
+- the map is kept out of recorded outputs and stays in the reply and its repeat (REC-002).
+
+188 core tests and the case pass. Left for a later order: dispatch still inserts declared
+defaults for control inputs the caller omitted. The gate's run on the squash is the
+coordinator's, at the merge.

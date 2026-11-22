@@ -59,6 +59,17 @@
         "NAM-011"
       ],
       "safety_rows": []
+    },
+    {
+      "id": "change-unknown-setting",
+      "case": "conventions/changes/unknown-setting/case.yaml",
+      "promises": [
+        "REV-009",
+        "REV-010",
+        "OPS-014",
+        "LIF-013"
+      ],
+      "safety_rows": []
     }
   ]
 }

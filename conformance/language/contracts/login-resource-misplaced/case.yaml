@@ -1,0 +1,117 @@
+{
+  "id": "contracts-login-resource-misplaced",
+  "title": "A login place is required, reference-typed and immutable",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "CTR-013"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "optional-fixture": "optional-fixture.json",
+    "optional-manifest": "optional-conduit.json",
+    "optional-documents": "optional-documents.json",
+    "string-fixture": "string-fixture.json",
+    "string-manifest": "string-conduit.json",
+    "string-documents": "string-documents.json",
+    "control-fixture": "control-fixture.json",
+    "control-manifest": "control-conduit.json",
+    "control-documents": "control-documents.json",
+    "valid-fixture": "valid-fixture.json",
+    "valid-manifest": "valid-conduit.json",
+    "valid-documents": "valid-documents.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "optional-fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "CTR-013",
+              "level": "error"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "CTR-013"
+        ],
+        "stateUnchanged": true
+      }
+    },
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "string-fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "CTR-013",
+              "level": "error"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "CTR-013"
+        ],
+        "stateUnchanged": true
+      }
+    },
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "control-fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "CTR-013",
+              "level": "error"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "CTR-013"
+        ],
+        "stateUnchanged": true
+      }
+    },
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "valid-fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [],
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

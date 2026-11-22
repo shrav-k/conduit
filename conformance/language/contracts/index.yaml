@@ -9,6 +9,13 @@
       "safety_rows": []
     },
     {
+      "id": "contracts-login-resource-misplaced",
+      "case": "language/contracts/login-resource-misplaced/case.yaml",
+      "promises": [
+        "CTR-013"
+      ]
+    },
+    {
       "id": "contracts-own-tools-control",
       "case": "language/contracts/own-tools-control/case.yaml",
       "promises": [

@@ -19,6 +19,9 @@ mod differential;
 pub mod explain;
 mod inventory;
 pub mod lifecycle;
+mod login_resource;
+#[cfg(test)]
+mod login_resource_tests;
 pub mod packages;
 mod pending;
 mod record_fault;

@@ -757,6 +757,7 @@ impl Catalog {
                                 root: d["spec"]["schema"].clone(),
                                 schema: d["spec"]["schema"].clone(),
                                 secret: false,
+                                resource: false,
                             }],
                             &pointer_tokens(pointer),
                             core,
@@ -776,6 +777,7 @@ impl Catalog {
                                 root: d["spec"]["schema"].clone(),
                                 schema: d["spec"]["schema"].clone(),
                                 secret: false,
+                                resource: false,
                             }],
                             &pointer_tokens(account),
                             core,
@@ -791,6 +793,28 @@ impl Catalog {
                         diagnostics.push(diag(
                             "CTR-013",
                             format!("{scope}: Type {name} signIn: {text}"),
+                        ));
+                    }
+                    let login = d["spec"]["loginResource"]["place"].as_str();
+                    if let Some(place) = login
+                        && let Err(cause) = binding_parts_at(
+                            &env,
+                            vec![BindingPart {
+                                scope: scope.clone(),
+                                root: d["spec"]["schema"].clone(),
+                                schema: d["spec"]["schema"].clone(),
+                                secret: false,
+                                resource: false,
+                            }],
+                            &pointer_tokens(place),
+                            core,
+                            BindingMode::Login,
+                            "",
+                        )
+                    {
+                        diagnostics.push(diag(
+                            "CTR-013",
+                            format!("{scope}: Type {name} loginResource place {place}: {cause}"),
                         ));
                     }
                     for control in strings(&d["spec"], "controls") {
@@ -824,6 +848,16 @@ impl Catalog {
                             diagnostics.push(diag(
                                 "CTR-013",
                                 format!("{scope}: Type {name} signIn account {account}: {cause}"),
+                            ));
+                        }
+                        if let Some(place) = login
+                            && let Some(cause) = own_tools_control_fault(control, spec, place)
+                        {
+                            diagnostics.push(diag(
+                                "CTR-013",
+                                format!(
+                                    "{scope}: Type {name} loginResource place {place}: {cause}"
+                                ),
                             ));
                         }
                     }
@@ -1329,7 +1363,12 @@ fn check_items(
                                 a["isRequired"] == true
                                     && (a["name"] == *name || a["valueHint"] == *name)
                             });
-                        let place = binding(env, &ts, &t["spec"]["schema"], &tokens, core);
+                        let login = t["spec"]["loginResource"]["place"] == pointer;
+                        let place = if login {
+                            (bindings == "environment").then(Binding::default)
+                        } else {
+                            binding(env, &ts, &t["spec"]["schema"], &tokens, core)
+                        };
                         let ok = place
                             .as_ref()
                             .is_some_and(|place| !required_input || !place.nullable);
@@ -1357,6 +1396,7 @@ struct BindingPart {
     root: Value,
     schema: Value,
     secret: bool,
+    resource: bool,
 }
 
 fn pointer_tokens(pointer: &str) -> Vec<String> {
@@ -1657,6 +1697,7 @@ fn branches(
             let (scope, schema) = env
                 .schema_reference(&part.scope, &part.root, reference, core)
                 .ok()?;
+            own.resource = scope == "core" && reference.ends_with("#resource-reference.v1");
             let root = if reference == "#" || reference.starts_with("#/") {
                 part.root.clone()
             } else {
@@ -1667,6 +1708,7 @@ fn branches(
                 root,
                 schema,
                 secret: false,
+                resource: false,
             });
         }
     }
@@ -1723,6 +1765,13 @@ struct Binding {
     secret: bool,
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum BindingMode {
+    Scalar,
+    OwnTools,
+    Login,
+}
+
 fn binding(
     env: &Environment,
     scope: &str,
@@ -1737,10 +1786,11 @@ fn binding(
             root: schema.clone(),
             schema: schema.clone(),
             secret: false,
+            resource: false,
         }],
         tokens,
         core,
-        false,
+        BindingMode::Scalar,
         "",
     )
     .ok()
@@ -1752,7 +1802,12 @@ fn binding_parts(
     core: &str,
     own_tools: bool,
 ) -> std::result::Result<bool, String> {
-    binding_parts_at(env, parts, tokens, core, own_tools, "").map(|place| place.nullable)
+    let mode = if own_tools {
+        BindingMode::OwnTools
+    } else {
+        BindingMode::Scalar
+    };
+    binding_parts_at(env, parts, tokens, core, mode, "").map(|place| place.nullable)
 }
 
 fn binding_parts_at(
@@ -1760,9 +1815,12 @@ fn binding_parts_at(
     parts: Vec<BindingPart>,
     tokens: &[String],
     core: &str,
-    own_tools: bool,
+    mode: BindingMode,
     path: &str,
 ) -> std::result::Result<Binding, String> {
+    if mode == BindingMode::Login && tokens.is_empty() && path.is_empty() {
+        return Err("the login place must name a required member of configuration".into());
+    }
     const UNREADABLE: &str =
         "rule (a): the walk could not read a reference or a pattern of the schema";
     let mut alternatives = vec![vec![]];
@@ -1822,10 +1880,17 @@ fn binding_parts_at(
                     "rule (a): a branch of the schema describes {member} under none of properties, patternProperties and additionalProperties"
                 ));
             }
-            let member = binding_parts_at(env, subs, tail, core, own_tools, &member)?;
+            let member = binding_parts_at(env, subs, tail, core, mode, &member)?;
             place.nullable |= member.nullable;
             place.secret |= member.secret;
         } else {
+            if mode == BindingMode::Login {
+                if !parts.iter().any(|part| part.resource) {
+                    return Err("the place is not governed by resource-reference.v1".into());
+                }
+                continue;
+            }
+            let own_tools = mode == BindingMode::OwnTools;
             if !own_tools && parts.iter().any(|p| p.secret) {
                 place.secret = true;
                 continue;
@@ -2204,6 +2269,7 @@ mod tests {
                 root: schema.clone(),
                 schema,
                 secret: false,
+                resource: false,
             }],
             &pointer_tokens(pointer),
             "core",

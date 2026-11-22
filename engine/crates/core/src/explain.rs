@@ -777,7 +777,11 @@ pub(crate) fn diagnostic(
             json!({"ruleId":rule,"level":"error","message":{"text":format!("{} reports {reason} under {rule}: {cause}", route["tool"].as_str().unwrap_or(operation))}}),
         );
     }
-    let cause = if rule == "ACC-033" {
+    let cause = if rule == "PND-009" && route["rootLoginNotice"] == true {
+        "Only root answers a login Resource's notice.".into()
+    } else if rule == "ACC-033" && route.get("loginPool").is_some() {
+        "Registering the Agent also needs an open Conduit listing the operation to its login Resource's owning Pool.".into()
+    } else if rule == "ACC-033" {
         format!(
             "The request needs an open Conduit listing the operation to {}.",
             acc033_target(state, route, c)
@@ -817,7 +821,9 @@ pub(crate) fn diagnostic(
         // The operation that tier() resolved, through a closed Conduit as well.
         let resolved = stone.map_or(operation.into(), |stone| closed_operation(stone, route, c));
         // PND-009 never resolves an action in the diagnostic, even at root.
-        let target = if resolved == c.qualified("answer.v1") && rule != "PND-009" {
+        let target = if let Some(pool) = route.get("loginPool") {
+            access::object_by_id(state, pool)
+        } else if resolved == c.qualified("answer.v1") && rule != "PND-009" {
             answer_refusal_target(state, route, c)?.or(presented)
         } else {
             presented
@@ -825,6 +831,13 @@ pub(crate) fn diagnostic(
         let mut conduits = vec![];
         if let Some(target) = target {
             refusal["target"] = inventory::object(target);
+            if route.get("loginPool").is_some() {
+                refusal["cause"] = json!(format!(
+                    "{} The owning Pool is {}.",
+                    cause,
+                    crate::login_resource::label(target)
+                ));
+            }
             conduits.extend(state.objects.iter()
                 .filter(|p| sender_live_path(p, conduit_consumer) && access::id(&p["target"]) == &target["id"])
                 .map(|p| json!({"name":p["name"],"as":p.get("local_name").or_else(|| p["nested"].get("name")).unwrap_or(&p["name"]),"state":if p["open"] == true {"open"} else {"registered"},"operations":p["operations"]})));
@@ -845,7 +858,7 @@ pub(crate) fn diagnostic(
         refusal["conduits"] = json!(conduits);
     }
     Ok(
-        json!({"ruleId":rule,"level":"error","message":{"text":format!("{subject} is refused under {rule}: {cause}")},"properties":{"refusal":refusal}}),
+        json!({"ruleId":rule,"level":"error","message":{"text":format!("{subject} is refused under {rule}: {}", refusal["cause"].as_str().unwrap_or_default())},"properties":{"refusal":refusal}}),
     )
 }
 
@@ -946,9 +959,16 @@ pub(crate) fn settle_cause(
         ""
     };
     let cause = format!("{prefix}Required part {name} ended {status}.");
-    Ok(Some(vec![outcome_diagnostic(
-        invocation, outcome, "OPS-022", &cause,
-    )?]))
+    let mut diagnostics = vec![outcome_diagnostic(invocation, outcome, "OPS-022", &cause)?];
+    diagnostics.extend(parts.iter().flat_map(|part| {
+        part["diagnostics"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter(|diagnostic| diagnostic["ruleId"] == "PRV-029")
+            .cloned()
+    }));
+    Ok(Some(diagnostics))
 }
 
 /// IFC-025: run after all diagnostics are final, once per returned or stored reply.

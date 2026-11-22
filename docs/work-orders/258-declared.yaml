@@ -1,0 +1,16 @@
+# Added cases for work order 258.
+- name: contracts-login-resource-misplaced
+  kind: added
+  cases: [contracts-login-resource-misplaced]
+- name: fleets-retire-login-resource
+  kind: added
+  cases: [fleets-retire-login-resource]
+- name: registration-login-place
+  kind: added
+  cases: [registration-login-place]
+- name: requests-login-resource-lapse
+  kind: added
+  cases: [requests-login-resource-lapse]
+- name: requests-login-resource-one-at-a-time
+  kind: added
+  cases: [requests-login-resource-one-at-a-time]

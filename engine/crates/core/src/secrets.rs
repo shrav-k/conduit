@@ -14,6 +14,9 @@ pub(crate) fn prepare_run(
 ) -> Result<()> {
     let v = &t.state.invocations[i];
     let object = access::object(&t.state, &v["object"]).ok_or("run subject missing")?;
+    if let Some(diagnostic) = directory_rejection(&t.state, object, v) {
+        return refuse_directory_run(t, a, c, i, diagnostic);
+    }
     let (_, bindings) = lifecycle::run_inputs(object, v, c)?;
     let resources: BTreeSet<_> = bindings
         .as_object()
@@ -56,6 +59,9 @@ pub(crate) fn is_own_runner_provider(object: &Value, c: &Context) -> bool {
 fn emit_run(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) -> Result<()> {
     let v = t.state.invocations[i].clone();
     let object = access::object(&t.state, &v["object"]).ok_or("run subject missing")?;
+    if let Some(diagnostic) = directory_rejection(&t.state, object, &v) {
+        return refuse_directory_run(t, a, c, i, diagnostic);
+    }
     let (inputs, mut bindings) = lifecycle::run_inputs(object, &v, c)?;
     let provider = is_own_runner_provider(object, c);
     for map in bindings.as_object_mut().unwrap().values_mut() {
@@ -78,6 +84,32 @@ fn emit_run(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) -
         }
     }
     lifecycle::emit(t, a, c, i, "run.v1", inputs, secret_bindings)
+}
+
+fn directory_rejection(state: &crate::State, object: &Value, invocation: &Value) -> Option<Value> {
+    if crate::login_resource::binds_directory(object, &invocation["setup"]["item"]["item"]) {
+        return crate::login_resource::run_diagnostic(state, object);
+    }
+    None
+}
+
+fn refuse_directory_run(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    diagnostic: Value,
+) -> Result<()> {
+    let invocation = &mut t.state.invocations[i];
+    invocation.as_object_mut().unwrap().remove("secret_reads");
+    t.decisions.push(decision(
+        "refuse-login-directory-run",
+        &["PRV-029", "PRV-007"],
+        &[],
+        json!({"instance":invocation["object"]}),
+        vec![],
+    ));
+    lifecycle::provider_part_unavailable(t, a, c, i, diagnostic)
 }
 
 fn unavailable(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) -> Result<()> {

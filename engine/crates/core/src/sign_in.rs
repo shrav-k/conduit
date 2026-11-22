@@ -1716,6 +1716,17 @@ pub(crate) fn preflight(
             "an own-behalf request must name the instance by reference instead of supplying its resolved ID.",
         )));
     }
+    if let Some(resource) = crate::login_resource::resource(state, instance) {
+        let tool = route["tool"].as_str().ok_or("sign-in route has no tool")?;
+        let resource = crate::login_resource::label(resource);
+        let mut result = Rejection::new("invalid", "PND-010");
+        result.diagnostics = Some(
+            json!([{"ruleId":"PND-010","level":"error","message":{"text":format!(
+                "{tool} reports invalid under PND-010: the Agent signs in through its login Resource {resource}; root sends sign-in.v1 for that Resource, which signs in all its Agents."
+            )}}]),
+        );
+        return Ok(Some(result));
+    }
     let expected = expected_account(instance, context)?;
     let logins = if matches!(expected, ExpectedAccount::Set { .. }) {
         stated_logins(instance, context)?

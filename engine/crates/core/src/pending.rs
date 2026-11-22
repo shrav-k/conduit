@@ -290,8 +290,8 @@ pub(crate) fn keep_sign_in_attempt(
     time: &str,
 ) -> Option<Value> {
     let id = unanswered_sign_in(state, &json!({"id":instance}), time)?["id"].clone();
-    let action = &mut state.pending_actions.get_mut(id.as_str()?)?["action"];
-    action["evidence"].as_array_mut()?.extend([
+    let entry = state.pending_actions.get_mut(id.as_str()?)?;
+    entry["action"]["evidence"].as_array_mut()?.extend([
         fact(
             invocation.clone(),
             "records",
@@ -299,11 +299,21 @@ pub(crate) fn keep_sign_in_attempt(
         ),
         fact(json!(result), "records", "what the sign-out hook did with that account"),
     ]);
+    if let Some(about) = entry
+        .pointer_mut("/about/evidence")
+        .and_then(Value::as_array_mut)
+    {
+        about.extend([json!(instance), json!(instance)]);
+    }
     Some(id)
 }
 
 pub(crate) enum SignInRequest<'a> {
     Invocation {
+        invocation: &'a Value,
+        trigger: &'a str,
+    },
+    LoginLapse {
         invocation: &'a Value,
         trigger: &'a str,
     },
@@ -329,16 +339,33 @@ pub(crate) fn raise_sign_in(
     a: &mut Allocation<'_>,
 ) -> Result<Option<Value>> {
     let time = &a.evidence.time;
-    if instance["state"] == "retired" || unanswered_sign_in(state, instance, time).is_some() {
+    if instance["state"] == "retired" {
         return Ok(None);
     }
     let instance_id = instance["id"]
         .as_str()
         .ok_or("sign-in instance has no ID")?;
+    let reporting_agent = match request {
+        SignInRequest::LoginLapse { invocation, .. } => Some(&invocation["target"]),
+        _ => None,
+    };
+    if reporting_agent.is_none() {
+        state
+            .sign_in_holds
+            .entry(instance_id.to_owned())
+            .or_insert_with(|| json!({"since":time}));
+    }
+    if unanswered_sign_in(state, instance, time).is_some() {
+        return Ok(None);
+    }
     let expiry = week_after(time).ok_or("cannot compute sign-in action expiry")?;
     let id = a.next(state)?;
     let (raised_by, request_id, operation, trigger, request_fact, trigger_fact) = match request {
         SignInRequest::Invocation {
+            invocation,
+            trigger,
+        }
+        | SignInRequest::LoginLapse {
             invocation,
             trigger,
         } => (
@@ -380,7 +407,7 @@ pub(crate) fn raise_sign_in(
             "what the account check before sign-in-hook.v1 reported",
         ),
     };
-    let action = json!({
+    let mut action = json!({
         "id": id,
         "kind": "sign-in",
         "subject": [{"kind":instance["kind"], "name":instance["name"], "id":instance["id"]}],
@@ -392,15 +419,106 @@ pub(crate) fn raise_sign_in(
         ],
         "expiry": expiry
     });
-    state.pending_actions.insert(
-        id,
-        json!({"action":action, "dispatched":null, "raisedBy":raised_by}),
-    );
-    state
-        .sign_in_holds
-        .entry(instance_id.to_owned())
-        .or_insert_with(|| json!({"since":time}));
+    if let Some(agent) = reporting_agent {
+        action["evidence"].as_array_mut().unwrap().push(fact(
+            agent.clone(),
+            "records",
+            "the Agent whose call reported the lapse",
+        ));
+    }
+    let mut entry = json!({"action":action, "dispatched":null, "raisedBy":raised_by});
+    if let Some(agent) = reporting_agent {
+        entry["about"] =
+            json!({"subject":[instance_id], "evidence":[instance_id, agent, agent, agent, agent]});
+    }
+    state.pending_actions.insert(id, entry);
     Ok(Some(action))
+}
+
+pub(crate) fn login_notice<'a>(state: &'a State, resource: &Value) -> Option<&'a Value> {
+    state
+        .pending_actions
+        .values()
+        .filter(|entry| entry.get("login") == Some(&resource["id"]))
+        .max_by_key(|entry| entry["sequence"].as_u64().unwrap_or_default())
+}
+
+pub(crate) fn login_notice_resource<'a>(state: &'a State, action: &Value) -> Option<&'a Value> {
+    state
+        .pending_actions
+        .get(action["id"].as_str()?)?
+        .get("login")
+}
+
+pub(crate) fn login_notice_for_lapse(
+    state: &mut State,
+    resource: &Value,
+    agent: &Value,
+    invocation: &Value,
+    a: &mut Allocation<'_>,
+) -> Result<Value> {
+    let request_id = invocation.get("login_request_record").or_else(|| {
+        state
+            .records
+            .iter()
+            .rev()
+            .find(|record| {
+                record["type"] == "access-decision"
+                    && record["data"]["invocation"] == invocation["id"]
+            })
+            .and_then(|record| record.get("id"))
+    });
+    let mut evidence = vec![fact(
+        agent["id"].clone(),
+        "records",
+        "the Agent that reported the lapse",
+    )];
+    if let Some(id) = request_id {
+        evidence.push(fact(
+            id.clone(),
+            "records",
+            "the request that reported the lapse",
+        ));
+    }
+    evidence.push(fact(
+        invocation["id"].clone(),
+        "records",
+        "the invocation that reported the lapse",
+    ));
+    let evidence_about = vec![agent["id"].clone(); evidence.len()];
+    let entry = json!({"login":resource["id"],"raisedBy":invocation["id"],"dispatched":null,
+        "action":{"kind":"notice","subject":[inventory::object(resource),inventory::object(agent)],"evidence":evidence},
+        "about":{"subject":[resource["id"],agent["id"]],"evidence":evidence_about}
+    });
+    store_login_notice(state, resource, entry, a)
+}
+
+pub(crate) fn store_login_notice(
+    state: &mut State,
+    resource: &Value,
+    mut entry: Value,
+    a: &mut Allocation<'_>,
+) -> Result<Value> {
+    let sequence = login_notice(state, resource)
+        .and_then(|e| e["sequence"].as_u64())
+        .unwrap_or_default();
+    let id = a.next(state)?;
+    entry["sequence"] = json!(sequence + 1);
+    entry["action"]["id"] = json!(id);
+    entry["action"]["expiry"] =
+        json!(week_after(&a.evidence.time).ok_or("notice expiry is out of range")?);
+    entry["action"].as_object_mut().unwrap().remove("answer");
+    state.pending_actions.insert(id.clone(), entry);
+    Ok(json!(id))
+}
+
+pub(crate) fn unanswered_login_notice<'a>(
+    state: &'a State,
+    resource: &Value,
+    time: &str,
+) -> Option<&'a Value> {
+    let action = &login_notice(state, resource)?["action"];
+    (action.get("answer").is_none() && is_raised_at(action, time)).then_some(&action["id"])
 }
 
 pub(crate) fn void_sign_in(

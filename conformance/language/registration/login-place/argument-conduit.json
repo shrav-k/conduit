@@ -1,0 +1,57 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "address": "example.org/conformance/shared-login",
+  "implementations": {
+    "agent": {
+      "implements": [
+        "#turn.v1",
+        "#status.v1"
+      ],
+      "package": {
+        "registryType": "npm",
+        "identifier": "example-scripted",
+        "fileSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "transport": {
+          "type": "stdio"
+        },
+        "packageArguments": [
+          {
+            "type": "positional",
+            "valueHint": "directory",
+            "isRequired": true
+          }
+        ]
+      },
+      "packageArguments": {
+        "directory": "/login"
+      }
+    },
+    "plain-agent": {
+      "implements": [
+        "#turn.v1",
+        "#status.v1"
+      ],
+      "command": [
+        "/fixture/shared-agent"
+      ],
+      "plain": true,
+      "tools": {
+        "#turn.v1": "turn",
+        "#status.v1": "status"
+      },
+      "environment": {
+        "LOGIN_DIRECTORY": "/login"
+      }
+    },
+    "resource": {
+      "implements": [
+        "github.com/shrav-k/conduit/core#account-hook.v1",
+        "github.com/shrav-k/conduit/core#sign-in-hook.v1",
+        "github.com/shrav-k/conduit/core#sign-out-hook.v1"
+      ],
+      "command": [
+        "/fixture/login-resource"
+      ]
+    }
+  }
+}

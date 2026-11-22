@@ -1,0 +1,10 @@
+{
+  "snapshots": [],
+  "project": {
+    "files": {
+      "conduit.json": "control-manifest",
+      "documents.json": "control-documents"
+    },
+    "directory": null
+  }
+}

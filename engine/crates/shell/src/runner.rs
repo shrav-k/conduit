@@ -621,16 +621,13 @@ impl Inner {
     }
     async fn start(
         &self,
-        intent: Value,
+        mut intent: Value,
         identity: BTreeMap<String, String>,
     ) -> Result<Option<Arc<Run>>> {
         let subject = string(&intent, "subject")?.to_owned();
         let setup = string(&intent, "invocation")?.to_owned();
-        let inputs = &intent["inputs"];
-        let (config, state) = {
-            let shell = self.shell.upgrade().ok_or("shell stopped")?;
-            (shell.config.clone(), shell.state()?)
-        };
+        let shell = self.shell.upgrade().ok_or("shell stopped")?;
+        let (config, state) = { (shell.config.clone(), shell.state()?) };
         let names = ["HOME", "LOGNAME", "PATH", "SHELL", "TERM", "USER"]
             .into_iter()
             .map(str::to_owned)
@@ -639,37 +636,19 @@ impl Inner {
         let inherited = names
             .into_iter()
             .filter_map(|name| std::env::var(&name).ok().map(|value| (name, value)));
-        let mut helper_env = run_environment(
+        let RunEnvironments {
+            instance: env,
+            helper: helper_env,
+        } = prepare_run_environments(
+            &shell,
+            &subject,
+            &mut intent["inputs"],
             inherited,
             &config.pass_environment,
-            &Value::Null,
-            &json!({}),
-            &BTreeMap::new(),
+            identity,
         )?;
-        for name in identity.keys() {
-            helper_env.remove(name);
-        }
-        // PRV-023/029: never give helpers an inherited state directory. Only the
-        // instance process receives the engine's value, after all item defaults.
-        let state_variable = &conduit_core::run_variables()["stateDirVariable"];
-        helper_env.retain(|name, _| !name.eq_ignore_ascii_case(state_variable));
-        let mut identity = identity;
-        let state_directory = self
-            .shell
-            .upgrade()
-            .ok_or("shell stopped")?
-            .state_directory(&subject)?;
-        identity.insert(
-            state_variable.clone(),
-            state_directory.to_string_lossy().into(),
-        );
-        let env = run_environment(
-            helper_env.clone().into_iter(),
-            &config.pass_environment,
-            &inputs["item"],
-            inputs,
-            &identity,
-        )?;
+        drop(shell);
+        let inputs = &intent["inputs"];
         let work = self.directory.join("work").join(Uuid::new_v4().to_string());
         private_directory(&work)?;
         let item = inputs["item"].clone();
@@ -1096,6 +1075,60 @@ fn program_path(root: &Path, name: &str) -> Result<PathBuf> {
     Ok(path)
 }
 
+struct RunEnvironments {
+    instance: BTreeMap<String, String>,
+    helper: BTreeMap<String, String>,
+}
+
+fn prepare_run_environments(
+    shell: &Shell,
+    subject: &str,
+    inputs: &mut Value,
+    inherited: impl Iterator<Item = (String, String)>,
+    pass: &[String],
+    mut identity: BTreeMap<String, String>,
+) -> Result<RunEnvironments> {
+    if let Some(directories) = inputs
+        .get_mut("loginDirectories")
+        .and_then(Value::as_object_mut)
+    {
+        for directory in directories.values_mut() {
+            let id = directory
+                .as_str()
+                .ok_or("login directory needs a Resource ID")?;
+            *directory = json!(shell.state_directory(id)?.to_string_lossy());
+        }
+    }
+    let mut helper = run_environment(inherited, pass, &Value::Null, &json!({}), &BTreeMap::new())?;
+    for name in identity.keys() {
+        helper.remove(name);
+    }
+    // PRV-023/029: the helper receives neither directory, including inherited values.
+    let state_variable = &conduit_core::run_variables()["stateDirVariable"];
+    helper.retain(|name, _| {
+        !name.eq_ignore_ascii_case(state_variable)
+            && !inputs["loginDirectories"]
+                .as_object()
+                .is_some_and(|directories| {
+                    directories
+                        .keys()
+                        .any(|bound| name.eq_ignore_ascii_case(bound))
+                })
+    });
+    identity.insert(
+        state_variable.clone(),
+        shell.state_directory(subject)?.to_string_lossy().into(),
+    );
+    let instance = run_environment(
+        helper.clone().into_iter(),
+        pass,
+        &inputs["item"],
+        inputs,
+        &identity,
+    )?;
+    Ok(RunEnvironments { instance, helper })
+}
+
 fn run_environment(
     inherited: impl Iterator<Item = (String, String)>,
     pass: &[String],
@@ -1121,12 +1154,17 @@ fn run_environment(
         }
         let supplied = inputs["secrets"]["environment"]
             .get(name)
+            .or_else(|| inputs["loginDirectories"].get(name))
             .or_else(|| inputs["environment"].get(name));
         if let Some(value) = package_input(declaration, supplied)? {
             env.insert(name.into(), value);
         }
     }
-    for values in [&inputs["environment"], &inputs["secrets"]["environment"]] {
+    for values in [
+        &inputs["environment"],
+        &inputs["loginDirectories"],
+        &inputs["secrets"]["environment"],
+    ] {
         for (name, value) in values.as_object().into_iter().flatten() {
             env.insert(
                 name.clone(),
@@ -2687,6 +2725,60 @@ mod tests {
                 ),
             ])
         );
+    }
+
+    #[test]
+    fn login_directory_reaches_each_agent_run() {
+        let temp = tempfile::tempdir().unwrap();
+        let (shell, _runner) = test_runner(temp.path());
+        let login_id = "00000000-0000-4000-8000-000000000001";
+        let agent_ids = [
+            "00000000-0000-4000-8000-000000000002",
+            "00000000-0000-4000-8000-000000000003",
+        ];
+        let directories = {
+            let writer = shell.writer.lock().unwrap();
+            let mut memory = writer.store.take().unwrap();
+            Arc::make_mut(&mut memory.state).objects.extend([
+                json!({"id":login_id,"kind":"Resource","name":"login"}),
+                json!({"id":agent_ids[0],"kind":"Agent","name":"agent-a"}),
+                json!({"id":agent_ids[1],"kind":"Agent","name":"agent-b"}),
+            ]);
+            writer
+                .store
+                .write_state(&memory.state, &memory.output_times)
+                .unwrap();
+            writer.store.remember(memory);
+            writer.store.directory.join("instances")
+        };
+        let state = &conduit_core::run_variables()["stateDirVariable"];
+        let inherited = BTreeMap::from([
+            ("LOGIN_DIRECTORY".to_owned(), "inherited-login".to_owned()),
+            (state.clone(), "inherited-state".to_owned()),
+            ("EXPLICIT".to_owned(), "allowed".to_owned()),
+        ]);
+        let pass: Vec<_> = inherited.keys().cloned().collect();
+        let item = json!({"package":{"environmentVariables":[{"name":"LOGIN_DIRECTORY","isRequired":true}]}});
+        for agent in agent_ids {
+            let run = prepare_run_environments(
+                &shell,
+                agent,
+                &mut json!({"item":item,"loginDirectories":{"LOGIN_DIRECTORY":login_id}}),
+                inherited.clone().into_iter(),
+                &pass,
+                BTreeMap::new(),
+            )
+            .expect("the login directory fills the required variable");
+            assert_eq!(
+                Path::new(&run.instance["LOGIN_DIRECTORY"]),
+                directories.join(login_id)
+            );
+            assert_eq!(Path::new(&run.instance[state]), directories.join(agent));
+            assert_eq!(
+                run.helper,
+                BTreeMap::from([("EXPLICIT".into(), "allowed".into())])
+            );
+        }
     }
 
     #[test]

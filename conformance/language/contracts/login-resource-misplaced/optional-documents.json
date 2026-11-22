@@ -1,0 +1,23 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "shared-agent.v1"
+    },
+    "spec": {
+      "family": "Agent",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "login": {
+            "$ref": "github.com/shrav-k/conduit/core#resource-reference.v1"
+          }
+        }
+      },
+      "loginResource": {
+        "place": "/login"
+      }
+    }
+  }
+]

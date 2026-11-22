@@ -577,6 +577,11 @@ pub(crate) fn action_inspection_target<'a>(
     context: &Context,
 ) -> Result<&'a Value> {
     if action["kind"] == "notice" {
+        if let Some(resource) =
+            pending::login_notice_resource(state, action).and_then(|id| object_by_id(state, id))
+        {
+            return Ok(&inspection_route(state, resource, context)?["id"]);
+        }
         let fleet = pending::notice_fleet(state, action)
             .and_then(|id| object_by_id(state, id))
             .filter(|fleet| fleet["state"] != "retired");
@@ -911,6 +916,21 @@ fn evaluate_path(
         )
     {
         return Ok(Verdict::reason("refused", "PND-009"));
+    }
+    if op == context.qualified("answer.v1")
+        && instance["id"] != root["id"]
+        && let Some(action) = pending::action_for_answer(
+            state,
+            instance,
+            request.serving.as_deref(),
+            &request.arguments["action"],
+            context,
+        )
+        && pending::login_notice_resource(state, &action).is_some()
+    {
+        let mut verdict = Verdict::reason("refused", "PND-009");
+        verdict.route = json!({"consumer":instance["id"],"caller":caller,"conduit":path["id"],"target":path["target"],"operation":op,"rootLoginNotice":true});
+        return Ok(verdict);
     }
     let sign_in = op == context.qualified("sign-in.v1");
     // ACC-056 puts caller eligibility before ACC-033 routing.

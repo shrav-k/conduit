@@ -1,4 +1,4 @@
-const COMMANDS: [(&str, &str, &str); 16] = [
+const COMMANDS: [(&str, &str, &str); 17] = [
     (
         "init",
         "[--label KEY=VALUE] [--trust-domain DOMAIN]",
@@ -63,8 +63,9 @@ const COMMANDS: [(&str, &str, &str); 16] = [
         "call --store /tmp/conduit management.inspect.v1 '{\"object\":{\"kind\":\"Interface\",\"name\":\"root\"}}'",
     ),
     ("plan", "[PROJECT_DIR]", "plan ./project"),
+    ("apply", "[PROJECT_DIR]", "apply"),
 ];
-const DESCRIPTIONS: [&str; 16] = [
+const DESCRIPTIONS: [&str; 17] = [
     "Create the project's conduit.yaml skeleton unless a manifest already exists. With --store, initialize a private store and root identity instead.",
     "Register a local project, open root's submitted Conduits and set up instances. Owns runs until exit; stop serve first. --package explicitly installs an archive before registration.",
     "Submit a project to serve, open root's submitted Conduits and set up instances. Prints each attempted step after its results; completed steps persist on failure. Relative fetch/program values must be made absolute.",
@@ -81,6 +82,7 @@ const DESCRIPTIONS: [&str; 16] = [
     "List tools presented to root or a named instance. Set up the instance first and open its Conduits if its list is empty.",
     "Call a presented root tool once through serve. Arguments must be a JSON object (default {}). --arguments-file - reads standard input to its end. Failed or unknown outcomes cause a nonzero exit.",
     "Read the project and engine as root, and print the requests apply would send.",
+    "Compute, print and record the plan, then send its requests as root without a prompt.",
 ];
 pub fn print(command: Option<&str>) -> Result<(), String> {
     if let Some(name) = command {

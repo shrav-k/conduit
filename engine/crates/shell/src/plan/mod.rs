@@ -1,5 +1,6 @@
-//! Read-only working-copy planning. Only the boundary reads the file system or engine.
+//! Working-copy planning and application through public engine requests.
 
+mod apply;
 mod compare;
 mod read;
 #[cfg(test)]
@@ -11,7 +12,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write;
 use std::path::{Path, PathBuf};
 
-pub use read::command;
+pub use read::{apply_command, command};
 
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Name {
@@ -122,6 +123,7 @@ pub struct Engine {
     pub tombstones: Vec<Value>,
     pub installed: BTreeSet<Pin>,
     pub routes: BTreeMap<Name, String>,
+    access_conduit: Option<String>,
 }
 
 impl Engine {
@@ -137,6 +139,23 @@ pub struct Ledger {
     pub objects: BTreeMap<Name, ObservedObject>,
     pub tombstones: Vec<Value>,
     pub files: Value,
+    plans: Vec<Value>,
+    journals: serde_json::Map<String, Value>,
+    journal_update: u64,
+    recovered_update: bool,
+    registration_flags: BTreeMap<String, Approval>,
+}
+
+#[derive(Clone, Debug)]
+struct Approval {
+    flag: String,
+    operand: String,
+}
+
+impl std::fmt::Display for Approval {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} {}", self.flag, self.operand)
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -153,8 +172,19 @@ pub struct DesiredObject {
 pub struct Desired {
     pub project: Project,
     pub objects: BTreeMap<Name, DesiredObject>,
+    nested: Vec<NestedRegistration>,
+    core_address: String,
+    core_pin: Value,
     pub stops: BTreeSet<String>,
     pub available_archives: BTreeMap<Pin, Archive>,
+}
+
+#[derive(Clone, Debug)]
+struct NestedRegistration {
+    parent: Name,
+    local: String,
+    name: Name,
+    resolved: ObservedObject,
 }
 
 #[derive(Clone, Debug)]
@@ -180,11 +210,13 @@ pub struct Step {
     pub rule: &'static str,
     pub arguments: Value,
     pub details: Vec<String>,
+    action: apply::Action,
 }
 
-#[derive(Default, Debug)]
+#[derive(Clone, Default, Debug)]
 pub struct Plan {
     pub steps: Vec<Step>,
+    names: BTreeMap<String, Name>,
     pub stops: BTreeSet<String>,
     pub differences: Vec<String>,
     pub closed_conduits: BTreeSet<String>,
@@ -201,12 +233,16 @@ impl Plan {
             };
             writeln!(
                 text,
-                "{} {} {} expected={} {} flag=- {}",
+                "{} {} {} expected={} {} flag={} {}",
                 index + 1,
                 step.tool,
                 step.subject,
                 expected,
                 step.class,
+                step.action
+                    .approval
+                    .as_ref()
+                    .map_or_else(|| "-".into(), ToString::to_string),
                 step.rule
             )
             .unwrap();
@@ -240,7 +276,17 @@ impl Plan {
         if self.steps.is_empty() && self.stops.is_empty() {
             text.push_str("no changes\n");
         } else {
-            text.push_str("flags []\n");
+            let flags: BTreeSet<_> = self
+                .steps
+                .iter()
+                .filter_map(|step| step.action.approval.as_ref().map(ToString::to_string))
+                .collect();
+            writeln!(
+                text,
+                "flags [{}]",
+                flags.into_iter().collect::<Vec<_>>().join(",")
+            )
+            .unwrap();
             text.push_str(if self.stops.is_empty() {
                 "ready\n"
             } else {

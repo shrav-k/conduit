@@ -1,80 +1,13 @@
 mod package_target;
 mod plan_apply_support;
 
-use std::{
-    collections::BTreeMap,
-    fs,
-    path::Path,
-    process::{Command, Output},
-};
+use std::{fs, process::Output};
 
-use conduit_shell::{Config, boundary, user_config::EngineContext};
-use plan_apply_support::{Engine, Symbols, cases, installs, replay_visit, repository, sha256};
+use conduit_shell::boundary;
+use plan_apply_support::cli::*;
+use plan_apply_support::{Engine, cases, installs, replay_visit, repository, sha256};
 use serde_json::{Value, json};
 use tempfile::TempDir;
-
-fn binary(directory: &Path, config: &Path) -> Command {
-    let mut command = Command::new(env!("CARGO_BIN_EXE_conduit"));
-    command
-        .current_dir(directory)
-        .env("CONDUIT_CONFIG_DIR", config);
-    command
-}
-
-fn tool(engine: &Engine, directory: &Path, config: &Path, args: &[&str]) -> Output {
-    binary(directory, config)
-        .args(args)
-        .arg("--store")
-        .arg(engine.directory())
-        .output()
-        .unwrap()
-}
-
-fn archive_arg(args: &Value) -> String {
-    let path = url::Url::parse(args["fetch"].as_str().unwrap())
-        .unwrap()
-        .to_file_path()
-        .unwrap();
-    format!(
-        "{}#{}",
-        path.display(),
-        args["digest"]
-            .as_str()
-            .unwrap()
-            .trim_start_matches("sha256:")
-    )
-}
-
-fn cache_fixture(config: &Path, stage: u8) {
-    fs::create_dir_all(config.join("packages")).unwrap();
-    for archive in installs().iter().filter(|archive| archive.stage <= stage) {
-        let (path, digest) = archive_arg(&archive.args)
-            .rsplit_once('#')
-            .map(|(p, d)| (p.to_owned(), d.to_owned()))
-            .unwrap();
-        fs::copy(path, config.join("packages").join(digest)).unwrap();
-    }
-}
-
-fn project_fixture(dir: &Path, case: &Value, symbols: Option<&Symbols>) {
-    for (name, bytes) in case["files"].as_object().unwrap() {
-        fs::write(dir.join(name), bytes.as_str().unwrap()).unwrap();
-    }
-    if let Some(symbols) = symbols
-        && !case["applied"].is_null()
-    {
-        fs::create_dir(dir.join(".conduit")).unwrap();
-        fs::write(
-            dir.join(".conduit/state.yaml"),
-            symbols.kept_for_plan(&case["applied"]).to_string(),
-        )
-        .unwrap();
-    }
-}
-
-fn stdin_free(output: &Output) -> &str {
-    std::str::from_utf8(&output.stdout).unwrap()
-}
 
 fn assert_plan(output: &Output, expected: &str, code: i32) {
     assert_eq!(
@@ -99,27 +32,6 @@ fn assert_plan(output: &Output, expected: &str, code: i32) {
             actual.lines().count()
         );
     }
-}
-
-async fn first_case() -> (Engine, TempDir, TempDir, Value) {
-    let engine = Engine::start().await;
-    let config = tempfile::tempdir().unwrap();
-    let dir = tempfile::tempdir().unwrap();
-    let installers = tempfile::tempdir().unwrap();
-    tokio::task::block_in_place(|| {
-        for archive in installs().iter().filter(|archive| archive.stage == 1) {
-            let out = tool(
-                &engine,
-                installers.path(),
-                config.path(),
-                &["install", &archive_arg(&archive.args)],
-            );
-            assert!(out.status.success(), "fixture archive install failed");
-        }
-    });
-    let case = cases().remove(0);
-    project_fixture(dir.path(), &case, None);
-    (engine, config, dir, case)
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
@@ -156,22 +68,6 @@ async fn plan_cases_02_03_07_09_on_replayed_state() {
     })
     .await;
     assert!(report.lines.is_empty(), "replay differs");
-}
-
-fn files(root: &Path) -> BTreeMap<std::path::PathBuf, Vec<u8>> {
-    fn visit(dir: &Path, dest: &mut BTreeMap<std::path::PathBuf, Vec<u8>>) {
-        for entry in fs::read_dir(dir).unwrap() {
-            let path = entry.unwrap().path();
-            if path.is_dir() {
-                visit(&path, dest);
-            } else {
-                dest.insert(path.clone(), fs::read(path).unwrap());
-            }
-        }
-    }
-    let mut result = BTreeMap::new();
-    visit(root, &mut result);
-    result
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
@@ -268,33 +164,7 @@ async fn plan_stops_on_another_engine_version() {
     let config = tempfile::tempdir().unwrap();
     let dir = tempfile::tempdir().unwrap();
     project_fixture(dir.path(), &cases()[0], None);
-    let current = EngineContext {
-        url: Config::for_store(&engine.directory()).unwrap().engine_url,
-        store: engine.directory(),
-        version: "conduit 0.0.0 (commit mismatch)".into(),
-    };
-    fs::write(
-        config.path().join("context.json"),
-        serde_json::to_vec(&current).unwrap(),
-    )
-    .unwrap();
-    let before = fs::read(engine.directory().join("state.json")).unwrap();
-    let out = tokio::task::block_in_place(|| {
-        binary(dir.path(), config.path())
-            .arg("plan")
-            .output()
-            .unwrap()
-    });
-    let version = binary(dir.path(), config.path())
-        .arg("--version")
-        .output()
-        .unwrap();
-    assert_eq!(out.status.code(), Some(2));
-    assert!(out.stdout.is_empty());
-    let err = String::from_utf8(out.stderr).unwrap();
-    assert!(err.contains(stdin_free(&version).trim()));
-    assert!(err.contains(&current.version));
-    assert!(before == fs::read(engine.directory().join("state.json")).unwrap());
+    check_foreign_engine(&engine, dir.path(), config.path(), "0.0.0+other", "plan").await;
     engine.close().await;
 }
 
@@ -310,18 +180,20 @@ fn plan_refuses_unbuilt_flags() {
         "--with-resources",
         "--with-agents",
     ] {
-        let out = binary(dir.path(), dir.path())
-            .args(["plan", flag, "object"])
-            .output()
-            .unwrap();
-        assert_eq!(out.status.code(), Some(2));
-        assert!(out.stdout.is_empty());
-        assert_eq!(
-            String::from_utf8(out.stderr).unwrap(),
-            format!(
-                "conduit plan: {flag} is not built yet; plan without it prints the stop that needs it\n"
-            )
-        );
+        for command in ["plan", "apply"] {
+            let out = binary(dir.path(), dir.path())
+                .args([command, flag, "object"])
+                .output()
+                .unwrap();
+            assert_eq!(out.status.code(), Some(2));
+            assert!(out.stdout.is_empty());
+            assert_eq!(
+                String::from_utf8(out.stderr).unwrap(),
+                format!(
+                    "conduit {command}: {flag} is not built yet; plan without it prints the stop that needs it\n"
+                )
+            );
+        }
     }
 }
 

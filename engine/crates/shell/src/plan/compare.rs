@@ -1,8 +1,14 @@
+use super::apply::{Action, Binding, Effect};
 use super::*;
 
 pub(super) fn plan(desired: &Desired, ledger: &Ledger, engine: &Engine) -> Plan {
     let mut result = Plan {
         stops: desired.stops.clone(),
+        names: engine
+            .objects
+            .iter()
+            .map(|(name, object)| (object.id.clone(), name.clone()))
+            .collect(),
         ..Plan::default()
     };
     if result.stops.iter().any(|stop| stop.ends_with(" SEC-001")) {
@@ -33,6 +39,7 @@ pub(super) fn plan(desired: &Desired, ledger: &Ledger, engine: &Engine) -> Plan 
         replace_templates: vec![],
         close: BTreeSet::new(),
         narrow: BTreeSet::new(),
+        resume: vec![],
     };
     changes.collect();
     changes.steps();
@@ -50,6 +57,7 @@ struct Changes<'a> {
     replace_templates: Vec<(Name, Option<String>)>,
     close: BTreeSet<Name>,
     narrow: BTreeSet<Name>,
+    resume: Vec<Name>,
 }
 
 impl Changes<'_> {
@@ -227,7 +235,14 @@ impl Changes<'_> {
             || redacted.is_some()
             || !changed_pins.is_empty() && !same_contracts(want, old, self.desired);
         if places.is_empty() && !changed_execution {
-            if old.state != "ready" {
+            if old.state == "registered" {
+                if let Some(flag) = self.ledger.registration_flags.get(&kept.id) {
+                    self.stop(name, &format!("state=registered requires={flag} LIF-013"));
+                    return;
+                }
+                self.touched.insert(name.clone());
+                self.resume.push(name.clone());
+            } else if old.state != "ready" {
                 self.stop(name, &format!("state={} rule=none -", old.state));
             }
             return;
@@ -459,6 +474,10 @@ impl Changes<'_> {
                 arguments: json!({"template":desired.document,"revision":observed.revision,"manifest":self.desired.project.manifest,
                     "contracts":self.desired.project.documents.iter().filter(|d|conduit_core::packages::contract(d)).collect::<Vec<_>>()}),
                 details,
+                action: Action {
+                    effect: Effect::Replace(Box::new(desired.resolved.clone())),
+                    ..Action::default()
+                },
             };
             self.result.steps.push(step);
         }
@@ -475,8 +494,10 @@ impl Changes<'_> {
             }
         }
         let closes: Vec<_> = self.close.iter().cloned().collect();
+        let mut close_steps = BTreeMap::new();
         for name in closes {
             self.result.closed_conduits.insert(name.name.clone());
+            close_steps.insert(name.clone(), self.result.steps.len() + 1);
             self.push(
                 &format!("{}.close.v1", self.access()),
                 name.clone(),
@@ -484,7 +505,9 @@ impl Changes<'_> {
                 Expected::None,
                 "narrows",
                 "LIF-037",
-            );
+            )
+            .action
+            .effect = Effect::Remove;
         }
         if !self.close.is_empty() {
             let list_at = self.result.steps.len() + 1;
@@ -495,9 +518,16 @@ impl Changes<'_> {
                 Expected::None,
                 "neither",
                 "LIF-040",
-            );
+            )
+            .action
+            .effect = Effect::Tombstones;
             let narrow: Vec<_> = self.narrow.iter().cloned().collect();
             for name in narrow {
+                let binding = Binding::Tombstone {
+                    closed: close_steps[&name],
+                    listed: list_at,
+                    object: self.engine.objects[&name].id.clone(),
+                };
                 self.push(
                     &format!("{}.lift.v1", self.access()),
                     Name::new("Tombstone", &name.name),
@@ -505,9 +535,14 @@ impl Changes<'_> {
                     Expected::Step(list_at),
                     "neither",
                     "ACC-053",
-                );
-                if let Some((parent, slot)) = nested_slot(self.engine, &name) {
-                    nested_activations.push((name, parent.clone(), slot.to_owned()));
+                )
+                .action = Action {
+                    binding: Some(binding),
+                    effect: Effect::Lift,
+                    ..Action::default()
+                };
+                if let Some((parent, field, slot)) = nested_slot(self.engine, &name) {
+                    nested_activations.push((name, parent.clone(), field, slot.to_owned()));
                 } else {
                     self.add.push(name);
                 }
@@ -515,7 +550,7 @@ impl Changes<'_> {
         }
         let nested_activations: Vec<_> = nested_activations
             .into_iter()
-            .map(|(child, parent, slot)| {
+            .map(|(child, parent, field, slot)| {
                 let registration = self.result.steps.len() + 1;
                 let id = self.engine.objects[&parent].id.clone();
                 self.result.steps.push(Step {
@@ -527,13 +562,23 @@ impl Changes<'_> {
                     rule: "LIF-009",
                     arguments: json!({"instance": parent.reference(), "nested": slot}),
                     details: vec![format!("nested={slot}")],
+                    action: Action {
+                        effect: Effect::RegisterReplacement {
+                            wanted: Box::new(self.desired.objects[&child].resolved.clone()),
+                            parent,
+                            field,
+                            slot,
+                            previous: child.clone(),
+                        },
+                        ..Action::default()
+                    },
                 });
                 (child, registration)
             })
             .collect();
         let mut pending: Vec<_> = nested_activations
             .into_iter()
-            .map(|(name, register)| (name, register, true))
+            .map(|(name, register)| (name, Expected::Step(register), true))
             .collect();
         let adds = std::mem::take(&mut self.add);
         if !adds.is_empty() {
@@ -547,14 +592,19 @@ impl Changes<'_> {
             pending.extend(
                 adds.into_iter()
                     .filter(|n| !self.desired.objects[n].resolved.is_template())
-                    .map(|name| (name, register, false)),
+                    .map(|name| (name, Expected::Step(register), false)),
             );
         }
+        pending.extend(
+            std::mem::take(&mut self.resume)
+                .into_iter()
+                .map(|name| (name, Expected::None, false)),
+        );
         self.activate(pending);
         self.retained_differences();
     }
 
-    fn activate(&mut self, mut pending: Vec<(Name, usize, bool)>) {
+    fn activate(&mut self, mut pending: Vec<(Name, Expected, bool)>) {
         pending.sort_by(|(a, _, _), (b, _, _)| {
             let order = ["Pool", "Resource", "Fleet", "Agent", "Interface", "Conduit"];
             (rank(&a.kind, &order), &a.name).cmp(&(rank(&b.kind, &order), &b.name))
@@ -572,26 +622,35 @@ impl Changes<'_> {
                 }
                 break;
             };
-            let (name, register, nested) = pending.remove(next);
+            let (name, relative, nested) = pending.remove(next);
             awaiting.remove(&name);
 
             let want = &self.desired.objects[&name];
             let route = self.owner_route(&want.resolved.definition, &name.kind);
-            let subject = if nested {
+            let subject = if nested && let Expected::Step(register) = relative {
                 Name::new(&name.kind, &format!("(step {register}).object"))
             } else {
                 name.clone()
             };
+            let expected =
+                (relative == Expected::None).then(|| self.engine.objects[&name].id.clone());
+            let check = want.resolved.clone();
             self.push(
                 &format!("{route}.inspect.v1"),
                 subject.clone(),
-                None,
-                Expected::Step(register),
+                expected.clone(),
+                relative,
                 "neither",
                 "LIF-013",
-            );
+            )
+            .action = Action {
+                binding: object_binding(relative, "object"),
+                check: Some(check),
+                effect: Effect::None,
+                ..Action::default()
+            };
             if name.kind == "Conduit" {
-                self.open_conduit(&name, subject, register);
+                self.open_conduit(&name, subject, expected, relative);
             } else {
                 let class = if want.resolved.definition["resolved"]["conduits"]
                     .as_object()
@@ -604,25 +663,54 @@ impl Changes<'_> {
                 self.push(
                     &format!("{route}.set-up.v1"),
                     subject,
-                    None,
-                    Expected::Step(register),
+                    expected,
+                    relative,
                     class,
                     "TPL-012",
-                );
+                )
+                .action = Action {
+                    binding: object_binding(relative, "instance"),
+                    effect: Effect::SetLifecycle {
+                        state: "ready",
+                        opened_by: None,
+                    },
+                    panel: true,
+                    ..Action::default()
+                };
             }
         }
     }
 
-    fn open_conduit(&mut self, name: &Name, subject: Name, register: usize) {
+    fn open_conduit(
+        &mut self,
+        name: &Name,
+        subject: Name,
+        expected: Option<String>,
+        relative: Expected,
+    ) {
         let want = &self.desired.objects[name];
+        let provenance = self
+            .engine
+            .objects
+            .get(&Name::new("Interface", "root"))
+            .zip(self.engine.access_conduit.as_ref())
+            .map(|(root, conduit)| (root.id.clone(), conduit.clone()));
         self.push(
             &format!("{}.open.v1", self.access()),
             subject,
-            None,
-            Expected::Step(register),
+            expected,
+            relative,
             "widens",
             "LIF-037",
-        );
+        )
+        .action = Action {
+            binding: object_binding(relative, "conduit"),
+            effect: Effect::SetLifecycle {
+                state: "ready",
+                opened_by: provenance,
+            },
+            ..Action::default()
+        };
         let detail = self.result.steps.last_mut().unwrap();
         detail.details.push(format!(
             "operations=[{}]",
@@ -656,6 +744,7 @@ impl Changes<'_> {
             .collect();
         order_registration_documents(&mut docs);
         let names: Vec<_> = docs.iter().filter_map(|d| Name::document(d)).collect();
+        let effect = self.registration_effect(&names);
         let primary = names
             .iter()
             .find(|n| n.kind == "Fleet" && !self.desired.objects[*n].resolved.is_template())
@@ -673,7 +762,9 @@ impl Changes<'_> {
             Expected::Step(self.result.steps.len() + 1),
             "adds",
             rule,
-        );
+        )
+        .action
+        .effect = effect;
         let step = self.result.steps.last_mut().unwrap();
         let manifest = &self.desired.project.manifest;
         let contracts = self
@@ -720,6 +811,37 @@ impl Changes<'_> {
         }
     }
 
+    fn registration_effect(&self, names: &[Name]) -> Effect {
+        let objects: BTreeMap<_, _> = names
+            .iter()
+            .map(|name| (name.clone(), self.desired.objects[name].resolved.clone()))
+            .collect();
+        let mut defaults = Vec::new();
+        for (name, object) in &objects {
+            if object.is_template() {
+                continue;
+            }
+            let template = match name.kind.as_str() {
+                "Pool" => "root-pool",
+                "Fleet" => "root-fleet",
+                _ => continue,
+            };
+            let mut view = object.clone();
+            view.state = "ready".into();
+            view.packages = vec![self.desired.core_pin.clone()];
+            view.definition = json!({"from":format!("{}#{template}", self.desired.core_address),
+                "consumer":Name::new("Interface","root").reference(),"target":name.reference(),
+                "as":name.name,"engine-made":true,"provenance":{"cause":"default"}});
+            defaults.push((template.to_owned(), view));
+        }
+        defaults.sort_by(|(_, a), (_, b)| text(&a.definition["as"]).cmp(text(&b.definition["as"])));
+        Effect::Register {
+            objects,
+            defaults,
+            nested: self.desired.nested.clone(),
+        }
+    }
+
     fn push(
         &mut self,
         tool: &str,
@@ -728,7 +850,7 @@ impl Changes<'_> {
         relative: Expected,
         class: &'static str,
         rule: &'static str,
-    ) {
+    ) -> &mut Step {
         let mut args = json!({});
         if subject.kind != "Tombstone" {
             let field = match tool
@@ -753,7 +875,9 @@ impl Changes<'_> {
             rule,
             arguments: args,
             details: vec![],
+            action: Action::default(),
         });
+        self.result.steps.last_mut().unwrap()
     }
 
     fn access(&self) -> &str {
@@ -1006,7 +1130,14 @@ fn owns_members(engine: &Engine, owner: &Name) -> bool {
     })
 }
 
-fn nested_slot<'a>(engine: &'a Engine, name: &Name) -> Option<(&'a Name, &'a str)> {
+fn object_binding(relative: Expected, field: &'static str) -> Option<Binding> {
+    match relative {
+        Expected::Step(from) => Some(Binding::Object { from, field }),
+        Expected::None => None,
+    }
+}
+
+fn nested_slot<'a>(engine: &'a Engine, name: &Name) -> Option<(&'a Name, &'static str, &'a str)> {
     let id = &engine.objects.get(name)?.id;
     for (parent, object) in &engine.objects {
         for field in ["entries", "conduits"] {
@@ -1016,7 +1147,7 @@ fn nested_slot<'a>(engine: &'a Engine, name: &Name) -> Option<(&'a Name, &'a str
                 .flatten()
                 .find(|(_, child)| child["id"] == *id || Name::object(child).as_ref() == Some(name))
             {
-                return Some((parent, slot));
+                return Some((parent, field, slot));
             }
         }
     }
@@ -1046,7 +1177,7 @@ fn matches_tombstone(name: &Name, definition: &Value, stone: &Value) -> bool {
     }
 }
 
-fn comparable(value: &Value) -> Value {
+pub(super) fn comparable(value: &Value) -> Value {
     let mut result = safe(value);
     if let Some(map) = result.as_object_mut() {
         for key in ["provenance", "slots", "engine-made"] {
@@ -1067,7 +1198,7 @@ fn comparable(value: &Value) -> Value {
     result
 }
 
-fn differences(left: &Value, right: &Value, pointer: &str, out: &mut Vec<String>) {
+pub(super) fn differences(left: &Value, right: &Value, pointer: &str, out: &mut Vec<String>) {
     if left == right {
         return;
     }

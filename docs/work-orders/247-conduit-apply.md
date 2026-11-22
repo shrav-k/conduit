@@ -291,4 +291,33 @@ the panel actions K3 counts at T1.
 
 ## Record
 
-Not yet run.
+Run on 2026-11-22 through Conduit itself, by the dogfood's own Agents, in Pacific time, on
+`main` with orders 265, 267, 245 and 271 stacked while they waited in the merge queue.
+
+**Two stops, both right.** A first turn (05:12 to 05:14) stopped before any edit: decision 8's
+ledger needs each registered object's revision, which the registration replies did not give,
+and K3 forbids reads a plan does not show. The coordinator had order 271 written and built,
+so the ledger is kept from the replies alone. A second turn (06:09 to 06:17) stopped on decision
+10 against case 01's printed output; the coordinator's decision: each sign-in action is printed
+immediately after the result of the setup that raised it, as case 01 and order 241's test have
+it.
+
+**Worker-1's turn** (06:18 to 06:52) built `conduit apply` on 245's planner: it prints the plan
+plan prints, keeps the plan's exact bytes, a journal entry before each step is sent and the
+ledger, verifies planned reads, stops at the first unsuccessful result, numbers attempts, resumes
+by row 8 and refuses the seven approval flags with status 2. Nine apply tests, which failed
+first, pass, with the planner's tests and order 241's consistency test and 60-request replay;
+the golden cases' plan text, recorded text and digests are unchanged.
+
+**Two blind reads at once** (06:53 to 07:09): `turn-verifier-1.turn.v1` found six musts and a
+should, the Claude reader a should and two nits. One fix turn (07:09 to 07:32) applied all ten,
+each must reproduced first by a regression: a registration reply kept in the journal before the
+ledger was written is recovered on load; the read check compares nested slot identities and
+treats a LIF-037 ID conflict as a failed verification; a lift is bound to the planned close's
+invocation; a failed verification advances the attempt; planned actions carry their flag and
+operand; a nested replacement updates the parent's slot. The planner now supplies each step's
+binding, read check, ledger effect and flag, and a step without a stated effect is refused
+before anything is sent. K3 states the 150-second per-request bound, and calls the panel lines
+sign-in actions (PND-005).
+
+The gate's run on the squash is the coordinator's, at the merge.

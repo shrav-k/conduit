@@ -48,6 +48,8 @@ const META: &str = "io.github.shrav-k.conduit/";
 const READ: &str = "read.read-issue.v1";
 const UPDATE: &str = "write.update-issue.v1";
 const WAIT: Duration = Duration::from_secs(20);
+// Match the response timeout in packages/scenario-s2-linear/README.md.
+const AWARE_REQUEST_DEADLINE: Duration = Duration::from_secs(2);
 static SCENARIO: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
 fn repo() -> PathBuf {
@@ -1629,14 +1631,17 @@ async fn s2_dependent_call_after_close() {
     let barrier = h
         .control(
             "/barrier/arm",
-            Some(json!({"match":{"field":"issue","identifier":"SYN-1"},"timeout_ms":4000})),
+            Some(json!({
+                "match":{"field":"issue","identifier":"SYN-1"},
+                "timeout_ms":WAIT.as_millis()
+            })),
         )
         .await;
     let (answer, ()) = tokio::join!(h.read(&a, "SYN-1"), async {
-        timeout(Duration::from_secs(2), async {
-            let control = json!({"id":barrier["id"],"timeout_ms":1500});
-            let reached = h.control("/barrier/wait", Some(control.clone())).await;
-            assert_eq!(reached["state"], "reached");
+        let control = json!({"id":barrier["id"],"timeout_ms":(WAIT / 2).as_millis()});
+        let reached = h.control("/barrier/wait", Some(control.clone())).await;
+        assert_eq!(reached["state"], "reached");
+        timeout(AWARE_REQUEST_DEADLINE, async {
             close(&h, &route).await;
             let released = h.control("/barrier/release", Some(control)).await;
             assert_eq!(released["state"], "released");

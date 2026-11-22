@@ -508,3 +508,19 @@ Owner's words: the drafter Agent -> "Yes, at the sitting (Recommended)"
 Lands in: the second-account sitting creates an Opus drafter Agent on the second Claude account, through Conduit, which writes first drafts of order texts from the coordinator's brief; the coordinator approves each draft, the drafter's turns are recorded, and its first five drafts are compared with the coordinator's own; it shares that account's week with the readers (DEC-046)
 
 Status: accepted, not done (the second-account sitting)
+
+## DEC-054, 2026-11-22, pair 4 by measurement
+
+Owner's words: pair 4 and the readers -> "Hold pair 4 by measurement (Recommended)"
+
+Lands in: amends DEC-046's "two each to start" for the Mac's measured limit (S2 timeouts and a full disk at two pairs and the gate on 2026-11-22): stage 3 starts pairs 1 to 3; `worker-4` and `verifier-4` are set up and sent no turn until a dated amendment shows five consecutive orders on pairs 1 to 3 with no usage-limit failure on `second-chatgpt`, no turn lost to the machine and each gate run passing or failing only on the order's change; one Claude reader reads for every pair, and a second comes the same way
+
+Status: accepted, not done (order 277; stage 3)
+
+## DEC-055, 2026-11-22, stage 3 sets condition 4 aside
+
+Owner's words: stage 3's pass condition 4 -> "Set aside for stage 3 (Recommended)"
+
+Lands in: experiment 028's stage 3: condition 4 (no guard answers broken) is recorded as not shown and judges no order, since under ruling 70 the Agents run unconfined and no guard runs; orders pass or fail on the other conditions; the guards return with the sandbox (ruling 84)
+
+Status: accepted, not done (order 277; stage 3)

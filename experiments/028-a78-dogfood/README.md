@@ -10,6 +10,8 @@ measures for orders 2 and 3 are
 for orders 4 and 5 are registered before order 4 runs.
 Stage 2, on the store initialized again with the Agent packages 0.2.0, or 0.2.1 if it is first
 initialized with them, is [registered below](#stage-2-registered-before-its-first-turn).
+Stage 3, the multi-account Fleet on the Agent packages 0.2.4, is
+[registered below](#stage-3-registered-before-its-first-turn).
 
 ## The setup as run
 
@@ -98,6 +100,9 @@ The raw export leaves at the next condensation; the results then link its last v
 | [stage-2/fleet/conduit.yaml](stage-2/fleet/conduit.yaml) | Stage 2's manifest template, written before 0.2.0 |
 | [stage-2/fleet/instances.yaml](stage-2/fleet/instances.yaml) | Stage 2's Fleet, Agents, Pool and Conduit instances |
 | [stage-2/fleet/templates.yaml](stage-2/fleet/templates.yaml) | Stage 2's Agent, Pool and Conduit templates |
+| [stage-3/fleet/conduit.yaml](stage-3/fleet/conduit.yaml) | Stage 3's manifest template, for the Agent packages 0.2.4 |
+| [stage-3/fleet/instances.yaml](stage-3/fleet/instances.yaml) | Stage 3's Pool, login Resources, Agents and Conduit instances |
+| [stage-3/fleet/templates.yaml](stage-3/fleet/templates.yaml) | Stage 3's Pool, Conduit, login Resource and role Agent templates |
 | `NNN-name/`, from order 2 on | One directory per order: its scrubbed records export, the harness's log and measures, its reports and its dated result, as the registration below says |
 
 ## What it cannot show
@@ -775,3 +780,245 @@ gate and the fresh read ran there.
 The coordinator, outside every turn, pointed this directory's links into `docs/proposals/` at
 `077fa47e`, and the open log's at its new place, since a stage-2 order may not change this
 directory. No other text changed.
+
+## Stage 3: registered before its first turn
+
+Registered on 2026-11-22 by work order 277, before stage 3's first turn
+([ruling 45](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-45/README.md)). It holds for every order that
+root sends through stage 3's Fleet, its turns running at once, across pairs and accounts. An
+order is stage 3's when root dispatches its first turn after step 9's restart of
+[the setup](#before-the-sitting-and-at-it) to an Agent of stage 3's documents, which the records
+name by its ID, since four of their names were stage 2's Agents' too. An order whose first turn
+was dispatched before that restart is not stage 3's, and conditions 8 and 11 and stop rule 3
+count nothing from before it. It changes only by a dated amendment, merged before the first turn
+it changes. It applies the owner's decisions
+[DEC-042](../../docs/decisions/log.md#dec-042-2026-11-21-model-logins-are-pool-owned-resources),
+[DEC-043](../../docs/decisions/log.md#dec-043-2026-11-21-the-sign-in-freeze-ends-in-sequence),
+[DEC-044](../../docs/decisions/log.md#dec-044-2026-11-21-records-fail-closed-and-research-before-deciding),
+[DEC-045](../../docs/decisions/log.md#dec-045-2026-11-21-the-shared-agent-contracts-the-schedule-and-stage-2s-record),
+[DEC-046](../../docs/decisions/log.md#dec-046-2026-11-21-the-fleet-grows-on-every-account-by-measurement),
+[DEC-047](../../docs/decisions/log.md#dec-047-2026-11-21-usage-in-records-and-harnesses-in-role-templates),
+[DEC-050](../../docs/decisions/log.md#dec-050-2026-11-22-both-reads-on-every-order),
+[DEC-051](../../docs/decisions/log.md#dec-051-2026-11-22-the-linux-programs-built-in-docker),
+[DEC-052](../../docs/decisions/log.md#dec-052-2026-11-22-a-release-reached-through-a-project-contract-must-be-installed),
+[DEC-053](../../docs/decisions/log.md#dec-053-2026-11-22-an-opus-drafter-on-the-second-claude-account),
+[DEC-054](../../docs/decisions/log.md#dec-054-2026-11-22-pair-4-by-measurement) and
+[DEC-055](../../docs/decisions/log.md#dec-055-2026-11-22-stage-3-sets-condition-4-aside). Its
+choices are the coordinator's, each open to the owner's strike
+([ruling 48](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-48/README.md)).
+
+The method of
+[the amendment of 2026-11-20](#amendment-of-2026-11-20-stage-2-directly-through-conduit) holds:
+root's tools are called by `conduit call`, Conduit's records are the evidence, and each manual
+step is a logged gap. Its reading that `reader-1` waits for a guard does not: the owner struck it
+([stage 2's results](results-2026-11-21-stage-2.md#owner-sittings)). No order that changes this
+experiment's directory goes through Conduit.
+
+### Stage 3's documents
+
+The `conduit-core` Fleet's documents for stage 3 are [its manifest](stage-3/fleet/conduit.yaml),
+[its templates](stage-3/fleet/templates.yaml) and [its instances](stage-3/fleet/instances.yaml).
+They are templates, not rendered copies. The coordinator renders them by hand into a copy outside
+the repository (a gap), reads the copy back against the values it was given and submits it. No
+account value is printed in doing so.
+
+| Agent | Type | Account | Directory | Deadline | Root's Conduit |
+| --- | --- | --- | --- | --- | --- |
+| `worker-1` | `codex.v4` | `primary-chatgpt` | `<slot-1>` | 14400 s | `root-worker-1` |
+| `verifier-1` | `codex.v4` | `primary-chatgpt` | `<slot-1>` | 3600 s | `root-verifier-1` |
+| `worker-2` | `codex.v4` | `primary-chatgpt` | `<slot-2>` | 14400 s | `root-worker-2` |
+| `verifier-2` | `codex.v4` | `primary-chatgpt` | `<slot-2>` | 3600 s | `root-verifier-2` |
+| `worker-3` | `codex.v4` | `second-chatgpt` | `<slot-3>` | 14400 s | `root-worker-3` |
+| `verifier-3` | `codex.v4` | `second-chatgpt` | `<slot-3>` | 3600 s | `root-verifier-3` |
+| `worker-4` | `codex.v4` | `second-chatgpt` | `<slot-4>` | 14400 s | `root-worker-4` |
+| `verifier-4` | `codex.v4` | `second-chatgpt` | `<slot-4>` | 3600 s | `root-verifier-4` |
+| `reader-a` | `claude-code.v4` | `second-claude` | `<slot-r>` | 3600 s | `root-reader-a` |
+| `drafter` | `claude-code.v4` | `second-claude` | `<slot-d>` | 3600 s | `root-drafter` |
+
+- Each Agent is made from its role's template, which fixes its text, its report schema, its model
+  and its effort (DEC-047): `worker-role`, `verifier-role`, `reader-role` or `drafter-role`.
+  Every Agent has effort `high` and its account services off; the two Claude Agents have the
+  model `opus` and peer messaging off.
+- Each Agent's `login` names its account's Resource, which the Pool `logins` owns:
+  `primary-chatgpt` and `second-chatgpt` are `codex-login.v1` Resources, `second-claude` an
+  `account-home.v1` Resource. Each account's one login serves its Agents and is never copied:
+  each Codex Agent's home links to its Resource's login, and each Claude Agent's client runs in
+  its Resource's account home.
+  Root reaches the Pool through `root-logins`, and each Agent through `root-NAME`, from its
+  package's `conversation` template, which grants `turn.v1` and `new-conversation.v1`.
+- A pair shares a working copy of its own; `reader-a` and `drafter` have one each. `reader-a`'s,
+  `<slot-r>`, is the clone that stage 2's `reader-1` reads in, and the two never read at once
+  before step 10 retires `reader-1`.
+- No account home is made for `primary-claude`: that account runs the coordinator alone
+  (DEC-046, as DEC-050, DEC-053 and DEC-054 place the reader and the drafter).
+- Stage 2's Fleet `conduit-core` owns the Agents, and stage 3's documents declare no Fleet.
+  Stage 2's Pool `trees`, its Conduit `root-trees` and its templates stay on the store, unused.
+  A new store takes that Fleet first.
+
+Placeholders, filled only in the rendered copy and never committed:
+
+| Placeholder | Stands for | Class |
+| --- | --- | --- |
+| `<codex-version>` | The agent-codex archive's version, 0.2.4 | other |
+| `<codex-digest>` | That archive's SHA-256 | other |
+| `<claude-version>`, `<claude-digest>` | The same for the agent-claude-code archive | other |
+| `<primary-chatgpt-account>` | The primary ChatGPT account, as Codex names it | account |
+| `<second-chatgpt-account>` | The second ChatGPT account, as Codex names it | account |
+| `<second-claude-account>` | The second Claude account, as Claude Code names it | account |
+| `<slot-1>` to `<slot-4>` | The absolute paths of the four pairs' working copies | path |
+| `<slot-r>`, `<slot-d>` | The absolute paths of the reader's and the drafter's copies | path |
+| `<codex-model>` | The Codex Agents' model, as `codex` names it; never empty | other |
+| `<report-schema>` | The JSON text of [the orders' shared schema](../../docs/work-orders/004-i2-01-vectors-and-first-start.schema.json) at the engine's commit | other |
+| `<verify-schema>` | The JSON text of [`verify.schema.json`](../../docs/work-orders/verify.schema.json) at the engine's commit | other |
+
+Each directory, account and schema is written as one quoted YAML string, and the setup's
+amendment gives each schema's SHA-256. `<codex-model>` is never empty, since the Codex package
+omits `usage` for an empty model (condition 10).
+
+### Before the sitting, and at it
+
+The coordinator records steps 1 to 9 below, with their evidence, by a dated amendment merged
+before stage 3's first turn, and step 10, which comes after that turn, by a later dated amendment
+that names the read that freed `reader-1`. The documents are submitted in parts, in this order.
+
+Before the sitting, while stage 2's pairs work on, the coordinator:
+
+1. builds the dogfood engine from `main` holding orders 258, 260, 262 and 269, each shown by
+   `git merge-base --is-ancestor`, and serves it with a call timeout above 14400 s, the workers'
+   deadline;
+2. installs the 0.2.4 archives into stage 2's store, recording each one's version, digest and
+   the commit it was built from;
+3. submits the documents that name no account and no Agent (the manifest, the templates, the
+   Pool `logins` and `root-logins`) and `primary-chatgpt`'s Resource, and sets that Resource up;
+4. has the owner type each second account, shown on the owner's screen and confirmed before it
+   is kept.
+
+At the owner's signal, the coordinator:
+
+5. retires `worker-1`, `verifier-1`, `worker-2` and `verifier-2` one at a time, each one's retire
+   hook logging out only its own login. After each, the stat of the everyday Codex login file,
+   which is never opened, is unchanged; otherwise the coordinator stops and tells the owner. The
+   everyday Claude login and a revocation by the vendor are not shown;
+6. lifts their tombstones, and those of root's `turn-worker-1`, `turn-verifier-1`,
+   `turn-worker-2` and `turn-verifier-2`, since a Conduit's tombstone also matches by consumer,
+   target and capability (LIF-041);
+7. has `primary-chatgpt` signed in; then, for each second account in turn, tells the owner before
+   its first use, submits its Resource and sets it up, and has it signed in. Each sign-in is the
+   owner's, one at a time, since Codex's browser login listens on fixed ports, and goes by
+   `sign-in.v1` through the Pool;
+8. submits and sets up the signed-in accounts' Agents and root's Conduits to them, with no
+   sign-in;
+9. restarts the engine, which shows every setup passing and no sign-in action pending;
+10. retires `reader-1` last, once `reader-a`'s first read of an order of stage 3 has succeeded
+    and is fresh, as condition 9 asks.
+
+### Stage 3's claim
+
+For each of its orders, stage 3 claims what [the claim](#claim) of orders 2 and 3 claims, with
+turns at once across pairs and accounts on one store. It adds what conditions 8 to 12 show:
+
+1. a login's one sign-in carries its Agents in parallel, and a lapse makes that login take one
+   model call at a time until root answers its notice (PND-005; condition 8);
+2. each turn's usage is in its record (IFC-051; condition 10);
+3. a usage limit pauses only its account (condition 11);
+4. both reads of an order run blind and at once (DEC-050; conditions 9 and 12).
+
+It claims nothing about access (D57), Agents kept apart (D60), speed (D54) or the drafts.
+
+### Stage 3's measures
+
+Each number in a result has beside it the command that gives it. Results name accounts by label,
+read the records by named fields, and are per stage, as
+[stage 2's](results-2026-11-21-stage-2.md) are, until the owner answers their
+[item 3](results-2026-11-21-stage-2.md#for-the-owner).
+
+- Per turn, from the records: the Agent, its account and its pair; its span; its outcome; its
+  `usage`; and the turns in flight at its dispatch, in all and on its login. Beyond the amendment
+  of 2026-11-20's rule of records alone, since these Types keep no inputs or outputs in their
+  records, from what the coordinator kept of each call, its message, its arguments and its
+  printed result, matched by invocation ID as
+  [stage 2's results](results-2026-11-21-stage-2.md#the-evidence-and-its-limit) match them: the
+  failure class, `failedTurn.limit`, and why the turn has no `usage`; its report, and whether the
+  report is valid against its schema (condition 3); and for a read, the checkpoint's commit that
+  its message names and whether the message holds the other read's report (condition 12).
+- Per order: both reads' spans, their overlap and their waits; the fix turns, one covering both
+  reads (DEC-050); the tokens by role.
+- Per account: each sign-in action and notice, with its call and the time to root's answer; each
+  usage-limit failure, with its `resetsAt` and the turns it held.
+- Per stage: the most turns at once, in all, per account and per login; the tokens per account
+  per day.
+- With no pass condition, each of the drafter's first five drafts: its order, its span, its
+  tokens, and what the coordinator kept, changed or rewrote (DEC-053).
+
+### Stage 3's pass conditions
+
+An order of stage 3 passes when all its conditions hold, and a condition not shown fails it.
+Conditions 1 to 7 are [stage 2's](#stage-2s-pass-conditions), as stage 2 reads them. Condition 4
+is set aside: it is recorded as not shown and judges no order, since the Agents run unconfined and
+no guard runs (DEC-055). A turn of `drafter` belongs to no order's verdict: no condition judges
+it, and it is measured as any turn is and as DEC-053 asks.
+
+8. **A login is signed in once.** From the order's first turn's dispatch to its last turn's end,
+   no sign-in action is raised on a login Resource but by a lapse report, and no two model calls
+   run at once on a login from its lapse report until root answers the notice (PND-005). An
+   action raised by a setup's account check that failed or ended unknown counts, and the result
+   names it apart.
+9. **Every read is fresh.** Each read but a repair is the first turn on its Agent since a
+   successful `new-conversation.v1` or a restart.
+10. **Every turn's usage is kept.** Each succeeded turn has `usage` with its model and client
+    version, or lacks it for a reason its package's README names, which the result names; no
+    turn has `usageDropped`.
+11. **A limit pauses its account.** No turn is dispatched on an account between its usage-limit
+    failure and that failure's `resetsAt` or, if that is null, the coordinator's recorded read
+    that the account reopened; and every turn runs on its Agent's account as the table gives it.
+12. **Both reads are blind and at once.** An order's two reads read one checkpoint, whose commit
+    both messages name, and overlap, and neither one's message holds the other's report.
+
+The claims hold when stage 3's first five orders pass and, over them, turns ran at once on both
+ChatGPT accounts, and two pairs at once on one login.
+
+### Pair 4, by measurement
+
+The owner's DEC-054 holds pair 4 back, since the Mac met timeouts of the
+[S2](../../ROADMAP.md#scenarios) tests and a full disk at two pairs and the gate on 2026-11-22.
+`worker-4` and `verifier-4` are set up, but sent no turn until a dated amendment shows, over five
+consecutive orders on pairs 1 to 3, no `usage-limit` failure on `second-chatgpt`, no turn lost to
+the machine (a timeout, a full disk, a killed process), and each gate run PASS or failing only on
+the order's change. For the same reason one reader, `reader-a`, reads for every pair, and a second
+reader comes by measurement, as pair 4 does (DEC-054). More Agents take new documents and an
+amendment.
+
+### Stage 3's stop rules
+
+A stop pauses stage 3 as [stage 2's stop rules](#stage-2s-stop-rules) pause stage 2. Stage 2's
+rules 1, 4 and 5 hold, and its rule 2 holds for a Resource's account check. Rule 1 has no guard
+to answer it while none runs (DEC-055). Rule 3 becomes:
+
+3. **A sign-in is asked again, or work leaves its account.** From step 9's restart, a sign-in
+   action that is no lapse report, one raised by a setup's account check that failed or ended
+   unknown among them, or a second lapse on one Resource in one calendar day, PST, stops that
+   account until the owner signs it in again. A turn dispatched on a paused or stopped account,
+   or work moved between accounts, stops stage 3, and the lift is the owner's.
+
+A usage limit pauses its account: a read it holds waits, and nothing merges unread. No API key is
+used, and no Agent names one.
+
+### What ends stage 3
+
+Stage 3 ends when the owner ends it, at an upgrade of the store's Agent packages, at a new
+initialization or at a change of the account map, unless a dated amendment merged before says
+otherwise. Pair 4's start does not end it. For stage 3, an upgrade is a change of the version or
+digest that the manifest pins for either Agent package, or an instance of stage 3's documents
+moving to another release; an archive installed with no instance moved is none. Step 2's install
+comes before stage 3's first turn and ends nothing of it. What such an install means for stage 2
+is open to the owner in [stage 2's results](results-2026-11-21-stage-2.md#for-the-owner), items 1
+and 4, and this registration does not answer it.
+
+### What stage 3 cannot show
+
+[What it cannot show](#what-it-cannot-show) holds for every result of stage 3. Any Agent's tools
+reach every working copy and every login, and can log a shared login out for all its Agents
+([ruling 70](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-70/README.md)). The tokens are each client's report, not
+what the account is charged or what is left of its week, and they leave out the coordinator and
+the [S3, S7 and S10](../../ROADMAP.md#scenarios) tests. A refresh failure that fails no turn is not seen. Blind is only what
+each message carries. One Mac shows nothing about another machine.

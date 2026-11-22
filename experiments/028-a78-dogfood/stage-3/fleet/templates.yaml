@@ -1,0 +1,198 @@
+# Templates of the conduit-core Fleet for stage 3 of A78, written by work order 277 against the
+# Agent packages 0.2.4: one Pool-owned login Resource per account (DEC-042, DEC-046) and one
+# Agent template per role, its text, report schema, model and effort fixed (DEC-047). Each
+# Agent names a directory, so its client's own tools are on, and nothing confines them in v0
+# (ruling 70). The <...> values are filled into a copy outside the repository.
+# The Pool that owns the accounts' logins.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Pool
+metadata:
+  name: login-pool
+spec:
+  type: github.com/shrav-k/conduit/core#pool.v1
+---
+# Root's route to the logins: their setup, sign-in and answers through the Pool.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: logins-admin
+spec:
+  capability: github.com/shrav-k/conduit/core#pool-management.v1
+  operations:
+  - github.com/shrav-k/conduit/core#inspect.v1
+  - github.com/shrav-k/conduit/core#list.v1
+  - github.com/shrav-k/conduit/core#set-up.v1
+  - github.com/shrav-k/conduit/core#sign-in.v1
+  - github.com/shrav-k/conduit/core#answer.v1
+  - github.com/shrav-k/conduit/core#retire.v1
+  - github.com/shrav-k/conduit/core#reconcile.v1
+---
+# One ChatGPT account's Codex login on this machine, shared by its Agents.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: codex-account
+spec:
+  type: example.org/conduit/agent-codex#codex-login.v1
+  inputs:
+    account:
+      schema:
+        type: string
+        minLength: 1
+      to:
+      - /config/account
+---
+# One Claude account's home on this machine, shared by its Agents.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: claude-account
+spec:
+  type: example.org/conduit/agent-claude-code#account-home.v1
+  inputs:
+    account:
+      schema:
+        type: string
+        minLength: 1
+      to:
+      - /config/account
+---
+# A Codex worker: four hours a turn. Account services stay off (ruling 48 point 1).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: worker-role
+spec:
+  type: example.org/conduit/agent-codex#codex.v4
+  inputs:
+    directory:
+      schema:
+        type: string
+        minLength: 1
+      to:
+      - /config/directory
+    login:
+      schema:
+        type: string
+        minLength: 1
+      to:
+      - /config/login
+  config:
+    accountServices: false
+    turnDeadlineSeconds: 14400
+    effort: high
+    model: <codex-model>
+    outputSchema: <report-schema>
+    instructions: >-
+      You are a Codex worker of the conduit-core Fleet. Each turn's message names one work order
+      of the repository in your directory, or lists the fixes to make. Carry it out as
+      AGENTS.md's section "If you were given a work order" says, in your directory alone. Do not
+      commit, push or switch branches. Never print an environment variable's value, and never
+      read or print a credential. End the turn with your report alone: one JSON object in your
+      output schema.
+---
+# A Codex verifier: one hour a turn. Nothing makes it read-only in v0; its text says so.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: verifier-role
+spec:
+  type: example.org/conduit/agent-codex#codex.v4
+  inputs:
+    directory:
+      schema:
+        type: string
+        minLength: 1
+      to:
+      - /config/directory
+    login:
+      schema:
+        type: string
+        minLength: 1
+      to:
+      - /config/login
+  config:
+    accountServices: false
+    turnDeadlineSeconds: 3600
+    effort: high
+    model: <codex-model>
+    outputSchema: <verify-schema>
+    instructions: >-
+      You are a Codex verifier of the conduit-core Fleet. Your standing order is
+      docs/work-orders/verify.md in your directory; each turn's message names the order and its
+      base commit. Read blind: you are given no other read, and the Claude reader reads the same
+      change at the same time (DEC-050). Change nothing. Never print an environment variable's
+      value, and never read or print a credential. End the turn with your report alone: one JSON
+      object in your output schema.
+---
+# The Claude reader: the fresh read on Claude Opus before each merge (ruling 79), one hour a
+# turn, in a clone of its own. Nothing makes it read-only in v0; its text says so.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: reader-role
+spec:
+  type: example.org/conduit/agent-claude-code#claude-code.v4
+  inputs:
+    directory:
+      schema:
+        type: string
+        minLength: 1
+      to:
+      - /config/directory
+    login:
+      schema:
+        type: string
+        minLength: 1
+      to:
+      - /config/login
+  config:
+    accountServices: false
+    peerMessaging: false
+    turnDeadlineSeconds: 3600
+    effort: high
+    model: opus
+    outputSchema: <verify-schema>
+    instructions: >-
+      You are the Claude reader of the conduit-core Fleet: the fresh read before each merge. Your
+      standing order is docs/work-orders/verify.md in your directory; each turn's message names
+      the order and the branch to read. Read blind: you are given no other read, and the order's
+      Codex verifier reads at the same time (DEC-050). Change nothing. Never print an environment
+      variable's value, and never read or print a credential. End the turn with your report
+      alone: one JSON object in your output schema.
+---
+# The drafter on Claude Opus (DEC-053): one hour a turn, in a clone of its own. The coordinator
+# approves or rewrites each draft.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: drafter-role
+spec:
+  type: example.org/conduit/agent-claude-code#claude-code.v4
+  inputs:
+    directory:
+      schema:
+        type: string
+        minLength: 1
+      to:
+      - /config/directory
+    login:
+      schema:
+        type: string
+        minLength: 1
+      to:
+      - /config/login
+  config:
+    accountServices: false
+    peerMessaging: false
+    turnDeadlineSeconds: 3600
+    effort: high
+    model: opus
+    outputSchema: <report-schema>
+    instructions: >-
+      You are the drafter of the conduit-core Fleet (DEC-053). Each turn's message is the
+      coordinator's brief for one work order: write its first draft as one file in your
+      directory, in the form of the merged orders the brief names. The coordinator approves or
+      rewrites it. Do not commit, push or switch branches. Never print an environment variable's
+      value, and never read or print a credential. End the turn with your report alone: one JSON
+      object in your output schema.

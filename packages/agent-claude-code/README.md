@@ -5,8 +5,9 @@ experiment 009. Work orders 023 and 024 tested this package with its scripted cl
 client closeout is still required. No client version command or model was run for this order.
 
 This standalone Rust crate has no dependency on another repository directory. Its lockfile
-and pinned toolchain travel with it. Its manifest exports two Agent Types and a conversation
-capability with two explicit operations, `turn.v1` and `new-conversation.v1`. The plain MCP wrapper
+and pinned toolchain travel with it. Its manifest exports three Agent Types, an account home
+Resource Type, and a conversation capability with two explicit operations, `turn.v1` and
+`new-conversation.v1`. The plain MCP wrapper
 exposes `turn` and `new-conversation`. The `.v2` item also exposes the hook tools `retire`, `account`,
 `sign-out` and `sign-in`. The manifest maps each versioned operation or hook to its tool. See the
 [account and sign-out hooks](#the-v2-account-and-sign-out-hooks) and the
@@ -635,14 +636,57 @@ The same configuration and state directory
 select the same Agent home as in 0.2.0. The engine determines whether an installed Agent keeps
 its instance and sign-in when its pin moves to 0.2.1.
 
+## The account home Resource
+
+`account-home.v1` is a Pool-owned Resource for one Claude Code account on one machine. Set
+`config.account` to the expected account. The Resource works with any Claude Code subscription
+plan. Its hooks create a private `account-home` in its state directory and use that directory
+as `CLAUDE_CONFIG_DIR` for `claude auth login`, `claude auth status` and `claude auth logout`.
+Its retire hook logs out and empties the directory. Only the Resource's own hooks perform
+those login operations. Set up the Resource and complete `sign-in.v1` through its owning Pool
+before setting up its Agents.
+
+## The .v3 Agent
+
+Set `config.login` on a `claude-code.v3` Agent to its `account-home.v1` Resource. Use the
+engine's runner for both and place them on the same node. Leave `runtime` unset. A custom
+runtime or different placement prevents setup under PRV-029. The runner passes the Resource's
+state directory as `AGENT_LOGIN_DIRECTORY`. Each launch sets `CLAUDE_CONFIG_DIR` to the
+Resource's existing `account-home`.
+
+Each Agent keeps its own conversation, settings and MCP servers. The wrapper passes
+`--no-session-persistence`, so the client keeps no transcript. `settings.json` and `mcp.json`
+for the run are in its private working directory. Auto memory would use the shared home.
+Both `.v2` and `.v3` disable it through `autoMemoryEnabled: false` and
+`CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` on every launch.
+
+The home shares `.claude.json` for account details and project trust, and `stats-cache.json`
+for `/usage` totals. DEC-047 measures usage per turn. Per-session files under `file-history/`,
+`session-env/` and `sessions/` are readable by every Agent of the home (PRV-029, DL16). An
+Agent's own unconfined tools can sign the account out (ruling 70).
+
+If the account home is missing or the client reports an authentication failure, the turn
+reports a lapse through IFC-016. The engine raises one sign-in action and one one-at-a-time
+notice on the Resource. The report holds no Agent. Root can sign in through the owning Pool
+and acknowledge the notice to lift the one-at-a-time rule. The Resource's own sign-in hold
+holds model work for all its Agents. The `.v3` retire hook stops its client and leaves the
+shared directory and login to the Resource.
+
 ## The standard Conduit templates
 
 From 0.2.2, `turn` grants `turn.v1` alone, and `conversation` grants both `turn.v1` and
-`new-conversation.v1`. Write `operator: {from: example.org/conduit/agent-claude-code#turn}` to
-grant root turns, or select `example.org/conduit/agent-claude-code#conversation` to let root also end a
+[`new-conversation.v1`](#a-new-conversation-both-versions). Write
+`operator: {from: example.org/conduit/agent-claude-code#turn}` to grant root turns. Write
+`operator: {from: example.org/conduit/agent-claude-code#conversation}` to let root also end a
 conversation. A later release keeps each template's operation list. A wider grant takes a new
 template (PKG-031).
 
-The Types, the Agent's home, and sign-in are as in 0.2.1. An instance keeps the release it
-resolved, so using 0.2.2 for an existing Agent requires replacing it. A replaced `.v2` Agent
-signs in again.
+## Moving to 0.2.3
+
+Install the 0.2.3 archive, move the pin, and replace each Agent that should use the new release.
+An instance keeps the release it resolved. A replaced `.v2` Agent signs in again. To move to
+`.v3`, retire each `.v2` Agent first to log out its own login. Confirmed shutdown removes the
+old Agent automatically. If it remains retired, wait for shutdown confirmation or unregister
+it before reusing the name. A tombstone can also block name reuse (LIF-041). Set up and sign in
+each account's Resource once per machine, then register and set up the `.v3` Agents that refer
+to it.

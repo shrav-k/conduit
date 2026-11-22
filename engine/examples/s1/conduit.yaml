@@ -9,8 +9,8 @@ packages:
     version: 0.1.0
     digest: sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69
   example.org/conduit/agent-claude-code:
-    version: 0.2.2
-    digest: sha256:c1d5cf4b51d07d3690d154cd257fd246ffcf1ad31269dc3659162e8fcc693dfa
+    version: 0.2.3
+    digest: sha256:06f9305db38b46b101dbf5b30d8a84943c1fff675fb69c3c6e88cb46dc3fa82b
   example.org/conduit/agent-codex:
     version: 0.2.3
     digest: sha256:fef6b25f1f53267dba4b2f8d5506f7ca079702ba7de39e8dc5d42494cd59decc

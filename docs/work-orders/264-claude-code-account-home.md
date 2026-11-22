@@ -241,4 +241,29 @@ existing test changed, and why; and every check's last line. Stage nothing.
 
 ## Record
 
-Not yet run.
+Run on 2026-11-22 through Conduit itself, by the dogfood's own Agents, in Pacific time, on
+`main` with orders 257, 258 and 259 stacked while they waited in the merge queue; it follows them
+as built, with the coordinator's amendments during their builds (open to the owner's strike).
+
+**Worker-1's first turn** (03:12 to 03:25) built agent-claude-code 0.2.3: an `account-home.v1`
+Resource Type keeping one account's `account-home` with its login and retirement hooks, and a
+`claude-code.v3` Agent Type that runs in that home as `CLAUDE_CONFIG_DIR`, its settings and MCP
+config written in its own run directory, `--no-session-persistence` kept, auto memory off by both
+of Claude Code's switches and probed, a lapse reported in IFC-016's URL form. It stopped at the
+undeclared-change rule: the order's declaration, copied from order 259's, named
+`codex-install.json` where this order changes Claude Code's; the coordinator corrected the two
+paths. **Its second turn** (03:25 to 03:29) finished it: 22 declared vector changes, 43 package
+tests, two offline builds with one digest.
+
+**Two blind reads at once** (03:29 to 03:33): `turn-verifier-1.turn.v1` found two musts; the
+Claude reader passed it with two nits, the first of which the coordinator raised to a must. One
+fix turn (03:33 to 03:38), each must reproduced first:
+- a resumed `.v3` turn could reach the client after the shared home was gone; the home is now
+  checked before every turn, and a missing one reports the lapse;
+- a relaunch wrote the run-local settings through a symlink, which could overwrite a file in the
+  shared home; they are now replaced without following links;
+- an engine MCP 401 with login wording read as the shared login's lapse; the engine's MCP
+  failures are excluded, as order 259 did for Codex.
+
+46 package tests and three vectors pass; the archive reproduces. The gate's run on the squash is
+the coordinator's, at the merge.

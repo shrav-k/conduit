@@ -274,4 +274,26 @@ Named here and not in this order:
 
 ## Record
 
-Not yet run.
+Run on 2026-11-21 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+
+**Worker-2's turn** (19:56 to 20:36) wrote DEC-043 into PND-010 and PND-011 and changed the
+engine's poll arms: at or after DL18 a late account check ends `sign-in.v1` unknown under
+PND-010, keeping its pending action, hold and condition, and a late other account still applies
+PND-011's hold. The three new cases failed at step 16 on the old engine and pass now. The whole
+engine suite passed once.
+
+**Two blind reads** (20:36 to 20:46), the owner's answer for A77's window:
+`turn-verifier-2.turn.v1` found two musts; the Claude reader passed it with two nits and found
+neither must. One fix turn (20:49 to 20:56), each must reproduced by a failing regression first:
+- an expired poll could still send an intent, through parameter repair after a first -32020
+  reply or through a discovery completing at the deadline; the deadline now applies before
+  either can dispatch;
+- a late poll whose instance retired meanwhile ended failed under PND-003; the DL18 ending now
+  takes precedence, keeping retirement's own effects;
+- the two new causes are named constants;
+- where the late check itself ended failed, unknown or with a reason, the cause now says so, so
+  an Agent can tell a check that could not run from one that found no account (the
+  coordinator's acceptance of a reader's nit, open to the owner's strike).
+
+29 sign-in unit tests and the 22 sign-in cases pass. The gate's run on the squash is the
+coordinator's, at the merge.

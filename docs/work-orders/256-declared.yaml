@@ -1,0 +1,10 @@
+# Added cases for work order 256.
+- name: requests-sign-in-late-expected-account
+  kind: added
+  cases: [requests-sign-in-late-expected-account]
+- name: requests-sign-in-late-no-account
+  kind: added
+  cases: [requests-sign-in-late-no-account]
+- name: requests-sign-in-late-first-account
+  kind: added
+  cases: [requests-sign-in-late-first-account]

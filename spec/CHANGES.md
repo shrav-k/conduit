@@ -17,6 +17,7 @@ then they are under `docs/proposals/`.
 
 ## [Unreleased]
 
+- Added: `inspect.v1`'s `packages`: the submitted project's item lists `documents`, the kind, name and digest of each contract document of that submission, the digest taken by SUB-008's canonical form, so a moved submission digest says which contract changed; no content is shown (order 245's finding; ruling 52).
 - Added: `inspect.v1`'s optional output `implementations`: for a template or an instance, other than a Conduit, a Conduit template or a first-start object, the implementation selected for each operation (TPL-004), the package or submission that holds it, and the item as the object holds it under NAM-009, a relative program resolved (order 245's finding; ruling 52).
 - Changed: PND-010, PND-011 and `sign-in.v1`'s description: an account check that answers after DL18 ended the sign-in's wait changes nothing but another account's hold, and a late expected account's diagnostic names a new sign-in.v1 (DEC-043).
 - Changed: PKG-028's and NAM-012's observables and `spec/README.md#an-author-of-documents`: the reference CLI may install an archive's missing dependencies first, each by its own request, from a cache or mirror copy it picks, and pins only that archive, exactly (DEC-048).

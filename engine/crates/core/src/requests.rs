@@ -431,11 +431,16 @@ pub(crate) fn record_content(t: &Transition, c: &Context, data: &mut Value) -> R
             continue;
         }
         if let Some(mut value) = value {
-            // Implementation selections and pending inspection evidence stay in the
-            // reply and its retained repeats.
+            // Implementation selections, contract digests and pending inspection evidence
+            // stay in the reply and its retained repeats.
             if setting == "outputs" && op == c.qualified("inspect.v1") {
                 if let Some(outputs) = value.as_object_mut() {
                     outputs.remove("implementations");
+                }
+                if let Some(packages) = value.get_mut("packages").and_then(Value::as_array_mut) {
+                    for package in packages.iter_mut().filter_map(Value::as_object_mut) {
+                        package.remove("documents");
+                    }
                 }
                 if let Some(status) = value.get_mut("status").and_then(Value::as_object_mut) {
                     status.remove("pending");
@@ -3607,6 +3612,72 @@ mod tests {
                 "{event} must omit the reply's implementation selections"
             );
         }
+    }
+
+    #[test]
+    fn inspection_documents_stay_out_of_shared_records_and_in_replies() {
+        let (mut setup, c) = interrupted_setup();
+        let subject_index = setup
+            .state
+            .objects
+            .iter()
+            .position(|o| o["id"] == "o1")
+            .unwrap();
+        let subject = &mut setup.state.objects[subject_index];
+        let package =
+            json!({"address":"example.org/demo","digest":format!("sha256:{}", "1".repeat(64))});
+        let document =
+            json!({"kind":"Schema","metadata":{"name":"note.v1"},"spec":{"type":"string"}});
+        subject["type"] = json!(c.qualified("type.v1"));
+        subject["held"] = json!({
+            "scope":"core",
+            "environment":c.core_environment,
+            "indexes":{"core":c.core_environment.scopes["core"].contracts,"project":{"note.v1":document}},
+            "contexts":{"project":package},
+        });
+        subject["packages"] = json!([package]);
+
+        let time = "2026-11-16T12:29:59Z";
+        let original = inspect_setup(&setup.state, &c, "root", time, Some("inspect-once"));
+        assert_eq!(original.reply["isError"], false);
+        let outputs = &original.reply["structuredContent"];
+        assert_eq!(
+            outputs["packages"][0]["documents"],
+            json!([{
+                "kind": "Schema",
+                "name": "note.v1",
+                "digest": crate::packages::document_digest(&document).unwrap(),
+            }])
+        );
+        let repeated = inspect_setup(&original.state, &c, "root", time, Some("inspect-once"));
+        assert_eq!(repeated.reply["structuredContent"], *outputs);
+        for (records, event) in [
+            (&original.records, "invocation-ended"),
+            (&original.records, "request-ended"),
+            (&repeated.records, "request-ended"),
+        ] {
+            let output = &records.iter().find(|r| r["type"] == event).unwrap()["data"]["outputs"];
+            assert_eq!(
+                output["id"], "o1",
+                "the Pool Type records inspection outputs"
+            );
+            assert_eq!(
+                output["packages"],
+                json!([package]),
+                "{event} must omit contract document digests"
+            );
+        }
+
+        setup.state.objects[subject_index]["held"]["indexes"]
+            .as_object_mut()
+            .unwrap()
+            .remove("project");
+        let without_index = inspect_setup(&setup.state, &c, "root", time, None);
+        assert_eq!(without_index.reply["isError"], false);
+        assert_eq!(
+            without_index.reply["structuredContent"]["packages"],
+            json!([package])
+        );
     }
 
     #[test]

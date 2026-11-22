@@ -81,6 +81,12 @@ pub fn project_digest(project: &Project) -> Result<String> {
     .map_err(|e| e.to_string())?;
     Ok(bytes_digest(&bytes))
 }
+/// The digest of a contract document in the canonical form used by SUB-008.
+pub fn document_digest(document: &Value) -> Result<String> {
+    let bytes = serde_json_canonicalizer::to_vec(document).map_err(|e| e.to_string())?;
+    Ok(bytes_digest(&bytes))
+}
+
 pub fn bytes_digest(bytes: &[u8]) -> String {
     format!("sha256:{:x}", Sha256::digest(bytes))
 }

@@ -282,9 +282,18 @@ metadata:
     nothing of whether it existed, under OPS-023. `packages` lists the packages the object holds:
     a package's item has `address`, `version` and `digest`; the core package's item has no `digest`;
     and the item of the submitted project whose contracts the object holds has `address`, the digest
-    that identifies that submission's contracts, and `version` where its manifest states one. `declared`
-    shows each reference in its resolved form, `{kind, id}`. Inspecting an open Conduit shows, under
-    each requirement it applies, the implementation that applies it, named by its qualified reference.
+    that identifies that submission's contracts, and `version` where its manifest states one.
+    That item also has `documents`: for each contract document of that submission, in the order
+    SUB-008 lists them, its `kind`, its `name`, and as `digest` the SHA-256, written as PKG-004 writes
+    a digest, of the RFC 8785 form of that document, the form it has in SUB-008's list, so an
+    author takes the same digest from the document as read from its file, or as translated from
+    a sectioned file. A moved submission digest so says which documents changed and, where none
+    did, that the manifest did. No document's content is shown, and no other item has `documents`.
+    The `documents` member stays in the reply and its retained repeats and is omitted from
+    recorded outputs (REC-002).
+    `declared` shows each reference in its resolved form, `{kind, id}`. Inspecting an open Conduit
+    shows, under each requirement it applies, the implementation that applies it, named by its
+    qualified reference.
     The status holds the lifecycle state, the shutdown of a retired instance and, in `conditions`,
     the further conditions of the instance and what was observed of it, the state of its run among
     them, and, in `unreconciled`, the engine's ID for each invocation whose outcome is unknown and
@@ -318,8 +327,9 @@ metadata:
     TPL-004, its hooks among them, named by the operation's qualified reference. The member's
     `selection` is the qualified reference of that implementation, and
     `github.com/shrav-k/conduit/core#engine` for the engine. Its `package` is the item of
-    `packages` that holds the implementation, which tells apart the releases of one address
-    and the submissions at one address, as a qualified reference does not (SUB-008, NAM-009).
+    `packages` that holds the implementation, without its `documents`, which tells apart the
+    releases of one address and the submissions at one address, as a qualified reference does
+    not (SUB-008, NAM-009).
     Its `item`, absent for the engine, is the implementation item as the object holds it
     under NAM-009, a program given as a relative path shown as it was resolved and is run
     (SUB-010, MAN-010), so two submissions with one digest, read from two directories, are
@@ -362,6 +372,27 @@ spec:
                 $ref: github.com/shrav-k/conduit/core#version.v1
               digest:
                 $ref: github.com/shrav-k/conduit/core#digest.v1
+              documents:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    kind:
+                      enum:
+                      - Capability
+                      - Operation
+                      - Requirement
+                      - Schema
+                      - Type
+                    name:
+                      $ref: github.com/shrav-k/conduit/core#contract-name.v1
+                    digest:
+                      $ref: github.com/shrav-k/conduit/core#digest.v1
+                  required:
+                  - kind
+                  - name
+                  - digest
+                  additionalProperties: false
             required:
             - address
             - digest
@@ -387,6 +418,7 @@ spec:
               $ref: github.com/shrav-k/conduit/core#qualified-reference.v1
             package:
               $ref: '#/properties/packages/items'
+              not: {required: [documents]}
             item:
               $ref: github.com/shrav-k/conduit/core#implementation-item.v1
           required:

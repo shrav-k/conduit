@@ -282,7 +282,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | NAM-006 | language | must | 0 | 0 | reason | none | reason, no case |
 | NAM-007 | language | must | 2 | 0 | cases | core | case passes |
 | NAM-008 | language | must | 1 | 0 | cases | core | case passes |
-| NAM-009 | language | must | 10 | 0 | cases | core | case passes |
+| NAM-009 | language | must | 11 | 0 | cases | core | case passes |
 | NAM-010 | language | must | 3 | 0 | cases | core | case passes |
 | NAM-011 | language | must | 1 | 0 | cases | none | case passes |
 | NAM-012 | language | must | 0 | 0 | reason | none | reason, no case |
@@ -552,7 +552,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | SUB-005 | language | must | 27 | 0 | cases | loader, core | case passes |
 | SUB-006 | language | must | 5 | 0 | cases | core | case passes |
 | SUB-007 | language | must | 0 | 0 | reason | none | reason, no case |
-| SUB-008 | language | must | 14 | 0 | cases | core | case passes |
+| SUB-008 | language | must | 15 | 0 | cases | core | case passes |
 | SUB-009 | convention | must | 2 | 0 | cases | core, shell | case passes |
 | SUB-010 | language | must | 11 | 0 | cases | loader, core, shell | case passes |
 | SUB-011 | language | must | 1 | 0 | cases | loader, core | case passes |

@@ -146,6 +146,17 @@
       ]
     },
     {
+      "id": "registration-contract-documents-inspected",
+      "case": "language/registration/contract-documents-inspected/case.yaml",
+      "promises": [
+        "NAM-009",
+        "SUB-008"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
       "id": "registration-destination-overlap",
       "case": "language/registration/destination-overlap/case.yaml",
       "promises": [

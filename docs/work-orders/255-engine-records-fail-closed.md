@@ -155,7 +155,7 @@ A choice no decision governs is yours: list it under `own_choices`.
      write fails as the executor answers the first `inspect-run.v1`: no `run.v1` and no
      `server/discover` is asked for; `submit` returns the setup's final result, outcome unknown,
      naming REC-007, and its records are kept. Today `submit` errs.
-   - `a_write_that_fails_after_its_rename_ends_the_dispatch_unknown`: the first test's `invoke`,
+   - `a_write_that_fails_after_its_rename_ends_the_undispatched_request_unavailable`: the first test's `invoke`,
      one write failing at `DirectorySync`: outcome unknown naming REC-007, no executor call, and
      the store holds the decision, the dispatch and the end unknown. Today `submit` errs.
    - `a_read_whose_record_cannot_be_kept_ends_unavailable_at_once` replaces
@@ -229,7 +229,7 @@ t() { (cd engine && cargo test --offline --release -p conduit-shell --lib "$1" 2
 t a_request_whose_record_cannot_be_kept_reports_unavailable  # 1; today 0
 t an_invocation_whose_end_cannot_be_recorded_ends_unknown  # 1; today 0
 t a_setup_whose_records_cannot_be_kept_asks_for_no_run  # 1; today 0
-t a_write_that_fails_after_its_rename_ends_the_dispatch_unknown  # 1; today 0
+t a_write_that_fails_after_its_rename_ends_the_undispatched_request_unavailable  # 1; today 0
 t a_read_whose_record_cannot_be_kept_ends_unavailable_at_once  # 1; today 0
 t an_undispatched_secret_read_ends_unavailable_at_recovery  # 1; today 0
 grep -c 'fn a_read_whose_dispatch_record_cannot_be_kept_is_not_dispatched' engine/crates/shell/src/tests.rs  # 0; today 1
@@ -280,4 +280,36 @@ Named here and not in this order:
 
 ## Record
 
-Not yet run.
+Run on 2026-11-21 and 22 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+
+**Worker-1's first turn** (21:39 to 21:41) stopped before any edit, as the stop rule asks: two
+decisions met REC-007 as order 254 merged it. The coordinator decided both, open to the owner's
+strike, and widened the scope to REC-007's observable and its CHANGES line:
+- records held to be kept late are lost if the engine stops before a record can be kept, and
+  recovery then ends what is left as IMP-007 does; REC-007 now says so;
+- a dispatch that a write records but never passes to the implementation, as when the directory's
+  sync fails after the rename, was not dispatched: it ends unavailable while the engine runs, its
+  end appended, and unknown at a restart. Decision 5 and its test, now
+  `a_write_that_fails_after_its_rename_ends_the_undispatched_request_unavailable`, follow.
+
+An implementation's reason with no outcome stands (REC-007 as merged), with a regression.
+
+**Worker-1's second turn** (21:42 to 22:29) built the order with those changes: seven regressions
+failed on `main` and pass. The whole engine suite passed once (527 passed).
+
+**Two blind reads at once** (22:30 to 22:37), the owner's answer for A77's window:
+`turn-verifier-1.turn.v1` found three musts, each reproduced in a core probe the regressions
+missed; the Claude reader passed it with two nits and found none of them. One fix turn (22:37 to
+23:09), each must reproduced by a failing regression first:
+- recovery ended unknown an ordinary request decided and never dispatched; it now ends
+  unavailable under REC-007, its access decision kept;
+- an engine-generated discovery rejection could be taken for an implementation's reason; the
+  validated reason now travels with the completion;
+- a completion whose end record reads back after its rename is kept while the engine runs, though
+  its directory's sync failed (the coordinator's decision, open to the owner's strike); DL10 says
+  so, and a regression asserts the result given;
+- a secret read recorded and not sent names SEC-016, and its cause words say the record was
+  written and read back but the write reported a failure.
+
+163 core tests pass; the whole engine suite passed once more (531 passed). The gate's run on the
+squash is the coordinator's, at the merge.

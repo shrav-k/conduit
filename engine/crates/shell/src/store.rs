@@ -67,6 +67,12 @@ pub(crate) enum WriteFault {
     DirectorySync,
 }
 
+#[derive(Debug)]
+pub(crate) struct StateWriteError {
+    pub renamed: bool,
+    pub message: String,
+}
+
 pub(crate) fn atomic_write(directory: &Path, name: &str, bytes: &[u8]) -> Result<()> {
     // DL2/DL13: credential and endpoint writes never receive a test-store fault.
     atomic_write_inner(
@@ -76,6 +82,7 @@ pub(crate) fn atomic_write(directory: &Path, name: &str, bytes: &[u8]) -> Result
         #[cfg(test)]
         None,
     )
+    .map_err(|error| error.message)
 }
 
 pub(crate) fn append_commit_measures(directory: &Path, bytes: &[u8]) -> std::io::Result<()> {
@@ -99,7 +106,7 @@ fn atomic_write_inner(
     name: &str,
     bytes: &[u8],
     #[cfg(test)] fault: Option<WriteFault>,
-) -> Result<()> {
+) -> std::result::Result<(), StateWriteError> {
     // DL2: all four persistence stages precede publication of the new memory snapshot.
     #[cfg(test)]
     let check = |stage| {
@@ -110,7 +117,8 @@ fn atomic_write_inner(
         }
     };
     let temporary = directory.join(format!(".write-{}", Uuid::new_v4()));
-    let result = (|| {
+    let mut renamed = false;
+    let result: Result<()> = (|| {
         let mut file = OpenOptions::new()
             .write(true)
             .create_new(true)
@@ -126,6 +134,7 @@ fn atomic_write_inner(
         #[cfg(test)]
         check(WriteFault::Rename)?;
         fs::rename(&temporary, directory.join(name)).map_err(|e| e.to_string())?;
+        renamed = true;
         #[cfg(test)]
         check(WriteFault::DirectorySync)?;
         File::open(directory)
@@ -135,7 +144,7 @@ fn atomic_write_inner(
     if result.is_err() {
         let _ = fs::remove_file(temporary);
     }
-    result
+    result.map_err(|message| StateWriteError { renamed, message })
 }
 
 pub(crate) struct Memory {
@@ -149,6 +158,8 @@ pub(crate) struct Store {
     cached: RefCell<Option<Memory>>,
     #[cfg(test)]
     pub fault: RefCell<Option<WriteFault>>,
+    #[cfg(test)]
+    pub faults: RefCell<std::collections::VecDeque<WriteFault>>,
 }
 impl Store {
     pub fn clean_state_directories(&self, state: &State) -> Result<()> {
@@ -205,6 +216,8 @@ impl Store {
             cached: RefCell::new(None),
             #[cfg(test)]
             fault: RefCell::new(None),
+            #[cfg(test)]
+            faults: RefCell::new(std::collections::VecDeque::new()),
         };
         // Reject an unknown/corrupt format before touching keys or recovering.
         store.load()?;
@@ -260,7 +273,7 @@ impl Store {
         &self,
         state: &State,
         output_times: &BTreeMap<String, String>,
-    ) -> Result<usize> {
+    ) -> std::result::Result<usize, StateWriteError> {
         // DL2: identical version-1 field order and bytes, serialized from references.
         self.cached.borrow_mut().take();
         #[derive(Serialize)]
@@ -274,13 +287,19 @@ impl Store {
             state,
             output_times,
         })
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| StateWriteError {
+            renamed: false,
+            message: e.to_string(),
+        })?;
         atomic_write_inner(
             &self.directory,
             "state.json",
             &bytes,
             #[cfg(test)]
-            self.fault.borrow_mut().take(),
+            self.fault
+                .borrow_mut()
+                .take()
+                .or_else(|| self.faults.borrow_mut().pop_front()),
         )?;
         Ok(bytes.len())
     }
@@ -289,5 +308,6 @@ impl Store {
         // DL2: fixture writes also invalidate memory, so their next reader reloads the file.
         self.write_state(&stored.state, &stored.output_times)
             .map(|_| ())
+            .map_err(|error| error.message)
     }
 }

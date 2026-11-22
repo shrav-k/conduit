@@ -113,7 +113,23 @@ pub const REFUSAL_CAUSES: &[(&str, &str)] = &[
     ),
 ];
 
+const DISPATCH_RECORD_READ_BACK: &str = "Although the record could be read back, the write reported a failure, so the engine did not dispatch the request.";
+
+pub(crate) fn dispatch_record_read_back(operation: &str, rule: &str) -> Value {
+    json!({"ruleId":rule,"level":"error","message":{"text":
+        format!("{operation} reports unavailable under {rule}: {DISPATCH_RECORD_READ_BACK}")
+    }})
+}
+
 pub const REASON_CAUSES: &[(&str, &str)] = &[
+    (
+        "REC-007",
+        "A request is dispatched only once its record is kept; the engine could not keep it, and keeps it if its store can be written while it runs.",
+    ),
+    (
+        "SEC-016",
+        "A secret is read only once the read's record is kept; the engine could not keep it, and keeps it if its store can be written while it runs.",
+    ),
     (
         "ACC-015",
         "The implementation must support every carried filter.",
@@ -835,6 +851,10 @@ pub(crate) fn diagnostic(
 
 pub const OUTCOME_CAUSES: &[(&str, &str)] = &[
     (
+        "REC-007",
+        "The engine could not record how the invocation ended, so its outcome is unknown; the engine keeps the record if its store can be written while it runs.",
+    ),
+    (
         "IFC-008",
         "The implementation rejected the declared Conduit extension revision and performed nothing.",
     ),
@@ -1105,6 +1125,7 @@ pub(crate) mod tests {
             reply: Value::Null,
             request_replies: vec![],
             input_required: vec![],
+            validated_reason: None,
         }
     }
     fn request(sender: &str, tool: &str, args: Value) -> AccessRequest {

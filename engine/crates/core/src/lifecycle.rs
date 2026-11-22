@@ -1471,6 +1471,56 @@ fn finish_unavailable_run(
     Ok(())
 }
 
+pub(crate) fn record_fault_end(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+) -> Result<()> {
+    let v = t.state.invocations[i].clone();
+    if v.get("provider_restart").is_some() {
+        return crate::secrets::restart_ended(t, a, c, i, "unknown");
+    }
+    if v.get("setup").is_some() || v.get("retirement").is_some() {
+        crate::secrets::cancel(t, a, c, i)?;
+        t.external_intents
+            .push(json!({"kind":"cancel-setup-parts","invocation":v["id"],"subject":v["object"]}));
+        if v.get("setup").is_some() {
+            t.state.invocations[i]["setup"]["phase"] = json!("ended");
+            if let Some(object) = t.state.objects.iter_mut().find(|o| o["id"] == v["object"]) {
+                object["status"]["setup"] =
+                    json!({"invocation":v["id"],"outcome":"unknown","parts":v["setup"]["parts"]});
+            }
+        }
+        if let Some(id) = v.get("retirement_of")
+            && let Some(object) = t.state.objects.iter_mut().find(|o| o["id"] == *id)
+        {
+            object["shutdown"] = json!("unknown");
+        }
+    }
+    if v.get("sign_in").is_some() {
+        t.state.invocations[i]["sign_in"]["phase"] = json!("ended");
+    }
+    requests::finish_record_fault(t, a, c, i)?;
+    let own_reply = t.reply.clone();
+    let children: Vec<_> = t
+        .state
+        .invocations
+        .iter()
+        .enumerate()
+        .filter(|(_, child)| child["setup_parent"] == v["id"] && child["state"] == "in-progress")
+        .map(|(child, _)| child)
+        .collect();
+    for child in children {
+        let entry = &t.state.invocations[child];
+        t.external_intents
+            .push(json!({"kind":"cancel","invocation":entry["id"],"attempt":entry["attempt"]}));
+        record_fault_end(t, a, c, child)?;
+    }
+    t.reply = own_reply;
+    child_ended(t, a, c, i)
+}
+
 pub(crate) fn child_ended(
     t: &mut Transition,
     a: &mut Allocation<'_>,

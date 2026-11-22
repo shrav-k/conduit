@@ -7,6 +7,7 @@ use crate::{
 use serde::Deserialize;
 use serde_json::{Value, json};
 use std::borrow::Cow;
+use std::collections::BTreeSet;
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(tag = "kind", rename_all = "kebab-case", deny_unknown_fields)]
@@ -1454,6 +1455,7 @@ fn invoke_inner(
             reply: Value::Null,
             request_replies: vec![],
             input_required: vec![],
+            validated_reason: None,
         };
         let mut allocation = Allocation {
             evidence: a.evidence,
@@ -1554,6 +1556,7 @@ fn invoke_inner(
             reply: Value::Null,
             request_replies: vec![],
             input_required: vec![],
+            validated_reason: None,
         };
         let rejection = crate::archives::install(
             &mut trial,
@@ -2137,31 +2140,31 @@ pub(crate) fn complete(
                 let stated = stated_value.and_then(Value::as_str);
                 let reason = reason_value.and_then(Value::as_str);
                 if stated_value.is_none()
-                    && matches!(reason, Some("refused" | "unavailable"))
+                    && let Some(reason @ ("refused" | "unavailable")) = reason
                     && result["isError"] == true
+                    && let Some(restriction) = meta.get(mark(c, "restriction"))
+                    && v["filters"]
+                        .as_array()
+                        .is_some_and(|f| f.contains(restriction))
                 {
-                    let restriction = meta.get(mark(c, "restriction"));
-                    if restriction
-                        .is_some_and(|r| v["filters"].as_array().is_some_and(|f| f.contains(r)))
-                    {
-                        restore_or_remove_invocation(&mut t.state, i, &v);
-                        reject(
-                            t,
-                            &mut a,
-                            c,
-                            &json!({"target":v["target"],"caller":v["caller"],"consumer":v["sender"],"conduit":v["conduit"],"operation":v["operation"],"arguments":v["arguments"]}),
-                            reason.unwrap(),
-                            "IFC-026",
-                            None,
-                            restriction,
-                        )?;
-                        t.request_replies.push(crate::RequestReply {
-                            invocation: id.into(),
-                            attempt,
-                            reply: t.reply.clone(),
-                        });
-                        return crate::lifecycle::child_answered(t, &mut a, c, &v, reason.unwrap());
-                    }
+                    t.validated_reason = Some((reason.into(), restriction.clone()));
+                    restore_or_remove_invocation(&mut t.state, i, &v);
+                    reject(
+                        t,
+                        &mut a,
+                        c,
+                        &json!({"target":v["target"],"caller":v["caller"],"consumer":v["sender"],"conduit":v["conduit"],"operation":v["operation"],"arguments":v["arguments"]}),
+                        reason,
+                        "IFC-026",
+                        None,
+                        Some(restriction),
+                    )?;
+                    t.request_replies.push(crate::RequestReply {
+                        invocation: id.into(),
+                        attempt,
+                        reply: t.reply.clone(),
+                    });
+                    return crate::lifecycle::child_answered(t, &mut a, c, &v, reason);
                 }
                 if reason_value.is_none()
                     && let Some(stated) = stated
@@ -2231,6 +2234,150 @@ pub(crate) fn complete(
         finish(t, &mut a, c, i, outcome, outputs, content, cause)?;
     }
     crate::lifecycle::child_ended(t, &mut a, c, i)
+}
+
+fn recorded_route(v: &Value) -> Value {
+    json!({"target":v["target"],"caller":v["caller"],"consumer":v["sender"],
+        "conduit":v["conduit"],"operation":v["operation"],"serving":v["serving"],
+        "invocation":v["id"],"attempt":v["attempt"],"idempotencyKey":v["key"]})
+}
+
+pub(crate) fn finish_record_fault(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+) -> Result<()> {
+    let cause = explain::outcome_cause(&t.state.invocations[i], "unknown", "REC-007")?;
+    if awaiting_implementation(&t.state.invocations[i]) {
+        t.state.invocations[i]["unanswered_or_succeeded"] = json!(true);
+    }
+    finish(
+        t,
+        a,
+        c,
+        i,
+        "unknown",
+        json!({}),
+        json!([]),
+        Some(vec![cause]),
+    )
+}
+
+pub(crate) fn record_fault_reason(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    reason: &str,
+    restriction: &Value,
+) -> Result<()> {
+    let v = t.state.invocations[i].clone();
+    let mut route = recorded_route(&v);
+    let mut ended = route.clone();
+    ended["reason"] = json!(reason);
+    ended["ruleId"] = json!("IFC-026");
+    ended["restriction"] = restriction.clone();
+    if reason == "refused" {
+        ended["refusalTier"] = json!(explain::tier(&t.state, &route, c)?);
+    }
+    record(t, a, c, "invocation-ended", ended)?;
+    restore_or_remove_invocation(&mut t.state, i, &v);
+    route["arguments"] = v["arguments"].clone();
+    reject(t, a, c, &route, reason, "IFC-026", None, Some(restriction))?;
+    fault_reply(t, &v)?;
+    crate::lifecycle::child_answered(t, a, c, &v, reason)
+}
+
+pub(crate) fn discard_proposed_dispatch(t: &mut Transition, id: &Value) {
+    let proposed: BTreeSet<_> = t
+        .records
+        .iter()
+        .filter(|r| {
+            r["data"]["invocation"] == *id
+                && matches!(
+                    r["type"].as_str(),
+                    Some("access-decision" | "invocation-dispatched")
+                )
+        })
+        .filter_map(|r| r["id"].as_str().map(str::to_owned))
+        .collect();
+    let kept = |r: &Value| !r["id"].as_str().is_some_and(|id| proposed.contains(id));
+    t.records.retain(kept);
+    t.state.records.retain(kept);
+}
+
+pub(crate) enum UnsentDispatch {
+    Proposed,
+    DecisionKept,
+    ReadBack,
+}
+
+fn reject_unsent(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    stage: UnsentDispatch,
+) -> Result<Value> {
+    let v = t.state.invocations[i].clone();
+    let route = recorded_route(&v);
+    if matches!(stage, UnsentDispatch::Proposed) {
+        discard_proposed_dispatch(t, &v["id"]);
+        let mut data = route.clone();
+        data["permitted"] = json!(false);
+        data["dispatched"] = json!(false);
+        data["reason"] = json!("unavailable");
+        data["ruleId"] = json!("REC-007");
+        record(t, a, c, "access-decision", data)?;
+    }
+    restore_or_remove_invocation(&mut t.state, i, &v);
+    if matches!(stage, UnsentDispatch::ReadBack) {
+        let operation = v["operation"]
+            .as_str()
+            .ok_or("invocation has no operation")?;
+        let diagnostic = explain::dispatch_record_read_back(operation, "REC-007");
+        reject_diagnostics(
+            t,
+            a,
+            c,
+            &route,
+            "unavailable",
+            "REC-007",
+            None,
+            None,
+            Some(json!([diagnostic])),
+        )?;
+    } else {
+        reject(t, a, c, &route, "unavailable", "REC-007", None, None)?;
+    }
+    Ok(v)
+}
+
+pub(crate) fn record_fault_unavailable(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    stage: UnsentDispatch,
+) -> Result<()> {
+    let v = reject_unsent(t, a, c, i, stage)?;
+    fault_reply(t, &v)?;
+    crate::lifecycle::child_answered(t, a, c, &v, "unavailable")
+}
+
+fn fault_reply(t: &mut Transition, invocation: &Value) -> Result<()> {
+    t.request_replies.push(crate::RequestReply {
+        invocation: invocation["id"]
+            .as_str()
+            .ok_or("invocation has no ID")?
+            .into(),
+        attempt: invocation["attempt"]
+            .as_u64()
+            .ok_or("invocation has no attempt")?,
+        reply: t.reply.clone(),
+    });
+    Ok(())
 }
 
 fn restore_or_remove_invocation(state: &mut State, i: usize, v: &Value) {
@@ -2574,19 +2721,30 @@ pub(crate) fn expire(t: &mut Transition, id: &str) -> Result<()> {
     Ok(())
 }
 
-/// Recover a persisted dispatch without reissuing it. No clock, timeout or shell
-/// observation can establish its outcome; only reconciliation (or an eligible
-/// caller repeat under OPS-012) can do so after this transition.
+/// Recover interrupted requests without reissuing them. Discovery-pending
+/// requests have not been sent. The outcome of a recorded dispatch is unknown.
 pub(crate) fn recover(t: &mut Transition, evidence: &Evidence, c: &Context) -> Result<()> {
     let mut a = Allocation {
         evidence,
         cursor: 0,
     };
-    for i in 0..t.state.invocations.len() {
+    let mut next = 0;
+    while next < t.state.invocations.len() {
+        let i = next;
+        next += 1;
         if crate::secrets::recover(t, &mut a, c, i)? {
             continue;
         }
         if t.state.invocations[i]["state"] == "in-progress" {
+            let v = &t.state.invocations[i];
+            if v["discovery"] == "pending" && v["hook"] != true {
+                let removed = v.get("previous").is_none();
+                reject_unsent(t, &mut a, c, i, UnsentDispatch::DecisionKept)?;
+                if removed {
+                    next -= 1;
+                }
+                continue;
+            }
             if awaiting_implementation(&t.state.invocations[i]) {
                 t.state.invocations[i]["unanswered_or_succeeded"] = json!(true);
             }
@@ -4185,6 +4343,7 @@ mod tests {
                 reply: Value::Null,
                 request_replies: vec![],
                 input_required: vec![],
+                validated_reason: None,
             },
             c,
         )

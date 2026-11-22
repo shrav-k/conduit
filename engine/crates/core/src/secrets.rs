@@ -355,6 +355,7 @@ pub(crate) fn complete(
                 } else {
                     "ACC-014"
                 };
+                t.validated_reason = Some((reason.into(), restriction.clone()));
                 return end(t, a, c, i, reason, Some(rule), Some(restriction));
             } else if reason.is_none() {
                 outcome = match (stated.and_then(Value::as_str), result["isError"] == true) {
@@ -449,6 +450,72 @@ fn end(
     } else {
         unavailable(t, a, c, i)
     }
+}
+
+pub(crate) fn record_fault(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    answer: Option<&(String, Value)>,
+    unsent_after_rename: bool,
+) -> Result<()> {
+    let v = t.state.invocations[i].clone();
+    if unsent_after_rename && v["secret_read"]["phase"] == "dispatched" {
+        let diagnostic =
+            crate::explain::dispatch_record_read_back(&c.qualified("get-secret.v1"), "SEC-016");
+        t.state.invocations[i]["cause"] = json!([diagnostic]);
+        let previous_replies = t.request_replies.len();
+        end(t, a, c, i, "unavailable", Some("SEC-016"), None)?;
+        for reply in &mut t.request_replies[previous_replies..] {
+            if let Some(diagnostics) =
+                reply.reply["structuredContent"]["diagnostics"].as_array_mut()
+            {
+                diagnostics.push(diagnostic.clone());
+            }
+        }
+        return Ok(());
+    }
+    if let Some((reason, restriction)) = answer {
+        let rule = if reason == "refused" {
+            "ACC-008"
+        } else {
+            "ACC-014"
+        };
+        requests::record(
+            t,
+            a,
+            c,
+            "invocation-ended",
+            json!({
+                "invocation":v["id"],"reason":reason,"ruleId":rule,"restriction":restriction
+            }),
+        )?;
+        return end(t, a, c, i, reason, Some(rule), Some(restriction));
+    }
+    let proposed = t
+        .records
+        .iter()
+        .any(|r| r["type"] == "invocation-dispatched" && r["data"]["invocation"] == v["id"]);
+    if v["secret_read"]["phase"] == "dispatched" && !proposed {
+        let cause = crate::explain::outcome_cause(&v, "unknown", "REC-007")?;
+        t.state.invocations[i]["cause"] = json!([cause]);
+        return end(t, a, c, i, "unknown", None, None);
+    }
+    unrecorded_read(t, a, c, i, "SEC-016")
+}
+
+pub(crate) fn unrecorded_read(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    rule: &str,
+) -> Result<()> {
+    let id = t.state.invocations[i]["id"].clone();
+    requests::discard_proposed_dispatch(t, &id);
+    record_decision(t, a, c, i, Some(("unavailable", rule)))?;
+    end(t, a, c, i, "unavailable", Some(rule), None)
 }
 
 fn awaiting_restart(waiter: &Value, restart: &Value) -> bool {
@@ -570,7 +637,7 @@ pub(crate) fn restart_if_needed(
     Ok(true)
 }
 
-fn restart_ended(
+pub(crate) fn restart_ended(
     t: &mut Transition,
     a: &mut Allocation<'_>,
     c: &Context,
@@ -740,6 +807,16 @@ pub(crate) fn recover(
         return Ok(true);
     }
     if v.get("secret_read").is_some() {
+        if matches!(
+            v["secret_read"]["phase"].as_str(),
+            Some("deciding" | "discover")
+        ) {
+            v["state"] = json!("unavailable");
+            let data = json!({"invocation":v["id"],"reason":"unavailable","ruleId":"SEC-016"});
+            record_decision(t, a, c, i, Some(("unavailable", "SEC-016")))?;
+            requests::record(t, a, c, "request-ended", data)?;
+            return Ok(true);
+        }
         v["state"] = json!("unknown");
         let data = json!({"invocation":v["id"],"outcome":"unknown"});
         if v["secret_read"]["phase"] == "dispatched" {

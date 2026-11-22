@@ -104,6 +104,7 @@ pub(crate) fn preflight(
             reply: Value::Null,
             request_replies: vec![],
             input_required: vec![],
+            validated_reason: None,
         };
         if let Some(mut rejection) = register_project(&mut trial, args, c, a, route)? {
             // Keep the chosen reason class and rule even when the diagnostics sort differently.
@@ -135,6 +136,7 @@ fn replacement(s: &State, args: &Value, c: &Context, a: &Allocation<'_>) -> Resu
         reply: Value::Null,
         request_replies: vec![],
         input_required: vec![],
+        validated_reason: None,
     };
     let evidence = crate::Evidence {
         time: a.evidence.time.clone(),

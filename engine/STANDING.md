@@ -46,7 +46,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | reason, no case | 54 | 17 | 1 | 72 |
 | no case, no reason | 22 | 65 | 19 | 106 |
 | all | 225 | 245 | 47 | 517 |
-| named in engine source | 157 | 172 | 29 | 358 |
+| named in engine source | 157 | 173 | 30 | 360 |
 
 ## The promises
 
@@ -169,7 +169,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | IFC-023 | interface | may | 0 | 0 | reason | none | reason, no case |
 | IFC-025 | interface | must | 36 | 0 | cases | loader, core | case passes |
 | IFC-026 | interface | must | 4 | 0 | outside | core, shell | case passes |
-| IFC-027 | interface | must | 4 | 0 | outside | none | case passes |
+| IFC-027 | interface | must | 4 | 0 | outside | core | case passes |
 | IFC-028 | interface | must | 4 | 0 | cases | core | case passes |
 | IFC-029 | interface | must | 0 | 0 | outside | none | no case, no reason |
 | IFC-030 | interface | must not | 0 | 0 | outside | none | no case, no reason |
@@ -471,7 +471,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | REC-004 | convention | must | 5 | 0 | cases | core | case passes |
 | REC-005 | convention | must | 2 | 0 | cases | core | case passes |
 | REC-006 | convention | must | 4 | 0 | cases | core | case passes |
-| REC-007 | convention | must | 0 | 0 | outside | none | no case, no reason |
+| REC-007 | convention | must | 0 | 0 | outside | core, shell | no case, no reason |
 | REV-001 | convention | must | 1 | 0 | cases | core | case passes |
 | REV-002 | convention | must | 1 | 0 | cases | core | case passes |
 | REV-003 | convention | must | 0 | 0 | reason | none | reason, no case |
@@ -535,7 +535,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | SEC-013 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | SEC-014 | convention | must | 2 | 0 | outside | none | case passes |
 | SEC-015 | convention | must not | 3 | 0 | outside | none | case passes |
-| SEC-016 | convention | must | 0 | 0 | outside | shell | no case, no reason |
+| SEC-016 | convention | must | 0 | 0 | outside | core, shell | no case, no reason |
 | SEC-017 | convention | must not | 2 | 0 | outside | none | case passes |
 | SEC-018 | convention | must not | 2 | 0 | outside | none | case passes |
 | SEC-019 | interface | must not | 0 | 0 | outside | none | no case, no reason |

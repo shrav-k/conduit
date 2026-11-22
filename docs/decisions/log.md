@@ -444,3 +444,35 @@ Owner's words: where the shared Agent contracts live -> "A contracts-only agent 
 Lands in: a package rule: the core package exports only what the engine implements, invokes or needs at first start; an `agent` package at the address move (DEC-035); the login and package orders and the second-account sitting come before the S1 chain where they contend; experiment 028's stage 2 results stand
 
 Status: accepted, not done (the agent package; the capacity work)
+
+## DEC-046, 2026-11-21, the Fleet grows on every account, by measurement
+
+Owner's words: the account map -> "Let’s discuss, we should use all the accounts for the test and to maximize agents for the fleet", then "Yes, grow by measurement (Recommended)"; Codex logins -> "What is this framing, we can have as many accounts and as many agents per account as we want right?", then "One login per account, shared"; the reuse rule -> "OpenAI's word + live watch (Recommended)"; at a limit -> "Pause that account (Recommended)"; reads -> "Both at once, blind (Recommended)"
+
+Lands in: cites DEC-042 and DEC-045; every account runs Agents: ChatGPT accounts worker pairs, two each to start, Claude accounts readers and a drafter, a pair added at a time while an account's week, the machine and the gate have room; the S3, S7 and S10 tests share the accounts; one Codex login per account per machine, a Pool's `codex-login` Resource linked into each Agent's own home, turns in parallel, a refresh failure that fails a turn raising one sign-in action and the login then taking one turn at a time until lifted, OpenAI's rule from its own word and the live login; a usage limit pauses only that account's lanes until its reset, and work never moves between accounts; for A77's ten orders the verifier and the reader read at once, blind, with one fix turn (amends rulings 79 and 87)
+
+Status: accepted, not done (the login spec, engine and package orders; the sitting)
+
+## DEC-047, 2026-11-21, usage in records, and harnesses in role templates
+
+Owner's words: usage -> "Engine keeps them now (Recommended)"; the harness -> "Role templates + inputs (Recommended)"
+
+Lands in: amends DEC-016's order for one measure: from the first Agent-package release after DEC-046's login, each turn's result carries the tokens its client reported, the model and the client version, and the engine keeps them in that call's end record (ruling 68 M1); numbers decide nothing in the engine; both Agent packages gain optional `instructions` and `outputSchema` inputs, mapped to each client's flags; pinned role templates fix each role's text, report schema, model and effort; auto memory, hooks, plugins, in-client subagents and repository discovery stay off
+
+Status: accepted, not done (a spec order, an engine order and the package orders)
+
+## DEC-048, 2026-11-21, exact pins and a closure walk
+
+Owner's words: the model -> "Exact digests + closure walk (Recommended)"; install's pin -> "Exact, up or down (Recommended)"; dependencies -> "Install the closure (Recommended)"; sources -> "Cache, file: fetch, mirrors (Recommended)"; S1's T2 -> "As written (Recommended)"; https -> "Nothing remote in v0 (Recommended)"
+
+Lands in: cites DEC-040 and ends B6's provisional rule: a manifest's exact pins are its lock, each package resolving through its own (NAM-014), with no lock file while there are no ranges; `conduit install ARCHIVE#HEX` pins that archive exactly, up or down, after installing its missing closure, each by its own printed install.v1, with `--dry-run`; a bare install restores; archives come from the cache, a `file:` fetch, then mirrors in the cache's layout; S1's T2 is one line (34/40), a tooling change; https waits for the first remote root
+
+Status: accepted, not done (a CLI order beside 245; orders 246 and 250 amended)
+
+## DEC-049, 2026-11-21, per-platform programs in one archive
+
+Owner's words: PRV-007 -> "Per-platform in one archive (Recommended)"
+
+Lands in: closes DEC-044's research: an implementation item may state `platforms`; its archive holds `platforms/<os>/<arch>/<program>`; such an item runs only on a matching node, through a runtime provider with `run.v2`, which checks the archive's digest on the node before unpacking; the engine keeps each archive's bytes as distributed; narrows DEC-035 for the two Agent packages, whose Linux builds need a cross toolchain installed only on the owner's approval
+
+Status: accepted, not done (spec, engine, kit and ssh-runtime, package and vendor-client orders)

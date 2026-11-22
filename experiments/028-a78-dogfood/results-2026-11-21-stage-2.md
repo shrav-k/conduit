@@ -28,28 +28,47 @@ about how well it reads.
 
 ## Verdict
 
+Amended on 2026-11-22 for the owner's four answers ([For the owner](#for-the-owner)). The 0.2.1
+install at 12:14 on 2026-11-20 ended stage 2
+([DEC-056](../../docs/decisions/log.md#dec-056-2026-11-22-the-021-install-ended-stage-2)), so
+its registered results are turns 1 to 10, of orders 217 and 218. Turns 11 to 104, up to order
+239's merge
+([DEC-059](../../docs/decisions/log.md#dec-059-2026-11-22-stage-2-ended-at-order-239s-merge)),
+are observations outside the stage. They are reported apart, and no verdict rests on them.
+
 No order of stage 2 passes, and stage 2's claims are not shown.
 
 - Stage 2's claims hold when each of its first five orders passes
-  ([its pass conditions](README.md#stage-2s-pass-conditions)). Those are 217, 218, 219, 222 and
-  220, by dispatch. None passes.
-- For every one of the 22 orders, condition 4 is not shown and condition 6 fails. Conditions 5,
-  7 and 8 hold for every order, by the records, and condition 2 by the coordinator's session
-  record. Conditions 1 and 3 also fail for 226, 232 and 236, and condition 9 for every order but
-  217 and 219.
+  ([its pass conditions](README.md#stage-2s-pass-conditions)). It ended with two, 217 and 218,
+  so its claims are not shown. Neither passes.
+- For both, over turns 1 to 10, condition 4 is not shown and condition 6 fails. Conditions 1
+  and 3 hold, conditions 5, 7 and 8 hold by the records, and condition 2 by the coordinator's
+  session record. Condition 9 also fails for 218: its read by `reader-1`, turn 10, was not fresh.
 - Claim 1 is not shown, since its orders do not pass. Its own condition, 8, holds: the records
   show no sign-in action raised after the owner's five sign-ins.
-- Claim 2 is not shown. `reader-1` gave each order its read through Conduit, but only 3 of its
-  25 turns were the first of a new conversation, and no guard read its clone.
-- 65 of the 104 turns were sent while another was in flight, which the registration does not
-  allow without a dated amendment, and none was written ([below](#turns-at-once)). Every order
-  but 236 has such a turn. Over the 39 turns sent with none in flight, the verdict is the same.
+- Claim 2 is not shown. `reader-1` gave each order its read through Conduit, but only 1 of its
+  2 turns, turn 5, was the first of a new conversation, and no guard read its clone.
+- 5 of the 10 turns, 3 to 7, were sent while another was in flight, which the registration does
+  not allow without a dated amendment, and none was written ([below](#turns-at-once)). Both
+  orders have such a turn. Over the 5 turns sent with none in flight, the verdict is the same.
+
+Read by the same conditions, the observations would fail too. For every one of the 20 orders
+observed, 219 to 239 but 237, condition 4 is not shown and condition 6 fails. Conditions
+5, 7 and 8 hold for every one, by the records, and condition 2 by the coordinator's session
+record. Conditions 1 and 3 also fail for 226, 232 and 236, and condition 9 for every order but
+219. 60 of the 94 turns, 218's turn 12 among them, were sent while another was in flight, and
+every observed order but 236 has such a turn. 2 of `reader-1`'s 23 turns there were the first of
+a new conversation.
 
 The registration asks each order for a directory with its scrubbed records export and its own
-result ([Stage 2's orders](README.md#stage-2s-orders)). None was made. The export holds no message
-or path. Its only private values are the five accounts that the sign-in answers' evidence names
-(`pending-action-answered`, `config/account`), which the registration's placeholders replace. For
-now this one file stands for the stage ([For the owner](#for-the-owner), item 3).
+result ([Stage 2's orders](README.md#stage-2s-orders)). None was made yet. The export holds no
+message or path. Its only private values are the five account values, of two accounts, that the
+sign-in answers' evidence names (`pending-action-answered`, `config/account`), which their
+labels will replace
+([DEC-058](../../docs/decisions/log.md#dec-058-2026-11-22-records-exports-committed-by-order)).
+The coordinator commits it split by order, as [The records, by order](#the-records-by-order)
+says. Until then this one file stands for the stage, and after it this file stays each order's
+result.
 
 ## The evidence, and its limit
 
@@ -59,9 +78,10 @@ CloudEvents, from the store's init at 23:45:05 PST on 2026-11-19 to 14:33:17 on 
 end of a turn of orders 240 to 242: 310 access decisions, 385 dispatches, 385 invocation endings,
 385 request endings, 234 object changes and 5 pending actions answered. Before it, serve had held
 the store since 08:35, so `conduit records` exited 1 (`store already has an active shell`). The
-export holds no message or path. Its only private values are the five accounts that the sign-in
-answers' evidence names (`pending-action-answered`, `config/account`), which the registration's
-placeholders replace. It is not committed, and nothing here quotes it.
+export holds no message or path. Its only private values are the five account values, of two
+accounts, that the sign-in answers' evidence names (`pending-action-answered`, `config/account`),
+which their labels will replace (DEC-058). It is not committed yet
+([The records, by order](#the-records-by-order)), and nothing here quotes it.
 
 So this file is built from the records and from what the coordinator kept:
 
@@ -98,6 +118,47 @@ Placeholders, as the registration asks:
 
 No name, account value or credential is in this file. Paths are the only redactions.
 
+## The records, by order
+
+The owner ruled that the export be committed, split by order, every account name replaced by its
+label
+([DEC-058](../../docs/decisions/log.md#dec-058-2026-11-22-records-exports-committed-by-order)).
+It is not committed yet: no records export of stage 2 is in the repository, and the export of
+14:44 on 2026-11-21 is only in the coordinator's private files, as `<records>`. No Agent or
+workflow opens a file that holds an account value, so the coordinator splits, scrubs, checks and
+commits it, after this amendment.
+
+- **Where.** Each order of this file, 217 to 239 but 237, gets the directory that
+  [What counts](README.md#what-counts-and-what-each-outcome-changes) names: `NNN-name/` in this
+  directory, named as the order's file in `docs/work-orders/` without `.md`, such as
+  `217-spec-rulings-78-76-83-cuts/`. Its `records.jsonl` holds, in the export's order, each record
+  whose `data.invocation` is the invocation of one of the order's turns in
+  [the turn table](#the-turns). 218's holds its turn 12 too.
+- **What each directory lacks.** It holds `records.jsonl` alone. The harness's log, measures,
+  reports and guard files that What counts names will not be there: the amendment of 2026-11-20
+  retired the harness that made them, and the reports are only in the coordinator's call
+  results, `<direct>`, which DEC-058 does not commit. No order gets a dated result of its own:
+  this file stays the result of each order, of the stage and of the observations.
+- **The rest.** Every other record goes in one file, `stage-2/records-other.jsonl`: the store's
+  init, the owner's sign-ins, the restarts' setups and account checks, the coordinator's lists,
+  the 0.2.1 install, and the turns of orders 215, 216 and 240 to 242, which are no order of this
+  file. So each record of the export is in exactly one file. Conditions 2, 8 and 9 read the
+  restarts' setups and account checks, so they read this file together with each order's.
+- **Left to split.** When it splits the export, the coordinator also splits at the install the
+  86 access decisions that are not turns (Access, in
+  [Measures and pass conditions](#measures-and-pass-conditions)), and, from its command history,
+  the 48 clone commands ([Manual steps](#manual-steps), step 2).
+- **Scrubbed.** Each account value is replaced by its account's label, and nothing else changes:
+  the four Codex Agents' by `primary-chatgpt` and `reader-1`'s by `primary-claude`, the accounts
+  [stage 2's instances](stage-2/fleet/instances.yaml) name as `<codex-account>` and
+  `<claude-account>`, which
+  [the registration's placeholders](README.md#stage-2-the-multi-slot-fleet-written-before-020)
+  define as the owner's primary ChatGPT and Claude accounts.
+- **Checked.** Before the commit, the coordinator checks that the files' lines add up to the
+  export's 1,704 and give the totals by type that [Commands](#commands) gives, and that no
+  account value is left in them. Before the merge, `python3 tools/check_private_paths.py`, run by
+  `python3 tools/gate.py --derive-private-names`, and the pull request's secret scan pass.
+
 ## The stage's bounds
 
 - **The start.** [The amendment of 2026-11-20](README.md#amendment-of-2026-11-20-stage-2-directly-through-conduit)
@@ -113,38 +174,65 @@ No name, account value or credential is in this file. Paths are the only redacti
   | 216 | `worker-2` | worker | 11-20 08:29:12 | 08:48:01 | `22f87d65-3614-4112-8433-cba6b5006df5` |
   | 216 | `verifier-2` | verifier | 11-20 08:48:55 | 08:55:53 | `f1cece81-8388-45d0-a2c1-dd46cf47258f` |
 
-- **The end.** The owner ended stage 2 once orders 236 to 239 were in
-  ([DEC-037](../../docs/decisions/log.md#dec-037-2026-11-21-the-post-dogfood-review)). Order 239
-  merged at 10:59:18 PST on 2026-11-21 (pull request 494). Order 237's text was written, but its
-  dispatch is held, so it sent no turn. The end is read as 239's merge, with 237 held. A reading
-  that waits for 237 would make orders 240 to 242 stage 2's. Who held 237, and whether it counts
-  as in, is the owner's to confirm ([For the owner](#for-the-owner), item 4).
-- **The orders.** There are 22, in dispatch order: 217, 218, 219, 222, 220, 223, 224, 225, 221,
-  230, 227, 229, 231, 228, 226, 232, 234, 233, 235, 236, 238 and 239. Between them they sent
-  104 turns, from 09:43:41 on 2026-11-20 to 10:37:23 on 2026-11-21 by the records: 22 first
-  worker turns, 35 fix turns, 22 verifier turns and 25 turns of `reader-1`. By Agent:
-  `worker-1` 28, `worker-2` 29, `verifier-1` 11, `verifier-2` 11 and `reader-1` 25.
-- **After the end.** From 12:55 on 2026-11-21, orders 240 to 242 had sent 15 turns on the same
-  store by 14:31. They are not counted here. The export holds no other turn: its 124 are these
-  15, the 104 and 215's and 216's 5.
+- **The end.** The 0.2.1 install at 12:14 PST on 2026-11-20, between turns 10 and 11, was an
+  upgrade of the store's Agent packages, so it ended the registered stage
+  ([DEC-056](../../docs/decisions/log.md#dec-056-2026-11-22-the-021-install-ended-stage-2)):
+  stage 2's results are its turns 1 to 10. Order 239's merge, at 10:59:18 PST on 2026-11-21
+  (pull request 494), is the end that "once orders 236 to 239 are in"
+  ([DEC-037](../../docs/decisions/log.md#dec-037-2026-11-21-the-post-dogfood-review)) set and
+  [DEC-059](../../docs/decisions/log.md#dec-059-2026-11-22-stage-2-ended-at-order-239s-merge)
+  confirms: order 237, which the coordinator held, sent no turn and kept no stage open. That merge
+  ends the turns this file numbers, so turns 11 to 104 are observations outside the stage. Order
+  237 and orders 240 to 242 are neither results nor observations.
+- **The orders.** Stage 2's are 217 and 218, both dispatched before the install. They sent
+  turns 1 to 10, from 09:43:41 to 12:13:13 on 2026-11-20 by the records: 2 first worker turns,
+  4 fix turns, 2 verifier turns and 2 turns of `reader-1`. By Agent: `worker-1` 3, `worker-2` 3,
+  `verifier-1` 1, `verifier-2` 1 and `reader-1` 2. 218's fix 3, turn 12, was sent after the
+  install, and is an observation.
+- **The observations.** Turns 11 to 104, from 12:20:19 on 2026-11-20 to 10:37:23 on 2026-11-21
+  by the records: 218's turn 12 and 20 orders, in dispatch order 219, 222, 220, 223, 224, 225,
+  221, 230, 227, 229, 231, 228, 226, 232, 234, 233, 235, 236, 238 and 239. They are 20 first
+  worker turns, 31 fix turns, 20 verifier turns and 23 turns of `reader-1`. By Agent:
+  `worker-1` 25, `worker-2` 26, `verifier-1` 10, `verifier-2` 10 and `reader-1` 23. With the
+  stage's, they are the 22 orders and 104 turns this file numbers.
+- **After 239's merge.** From 12:55 on 2026-11-21, orders 240 to 242 had sent 15 turns on the same
+  store by 14:31. They fall outside stage 2 (DEC-059) and are not counted here. The export holds
+  no other turn: its 124 are these 15, the 104 and 215's and 216's 5.
 
 ## Turns at once
 
-All counts here are from the records' dispatch and end times, to the millisecond.
+All counts here are from the records' dispatch and end times, to the millisecond. No turn of the
+stage overlapped one after it.
 
-- 77 of the 104 turns overlapped another turn: each of the two was dispatched before the other
-  ended. 27 overlapped none.
-- 65 were sent while another was in flight. 60 of them started inside another's span by the
-  coordinator's clock as well. The other 5 are the later of the five pairs, of six that the clock
-  put in the same second, in which no third turn was in flight: 3 was dispatched 0.50 s after 2,
-  12 0.64 s after 11, 25 0.65 s after 24, 60 0.69 s after 59 and 97 0.75 s after 96. 36 and 37,
-  also in one second by the clock, were both sent while 35 was in flight.
-- 39 were sent with none in flight: 1, 2, 8 to 11, 13, 14, 15, 19, 20, 22, 23, 24, 26, 27, 33,
-  40, 44, 59, 80 to 84, 87 to 96 and 101 to 104. 12 of them had another turn sent beside them
-  while they ran. The clock alone gave 34, without 2, 11, 24, 59 and 96.
-- At most three ran at once.
+In stage 2, turns 1 to 10:
+
+- 6 of the 10 turns overlapped another turn: each of the two was dispatched before the other
+  ended. 4 overlapped none: 1, 8, 9 and 10.
+- 5 were sent while another was in flight: 3 to 7. 4 of them started inside another's span by
+  the coordinator's clock as well. The other, 3, was dispatched 0.50 s after 2, in the same
+  second by the clock, with no third turn in flight.
+- 5 were sent with none in flight: 1, 2, 8, 9 and 10. One of them, 2, had another turn sent
+  beside it while it ran. The clock alone gave 4, without 2.
+- At most two ran at once.
 - The first overlap was turns 2 and 3: `verifier-1` on 217, dispatched at 10:25:11 on 2026-11-20,
   and `worker-2` on 218, half a second later.
+
+Among the observations, turns 11 to 104:
+
+- 71 of the 94 turns overlapped another turn. 23 overlapped none.
+- 60 were sent while another was in flight. 56 of them started inside another's span by the
+  coordinator's clock as well. The other 4 are the later of the four pairs, of five that the
+  clock put in the same second, in which no third turn was in flight: 12 was dispatched 0.64 s
+  after 11, 25 0.65 s after 24, 60 0.69 s after 59 and 97 0.75 s after 96. 36 and 37, also in one
+  second by the clock, were both sent while 35 was in flight.
+- 34 were sent with none in flight: 11, 13, 14, 15, 19, 20, 22, 23, 24, 26, 27, 33, 40, 44, 59,
+  80 to 84, 87 to 96 and 101 to 104. 11 of them had another turn sent beside them while they
+  ran. The clock alone gave 30, without 11, 24, 59 and 96.
+- At most three ran at once.
+- The first overlap was turns 11 and 12, 219's worker and 218's fix 3.
+
+Over both:
+
 - The registration sends one turn at a time until 0.2.1's `new-conversation.v1` is installed. It
   says "a turn sent while another is in flight is not stage 2's". Only a dated amendment merged
   before the first such turn can let turns run at once
@@ -157,77 +245,131 @@ All counts here are from the records' dispatch and end times, to the millisecond
   its own pace levers. It found the conflict on 2026-11-21, logged it in its notes (private) and
   told the owner.
 - No serve restart was made while a turn was in flight.
-- So the 65 turns sent in flight are outside the registration. Nothing about turns at once is a
-  result here.
-- Only order 236 ran with all its turns inside the registration; 239's turn 97 was sent while
-  238's turn 96 was in flight. Order 236 still fails conditions 1, 3, 6 and 9, and condition 4 is
-  not shown.
+- So turns 3 to 7, sent in flight, are outside the registration, as the 60 observed would be.
+  Nothing about turns at once is a result here.
+- Neither of stage 2's orders ran with all its turns sent alone. Among the observations only
+  order 236 did; 239's turn 97 was sent while 238's turn 96 was in flight. Order 236 still
+  shows conditions 1, 3, 6 and 9 failing, and condition 4 not shown.
 
 ## Measures and pass conditions
 
-Each condition is shown twice: over every turn of stage 2's orders, and over the 39 turns sent
-with no other in flight, the registration's count: 1, 2, 8 to 11, 13, 14, 15, 19, 20, 22, 23,
-24, 26, 27, 33, 40, 44, 59, 80 to 84, 87 to 96 and 101 to 104 ([the turn table](#the-turns)).
+Each condition is shown for stage 2's turns, 1 to 10, and apart for the observations, 11 to 104.
+Each is shown twice: over every turn, and over the turns sent with no other in flight, the
+registration's count: 1, 2, 8, 9 and 10 in the stage, and the 34 listed in
+[Turns at once](#turns-at-once) among the observations ([the turn table](#the-turns)).
 
-| Condition | Over every turn (104) | Over the turns sent alone (39) |
-| --- | --- | --- |
-| 1. No turn lost | Fails: 4 lost. Turns 89 and 90 (`reader-1`, order 236) ended `unknown`, in the records as in the call results. Turns 72 and 82 (`reader-1`, orders 226 and 232) left reports that are invalid, with no repair turn sent; a report left so is read as still invalid after its repair turn. | Fails: 3 lost, turns 82, 89 and 90. |
-| 2. Set-up at most 240 s | Holds, by the coordinator's session record, not by the records, which hold neither serve's stop nor its start. There were 4 restarts, before turns 1, 2 and 3, 11 and 12, and 91. By the session record, the stop was a command of 8 s, then the start one of 21 s at 09:43 and 24 s at 10:24; at 12:19 and 08:35 one command did both, in 35 and 36 s. From each restart command's start to root's tools answering took at most 36 s. Root's tools answered 12 to 14 s after serve's start, polled every 2 s, before the setups ended, which the records put 15 to 20 s after the first setup's dispatch. Every other turn had no restart before it. | Holds, by the coordinator's session record, not by the records: 4 restarts (before turns 1, 2, 11 and 91), at most 36 s from each restart command's start to root's tools answering, and 12 to 14 s from serve's start. |
-| 3. Reports valid, causes named | Fails. 100 of the 102 reports are valid against their schemas at the first try. `reader-1`'s reports on 226 and 232 lack `findings`, and no repair turn was sent. The cause of turns 89 and 90 is `client failure: other`, which names none. | Fails: 36 of 37 valid (232's reader); turns 89 and 90 the same. |
-| 4. No guard broken or unknown | Not shown: Conduit has no guard ([the amendment of 2026-11-20](README.md#amendment-of-2026-11-20-stage-2-directly-through-conduit)), and the records hold no guard's answer. | Not shown. |
-| 5. No turn recorded as not having occurred | Holds. None of the export's 385 `invocation-ended` records has `reconciled` true or the outcome `failed`, and no `reconcile.v1` was dispatched. Each turn had one attempt, which ended `succeeded` or `unknown`. | Holds, the same. |
-| 6. Each friction in the open log before the next order | Fails. [The open log](../../docs/implementation/first-build/log-increment-4.md)'s last row is 4-37, from before stage 2. The stage's frictions (gaps 1 to 16, the lost turns, the reports left invalid, the moves of 224 and 226 between pairs) are only in the coordinator's notes (private). | Fails, the same. |
-| 7. Every turn found in the export | Holds, with the coordinator's call results read as the log, since the amendment retired the harness. Each of the 104 calls' invocations is in the export with its caller, its Agent (the target's ID, one to one with the five turn tools), its dispatch, its end and its outcome, and the outcome and tool match the call's. | Holds, the same. |
-| 8. No sign-in asked again | Holds. The records' 5 sign-in actions, one per Agent, were raised by the init's setups at 23:45 on 2026-11-19 and answered by the owner's sign-ins from 23:50 to 23:52. No record after them raises one, up to the export's last at 14:33 on 2026-11-21: no turn's end, and none of the 20 setups at the stage's 4 restarts, whose account checks all succeeded. No turn ended on a sign-in. | Holds, the same. |
-| 9. Every read fresh | Fails: 9 of 47 reads were their Agent's first turn since a restart (verifiers 6 of 22, `reader-1` 3 of 25). | Fails: 8 of 23 (verifiers 6 of 13, `reader-1` 2 of 10). |
+| Condition | Turns 1 to 10 | Sent alone (5) | Turns 11 to 104 | Sent alone (34) |
+| --- | --- | --- | --- | --- |
+| 1. No turn lost | Holds | Holds | Fails: 4 lost | Fails: 3 lost |
+| 2. Set-up at most 240 s | Holds | Holds | Holds | Holds |
+| 3. Reports valid, causes named | Holds | Holds | Fails: 90 of 92 | Fails: 31 of 32 |
+| 4. No guard broken or unknown | Not shown | Not shown | Not shown | Not shown |
+| 5. No turn recorded as not having occurred | Holds | Holds | Holds | Holds |
+| 6. Each friction in the open log before the next order | Fails | Fails | Fails | Fails |
+| 7. Every turn found in the export | Holds | Holds | Holds | Holds |
+| 8. No sign-in asked again | Holds | Holds | Holds | Holds |
+| 9. Every read fresh | Fails: 3 of 4 | Fails: 2 of 3 | Fails: 6 of 43 | Fails: 6 of 20 |
 
-Over the clock's 34 turns sent alone, each value is the same but 2 (2 restarts, before turns 1
-and 91, 12 and 14 s from serve's start), 3 (31 of 32 valid) and 9 (6 of 20: verifiers 4 of 11, `reader-1` 2 of 9).
+1. **No turn lost.** In the stage every turn succeeded, with a valid report. Among the
+   observations 4 were lost. Turns 89 and 90 (`reader-1`, order 236) ended `unknown`, in the
+   records as in the call results. Turns 72 and 82 (`reader-1`, orders 226 and 232) left reports
+   that are invalid, with no repair turn sent; a report left so is read as still invalid after
+   its repair turn. Of the 34 sent alone, 3 were lost: 82, 89 and 90.
+2. **Set-up.** It holds by the coordinator's session record, not by the records, which hold
+   neither serve's stop nor its start. There were 4 restarts: 2 in the stage, before turn 1 and
+   before turns 2 and 3, and 2 among the observations, before turns 11 and 12 and before turn 91.
+   Over the turns sent alone they were before turns 1 and 2, and 11 and 91. By the session
+   record, the stop was a command of 8 s, then the start one of 21 s at 09:43 and 24 s at 10:24;
+   at 12:19 and 08:35 one command did both, in 35 and 36 s. From each restart command's start to
+   root's tools answering took at most 36 s. Root's tools answered 12 to 14 s after serve's
+   start, polled every 2 s, before the setups ended, which the records put 15 to 20 s after the
+   first setup's dispatch. Every other turn had no restart before it.
+3. **Reports.** In the stage all 10 reports are valid against their schemas at the first try.
+   Among the observations 90 of the 92 are, and 31 of the 32 of turns sent alone: `reader-1`'s
+   reports on 226 and 232 lack `findings`, and no repair turn was sent; 232's turn was sent
+   alone. The cause of turns 89 and 90 is `client failure: other`, which names none.
+4. **Guards.** Not shown: Conduit has no guard
+   ([the amendment of 2026-11-20](README.md#amendment-of-2026-11-20-stage-2-directly-through-conduit)),
+   and the records hold no guard's answer.
+5. **Not having occurred.** None of the export's 385 `invocation-ended` records has `reconciled`
+   true or the outcome `failed`, and no `reconcile.v1` was dispatched. Each turn had one attempt,
+   which ended `succeeded`, or `unknown` for turns 89 and 90.
+6. **Frictions.** [The open log](../../docs/implementation/first-build/log-increment-4.md)'s last
+   row is 4-37, from before stage 2. The frictions of the stage and of the observations (gaps 1
+   to 16, the lost turns, the reports left invalid, the moves of 224 and 226 between pairs) are
+   only in the coordinator's notes (private).
+7. **Found.** With the coordinator's call results read as the log, since the amendment retired
+   the harness. Each of the 104 calls' invocations is in the export with its caller, its Agent
+   (the target's ID, one to one with the five turn tools), its dispatch, its end and its outcome,
+   and the outcome and tool match the call's.
+8. **Sign-in.** The records' 5 sign-in actions, one per Agent, were raised by the init's setups
+   at 23:45 on 2026-11-19 and answered by the owner's sign-ins from 23:50 to 23:52. No record
+   after them raises one, up to the export's last at 14:33 on 2026-11-21: no turn's end, and none
+   of the 20 setups at the 4 restarts, 10 in the stage and 10 after it, whose account checks all
+   succeeded. No turn ended on a sign-in.
+9. **Fresh reads.** In the stage 3 of 4 reads were their Agent's first turn since a restart:
+   verifiers 2 of 2, `reader-1` 1 of 2, since its read of 218, turn 10, was its second. Sent
+   alone: 2 of 3 (verifiers 2 of 2, `reader-1` 0 of 1). Among the observations, 6 of 43
+   (verifiers 4 of 20, `reader-1` 2 of 23); sent alone, 6 of 20 (verifiers 4 of 11, `reader-1`
+   2 of 9).
+
+Over the clock's turns sent alone, 4 in the stage (1, 8, 9 and 10) and 30 among the
+observations, each value is the same but 2, 3 and 9. In the stage: 1 restart, before turn 1;
+4 of 4 reports valid; 1 of 2 reads fresh (verifiers 1 of 1, `reader-1` 0 of 1). Among the
+observations: 1 restart, before turn 91; 27 of 28 valid; 5 of 18 fresh (verifiers 3 of 10,
+`reader-1` 2 of 8).
 
 Without `new-conversation.v1`, a turn sent with no restart before it goes on in its Agent's last
 conversation, which keeps the earlier turns' context (gap 10 in the coordinator's notes). The
 amendment reads condition 9 from Conduit's records. They show each restart as a setup of every
-Agent, first dispatched at 09:43:10, 10:24:32 and 12:19:28 on 2026-11-20 and 08:35:43 on
-2026-11-21, 2 to 9 s after the coordinator's restart commands, and no `new-conversation.v1`.
-Read from them, the fresh reads are as the restart commands gave them. For `reader-1` the
-package agrees. Its result reports the client's tools as `current` on turns 5, 15 and 91 only,
-and as `session_init_unverified` on its other 20 turns that succeeded. Its lost turn 89 failed as
+Agent, first dispatched at 09:43:10 and 10:24:32 on 2026-11-20 in the stage, and at 12:19:28
+on 2026-11-20 and 08:35:43 on 2026-11-21 after it, 2 to 9 s after the coordinator's restart
+commands, and no `new-conversation.v1`. Read from them, the fresh reads are as the restart
+commands gave them. For `reader-1` the package agrees. Its result reports the client's tools as
+`current` on turns 5, 15 and 91 only, and as `session_init_unverified` on its other 20 turns that
+succeeded: turn 10 in the stage, and 19 among the observations. Its lost turn 89 failed as
 "client turn 18", which matches the 18 turns `reader-1` was sent from the restart at 12:19 on
 2026-11-20 to that read.
 
 Stage-level measures:
 
-- **Restarts.** 4 in the stage: 09:43, 10:24 and 12:19 on 2026-11-20, and 08:35 on 2026-11-21,
-  each a setup of all five Agents in the records. One more at 07:27 on 2026-11-20 came before
-  order 215. Each took 12 to 14 s, as above.
-- **Waits for a turn in flight.** None is logged. Instead, 65 turns were sent beside one already
-  in flight.
+- **Restarts.** 2 in the stage, at 09:43 and 10:24 on 2026-11-20, and 2 after it, at 12:19 on
+  2026-11-20 and 08:35 on 2026-11-21, each a setup of all five Agents in the records. One more
+  at 07:27 on 2026-11-20 came before order 215. Each took 12 to 14 s, as above.
+- **Waits for a turn in flight.** None is logged. Instead, 5 turns of the stage and 60 of the
+  observations were sent beside one already in flight.
 - **Restarts and new conversations.** The registration counts restarts to show what a new
   conversation without a restart would remove. Here restarts were few because conversations were
   carried on instead. The cost fell on condition 9, not on set-up time.
-- **Work seconds**, from each turn's dispatch to its end in the records. The total is 67331 s;
-  over the 39 turns sent alone it is 18675 s (15311 s over the clock's 34). The medians of the
-  turns that succeeded: first worker turns 1015 s, fix turns 572 s, verifier turns 286 s and
-  `reader-1`'s turns 275 s.
-- **`reader-1`'s turns.** Their seconds are in the turn table, with a median of 275 s over the
-  23 that succeeded. No result reports tokens.
+- **Work seconds**, from each turn's dispatch to its end in the records, as the turn table
+  rounds them. In the stage the total is 10115 s; over the 5 turns sent alone it is 4951 s
+  (4565 s over the clock's 4). Its turns all succeeded: first worker turns 1932 and 1593 s, fix
+  turns a median of 807 s over 4, verifier turns 386 and 602 s and `reader-1`'s turns 873 and
+  994 s. Among the observations the total is 57216 s; over the 34 sent alone it is 13724 s
+  (10746 s over the clock's 30). The medians of the turns that succeeded: first worker turns
+  955.5 s, fix turns 495 s, verifier turns 282.5 s and `reader-1`'s turns 273 s. Over all 104,
+  as before: 67331 s, and medians of 1015, 572, 286 and 275 s.
+- **`reader-1`'s turns.** Their seconds are in the turn table: 873 and 994 s in the stage, and
+  a median of 273 s over the 21 that succeeded among the observations. No result reports tokens.
 - **Access.** From turn 1's dispatch to turn 104's end the records hold 190 access decisions, and
-  every one permitted. 104 are the turns' own, each `mediated` and naming its Agent's turn tool.
-  The other 86 are the restarts' setups and the coordinator's lists and the 0.2.1 install's
-  calls. None was refused. The store's 6 opens (`open.v1`) were at its init, at 23:45 on
-  2026-11-19; none was in the stage, and nothing was ever closed. So no order tested access
-  (D57).
+  every one permitted. 104 are the turns' own, 10 in the stage and 94 among the observations,
+  each `mediated` and naming its Agent's turn tool. The other 86 are the restarts' setups and the
+  coordinator's lists and the 0.2.1 install's calls; this file does not split them at the
+  install, which needs the records. Every access decision in the export was permitted, so none
+  was refused in the stage or after it. The store's 6 opens (`open.v1`) were at its init, at
+  23:45 on 2026-11-19; none was in the stage or after it, and nothing was ever closed. So no
+  order tested access (D57).
 - **Attempts and reconciliation.** Every turn had one attempt, and no `reconcile.v1` was
   dispatched. After turn 89 ended `unknown`, its Agent was sent a new turn request (90); after
   90, a restart and another (91). No field of the records links a new request to the turn it
   replaced.
 - **Sign-in actions and account checks.** The records hold 5 sign-in actions, as condition 8
   says: raised at the init and answered at the owner's sign-ins, whose `sign-in.v1` took 10 to
-  50 s each and succeeded; each one's `sign-in-hook.v1` part ended `unknown`. In the stage none
-  was raised and none was pending after a restart. Each of the 20 setups at the stage's restarts
-  ran its account check, which succeeded, and no `sign-out-hook.v1` undid an account. By the
-  engine's rule a setup raises an action on any answer but the account its Agent names; the
-  export does not carry the answer itself.
+  50 s each and succeeded; each one's `sign-in-hook.v1` part ended `unknown`. In the stage and
+  after it none was raised and none was pending after a restart. Each of the 20 setups at the 4
+  restarts, 10 in the stage and 10 after it, ran its account check, which succeeded, and no
+  `sign-out-hook.v1` undid an account. By the engine's rule a setup raises an action on any
+  answer but the account its Agent names; the export does not carry the answer itself.
 
 Measures not shown, for want of records or logs:
 
@@ -251,15 +393,23 @@ in the records with caller, Agent, dispatch, end and outcome. "Refused/opened/cl
 access decisions not permitted and the `open.v1` and `close.v1` that succeeded, from the order's
 first dispatch to its last end. No order raised a sign-in action.
 
-All 22 orders merged (pull requests 453 to 494). Twenty merged on reads that were not fresh,
-which condition 9 says nothing merges on. 226 and 232 merged on invalid reader reports with no
-repair turn and no read outside Conduit. 236's lost read was sent again through Conduit, not
-outside it as the registration asks.
+All 22 orders merged (pull requests 453 to 494). The first table gives stage 2's two orders,
+over turns 1 to 10; the second gives 218's turn 12 and the 20 orders observed after the stage.
+218 merged on a read that was not fresh, which condition 9 says nothing merges on, and so did 19
+of the 20 observed, all but 219. Among the observed, 226 and 232 merged on invalid reader
+reports with no repair turn and no read outside Conduit, and 236's lost read was sent again
+through Conduit, not outside it as the registration asks.
 
 | Order | Agents | Turns | In export | Sent alone | Verifier m/s/n | Reader m/s/n | Reports invalid | Lost | Reads fresh | Refused/opened/closed |
 | ---: | --- | ---: | --- | ---: | --- | --- | --- | ---: | --- | --- |
 | 217 | `reader-1`, `verifier-1`, `worker-1` | 5 | 5 of 5 | 2 | 2/1/0 | 2/2/1 | none | 0 | 2 of 2 | 0/0/0 |
-| 218 | `reader-1`, `verifier-2`, `worker-2` | 6 | 6 of 6 | 3 | 3/0/0 | 0/4/0 | none | 0 | 1 of 2 | 0/0/0 |
+| 218 | `reader-1`, `verifier-2`, `worker-2` | 5 | 5 of 5 | 3 | 3/0/0 | 0/4/0 | none | 0 | 1 of 2 | 0/0/0 |
+
+The observations:
+
+| Order | Agents | Turns | In export | Sent alone | Verifier m/s/n | Reader m/s/n | Reports invalid | Lost | Reads fresh | Refused/opened/closed |
+| ---: | --- | ---: | --- | ---: | --- | --- | --- | ---: | --- | --- |
+| 218 | `worker-2` | 1 | 1 of 1 | 0 | no read | no read | none | 0 | no read | 0/0/0 |
 | 219 | `reader-1`, `verifier-1`, `worker-1` | 5 | 5 of 5 | 4 | 2/0/0 | 0/1/2 | none | 0 | 2 of 2 | 0/0/0 |
 | 222 | `reader-1`, `verifier-2`, `worker-2` | 4 | 4 of 4 | 2 | 10/0/0 | 0/3/0 | none | 0 | 1 of 2 | 0/0/0 |
 | 220 | `reader-1`, `verifier-1`, `worker-1` | 4 | 4 of 4 | 3 | 0/1/0 | 0/0/0 | none | 0 | 0 of 2 | 0/0/0 |
@@ -293,13 +443,15 @@ outside it as the registration asks.
   order ran on one pair, its turns in that pair's slot and the reader's in `<slot-r>`. Both moves
   were the coordinator's interventions.
 - In eight orders a worker's turn succeeded but stopped under the order's own stop rule, and the
-  coordinator decided or widened the scope by hand: 218 (turn 3), 220 (21), 222 (16), 224 (28),
-  226 (57), 228 (51), 229 (48) and 232 (68).
+  coordinator decided or widened the scope by hand: 218 (turn 3) in the stage, and 220 (21), 222
+  (16), 224 (28), 226 (57), 228 (51), 229 (48) and 232 (68) among the observations.
 - The coordinator also changed an order's scope or text in the middle of the order, in 220, 223,
   224, 226, 227 and 231. It fixed files itself in 218, 222 and 228, and mirrored them into the
   slot where the worker went on.
 
 ## Turns lost, and other failures
+
+No turn of the stage was lost or failed. Each of these is among the observations.
 
 - **Turn 89**: order 236, `reader-1`, 00:34:37 to 00:37:00 on 2026-11-21, by the records.
   - It ended `unknown` under IFC-010. The package's error reads: "client turn 18 failed: client
@@ -335,10 +487,12 @@ Each is a gap in the coordinator's notes (private), to be ordered as engine and 
 (ruling 92, points 2 and 9).
 
 1. Serve was started by hand under `env -i`, with a PATH of tool directories and a call timeout
-   of 7200 s. This happened 5 times, once before the stage (gap 1).
+   of 7200 s. This happened 5 times: once before the stage, twice in it and twice after it
+   (gap 1).
 2. Before each order, each slot and the reader's clone were brought to `main` by hand, as a fresh
    clone with the build cache kept (gaps 2 and 11). The coordinator's command history holds 48
-   commands that made such a clone in the stage: 13 of `<slot-1>`, 13 of `<slot-2>` and 22 of `<slot-r>`. One copy
+   commands that made such a clone from the stage's start to 239's merge: 13 of `<slot-1>`, 13 of
+   `<slot-2>` and 22 of `<slot-r>`; this file does not split them at the install. One copy
    into `<slot-r>` left deleted files behind (order 217). One set of clones came from a stale
    local `main`, and 222's start check stopped it.
 3. A worker and its verifier share one directory. The verifier is asked to stay read-only by its
@@ -348,11 +502,11 @@ Each is a gap in the coordinator's notes (private), to be ordered as engine and 
 5. Each worker's changes were copied by hand into a fresh trusted worktree, leaving out `.git` and
    build output. The gate ran there (gap 5).
 6. A fresh conversation needs a restart of serve, which ends every Agent's conversation. There
-   were 4 such restarts (gap 11).
+   were 4 such restarts, 2 in the stage and 2 after it (gap 11).
 7. At 12:14 on 2026-11-20 the coordinator installed the 0.2.1 archives and replaced the Codex
    verifier template with 0.2.1. It put the template back by 12:17. Instances keep the template
    they resolved, so upgrading means replacing each instance and signing each one in again
-   (gap 13).
+   (gap 13). The install ended stage 2 (DEC-056).
 8. Merges conflicted on the order index and on the gate's engine list, and the conflicts were
    resolved by hand, more than a dozen times, until order 238 (gaps 14 and 15).
 9. The weekly limit's dead session needed a restart of serve (above).
@@ -365,15 +519,18 @@ Each is a gap in the coordinator's notes (private), to be ordered as engine and 
 - 2026-11-20, just after midnight: the five sign-ins, in one sitting, as the amendment of
   2026-11-20 records. The records put them earlier: `sign-in.v1` dispatched from 23:49:40 to
   23:52:22 PST on 2026-11-19, the last ending at 23:52:32.
-- None during the stage's turns.
+- None during the turns, in the stage or after it.
   - On 2026-11-20 the owner moved the 0.2.1 sign-ins to the second-account sitting.
   - On 2026-11-21 the owner held the S1 rerun's sitting
     ([DEC-038](../../docs/decisions/log.md#dec-038-2026-11-21-the-s1-rerun-waits-for-the-simplification-chain)).
-  - The owner answered questions in chat throughout the stage. On 2026-11-20 the owner struck the
-    coordinator's reading that `reader-1` waits for a guard (the coordinator's notes, private).
-    The amendment of 2026-11-20 leaves exactly that to the owner.
+  - The owner answered questions in chat in the stage and after it. On 2026-11-20 the owner
+    struck the coordinator's reading that `reader-1` waits for a guard (the coordinator's notes,
+    private). The amendment of 2026-11-20 leaves exactly that to the owner.
 
 ## Stops and pauses
+
+No stop rule's condition was shown met in the stage. The pause and stop rule 4's condition
+below came among the observations.
 
 - **A pause.** The Claude weekly limit stopped the coordinator's session at 00:37 on 2026-11-21;
   its message gave the reset as 1am. No turn was sent until 08:33, after the owner's next message
@@ -386,30 +543,54 @@ Each is a gap in the coordinator's notes (private), to be ordered as engine and 
   shown.
 - **Stop rule 1** had no guard to answer it.
 - **Stop rules 2, 3 and 5.**
-  - No sign-in was asked again: the records show no sign-in action raised in the stage. Every
-    setup's account check succeeded and raised no action; the export does not carry the account
-    each answered.
+  - No sign-in was asked again: the records show no sign-in action raised in the stage or
+    after it. Every setup's account check succeeded and raised no action; the export does not
+    carry the account each answered.
   - Serve came back within 14 s each time, by the coordinator's session record.
 
 ## For the owner
+
+All four items are answered, on 2026-11-22, and this file is amended for each answer.
 
 1. **The 0.2.1 install.** It happened at 12:14 on 2026-11-20, between turns 10 and 11. No instance
    left 0.2.0, and no turn was in flight. The registration ends stage 2 at "an upgrade of the
    store's Agent packages" unless an amendment says otherwise. Is this such an upgrade? If it is,
    stage 2 ended there, and turns 11 to 104 are outside as well.
+   **Answered:** "It ended stage 2 (Recommended)"
+   ([DEC-056](../../docs/decisions/log.md#dec-056-2026-11-22-the-021-install-ended-stage-2)).
+   A registration's end condition holds as written when no amendment merged before the event
+   says otherwise. Stage 2's registered results are turns 1 to 10, and turns 11 to 104 are
+   observations outside the stage.
 2. **Order 235.** Its pull request (488) changed this directory: the coordinator pinned the links,
    outside every turn
    ([the amendment of 2026-11-21](README.md#amendment-of-2026-11-21-links-after-work-order-235)).
    The registration says no order that changes this directory goes through Conduit in stage 2.
+   **Answered:** "No breach (Recommended)"
+   ([DEC-057](../../docs/decisions/log.md#dec-057-2026-11-22-order-235s-change-was-no-breach)).
+   The bar covers orders sent through Conduit's Fleet. The link pinning, made by the coordinator
+   outside every turn, neither breached it nor ended the stage. Order 235 is among the
+   observations (turns 83, 85 and 86), so DEC-057 changes no result of the stage: what it settles
+   is that 235's merge did not end the observations, which run to 239's merge.
 3. **The records.** They were exported with serve stopped at 14:44 on 2026-11-21, and this file
    is checked against them. The registration asks for each order's directory with its scrubbed
    export. The export's only private values are the five accounts the sign-in answers name. With
    those five values replaced, should the export, split by order, be committed as the
    registration asks?
+   **Answered:** "Commit it, split by order (Recommended)"
+   ([DEC-058](../../docs/decisions/log.md#dec-058-2026-11-22-records-exports-committed-by-order)).
+   Each order's directory is to hold its scrubbed export, every account name replaced by its
+   label, checked by the private-paths guard before merge.
+   [The records, by order](#the-records-by-order) says where and how; the commit is the
+   coordinator's.
 4. **The end.** [DEC-037](../../docs/decisions/log.md#dec-037-2026-11-21-the-post-dogfood-review)
    ends stage 2 "once orders 236 to 239 are in", and 237 sent no turn. This file reads the end as
    239's merge, with 237 held. If 237 must be in first, orders 240 to 242 are stage 2's. Who held
    237, and does it count as in?
+   **Answered:** "Ended at 239's merge (Recommended)"
+   ([DEC-059](../../docs/decisions/log.md#dec-059-2026-11-22-stage-2-ended-at-order-239s-merge)).
+   An order the coordinator held, which sent no turn, keeps no stage open. Order 237, held under
+   [DEC-005](../../docs/decisions/log.md#dec-005-2026-11-20-v0s-gate-publication-and-stewardship)
+   and run later on the owner's answer, and orders 240 to 242 fall outside stage 2.
 
 ## The turns
 
@@ -417,7 +598,8 @@ Times are PST: a turn's start is its dispatch in the records and its end its end
 second; within one second the order is the records' milliseconds. "Seconds" is end minus
 dispatch, from the milliseconds, rounded. "Overlaps" lists the other turns whose span crossed
 this one's. "Read fresh" says, for a verifier or reader turn, whether it was its Agent's first
-turn since a restart; if not, which turn of that conversation it was.
+turn since a restart; if not, which turn of that conversation it was. Turns 1 to 10 are stage
+2's; turns 11 to 104 are observations after its end (DEC-056).
 
 | # | Order | Agent | Role | Start | End | Seconds | Outcome | Invocation | Overlaps | Read fresh |
 | ---: | ---: | --- | --- | --- | --- | ---: | --- | --- | --- | --- |
@@ -554,8 +736,9 @@ and `check_records.py` and `from_records.py` for the records) compute them from 
   result's name and its background task, and by its invocation ID to the records. A turn's start
   and end are its `invocation-dispatched` and `invocation-ended` records' times, and its Agent is
   its access decision's `tool`. The call the CLI refused at 00:30:11 on 2026-11-21 is not a turn.
-- **Stage 2's turns.** Those of orders 217 to 239, sent after the amendment's merge and before
-  239's merge, numbered by dispatch.
+- **The turns numbered.** Those of orders 217 to 239, sent after the amendment's merge and
+  before 239's merge, numbered by dispatch. Stage 2's are those dispatched before the 0.2.1
+  install at 12:14 on 2026-11-20, turns 1 to 10 (DEC-056); the rest are observations.
 - **Overlaps.** Two turns overlap when each is dispatched before the other ends.
 - **Sent in flight.** A turn is sent in flight when another was dispatched before it and had not
   ended. A turn is sent alone when it was not. No two turns share a dispatch time to the

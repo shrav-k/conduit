@@ -21,16 +21,18 @@ mod authored;
 mod diagnostic;
 pub mod formats;
 mod json;
+mod locations;
 mod number;
 mod project;
 mod read;
 pub mod rules;
 mod schemas;
+pub mod secret;
 mod sectioned;
 mod value;
 mod yaml;
 
-pub use diagnostic::{Diagnostic, Diagnostics, Position, SchemaLocation};
+pub use diagnostic::{Diagnostic, Diagnostics, Position, SchemaLocation, diagnostic_result};
 pub use project::{
     FileRole, MANIFEST_NAMES, Project, read_archive_files, read_project, read_submitted_files,
 };

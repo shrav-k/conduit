@@ -112,12 +112,16 @@ pub fn context(repository: &Path) -> Result<Context> {
 /// Metadata discovery for an explicit public install request. The engine reads and
 /// validates these archive bytes again; this command admits no package itself.
 pub fn install_arguments(argument: &str) -> Result<Value> {
-    let (path, hash) = argument
+    named_install_arguments(argument).map(|(_, arguments)| arguments)
+}
+
+pub(crate) fn named_install_arguments(argument: &str) -> Result<(&str, Value)> {
+    let (authored_path, hash) = argument
         .rsplit_once('#')
         .ok_or("install needs ARCHIVE#SHA256")?;
-    let path = std::path::Path::new(path).canonicalize().map_err(|error| {
+    let path = std::path::Path::new(authored_path).canonicalize().map_err(|error| {
         format!(
-            "install archive {path:?}: cannot resolve archive: {error}; use a readable archive path"
+            "install archive {authored_path:?}: cannot resolve archive: {error}; use a readable archive path"
         )
     })?;
     let bytes = std::fs::read(&path).map_err(|error| {
@@ -133,9 +137,10 @@ pub fn install_arguments(argument: &str) -> Result<Value> {
         ));
     }
     let manifest = archive_metadata::manifest(&bytes)?;
-    Ok(
+    Ok((
+        authored_path,
         serde_json::json!({"address":manifest["address"],"version":manifest["version"],"digest":digest,"fetch":url::Url::from_file_path(path).map_err(|_| "invalid archive URL")?.as_str()}),
-    )
+    ))
 }
 
 /// CLI archive admission. No filesystem extraction; the core owns package validation.

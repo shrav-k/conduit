@@ -355,10 +355,43 @@ fn gzip(tar: &[u8]) -> Vec<u8> {
     gz.write_all(tar).unwrap();
     gz.finish().unwrap()
 }
+fn secret_archives(root: &Path, check: bool) {
+    for form in ["framed", "sectioned", "long-chain"] {
+        let fixture = root.join(format!("conformance/language/sectioned/secret-{form}"));
+        let mut manifest = documents(&fixture.join("conduit.json")).remove(0);
+        manifest["version"] = json!("0.1.0");
+        let files = BTreeMap::from([
+            (
+                "conduit.json".into(),
+                (json_bytes(&manifest), b'0', String::new()),
+            ),
+            (
+                "package.json".into(),
+                (
+                    fs::read(fixture.join("package.json")).unwrap(),
+                    b'0',
+                    String::new(),
+                ),
+            ),
+        ]);
+        let bytes = archive(files);
+        write_fixture(&fixture.join("package.tar.gz"), &bytes, check);
+        let recipe = json!({
+            "name": "package.tar.gz",
+            "address": manifest["address"],
+            "version": manifest["version"],
+            "digest": conduit_core::packages::bytes_digest(&bytes),
+            "completion": {"status": "complete", "file": "package.tar.gz"},
+        });
+        write_fixture(&fixture.join("archive.json"), &json_bytes(&recipe), check);
+    }
+}
+
 fn main() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
     let out = root.join("conformance/fixtures/install-archives");
     let check = std::env::args().any(|a| a == "--check");
+    secret_archives(&root, check);
     if !check {
         fs::create_dir_all(&out).unwrap();
     }

@@ -1,7 +1,6 @@
 # A83 Part E: observed client-visible outcomes, one line per example set.
 # Derived with `cargo test --release -p conduit-shell --test by_rule -- --nocapture`
-# from engine/ on 2026-11-15, on main commit
-# f37d76c093f4bbd279bf9d4d4cbccd5645f51bb1 (origin/main; also this work order's base).
+# from engine/ on 2026-11-21, including the sectioned project and package.
 # A line changes only in the pull request that changes what the engine does with that set.
 # NAME CLASS REASON RULES
 CON-016-no-input-fills-operations.yaml accepted succeeded -
@@ -47,3 +46,5 @@ TPL-004-offered-operation-without-an-implementation.yaml named invalid TPL-004
 TPL-019-two-items-that-are-run.yaml named invalid TPL-019
 valid/equal-defaults accepted succeeded -
 valid/files-package accepted succeeded -
+valid/sectioned-package accepted succeeded -
+valid/sectioned-project accepted succeeded -

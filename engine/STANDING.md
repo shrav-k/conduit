@@ -41,12 +41,12 @@ Each number counts promises. The last row counts those whose Engine source is no
 
 | Promises | language | convention | interface | all |
 | --- | ---: | ---: | ---: | ---: |
-| case passes | 147 | 161 | 27 | 335 |
+| case passes | 149 | 162 | 27 | 338 |
 | expected failure | 0 | 0 | 0 | 0 |
-| reason, no case | 55 | 17 | 1 | 73 |
-| no case, no reason | 23 | 66 | 19 | 108 |
+| reason, no case | 54 | 17 | 1 | 72 |
+| no case, no reason | 22 | 65 | 19 | 106 |
 | all | 225 | 244 | 47 | 516 |
-| named in engine source | 155 | 172 | 29 | 356 |
+| named in engine source | 157 | 172 | 29 | 358 |
 
 ## The promises
 
@@ -101,7 +101,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | CON-017 | language | must | 2 | 0 | cases | core | case passes |
 | CON-018 | language | must | 0 | 0 | outside | none | no case, no reason |
 | CON-020 | language | must | 0 | 0 | reason | none | reason, no case |
-| CON-021 | language | must | 0 | 0 | reason | core | reason, no case |
+| CON-021 | language | must | 2 | 0 | reason | loader, core | case passes |
 | CON-022 | language | must | 1 | 0 | cases | core | case passes |
 | CON-023 | convention | must | 1 | 0 | cases | core | case passes |
 | CON-024 | convention | must | 3 | 0 | cases | core | case passes |
@@ -134,8 +134,8 @@ Each number counts promises. The last row counts those whose Engine source is no
 | ENR-011 | convention | must not | 0 | 0 | outside | none | no case, no reason |
 | ENR-012 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | FLEET-001 | language | must | 2 | 0 | outside | core | case passes |
-| FLEET-002 | language | must | 3 | 0 | outside | core | case passes |
-| FLEET-003 | language | must | 2 | 0 | outside | core | case passes |
+| FLEET-002 | language | must | 3 | 0 | outside | loader, core | case passes |
+| FLEET-003 | language | must | 2 | 0 | outside | loader, core | case passes |
 | FLEET-004 | convention | must not | 2 | 0 | outside | core | case passes |
 | FLEET-005 | convention | must | 11 | 0 | outside | core, shell | case passes |
 | FLEET-006 | language | must | 2 | 0 | outside | core | case passes |
@@ -157,7 +157,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | IFC-010 | interface | must | 27 | 0 | cases | core | case passes |
 | IFC-012 | interface | must | 21 | 0 | cases | core, shell | case passes |
 | IFC-013 | interface | must | 3 | 0 | cases | core | case passes |
-| IFC-014 | language | must | 7 | 0 | cases | core | case passes |
+| IFC-014 | language | must | 8 | 0 | cases | loader, core | case passes |
 | IFC-015 | interface | must | 0 | 0 | outside | none | no case, no reason |
 | IFC-016 | interface | must | 1 | 0 | outside | core | case passes |
 | IFC-017 | interface | must | 0 | 0 | outside | core | no case, no reason |
@@ -196,7 +196,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | IMP-007 | convention | must not | 5 | 0 | cases | core, shell | case passes |
 | IMP-008 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | INS-001 | language | must | 0 | 0 | reason | none | reason, no case |
-| INS-002 | language | must | 6 | 0 | cases | core | case passes |
+| INS-002 | language | must | 7 | 0 | cases | core | case passes |
 | INS-003 | language | must | 2 | 0 | cases | core | case passes |
 | INS-004 | language | must | 4 | 0 | cases | core | case passes |
 | INS-005 | language | must | 3 | 0 | cases | core | case passes |
@@ -299,16 +299,16 @@ Each number counts promises. The last row counts those whose Engine source is no
 | NAM-024 | language | must | 11 | 0 | cases | core | case passes |
 | NAM-025 | language | should | 0 | 0 | reason | none | reason, no case |
 | NAM-026 | convention | must | 1 | 0 | cases | core | case passes |
-| NAM-027 | language | must | 3 | 0 | cases | loader, core | case passes |
+| NAM-027 | language | must | 4 | 0 | cases | loader, core | case passes |
 | NAM-028 | language | must | 6 | 0 | cases | core | case passes |
 | OBJ-001 | language | must | 1 | 0 | reason | none | case passes |
-| OBJ-002 | language | must | 2 | 0 | cases | core | case passes |
+| OBJ-002 | language | must | 5 | 0 | cases | core | case passes |
 | OBJ-003 | language | must | 8 | 0 | cases | core | case passes |
 | OBJ-004 | language | must | 0 | 0 | reason | none | reason, no case |
 | OBJ-006 | language | must | 1 | 0 | cases | core | case passes |
 | OBJ-007 | language | must | 1 | 0 | cases | core | case passes |
 | OBJ-008 | language | must | 5 | 0 | cases | core | case passes |
-| OBJ-009 | language | must | 35 | 0 | cases | core | case passes |
+| OBJ-009 | language | must | 36 | 0 | cases | core | case passes |
 | OBJ-010 | language | must not | 2 | 0 | cases | core | case passes |
 | OBJ-011 | language | must | 0 | 0 | reason | core | reason, no case |
 | OBJ-012 | language | must | 0 | 0 | reason | none | reason, no case |
@@ -375,7 +375,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | PKG-020 | language | must | 9 | 0 | cases | core | case passes |
 | PKG-021 | language | must | 6 | 0 | cases | core | case passes |
 | PKG-022 | language | must | 15 | 0 | cases | core, shell | case passes |
-| PKG-023 | convention | must | 40 | 0 | cases | core | case passes |
+| PKG-023 | convention | must | 43 | 0 | cases | core | case passes |
 | PKG-024 | convention | must | 2 | 0 | cases | core | case passes |
 | PKG-025 | convention | must | 2 | 0 | cases | core | case passes |
 | PKG-026 | language | must | 7 | 0 | cases | core | case passes |
@@ -420,10 +420,10 @@ Each number counts promises. The last row counts those whose Engine source is no
 | PND-012 | convention | must | 1 | 0 | outside | core | case passes |
 | PND-013 | convention | must | 4 | 0 | outside | core, shell | case passes |
 | PND-014 | convention | must not | 2 | 0 | outside | core, shell | case passes |
-| POOL-001 | language | must | 7 | 0 | cases | core | case passes |
+| POOL-001 | language | must | 7 | 0 | cases | loader, core | case passes |
 | POOL-002 | language | must | 2 | 0 | outside | core | case passes |
 | POOL-003 | convention | must | 0 | 0 | outside | core | no case, no reason |
-| POOL-004 | language | must | 2 | 0 | cases | core | case passes |
+| POOL-004 | language | must | 2 | 0 | cases | loader, core | case passes |
 | POOL-005 | language | must | 2 | 0 | outside | core | case passes |
 | POOL-006 | language | must | 2 | 0 | outside | core | case passes |
 | POOL-007 | convention | must not | 0 | 0 | outside | none | no case, no reason |
@@ -502,27 +502,27 @@ Each number counts promises. The last row counts those whose Engine source is no
 | SCH-016 | language | must | 4 | 0 | cases | loader, core | case passes |
 | SCH-017 | language | must | 0 | 0 | reason | loader | reason, no case |
 | SCH-018 | language | must | 0 | 0 | reason | loader | reason, no case |
-| SCH-019 | language | must | 2 | 0 | cases | core | case passes |
+| SCH-019 | language | must | 5 | 0 | cases | core | case passes |
 | SCH-020 | language | must | 0 | 0 | reason | loader | reason, no case |
 | SCH-021 | language | must | 0 | 0 | reason | loader | reason, no case |
-| SCT-001 | language | must | 7 | 0 | outside | core | case passes |
-| SCT-002 | language | must | 5 | 0 | outside | loader | case passes |
-| SCT-003 | language | must | 5 | 0 | outside | none | case passes |
-| SCT-004 | language | must | 4 | 0 | outside | none | case passes |
-| SCT-005 | language | must | 3 | 0 | outside | loader | case passes |
-| SCT-006 | language | must | 6 | 0 | outside | loader | case passes |
-| SCT-007 | language | must | 4 | 0 | outside | loader | case passes |
-| SCT-008 | language | must | 4 | 0 | outside | loader | case passes |
-| SCT-009 | language | must | 3 | 0 | outside | loader | case passes |
-| SCT-011 | language | must | 9 | 0 | outside | loader | case passes |
-| SCT-013 | language | must | 2 | 0 | outside | loader | case passes |
-| SCT-014 | language | must | 10 | 0 | outside | none | case passes |
-| SCT-015 | language | must | 2 | 0 | outside | none | case passes |
-| SCT-016 | language | must | 1 | 0 | outside | loader | case passes |
+| SCT-001 | language | must | 7 | 0 | cases | core | case passes |
+| SCT-002 | language | must | 5 | 0 | cases | loader | case passes |
+| SCT-003 | language | must | 5 | 0 | cases | none | case passes |
+| SCT-004 | language | must | 4 | 0 | cases | none | case passes |
+| SCT-005 | language | must | 3 | 0 | cases | loader | case passes |
+| SCT-006 | language | must | 6 | 0 | cases | loader | case passes |
+| SCT-007 | language | must | 4 | 0 | cases | loader | case passes |
+| SCT-008 | language | must | 5 | 0 | cases | loader | case passes |
+| SCT-009 | language | must | 3 | 0 | cases | loader | case passes |
+| SCT-011 | language | must | 12 | 0 | cases | loader | case passes |
+| SCT-013 | language | must | 2 | 0 | cases | loader | case passes |
+| SCT-014 | language | must | 25 | 0 | cases | loader | case passes |
+| SCT-015 | language | must | 6 | 0 | cases | none | case passes |
+| SCT-016 | language | must | 1 | 0 | cases | loader | case passes |
 | SEC-001 | language | must | 0 | 0 | outside | core | no case, no reason |
 | SEC-002 | language | must | 0 | 0 | outside | none | no case, no reason |
-| SEC-003 | language | must not | 0 | 0 | outside | none | no case, no reason |
-| SEC-004 | convention | must not | 0 | 0 | outside | core | no case, no reason |
+| SEC-003 | language | must not | 4 | 0 | outside | loader | case passes |
+| SEC-004 | convention | must not | 3 | 0 | outside | core | case passes |
 | SEC-005 | language | must | 2 | 0 | outside | core | case passes |
 | SEC-006 | interface | must | 0 | 0 | outside | none | no case, no reason |
 | SEC-007 | convention | must | 1 | 0 | outside | core | case passes |
@@ -546,16 +546,16 @@ Each number counts promises. The last row counts those whose Engine source is no
 | SUB-001 | language | must | 7 | 0 | cases | loader, core | case passes |
 | SUB-002 | language | must | 8 | 0 | cases | core | case passes |
 | SUB-003 | language | must | 35 | 0 | cases | core | case passes |
-| SUB-004 | language | must | 2 | 0 | cases | core | case passes |
-| SUB-005 | language | must | 26 | 0 | cases | loader, core | case passes |
+| SUB-004 | language | must | 3 | 0 | cases | loader, core | case passes |
+| SUB-005 | language | must | 27 | 0 | cases | loader, core | case passes |
 | SUB-006 | language | must | 5 | 0 | cases | core | case passes |
 | SUB-007 | language | must | 0 | 0 | reason | none | reason, no case |
 | SUB-008 | language | must | 13 | 0 | cases | core | case passes |
-| SUB-009 | convention | must | 2 | 0 | cases | core | case passes |
+| SUB-009 | convention | must | 2 | 0 | cases | core, shell | case passes |
 | SUB-010 | language | must | 10 | 0 | cases | loader, core, shell | case passes |
 | SUB-011 | language | must | 1 | 0 | cases | loader, core | case passes |
 | TPL-001 | language | must | 0 | 0 | reason | none | reason, no case |
-| TPL-002 | language | must | 2 | 0 | cases | core | case passes |
+| TPL-002 | language | must | 3 | 0 | cases | core | case passes |
 | TPL-003 | language | must | 1 | 0 | cases | core | case passes |
 | TPL-004 | language | must | 10 | 0 | cases | core | case passes |
 | TPL-005 | language | must | 2 | 0 | cases | core | case passes |

@@ -1,0 +1,23 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Interface",
+    "metadata": {
+      "name": "auditor--t"
+    },
+    "spec": {
+      "type": "#private-config.v1",
+      "config": {
+        "sample": "synthetic-value-for-redaction"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Interface",
+    "metadata": {
+      "name": "auditor"
+    },
+    "from": "auditor--t"
+  }
+]

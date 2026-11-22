@@ -1,0 +1,98 @@
+{
+  "id": "sections-located-supplied-owner",
+  "title": "An Agent owner diagnostic points to the Fleet supplied in another document of its file",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-011",
+    "SCT-014"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "owners.yaml": "owners.yaml",
+    "framed.json": "framed.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "owners.yaml"
+        ],
+        "locate": [
+          {
+            "ruleId": "FLEET-003",
+            "level": "error",
+            "message": {
+              "text": "a: owner \"workers\" is retired"
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/objects/a/owner"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [
+          {
+            "ruleId": "FLEET-003",
+            "level": "error",
+            "message": {
+              "text": "a: owner \"workers\" is retired"
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/fleet"
+                  }
+                ],
+                "physicalLocation": {
+                  "artifactLocation": {
+                    "uri": "owners.yaml"
+                  },
+                  "region": {
+                    "startLine": 2,
+                    "startColumn": 8
+                  }
+                }
+              }
+            ],
+            "properties": {
+              "file": "owners.yaml",
+              "document": 1,
+              "translation": {
+                "rule": "SCT-006",
+                "document": "a"
+              }
+            }
+          }
+        ],
+        "framed": "framed.json",
+        "translations": [
+          {
+            "kind": "Agent",
+            "name": "a",
+            "rule": "SCT-006"
+          },
+          {
+            "kind": "Fleet",
+            "name": "workers",
+            "rule": "SCT-011"
+          }
+        ]
+      }
+    }
+  ]
+}

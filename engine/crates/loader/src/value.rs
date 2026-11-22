@@ -78,8 +78,14 @@ impl Node {
     /// The deepest node that a JSON Pointer reaches, following it as far as it goes. Used to
     /// say where in the file a place is.
     pub fn locate(&self, pointer: &str) -> &Node {
+        self.located_prefix(pointer).0
+    }
+
+    pub(crate) fn located_prefix<'p>(&self, pointer: &'p str) -> (&Node, &'p str) {
         let mut node = self;
+        let mut matched = 0;
         for token in pointer.split('/').skip(1) {
+            let length = token.len();
             let token = token.replace("~1", "/").replace("~0", "~");
             let next = match &node.value {
                 Value::Object(members) => members.iter().find(|(k, _)| *k == token).map(|(_, v)| v),
@@ -87,11 +93,14 @@ impl Node {
                 _ => None,
             };
             match next {
-                Some(found) => node = found,
+                Some(found) => {
+                    node = found;
+                    matched += length + 1;
+                }
                 None => break,
             }
         }
-        node
+        (node, &pointer[..matched])
     }
 }
 

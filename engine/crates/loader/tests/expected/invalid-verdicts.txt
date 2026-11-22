@@ -6,6 +6,7 @@
 # of increment 1, and the coordinator's decisions on its findings 1-05, 1-07 and 1-10, which
 # each added a file here. A file added under invalid/ needs a line here, which the test
 # `every_invalid_example_is_rejected_by_the_step_its_name_gives` asks for.
+# The sectioned example verdicts were derived on 2026-11-21 by reading each as a project.
 CON-016-template-without-operations.yaml schema
 CON-020-template-names-a-consumer.yaml schema
 CTR-001-contract-name-only-a-version.yaml schema
@@ -68,6 +69,16 @@ SCH-012-duplicate-key.yaml read
 SCH-015-ref-to-a-bare-name.yaml schema
 SCH-015-ref-to-an-https-address.yaml schema
 SCH-021-fraction-just-above-binary64.yaml read
+SCT-001-sectioned-missing-kind.yaml schema
+SCT-001-sectioned-unknown-key.yaml schema
+SCT-005-sectioned-fleet-template.yaml schema
+SCT-006-sectioned-inline-inputs.yaml schema
+SCT-006-sectioned-type-and-from.yaml schema
+SCT-007-sectioned-bare-target.yaml schema
+SCT-007-sectioned-mixed-consumes.yaml schema
+SCT-009-sectioned-pool-operator.yaml schema
+SCT-013-sectioned-double-hyphen.yaml schema
+SCT-013-sectioned-reserved-local.yaml schema
 SUB-005-json-value-that-is-not-a-map.json schema
 SUB-005-not-utf-8.yaml read
 TPL-001-pool-template-with-conduits.yaml schema

@@ -1,0 +1,9 @@
+{
+  "snapshots": [],
+  "project": {
+    "files": {
+      "a.json": "authored.json",
+      "b.json": "authored.json"
+    }
+  }
+}

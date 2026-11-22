@@ -1,0 +1,27 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "interfaces": {
+    "local-basis": {
+      "from": "missing",
+      "arguments": {
+        "sample": "synthetic-value-for-redaction"
+      }
+    },
+    "remote-basis": {
+      "from": "example.org/unpinned#console",
+      "arguments": {
+        "sample": "synthetic-value-for-redaction"
+      }
+    }
+  },
+  "templates": {
+    "interfaces": {
+      "configured": {
+        "type": "#missing.v1",
+        "config": {
+          "sample": "synthetic-value-for-redaction"
+        }
+      }
+    }
+  }
+}

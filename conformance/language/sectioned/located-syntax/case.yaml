@@ -1,0 +1,68 @@
+{
+  "id": "sections-located-syntax",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-014",
+    "SCT-008"
+  ],
+  "title": "A reserved consumes target has a place without a translation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.yaml": "authored.yaml"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.yaml"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SCT-008",
+            "level": "error",
+            "locations": [
+              {
+                "physicalLocation": {
+                  "artifactLocation": {
+                    "uri": "authored.yaml"
+                  },
+                  "region": {
+                    "startLine": 6,
+                    "startColumn": 14
+                  }
+                },
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/interfaces/auditor/consumes/tools"
+                  }
+                ]
+              }
+            ],
+            "properties": {
+              "file": "authored.yaml",
+              "document": 1
+            }
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "conduits"
+            ],
+            "translation_absent": true
+          }
+        ]
+      }
+    }
+  ]
+}

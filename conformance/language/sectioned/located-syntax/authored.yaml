@@ -1,0 +1,6 @@
+apiVersion: github.com/shrav-k/conduit/v0
+interfaces:
+  auditor:
+    type: github.com/shrav-k/conduit/core#interface.v1
+    consumes:
+      tools: {to: {kind: Resource, name: management}, from: basis}

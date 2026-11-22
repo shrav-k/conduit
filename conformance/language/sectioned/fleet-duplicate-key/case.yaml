@@ -44,7 +44,25 @@
             ],
             "message": {
               "text": "a second fleet reviewers in the file; the first fleet maintainers is in document 1 at /fleet"
-            }
+            },
+            "relatedLocations": [
+              {
+                "physicalLocation": {
+                  "artifactLocation": {
+                    "uri": "authored.json"
+                  },
+                  "region": {
+                    "startLine": 4,
+                    "startColumn": 14
+                  }
+                },
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/fleet"
+                  }
+                ]
+              }
+            ]
           }
         ]
       }

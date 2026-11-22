@@ -9,6 +9,10 @@ pub(super) fn run(step: &Step<'_>) -> Result<(Value, State)> {
         .collect::<Result<Vec<_>>>()?;
     let reply = match read_submitted_files(&files, step.spec) {
         Ok(project) => {
+            let mut diagnostics = step.input["locate"].as_array().cloned().unwrap_or_default();
+            for diagnostic in &mut diagnostics {
+                project.locate_diagnostic(diagnostic);
+            }
             let documents = project
                 .documents
                 .iter()
@@ -32,7 +36,7 @@ pub(super) fn run(step: &Step<'_>) -> Result<(Value, State)> {
                 .into_iter()
                 .map(|(kind, name, rule)| json!({"kind":kind,"name":name,"rule":rule}))
                 .collect::<Vec<_>>();
-            json!({"accepted":true,"diagnostics":[],"framed_documents":documents,"translations":translations})
+            json!({"accepted":true,"diagnostics":diagnostics,"framed_documents":documents,"translations":translations})
         }
         Err(errors) => {
             json!({"accepted":false,"diagnostics":errors.0.iter().map(diagnostic).collect::<Vec<_>>()})

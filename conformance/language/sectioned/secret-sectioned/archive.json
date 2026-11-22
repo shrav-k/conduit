@@ -1,0 +1,10 @@
+{
+  "address": "example.org/conformance/sections-secret-sectioned",
+  "completion": {
+    "file": "package.tar.gz",
+    "status": "complete"
+  },
+  "digest": "sha256:d9c38c4695480a94c108c4a7b93a0c8fbfc65078c294ea3bf65c8c87105ab57f",
+  "name": "package.tar.gz",
+  "version": "0.1.0"
+}

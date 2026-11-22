@@ -65,7 +65,8 @@ pub struct Project {
     /// Every other document, in the order of the files' names and then as written. The order
     /// has no meaning (SUB-001).
     pub documents: Vec<Document>,
-    translations: Vec<Option<Translation>>,
+    pub(crate) translations: Vec<Option<Translation>>,
+    pub(crate) authored: Vec<Document>,
 }
 
 impl Project {
@@ -124,6 +125,7 @@ fn load(
     {
         faults.extend(found.0);
     }
+    let authored = read.documents.iter().flatten().cloned().collect();
     let (documents, translations) = sectioned::translate(
         read.documents,
         read.manifest.as_ref(),
@@ -131,20 +133,27 @@ fn load(
         archive,
         &mut faults,
     );
-    for document in &documents {
+    let project = Project {
+        directory: directory.map(Path::to_path_buf),
+        manifest: read.manifest,
+        documents,
+        translations,
+        authored,
+    };
+    for (index, document) in project.documents.iter().enumerate() {
         if let Err(found) = spec.check(document, Role::Document) {
-            faults.extend(found.0);
+            faults.extend(
+                found
+                    .0
+                    .into_iter()
+                    .map(|fault| project.locate_load_fault(index, fault)),
+            );
         }
     }
     if !faults.is_empty() {
         return Err(Diagnostics(faults));
     }
-    Ok(Project {
-        directory: directory.map(Path::to_path_buf),
-        manifest: read.manifest,
-        documents,
-        translations,
-    })
+    Ok(project)
 }
 
 /// The files of a directory that MAN-011 reads, each with its name and bytes, in the order of

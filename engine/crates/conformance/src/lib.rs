@@ -11,7 +11,8 @@ mod schemas;
 mod steps;
 use conduit_core::{Context, Input, State};
 use conduit_loader::{
-    Diagnostic, Specification, Syntax, read_bytes, read_file, read_submitted_files,
+    Specification, Syntax, diagnostic_result as diagnostic, read_bytes, read_file,
+    read_submitted_files,
 };
 use serde::Deserialize;
 use serde_json::{Value, json};
@@ -515,29 +516,6 @@ fn expand(value: &Value, symbols: &BTreeMap<String, Value>, spec: &Specification
         ),
         v => v.clone(),
     })
-}
-
-fn diagnostic(d: &Diagnostic) -> Value {
-    let mut location = json!({});
-    if let Some(pointer) = &d.pointer {
-        location["logicalLocations"] = json!([{"fullyQualifiedName":pointer}]);
-    }
-    if let Some(file) = &d.file {
-        location["physicalLocation"] = json!({"artifactLocation":{"uri":file}});
-    }
-    if let Some(position) = d.position {
-        location["physicalLocation"]["region"] =
-            json!({"startLine":position.line,"startColumn":position.column});
-    }
-    let mut result = json!({"ruleId":d.rule,"level":"error","message":{"text":d.message},
-        "locations":[location],"properties":{"file":d.file,"document":d.document}});
-    if let Some(keyword) = d.keyword_location() {
-        result["properties"]["keywordLocation"] = json!(keyword);
-    }
-    if let Some(absolute) = d.absolute_keyword_location() {
-        result["properties"]["absoluteKeywordLocation"] = json!(absolute);
-    }
-    result
 }
 
 /// Follow JSON Schema's evaluation pointer, resolving each by-reference applicator rather

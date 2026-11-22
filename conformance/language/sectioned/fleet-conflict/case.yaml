@@ -44,7 +44,25 @@
             ],
             "message": {
               "text": "the file's /fleet names maintainers, but the Agent's owner is outside"
-            }
+            },
+            "relatedLocations": [
+              {
+                "physicalLocation": {
+                  "artifactLocation": {
+                    "uri": "authored.json"
+                  },
+                  "region": {
+                    "startLine": 3,
+                    "startColumn": 12
+                  }
+                },
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/fleet"
+                  }
+                ]
+              }
+            ]
           }
         ]
       }

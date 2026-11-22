@@ -291,4 +291,39 @@ Named here and not in this order:
 
 ## Record
 
-Not yet run.
+Run on 2026-11-21 through Conduit itself, by the dogfood's own Agents, in Pacific time.
+
+**Worker-1 stopped at the start** (14:55 to 15:24), as the stop rule says. On today's engine, a
+rejected submission's diagnostic quoted a literal written at a place that `secret-reference.v1`
+governs, a SEC-003 breach. The order allowed changes to locations only.
+
+Root's decision, open to the owner's strike, was that the SEC-003 fix lands here, first and at
+its source. Every diagnostic about such a value withholds it, in framed and sectioned documents
+alike, over the wire, at the CLI and at install, keeping its rule ID, level, verdict, document
+and pointer.
+
+**Worker-1 then built the order** (15:25 to 16:19): SCT-014's authored locations, SCT-015's
+equivalence and the sectioned examples through the engine. The whole engine suite ran once
+(509 passed, 0 failed, 9 ignored), and conformance gave 613 passed and 3 expected failures.
+Mid-turn, a shell mistake truncated eleven files. Worker-1 restored them from HEAD and applied
+its edits again, and the verifier found no lost content.
+
+**`turn-verifier-1.turn.v1`** (16:19 to 16:26) found five musts, which worker-1 fixed (16:27 to
+17:01, the suite 510 passed):
+- a remaining disclosure through a long reference chain, closed by redaction that follows every
+  reference validation follows and fails closed;
+- three lost authored locations: a configuration field, a standard argument and a nested member;
+- a missing Fleet-owner case.
+
+**The Claude reader** (17:02 to 17:07) passed it with one should, which root treated as
+required: whole-document conflict diagnostics printed `arguments` and `config` verbatim when the
+governing template could not be resolved. Worker-1 now withholds them (17:08 to 17:16), with a
+sectioned and framed regression. 234 core and conformance tests pass.
+
+Left for the owner: the loader's YAML syntax diagnostics quote the scalar that fails to parse
+(`yaml.rs`, about lines 579 to 601). Either those messages drop it, or SEC-003 does not reach a
+document that fails to parse.
+
+At the rebase onto orders 240 and 252, the gate's engine row failed once. Order 240 had replaced the `sectioned-package` example, so it pins `example.org/ticket-queue`, but this order's public-route test still installed S1's filesystem for it. Worker-1 (18:33 to 18:35) made the test build a contracts-only `example.org/ticket-queue` package and install it first; the example registers as before.
+
+The gate's run on the squash is the coordinator's, at the merge.

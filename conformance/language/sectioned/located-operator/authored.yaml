@@ -1,0 +1,8 @@
+apiVersion: github.com/shrav-k/conduit/v0
+resources:
+  auditor:
+    type: github.com/shrav-k/conduit/core#management.v1
+    owner: system
+    operator:
+      capability: github.com/shrav-k/conduit/core#object-management.v1
+      operations: []

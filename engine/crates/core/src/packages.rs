@@ -111,6 +111,24 @@ pub(crate) fn format_submission_notes(diagnostics: &mut Value) {
     }
 }
 
+pub(crate) fn object_location(diagnostic: &mut Value, name: &str, pointer: &str) {
+    let name = name.replace('~', "~0").replace('/', "~1");
+    diagnostic["locations"] =
+        json!([{"logicalLocations":[{"fullyQualifiedName":format!("/objects/{name}{pointer}")}]}]);
+}
+
+fn document_locations(diagnostics: &mut [Value], document: &Value, pointer: &str) {
+    if let Some(name) = document["metadata"]["name"].as_str() {
+        for diagnostic in diagnostics {
+            if diagnostic.get("locations").is_some() {
+                diagnostic["properties"]["document"] = json!(name);
+            } else {
+                object_location(diagnostic, name, pointer);
+            }
+        }
+    }
+}
+
 fn items<'a>(value: &'a Value, key: &str) -> impl Iterator<Item = (&'a String, &'a Value)> {
     value
         .get(key)
@@ -349,6 +367,58 @@ pub(crate) fn release_default_diagnostics(
     Ok(diagnostics)
 }
 impl Catalog {
+    /// Construct only the name and schema context for a diagnostic that prints an input
+    /// document. Duplicate names and bad pins still receive their ordinary verdicts.
+    pub(crate) fn diagnostic_context(
+        builtin: &Project,
+        snapshots: &[Snapshot],
+        project: &Project,
+    ) -> (Environment, BTreeMap<String, BTreeMap<String, Value>>) {
+        let projects = [
+            ("core".to_owned(), builtin),
+            ("project".to_owned(), project),
+        ]
+        .into_iter()
+        .chain(
+            snapshots
+                .iter()
+                .enumerate()
+                .map(|(i, snapshot)| (format!("snapshot-{i}"), &snapshot.project)),
+        );
+        let mut scopes = BTreeMap::new();
+        let mut indexes = BTreeMap::new();
+        for (scope, project) in projects {
+            let manifest = manifest(project);
+            let own = index(project);
+            let pins = items(&manifest, "packages")
+                .filter_map(|(address, item)| {
+                    Some((
+                        address.clone(),
+                        format!("snapshot-{}", Self::pin(snapshots, address, item).ok()?),
+                    ))
+                })
+                .collect();
+            let exports = (scope != "project")
+                .then(|| strings(&manifest, "exports").map(str::to_owned).collect());
+            scopes.insert(
+                scope.clone(),
+                Scope {
+                    address: manifest["address"].as_str().unwrap_or("").into(),
+                    version: manifest["version"].as_str().map(str::to_owned),
+                    manifest: pins,
+                    contracts: own
+                        .iter()
+                        .filter(|(_, d)| contract(d))
+                        .map(|(name, d)| (name.clone(), d.clone()))
+                        .collect(),
+                    exports,
+                },
+            );
+            indexes.insert(scope, own);
+        }
+        (Environment { scopes }, indexes)
+    }
+
     pub fn new(builtin: Project, snapshots: Vec<Snapshot>, core: &str) -> Result<Self> {
         if manifest(&builtin)["address"] != core {
             return Err("built-in catalog address differs from names file".into());
@@ -376,15 +446,15 @@ impl Catalog {
         })
     }
     fn pin(
-        &self,
+        snapshots: &[Snapshot],
         address: &str,
         item: &Value,
     ) -> std::result::Result<usize, (&'static str, String)> {
-        let Some((i, s)) = self.snapshots.iter().enumerate().find(|(_, s)| {
+        let Some((i, s)) = snapshots.iter().enumerate().find(|(_, s)| {
             s.address == address
                 && version_equal(&s.version, item["version"].as_str().unwrap_or(""))
         }) else {
-            let rule = if self.snapshots.iter().any(|s| s.address == address) {
+            let rule = if snapshots.iter().any(|s| s.address == address) {
                 "PKG-003"
             } else {
                 "PKG-006"
@@ -409,6 +479,10 @@ impl Catalog {
         Ok(i)
     }
     pub fn resolve(&self, project: &Project) -> Result<Resolution> {
+        self.resolve_at(project, "project")
+    }
+
+    pub(crate) fn resolve_at(&self, project: &Project, location_scope: &str) -> Result<Resolution> {
         let core = self.core_address.as_str();
         let mut diagnostics = vec![];
         let mut decisions = vec![];
@@ -482,10 +556,14 @@ impl Catalog {
                 if let Some(n) = d["metadata"]["name"].as_str()
                     && (!seen.insert(n) || m["implementations"].get(n).is_some())
                 {
-                    diagnostics.push(diag(
+                    let mut diagnostic = diag(
                         "NAM-027",
                         format!("{scope}: duplicate document/implementation name {n}"),
-                    ));
+                    );
+                    if scope == location_scope {
+                        object_location(&mut diagnostic, n, "");
+                    }
+                    diagnostics.push(diagnostic);
                 }
             }
             let mut exports = BTreeSet::new();
@@ -509,7 +587,7 @@ impl Catalog {
                     ));
                     continue;
                 }
-                match self.pin(address, item) {
+                match Self::pin(&self.snapshots, address, item) {
                     Ok(i) => {
                         pins.insert(address.clone(), format!("snapshot-{i}"));
                     }
@@ -566,12 +644,24 @@ impl Catalog {
             }
             let mut selections = vec![];
             for d in &p.documents {
-                selections_document(d, scope != "project", &mut selections)?;
+                let mut document_selections = vec![];
+                selections_document(d, scope != "project", &mut document_selections)?;
+                selections.extend(
+                    document_selections
+                        .into_iter()
+                        .map(|selection| (Some(d), selection)),
+                );
             }
+            let mut implementation_selections = vec![];
             for (_, item) in items(&manifest(p), "implementations") {
-                selections_spec(item, &mut selections);
+                selections_spec(item, &mut implementation_selections);
             }
-            for (reference, kind) in selections {
+            selections.extend(
+                implementation_selections
+                    .into_iter()
+                    .map(|selection| (None, selection)),
+            );
+            for (document, (reference, kind)) in selections {
                 match resolve_name(&env, &indexes, scope, &reference, &kind, core) {
                     Ok((target, name)) => {
                         let address = &env.scopes[&target].address;
@@ -583,12 +673,29 @@ impl Catalog {
                         references.push(json!({"scope":scope,"reference":reference,"target_scope":target,"name":name,"kind":indexes[&target][&name]["kind"]}));
                     }
                     Err((rule, why)) => {
+                        let before = diagnostics.len();
                         diagnostics.push(diag(rule, format!("{scope}: {why}")));
                         if rule == "PKG-018" {
                             diagnostics.push(diag(
                                 "NAM-028",
                                 format!("{scope}: unresolved export {reference}"),
                             ));
+                        }
+                        if scope == location_scope
+                            && let Some(document) = document
+                        {
+                            let pointer = if document["from"] == reference {
+                                "/from"
+                            } else if kind == "Type" && document["spec"]["type"] == reference {
+                                "/spec/type"
+                            } else if kind == "Capability"
+                                && document["spec"]["capability"] == reference
+                            {
+                                "/spec/capability"
+                            } else {
+                                ""
+                            };
+                            document_locations(&mut diagnostics[before..], document, pointer);
                         }
                     }
                 }
@@ -597,12 +704,20 @@ impl Catalog {
         if !diagnostics.is_empty() {
             return Ok(rejected(diagnostics));
         }
-        check_items(&env, &indexes, &projects, core, &mut diagnostics);
+        check_items(
+            &env,
+            &indexes,
+            &projects,
+            core,
+            location_scope,
+            &mut diagnostics,
+        );
         for (scope, p) in &projects {
             if scope == "core" {
                 continue;
             }
             for d in &p.documents {
+                let before = diagnostics.len();
                 // FLEET-001: only the core package defines this family's template and Type.
                 if (d["kind"] == "Fleet" && d.get("from").is_none())
                     || (d["kind"] == "Type" && d["spec"]["family"] == "Fleet")
@@ -714,6 +829,9 @@ impl Catalog {
                     }
                 }
                 diagnostics.extend(env.check_document(scope, d, core)?);
+                if scope == location_scope {
+                    document_locations(&mut diagnostics[before..], d, "");
+                }
             }
             for (address, _) in items(&manifest(p), "packages") {
                 if !used.get(scope).is_some_and(|u| u.contains(address)) {
@@ -1015,6 +1133,7 @@ fn check_items(
     indexes: &BTreeMap<String, BTreeMap<String, Value>>,
     projects: &BTreeMap<String, Project>,
     core: &str,
+    location_scope: &str,
     diagnostics: &mut Vec<Value>,
 ) {
     let provider_ops: BTreeSet<_> = [
@@ -1107,14 +1226,19 @@ fn check_items(
             };
             let t = &indexes[&ts][&tn];
             if t["spec"]["family"] != d["kind"] {
-                diagnostics.push(diag(
+                let mut diagnostic = diag(
                     "TPL-002",
                     format!(
                         "template {} selects Type {r} of another family",
                         d["metadata"]["name"]
                     ),
-                ));
+                );
+                if scope == location_scope {
+                    document_locations(std::slice::from_mut(&mut diagnostic), d, "/spec/type");
+                }
+                diagnostics.push(diagnostic);
             }
+            let before = diagnostics.len();
             // TPL-004: only required, offered or control operations use Type defaults.
             let mut needed = BTreeSet::new();
             for op in strings(&t["spec"], "requires").chain(strings(&t["spec"], "controls")) {
@@ -1220,6 +1344,9 @@ fn check_items(
                         }
                     }
                 }
+            }
+            if scope == location_scope {
+                document_locations(&mut diagnostics[before..], d, "");
             }
         }
     }

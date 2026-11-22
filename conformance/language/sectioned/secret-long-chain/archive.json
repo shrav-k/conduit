@@ -1,0 +1,10 @@
+{
+  "address": "example.org/conformance/sections-secret-long-chain",
+  "completion": {
+    "file": "package.tar.gz",
+    "status": "complete"
+  },
+  "digest": "sha256:e42f84f1f0c499e2bd22022fcdfdf665f46ea50f323515099f67378a8a21a3c0",
+  "name": "package.tar.gz",
+  "version": "0.1.0"
+}

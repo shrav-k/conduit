@@ -1,4 +1,5 @@
-# Frozen S1 promise inventory: the 308 live IDs named in increment 2, section 2.
+# Frozen S1 promise inventory: the 322 live IDs: the 308 named in increment 2, section 2,
+# and the 14 SCT IDs that batch 1 planned for 043b.
 # Inventory only; inclusion does not prove coverage of a whole promise.
 - SUB-005
 - FST-001
@@ -308,3 +309,17 @@
 - OBS-001
 - OBS-002
 - OBS-006
+- SCT-001
+- SCT-002
+- SCT-003
+- SCT-004
+- SCT-005
+- SCT-006
+- SCT-007
+- SCT-008
+- SCT-009
+- SCT-011
+- SCT-013
+- SCT-014
+- SCT-015
+- SCT-016

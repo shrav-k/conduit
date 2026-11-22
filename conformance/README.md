@@ -665,17 +665,17 @@ restores A. No fixture patch supplies lifecycle progress. Every dispatched exter
 ends before the trace finishes; plain intents contain no Conduit metadata. Scripted text is
 not evidence of real file effects, Agent behavior or confinement.
 
-The manifest's `s1_coverage` contains exactly the 308 promise IDs in the [frozen S1
-inventory](s1-promises.yaml), copied from increment 2's study, section 2, including its observation
-paragraph. The [safety traces proposed for S1 in increment 2](s1-safety-cases.md) are preserved
+The manifest's `s1_coverage` contains the 322 live IDs in the [frozen S1
+inventory](s1-promises.yaml). It includes the 308 named in increment 2, section 2, and the 14 SCT
+IDs that batch 1 planned for 043b. The [safety traces proposed for S1 in increment 2](s1-safety-cases.md) are preserved
 separately; they do not define the coverage-index pieces' `safety_rows` tags. Each row has vectors
 declaring that promise, or a specific reason why no vector does. A case tag demonstrates only its
 asserted slice; neither a tag nor an explicit reason proves a whole promise. The runner checks the
 inventory even with an ID prefix: missing/extra/duplicate rows, empty reasons, unknown vectors and
 vectors that do not declare the promise fail. When increment 2 ended, the inventory had 217 rows
-with vectors and 91 with reasons; on 2026-11-15 it has 226 with vectors and 82 with reasons. The
-reasons include loader tests not yet ported, missing boundary cases and shell work. Those reasons
-remain visible coverage debt, logged in the increment's I2-09 section.
+with vectors and 91 with reasons. On 2026-11-21 it has 239 with vectors and 83 with reasons.
+The reasons include loader tests still to port, missing boundary cases and shell work. The
+increment's I2-09 section records this coverage debt.
 
 The first build's [conformance choices](../engine/CONFORMANCE.md) and the
 [increment 3 handoff](../engine/README.md#the-cores-boundary) state the current

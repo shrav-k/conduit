@@ -26,7 +26,7 @@ pub struct Environment {
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 struct Contract(String, String);
 
-fn token(s: &str) -> String {
+pub(crate) fn token(s: &str) -> String {
     s.replace('~', "~0").replace('/', "~1")
 }
 fn fragment(s: &str) -> String {
@@ -431,6 +431,17 @@ pub(crate) fn standalone_validator(schema: &Value, value: &Value) -> Result<json
     conduit_loader::compile(&schema).map_err(|e| e.to_string())
 }
 
+pub(crate) struct SchemaFailure {
+    pub(crate) instance_pointer: String,
+    message: String,
+}
+
+impl std::fmt::Display for SchemaFailure {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.message)
+    }
+}
+
 impl Environment {
     pub(crate) fn failure_at(
         &self,
@@ -439,7 +450,7 @@ impl Environment {
         pointer: &str,
         value: &Value,
         core: &str,
-    ) -> Result<Option<String>> {
+    ) -> Result<Option<SchemaFailure>> {
         let uri = "urn:conduit:root";
         let mut resources = self.resources(core)?;
         resources.insert(uri.into(), self.contextual_root(scope, root, uri, core)?);
@@ -457,10 +468,37 @@ impl Environment {
             .with_retriever(Supplied(adapted))
             .build(&entry)
             .map_err(|e| e.to_string())?;
-        Ok(validator
-            .iter_errors(value)
-            .next()
-            .map(|e| format!("{}; failing schema keyword {}", e, e.schema_path())))
+        Ok(validator.iter_errors(value).next().map(|error| {
+            let at = error.instance_path().as_str();
+            let protected = root.pointer(pointer).map_or_else(
+                || BTreeSet::from([String::new()]),
+                |schema| self.secret_paths(scope, root, schema, value, core),
+            );
+            let mut instance_pointer = at;
+            let mut withhold = false;
+            for path in &protected {
+                if at == path || below_pointer(at, path) {
+                    withhold = true;
+                    // A property or index inside a protected value can itself
+                    // disclose part of that value. Name the protected field.
+                    if path.len() < instance_pointer.len() {
+                        instance_pointer = path;
+                    }
+                } else if below_pointer(path, at) {
+                    // An error at the containing value can print its children.
+                    withhold = true;
+                }
+            }
+            let message = if withhold {
+                conduit_loader::secret::WITHHELD_VALUE.into()
+            } else {
+                format!("{error}; failing schema keyword {}", error.schema_path())
+            };
+            SchemaFailure {
+                instance_pointer: instance_pointer.to_owned(),
+                message,
+            }
+        }))
     }
     pub(crate) fn valid_at(
         &self,
@@ -550,7 +588,16 @@ impl Environment {
             }
         }
         if defaults.len() > 1 {
-            let mut values = defaults.iter().map(Value::to_string).collect::<Vec<_>>();
+            let mut values = defaults
+                .iter()
+                .map(|value| {
+                    let mut display = value.clone();
+                    for (scope, root, schema) in &parts {
+                        self.withhold_values(scope, root, schema, &mut display, core);
+                    }
+                    display.to_string()
+                })
+                .collect::<Vec<_>>();
             values.sort();
             let values = values.join(" and ");
             out.push(diagnostic(
@@ -762,6 +809,12 @@ struct SchemaPosition<'a> {
     schema: &'a Value,
 }
 
+fn below_pointer(pointer: &str, parent: &str) -> bool {
+    pointer
+        .strip_prefix(parent)
+        .is_some_and(|rest| rest.starts_with('/'))
+}
+
 impl<'a> SchemaPosition<'a> {
     fn at(self, schema: &'a Value) -> Self {
         Self { schema, ..self }
@@ -771,6 +824,183 @@ impl<'a> SchemaPosition<'a> {
 type SecretPositions<'a> = BTreeSet<(&'a str, *const Value, *const Value, bool)>;
 
 impl Environment {
+    fn secret_paths(
+        &self,
+        scope: &str,
+        root: &Value,
+        schema: &Value,
+        value: &Value,
+        core: &str,
+    ) -> BTreeSet<String> {
+        // The value tree and schema graph are finite independently. An alias in
+        // $defs consumes no instance depth, so a depth limit cannot show safety.
+        let mut pending = vec![(
+            SchemaPosition {
+                scope,
+                root,
+                schema,
+            },
+            value,
+            String::new(),
+        )];
+        let mut seen = BTreeSet::new();
+        let mut protected = BTreeSet::new();
+        'next: while let Some((position, value, at)) = pending.pop() {
+            if protected.contains(&at)
+                || !seen.insert((
+                    position.scope,
+                    position.root as *const Value,
+                    position.schema as *const Value,
+                    value as *const Value,
+                    at.clone(),
+                ))
+            {
+                continue;
+            }
+            let schema = position.schema;
+            if schema.is_boolean() {
+                continue;
+            }
+            // These keywords can change the active dialect, reference scope or
+            // applicable subschemas. They are outside Conduit's schema profile.
+            if !schema.is_object()
+                || [
+                    "$id",
+                    "$schema",
+                    "$anchor",
+                    "$dynamicAnchor",
+                    "$dynamicRef",
+                    "$recursiveAnchor",
+                    "$recursiveRef",
+                    "dependencies",
+                    "additionalItems",
+                    "unevaluatedItems",
+                    "unevaluatedProperties",
+                ]
+                .iter()
+                .any(|key| schema.get(key).is_some())
+            {
+                protected.insert(at);
+                continue;
+            }
+            if let Some(reference) = schema.get("$ref") {
+                if let Some(reference) = reference.as_str()
+                    && !self.references_secret(position.scope, reference, core)
+                    && let Some(target) = self.referenced_position(position, reference, core)
+                {
+                    pending.push((target, value, at.clone()));
+                } else {
+                    // A known secret reference and a reference we cannot classify
+                    // both withhold the instance at this position.
+                    protected.insert(at);
+                    continue;
+                }
+            }
+            for key in ["allOf", "anyOf", "oneOf"] {
+                for sub in schema[key].as_array().into_iter().flatten() {
+                    pending.push((position.at(sub), value, at.clone()));
+                }
+            }
+            for key in ["not", "if", "then", "else"] {
+                if let Some(sub) = schema.get(key) {
+                    pending.push((position.at(sub), value, at.clone()));
+                }
+            }
+            if let Some(members) = value.as_object() {
+                for (name, sub) in schema["dependentSchemas"].as_object().into_iter().flatten() {
+                    if members.contains_key(name) {
+                        pending.push((position.at(sub), value, at.clone()));
+                    }
+                }
+                if let Some(sub) = schema.get("propertyNames") {
+                    // A key belongs to the parent object. Withhold that object
+                    // if a key schema leads to a protected or unknown reference.
+                    pending.push((position.at(sub), &Value::Null, at.clone()));
+                }
+                let mut patterns = Vec::new();
+                for (pattern, sub) in schema["patternProperties"]
+                    .as_object()
+                    .into_iter()
+                    .flatten()
+                {
+                    let Ok(pattern) = formats::ecma_regex(pattern) else {
+                        protected.insert(at);
+                        continue 'next;
+                    };
+                    patterns.push((pattern, sub));
+                }
+                for (name, child) in members {
+                    let child_at = format!("{at}/{}", token(name));
+                    let mut matched = false;
+                    if let Some(sub) = schema["properties"].get(name) {
+                        matched = true;
+                        pending.push((position.at(sub), child, child_at.clone()));
+                    }
+                    for (pattern, sub) in &patterns {
+                        if pattern.find(name).is_some() {
+                            matched = true;
+                            pending.push((position.at(sub), child, child_at.clone()));
+                        }
+                    }
+                    if !matched && let Some(sub) = schema.get("additionalProperties") {
+                        pending.push((position.at(sub), child, child_at));
+                    }
+                }
+            }
+            if let Some(values) = value.as_array() {
+                let prefix = schema["prefixItems"].as_array();
+                for (index, child) in values.iter().enumerate() {
+                    let child_at = format!("{at}/{index}");
+                    if let Some(sub) = prefix
+                        .and_then(|items| items.get(index))
+                        .or_else(|| schema.get("items"))
+                    {
+                        pending.push((position.at(sub), child, child_at.clone()));
+                    }
+                    if let Some(sub) = schema.get("contains") {
+                        pending.push((position.at(sub), child, child_at));
+                    }
+                }
+            }
+        }
+        protected
+    }
+
+    pub(crate) fn withhold_values(
+        &self,
+        scope: &str,
+        root: &Value,
+        schema: &Value,
+        value: &mut Value,
+        core: &str,
+    ) {
+        for path in self.secret_paths(scope, root, schema, value, core) {
+            if let Some(val) = value.pointer_mut(&path) {
+                *val = json!(conduit_loader::secret::WITHHELD_VALUE);
+            }
+        }
+    }
+
+    pub(crate) fn withhold_defaults(&self, scope: &str, document: &mut Value, core: &str) {
+        for (at, mut schema) in roots(document) {
+            if let Some(input) = at.strip_suffix("/schema")
+                && let Some(value) = document.pointer_mut(&format!("{input}/default"))
+            {
+                self.withhold_values(scope, &schema, &schema, value, core);
+            }
+            let original = schema.clone();
+            walk(&mut schema, "", &mut |_, pointer| {
+                if let Some(value) = document.pointer_mut(&format!("{at}{pointer}/default"))
+                    && let Some(sub) = original.pointer(pointer)
+                {
+                    self.withhold_values(scope, &original, sub, value, core);
+                }
+                Ok(())
+            })
+            .expect("redacting defaults performs no fallible schema checks");
+        }
+    }
+
     pub(crate) fn references_secret(&self, scope: &str, reference: &str, core: &str) -> bool {
         self.resolve(scope, reference, core)
             .is_ok_and(|contract| contract.0 == "core" && contract.1 == "secret-reference.v1")
@@ -1319,6 +1549,30 @@ pub(crate) fn publish_normalized(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn diagnostic_protection_follows_cycles_and_withholds_an_unresolved_target() {
+        let schema = json!({
+            "$defs": {
+                "loop": {
+                    "allOf": [
+                        {"$ref":"#/$defs/loop"},
+                        {"properties":{"unknown":{"$ref":"#/$defs/missing"}}}
+                    ]
+                }
+            },
+            "properties":{"cyclic":{"$ref":"#/$defs/loop"}}
+        });
+        let environment = Environment {
+            scopes: BTreeMap::new(),
+        };
+        let mut value = json!({"cyclic":{"unknown":17,"ordinary":23}});
+        environment.withhold_values("project", &schema, &schema, &mut value, "test.core");
+        assert_eq!(
+            value,
+            json!({"cyclic":{"unknown":conduit_loader::secret::WITHHELD_VALUE,"ordinary":23}})
+        );
+    }
 
     #[test]
     fn sec_001_follows_local_aliases_and_allows_only_null_siblings() {

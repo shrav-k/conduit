@@ -311,7 +311,8 @@ pub(crate) fn execute(
         if t.reply["accepted"] != true {
             return Err("registration changed between validation and dispatch".into());
         }
-        let created = t.reply["objects"].clone();
+        packages::format_submission_notes(&mut t.reply["diagnostics"]);
+        outputs = json!({"objects":t.reply["objects"],"diagnostics":t.reply["diagnostics"]});
         for r in &mut t.records[start..] {
             r["data"]["invocation"] = v["id"].clone();
         }
@@ -328,7 +329,6 @@ pub(crate) fn execute(
         {
             a.cursor += 1;
         }
-        outputs = json!({"objects":created,"diagnostics":[]});
     } else if v["operation"] == c.qualified("list.v1") {
         // OPS-036/ACC-033: list reads stored fields only; package visibility uses State.
         let view = &t.state;
@@ -623,7 +623,7 @@ pub(crate) fn execute(
         let old = template(&t.state, args)
             .ok_or("replacement template absent")?
             .clone();
-        let trial = replacement(&t.state, args, c, a)?;
+        let mut trial = replacement(&t.state, args, c, a)?;
         let mut new = trial
             .state
             .objects
@@ -660,7 +660,8 @@ pub(crate) fn execute(
             )?;
         }
         t.decisions.extend(trial.decisions);
-        outputs = json!({"revision":new["revision"],"diagnostics":[]});
+        packages::format_submission_notes(&mut trial.reply["diagnostics"]);
+        outputs = json!({"revision":new["revision"],"diagnostics":trial.reply["diagnostics"]});
         t.decisions.push(decision(
             "replace-one-template",
             &[
@@ -845,6 +846,187 @@ mod answer_tests {
             .iter()
             .find(|r| r["type"] == "pending-action-answered")
             .unwrap()
+    }
+
+    #[test]
+    fn register_and_replace_results_report_unused_packages() {
+        let (mut state, mut c) = fixture();
+        let operations = [c.qualified("register.v1"), c.qualified("replace.v1")];
+        let capability = c.qualified("object-management.v1");
+        let contracts = &mut c.core_environment.scopes.get_mut("core").unwrap().contracts;
+        for name in ["register.v1", "replace.v1"] {
+            contracts.insert(
+                name.into(),
+                json!({"kind":"Operation","metadata":{"name":name},"spec":{
+                    "inputSchema":{"type":"object"},"outputSchema":{"type":"object"},
+                    "deduplicates":true
+                }}),
+            );
+        }
+        for name in [
+            "runtime-provider.v1",
+            "machine-provider.v1",
+            "package-source.v1",
+        ] {
+            contracts.insert(
+                name.into(),
+                json!({"kind":"Capability","metadata":{"name":name},"spec":{"operations":[]}}),
+            );
+        }
+        contracts.insert(
+            "qualified-reference.v1".into(),
+            json!({"kind":"Schema","metadata":{"name":"qualified-reference.v1"},
+                "spec":{"type":"string"}}),
+        );
+        contracts.insert(
+            "object-management.v1".into(),
+            json!({"kind":"Capability","metadata":{"name":"object-management.v1"},
+                "spec":{"operations":operations}}),
+        );
+        c.builtin = Some(packages::Project {
+            manifest: Some(json!({"address":c.core_package,"version":"1.0.0",
+                "exports":["qualified-reference.v1"],"implementations":{"engine":{"implements":[]}}})),
+            documents: contracts.values().cloned().collect(),
+            directory: None,
+        });
+        for object in &mut state.objects {
+            if object["id"] == "management" {
+                object["schema_environment"] = json!(c.core_environment);
+                for operation in &operations {
+                    object["resolved_implementations"][operation] = json!({"source":"engine"});
+                }
+            } else if object["id"] == "root-management" {
+                object["operations"] = json!(operations);
+                object["capability"] = json!(capability);
+            }
+        }
+
+        let types = "example.org/types";
+        let schemas = "example.org/schemas";
+        let mut manifest = json!({"address":"example.org/submission","packages":{}});
+        for (address, name, document) in [
+            (
+                types,
+                "type.v1",
+                json!({"kind":"Type","metadata":{"name":"type.v1"},
+                "spec":{"family":"Resource","schema":{"type":"object"}}}),
+            ),
+            (
+                schemas,
+                "config.v1",
+                json!({"kind":"Schema","metadata":{"name":"config.v1"},
+                "spec":{"type":"object"}}),
+            ),
+        ] {
+            let project = packages::Project {
+                manifest: Some(json!({"address":address,"version":"1.0.0","exports":[name]})),
+                documents: vec![document],
+                directory: None,
+            };
+            let digest = packages::project_digest(&project).unwrap();
+            manifest["packages"][address] = json!({"version":"1.0.0","digest":digest});
+            state.preinstalled_snapshots.push(packages::Snapshot {
+                source: packages::SnapshotSource::PreinstalledSnapshot,
+                address: address.into(),
+                version: "1.0.0".into(),
+                digest,
+                project,
+            });
+        }
+        let template = json!({"kind":"Resource","metadata":{"name":"shared"},
+            "spec":{"type":format!("{types}#type.v1"),"config":{}}});
+        let schema = json!({"kind":"Schema","metadata":{"name":"config.v1"},
+            "spec":{"$ref":format!("{schemas}#config.v1")}});
+        let note = json!([{"ruleId":"NAM-008","level":"note",
+            "message":{"text":format!("Unused package {schemas}; submission accepted.")}}]);
+        let invoke = |state: &State, step, tool: &str, arguments, key: &str| {
+            let mut evidence = evidence(step, NOW);
+            evidence.revisions = vec!["r1".into(), "r2".into()];
+            crate::step(
+                state,
+                Input::Invoke {
+                    evidence,
+                    request: AccessRequest {
+                        identity: Identity::Instance { id: "root".into() },
+                        tool: tool.into(),
+                        arguments,
+                        serving: None,
+                        readable: true,
+                        authority_readable: true,
+                        client_capabilities: None,
+                        sign_in_login: None,
+                        sign_in_return: None,
+                    },
+                    key: Some(key.into()),
+                    archive: None,
+                },
+                &c,
+            )
+            .unwrap_or_else(|error| panic!("{tool} at step {step}: {error}"))
+        };
+        let mut diagnostics = Vec::new();
+        for use_both in [false, true] {
+            let contracts = if use_both {
+                vec![schema.clone()]
+            } else {
+                vec![]
+            };
+            let mut documents = contracts.clone();
+            documents.push(template.clone());
+            let args = json!({"manifest":manifest,"documents":documents});
+            let registered = invoke(
+                &state,
+                1,
+                "management.register.v1",
+                args.clone(),
+                "register",
+            );
+            assert_eq!(
+                registered.reply["_meta"]["test/outcome"], "succeeded",
+                "{}",
+                registered.reply
+            );
+            let repeated = invoke(
+                &registered.state,
+                2,
+                "management.register.v1",
+                args,
+                "register",
+            );
+            assert_eq!(
+                repeated.reply["structuredContent"],
+                registered.reply["structuredContent"]
+            );
+            let revision = &registered
+                .state
+                .objects
+                .iter()
+                .find(|o| o["name"] == "shared")
+                .unwrap()["revision"];
+            let args = json!({"manifest":manifest,"contracts":contracts,"template":template,"revision":revision});
+            let replaced = invoke(
+                &registered.state,
+                3,
+                "management.replace.v1",
+                args.clone(),
+                "replace",
+            );
+            assert_eq!(
+                replaced.reply["_meta"]["test/outcome"], "succeeded",
+                "{}",
+                replaced.reply
+            );
+            let repeated = invoke(&replaced.state, 4, "management.replace.v1", args, "replace");
+            assert_eq!(
+                repeated.reply["structuredContent"],
+                replaced.reply["structuredContent"]
+            );
+            diagnostics.push((
+                registered.reply["structuredContent"]["diagnostics"].clone(),
+                replaced.reply["structuredContent"]["diagnostics"].clone(),
+            ));
+        }
+        assert_eq!(diagnostics, [(note.clone(), note), (json!([]), json!([]))]);
     }
 
     fn notice_fixture() -> (State, Context) {

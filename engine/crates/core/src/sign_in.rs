@@ -1487,15 +1487,6 @@ fn end_sign_in(
         Some(vec![diagnostic]),
     )?;
     t.state.invocations[i]["sign_in"]["phase"] = json!("ended");
-    link_raised_action(t, i)
-}
-
-pub(crate) fn link_raised_action(t: &mut Transition, i: usize) -> Result<()> {
-    let invocation = &t.state.invocations[i];
-    if let Some(action) = invocation["sign_in"].get("raised") {
-        let (id, action) = (invocation["id"].clone(), action.clone());
-        link_action(t, &id, &action)?;
-    }
     Ok(())
 }
 
@@ -1562,7 +1553,14 @@ fn link_action(t: &mut Transition, invocation: &Value, action: &Value) -> Result
         .rev()
         .find(|r| r["type"] == "invocation-ended" && r["data"]["invocation"] == *invocation)
         .ok_or("sign-in invocation has no ending record")?;
-    ended["data"]["pendingAction"] = json!([action]);
+    let pending = &mut ended["data"]["pendingAction"];
+    if let Some(ids) = pending.as_array_mut() {
+        if !ids.contains(action) {
+            ids.push(action.clone());
+        }
+    } else {
+        *pending = json!([action]);
+    }
     let stored = t
         .state
         .records
@@ -2905,6 +2903,42 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn sign_in_result_names_the_action_it_raised() {
+        let (mut t, c) = account_part_fixture();
+        answer_part(
+            &mut t,
+            &c,
+            "k1",
+            account_result(&c, "succeeded", json!("other-account")),
+        );
+        let action = t.state.invocations[0]["sign_in"]["raised"].clone();
+        assert!(action.is_string());
+        let hook = t.reply["hook"].as_str().unwrap().to_owned();
+        let mut ended = transition(t.state);
+        answer_part(
+            &mut ended,
+            &c,
+            &hook,
+            account_result(&c, "failed", Value::Null),
+        );
+        let record = ended
+            .records
+            .iter()
+            .find(|r| r["type"] == "invocation-ended" && r["data"]["invocation"] == "g1")
+            .unwrap();
+        let reply = ended
+            .request_replies
+            .iter()
+            .find(|r| r.invocation == "g1")
+            .unwrap();
+        let key = format!("{}pendingAction", c.meta_prefix);
+        assert_eq!(record["data"]["outcome"], "failed");
+        assert_eq!(record["data"]["pendingAction"], json!([action]));
+        assert_eq!(ended.reply["_meta"][&key], json!([action]));
+        assert_eq!(reply.reply["_meta"][&key], json!([action]));
     }
 
     #[test]

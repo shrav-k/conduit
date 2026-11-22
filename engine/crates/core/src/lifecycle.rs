@@ -390,29 +390,6 @@ pub(crate) fn report_sign_in_undone(
     Ok(())
 }
 
-pub(crate) fn record_setup_sign_in(t: &mut Transition, i: usize) -> Result<()> {
-    let setup = &t.state.invocations[i];
-    let Some(action) = setup["setup"].get("raised") else {
-        return Ok(());
-    };
-    let ended = t
-        .records
-        .iter_mut()
-        .rev()
-        .find(|r| r["type"] == "invocation-ended" && r["data"]["invocation"] == setup["id"])
-        .ok_or("raising setup has no ending record")?;
-    ended["data"]["pendingAction"] = json!([action]);
-    let stored = t
-        .state
-        .records
-        .iter_mut()
-        .rev()
-        .find(|r| r["id"] == ended["id"])
-        .ok_or("raising setup's ending record absent from state")?;
-    *stored = ended.clone();
-    Ok(())
-}
-
 fn settle(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) -> Result<()> {
     let v = t.state.invocations[i].clone();
     let parts = v["setup"]["parts"].as_array().unwrap();
@@ -465,8 +442,7 @@ fn settle(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) -> 
             &format!("The sign-out hook ended {sign_out} after the account check found an account other than the expected one, so SignInUndone is False and requests to the instance other than the parts of sign-in.v1, of a setup and of its retirement report unavailable until an account check finds the expected account or none."),
         )?);
     }
-    requests::finish(t, a, c, i, outcome, json!({}), json!([]), cause)?;
-    record_setup_sign_in(t, i)
+    requests::finish(t, a, c, i, outcome, json!({}), json!([]), cause)
 }
 fn request_for(
     t: &Transition,
@@ -1897,6 +1873,85 @@ mod explanation_tests {
             "setup":{"phase":phase,"run_phase":"run","cursor":0,"parts":[]}
         }));
         (state, c)
+    }
+
+    #[test]
+    fn setup_result_names_the_sign_in_action_it_raised() {
+        let (mut state, c) = setup_fixture("declarations");
+        state.invocations[0]["object"] = json!("agent");
+        let mut environment = c.core_environment.clone();
+        let contracts = &mut environment.scopes.get_mut("core").unwrap().contracts;
+        contracts.get_mut("type.v1").unwrap()["spec"]["signIn"] = json!({"account":"/account"});
+        contracts.insert(
+            "account-hook.v1".into(),
+            json!({"kind":"Operation","metadata":{"name":"account-hook.v1"},
+                "spec":{"outputSchema":{"type":"object","required":["account"],
+                    "properties":{"account":{"type":["string","null"]}}}}}),
+        );
+        let indexes = json!({"core":contracts});
+        let agent = &mut state.objects[1];
+        agent["held"] =
+            json!({"environment":environment,"indexes":indexes,"contexts":{},"scope":"core"});
+        agent["config"] = json!({"account":"expected-account"});
+        agent["resolved_implementations"][c.qualified("account-hook.v1")] =
+            json!({"source":"project","item":{}});
+
+        let mut pending = transition(state);
+        let fresh = evidence();
+        let mut allocation = Allocation {
+            evidence: &fresh,
+            cursor: 0,
+        };
+        advance(&mut pending, &mut allocation, &c, 0).unwrap();
+        let hook = pending.reply["hook"].as_str().unwrap().to_owned();
+        let complete = |state: &State, completion| {
+            let mut fresh = evidence();
+            fresh.ids.retain(|id| !state.allocated_ids.contains(id));
+            step(
+                state,
+                Input::Complete {
+                    evidence: fresh,
+                    invocation: hook.clone(),
+                    attempt: 1,
+                    completion,
+                },
+                &c,
+            )
+            .unwrap()
+        };
+        let ready = complete(&pending.state, requests::advertised_extension(&c));
+        for account in [json!("expected-account"), Value::Null] {
+            let ended = complete(
+                &ready.state,
+                requests::Completion::Result {
+                    result: json!({"isError":false,"content":[],"_meta":{"test/outcome":"succeeded"},
+                        "structuredContent":{"account":account}}),
+                },
+            );
+            assert_eq!(ended.reply["_meta"]["test/outcome"], "succeeded");
+            let stored = ended
+                .request_replies
+                .iter()
+                .find(|reply| reply.invocation == "setup")
+                .unwrap();
+            if account.is_null() {
+                let record = ended
+                    .records
+                    .iter()
+                    .find(|r| r["type"] == "invocation-ended" && r["data"]["invocation"] == "setup")
+                    .unwrap();
+                let action = &record["data"]["pendingAction"];
+                let id = action[0].as_str().unwrap();
+                assert_eq!(action, &json!([id]));
+                assert!(ended.state.pending_actions.contains_key(id));
+                assert_eq!(&ended.reply["_meta"]["test/pendingAction"], action);
+                assert_eq!(&stored.reply["_meta"]["test/pendingAction"], action);
+            } else {
+                assert!(ended.state.pending_actions.is_empty());
+                assert!(ended.reply["_meta"].get("test/pendingAction").is_none());
+                assert!(stored.reply["_meta"].get("test/pendingAction").is_none());
+            }
+        }
     }
 
     fn cancel_setup(state: &State, c: &Context) -> Transition {

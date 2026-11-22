@@ -93,6 +93,24 @@ pub(crate) fn version_equal(a: &str, b: &str) -> bool {
 fn diag(rule: &str, text: impl Into<String>) -> Value {
     json!({"ruleId":rule,"level":"error","message":{"text":text.into()}})
 }
+
+const UNUSED_PACKAGE_NOTE: &str = "unused satisfied package ";
+
+/// Use the public wording once registration has accepted the submitted project.
+pub(crate) fn format_submission_notes(diagnostics: &mut Value) {
+    for diagnostic in diagnostics.as_array_mut().into_iter().flatten() {
+        if diagnostic["ruleId"] == "NAM-008"
+            && let Some(address) = diagnostic["message"]["text"]
+                .as_str()
+                .and_then(|text| text.strip_prefix("project: "))
+                .and_then(|text| text.strip_prefix(UNUSED_PACKAGE_NOTE))
+        {
+            diagnostic["message"]["text"] =
+                json!(format!("Unused package {address}; submission accepted."));
+        }
+    }
+}
+
 fn items<'a>(value: &'a Value, key: &str) -> impl Iterator<Item = (&'a String, &'a Value)> {
     value
         .get(key)
@@ -701,7 +719,7 @@ impl Catalog {
                 if !used.get(scope).is_some_and(|u| u.contains(address)) {
                     let mut d = diag(
                         "NAM-008",
-                        format!("{scope}: unused satisfied package {address}"),
+                        format!("{scope}: {UNUSED_PACKAGE_NOTE}{address}"),
                     );
                     d["level"] = json!("note");
                     diagnostics.push(d);

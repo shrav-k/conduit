@@ -5,7 +5,7 @@ mod core;
 mod install_archive;
 mod load;
 mod read;
-mod request_fixture;
+pub(super) mod request_fixture;
 mod resolve_project;
 mod restore_state;
 mod schema_case;

@@ -13,8 +13,9 @@ finds in the [open log](../docs/implementation/first-build/log-increment-4.md).
 
 It holds the strict loader of increment 1 (A43), in [crates/loader](crates/loader), whose
 package is `conduit-loader`; the pure `conduit-core` in [crates/core](crates/core); and the
-`conduit-conformance` runner in [crates/conformance](crates/conformance); and the
-`conduit-shell` library with its `conduit` binary in [crates/shell](crates/shell).
+`conduit-conformance` runner in [crates/conformance](crates/conformance);
+the `conduit-shell` library with its `conduit` binary in [crates/shell](crates/shell);
+and the `conduit-model-check` tests in [crates/model-check](crates/model-check/README.md).
 
 State on 2026-11-10: increment 1, the loader, was done on 2026-11-09; increment 2, S1 whole on
 the pure core by vectors, and increment 3, the shell, were done on 2026-11-10. The shell ran
@@ -415,7 +416,14 @@ this directory, and a test writes its documents with the names it reads. As of 2
 shell CLI also reads `spec/` from this checkout; a standalone distribution carrying the core
 package (NAM-020) remains work for later.
 
-The crate choices below record the loader work of 2026-11-09; their upstream status is as
+**Model checking.** The engine tests use Stateright 0.31.0 for breadth-first searches and
+seeded simulations of the real core. It reuses the explorer and trace conventions from
+[experiment 012](../experiments/012-model-checking/README.md). The order considered writing
+a new explorer, simulating a runtime or a network with Turmoil or madsim, exploring thread
+interleavings with Loom or Shuttle, and restating the rules in TLA+ or Quint. Stateright
+already explores the deterministic core transitions and prints fault traces.
+
+The loader choices below record the work of 2026-11-09. Their upstream status is as
 recorded then.
 
 **YAML: [saphyr-parser](https://crates.io/crates/saphyr-parser) 0.3.3.** `serde_yaml` is no

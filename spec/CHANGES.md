@@ -33,3 +33,9 @@ then they are under `docs/proposals/`.
 - Added: IFC-051, a result, plain or not, may carry one usage member in `_meta`, which the record of the invocation's end keeps unchanged, or drops with a warning naming IFC-051 where it is malformed; it changes nothing else; a secret read's usage member is ignored without a warning under SEC-015 (DEC-047).
 - Added: `usage.v1`, the core schema of IFC-051's member, and `record.v1`'s `usage` and `usageDropped` (DEC-047).
 - Changed: REC-002, except for a read of a secret, the record of an invocation's end holds its usage member or the warning that dropped it, under IFC-051, whatever `records` states (DEC-047).
+- Changed: CTR-013, ACC-033 and `type-spec.v1`, an Agent's login place may refer to a Pool-owned login Resource, for every plan, its Pool authorizing it (DEC-042).
+- Changed: PRV-029 and MAN-017, a login Resource's directory reaches its Agents' runs; an Agent's hooks never log it out (DEC-042).
+- Changed: PND-005, PND-009 and PND-010, an Agent's lapse raises its login Resource's action and one call at a time until root lifts it; only the Resource's own hold holds its Agents (DEC-042, DEC-046).
+- Changed: PRV-020 and LIF-021, a login Resource with an Agent reports conflict at retirement (DEC-042).
+- Changed: `login Resource`, `notice`, `state directory` and the limit at spec/README.md#pending-actions-sign-in-and-the-network on a Resource's login (DEC-042).
+- Changed: IFC-016, a URL request outside sign-in.v1 from an Agent of a login Resource raises PND-005 for that Resource, the form in which a plain turn reports a lapsed login (DEC-042, DEC-046).

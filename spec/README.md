@@ -459,7 +459,9 @@ its program without Conduit's part, so only its URL is checked (IFC-049).
 On the engine's machine a process under the same operating-system user can read the root
 Interface's token (DL13) and every state directory, an unconfined Agent among them (PRV-029,
 DL16). Until Agents are confined, a package keeping a Resource's login runs where no
-unconfined Agent runs; the engine does not check that placement in v0 (ruling 75 C1).
+unconfined Agent runs, but for a login Resource, which by design runs beside its
+unconfined Agents, any of which can read it, including the shared client files that CTR-013
+describes (PRV-029; DEC-042); the engine does not check that placement in v0 (ruling 75 C1).
 
 In v0 the person's Interface runs on the engine's machine. From another machine or a phone,
 the person reaches it over SSH and pastes the return, or uses a device code. A phone

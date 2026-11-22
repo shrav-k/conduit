@@ -430,8 +430,9 @@
     either, under ACC-034. Only URL-mode elicitation arising as a part of sign-in.v1 is
     relayed, under IFC-049, to the requesting person's Interface. A URL elicitation at any
     other point ends the call unknown, raises PND-005 only for a Type stating signIn with a
-    string account, and reaches no consumer inline, even root. Without that declaration it
-    ends unknown with a diagnostic naming the absent signIn or expected account, and raises
+    string account, or for the login Resource of an Agent where that Resource has one
+    (CTR-013, PND-005), and reaches no consumer inline, even root. Without either it ends
+    unknown with a diagnostic naming the absent signIn or expected account, and raises
     nothing. Other input requests are not answered or passed on; IFC-009 and IFC-010 read
     their results. Task input requests use tasks/get and tasks/update as IFC-049 states. A
     task request that does not proceed carries the same explanation and deciding diagnostic
@@ -724,7 +725,10 @@
     reports conflict under OPS-034. It is never dispatched again to recover that content.
     This specification gives `content` no other meaning: an operation's outputs are in
     `structuredContent`. io.github.shrav-k.conduit/pendingAction names the action IDs raised
-    or holding the request (PND-005, PND-007). For an Interface's own result
+    or holding the request (PND-005, PND-007). A call reporting a lapsed login of a login
+    Resource also names in pendingAction the Resource's unanswered sign-in action
+    and unanswered one-at-a-time notice, in that order where present, whether the report
+    raised them or found them unanswered (PND-005). For an Interface's own result
     io.github.shrav-k.conduit/unanswered is the nonzero count under PND-002; it is absent
     for Agents. Neither key holds evidence values or prompts (PND-004).
     pendingAction is a list of action IDs, including when it names one action, and carries

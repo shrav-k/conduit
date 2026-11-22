@@ -272,9 +272,9 @@
   layer: language
   level: must
   when: >-
-    A Type contract states signIn.
+    A Type contract states signIn or loginResource.
   then: >-
-    It holds exactly account, a pointer into configuration, and logins, a non-empty list of
+    signIn holds exactly account, a pointer into configuration, and logins, a non-empty list of
     sign-in-login.v1. Every login value is literal, never a configuration pointer. A login
     states name, return, authorization and clientId. Names differ within the Type. Return is
     device, redirect, page or service: device states the verification page, redirect the
@@ -284,12 +284,20 @@
     No other member is allowed. The account place and every member on its path are required,
     and the place is confined to string or null by MAN-017's test. The Type lists no control
     whose changes holds the account pointer, a pointer inside it or a pointer over it, compared
-    as CTR-006 compares pointers. The Type requires the three core operations sign-in-hook.v1,
-    account-hook.v1 and sign-out-hook.v1. No URL may pass
+    as CTR-006 compares pointers. A Type stating signIn requires the three core operations
+    sign-in-hook.v1, account-hook.v1 and sign-out-hook.v1. No URL may pass
     IFC-049's checks for two of its logins, including overlapping fixed ports and ports: any
     on the same host and path. A contract failing these rules is rejected at install or
     submission. The logins are part of the Type contract: PKG-004's package digest and
     SUB-008's digest of a submitted project's contracts cover them.
+    loginResource is allowed only for the family Agent, never beside signIn, and holds
+    exactly place: a pointer into configuration, the Agent's login place, required, of
+    schema resource-reference.v1, that no control's changes holds, compared as for the
+    account pointer. Such a Type need not require the three hooks. A contract breaking these
+    rules is rejected at install or submission. A submission whose login place refers to a
+    Resource whose Type does not state signIn, that holds no string at its account place, or
+    that is retired, is rejected, with a diagnostic naming CTR-013, the place and that
+    Resource.
   observable: >-
     A string at the account place is the expected account. Null disables both sign-in actions
     and the account check, as for API-key configuration. A Type states signIn only where
@@ -302,8 +310,16 @@
     and filters (PND-011), and exposed through no consumer tool. The engine starts no login
     and holds no token it yields (PRV-029 and the limits in spec/README.md). A Resource
     needing browser login is implemented by a package that completes it and keeps its token in
-    its own state directory (PRV-029). The
-    engine carries no return for carried: false (PND-013). The engine compares the client IDs
+    its own state directory (PRV-029). An Agent whose Type states loginResource keeps its own
+    state directory and context, and is an Agent of its login Resource: the Pool-owned
+    Resource its login place refers to, whose state directory holds one account's login on
+    one machine (PRV-029). What an Agent's client writes in that Resource's directory is
+    shared with every Agent of that login, including, for a Claude account home, per-session
+    files, `.claude.json`, usage totals and auto memory while on, as DEC-042 accepted.
+    The account check, sign-in.v1 and the sign-in action are that Resource's, never the
+    Agent's (PND-005, PND-010). A login Resource serves whatever
+    subscription plan its vendor's own sign-in serves; no Type states a plan.
+    The engine carries no return for carried: false (PND-013). The engine compares the client IDs
     of a Type's logins with every Type it holds at another address: every installed package's
     Types and every submission's Types held by a template or instance (SUB-008, PKG-029).
     Types at one address share freely, including sibling Types, package versions and

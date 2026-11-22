@@ -627,6 +627,9 @@
     Resource's owning Pool, with the Interface-only and scoped limits of PND-010.
     (17) Answering with answer.v1: the target authorizing inspection of the subject,
     under rows 6, 6A and 7, including their retired-owner fallback (PND-009).
+    Registering an Agent whose login place refers to a Resource (CTR-013), under row 1A, 2
+    or 3, also needs that Resource's owning Pool, listing the row's operation, unless that
+    Pool is in the same submission.
     No request is authorized against a retired Pool or Fleet.
   observable: >-
     An actor with the listed Conduits is permitted, subject to further conditions such as

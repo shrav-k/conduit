@@ -218,6 +218,9 @@
     PRV-022 fixes, every file that PRV-022 names among it but `tls.crt` and `tls.key`, which it
     gives where DL13 states; and in `machine`, the hostname and the labels of the machine that
     the instance's node represents. A place that holds null gives no variable and no argument.
+    For an Agent's login place under CTR-013, the engine's own runner gives each environment
+    variable bound to that place the login Resource's directory path in place of the resolved
+    reference (PRV-029).
     The engine then reaches the server at the `url` that the run returns or, on its own runner,
     over the process's stdio. It asks no runtime provider other than its own runner for the run
     of a `command` item whose program the manifest gives as a relative path, under MAN-010,
@@ -584,7 +587,8 @@
   when: >-
     A retirement of a Resource whose type offers `runtime-provider.v1` would be dispatched, by
     a request of an actor or within `retire-with-resources.v1`, and an instance that exists
-    names that Resource in `runtime`, retired or not.
+    names that Resource in `runtime`, retired or not; or a retirement of a login Resource
+    would be so dispatched while an Agent of it exists, retired or not (CTR-013).
   then: >-
     The retirement is not dispatched, and reports conflict.
   observable: >-
@@ -601,6 +605,9 @@
     that uses it exists; this promise answers conflict instead, as PLC-011 does for a node.
     Within `retire-with-resources.v1` the Resources that name a runtime provider are retired
     before it, under LIF-021. Where the actor is not permitted, OPS-023 gives refused first.
+    A login Resource is likewise retired only once every Agent of it has been removed or
+    unregistered, the diagnostic naming each, so its own retire hook logs out a login no
+    Agent uses.
 
 
 
@@ -946,13 +953,19 @@
     the instance ID and is never reused for another instance. CONDUIT_STATE_DIR names it.
     Removal or unregistration of the instance removes it with its contents (LIF-035).
   observable: >-
-    The engine reads none of its contents, records none and passes it to no other run. A
-    process under the same operating-system user may still read it; isolation is mediated
-    (ACC-027, DL16). Another runtime provider supplies such a directory only where its
-    contract states it does. A Type whose implementation needs one states that requirement;
+    The engine reads none of its contents, records none and passes it to no other run but
+    this: an Agent of a login Resource (CTR-013) receives that Resource's directory path
+    in each run through the environment binding under PRV-007 and may read and write in
+    that directory. Only the engine's own runner passes the path, to a run on the Resource's
+    node; elsewhere the Agent's setup fails with a diagnostic naming PRV-029 and the
+    Resource. A process under the same operating-system user may still read it; isolation
+    is mediated (ACC-027, DL16). Another runtime provider supplies such a directory only
+    where its contract states it does. A Type whose implementation needs one states that requirement;
     setup under a runner that gives none fails with an explicit diagnostic. Agent packages
     use it for the Agent's own home; their client-specific subdirectories and credential
-    storage belong to their contracts.
+    storage belong to their contracts. A retire-hook.v1 or sign-out-hook.v1 logs out only a
+    login in its own instance's directory; an Agent's never logs out its login Resource's,
+    which only that Resource's own hooks sign in or out.
 
 - id: PRV-030
   layer: convention

@@ -23,13 +23,13 @@ everything the promises say it exports, and everything first start needs.
 | [types.yaml](types.yaml) | The 7 Type contracts: the basic Interface, Pool and Fleet types, and the types of a node, of a value, of `management` and of `access` |
 | [requirements.yaml](requirements.yaml) | The 2 Requirement contracts: the bound of a right to open, and the shared-host requirement |
 | [references.yaml](references.yaml) | The 13 reference schemas: the Schema contracts that make a value a reference (OBJ-021), a secret reference among them (SEC-001). Each also accepts the resolved form `{kind, id}`, which only the engine writes |
-| [results.yaml](results.yaml) | 12 Schema contracts: an object as a result names it, a diagnostic, a condition, a record, a call's usage, an inventory, a tombstone, opening provenance and a trust domain |
+| [results.yaml](results.yaml) | 14 Schema contracts: an object as a result names it, a diagnostic, a condition, a record, a call's usage, a call's limits, an instance's limits, an inventory, a tombstone, opening provenance and a trust domain |
 | [templates.yaml](templates.yaml) | The 18 templates: first-start objects and Conduits, defaults, scoped administration, explicit cascades and a value Resource |
 
 The package also exports the 52 Schema contracts under [spec/schemas](../schemas/README.md),
 which are the schemas of documents themselves. They are part of this package because a `$ref`
 from one schema to another names a Schema contract (SCH-015), and because `register.v1` states
-its inputs with them. In all the package exports 150 documents, 77 of them Schema contracts,
+its inputs with them. In all the package exports 152 documents, 79 of them Schema contracts,
 and has one implementation, which is also an export (PKG-019).
 
 A document of the core package refers to another by its full address, as
@@ -622,6 +622,8 @@ its binding and labels are fixed when made (PLC-008, ENR-010).
 | `condition.v1` | Schema | LIF-011, OBS-002, PRV-009 |
 | `record.v1` | Schema | REC-002, LIF-013 |
 | `usage.v1` | Schema | IFC-051: what one call's model work used, by client and model |
+| `limit-report.v1` | Schema | IFC-052: the usage limits one call's client reported |
+| `limit-status.v1` | Schema | IFC-053: the newest usage limits an Agent or login Resource shows |
 | `name.v1` | Schema of a document's part | OBJ-001, OBJ-022 |
 | `export-name.v1` | Schema of a document's part | NAM-004 |
 | `contract-name.v1` | Schema of a document's part | CTR-001 |

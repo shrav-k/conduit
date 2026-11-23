@@ -1,0 +1,4648 @@
+{
+  "id": "access-ask-states",
+  "layers": [
+    "convention",
+    "interface"
+  ],
+  "promises": [
+    "ACC-058",
+    "ACC-029"
+  ],
+  "title": "Asks use caller-owned names, deduplicate and obey bounds",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "../../../language/registration/s1/fixture.json",
+    "filesystem-m": "../../../fixtures/s1/packages/filesystem/conduit.yaml",
+    "filesystem-d": "../../../fixtures/s1/packages/filesystem/contracts.yaml",
+    "filesystem-a": "../../../fixtures/s1/archives/filesystem.tar.gz",
+    "history-m": "../../../fixtures/s1/packages/history/conduit.yaml",
+    "history-d": "../../../fixtures/s1/packages/history/contracts.yaml",
+    "history-a": "../../../fixtures/s1/archives/history.tar.gz",
+    "agents-m": "../../../fixtures/s1/packages/agents/conduit.yaml",
+    "agents-d": "../../../fixtures/s1/packages/agents/contracts.yaml",
+    "agents-a": "../../../fixtures/s1/archives/agents.tar.gz",
+    "conduit.yaml": "../../../fixtures/s1/project/conduit.yaml",
+    "templates.yaml": "../../../fixtures/s1/project/templates.yaml",
+    "instances.yaml": "../../../fixtures/s1/project/instances.yaml"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "first-start",
+        "evidence": {
+          "time": "2026-11-09T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000000001",
+            "00000000-0000-4000-8000-000000000002",
+            "00000000-0000-4000-8000-000000000003",
+            "00000000-0000-4000-8000-000000000004",
+            "00000000-0000-4000-8000-000000000005",
+            "00000000-0000-4000-8000-000000000006",
+            "00000000-0000-4000-8000-000000000007",
+            "00000000-0000-4000-8000-000000000008",
+            "00000000-0000-4000-8000-000000000009",
+            "00000000-0000-4000-8000-000000000010",
+            "00000000-0000-4000-8000-000000000011",
+            "00000000-0000-4000-8000-000000000012",
+            "00000000-0000-4000-8000-000000000013",
+            "00000000-0000-4000-8000-000000000014",
+            "00000000-0000-4000-8000-000000000015",
+            "00000000-0000-4000-8000-000000000016",
+            "00000000-0000-4000-8000-000000000017",
+            "00000000-0000-4000-8000-000000000018",
+            "00000000-0000-4000-8000-000000000019",
+            "00000000-0000-4000-8000-000000000020",
+            "00000000-0000-4000-8000-000000000021",
+            "00000000-0000-4000-8000-000000000022",
+            "00000000-0000-4000-8000-000000000023",
+            "00000000-0000-4000-8000-000000000024"
+          ],
+          "revisions": [
+            "r1",
+            "r2",
+            "r3",
+            "r4",
+            "r5",
+            "r6",
+            "r7",
+            "r8"
+          ],
+          "suffixes": [
+            "abc01",
+            "abc02",
+            "abc03"
+          ]
+        },
+        "machine": {
+          "hostname": " WORKSTATION.Example ",
+          "labels": {
+            "kubernetes.io/hostname": "workstation.example",
+            "kubernetes.io/os": "darwin",
+            "kubernetes.io/arch": "arm64",
+            "example.org/role": "test"
+          },
+          "state": "reachable"
+        },
+        "trustDomain": "vectors-040.example"
+      },
+      "expect": {
+        "state": {
+          "started": true
+        },
+        "records": [
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000009",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000001",
+              "cause": "first-start",
+              "action": "registered",
+              "previous": null,
+              "state": "registered"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000010",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000001",
+              "cause": "first-start",
+              "action": "lifecycle-changed",
+              "previous": "registered",
+              "state": "ready"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000011",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000002",
+              "cause": "first-start",
+              "action": "registered",
+              "previous": null,
+              "state": "registered"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000012",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000002",
+              "cause": "first-start",
+              "action": "lifecycle-changed",
+              "previous": "registered",
+              "state": "ready"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000013",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000003",
+              "cause": "first-start",
+              "action": "registered",
+              "previous": null,
+              "state": "registered"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000014",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000003",
+              "cause": "first-start",
+              "action": "lifecycle-changed",
+              "previous": "registered",
+              "state": "ready"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000015",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000004",
+              "cause": "first-start",
+              "action": "registered",
+              "previous": null,
+              "state": "registered"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000016",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000004",
+              "cause": "first-start",
+              "action": "lifecycle-changed",
+              "previous": "registered",
+              "state": "ready"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000017",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000005",
+              "cause": "first-start",
+              "action": "registered",
+              "previous": null,
+              "state": "registered"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000018",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000005",
+              "cause": "first-start",
+              "action": "lifecycle-changed",
+              "previous": "registered",
+              "state": "ready"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000019",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000006",
+              "cause": "first-start",
+              "action": "registered",
+              "previous": null,
+              "state": "registered"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000020",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000006",
+              "cause": "first-start",
+              "action": "lifecycle-changed",
+              "previous": "registered",
+              "state": "ready"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000021",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000007",
+              "cause": "first-start",
+              "action": "registered",
+              "previous": null,
+              "state": "registered"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000022",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000007",
+              "cause": "first-start",
+              "action": "lifecycle-changed",
+              "previous": "registered",
+              "state": "ready"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000023",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000008",
+              "cause": "first-start",
+              "action": "registered",
+              "previous": null,
+              "state": "registered"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000024",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000008",
+              "cause": "first-start",
+              "action": "lifecycle-changed",
+              "previous": "registered",
+              "state": "ready"
+            }
+          }
+        ],
+        "external_intents": [],
+        "reply": {
+          "started": true
+        },
+        "required_promises": [
+          "FST-001"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "records": [],
+        "external_intents": [],
+        "reply": {
+          "accepted": true,
+          "diagnostics": []
+        },
+        "required_promises": [
+          "PKG-006"
+        ],
+        "stateUnchanged": true
+      }
+    },
+    {
+      "input": {
+        "kind": "register-project",
+        "file": "fixture",
+        "evidence": {
+          "time": "2026-11-09T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000000100",
+            "00000000-0000-4000-8000-000000000101",
+            "00000000-0000-4000-8000-000000000102",
+            "00000000-0000-4000-8000-000000000103",
+            "00000000-0000-4000-8000-000000000104",
+            "00000000-0000-4000-8000-000000000105",
+            "00000000-0000-4000-8000-000000000106",
+            "00000000-0000-4000-8000-000000000107",
+            "00000000-0000-4000-8000-000000000108",
+            "00000000-0000-4000-8000-000000000109",
+            "00000000-0000-4000-8000-000000000110",
+            "00000000-0000-4000-8000-000000000111",
+            "00000000-0000-4000-8000-000000000112",
+            "00000000-0000-4000-8000-000000000113",
+            "00000000-0000-4000-8000-000000000114",
+            "00000000-0000-4000-8000-000000000115",
+            "00000000-0000-4000-8000-000000000116",
+            "00000000-0000-4000-8000-000000000117",
+            "00000000-0000-4000-8000-000000000118",
+            "00000000-0000-4000-8000-000000000119",
+            "00000000-0000-4000-8000-000000000120",
+            "00000000-0000-4000-8000-000000000121",
+            "00000000-0000-4000-8000-000000000122",
+            "00000000-0000-4000-8000-000000000123",
+            "00000000-0000-4000-8000-000000000124",
+            "00000000-0000-4000-8000-000000000125",
+            "00000000-0000-4000-8000-000000000126",
+            "00000000-0000-4000-8000-000000000127",
+            "00000000-0000-4000-8000-000000000128",
+            "00000000-0000-4000-8000-000000000129",
+            "00000000-0000-4000-8000-000000000130",
+            "00000000-0000-4000-8000-000000000131",
+            "00000000-0000-4000-8000-000000000132",
+            "00000000-0000-4000-8000-000000000133",
+            "00000000-0000-4000-8000-000000000134",
+            "00000000-0000-4000-8000-000000000135",
+            "00000000-0000-4000-8000-000000000136",
+            "00000000-0000-4000-8000-000000000137",
+            "00000000-0000-4000-8000-000000000138",
+            "00000000-0000-4000-8000-000000000139",
+            "00000000-0000-4000-8000-000000000140",
+            "00000000-0000-4000-8000-000000000141",
+            "00000000-0000-4000-8000-000000000142",
+            "00000000-0000-4000-8000-000000000143",
+            "00000000-0000-4000-8000-000000000144",
+            "00000000-0000-4000-8000-000000000145",
+            "4beb5dc6-103b-52e5-b72f-b5799dbcc710",
+            "456381a3-5776-5ea8-b730-d75fce871300",
+            "6c948b2a-f524-507c-b6cb-3015ad9b8991",
+            "3b5fbd99-7824-5fee-856c-e1d7b35d3f6e",
+            "5296b979-2af8-5fb6-b5a1-c730a4a6e792"
+          ],
+          "revisions": [
+            "reg-0",
+            "reg-1",
+            "reg-2",
+            "reg-3",
+            "reg-4",
+            "reg-5",
+            "reg-6",
+            "reg-7",
+            "reg-8",
+            "reg-9",
+            "reg-10",
+            "reg-11",
+            "reg-12",
+            "reg-13",
+            "reg-14",
+            "reg-15",
+            "reg-16",
+            "reg-17",
+            "reg-18",
+            "reg-19",
+            "r21",
+            "r22"
+          ],
+          "suffixes": [
+            "a0000",
+            "a0001",
+            "a0002",
+            "a0003",
+            "a0004",
+            "a0005"
+          ]
+        },
+        "request": {
+          "sender": "00000000-0000-4000-8000-000000000005",
+          "caller": "00000000-0000-4000-8000-000000000005",
+          "conduit": "00000000-0000-4000-8000-000000000006",
+          "target": "00000000-0000-4000-8000-000000000003",
+          "operation": "@core#register.v1"
+        },
+        "reverse": false
+      },
+      "expect": {
+        "state": {
+          "started": true
+        },
+        "records": [
+          {
+            "id": "456381a3-5776-5ea8-b730-d75fce871300",
+            "type": "access-decision",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710",
+              "permitted": true
+            }
+          },
+          {
+            "id": "6c948b2a-f524-507c-b6cb-3015ad9b8991",
+            "type": "invocation-dispatched",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000120",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000100",
+              "action": "registered",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000121",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000101",
+              "action": "registered",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000122",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000102",
+              "action": "registered",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000123",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000103",
+              "action": "registered",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000124",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000104",
+              "action": "registered",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000125",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000105",
+              "action": "registered",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000126",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000106",
+              "action": "registered",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000127",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000107",
+              "action": "registered",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000128",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000108",
+              "action": "registered",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000129",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000109",
+              "action": "registered",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000130",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000110",
+              "action": "registered",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000131",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000111",
+              "action": "registered",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000132",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000112",
+              "action": "registered",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000133",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000113",
+              "action": "registered",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000134",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000114",
+              "action": "registered",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000135",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000115",
+              "action": "registered",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000136",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000116",
+              "action": "registered",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000137",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000117",
+              "action": "registered",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000138",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000118",
+              "action": "registered",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000139",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000119",
+              "action": "registered",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000141",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000140",
+              "cause": "default",
+              "action": "registered",
+              "state": "registered",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000142",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000140",
+              "cause": "default",
+              "action": "lifecycle-changed",
+              "state": "ready",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000144",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000143",
+              "cause": "default",
+              "action": "registered",
+              "state": "registered",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000145",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000143",
+              "cause": "default",
+              "action": "lifecycle-changed",
+              "state": "ready",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710"
+            }
+          },
+          {
+            "id": "3b5fbd99-7824-5fee-856c-e1d7b35d3f6e",
+            "type": "invocation-ended",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710",
+              "outcome": "succeeded"
+            }
+          },
+          {
+            "id": "5296b979-2af8-5fb6-b5a1-c730a4a6e792",
+            "type": "request-ended",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "4beb5dc6-103b-52e5-b72f-b5799dbcc710",
+              "outcome": "succeeded"
+            }
+          }
+        ],
+        "reply": {
+          "accepted": true
+        },
+        "required_promises": [
+          "INS-016"
+        ],
+        "external_intents": []
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T12:30:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000010200",
+            "00000000-0000-4000-8000-000000010201",
+            "00000000-0000-4000-8000-000000010202",
+            "00000000-0000-4000-8000-000000010203",
+            "00000000-0000-4000-8000-000000010204",
+            "00000000-0000-4000-8000-000000010205",
+            "00000000-0000-4000-8000-000000010206",
+            "00000000-0000-4000-8000-000000010207",
+            "00000000-0000-4000-8000-000000010208",
+            "00000000-0000-4000-8000-000000010209",
+            "00000000-0000-4000-8000-000000010210",
+            "00000000-0000-4000-8000-000000010211",
+            "00000000-0000-4000-8000-000000010212",
+            "00000000-0000-4000-8000-000000010213",
+            "00000000-0000-4000-8000-000000010214",
+            "00000000-0000-4000-8000-000000010215",
+            "00000000-0000-4000-8000-000000010216",
+            "00000000-0000-4000-8000-000000010217",
+            "00000000-0000-4000-8000-000000010218",
+            "00000000-0000-4000-8000-000000010219",
+            "00000000-0000-4000-8000-000000010220",
+            "00000000-0000-4000-8000-000000010221",
+            "00000000-0000-4000-8000-000000010222",
+            "00000000-0000-4000-8000-000000010223",
+            "00000000-0000-4000-8000-000000010224",
+            "00000000-0000-4000-8000-000000010225",
+            "00000000-0000-4000-8000-000000010226",
+            "00000000-0000-4000-8000-000000010227",
+            "00000000-0000-4000-8000-000000010228",
+            "00000000-0000-4000-8000-000000010229"
+          ],
+          "revisions": [
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1"
+          ],
+          "suffixes": [
+            "r0001",
+            "r0002",
+            "r0003"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.open.v1",
+          "arguments": {
+            "conduit": "root-workspace"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          }
+        },
+        "external_intents": [],
+        "records": [
+          {
+            "type": "access-decision",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000010201",
+              "operation": "@core#open.v1",
+              "permitted": true,
+              "target": "00000000-0000-4000-8000-000000000004"
+            },
+            "id": "00000000-0000-4000-8000-000000010200",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "attempt": 1,
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000010201",
+              "operation": "@core#open.v1",
+              "target": "00000000-0000-4000-8000-000000000004"
+            },
+            "id": "00000000-0000-4000-8000-000000010202",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "object-change",
+            "data": {
+              "action": "opened",
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000010201",
+              "object": "00000000-0000-4000-8000-000000000115",
+              "operation": "@core#open.v1",
+              "state": "ready",
+              "target": "00000000-0000-4000-8000-000000000115"
+            },
+            "id": "00000000-0000-4000-8000-000000010203",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "invocation-ended",
+            "data": {
+              "attempt": 1,
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000010201",
+              "object": "00000000-0000-4000-8000-000000000115",
+              "operation": "@core#open.v1",
+              "outcome": "succeeded",
+              "target": "00000000-0000-4000-8000-000000000004"
+            },
+            "id": "00000000-0000-4000-8000-000000010204",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "request-ended",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000010201",
+              "object": "00000000-0000-4000-8000-000000000115",
+              "operation": "@core#open.v1",
+              "outcome": "succeeded",
+              "target": "00000000-0000-4000-8000-000000000004"
+            },
+            "id": "00000000-0000-4000-8000-000000010205",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T12:30:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000010400",
+            "00000000-0000-4000-8000-000000010401",
+            "00000000-0000-4000-8000-000000010402",
+            "00000000-0000-4000-8000-000000010403",
+            "00000000-0000-4000-8000-000000010404",
+            "00000000-0000-4000-8000-000000010405",
+            "00000000-0000-4000-8000-000000010406",
+            "00000000-0000-4000-8000-000000010407",
+            "00000000-0000-4000-8000-000000010408",
+            "00000000-0000-4000-8000-000000010409",
+            "00000000-0000-4000-8000-000000010410",
+            "00000000-0000-4000-8000-000000010411",
+            "00000000-0000-4000-8000-000000010412",
+            "00000000-0000-4000-8000-000000010413",
+            "00000000-0000-4000-8000-000000010414",
+            "00000000-0000-4000-8000-000000010415",
+            "00000000-0000-4000-8000-000000010416",
+            "00000000-0000-4000-8000-000000010417",
+            "00000000-0000-4000-8000-000000010418",
+            "00000000-0000-4000-8000-000000010419",
+            "00000000-0000-4000-8000-000000010420",
+            "00000000-0000-4000-8000-000000010421",
+            "00000000-0000-4000-8000-000000010422",
+            "00000000-0000-4000-8000-000000010423",
+            "00000000-0000-4000-8000-000000010424",
+            "00000000-0000-4000-8000-000000010425",
+            "00000000-0000-4000-8000-000000010426",
+            "00000000-0000-4000-8000-000000010427",
+            "00000000-0000-4000-8000-000000010428",
+            "00000000-0000-4000-8000-000000010429"
+          ],
+          "revisions": [
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1"
+          ],
+          "suffixes": [
+            "r0001",
+            "r0002",
+            "r0003"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.set-up.v1",
+          "arguments": {
+            "instance": {
+              "kind": "Pool",
+              "name": "workspace"
+            }
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          }
+        },
+        "external_intents": [],
+        "records": [
+          {
+            "type": "access-decision",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000010401",
+              "operation": "@core#set-up.v1",
+              "permitted": true,
+              "target": "00000000-0000-4000-8000-000000000003"
+            },
+            "id": "00000000-0000-4000-8000-000000010400",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "attempt": 1,
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000010401",
+              "operation": "@core#set-up.v1",
+              "target": "00000000-0000-4000-8000-000000000003"
+            },
+            "id": "00000000-0000-4000-8000-000000010402",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "object-change",
+            "data": {
+              "action": "setup-ended",
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000010401",
+              "object": "00000000-0000-4000-8000-000000000117",
+              "operation": "@core#set-up.v1",
+              "outcome": "succeeded",
+              "target": "00000000-0000-4000-8000-000000000117"
+            },
+            "id": "00000000-0000-4000-8000-000000010403",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "invocation-ended",
+            "data": {
+              "attempt": 1,
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000010401",
+              "object": "00000000-0000-4000-8000-000000000117",
+              "operation": "@core#set-up.v1",
+              "outcome": "succeeded",
+              "target": "00000000-0000-4000-8000-000000000003"
+            },
+            "id": "00000000-0000-4000-8000-000000010404",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "request-ended",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000010401",
+              "object": "00000000-0000-4000-8000-000000000117",
+              "operation": "@core#set-up.v1",
+              "outcome": "succeeded",
+              "target": "00000000-0000-4000-8000-000000000003"
+            },
+            "id": "00000000-0000-4000-8000-000000010405",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T12:30:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000010600",
+            "00000000-0000-4000-8000-000000010601",
+            "00000000-0000-4000-8000-000000010602",
+            "00000000-0000-4000-8000-000000010603",
+            "00000000-0000-4000-8000-000000010604",
+            "00000000-0000-4000-8000-000000010605",
+            "00000000-0000-4000-8000-000000010606",
+            "00000000-0000-4000-8000-000000010607",
+            "00000000-0000-4000-8000-000000010608",
+            "00000000-0000-4000-8000-000000010609",
+            "00000000-0000-4000-8000-000000010610",
+            "00000000-0000-4000-8000-000000010611",
+            "00000000-0000-4000-8000-000000010612",
+            "00000000-0000-4000-8000-000000010613",
+            "00000000-0000-4000-8000-000000010614",
+            "00000000-0000-4000-8000-000000010615",
+            "00000000-0000-4000-8000-000000010616",
+            "00000000-0000-4000-8000-000000010617",
+            "00000000-0000-4000-8000-000000010618",
+            "00000000-0000-4000-8000-000000010619",
+            "00000000-0000-4000-8000-000000010620",
+            "00000000-0000-4000-8000-000000010621",
+            "00000000-0000-4000-8000-000000010622",
+            "00000000-0000-4000-8000-000000010623",
+            "00000000-0000-4000-8000-000000010624",
+            "00000000-0000-4000-8000-000000010625",
+            "00000000-0000-4000-8000-000000010626",
+            "00000000-0000-4000-8000-000000010627",
+            "00000000-0000-4000-8000-000000010628",
+            "00000000-0000-4000-8000-000000010629"
+          ],
+          "revisions": [
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1"
+          ],
+          "suffixes": [
+            "r0001",
+            "r0002",
+            "r0003"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "root-workspace.set-up.v1",
+          "arguments": {
+            "instance": {
+              "kind": "Resource",
+              "name": "shared"
+            }
+          }
+        },
+        "key": "setup-shared-10400"
+      },
+      "expect": {
+        "reply": {
+          "pending": true
+        },
+        "records": [
+          {
+            "type": "access-decision",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000115",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-shared-10400",
+              "invocation": "00000000-0000-4000-8000-000000010601",
+              "operation": "@core#set-up.v1",
+              "permitted": true,
+              "target": "00000000-0000-4000-8000-000000000117"
+            },
+            "id": "00000000-0000-4000-8000-000000010600",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "attempt": 1,
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000115",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-shared-10400",
+              "invocation": "00000000-0000-4000-8000-000000010601",
+              "operation": "@core#set-up.v1",
+              "target": "00000000-0000-4000-8000-000000000117"
+            },
+            "id": "00000000-0000-4000-8000-000000010602",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          }
+        ]
+      },
+      "capture": {
+        "shared": "/reply/invocation"
+      }
+    },
+    {
+      "input": {
+        "kind": "setup-report",
+        "evidence": {
+          "time": "2026-11-09T12:30:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000010800",
+            "00000000-0000-4000-8000-000000010801",
+            "00000000-0000-4000-8000-000000010802",
+            "00000000-0000-4000-8000-000000010803",
+            "00000000-0000-4000-8000-000000010804",
+            "00000000-0000-4000-8000-000000010805",
+            "00000000-0000-4000-8000-000000010806",
+            "00000000-0000-4000-8000-000000010807",
+            "00000000-0000-4000-8000-000000010808",
+            "00000000-0000-4000-8000-000000010809",
+            "00000000-0000-4000-8000-000000010810",
+            "00000000-0000-4000-8000-000000010811",
+            "00000000-0000-4000-8000-000000010812",
+            "00000000-0000-4000-8000-000000010813",
+            "00000000-0000-4000-8000-000000010814",
+            "00000000-0000-4000-8000-000000010815",
+            "00000000-0000-4000-8000-000000010816",
+            "00000000-0000-4000-8000-000000010817",
+            "00000000-0000-4000-8000-000000010818",
+            "00000000-0000-4000-8000-000000010819",
+            "00000000-0000-4000-8000-000000010820",
+            "00000000-0000-4000-8000-000000010821",
+            "00000000-0000-4000-8000-000000010822",
+            "00000000-0000-4000-8000-000000010823",
+            "00000000-0000-4000-8000-000000010824",
+            "00000000-0000-4000-8000-000000010825",
+            "00000000-0000-4000-8000-000000010826",
+            "00000000-0000-4000-8000-000000010827",
+            "00000000-0000-4000-8000-000000010828",
+            "00000000-0000-4000-8000-000000010829"
+          ],
+          "revisions": [
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1"
+          ],
+          "suffixes": [
+            "r0001",
+            "r0002",
+            "r0003"
+          ]
+        },
+        "invocation": "$shared",
+        "report": {
+          "kind": "inspect-run",
+          "state": "stopped"
+        }
+      },
+      "expect": {
+        "reply": {
+          "pending": true
+        },
+        "external_intents": [
+          {
+            "kind": "builtin-runner",
+            "operation": "@core#run.v1",
+            "subject": "00000000-0000-4000-8000-000000000119",
+            "caller": "00000000-0000-4000-8000-000000000005",
+            "inputs": {
+              "environment": {},
+              "packageArguments": {
+                "root": "/tmp/conduit-s1/shared"
+              },
+              "identity": {
+                "materializeFor": "00000000-0000-4000-8000-000000000119",
+                "environmentNames": [
+                  "CONDUIT_URL",
+                  "CONDUIT_IDENTITY_DIR"
+                ],
+                "fileNames": [
+                  "ca.crt",
+                  "jwks.json",
+                  "engine-id",
+                  "token"
+                ]
+              }
+            }
+          }
+        ],
+        "records": [
+          {
+            "type": "object-change",
+            "data": {
+              "action": "setup-part-reported",
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000115",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-shared-10400",
+              "invocation": "00000000-0000-4000-8000-000000010601",
+              "object": "00000000-0000-4000-8000-000000000119",
+              "operation": "@core#set-up.v1",
+              "partOperation": "@core#inspect-run.v1",
+              "runState": "stopped",
+              "target": "00000000-0000-4000-8000-000000000119"
+            },
+            "id": "00000000-0000-4000-8000-000000010800",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "setup-report",
+        "evidence": {
+          "time": "2026-11-09T12:30:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000011000",
+            "00000000-0000-4000-8000-000000011001",
+            "00000000-0000-4000-8000-000000011002",
+            "00000000-0000-4000-8000-000000011003",
+            "00000000-0000-4000-8000-000000011004",
+            "00000000-0000-4000-8000-000000011005",
+            "00000000-0000-4000-8000-000000011006",
+            "00000000-0000-4000-8000-000000011007",
+            "00000000-0000-4000-8000-000000011008",
+            "00000000-0000-4000-8000-000000011009",
+            "00000000-0000-4000-8000-000000011010",
+            "00000000-0000-4000-8000-000000011011",
+            "00000000-0000-4000-8000-000000011012",
+            "00000000-0000-4000-8000-000000011013",
+            "00000000-0000-4000-8000-000000011014",
+            "00000000-0000-4000-8000-000000011015",
+            "00000000-0000-4000-8000-000000011016",
+            "00000000-0000-4000-8000-000000011017",
+            "00000000-0000-4000-8000-000000011018",
+            "00000000-0000-4000-8000-000000011019",
+            "00000000-0000-4000-8000-000000011020",
+            "00000000-0000-4000-8000-000000011021",
+            "00000000-0000-4000-8000-000000011022",
+            "00000000-0000-4000-8000-000000011023",
+            "00000000-0000-4000-8000-000000011024",
+            "00000000-0000-4000-8000-000000011025",
+            "00000000-0000-4000-8000-000000011026",
+            "00000000-0000-4000-8000-000000011027",
+            "00000000-0000-4000-8000-000000011028",
+            "00000000-0000-4000-8000-000000011029"
+          ],
+          "revisions": [
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1"
+          ],
+          "suffixes": [
+            "r0001",
+            "r0002",
+            "r0003"
+          ]
+        },
+        "invocation": "$shared",
+        "report": {
+          "kind": "run",
+          "outcome": "succeeded"
+        }
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          }
+        },
+        "external_intents": [],
+        "records": [
+          {
+            "type": "object-change",
+            "data": {
+              "action": "setup-part-reported",
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000115",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-shared-10400",
+              "invocation": "00000000-0000-4000-8000-000000010601",
+              "object": "00000000-0000-4000-8000-000000000119",
+              "operation": "@core#set-up.v1",
+              "outcome": "succeeded",
+              "partOperation": "@core#run.v1",
+              "target": "00000000-0000-4000-8000-000000000119"
+            },
+            "id": "00000000-0000-4000-8000-000000011000",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "object-change",
+            "data": {
+              "action": "setup-ended",
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000115",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-shared-10400",
+              "invocation": "00000000-0000-4000-8000-000000010601",
+              "object": "00000000-0000-4000-8000-000000000119",
+              "operation": "@core#set-up.v1",
+              "outcome": "succeeded",
+              "target": "00000000-0000-4000-8000-000000000119"
+            },
+            "id": "00000000-0000-4000-8000-000000011001",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "invocation-ended",
+            "data": {
+              "attempt": 1,
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000115",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-shared-10400",
+              "invocation": "00000000-0000-4000-8000-000000010601",
+              "object": "00000000-0000-4000-8000-000000000119",
+              "operation": "@core#set-up.v1",
+              "outcome": "succeeded",
+              "target": "00000000-0000-4000-8000-000000000117"
+            },
+            "id": "00000000-0000-4000-8000-000000011002",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "request-ended",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000115",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-shared-10400",
+              "invocation": "00000000-0000-4000-8000-000000010601",
+              "object": "00000000-0000-4000-8000-000000000119",
+              "operation": "@core#set-up.v1",
+              "outcome": "succeeded",
+              "target": "00000000-0000-4000-8000-000000000117"
+            },
+            "id": "00000000-0000-4000-8000-000000011003",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T12:30:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000011200",
+            "00000000-0000-4000-8000-000000011201",
+            "00000000-0000-4000-8000-000000011202",
+            "00000000-0000-4000-8000-000000011203",
+            "00000000-0000-4000-8000-000000011204",
+            "00000000-0000-4000-8000-000000011205",
+            "00000000-0000-4000-8000-000000011206",
+            "00000000-0000-4000-8000-000000011207",
+            "00000000-0000-4000-8000-000000011208",
+            "00000000-0000-4000-8000-000000011209",
+            "00000000-0000-4000-8000-000000011210",
+            "00000000-0000-4000-8000-000000011211",
+            "00000000-0000-4000-8000-000000011212",
+            "00000000-0000-4000-8000-000000011213",
+            "00000000-0000-4000-8000-000000011214",
+            "00000000-0000-4000-8000-000000011215",
+            "00000000-0000-4000-8000-000000011216",
+            "00000000-0000-4000-8000-000000011217",
+            "00000000-0000-4000-8000-000000011218",
+            "00000000-0000-4000-8000-000000011219",
+            "00000000-0000-4000-8000-000000011220",
+            "00000000-0000-4000-8000-000000011221",
+            "00000000-0000-4000-8000-000000011222",
+            "00000000-0000-4000-8000-000000011223",
+            "00000000-0000-4000-8000-000000011224",
+            "00000000-0000-4000-8000-000000011225",
+            "00000000-0000-4000-8000-000000011226",
+            "00000000-0000-4000-8000-000000011227",
+            "00000000-0000-4000-8000-000000011228",
+            "00000000-0000-4000-8000-000000011229"
+          ],
+          "revisions": [
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1"
+          ],
+          "suffixes": [
+            "r0001",
+            "r0002",
+            "r0003"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "root-workspace.set-up.v1",
+          "arguments": {
+            "instance": {
+              "kind": "Resource",
+              "name": "history"
+            }
+          }
+        },
+        "key": "setup-history-11000"
+      },
+      "expect": {
+        "reply": {
+          "pending": true
+        },
+        "records": [
+          {
+            "type": "access-decision",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000115",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-history-11000",
+              "invocation": "00000000-0000-4000-8000-000000011201",
+              "operation": "@core#set-up.v1",
+              "permitted": true,
+              "target": "00000000-0000-4000-8000-000000000117"
+            },
+            "id": "00000000-0000-4000-8000-000000011200",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "attempt": 1,
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000115",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-history-11000",
+              "invocation": "00000000-0000-4000-8000-000000011201",
+              "operation": "@core#set-up.v1",
+              "target": "00000000-0000-4000-8000-000000000117"
+            },
+            "id": "00000000-0000-4000-8000-000000011202",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          }
+        ]
+      },
+      "capture": {
+        "history": "/reply/invocation"
+      }
+    },
+    {
+      "input": {
+        "kind": "setup-report",
+        "evidence": {
+          "time": "2026-11-09T12:30:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000011400",
+            "00000000-0000-4000-8000-000000011401",
+            "00000000-0000-4000-8000-000000011402",
+            "00000000-0000-4000-8000-000000011403",
+            "00000000-0000-4000-8000-000000011404",
+            "00000000-0000-4000-8000-000000011405",
+            "00000000-0000-4000-8000-000000011406",
+            "00000000-0000-4000-8000-000000011407",
+            "00000000-0000-4000-8000-000000011408",
+            "00000000-0000-4000-8000-000000011409",
+            "00000000-0000-4000-8000-000000011410",
+            "00000000-0000-4000-8000-000000011411",
+            "00000000-0000-4000-8000-000000011412",
+            "00000000-0000-4000-8000-000000011413",
+            "00000000-0000-4000-8000-000000011414",
+            "00000000-0000-4000-8000-000000011415",
+            "00000000-0000-4000-8000-000000011416",
+            "00000000-0000-4000-8000-000000011417",
+            "00000000-0000-4000-8000-000000011418",
+            "00000000-0000-4000-8000-000000011419",
+            "00000000-0000-4000-8000-000000011420",
+            "00000000-0000-4000-8000-000000011421",
+            "00000000-0000-4000-8000-000000011422",
+            "00000000-0000-4000-8000-000000011423",
+            "00000000-0000-4000-8000-000000011424",
+            "00000000-0000-4000-8000-000000011425",
+            "00000000-0000-4000-8000-000000011426",
+            "00000000-0000-4000-8000-000000011427",
+            "00000000-0000-4000-8000-000000011428",
+            "00000000-0000-4000-8000-000000011429"
+          ],
+          "revisions": [
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1"
+          ],
+          "suffixes": [
+            "r0001",
+            "r0002",
+            "r0003"
+          ]
+        },
+        "invocation": "$history",
+        "report": {
+          "kind": "inspect-run",
+          "state": "stopped"
+        }
+      },
+      "expect": {
+        "reply": {
+          "pending": true
+        },
+        "external_intents": [
+          {
+            "kind": "builtin-runner",
+            "operation": "@core#run.v1",
+            "subject": "00000000-0000-4000-8000-000000000118",
+            "caller": "00000000-0000-4000-8000-000000000005",
+            "inputs": {
+              "environment": {},
+              "packageArguments": {
+                "root": "/tmp/conduit-s1/history"
+              },
+              "identity": {
+                "materializeFor": "00000000-0000-4000-8000-000000000118",
+                "environmentNames": [
+                  "CONDUIT_URL",
+                  "CONDUIT_IDENTITY_DIR"
+                ],
+                "fileNames": [
+                  "ca.crt",
+                  "jwks.json",
+                  "engine-id",
+                  "token"
+                ]
+              }
+            }
+          }
+        ],
+        "records": [
+          {
+            "type": "object-change",
+            "data": {
+              "action": "setup-part-reported",
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000115",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-history-11000",
+              "invocation": "00000000-0000-4000-8000-000000011201",
+              "object": "00000000-0000-4000-8000-000000000118",
+              "operation": "@core#set-up.v1",
+              "partOperation": "@core#inspect-run.v1",
+              "runState": "stopped",
+              "target": "00000000-0000-4000-8000-000000000118"
+            },
+            "id": "00000000-0000-4000-8000-000000011400",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "setup-report",
+        "evidence": {
+          "time": "2026-11-09T12:30:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000011600",
+            "00000000-0000-4000-8000-000000011601",
+            "00000000-0000-4000-8000-000000011602",
+            "00000000-0000-4000-8000-000000011603",
+            "00000000-0000-4000-8000-000000011604",
+            "00000000-0000-4000-8000-000000011605",
+            "00000000-0000-4000-8000-000000011606",
+            "00000000-0000-4000-8000-000000011607",
+            "00000000-0000-4000-8000-000000011608",
+            "00000000-0000-4000-8000-000000011609",
+            "00000000-0000-4000-8000-000000011610",
+            "00000000-0000-4000-8000-000000011611",
+            "00000000-0000-4000-8000-000000011612",
+            "00000000-0000-4000-8000-000000011613",
+            "00000000-0000-4000-8000-000000011614",
+            "00000000-0000-4000-8000-000000011615",
+            "00000000-0000-4000-8000-000000011616",
+            "00000000-0000-4000-8000-000000011617",
+            "00000000-0000-4000-8000-000000011618",
+            "00000000-0000-4000-8000-000000011619",
+            "00000000-0000-4000-8000-000000011620",
+            "00000000-0000-4000-8000-000000011621",
+            "00000000-0000-4000-8000-000000011622",
+            "00000000-0000-4000-8000-000000011623",
+            "00000000-0000-4000-8000-000000011624",
+            "00000000-0000-4000-8000-000000011625",
+            "00000000-0000-4000-8000-000000011626",
+            "00000000-0000-4000-8000-000000011627",
+            "00000000-0000-4000-8000-000000011628",
+            "00000000-0000-4000-8000-000000011629"
+          ],
+          "revisions": [
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1"
+          ],
+          "suffixes": [
+            "r0001",
+            "r0002",
+            "r0003"
+          ]
+        },
+        "invocation": "$history",
+        "report": {
+          "kind": "run",
+          "outcome": "succeeded"
+        }
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          }
+        },
+        "external_intents": [],
+        "records": [
+          {
+            "type": "object-change",
+            "data": {
+              "action": "setup-part-reported",
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000115",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-history-11000",
+              "invocation": "00000000-0000-4000-8000-000000011201",
+              "object": "00000000-0000-4000-8000-000000000118",
+              "operation": "@core#set-up.v1",
+              "outcome": "succeeded",
+              "partOperation": "@core#run.v1",
+              "target": "00000000-0000-4000-8000-000000000118"
+            },
+            "id": "00000000-0000-4000-8000-000000011600",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "object-change",
+            "data": {
+              "action": "setup-ended",
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000115",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-history-11000",
+              "invocation": "00000000-0000-4000-8000-000000011201",
+              "object": "00000000-0000-4000-8000-000000000118",
+              "operation": "@core#set-up.v1",
+              "outcome": "succeeded",
+              "target": "00000000-0000-4000-8000-000000000118"
+            },
+            "id": "00000000-0000-4000-8000-000000011601",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "invocation-ended",
+            "data": {
+              "attempt": 1,
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000115",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-history-11000",
+              "invocation": "00000000-0000-4000-8000-000000011201",
+              "object": "00000000-0000-4000-8000-000000000118",
+              "operation": "@core#set-up.v1",
+              "outcome": "succeeded",
+              "target": "00000000-0000-4000-8000-000000000117"
+            },
+            "id": "00000000-0000-4000-8000-000000011602",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "request-ended",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000115",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-history-11000",
+              "invocation": "00000000-0000-4000-8000-000000011201",
+              "object": "00000000-0000-4000-8000-000000000118",
+              "operation": "@core#set-up.v1",
+              "outcome": "succeeded",
+              "target": "00000000-0000-4000-8000-000000000117"
+            },
+            "id": "00000000-0000-4000-8000-000000011603",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T12:30:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000011800",
+            "00000000-0000-4000-8000-000000011801",
+            "00000000-0000-4000-8000-000000011802",
+            "00000000-0000-4000-8000-000000011803",
+            "00000000-0000-4000-8000-000000011804",
+            "00000000-0000-4000-8000-000000011805",
+            "00000000-0000-4000-8000-000000011806",
+            "00000000-0000-4000-8000-000000011807",
+            "00000000-0000-4000-8000-000000011808",
+            "00000000-0000-4000-8000-000000011809",
+            "00000000-0000-4000-8000-000000011810",
+            "00000000-0000-4000-8000-000000011811",
+            "00000000-0000-4000-8000-000000011812",
+            "00000000-0000-4000-8000-000000011813",
+            "00000000-0000-4000-8000-000000011814",
+            "00000000-0000-4000-8000-000000011815",
+            "00000000-0000-4000-8000-000000011816",
+            "00000000-0000-4000-8000-000000011817",
+            "00000000-0000-4000-8000-000000011818",
+            "00000000-0000-4000-8000-000000011819",
+            "00000000-0000-4000-8000-000000011820",
+            "00000000-0000-4000-8000-000000011821",
+            "00000000-0000-4000-8000-000000011822",
+            "00000000-0000-4000-8000-000000011823",
+            "00000000-0000-4000-8000-000000011824",
+            "00000000-0000-4000-8000-000000011825",
+            "00000000-0000-4000-8000-000000011826",
+            "00000000-0000-4000-8000-000000011827",
+            "00000000-0000-4000-8000-000000011828",
+            "00000000-0000-4000-8000-000000011829"
+          ],
+          "revisions": [
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1"
+          ],
+          "suffixes": [
+            "r0001",
+            "r0002",
+            "r0003"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "s1.set-up.v1",
+          "arguments": {
+            "instance": {
+              "kind": "Agent",
+              "name": "agent-a"
+            }
+          }
+        },
+        "key": "setup-agent-a-11600"
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          }
+        },
+        "external_intents": [],
+        "records": [
+          {
+            "type": "access-decision",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000140",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-agent-a-11600",
+              "invocation": "00000000-0000-4000-8000-000000011801",
+              "operation": "@core#set-up.v1",
+              "permitted": true,
+              "target": "00000000-0000-4000-8000-000000000116"
+            },
+            "id": "00000000-0000-4000-8000-000000011800",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "attempt": 1,
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000140",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-agent-a-11600",
+              "invocation": "00000000-0000-4000-8000-000000011801",
+              "operation": "@core#set-up.v1",
+              "target": "00000000-0000-4000-8000-000000000116"
+            },
+            "id": "00000000-0000-4000-8000-000000011802",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "access-decision",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000011804",
+              "operation": "@core#open.v1",
+              "permitted": true,
+              "serving": "00000000-0000-4000-8000-000000011801",
+              "target": "00000000-0000-4000-8000-000000000004"
+            },
+            "id": "00000000-0000-4000-8000-000000011803",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "attempt": 1,
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000011804",
+              "operation": "@core#open.v1",
+              "serving": "00000000-0000-4000-8000-000000011801",
+              "target": "00000000-0000-4000-8000-000000000004"
+            },
+            "id": "00000000-0000-4000-8000-000000011805",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "object-change",
+            "data": {
+              "action": "opened",
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000011804",
+              "object": "00000000-0000-4000-8000-000000000110",
+              "operation": "@core#open.v1",
+              "serving": "00000000-0000-4000-8000-000000011801",
+              "state": "ready",
+              "target": "00000000-0000-4000-8000-000000000110"
+            },
+            "id": "00000000-0000-4000-8000-000000011806",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "invocation-ended",
+            "data": {
+              "attempt": 1,
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000011804",
+              "object": "00000000-0000-4000-8000-000000000110",
+              "operation": "@core#open.v1",
+              "outcome": "succeeded",
+              "serving": "00000000-0000-4000-8000-000000011801",
+              "target": "00000000-0000-4000-8000-000000000004"
+            },
+            "id": "00000000-0000-4000-8000-000000011807",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "request-ended",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000011804",
+              "object": "00000000-0000-4000-8000-000000000110",
+              "operation": "@core#open.v1",
+              "outcome": "succeeded",
+              "serving": "00000000-0000-4000-8000-000000011801",
+              "target": "00000000-0000-4000-8000-000000000004"
+            },
+            "id": "00000000-0000-4000-8000-000000011808",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "access-decision",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000011810",
+              "operation": "@core#open.v1",
+              "permitted": true,
+              "serving": "00000000-0000-4000-8000-000000011801",
+              "target": "00000000-0000-4000-8000-000000000004"
+            },
+            "id": "00000000-0000-4000-8000-000000011809",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "attempt": 1,
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000011810",
+              "operation": "@core#open.v1",
+              "serving": "00000000-0000-4000-8000-000000011801",
+              "target": "00000000-0000-4000-8000-000000000004"
+            },
+            "id": "00000000-0000-4000-8000-000000011811",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "object-change",
+            "data": {
+              "action": "opened",
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000011810",
+              "object": "00000000-0000-4000-8000-000000000111",
+              "operation": "@core#open.v1",
+              "serving": "00000000-0000-4000-8000-000000011801",
+              "state": "ready",
+              "target": "00000000-0000-4000-8000-000000000111"
+            },
+            "id": "00000000-0000-4000-8000-000000011812",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "invocation-ended",
+            "data": {
+              "attempt": 1,
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000011810",
+              "object": "00000000-0000-4000-8000-000000000111",
+              "operation": "@core#open.v1",
+              "outcome": "succeeded",
+              "serving": "00000000-0000-4000-8000-000000011801",
+              "target": "00000000-0000-4000-8000-000000000004"
+            },
+            "id": "00000000-0000-4000-8000-000000011813",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "request-ended",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000011810",
+              "object": "00000000-0000-4000-8000-000000000111",
+              "operation": "@core#open.v1",
+              "outcome": "succeeded",
+              "serving": "00000000-0000-4000-8000-000000011801",
+              "target": "00000000-0000-4000-8000-000000000004"
+            },
+            "id": "00000000-0000-4000-8000-000000011814",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "object-change",
+            "data": {
+              "action": "setup-ended",
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000140",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-agent-a-11600",
+              "invocation": "00000000-0000-4000-8000-000000011801",
+              "object": "00000000-0000-4000-8000-000000000109",
+              "operation": "@core#set-up.v1",
+              "outcome": "succeeded",
+              "target": "00000000-0000-4000-8000-000000000109"
+            },
+            "id": "00000000-0000-4000-8000-000000011815",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "invocation-ended",
+            "data": {
+              "attempt": 1,
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000140",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-agent-a-11600",
+              "invocation": "00000000-0000-4000-8000-000000011801",
+              "object": "00000000-0000-4000-8000-000000000109",
+              "operation": "@core#set-up.v1",
+              "outcome": "succeeded",
+              "target": "00000000-0000-4000-8000-000000000116"
+            },
+            "id": "00000000-0000-4000-8000-000000011816",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "request-ended",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000140",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-agent-a-11600",
+              "invocation": "00000000-0000-4000-8000-000000011801",
+              "object": "00000000-0000-4000-8000-000000000109",
+              "operation": "@core#set-up.v1",
+              "outcome": "succeeded",
+              "target": "00000000-0000-4000-8000-000000000116"
+            },
+            "id": "00000000-0000-4000-8000-000000011817",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          }
+        ]
+      },
+      "capture": {
+        "aSetup": "/reply/_meta/io.github.shrav-k.conduit~1invocation"
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T12:30:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000012000",
+            "00000000-0000-4000-8000-000000012001",
+            "00000000-0000-4000-8000-000000012002",
+            "00000000-0000-4000-8000-000000012003",
+            "00000000-0000-4000-8000-000000012004",
+            "00000000-0000-4000-8000-000000012005",
+            "00000000-0000-4000-8000-000000012006",
+            "00000000-0000-4000-8000-000000012007",
+            "00000000-0000-4000-8000-000000012008",
+            "00000000-0000-4000-8000-000000012009",
+            "00000000-0000-4000-8000-000000012010",
+            "00000000-0000-4000-8000-000000012011",
+            "00000000-0000-4000-8000-000000012012",
+            "00000000-0000-4000-8000-000000012013",
+            "00000000-0000-4000-8000-000000012014",
+            "00000000-0000-4000-8000-000000012015",
+            "00000000-0000-4000-8000-000000012016",
+            "00000000-0000-4000-8000-000000012017",
+            "00000000-0000-4000-8000-000000012018",
+            "00000000-0000-4000-8000-000000012019",
+            "00000000-0000-4000-8000-000000012020",
+            "00000000-0000-4000-8000-000000012021",
+            "00000000-0000-4000-8000-000000012022",
+            "00000000-0000-4000-8000-000000012023",
+            "00000000-0000-4000-8000-000000012024",
+            "00000000-0000-4000-8000-000000012025",
+            "00000000-0000-4000-8000-000000012026",
+            "00000000-0000-4000-8000-000000012027",
+            "00000000-0000-4000-8000-000000012028",
+            "00000000-0000-4000-8000-000000012029"
+          ],
+          "revisions": [
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1",
+            "replacement-r1"
+          ],
+          "suffixes": [
+            "r0001",
+            "r0002",
+            "r0003"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "s1.set-up.v1",
+          "arguments": {
+            "instance": {
+              "kind": "Agent",
+              "name": "agent-b"
+            }
+          }
+        },
+        "key": "setup-agent-b-11800"
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          }
+        },
+        "external_intents": [],
+        "records": [
+          {
+            "type": "access-decision",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000140",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-agent-b-11800",
+              "invocation": "00000000-0000-4000-8000-000000012001",
+              "operation": "@core#set-up.v1",
+              "permitted": true,
+              "target": "00000000-0000-4000-8000-000000000116"
+            },
+            "id": "00000000-0000-4000-8000-000000012000",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "attempt": 1,
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000140",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-agent-b-11800",
+              "invocation": "00000000-0000-4000-8000-000000012001",
+              "operation": "@core#set-up.v1",
+              "target": "00000000-0000-4000-8000-000000000116"
+            },
+            "id": "00000000-0000-4000-8000-000000012002",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "access-decision",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000012004",
+              "operation": "@core#open.v1",
+              "permitted": true,
+              "serving": "00000000-0000-4000-8000-000000012001",
+              "target": "00000000-0000-4000-8000-000000000004"
+            },
+            "id": "00000000-0000-4000-8000-000000012003",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "attempt": 1,
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000012004",
+              "operation": "@core#open.v1",
+              "serving": "00000000-0000-4000-8000-000000012001",
+              "target": "00000000-0000-4000-8000-000000000004"
+            },
+            "id": "00000000-0000-4000-8000-000000012005",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "object-change",
+            "data": {
+              "action": "opened",
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000012004",
+              "object": "00000000-0000-4000-8000-000000000113",
+              "operation": "@core#open.v1",
+              "serving": "00000000-0000-4000-8000-000000012001",
+              "state": "ready",
+              "target": "00000000-0000-4000-8000-000000000113"
+            },
+            "id": "00000000-0000-4000-8000-000000012006",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "invocation-ended",
+            "data": {
+              "attempt": 1,
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000012004",
+              "object": "00000000-0000-4000-8000-000000000113",
+              "operation": "@core#open.v1",
+              "outcome": "succeeded",
+              "serving": "00000000-0000-4000-8000-000000012001",
+              "target": "00000000-0000-4000-8000-000000000004"
+            },
+            "id": "00000000-0000-4000-8000-000000012007",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "request-ended",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000012004",
+              "object": "00000000-0000-4000-8000-000000000113",
+              "operation": "@core#open.v1",
+              "outcome": "succeeded",
+              "serving": "00000000-0000-4000-8000-000000012001",
+              "target": "00000000-0000-4000-8000-000000000004"
+            },
+            "id": "00000000-0000-4000-8000-000000012008",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "access-decision",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000012010",
+              "operation": "@core#open.v1",
+              "permitted": true,
+              "serving": "00000000-0000-4000-8000-000000012001",
+              "target": "00000000-0000-4000-8000-000000000004"
+            },
+            "id": "00000000-0000-4000-8000-000000012009",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "invocation-dispatched",
+            "data": {
+              "attempt": 1,
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000012010",
+              "operation": "@core#open.v1",
+              "serving": "00000000-0000-4000-8000-000000012001",
+              "target": "00000000-0000-4000-8000-000000000004"
+            },
+            "id": "00000000-0000-4000-8000-000000012011",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "object-change",
+            "data": {
+              "action": "opened",
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000012010",
+              "object": "00000000-0000-4000-8000-000000000114",
+              "operation": "@core#open.v1",
+              "serving": "00000000-0000-4000-8000-000000012001",
+              "state": "ready",
+              "target": "00000000-0000-4000-8000-000000000114"
+            },
+            "id": "00000000-0000-4000-8000-000000012012",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "invocation-ended",
+            "data": {
+              "attempt": 1,
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000012010",
+              "object": "00000000-0000-4000-8000-000000000114",
+              "operation": "@core#open.v1",
+              "outcome": "succeeded",
+              "serving": "00000000-0000-4000-8000-000000012001",
+              "target": "00000000-0000-4000-8000-000000000004"
+            },
+            "id": "00000000-0000-4000-8000-000000012013",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "request-ended",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000007",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "invocation": "00000000-0000-4000-8000-000000012010",
+              "object": "00000000-0000-4000-8000-000000000114",
+              "operation": "@core#open.v1",
+              "outcome": "succeeded",
+              "serving": "00000000-0000-4000-8000-000000012001",
+              "target": "00000000-0000-4000-8000-000000000004"
+            },
+            "id": "00000000-0000-4000-8000-000000012014",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "object-change",
+            "data": {
+              "action": "setup-ended",
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000140",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-agent-b-11800",
+              "invocation": "00000000-0000-4000-8000-000000012001",
+              "object": "00000000-0000-4000-8000-000000000112",
+              "operation": "@core#set-up.v1",
+              "outcome": "succeeded",
+              "target": "00000000-0000-4000-8000-000000000112"
+            },
+            "id": "00000000-0000-4000-8000-000000012015",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "invocation-ended",
+            "data": {
+              "attempt": 1,
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000140",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-agent-b-11800",
+              "invocation": "00000000-0000-4000-8000-000000012001",
+              "object": "00000000-0000-4000-8000-000000000112",
+              "operation": "@core#set-up.v1",
+              "outcome": "succeeded",
+              "target": "00000000-0000-4000-8000-000000000116"
+            },
+            "id": "00000000-0000-4000-8000-000000012016",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          },
+          {
+            "type": "request-ended",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000140",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "idempotencyKey": "setup-agent-b-11800",
+              "invocation": "00000000-0000-4000-8000-000000012001",
+              "object": "00000000-0000-4000-8000-000000000112",
+              "operation": "@core#set-up.v1",
+              "outcome": "succeeded",
+              "target": "00000000-0000-4000-8000-000000000116"
+            },
+            "id": "00000000-0000-4000-8000-000000012017",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:30:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T13:00:00Z",
+          "ids": [
+            "29800000-0000-4000-8000-000000002200",
+            "29800000-0000-4000-8000-000000002201",
+            "29800000-0000-4000-8000-000000002202",
+            "29800000-0000-4000-8000-000000002203",
+            "29800000-0000-4000-8000-000000002204",
+            "29800000-0000-4000-8000-000000002205",
+            "29800000-0000-4000-8000-000000002206",
+            "29800000-0000-4000-8000-000000002207",
+            "29800000-0000-4000-8000-000000002208",
+            "29800000-0000-4000-8000-000000002209",
+            "29800000-0000-4000-8000-000000002210",
+            "29800000-0000-4000-8000-000000002211",
+            "29800000-0000-4000-8000-000000002212",
+            "29800000-0000-4000-8000-000000002213",
+            "29800000-0000-4000-8000-000000002214",
+            "29800000-0000-4000-8000-000000002215",
+            "29800000-0000-4000-8000-000000002216",
+            "29800000-0000-4000-8000-000000002217",
+            "29800000-0000-4000-8000-000000002218",
+            "29800000-0000-4000-8000-000000002219",
+            "29800000-0000-4000-8000-000000002220",
+            "29800000-0000-4000-8000-000000002221",
+            "29800000-0000-4000-8000-000000002222",
+            "29800000-0000-4000-8000-000000002223",
+            "29800000-0000-4000-8000-000000002224",
+            "29800000-0000-4000-8000-000000002225",
+            "29800000-0000-4000-8000-000000002226",
+            "29800000-0000-4000-8000-000000002227",
+            "29800000-0000-4000-8000-000000002228",
+            "29800000-0000-4000-8000-000000002229",
+            "29800000-0000-4000-8000-000000002230",
+            "29800000-0000-4000-8000-000000002231",
+            "29800000-0000-4000-8000-000000002232",
+            "29800000-0000-4000-8000-000000002233",
+            "29800000-0000-4000-8000-000000002234",
+            "29800000-0000-4000-8000-000000002235",
+            "29800000-0000-4000-8000-000000002236",
+            "29800000-0000-4000-8000-000000002237",
+            "29800000-0000-4000-8000-000000002238",
+            "29800000-0000-4000-8000-000000002239"
+          ],
+          "revisions": [
+            "ask-r22",
+            "ask-r22",
+            "ask-r22",
+            "ask-r22",
+            "ask-r22",
+            "ask-r22",
+            "ask-r22",
+            "ask-r22",
+            "ask-r22",
+            "ask-r22",
+            "ask-r22",
+            "ask-r22",
+            "ask-r22",
+            "ask-r22",
+            "ask-r22",
+            "ask-r22",
+            "ask-r22",
+            "ask-r22",
+            "ask-r22",
+            "ask-r22"
+          ],
+          "suffixes": [
+            "a0220",
+            "a0221",
+            "a0222",
+            "a0223",
+            "a0224",
+            "a0225",
+            "a0226",
+            "a0227",
+            "a0228",
+            "a0229"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.register.v1",
+          "arguments": {
+            "documents": [
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Conduit",
+                "metadata": {
+                  "name": "ask-a"
+                },
+                "from": "github.com/shrav-k/conduit/core#access-request",
+                "consumer": {
+                  "kind": "Agent",
+                  "name": "agent-a"
+                },
+                "target": {
+                  "kind": "Resource",
+                  "name": "access"
+                },
+                "as": "ask"
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Conduit",
+                "metadata": {
+                  "name": "bounded-ask-t"
+                },
+                "spec": {
+                  "capability": "github.com/shrav-k/conduit/core#access-control.v1",
+                  "operations": [
+                    "github.com/shrav-k/conduit/core#request-access.v1",
+                    "github.com/shrav-k/conduit/core#withdraw-access-request.v1"
+                  ],
+                  "requirements": {
+                    "limit": {
+                      "requirement": "github.com/shrav-k/conduit/core#bound.v1",
+                      "arguments": {
+                        "targets": [
+                          {
+                            "kind": "Pool",
+                            "name": "workspace"
+                          }
+                        ],
+                        "operations": [
+                          "github.com/shrav-k/conduit/core#inspect.v1"
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Conduit",
+                "metadata": {
+                  "name": "ask-b"
+                },
+                "from": "#bounded-ask-t",
+                "consumer": {
+                  "kind": "Agent",
+                  "name": "agent-b"
+                },
+                "target": {
+                  "kind": "Resource",
+                  "name": "access"
+                },
+                "as": "ask"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          }
+        },
+        "external_intents": []
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T13:00:00Z",
+          "ids": [
+            "29800000-0000-4000-8000-000000002300",
+            "29800000-0000-4000-8000-000000002301",
+            "29800000-0000-4000-8000-000000002302",
+            "29800000-0000-4000-8000-000000002303",
+            "29800000-0000-4000-8000-000000002304",
+            "29800000-0000-4000-8000-000000002305",
+            "29800000-0000-4000-8000-000000002306",
+            "29800000-0000-4000-8000-000000002307",
+            "29800000-0000-4000-8000-000000002308",
+            "29800000-0000-4000-8000-000000002309",
+            "29800000-0000-4000-8000-000000002310",
+            "29800000-0000-4000-8000-000000002311",
+            "29800000-0000-4000-8000-000000002312",
+            "29800000-0000-4000-8000-000000002313",
+            "29800000-0000-4000-8000-000000002314",
+            "29800000-0000-4000-8000-000000002315",
+            "29800000-0000-4000-8000-000000002316",
+            "29800000-0000-4000-8000-000000002317",
+            "29800000-0000-4000-8000-000000002318",
+            "29800000-0000-4000-8000-000000002319",
+            "29800000-0000-4000-8000-000000002320",
+            "29800000-0000-4000-8000-000000002321",
+            "29800000-0000-4000-8000-000000002322",
+            "29800000-0000-4000-8000-000000002323",
+            "29800000-0000-4000-8000-000000002324",
+            "29800000-0000-4000-8000-000000002325",
+            "29800000-0000-4000-8000-000000002326",
+            "29800000-0000-4000-8000-000000002327",
+            "29800000-0000-4000-8000-000000002328",
+            "29800000-0000-4000-8000-000000002329",
+            "29800000-0000-4000-8000-000000002330",
+            "29800000-0000-4000-8000-000000002331",
+            "29800000-0000-4000-8000-000000002332",
+            "29800000-0000-4000-8000-000000002333",
+            "29800000-0000-4000-8000-000000002334",
+            "29800000-0000-4000-8000-000000002335",
+            "29800000-0000-4000-8000-000000002336",
+            "29800000-0000-4000-8000-000000002337",
+            "29800000-0000-4000-8000-000000002338",
+            "29800000-0000-4000-8000-000000002339"
+          ],
+          "revisions": [
+            "ask-r23",
+            "ask-r23",
+            "ask-r23",
+            "ask-r23",
+            "ask-r23",
+            "ask-r23",
+            "ask-r23",
+            "ask-r23",
+            "ask-r23",
+            "ask-r23",
+            "ask-r23",
+            "ask-r23",
+            "ask-r23",
+            "ask-r23",
+            "ask-r23",
+            "ask-r23",
+            "ask-r23",
+            "ask-r23",
+            "ask-r23",
+            "ask-r23"
+          ],
+          "suffixes": [
+            "a0230",
+            "a0231",
+            "a0232",
+            "a0233",
+            "a0234",
+            "a0235",
+            "a0236",
+            "a0237",
+            "a0238",
+            "a0239"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.open.v1",
+          "arguments": {
+            "conduit": "ask-a"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          }
+        },
+        "external_intents": []
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T13:00:00Z",
+          "ids": [
+            "29800000-0000-4000-8000-000000002400",
+            "29800000-0000-4000-8000-000000002401",
+            "29800000-0000-4000-8000-000000002402",
+            "29800000-0000-4000-8000-000000002403",
+            "29800000-0000-4000-8000-000000002404",
+            "29800000-0000-4000-8000-000000002405",
+            "29800000-0000-4000-8000-000000002406",
+            "29800000-0000-4000-8000-000000002407",
+            "29800000-0000-4000-8000-000000002408",
+            "29800000-0000-4000-8000-000000002409",
+            "29800000-0000-4000-8000-000000002410",
+            "29800000-0000-4000-8000-000000002411",
+            "29800000-0000-4000-8000-000000002412",
+            "29800000-0000-4000-8000-000000002413",
+            "29800000-0000-4000-8000-000000002414",
+            "29800000-0000-4000-8000-000000002415",
+            "29800000-0000-4000-8000-000000002416",
+            "29800000-0000-4000-8000-000000002417",
+            "29800000-0000-4000-8000-000000002418",
+            "29800000-0000-4000-8000-000000002419",
+            "29800000-0000-4000-8000-000000002420",
+            "29800000-0000-4000-8000-000000002421",
+            "29800000-0000-4000-8000-000000002422",
+            "29800000-0000-4000-8000-000000002423",
+            "29800000-0000-4000-8000-000000002424",
+            "29800000-0000-4000-8000-000000002425",
+            "29800000-0000-4000-8000-000000002426",
+            "29800000-0000-4000-8000-000000002427",
+            "29800000-0000-4000-8000-000000002428",
+            "29800000-0000-4000-8000-000000002429",
+            "29800000-0000-4000-8000-000000002430",
+            "29800000-0000-4000-8000-000000002431",
+            "29800000-0000-4000-8000-000000002432",
+            "29800000-0000-4000-8000-000000002433",
+            "29800000-0000-4000-8000-000000002434",
+            "29800000-0000-4000-8000-000000002435",
+            "29800000-0000-4000-8000-000000002436",
+            "29800000-0000-4000-8000-000000002437",
+            "29800000-0000-4000-8000-000000002438",
+            "29800000-0000-4000-8000-000000002439"
+          ],
+          "revisions": [
+            "ask-r24",
+            "ask-r24",
+            "ask-r24",
+            "ask-r24",
+            "ask-r24",
+            "ask-r24",
+            "ask-r24",
+            "ask-r24",
+            "ask-r24",
+            "ask-r24",
+            "ask-r24",
+            "ask-r24",
+            "ask-r24",
+            "ask-r24",
+            "ask-r24",
+            "ask-r24",
+            "ask-r24",
+            "ask-r24",
+            "ask-r24",
+            "ask-r24"
+          ],
+          "suffixes": [
+            "a0240",
+            "a0241",
+            "a0242",
+            "a0243",
+            "a0244",
+            "a0245",
+            "a0246",
+            "a0247",
+            "a0248",
+            "a0249"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.open.v1",
+          "arguments": {
+            "conduit": "ask-b"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          }
+        },
+        "external_intents": []
+      }
+    },
+    {
+      "input": {
+        "kind": "list-tools",
+        "identity": {
+          "kind": "instance",
+          "id": "00000000-0000-4000-8000-000000000109"
+        }
+      },
+      "expect": {
+        "reply": {
+          "tools": [
+            {
+              "name": "ask.request-access.v1"
+            },
+            {
+              "name": "ask.withdraw-access-request.v1"
+            },
+            {
+              "name": "history.directory.list.v1"
+            },
+            {
+              "name": "history.file.read.v1"
+            },
+            {
+              "name": "history.file.write.v1"
+            },
+            {
+              "name": "project.directory.list.v1"
+            },
+            {
+              "name": "project.file.read.v1"
+            }
+          ]
+        },
+        "external_intents": [],
+        "records": []
+      }
+    },
+    {
+      "input": {
+        "kind": "list-tools",
+        "identity": {
+          "kind": "instance",
+          "id": "00000000-0000-4000-8000-000000000110"
+        }
+      },
+      "expect": {
+        "reply": {
+          "tools": [
+            {
+              "name": "ask.request-access.v1"
+            },
+            {
+              "name": "ask.withdraw-access-request.v1"
+            },
+            {
+              "name": "history.directory.list.v1"
+            },
+            {
+              "name": "history.file.read.v1"
+            },
+            {
+              "name": "history.file.write.v1"
+            },
+            {
+              "name": "project.directory.list.v1"
+            },
+            {
+              "name": "project.file.read.v1"
+            },
+            {
+              "name": "project.file.write.v1"
+            }
+          ]
+        },
+        "external_intents": [],
+        "records": []
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T13:00:00Z",
+          "ids": [
+            "29800000-0000-4000-8000-000000002500",
+            "29800000-0000-4000-8000-000000002501",
+            "29800000-0000-4000-8000-000000002502",
+            "29800000-0000-4000-8000-000000002503",
+            "29800000-0000-4000-8000-000000002504",
+            "29800000-0000-4000-8000-000000002505",
+            "29800000-0000-4000-8000-000000002506",
+            "29800000-0000-4000-8000-000000002507",
+            "29800000-0000-4000-8000-000000002508",
+            "29800000-0000-4000-8000-000000002509",
+            "29800000-0000-4000-8000-000000002510",
+            "29800000-0000-4000-8000-000000002511",
+            "29800000-0000-4000-8000-000000002512",
+            "29800000-0000-4000-8000-000000002513",
+            "29800000-0000-4000-8000-000000002514",
+            "29800000-0000-4000-8000-000000002515",
+            "29800000-0000-4000-8000-000000002516",
+            "29800000-0000-4000-8000-000000002517",
+            "29800000-0000-4000-8000-000000002518",
+            "29800000-0000-4000-8000-000000002519",
+            "29800000-0000-4000-8000-000000002520",
+            "29800000-0000-4000-8000-000000002521",
+            "29800000-0000-4000-8000-000000002522",
+            "29800000-0000-4000-8000-000000002523",
+            "29800000-0000-4000-8000-000000002524",
+            "29800000-0000-4000-8000-000000002525",
+            "29800000-0000-4000-8000-000000002526",
+            "29800000-0000-4000-8000-000000002527",
+            "29800000-0000-4000-8000-000000002528",
+            "29800000-0000-4000-8000-000000002529",
+            "29800000-0000-4000-8000-000000002530",
+            "29800000-0000-4000-8000-000000002531",
+            "29800000-0000-4000-8000-000000002532",
+            "29800000-0000-4000-8000-000000002533",
+            "29800000-0000-4000-8000-000000002534",
+            "29800000-0000-4000-8000-000000002535",
+            "29800000-0000-4000-8000-000000002536",
+            "29800000-0000-4000-8000-000000002537",
+            "29800000-0000-4000-8000-000000002538",
+            "29800000-0000-4000-8000-000000002539"
+          ],
+          "revisions": [
+            "ask-r25",
+            "ask-r25",
+            "ask-r25",
+            "ask-r25",
+            "ask-r25",
+            "ask-r25",
+            "ask-r25",
+            "ask-r25",
+            "ask-r25",
+            "ask-r25",
+            "ask-r25",
+            "ask-r25",
+            "ask-r25",
+            "ask-r25",
+            "ask-r25",
+            "ask-r25",
+            "ask-r25",
+            "ask-r25",
+            "ask-r25",
+            "ask-r25"
+          ],
+          "suffixes": [
+            "a0250",
+            "a0251",
+            "a0252",
+            "a0253",
+            "a0254",
+            "a0255",
+            "a0256",
+            "a0257",
+            "a0258",
+            "a0259"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "ask.request-access.v1",
+          "arguments": {
+            "operation": "example.org/s1/filesystem#file.read.v1",
+            "conduit": "project"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          },
+          "structuredContent": {
+            "state": "held",
+            "diagnostics": [
+              {
+                "ruleId": "ACC-058",
+                "level": "info"
+              }
+            ],
+            "tools": [
+              "project.file.read.v1"
+            ]
+          }
+        },
+        "external_intents": []
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T13:00:00Z",
+          "ids": [
+            "29800000-0000-4000-8000-000000002600",
+            "29800000-0000-4000-8000-000000002601",
+            "29800000-0000-4000-8000-000000002602",
+            "29800000-0000-4000-8000-000000002603",
+            "29800000-0000-4000-8000-000000002604",
+            "29800000-0000-4000-8000-000000002605",
+            "29800000-0000-4000-8000-000000002606",
+            "29800000-0000-4000-8000-000000002607",
+            "29800000-0000-4000-8000-000000002608",
+            "29800000-0000-4000-8000-000000002609",
+            "29800000-0000-4000-8000-000000002610",
+            "29800000-0000-4000-8000-000000002611",
+            "29800000-0000-4000-8000-000000002612",
+            "29800000-0000-4000-8000-000000002613",
+            "29800000-0000-4000-8000-000000002614",
+            "29800000-0000-4000-8000-000000002615",
+            "29800000-0000-4000-8000-000000002616",
+            "29800000-0000-4000-8000-000000002617",
+            "29800000-0000-4000-8000-000000002618",
+            "29800000-0000-4000-8000-000000002619",
+            "29800000-0000-4000-8000-000000002620",
+            "29800000-0000-4000-8000-000000002621",
+            "29800000-0000-4000-8000-000000002622",
+            "29800000-0000-4000-8000-000000002623",
+            "29800000-0000-4000-8000-000000002624",
+            "29800000-0000-4000-8000-000000002625",
+            "29800000-0000-4000-8000-000000002626",
+            "29800000-0000-4000-8000-000000002627",
+            "29800000-0000-4000-8000-000000002628",
+            "29800000-0000-4000-8000-000000002629",
+            "29800000-0000-4000-8000-000000002630",
+            "29800000-0000-4000-8000-000000002631",
+            "29800000-0000-4000-8000-000000002632",
+            "29800000-0000-4000-8000-000000002633",
+            "29800000-0000-4000-8000-000000002634",
+            "29800000-0000-4000-8000-000000002635",
+            "29800000-0000-4000-8000-000000002636",
+            "29800000-0000-4000-8000-000000002637",
+            "29800000-0000-4000-8000-000000002638",
+            "29800000-0000-4000-8000-000000002639"
+          ],
+          "revisions": [
+            "ask-r26",
+            "ask-r26",
+            "ask-r26",
+            "ask-r26",
+            "ask-r26",
+            "ask-r26",
+            "ask-r26",
+            "ask-r26",
+            "ask-r26",
+            "ask-r26",
+            "ask-r26",
+            "ask-r26",
+            "ask-r26",
+            "ask-r26",
+            "ask-r26",
+            "ask-r26",
+            "ask-r26",
+            "ask-r26",
+            "ask-r26",
+            "ask-r26"
+          ],
+          "suffixes": [
+            "a0260",
+            "a0261",
+            "a0262",
+            "a0263",
+            "a0264",
+            "a0265",
+            "a0266",
+            "a0267",
+            "a0268",
+            "a0269"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "ask.request-access.v1",
+          "arguments": {
+            "operation": "example.org/s1/filesystem#file.write.v1",
+            "conduit": "project"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          },
+          "structuredContent": {
+            "state": "raised",
+            "diagnostics": [
+              {
+                "ruleId": "ACC-058",
+                "level": "info"
+              }
+            ]
+          }
+        },
+        "external_intents": [],
+        "absent": [
+          "/reply/_meta/io.github.shrav-k.conduit~1pendingAction/1"
+        ]
+      },
+      "capture": {
+        "writeAction": "/reply/_meta/io.github.shrav-k.conduit~1pendingAction/0",
+        "writeActionOutput": "/reply/structuredContent/action",
+        "writeActionExpiry": "/reply/structuredContent/expiry"
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T13:00:00Z",
+          "ids": [
+            "29800000-0000-4000-8000-000000002700",
+            "29800000-0000-4000-8000-000000002701",
+            "29800000-0000-4000-8000-000000002702",
+            "29800000-0000-4000-8000-000000002703",
+            "29800000-0000-4000-8000-000000002704",
+            "29800000-0000-4000-8000-000000002705",
+            "29800000-0000-4000-8000-000000002706",
+            "29800000-0000-4000-8000-000000002707",
+            "29800000-0000-4000-8000-000000002708",
+            "29800000-0000-4000-8000-000000002709",
+            "29800000-0000-4000-8000-000000002710",
+            "29800000-0000-4000-8000-000000002711",
+            "29800000-0000-4000-8000-000000002712",
+            "29800000-0000-4000-8000-000000002713",
+            "29800000-0000-4000-8000-000000002714",
+            "29800000-0000-4000-8000-000000002715",
+            "29800000-0000-4000-8000-000000002716",
+            "29800000-0000-4000-8000-000000002717",
+            "29800000-0000-4000-8000-000000002718",
+            "29800000-0000-4000-8000-000000002719",
+            "29800000-0000-4000-8000-000000002720",
+            "29800000-0000-4000-8000-000000002721",
+            "29800000-0000-4000-8000-000000002722",
+            "29800000-0000-4000-8000-000000002723",
+            "29800000-0000-4000-8000-000000002724",
+            "29800000-0000-4000-8000-000000002725",
+            "29800000-0000-4000-8000-000000002726",
+            "29800000-0000-4000-8000-000000002727",
+            "29800000-0000-4000-8000-000000002728",
+            "29800000-0000-4000-8000-000000002729",
+            "29800000-0000-4000-8000-000000002730",
+            "29800000-0000-4000-8000-000000002731",
+            "29800000-0000-4000-8000-000000002732",
+            "29800000-0000-4000-8000-000000002733",
+            "29800000-0000-4000-8000-000000002734",
+            "29800000-0000-4000-8000-000000002735",
+            "29800000-0000-4000-8000-000000002736",
+            "29800000-0000-4000-8000-000000002737",
+            "29800000-0000-4000-8000-000000002738",
+            "29800000-0000-4000-8000-000000002739"
+          ],
+          "revisions": [
+            "ask-r27",
+            "ask-r27",
+            "ask-r27",
+            "ask-r27",
+            "ask-r27",
+            "ask-r27",
+            "ask-r27",
+            "ask-r27",
+            "ask-r27",
+            "ask-r27",
+            "ask-r27",
+            "ask-r27",
+            "ask-r27",
+            "ask-r27",
+            "ask-r27",
+            "ask-r27",
+            "ask-r27",
+            "ask-r27",
+            "ask-r27",
+            "ask-r27"
+          ],
+          "suffixes": [
+            "a0270",
+            "a0271",
+            "a0272",
+            "a0273",
+            "a0274",
+            "a0275",
+            "a0276",
+            "a0277",
+            "a0278",
+            "a0279"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "ask.request-access.v1",
+          "arguments": {
+            "operation": "example.org/s1/filesystem#file.write.v1",
+            "conduit": "project"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          },
+          "structuredContent": {
+            "state": "unanswered",
+            "diagnostics": [
+              {
+                "ruleId": "ACC-058",
+                "level": "info"
+              }
+            ],
+            "action": "$writeAction",
+            "expiry": "$writeActionExpiry"
+          }
+        },
+        "external_intents": []
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T13:00:00Z",
+          "ids": [
+            "29800000-0000-4000-8000-000000002800",
+            "29800000-0000-4000-8000-000000002801",
+            "29800000-0000-4000-8000-000000002802",
+            "29800000-0000-4000-8000-000000002803",
+            "29800000-0000-4000-8000-000000002804",
+            "29800000-0000-4000-8000-000000002805",
+            "29800000-0000-4000-8000-000000002806",
+            "29800000-0000-4000-8000-000000002807",
+            "29800000-0000-4000-8000-000000002808",
+            "29800000-0000-4000-8000-000000002809",
+            "29800000-0000-4000-8000-000000002810",
+            "29800000-0000-4000-8000-000000002811",
+            "29800000-0000-4000-8000-000000002812",
+            "29800000-0000-4000-8000-000000002813",
+            "29800000-0000-4000-8000-000000002814",
+            "29800000-0000-4000-8000-000000002815",
+            "29800000-0000-4000-8000-000000002816",
+            "29800000-0000-4000-8000-000000002817",
+            "29800000-0000-4000-8000-000000002818",
+            "29800000-0000-4000-8000-000000002819",
+            "29800000-0000-4000-8000-000000002820",
+            "29800000-0000-4000-8000-000000002821",
+            "29800000-0000-4000-8000-000000002822",
+            "29800000-0000-4000-8000-000000002823",
+            "29800000-0000-4000-8000-000000002824",
+            "29800000-0000-4000-8000-000000002825",
+            "29800000-0000-4000-8000-000000002826",
+            "29800000-0000-4000-8000-000000002827",
+            "29800000-0000-4000-8000-000000002828",
+            "29800000-0000-4000-8000-000000002829",
+            "29800000-0000-4000-8000-000000002830",
+            "29800000-0000-4000-8000-000000002831",
+            "29800000-0000-4000-8000-000000002832",
+            "29800000-0000-4000-8000-000000002833",
+            "29800000-0000-4000-8000-000000002834",
+            "29800000-0000-4000-8000-000000002835",
+            "29800000-0000-4000-8000-000000002836",
+            "29800000-0000-4000-8000-000000002837",
+            "29800000-0000-4000-8000-000000002838",
+            "29800000-0000-4000-8000-000000002839"
+          ],
+          "revisions": [
+            "ask-r28",
+            "ask-r28",
+            "ask-r28",
+            "ask-r28",
+            "ask-r28",
+            "ask-r28",
+            "ask-r28",
+            "ask-r28",
+            "ask-r28",
+            "ask-r28",
+            "ask-r28",
+            "ask-r28",
+            "ask-r28",
+            "ask-r28",
+            "ask-r28",
+            "ask-r28",
+            "ask-r28",
+            "ask-r28",
+            "ask-r28",
+            "ask-r28"
+          ],
+          "suffixes": [
+            "a0280",
+            "a0281",
+            "a0282",
+            "a0283",
+            "a0284",
+            "a0285",
+            "a0286",
+            "a0287",
+            "a0288",
+            "a0289"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "ask.request-access.v1",
+          "arguments": {
+            "operation": "example.org/s1/filesystem#file.write.v1",
+            "target": {
+              "kind": "Resource",
+              "name": "missing"
+            }
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          },
+          "structuredContent": {
+            "state": "raised",
+            "diagnostics": [
+              {
+                "ruleId": "ACC-058",
+                "level": "info"
+              }
+            ]
+          }
+        },
+        "external_intents": [],
+        "absent": [
+          "/reply/_meta/io.github.shrav-k.conduit~1pendingAction/1"
+        ]
+      },
+      "capture": {
+        "missingAction": "/reply/_meta/io.github.shrav-k.conduit~1pendingAction/0",
+        "missingActionOutput": "/reply/structuredContent/action",
+        "missingActionExpiry": "/reply/structuredContent/expiry"
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T13:00:00Z",
+          "ids": [
+            "29800000-0000-4000-8000-000000002900",
+            "29800000-0000-4000-8000-000000002901",
+            "29800000-0000-4000-8000-000000002902",
+            "29800000-0000-4000-8000-000000002903",
+            "29800000-0000-4000-8000-000000002904",
+            "29800000-0000-4000-8000-000000002905",
+            "29800000-0000-4000-8000-000000002906",
+            "29800000-0000-4000-8000-000000002907",
+            "29800000-0000-4000-8000-000000002908",
+            "29800000-0000-4000-8000-000000002909",
+            "29800000-0000-4000-8000-000000002910",
+            "29800000-0000-4000-8000-000000002911",
+            "29800000-0000-4000-8000-000000002912",
+            "29800000-0000-4000-8000-000000002913",
+            "29800000-0000-4000-8000-000000002914",
+            "29800000-0000-4000-8000-000000002915",
+            "29800000-0000-4000-8000-000000002916",
+            "29800000-0000-4000-8000-000000002917",
+            "29800000-0000-4000-8000-000000002918",
+            "29800000-0000-4000-8000-000000002919",
+            "29800000-0000-4000-8000-000000002920",
+            "29800000-0000-4000-8000-000000002921",
+            "29800000-0000-4000-8000-000000002922",
+            "29800000-0000-4000-8000-000000002923",
+            "29800000-0000-4000-8000-000000002924",
+            "29800000-0000-4000-8000-000000002925",
+            "29800000-0000-4000-8000-000000002926",
+            "29800000-0000-4000-8000-000000002927",
+            "29800000-0000-4000-8000-000000002928",
+            "29800000-0000-4000-8000-000000002929",
+            "29800000-0000-4000-8000-000000002930",
+            "29800000-0000-4000-8000-000000002931",
+            "29800000-0000-4000-8000-000000002932",
+            "29800000-0000-4000-8000-000000002933",
+            "29800000-0000-4000-8000-000000002934",
+            "29800000-0000-4000-8000-000000002935",
+            "29800000-0000-4000-8000-000000002936",
+            "29800000-0000-4000-8000-000000002937",
+            "29800000-0000-4000-8000-000000002938",
+            "29800000-0000-4000-8000-000000002939"
+          ],
+          "revisions": [
+            "ask-r29",
+            "ask-r29",
+            "ask-r29",
+            "ask-r29",
+            "ask-r29",
+            "ask-r29",
+            "ask-r29",
+            "ask-r29",
+            "ask-r29",
+            "ask-r29",
+            "ask-r29",
+            "ask-r29",
+            "ask-r29",
+            "ask-r29",
+            "ask-r29",
+            "ask-r29",
+            "ask-r29",
+            "ask-r29",
+            "ask-r29",
+            "ask-r29"
+          ],
+          "suffixes": [
+            "a0290",
+            "a0291",
+            "a0292",
+            "a0293",
+            "a0294",
+            "a0295",
+            "a0296",
+            "a0297",
+            "a0298",
+            "a0299"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "ask.request-access.v1",
+          "arguments": {
+            "operation": "example.org/s1/filesystem#file.write.v1",
+            "target": {
+              "kind": "Resource",
+              "name": "missing"
+            }
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          },
+          "structuredContent": {
+            "state": "unanswered",
+            "diagnostics": [
+              {
+                "ruleId": "ACC-058",
+                "level": "info"
+              }
+            ],
+            "action": "$missingAction",
+            "expiry": "$missingActionExpiry"
+          }
+        },
+        "external_intents": []
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T13:00:00Z",
+          "ids": [
+            "29800000-0000-4000-8000-000000003000",
+            "29800000-0000-4000-8000-000000003001",
+            "29800000-0000-4000-8000-000000003002",
+            "29800000-0000-4000-8000-000000003003",
+            "29800000-0000-4000-8000-000000003004",
+            "29800000-0000-4000-8000-000000003005",
+            "29800000-0000-4000-8000-000000003006",
+            "29800000-0000-4000-8000-000000003007",
+            "29800000-0000-4000-8000-000000003008",
+            "29800000-0000-4000-8000-000000003009",
+            "29800000-0000-4000-8000-000000003010",
+            "29800000-0000-4000-8000-000000003011",
+            "29800000-0000-4000-8000-000000003012",
+            "29800000-0000-4000-8000-000000003013",
+            "29800000-0000-4000-8000-000000003014",
+            "29800000-0000-4000-8000-000000003015",
+            "29800000-0000-4000-8000-000000003016",
+            "29800000-0000-4000-8000-000000003017",
+            "29800000-0000-4000-8000-000000003018",
+            "29800000-0000-4000-8000-000000003019",
+            "29800000-0000-4000-8000-000000003020",
+            "29800000-0000-4000-8000-000000003021",
+            "29800000-0000-4000-8000-000000003022",
+            "29800000-0000-4000-8000-000000003023",
+            "29800000-0000-4000-8000-000000003024",
+            "29800000-0000-4000-8000-000000003025",
+            "29800000-0000-4000-8000-000000003026",
+            "29800000-0000-4000-8000-000000003027",
+            "29800000-0000-4000-8000-000000003028",
+            "29800000-0000-4000-8000-000000003029",
+            "29800000-0000-4000-8000-000000003030",
+            "29800000-0000-4000-8000-000000003031",
+            "29800000-0000-4000-8000-000000003032",
+            "29800000-0000-4000-8000-000000003033",
+            "29800000-0000-4000-8000-000000003034",
+            "29800000-0000-4000-8000-000000003035",
+            "29800000-0000-4000-8000-000000003036",
+            "29800000-0000-4000-8000-000000003037",
+            "29800000-0000-4000-8000-000000003038",
+            "29800000-0000-4000-8000-000000003039"
+          ],
+          "revisions": [
+            "ask-r30",
+            "ask-r30",
+            "ask-r30",
+            "ask-r30",
+            "ask-r30",
+            "ask-r30",
+            "ask-r30",
+            "ask-r30",
+            "ask-r30",
+            "ask-r30",
+            "ask-r30",
+            "ask-r30",
+            "ask-r30",
+            "ask-r30",
+            "ask-r30",
+            "ask-r30",
+            "ask-r30",
+            "ask-r30",
+            "ask-r30",
+            "ask-r30"
+          ],
+          "suffixes": [
+            "a0300",
+            "a0301",
+            "a0302",
+            "a0303",
+            "a0304",
+            "a0305",
+            "a0306",
+            "a0307",
+            "a0308",
+            "a0309"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "ask.request-access.v1",
+          "arguments": {
+            "operation": "example.org/other#purge.v1",
+            "target": {
+              "kind": "Resource",
+              "name": "shared"
+            }
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          },
+          "structuredContent": {
+            "state": "raised",
+            "diagnostics": [
+              {
+                "ruleId": "ACC-058",
+                "level": "info"
+              }
+            ]
+          }
+        },
+        "external_intents": [],
+        "absent": [
+          "/reply/_meta/io.github.shrav-k.conduit~1pendingAction/1"
+        ]
+      },
+      "capture": {
+        "otherAction": "/reply/_meta/io.github.shrav-k.conduit~1pendingAction/0",
+        "otherActionOutput": "/reply/structuredContent/action",
+        "otherActionExpiry": "/reply/structuredContent/expiry"
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T13:00:00Z",
+          "ids": [
+            "29800000-0000-4000-8000-000000003100",
+            "29800000-0000-4000-8000-000000003101",
+            "29800000-0000-4000-8000-000000003102",
+            "29800000-0000-4000-8000-000000003103",
+            "29800000-0000-4000-8000-000000003104",
+            "29800000-0000-4000-8000-000000003105",
+            "29800000-0000-4000-8000-000000003106",
+            "29800000-0000-4000-8000-000000003107",
+            "29800000-0000-4000-8000-000000003108",
+            "29800000-0000-4000-8000-000000003109",
+            "29800000-0000-4000-8000-000000003110",
+            "29800000-0000-4000-8000-000000003111",
+            "29800000-0000-4000-8000-000000003112",
+            "29800000-0000-4000-8000-000000003113",
+            "29800000-0000-4000-8000-000000003114",
+            "29800000-0000-4000-8000-000000003115",
+            "29800000-0000-4000-8000-000000003116",
+            "29800000-0000-4000-8000-000000003117",
+            "29800000-0000-4000-8000-000000003118",
+            "29800000-0000-4000-8000-000000003119",
+            "29800000-0000-4000-8000-000000003120",
+            "29800000-0000-4000-8000-000000003121",
+            "29800000-0000-4000-8000-000000003122",
+            "29800000-0000-4000-8000-000000003123",
+            "29800000-0000-4000-8000-000000003124",
+            "29800000-0000-4000-8000-000000003125",
+            "29800000-0000-4000-8000-000000003126",
+            "29800000-0000-4000-8000-000000003127",
+            "29800000-0000-4000-8000-000000003128",
+            "29800000-0000-4000-8000-000000003129",
+            "29800000-0000-4000-8000-000000003130",
+            "29800000-0000-4000-8000-000000003131",
+            "29800000-0000-4000-8000-000000003132",
+            "29800000-0000-4000-8000-000000003133",
+            "29800000-0000-4000-8000-000000003134",
+            "29800000-0000-4000-8000-000000003135",
+            "29800000-0000-4000-8000-000000003136",
+            "29800000-0000-4000-8000-000000003137",
+            "29800000-0000-4000-8000-000000003138",
+            "29800000-0000-4000-8000-000000003139"
+          ],
+          "revisions": [
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31"
+          ],
+          "suffixes": [
+            "a0310",
+            "a0311",
+            "a0312",
+            "a0313",
+            "a0314",
+            "a0315",
+            "a0316",
+            "a0317",
+            "a0318",
+            "a0319"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "ask.request-access.v1",
+          "arguments": {
+            "operation": "example.org/s1/filesystem#file.write.v1",
+            "conduit": "project",
+            "target": {
+              "kind": "Resource",
+              "name": "shared"
+            }
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "invalid"
+          },
+          "structuredContent": {
+            "diagnostics": [
+              {
+                "ruleId": "ACC-058"
+              }
+            ]
+          }
+        },
+        "external_intents": []
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T13:00:00Z",
+          "ids": [
+            "29800000-0000-4000-8000-000000003200",
+            "29800000-0000-4000-8000-000000003201",
+            "29800000-0000-4000-8000-000000003202",
+            "29800000-0000-4000-8000-000000003203",
+            "29800000-0000-4000-8000-000000003204",
+            "29800000-0000-4000-8000-000000003205",
+            "29800000-0000-4000-8000-000000003206",
+            "29800000-0000-4000-8000-000000003207",
+            "29800000-0000-4000-8000-000000003208",
+            "29800000-0000-4000-8000-000000003209",
+            "29800000-0000-4000-8000-000000003210",
+            "29800000-0000-4000-8000-000000003211",
+            "29800000-0000-4000-8000-000000003212",
+            "29800000-0000-4000-8000-000000003213",
+            "29800000-0000-4000-8000-000000003214",
+            "29800000-0000-4000-8000-000000003215",
+            "29800000-0000-4000-8000-000000003216",
+            "29800000-0000-4000-8000-000000003217",
+            "29800000-0000-4000-8000-000000003218",
+            "29800000-0000-4000-8000-000000003219",
+            "29800000-0000-4000-8000-000000003220",
+            "29800000-0000-4000-8000-000000003221",
+            "29800000-0000-4000-8000-000000003222",
+            "29800000-0000-4000-8000-000000003223",
+            "29800000-0000-4000-8000-000000003224",
+            "29800000-0000-4000-8000-000000003225",
+            "29800000-0000-4000-8000-000000003226",
+            "29800000-0000-4000-8000-000000003227",
+            "29800000-0000-4000-8000-000000003228",
+            "29800000-0000-4000-8000-000000003229",
+            "29800000-0000-4000-8000-000000003230",
+            "29800000-0000-4000-8000-000000003231",
+            "29800000-0000-4000-8000-000000003232",
+            "29800000-0000-4000-8000-000000003233",
+            "29800000-0000-4000-8000-000000003234",
+            "29800000-0000-4000-8000-000000003235",
+            "29800000-0000-4000-8000-000000003236",
+            "29800000-0000-4000-8000-000000003237",
+            "29800000-0000-4000-8000-000000003238",
+            "29800000-0000-4000-8000-000000003239"
+          ],
+          "revisions": [
+            "ask-r32",
+            "ask-r32",
+            "ask-r32",
+            "ask-r32",
+            "ask-r32",
+            "ask-r32",
+            "ask-r32",
+            "ask-r32",
+            "ask-r32",
+            "ask-r32",
+            "ask-r32",
+            "ask-r32",
+            "ask-r32",
+            "ask-r32",
+            "ask-r32",
+            "ask-r32",
+            "ask-r32",
+            "ask-r32",
+            "ask-r32",
+            "ask-r32"
+          ],
+          "suffixes": [
+            "a0320",
+            "a0321",
+            "a0322",
+            "a0323",
+            "a0324",
+            "a0325",
+            "a0326",
+            "a0327",
+            "a0328",
+            "a0329"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000110"
+          },
+          "tool": "ask.request-access.v1",
+          "arguments": {
+            "operation": "github.com/shrav-k/conduit/core#inspect.v1",
+            "target": {
+              "kind": "Pool",
+              "name": "workspace"
+            }
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded"
+          },
+          "structuredContent": {
+            "state": "raised",
+            "diagnostics": [
+              {
+                "ruleId": "ACC-058",
+                "level": "info"
+              }
+            ]
+          }
+        },
+        "external_intents": [],
+        "absent": [
+          "/reply/_meta/io.github.shrav-k.conduit~1pendingAction/1"
+        ]
+      },
+      "capture": {
+        "boundedAction": "/reply/_meta/io.github.shrav-k.conduit~1pendingAction/0",
+        "boundedActionOutput": "/reply/structuredContent/action",
+        "boundedActionExpiry": "/reply/structuredContent/expiry"
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T13:00:00Z",
+          "ids": [
+            "29800000-0000-4000-8000-000000003300",
+            "29800000-0000-4000-8000-000000003301",
+            "29800000-0000-4000-8000-000000003302",
+            "29800000-0000-4000-8000-000000003303",
+            "29800000-0000-4000-8000-000000003304",
+            "29800000-0000-4000-8000-000000003305",
+            "29800000-0000-4000-8000-000000003306",
+            "29800000-0000-4000-8000-000000003307",
+            "29800000-0000-4000-8000-000000003308",
+            "29800000-0000-4000-8000-000000003309",
+            "29800000-0000-4000-8000-000000003310",
+            "29800000-0000-4000-8000-000000003311",
+            "29800000-0000-4000-8000-000000003312",
+            "29800000-0000-4000-8000-000000003313",
+            "29800000-0000-4000-8000-000000003314",
+            "29800000-0000-4000-8000-000000003315",
+            "29800000-0000-4000-8000-000000003316",
+            "29800000-0000-4000-8000-000000003317",
+            "29800000-0000-4000-8000-000000003318",
+            "29800000-0000-4000-8000-000000003319",
+            "29800000-0000-4000-8000-000000003320",
+            "29800000-0000-4000-8000-000000003321",
+            "29800000-0000-4000-8000-000000003322",
+            "29800000-0000-4000-8000-000000003323",
+            "29800000-0000-4000-8000-000000003324",
+            "29800000-0000-4000-8000-000000003325",
+            "29800000-0000-4000-8000-000000003326",
+            "29800000-0000-4000-8000-000000003327",
+            "29800000-0000-4000-8000-000000003328",
+            "29800000-0000-4000-8000-000000003329",
+            "29800000-0000-4000-8000-000000003330",
+            "29800000-0000-4000-8000-000000003331",
+            "29800000-0000-4000-8000-000000003332",
+            "29800000-0000-4000-8000-000000003333",
+            "29800000-0000-4000-8000-000000003334",
+            "29800000-0000-4000-8000-000000003335",
+            "29800000-0000-4000-8000-000000003336",
+            "29800000-0000-4000-8000-000000003337",
+            "29800000-0000-4000-8000-000000003338",
+            "29800000-0000-4000-8000-000000003339"
+          ],
+          "revisions": [
+            "ask-r33",
+            "ask-r33",
+            "ask-r33",
+            "ask-r33",
+            "ask-r33",
+            "ask-r33",
+            "ask-r33",
+            "ask-r33",
+            "ask-r33",
+            "ask-r33",
+            "ask-r33",
+            "ask-r33",
+            "ask-r33",
+            "ask-r33",
+            "ask-r33",
+            "ask-r33",
+            "ask-r33",
+            "ask-r33",
+            "ask-r33",
+            "ask-r33"
+          ],
+          "suffixes": [
+            "a0330",
+            "a0331",
+            "a0332",
+            "a0333",
+            "a0334",
+            "a0335",
+            "a0336",
+            "a0337",
+            "a0338",
+            "a0339"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000110"
+          },
+          "tool": "ask.request-access.v1",
+          "arguments": {
+            "operation": "github.com/shrav-k/conduit/core#inspect.v1",
+            "target": {
+              "kind": "Pool",
+              "name": "system"
+            }
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "refused"
+          },
+          "isError": true,
+          "structuredContent": {
+            "diagnostics": [
+              {
+                "ruleId": "ACC-029",
+                "level": "error",
+                "properties": {
+                  "refusal": {
+                    "tier": 1
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "external_intents": [],
+        "absent": [
+          "/reply/_meta/io.github.shrav-k.conduit~1pendingAction"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T13:00:00Z",
+          "ids": [
+            "29800000-0000-4000-8000-000000003400",
+            "29800000-0000-4000-8000-000000003401",
+            "29800000-0000-4000-8000-000000003402",
+            "29800000-0000-4000-8000-000000003403",
+            "29800000-0000-4000-8000-000000003404",
+            "29800000-0000-4000-8000-000000003405",
+            "29800000-0000-4000-8000-000000003406",
+            "29800000-0000-4000-8000-000000003407",
+            "29800000-0000-4000-8000-000000003408",
+            "29800000-0000-4000-8000-000000003409",
+            "29800000-0000-4000-8000-000000003410",
+            "29800000-0000-4000-8000-000000003411",
+            "29800000-0000-4000-8000-000000003412",
+            "29800000-0000-4000-8000-000000003413",
+            "29800000-0000-4000-8000-000000003414",
+            "29800000-0000-4000-8000-000000003415",
+            "29800000-0000-4000-8000-000000003416",
+            "29800000-0000-4000-8000-000000003417",
+            "29800000-0000-4000-8000-000000003418",
+            "29800000-0000-4000-8000-000000003419",
+            "29800000-0000-4000-8000-000000003420",
+            "29800000-0000-4000-8000-000000003421",
+            "29800000-0000-4000-8000-000000003422",
+            "29800000-0000-4000-8000-000000003423",
+            "29800000-0000-4000-8000-000000003424",
+            "29800000-0000-4000-8000-000000003425",
+            "29800000-0000-4000-8000-000000003426",
+            "29800000-0000-4000-8000-000000003427",
+            "29800000-0000-4000-8000-000000003428",
+            "29800000-0000-4000-8000-000000003429",
+            "29800000-0000-4000-8000-000000003430",
+            "29800000-0000-4000-8000-000000003431",
+            "29800000-0000-4000-8000-000000003432",
+            "29800000-0000-4000-8000-000000003433",
+            "29800000-0000-4000-8000-000000003434",
+            "29800000-0000-4000-8000-000000003435",
+            "29800000-0000-4000-8000-000000003436",
+            "29800000-0000-4000-8000-000000003437",
+            "29800000-0000-4000-8000-000000003438",
+            "29800000-0000-4000-8000-000000003439"
+          ],
+          "revisions": [
+            "ask-r34",
+            "ask-r34",
+            "ask-r34",
+            "ask-r34",
+            "ask-r34",
+            "ask-r34",
+            "ask-r34",
+            "ask-r34",
+            "ask-r34",
+            "ask-r34",
+            "ask-r34",
+            "ask-r34",
+            "ask-r34",
+            "ask-r34",
+            "ask-r34",
+            "ask-r34",
+            "ask-r34",
+            "ask-r34",
+            "ask-r34",
+            "ask-r34"
+          ],
+          "suffixes": [
+            "a0340",
+            "a0341",
+            "a0342",
+            "a0343",
+            "a0344",
+            "a0345",
+            "a0346",
+            "a0347",
+            "a0348",
+            "a0349"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000110"
+          },
+          "tool": "ask.withdraw-access-request.v1",
+          "arguments": {
+            "action": "$writeAction"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "refused"
+          },
+          "isError": true,
+          "structuredContent": {
+            "diagnostics": [
+              {
+                "ruleId": "ACC-058",
+                "level": "error",
+                "properties": {
+                  "refusal": {
+                    "tier": 1
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "external_intents": [],
+        "absent": [
+          "/reply/_meta/io.github.shrav-k.conduit~1pendingAction"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T13:00:00Z",
+          "ids": [
+            "29800000-0000-4000-8000-000000091000",
+            "29800000-0000-4000-8000-000000091001",
+            "29800000-0000-4000-8000-000000091002",
+            "29800000-0000-4000-8000-000000091003",
+            "29800000-0000-4000-8000-000000091004",
+            "29800000-0000-4000-8000-000000091005",
+            "29800000-0000-4000-8000-000000091006",
+            "29800000-0000-4000-8000-000000091007",
+            "29800000-0000-4000-8000-000000091008",
+            "29800000-0000-4000-8000-000000091009",
+            "29800000-0000-4000-8000-000000091010",
+            "29800000-0000-4000-8000-000000091011",
+            "29800000-0000-4000-8000-000000091012",
+            "29800000-0000-4000-8000-000000091013",
+            "29800000-0000-4000-8000-000000091014",
+            "29800000-0000-4000-8000-000000091015",
+            "29800000-0000-4000-8000-000000091016",
+            "29800000-0000-4000-8000-000000091017",
+            "29800000-0000-4000-8000-000000091018",
+            "29800000-0000-4000-8000-000000091019",
+            "29800000-0000-4000-8000-000000091020",
+            "29800000-0000-4000-8000-000000091021",
+            "29800000-0000-4000-8000-000000091022",
+            "29800000-0000-4000-8000-000000091023",
+            "29800000-0000-4000-8000-000000091024",
+            "29800000-0000-4000-8000-000000091025",
+            "29800000-0000-4000-8000-000000091026",
+            "29800000-0000-4000-8000-000000091027",
+            "29800000-0000-4000-8000-000000091028",
+            "29800000-0000-4000-8000-000000091029",
+            "29800000-0000-4000-8000-000000091030",
+            "29800000-0000-4000-8000-000000091031",
+            "29800000-0000-4000-8000-000000091032",
+            "29800000-0000-4000-8000-000000091033",
+            "29800000-0000-4000-8000-000000091034",
+            "29800000-0000-4000-8000-000000091035",
+            "29800000-0000-4000-8000-000000091036",
+            "29800000-0000-4000-8000-000000091037",
+            "29800000-0000-4000-8000-000000091038",
+            "29800000-0000-4000-8000-000000091039"
+          ],
+          "revisions": [
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31",
+            "ask-r31"
+          ],
+          "suffixes": [
+            "a0310",
+            "a0311",
+            "a0312",
+            "a0313",
+            "a0314",
+            "a0315",
+            "a0316",
+            "a0317",
+            "a0318",
+            "a0319"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "ask.request-access.v1",
+          "arguments": {
+            "operation": "project.file.read.v1",
+            "conduit": "project"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "invalid"
+          },
+          "structuredContent": {
+            "diagnostics": [
+              {
+                "ruleId": "ACC-058"
+              }
+            ]
+          }
+        },
+        "external_intents": []
+      }
+    },
+    {
+      "input": {
+        "kind": "list-tools",
+        "identity": {
+          "kind": "instance",
+          "id": "00000000-0000-4000-8000-000000000109"
+        }
+      },
+      "expect": {
+        "reply": {
+          "tools": [
+            {
+              "name": "ask.request-access.v1"
+            },
+            {
+              "name": "ask.withdraw-access-request.v1"
+            },
+            {
+              "name": "history.directory.list.v1"
+            },
+            {
+              "name": "history.file.read.v1"
+            },
+            {
+              "name": "history.file.write.v1"
+            },
+            {
+              "name": "project.directory.list.v1"
+            },
+            {
+              "name": "project.file.read.v1"
+            }
+          ]
+        },
+        "external_intents": [],
+        "records": []
+      }
+    },
+    {
+      "input": {
+        "kind": "list-tools",
+        "identity": {
+          "kind": "instance",
+          "id": "00000000-0000-4000-8000-000000000110"
+        }
+      },
+      "expect": {
+        "reply": {
+          "tools": [
+            {
+              "name": "ask.request-access.v1"
+            },
+            {
+              "name": "ask.withdraw-access-request.v1"
+            },
+            {
+              "name": "history.directory.list.v1"
+            },
+            {
+              "name": "history.file.read.v1"
+            },
+            {
+              "name": "history.file.write.v1"
+            },
+            {
+              "name": "project.directory.list.v1"
+            },
+            {
+              "name": "project.file.read.v1"
+            },
+            {
+              "name": "project.file.write.v1"
+            }
+          ]
+        },
+        "external_intents": [],
+        "records": []
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T13:00:00Z",
+          "ids": [
+            "29800000-0000-4000-8000-000000003500",
+            "29800000-0000-4000-8000-000000003501",
+            "29800000-0000-4000-8000-000000003502",
+            "29800000-0000-4000-8000-000000003503",
+            "29800000-0000-4000-8000-000000003504",
+            "29800000-0000-4000-8000-000000003505",
+            "29800000-0000-4000-8000-000000003506",
+            "29800000-0000-4000-8000-000000003507",
+            "29800000-0000-4000-8000-000000003508",
+            "29800000-0000-4000-8000-000000003509",
+            "29800000-0000-4000-8000-000000003510",
+            "29800000-0000-4000-8000-000000003511",
+            "29800000-0000-4000-8000-000000003512",
+            "29800000-0000-4000-8000-000000003513",
+            "29800000-0000-4000-8000-000000003514",
+            "29800000-0000-4000-8000-000000003515",
+            "29800000-0000-4000-8000-000000003516",
+            "29800000-0000-4000-8000-000000003517",
+            "29800000-0000-4000-8000-000000003518",
+            "29800000-0000-4000-8000-000000003519",
+            "29800000-0000-4000-8000-000000003520",
+            "29800000-0000-4000-8000-000000003521",
+            "29800000-0000-4000-8000-000000003522",
+            "29800000-0000-4000-8000-000000003523",
+            "29800000-0000-4000-8000-000000003524",
+            "29800000-0000-4000-8000-000000003525",
+            "29800000-0000-4000-8000-000000003526",
+            "29800000-0000-4000-8000-000000003527",
+            "29800000-0000-4000-8000-000000003528",
+            "29800000-0000-4000-8000-000000003529",
+            "29800000-0000-4000-8000-000000003530",
+            "29800000-0000-4000-8000-000000003531",
+            "29800000-0000-4000-8000-000000003532",
+            "29800000-0000-4000-8000-000000003533",
+            "29800000-0000-4000-8000-000000003534",
+            "29800000-0000-4000-8000-000000003535",
+            "29800000-0000-4000-8000-000000003536",
+            "29800000-0000-4000-8000-000000003537",
+            "29800000-0000-4000-8000-000000003538",
+            "29800000-0000-4000-8000-000000003539"
+          ],
+          "revisions": [
+            "ask-r35",
+            "ask-r35",
+            "ask-r35",
+            "ask-r35",
+            "ask-r35",
+            "ask-r35",
+            "ask-r35",
+            "ask-r35",
+            "ask-r35",
+            "ask-r35",
+            "ask-r35",
+            "ask-r35",
+            "ask-r35",
+            "ask-r35",
+            "ask-r35",
+            "ask-r35",
+            "ask-r35",
+            "ask-r35",
+            "ask-r35",
+            "ask-r35"
+          ],
+          "suffixes": [
+            "a0350",
+            "a0351",
+            "a0352",
+            "a0353",
+            "a0354",
+            "a0355",
+            "a0356",
+            "a0357",
+            "a0358",
+            "a0359"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.list.v1",
+          "arguments": {}
+        }
+      },
+      "expect": {
+        "reply": {
+          "structuredContent": {
+            "pending": [
+              {
+                "id": "$writeAction",
+                "kind": "access-request",
+                "subject": [
+                  {
+                    "kind": "Agent",
+                    "id": "00000000-0000-4000-8000-000000000109",
+                    "name": "agent-a"
+                  }
+                ]
+              },
+              {
+                "id": "$missingAction",
+                "kind": "access-request",
+                "subject": [
+                  {
+                    "kind": "Agent",
+                    "id": "00000000-0000-4000-8000-000000000109",
+                    "name": "agent-a"
+                  }
+                ]
+              },
+              {
+                "id": "$otherAction",
+                "kind": "access-request",
+                "subject": [
+                  {
+                    "kind": "Agent",
+                    "id": "00000000-0000-4000-8000-000000000109",
+                    "name": "agent-a"
+                  }
+                ]
+              },
+              {
+                "id": "$boundedAction",
+                "kind": "access-request",
+                "subject": [
+                  {
+                    "kind": "Agent",
+                    "id": "00000000-0000-4000-8000-000000000110",
+                    "name": "agent-b"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

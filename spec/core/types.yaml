@@ -142,7 +142,10 @@ apiVersion: github.com/shrav-k/conduit/v0
 kind: Type
 metadata:
   name: access.v1
-  description: The type of the `access` Resource, which opens and closes Conduits.
+  description: >-
+    The type of the `access` Resource, which opens and closes Conduits, and through which an Agent
+    asks for access and withdraws its asks. A Conduit to `access` listing no other of its operations
+    is an asking Conduit, no right to open (ACC-058).
 spec:
   family: Resource
   schema:
@@ -155,6 +158,8 @@ spec:
   - github.com/shrav-k/conduit/core#close.v1
   - github.com/shrav-k/conduit/core#reconcile.v1
   - github.com/shrav-k/conduit/core#lift.v1
+  - github.com/shrav-k/conduit/core#request-access.v1
+  - github.com/shrav-k/conduit/core#withdraw-access-request.v1
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type

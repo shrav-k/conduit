@@ -1,0 +1,70 @@
+{
+  "id": "sectioned-consumes-asking",
+  "layers": [
+    "language",
+    "convention"
+  ],
+  "promises": [
+    "SCT-008",
+    "ACC-058"
+  ],
+  "title": "An Agent may inline only asking operations without a bound",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.json": "authored.json",
+    "framed.json": "framed.json",
+    "mixed.json": "mixed.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "framed": "framed.json",
+        "translations": [
+          {
+            "kind": "Agent",
+            "name": "agent-a",
+            "rule": "SCT-006"
+          },
+          {
+            "kind": "Conduit",
+            "name": "agent-a--ask",
+            "rule": "SCT-007"
+          },
+          {
+            "kind": "Conduit",
+            "name": "agent-a--ask--t",
+            "rule": "SCT-007"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "mixed.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SCT-008",
+            "level": "error"
+          }
+        ]
+      }
+    }
+  ]
+}

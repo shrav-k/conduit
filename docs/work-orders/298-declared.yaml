@@ -1,0 +1,13 @@
+# Added cases for work order 298.
+- name: sectioned-consumes-asking
+  kind: added
+  cases: [sectioned-consumes-asking]
+- name: access-ask-offered
+  kind: added
+  cases: [access-ask-offered]
+- name: access-ask-refused
+  kind: added
+  cases: [access-ask-refused]
+- name: access-ask-states
+  kind: added
+  cases: [access-ask-states]

@@ -28,6 +28,14 @@
       ]
     },
     {
+      "id": "sectioned-consumes-asking",
+      "case": "language/sectioned/consumes-asking/case.yaml",
+      "promises": [
+        "SCT-008",
+        "ACC-058"
+      ]
+    },
+    {
       "id": "sectioned-consumes-bound",
       "case": "language/sectioned/consumes-bound/case.yaml",
       "promises": [

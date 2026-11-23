@@ -22,6 +22,7 @@
 #                    FST-005, CON-002 (they are its declared Conduits)
 #   root-management  FST-002, ACC-032 (it lists the operations reserved to the root Interface)
 #   root-access      FST-002, ACC-022 (it applies no bound)
+#   access-request   ACC-058 (an Agent asks and withdraws; no bound and no right to open)
 #   pool             SCT-017 (a documents file’s `pool` key instantiates it)
 #
 # No instance document is made from any of these five templates: `system`, `node`,
@@ -149,8 +150,9 @@ kind: Conduit
 metadata:
   name: root-access
   description: >-
-    The root Interface's Conduit to `access`. It lists every operation of `access-control.v1` and
-    applies no bound, so it is a right to open with no bound, which is unlimited.
+    The root Interface's Conduit to `access`. It lists `open.v1`, `close.v1`, `reconcile.v1` and
+    `lift.v1`, not the two asks of ACC-058, and applies no bound, so it is a right to open with no
+    bound, which is unlimited.
 spec:
   capability: github.com/shrav-k/conduit/core#access-control.v1
   operations:
@@ -240,6 +242,19 @@ spec:
   - github.com/shrav-k/conduit/core#inspect.v1
   - github.com/shrav-k/conduit/core#set-up.v1
   - github.com/shrav-k/conduit/core#reconcile.v1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: access-request
+  description: >-
+    An Agent's asking Conduit to access, listing only the operations to ask for access and withdraw
+    its own ask. It has no bound and is no right to open (ACC-058).
+spec:
+  capability: github.com/shrav-k/conduit/core#access-control.v1
+  operations:
+  - github.com/shrav-k/conduit/core#request-access.v1
+  - github.com/shrav-k/conduit/core#withdraw-access-request.v1
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Conduit

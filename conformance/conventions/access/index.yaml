@@ -1,6 +1,31 @@
 {
   "cases": [
     {
+      "id": "access-ask-offered",
+      "case": "conventions/access/ask-offered/case.yaml",
+      "promises": [
+        "ACC-058",
+        "ACC-030",
+        "IFC-012"
+      ]
+    },
+    {
+      "id": "access-ask-refused",
+      "case": "conventions/access/ask-refused/case.yaml",
+      "promises": [
+        "ACC-058",
+        "ACC-056"
+      ]
+    },
+    {
+      "id": "access-ask-states",
+      "case": "conventions/access/ask-states/case.yaml",
+      "promises": [
+        "ACC-058",
+        "ACC-029"
+      ]
+    },
+    {
       "id": "access-bounds",
       "case": "conventions/access/bounds/case.yaml",
       "promises": [

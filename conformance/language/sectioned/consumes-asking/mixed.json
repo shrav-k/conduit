@@ -1,0 +1,23 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "agents": {
+    "agent-a": {
+      "from": "basis",
+      "consumes": {
+        "ask": {
+          "to": {
+            "kind": "Resource",
+            "name": "access"
+          },
+          "capability": "github.com/shrav-k/conduit/core#access-control.v1",
+          "operations": [
+            "github.com/shrav-k/conduit/core#request-access.v1",
+            "github.com/shrav-k/conduit/core#withdraw-access-request.v1",
+            "github.com/shrav-k/conduit/core#open.v1"
+          ]
+        }
+      },
+      "owner": "team"
+    }
+  }
+}

@@ -1,10 +1,11 @@
 # Sectioned documents, defined by translation into canonical framed documents.
 # JSON Schema 2020-12, within spec/schema-profile.md.
 # Promises encoded: SCT-001, SCT-002, SCT-005, SCT-006, SCT-007, SCT-009,
-# SCT-013, SCT-016; OBJ-019, OBJ-022.
+# SCT-013, SCT-016, SCT-017; OBJ-019, OBJ-022.
 # Checked during translation: version inheritance, missing or conflicting Agent owners,
-# at most one fleet per file, shared Fleet generation, SCT-008 targets, generated name
-# lengths and cross-document name collisions.
+# at most one fleet and one pool per file, shared Fleet and Pool generation, SCT-008
+# targets, generated name lengths and cross-document name collisions.
+# After translation, the instance schema rejects a Resource with no owner (SUB-005).
 # Package files accept only templates and apiVersion (MAN-011).
 # The wire's document.v1 remains canonical and does not reference sectioned.v1.
 # Standing: draft specification; see spec/README.md for status and coverage.
@@ -14,14 +15,25 @@ apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
 metadata:
   name: sectioned.v1
-  description: A sectioned documents-file value. Version inheritance, per-file Fleet ownership,
-    semantic checks and translation follow SCT-001 to SCT-016.
+  description: A sectioned documents-file value. Version inheritance, per-file Fleet and Pool
+    ownership, semantic checks and translation follow SCT-001 to SCT-017.
 spec:
   type: object
   properties:
     apiVersion:
       $ref: github.com/shrav-k/conduit/core#api-version.v1
     fleet:
+      type: string
+      maxLength: 63
+      pattern: ^[a-z]([a-z0-9]|-[a-z0-9])*-?$
+      not:
+        enum:
+        - system
+        - local
+        - management
+        - access
+        - root
+    pool:
       type: string
       maxLength: 63
       pattern: ^[a-z]([a-z0-9]|-[a-z0-9])*-?$
@@ -113,6 +125,8 @@ spec:
   anyOf:
   - required:
     - fleet
+  - required:
+    - pool
   - required:
     - templates
   - required:
@@ -599,7 +613,8 @@ apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
 metadata:
   name: sectioned-resource.v1
-  description: An inline or referenced Resource definition, with its required Pool owner.
+  description: An inline or referenced Resource definition. Owner is required unless the file
+    supplies pool.
 spec:
   oneOf:
   - type: object
@@ -646,7 +661,6 @@ spec:
         $ref: github.com/shrav-k/conduit/core#sectioned-operator.v1
     required:
     - type
-    - owner
     additionalProperties: false
   - type: object
     properties:
@@ -682,7 +696,6 @@ spec:
         $ref: github.com/shrav-k/conduit/core#sectioned-operator.v1
     required:
     - from
-    - owner
     additionalProperties: false
 ---
 apiVersion: github.com/shrav-k/conduit/v0

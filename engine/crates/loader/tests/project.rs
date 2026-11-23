@@ -495,3 +495,36 @@ fn a_supplied_owner_location_uses_the_document_that_stated_fleet() {
         })
     );
 }
+
+#[test]
+fn file_pool_and_fleet_supply_only_their_own_families_and_locations() {
+    let version = api();
+    let authored = format!(
+        "apiVersion: {version}\npool: team\nfleet: maintainers\n---\n\
+         apiVersion: {version}\nkind: Resource\nmetadata: {{name: shared}}\nfrom: basis\n---\n\
+         apiVersion: {version}\nagents:\n  worker: {{from: worker-template}}\n"
+    );
+    let project = submit(&[("owners.yaml", &authored)]).unwrap();
+    for (name, owner) in [("shared", "team"), ("worker", "maintainers")] {
+        let instance = project
+            .documents
+            .iter()
+            .map(|document| document.root.to_json())
+            .find(|document| document["metadata"]["name"] == name)
+            .unwrap();
+        assert_eq!(instance["owner"], owner);
+    }
+    let mut diagnostic = serde_json::json!({
+        "ruleId": "POOL-001",
+        "level": "error",
+        "properties": {"document": "shared"},
+        "locations": [{"logicalLocations": [{"fullyQualifiedName": "/owner"}]}],
+    });
+    project.locate_diagnostic(&mut diagnostic);
+    assert_eq!(diagnostic["properties"]["document"], 1);
+    assert_eq!(diagnostic["properties"]["translation"]["rule"], "SCT-017");
+    assert_eq!(
+        diagnostic["locations"][0]["logicalLocations"][0]["fullyQualifiedName"],
+        "/pool"
+    );
+}

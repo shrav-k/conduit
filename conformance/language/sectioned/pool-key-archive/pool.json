@@ -1,0 +1,11 @@
+{
+  "name": "sectioned-pool.tar.gz",
+  "address": "example.org/conformance/sectioned-pool",
+  "version": "0.1.0",
+  "digest": "sha256:2eb6b4158e2ca31566996a56a19cfba6772e4f3667eec3a66d0963034fb53f80",
+  "directory": null,
+  "completion": {
+    "status": "complete",
+    "file": "sectioned-pool.tar.gz"
+  }
+}

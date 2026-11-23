@@ -1,0 +1,10 @@
+{
+  "snapshots": [],
+  "project": {
+    "files": {
+      "conduit.json": "conduit.json",
+      "authored.json": "authored.json",
+      "extra.json": "extra.json"
+    }
+  }
+}

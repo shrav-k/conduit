@@ -1,0 +1,23 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "shared"
+    },
+    "from": "basis"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "kept"
+    },
+    "from": "basis",
+    "owner": "other"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "pool": "team"
+  }
+]

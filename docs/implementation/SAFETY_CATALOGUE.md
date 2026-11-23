@@ -10,9 +10,10 @@ PND-008, PND-013 and PRV-030, read from `spec/` as of commit `6ef168a2`.
 Work order 171b added the row of PND-014, which it wrote, and requoted the rows of PND-011
 and PND-013, whose quoted text it changed.
 Work order 254 added the row of REC-007, which it wrote.
+Work order 286 added the row of SCT-017, which it wrote.
 
-Promises read: 521; safety: 413; for the coordinator: 0; others: 108. Safety by kind: access 200,
-secret 45, effect 125, result 43. Safety by layer: language 135, convention 233, interface 45.
+Promises read: 522; safety: 414; for the coordinator: 0; others: 108. Safety by kind: access 201,
+secret 45, effect 125, result 43. Safety by layer: language 136, convention 233, interface 45.
 Safety in the seven convention files: 129 (G5’s list as ruling 39 worded it); safety of the
 convention layer anywhere: 233 (the wider reading, for the owner).
 
@@ -141,7 +142,7 @@ Read: 28 promises. Source: [spec/promises/naming.yaml](../../spec/promises/namin
 
 ### spec/promises/sections.yaml
 
-Read: 15 promises. Source: [spec/promises/sections.yaml](../../spec/promises/sections.yaml).
+Read: 16 promises. Source: [spec/promises/sections.yaml](../../spec/promises/sections.yaml).
 
 | ID | layer | level | kind | why a breach is unsafe | S1 traces |
 | --- | --- | --- | --- | --- | --- |
@@ -156,6 +157,7 @@ Read: 15 promises. Source: [spec/promises/sections.yaml](../../spec/promises/sec
 | SCT-014 | language | must | secret | `observable`: “No value at a place governed by a secret reference is echoed” — echoing a submitted literal there can disclose a secret in a diagnostic. | — |
 | SCT-015 | language | must | effect | `observable`: “It supplies no implicit setup, opening, retirement, repeat or change of a pin” — using registration equivalence to perform those actions implicitly can execute unauthorized effects. | — |
 | SCT-016 | language | must | access | `then`: “with the written `consumer` and `target`” — changing either endpoint during translation can give the wrong party access to the wrong target. | — |
+| SCT-017 | language | must | access | `then`: “supplies X as the owner of every Resource instance defined anywhere in that file” — supplying ownership beyond the file or overwriting a stated owner can give the wrong Pool authority over a Resource. | — |
 
 ### spec/promises/packages.yaml
 

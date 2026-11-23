@@ -15,8 +15,8 @@
     A map with no `kind` is read from a documents file of a project or package.
   then: >-
     It is a sectioned document, valid against `sectioned.v1`. Its only keys are `apiVersion`,
-    `fleet`, `templates`, `interfaces`, `agents`, `resources`, `pools` and `conduits`, and at
-    least one key other than `apiVersion` is present.
+    `fleet`, `pool`, `templates`, `interfaces`, `agents`, `resources`, `pools` and `conduits`,
+    and at least one key other than `apiVersion` is present.
   observable: >-
     An unknown key or `apiVersion` alone is rejected under SUB-005, at the authored place. A
     map with `metadata` or `spec` but no `kind` is rejected with a diagnostic saying that a
@@ -49,9 +49,9 @@
     installation.
   then: >-
     It means exactly the project or package in which each sectioned document is replaced by
-    its translation under SCT-005 to SCT-009, SCT-011 and SCT-016. The translated
-    documents, the framed documents read beside them and the manifest are handed over together
-    as one set.
+    its translation under SCT-005 to SCT-009, SCT-011, SCT-016 and SCT-017. The translated
+    documents, the framed documents read beside them with any file owners supplied, and the
+    manifest are handed over together as one set.
   observable: >-
     SUB-001 to SUB-007, OBJ-002, NAM-027, instantiation, CON-021, IFC-014 and every other
     check apply unchanged to that set. No translation provenance is stored. Inspection,
@@ -67,7 +67,7 @@
   then: >-
     It depends only on the authored documents and their SCT-002 versions. It reads no package,
     contract, stored object, caller, file name, directory or environment. File boundaries
-    determine only the per-file rule SCT-011; renaming a file changes nothing.
+    determine only the per-file rules SCT-011 and SCT-017; renaming a file changes nothing.
   observable: >-
     The same text translates to equal documents under SCH-007, regardless of key or file order
     (SUB-001). An unchanged definition keeps its generated names across a replacement or pin
@@ -106,11 +106,11 @@
   observable: >-
     Exactly one of `type` and `from` is required. Inline definitions accept neither `inputs`
     nor `arguments`. Referenced definitions accept none of the inline template fields. OBJ-013
-    governs standard arguments: a Resource requires its Pool `owner`; an Agent requires its
-    Fleet `owner` unless SCT-011 supplies it; each may state `placement` and `runtime`. An
-    Interface or Pool accepts none of these. `consumes` and `operator` make only what
-    SCT-007 and SCT-009 state. Every instance still comes from a template, including
-    one made in the same submission.
+    governs standard arguments: a Resource requires its Pool `owner` unless SCT-017 supplies
+    it; an Agent requires its Fleet `owner` unless SCT-011 supplies it; each may state
+    `placement` and `runtime`. An Interface or Pool accepts none of these. `consumes` and
+    `operator` make only what SCT-007 and SCT-009 state. Every instance still comes from a
+    template, including one made in the same submission.
 
 - id: SCT-007
   layer: language
@@ -193,10 +193,10 @@
   when: >-
     A sectioned document gives names or would generate names.
   then: >-
-    Definition names, template names, `conduits` members and `fleet` values follow OBJ-001,
-    contain no `--`, and are none of `system`, `local`, `management`, `access` and `root`. The
-    keys of `consumes` follow OBJ-022, contain no `--`, and are neither `t` nor `operator`. Every generated
-    name is at most 63 characters.
+    Definition names, template names, `conduits` members and `fleet` and `pool` values follow
+    OBJ-001, contain no `--`, and are none of `system`, `local`, `management`, `access` and
+    `root`. The keys of `consumes` follow OBJ-022, contain no `--`, and are neither `t` nor
+    `operator`. Every generated name is at most 63 characters.
   observable: >-
     The no-`--` pattern is `^[a-z]([a-z0-9]|-[a-z0-9])*-?$`. Violations are rejected at the
     authored key or value. The generated names are exactly `N--t`, `N--L`, `N--L--t`,
@@ -219,13 +219,14 @@
   observable: >-
     A generated template's `spec.X` maps to the inline definition's X; a template-section body
     maps to `templates.<family>.N`; an instance's standard arguments and `arguments` map to
-    those authored keys. `N--L--t` maps under `/F/N/consumes/L` (F is the authored section key), and `N--L`'s target maps
-    there to `to`. Operator and the standalone Conduit section map analogously. A
-    supplied Fleet owner maps to `/fleet`; an explicitly written owner maps to its authored
-    owner. A Fleet shared by several files names their supplying places. A syntax rejection
-    with no emitted document has no translation property. Schema rejections cite SUB-005 and
-    carry `keywordLocation`. OBJ-023 and OBJ-025 still decide invalid or conflict. No value at
-    a place governed by a secret reference is echoed (SEC-003).
+    those authored keys. `N--L--t` maps under `/F/N/consumes/L` (F is the authored section
+    key), and `N--L`'s target maps there to `to`. Operator and the standalone Conduit section
+    map analogously. A supplied Fleet owner maps to `/fleet`, and a supplied Pool owner to
+    `/pool`; an explicitly written owner maps to its authored owner. A Fleet or Pool shared
+    by several files names their supplying places. A syntax rejection with no emitted document
+    has no translation property. Schema rejections cite SUB-005 and carry `keywordLocation`.
+    OBJ-023 and OBJ-025 still decide invalid or conflict. No value at a place governed by a
+    secret reference is echoed (SEC-003).
 
 - id: SCT-015
   layer: language
@@ -261,3 +262,21 @@
     form accepts may be written here, including one to `management` or one to `access` without
     a bound. Canonical authorization and root-consumer restrictions still apply. SCT-008
     restricts only `consumes`, never this section.
+
+- id: SCT-017
+  layer: language
+  level: must
+  when: >-
+    A documents file states `pool: X` in a sectioned document.
+  then: >-
+    At most one `pool` key occurs in the whole file, across all its documents. X is a bare
+    name. The translation makes Pool X from the core template `pool`, and supplies X as the
+    owner of every Resource instance defined anywhere in that file, whether sectioned or framed,
+    that states no owner. A Resource that states an owner keeps it, whichever Pool it names.
+  observable: >-
+    A second `pool` key in the file is rejected, the diagnostic naming both. Resources in
+    another file receive no owner from this key and must state `owner` unless their own file
+    supplies one. A Pool's entries are no Resource instance of the file and keep their Pool
+    (POOL-002). Where several files state the same X, the project's translation makes that
+    Pool once. A separately authored document named X still clashes under NAM-027. No root
+    Conduit is translated: FLEET-005 makes the default. A package accepts no `pool` (MAN-011).

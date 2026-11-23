@@ -483,6 +483,7 @@ pub(crate) fn sectioned_wire_items(arguments: &Value) -> impl Iterator<Item = us
             let keys = item.as_object()?;
             let sections = [
                 "fleet",
+                "pool",
                 "templates",
                 "interfaces",
                 "agents",
@@ -1411,6 +1412,15 @@ pub(crate) fn decide(
 mod notification_tests {
     use super::*;
     use std::collections::BTreeMap;
+
+    #[test]
+    fn pool_key_is_a_sectioned_wire_item() {
+        let arguments = json!({"documents": [
+            {"apiVersion": "github.com/shrav-k/conduit/v0", "pool": "team"},
+            {"apiVersion": "github.com/shrav-k/conduit/v0", "kind": "Pool", "from": "basis"}
+        ]});
+        assert_eq!(sectioned_wire_items(&arguments).collect::<Vec<_>>(), [0]);
+    }
 
     #[test]
     fn unchanged_dependencies_preserve_publication_error_and_consumer() {

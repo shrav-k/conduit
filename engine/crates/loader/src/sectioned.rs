@@ -13,6 +13,39 @@ const FAMILIES: [(&str, &str); 5] = [
 ];
 type Members = Vec<(String, Node)>;
 
+#[derive(Clone, Copy)]
+struct FileOwnerRule {
+    key: &'static str,
+    pointer: &'static str,
+    kind: &'static str,
+    owned_kind: &'static str,
+    rule: &'static str,
+}
+
+const FILE_OWNER_RULES: [FileOwnerRule; 2] = [
+    FileOwnerRule {
+        key: "fleet",
+        pointer: "/fleet",
+        kind: "Fleet",
+        owned_kind: "Agent",
+        rule: "SCT-011",
+    },
+    FileOwnerRule {
+        key: "pool",
+        pointer: "/pool",
+        kind: "Pool",
+        owned_kind: "Resource",
+        rule: "SCT-017",
+    },
+];
+
+struct FileOwner {
+    declaration: FileOwnerRule,
+    name: String,
+    source: TranslationSource,
+    usable: bool,
+}
+
 /// An authored place in a project, before any translation.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TranslationSource {
@@ -22,7 +55,7 @@ pub struct TranslationSource {
     pub position: crate::Position,
 }
 
-/// The rule and authored places of a generated document or supplied Fleet owner.
+/// The rule and authored places of a generated document or supplied owner.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Translation {
     pub rule: &'static str,
@@ -93,17 +126,16 @@ pub(crate) fn translate(
     faults: &mut Vec<Diagnostic>,
 ) -> (Vec<Document>, Vec<Option<Translation>>) {
     let mut output = Output::default();
-    let mut shared_fleets: BTreeMap<String, usize> = BTreeMap::new();
+    let mut shared_owners: BTreeMap<(&str, String), usize> = BTreeMap::new();
     let inherited = manifest.and_then(|manifest| manifest.root.get("apiVersion"));
     let core = &spec.names().core_package;
     for documents in files {
-        let mut fleet_faults = Vec::new();
-        let file_fleet = if archive {
-            None
-        } else {
-            check_file_fleets(&documents, &mut fleet_faults)
-        };
-        let mut owner_usable = false;
+        let mut owner_faults = Vec::new();
+        let mut owners: Vec<_> = FILE_OWNER_RULES
+            .into_iter()
+            .filter(|_| !archive)
+            .filter_map(|rule| check_file_owner(&documents, rule, &mut owner_faults))
+            .collect();
         let mut checked = Vec::new();
         for document in documents {
             let mut member_faults = MemberFaults::default();
@@ -114,7 +146,10 @@ pub(crate) fn translate(
                     faults.extend(found.0);
                 }
                 if archive {
-                    for key in std::iter::once("fleet").chain(FAMILIES.map(|(section, _)| section))
+                    for key in FILE_OWNER_RULES
+                        .map(|rule| rule.key)
+                        .into_iter()
+                        .chain(FAMILIES.map(|(section, _)| section))
                     {
                         if document.root.get(key).is_some() {
                             faults.push(fault(
@@ -134,32 +169,38 @@ pub(crate) fn translate(
                         .iter()
                         .map(|fault| fault.pointer.clone().unwrap_or_default()),
                 );
-                if file_fleet
-                    .as_ref()
-                    .is_some_and(|(_, place)| place.document == document.index)
-                {
-                    owner_usable = !member_faults.blocks("/fleet");
+                for owner in &mut owners {
+                    if owner.source.document == document.index {
+                        owner.usable = !member_faults.blocks(owner.declaration.pointer);
+                    }
                 }
             }
             checked.push((document, member_faults));
         }
-        faults.extend(fleet_faults);
-        let fleet = file_fleet
-            .as_ref()
-            .filter(|_| owner_usable)
-            .map(|(name, place)| (name.as_str(), place));
-        if let Some((name, location)) = fleet
-            && let Some((document, member_faults)) = checked
+        faults.extend(owner_faults);
+        owners.retain(|owner| owner.usable);
+        for owner in &owners {
+            let FileOwner {
+                declaration,
+                name,
+                source,
+                ..
+            } = owner;
+            let Some((document, member_faults)) = checked
                 .iter()
-                .find(|(document, _)| document.index == location.document)
-            && let Some(version) = usable_version(document, inherited, spec)
-        {
-            match shared_fleets.entry(name.to_owned()) {
+                .find(|(document, _)| document.index == source.document)
+            else {
+                continue;
+            };
+            let Some(version) = usable_version(document, inherited, spec) else {
+                continue;
+            };
+            match shared_owners.entry((declaration.kind, name.clone())) {
                 Entry::Occupied(found) => output.translations[*found.get()]
                     .as_mut()
-                    .expect("Fleet provenance")
+                    .expect("file owner provenance")
                     .sources
-                    .push(location.clone()),
+                    .push(source.clone()),
                 Entry::Vacant(place) => {
                     place.insert(output.documents.len());
                     let mut expansion = Expansion {
@@ -171,13 +212,13 @@ pub(crate) fn translate(
                         faults,
                     };
                     expansion.emit(
-                        ("/fleet", "SCT-011"),
-                        "Fleet",
+                        (declaration.pointer, declaration.rule),
+                        declaration.kind,
                         name,
                         None,
                         vec![(
                             "from".into(),
-                            string(format!("{core}#fleet"), &document.root),
+                            string(format!("{core}#{}", declaration.key), &document.root),
                         )],
                     );
                 }
@@ -193,10 +234,9 @@ pub(crate) fn translate(
                     output: &mut output,
                     faults,
                 };
-                expansion.expand(fleet);
+                expansion.expand(&owners);
             } else {
-                let translation = fleet
-                    .and_then(|(name, place)| framed_owner(&mut document, name, place, faults));
+                let translation = framed_owner(&mut document, &owners, faults);
                 output.push(document, translation);
             }
         }
@@ -204,29 +244,38 @@ pub(crate) fn translate(
     (output.documents, output.translations)
 }
 
-fn check_file_fleets(
+fn check_file_owner(
     documents: &[Document],
+    declaration: FileOwnerRule,
     faults: &mut Vec<Diagnostic>,
-) -> Option<(String, TranslationSource)> {
+) -> Option<FileOwner> {
+    let FileOwnerRule {
+        key, pointer, rule, ..
+    } = declaration;
     let mut declarations = documents
         .iter()
         .filter(|document| sectioned(document) && !has_framed_keys(document))
         .filter_map(|document| {
             document
                 .root
-                .get("fleet")
-                .map(|fleet| (document, fleet.as_str()))
+                .get(key)
+                .map(|owner| (document, owner.as_str()))
         });
     let (first, first_name) = declarations.next()?;
     let first_label = first_name.unwrap_or("declaration");
     for (document, name) in declarations {
         let label = name.unwrap_or("declaration");
-        faults.push(with_related(fault(document, "SCT-011", "/fleet", format!(
-            "a second fleet {label} in the file; the first fleet {first_label} is in document {} at /fleet",
+        faults.push(with_related(fault(document, rule, pointer, format!(
+            "a second {key} {label} in the file; the first {key} {first_label} is in document {} at {pointer}",
             first.index
-        )), &source(first, "/fleet")));
+        )), &source(first, pointer)));
     }
-    first_name.map(|name| (name.to_owned(), source(first, "/fleet")))
+    first_name.map(|name| FileOwner {
+        declaration,
+        name: name.to_owned(),
+        source: source(first, pointer),
+        usable: false,
+    })
 }
 
 fn source(document: &Document, pointer: &str) -> TranslationSource {
@@ -267,27 +316,35 @@ fn with_related(mut fault: Diagnostic, source: &TranslationSource) -> Diagnostic
 
 fn framed_owner(
     document: &mut Document,
-    fleet: &str,
-    place: &TranslationSource,
+    owners: &[FileOwner],
     faults: &mut Vec<Diagnostic>,
 ) -> Option<Translation> {
-    if document.root.get("kind").and_then(Node::as_str) != Some("Agent")
-        || document.root.get("from").is_none()
-    {
+    document.root.get("from")?;
+    let kind = document.root.get("kind")?.as_str()?;
+    let default = owners
+        .iter()
+        .find(|owner| owner.declaration.owned_kind == kind)?;
+    if let Some(written) = document.root.get("owner") {
+        if kind == "Agent" {
+            check_owner(
+                document,
+                written,
+                &default.name,
+                &default.source,
+                "/owner",
+                faults,
+            );
+        }
         return None;
     }
-    if let Some(owner) = document.root.get("owner") {
-        check_owner(document, owner, fleet, place, "/owner", faults);
-        return None;
-    }
-    let owner = string(fleet, &document.root);
+    let owner = string(&default.name, &document.root);
     if let Value::Object(fields) = &mut document.root.value {
         fields.push(("owner".into(), owner));
     }
     Some(Translation {
-        rule: "SCT-011",
+        rule: default.declaration.rule,
         sources: vec![source(document, "")],
-        owner: Some(place.clone()),
+        owner: Some(default.source.clone()),
     })
 }
 
@@ -327,7 +384,7 @@ struct Expansion<'a> {
 }
 
 impl Expansion<'_> {
-    fn expand(&mut self, fleet: Option<(&str, &TranslationSource)>) {
+    fn expand(&mut self, owners: &[FileOwner]) {
         let root = &self.document.root;
         for (section, family) in FAMILIES {
             let templates = root
@@ -360,7 +417,7 @@ impl Expansion<'_> {
                     let mut ends = copy(item, &["consumer", "target", "as"]);
                     self.conduit((&place, "SCT-016"), name, item, &mut ends);
                 } else {
-                    self.instance(&place, family, name, item, fleet);
+                    self.instance(&place, family, name, item, owners);
                 }
             }
         }
@@ -372,10 +429,10 @@ impl Expansion<'_> {
         family: &str,
         name: &str,
         item: &Node,
-        fleet: Option<(&str, &TranslationSource)>,
+        owners: &[FileOwner],
     ) {
         if !self.member_faults.blocks(place) {
-            self.base_instance(place, family, name, item, fleet);
+            self.base_instance(place, family, name, item, owners);
         }
         for (label, consumed) in members(item.get("consumes")) {
             let at = member_pointer(&format!("{place}/consumes"), label);
@@ -438,25 +495,28 @@ impl Expansion<'_> {
         family: &str,
         name: &str,
         item: &Node,
-        fleet: Option<(&str, &TranslationSource)>,
+        owners: &[FileOwner],
     ) {
         let mut fields = copy(item, &["arguments", "owner", "placement", "runtime"]);
         let mut supplied_owner = None;
-        if family == "Agent"
-            && let Some((fleet, fleet_place)) = fleet
+        if let Some(default) = owners
+            .iter()
+            .find(|owner| owner.declaration.owned_kind == family)
         {
-            if let Some(owner) = item.get("owner") {
-                check_owner(
-                    self.document,
-                    owner,
-                    fleet,
-                    fleet_place,
-                    &format!("{place}/owner"),
-                    self.faults,
-                );
+            if let Some(written) = item.get("owner") {
+                if family == "Agent" {
+                    check_owner(
+                        self.document,
+                        written,
+                        &default.name,
+                        &default.source,
+                        &format!("{place}/owner"),
+                        self.faults,
+                    );
+                }
             } else {
-                fields.push(("owner".into(), string(fleet, item)));
-                supplied_owner = Some(fleet_place.clone());
+                fields.push(("owner".into(), string(&default.name, item)));
+                supplied_owner = Some(default.source.clone());
             }
         }
         let origin = (place, "SCT-006");

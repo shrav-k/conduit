@@ -1,0 +1,53 @@
+{
+  "id": "sectioned-pool-key-shared",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-017",
+    "SCT-004"
+  ],
+  "title": "Two files declaring the same Pool make one Pool",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "a.json": "a.json",
+    "b.json": "b.json",
+    "framed.json": "framed.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "b.json",
+          "a.json"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "framed": "framed.json",
+        "translations": [
+          {
+            "kind": "Pool",
+            "name": "team",
+            "rule": "SCT-017"
+          },
+          {
+            "kind": "Resource",
+            "name": "a",
+            "rule": "SCT-006"
+          },
+          {
+            "kind": "Resource",
+            "name": "b",
+            "rule": "SCT-006"
+          }
+        ]
+      }
+    }
+  ]
+}

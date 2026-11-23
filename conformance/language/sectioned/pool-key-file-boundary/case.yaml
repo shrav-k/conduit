@@ -1,0 +1,43 @@
+{
+  "id": "sectioned-pool-key-file-boundary",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-017",
+    "SUB-005"
+  ],
+  "title": "A Pool supplies no owner to Resources in another file",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "pool.json": "pool.json",
+    "other.json": "other.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "pool.json",
+          "other.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "file": "other.json",
+              "document": 1
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

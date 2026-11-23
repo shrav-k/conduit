@@ -1,0 +1,59 @@
+{
+  "id": "sectioned-pool-key-archive",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "MAN-011",
+    "SCT-017"
+  ],
+  "title": "An archive cannot declare a file Pool",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "pool.json": "pool.json",
+    "sectioned-pool.tar.gz": "sectioned-pool.tar.gz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "pool.json"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "MAN-011",
+              "level": "error",
+              "properties": {
+                "file": "sections.yaml",
+                "document": 1
+              },
+              "locations": [
+                {
+                  "logicalLocations": [
+                    {
+                      "fullyQualifiedName": "/pool"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "stateUnchanged": true,
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "MAN-011",
+          "PKG-023"
+        ]
+      }
+    }
+  ]
+}

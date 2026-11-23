@@ -117,6 +117,7 @@ registration meaning from changing a running project.
 
 Definitions and Conduits in examples and guides use YAML flow style (`{...}` and `[...]`);
 block style remains equally legal under SCH-013. `conduit init` writes a flow-style skeleton.
+It writes neither `fleet` nor `pool`.
 Package pins belong to the manifest: `conduit install ARCHIVE#HEX` writes the given archive's
 pin into the author's file, at exactly its version and digest, after installing what that
 archive lists, and pins no dependency.
@@ -208,7 +209,7 @@ lists each S1 promise's vectors, or the reason it has none.
 | [promises/templates.yaml](promises/templates.yaml) | What the `spec` of a template holds: the type, implementations, hooks, retirement and controls | Draft; 14 promises; vectors test slices of 10 promises |
 | [promises/contracts.yaml](promises/contracts.yaml) | The five kinds of contract and what each holds | Draft; 12 promises; vectors test slices of 4 promises |
 | [promises/naming.yaml](promises/naming.yaml) | How packages, their exports and contracts are named, where versions live, and which version of a contract governs | Draft; 28 promises; vectors test slices of 17 promises |
-| [promises/sections.yaml](promises/sections.yaml) | Sectioned documents, their translation into canonical documents, per-file Fleet ownership, consumes, operator and authored diagnostics | Draft; 14 promises; no vectors yet |
+| [promises/sections.yaml](promises/sections.yaml) | Sectioned documents, their translation into canonical documents, per-file Fleet and Pool ownership, consumes, operator and authored diagnostics | Draft; 15 promises; vectors test slices of 15 promises |
 | [promises/packages.yaml](promises/packages.yaml) | Versions, digests, the archive, what a package's manifest states, and what a request to install reports | Draft; 24 promises; vectors test slices of 20 promises |
 | [promises/manifest.yaml](promises/manifest.yaml) | The manifest's format: the file `conduit.yaml`, `conduit.yml` or `conduit.json`, its keys, implementation items, which variables of a run they may not bind, which files of a project are its documents, and the layout of a package's archive | Draft; 17 promises; vectors test slices of 10 promises |
 | [promises/submissions.yaml](promises/submissions.yaml) | Handing over several documents at once, the contracts of a submitted project and the address that names them, how a template is replaced, that every engine takes a directory, and documents, files, submissions or archives beyond a limit that the engine states | Draft; 11 promises; vectors test slices of 10 promises |
@@ -221,7 +222,7 @@ lists each S1 promise's vectors, or the reason it has none.
 | [promises/enrollment.yaml](promises/enrollment.yaml) | Managed machine enrollment, provider evidence, root admission and refusal, expiry, fixed labels and removal questions (rulings 50, 51, 52, 56 and 68); six contracts live, capability and engine bindings staged for 049a and 049b | Draft; 12 promises; no vectors yet |
 | [promises/pending.yaml](promises/pending.yaml) | Pending actions, scope delivery, evidence, answers, sign-in, setup, notices and enrollment | Draft; 14 promises; no vectors yet |
 | [promises/secrets.yaml](promises/secrets.yaml) | Secrets: how a document marks one, which Resources hold one and what else their type may offer, who may have one read, how the engine reads one before a run or a connection, and again once it has lost a connection's values, and where the value may go, a header that carries one among it | Draft; 24 promises; vectors test slices of 2 promises |
-| [core/](core/README.md) | The core package, written out as documents: what it exports, and the promise that needs each export | Draft; 152 documents exported and 1 implementation, which is also an export |
+| [core/](core/README.md) | The core package, written out as documents: what it exports, and the promise that needs each export | Draft; 155 documents exported and 1 implementation, which is also an export |
 | [core/conduit.yaml](core/conduit.yaml) | The core package's manifest: its address, its version, its exports and its one implementation, the engine itself | Draft |
 | [core/operations.yaml](core/operations.yaml) | The Operation contracts: every management verb, the setup, retire and sign-in hooks, the operations of the three provider capabilities that the engine invokes by provider calls, and `get-secret.v1` | Draft; 38 contracts |
 | [core/capabilities.yaml](core/capabilities.yaml) | The Capability contracts: what `management`, `access`, Pools and Fleets offer, and the four provider capabilities | Draft; 8 contracts |
@@ -229,7 +230,7 @@ lists each S1 promise's vectors, or the reason it has none.
 | [core/requirements.yaml](core/requirements.yaml) | The Requirement contracts `bound.v1` and `shared-host.v1`, which the engine applies itself | Draft; 2 contracts |
 | [core/references.yaml](core/references.yaml) | The reference schemas: the Schema contracts that make a value a reference, `secret-reference.v1` among them | Draft; 13 contracts |
 | [core/results.yaml](core/results.yaml) | Also pending-action.v1, evidence-item.v1 and refusal.v1; the Schema contracts `object.v1`, `diagnostic.v1`, `condition.v1`, `record.v1`, `usage.v1`, `limit-report.v1`, `limit-status.v1`, `inventory.v1`, `tombstone.v1`, `provenance.v1` and `trust-domain.v1`: an object as a result names it, a diagnostic, a condition, a record, a call's usage, a call's limits, an instance's limits, an inventory, a tombstone, opening provenance and a trust domain | Draft; 14 contracts |
-| [core/templates.yaml](core/templates.yaml) | The core templates, including those of the five first-start objects, root's declared Conduits and a value Resource | Draft; 18 templates |
+| [core/templates.yaml](core/templates.yaml) | The core templates, including those of the five first-start objects, root's declared Conduits and a value Resource | Draft; 19 templates |
 | [schemas/](schemas/README.md) | The JSON Schemas of every document and of the manifest, each a Schema contract of the core package; which schema to use; and what a schema cannot express | Draft; 52 contracts in 9 files |
 | [schemas/document.yaml](schemas/document.yaml) | `document.v1`: any template, instance or contract document | Draft; 1 contract |
 | [schemas/sectioned.yaml](schemas/sectioned.yaml) | `sectioned.v1` and the parts of the short form | Draft; 9 contracts |
@@ -253,7 +254,7 @@ lists each S1 promise's vectors, or the reason it has none.
 | [interface/implementation.yaml](interface/implementation.yaml) | The implementation interface: the Model Context Protocol as the wire between an engine, its implementations and its consumers, with Conduit's keys as an extension of the protocol, and the proof of who is who in both directions | Draft; 48 promises; vectors test slices of 26 promises |
 | [implementation-defined.yaml](implementation-defined.yaml) | What is left to each engine, which it documents as its conformance document | Draft; 17 items |
 
-Every area has been written as promises, 520 in all: 225 of the layer `language`, 245 of the
+Every area has been written as promises, 521 in all: 226 of the layer `language`, 245 of the
 layer `convention` and 50 of the layer `interface`. The JSON Schemas of documents, contracts and
 manifests, the core package as documents and the manifest's file format exist: they are
 `schemas/`, `core/` and `promises/manifest.yaml`. The vectors and the core exist on

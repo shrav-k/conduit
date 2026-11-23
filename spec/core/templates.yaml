@@ -22,6 +22,7 @@
 #                    FST-005, CON-002 (they are its declared Conduits)
 #   root-management  FST-002, ACC-032 (it lists the operations reserved to the root Interface)
 #   root-access      FST-002, ACC-022 (it applies no bound)
+#   pool             SCT-017 (a documents file’s `pool` key instantiates it)
 #
 # No instance document is made from any of these five templates: `system`, `node`,
 # `management`, `access` and `root` (FST-006). The first-start objects are identified by their
@@ -272,6 +273,16 @@ metadata:
   description: The only Fleet template, instantiated without arguments (FLEET-001).
 spec:
   type: github.com/shrav-k/conduit/core#fleet.v1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Pool
+metadata:
+  name: pool
+  description: >-
+    The Pool template that a documents file's `pool` key instantiates (SCT-017). It has no
+    inputs, entries or declared Conduits, and any project may instantiate it.
+spec:
+  type: github.com/shrav-k/conduit/core#pool.v1
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Conduit

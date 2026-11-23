@@ -265,7 +265,7 @@
     nowhere does not leave the project read as one with no manifest. Documents in a directory
     below are another project, with a manifest of its own if it uses packages. A documents
     file may mix framed and sectioned documents. A package's sectioned documents hold only
-    `templates` and optional `apiVersion`: `fleet` and every instance section are rejected at
+    `templates` and optional `apiVersion`: `fleet`, `pool` and every instance section are rejected at
     install under this promise, even if empty. A sectioned project is translated before
     registration (SCT-003).
 

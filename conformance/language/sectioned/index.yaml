@@ -262,6 +262,71 @@
       ]
     },
     {
+      "id": "sectioned-pool-key-archive",
+      "case": "language/sectioned/pool-key-archive/case.yaml",
+      "promises": [
+        "MAN-011",
+        "SCT-017"
+      ]
+    },
+    {
+      "id": "sectioned-pool-key-duplicate-key",
+      "case": "language/sectioned/pool-key-duplicate-key/case.yaml",
+      "promises": [
+        "SCT-017",
+        "SCT-014"
+      ]
+    },
+    {
+      "id": "sectioned-pool-key-file-boundary",
+      "case": "language/sectioned/pool-key-file-boundary/case.yaml",
+      "promises": [
+        "SCT-017",
+        "SUB-005"
+      ]
+    },
+    {
+      "id": "sectioned-pool-key-framed",
+      "case": "language/sectioned/pool-key-framed/case.yaml",
+      "promises": [
+        "SCT-017"
+      ]
+    },
+    {
+      "id": "sectioned-pool-key-located",
+      "case": "language/sectioned/pool-key-located/case.yaml",
+      "promises": [
+        "SCT-014",
+        "SCT-017",
+        "OBJ-002"
+      ]
+    },
+    {
+      "id": "sectioned-pool-key-registered",
+      "case": "language/sectioned/pool-key-registered/case.yaml",
+      "promises": [
+        "SCT-017",
+        "POOL-001",
+        "FLEET-005"
+      ]
+    },
+    {
+      "id": "sectioned-pool-key-shared",
+      "case": "language/sectioned/pool-key-shared/case.yaml",
+      "promises": [
+        "SCT-017",
+        "SCT-004"
+      ]
+    },
+    {
+      "id": "sectioned-pool-key-supplied",
+      "case": "language/sectioned/pool-key-supplied/case.yaml",
+      "promises": [
+        "SCT-017",
+        "SCT-006"
+      ]
+    },
+    {
       "id": "sectioned-pool-operator",
       "case": "language/sectioned/pool-operator/case.yaml",
       "promises": [

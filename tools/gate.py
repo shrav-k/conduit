@@ -26,6 +26,8 @@ import threading
 import time
 from urllib.parse import urlsplit
 
+from check_private_paths import contributor_entry
+
 WORKFLOW = Path('.github/workflows/checks.yml')
 OUTPUT = Path('target/gate')
 CONFIG = '.gitleaks.toml'
@@ -639,6 +641,50 @@ def scrub_environment():
 def git(root, env, *args):
     return subprocess.run([*GIT, *args], cwd=root, env=env, stdin=subprocess.DEVNULL,
                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+
+class ContributorsReadError(ValueError):
+    """A committed contributor list could not be inspected without exposing Git's output."""
+
+
+def contributors(root, env, ref):
+    """Read only the committed regular file, returning admitted byte pairs and safe faults."""
+    tree = git(root, env, 'ls-tree', '-z', ref, '--', 'CONTRIBUTORS')
+    if tree.returncode:
+        raise ContributorsReadError('could not inspect CONTRIBUTORS')
+    if not tree.stdout:
+        return set(), []
+    metadata = tree.stdout.split(b'\t', 1)[0].split()
+    if len(metadata) != 3 or metadata[0] not in (b'100644', b'100755') or metadata[1] != b'blob':
+        return set(), ['is not a regular file']
+    blob = git(root, env, 'cat-file', 'blob', metadata[2].decode('ascii'))
+    if blob.returncode:
+        raise ContributorsReadError('could not read CONTRIBUTORS')
+    try:
+        text = blob.stdout.decode('utf-8')
+    except UnicodeDecodeError:
+        return set(), ['is not UTF-8']
+    entries, faults = {}, []
+    for number, line in enumerate(text.split('\n'), 1):
+        if not line or line.startswith('#'):
+            continue
+        entry = contributor_entry(line)
+        if entry is None:
+            faults.append(f'line {number} is not Name <e-mail>')
+        elif entry == IDENTITY:
+            faults.append(f'line {number} is the work-order identity')
+        elif entry in entries:
+            faults.append(f'line {number} repeats line {entries[entry]}')
+        else:
+            entries[entry] = number
+    admitted = {tuple(field.encode('utf-8') for field in entry) for entry in entries}
+    return (set() if faults else admitted), faults
+
+
+def identity_reason(count, listed, faults):
+    return (f'the branch adds {count} commits, each to be by '
+            'Conduit work order <work-orders@conduit.invalid> or a contributor that CONTRIBUTORS '
+            f'lists at the merge base ({len(listed)} listed, {len(faults)} faulty)')
 
 
 def changed_paths(root, merge_base, env):
@@ -1427,52 +1473,86 @@ def run_gate(root, argv, run, machine, cleanup):
         current = 'identity'
         identity_args = ['log', '-z', IDENTITY_FORMAT, merge_base + '..HEAD']
         identity = gate_row('identity', command_text([*GIT, *identity_args]), required=head != merge_base)
-        if head == merge_base:
-            identity['why'] = NO_COMMITS
-        elif record.get('stopped_at') is not None:
-            omit(identity)
-        elif options.plan:
-            count = int(git(root, environment, 'rev-list', '--count', merge_base + '..HEAD').stdout)
-            identity.update(result='PASS', reason=(f'the branch adds {count} commits, each to be by '
-                            'Conduit work order <work-orders@conduit.invalid>'))
-        else:
-            identity['started'] = utc_now()
-            started = time.monotonic()
-            print('running identity: ' + identity['command'], file=sys.stderr)
-            commits = git(root, environment, *identity_args)
-            # With -z and the format, NUL ends each of a commit's five fields, so no tab, line end
-            # or Unicode line separator in a name can move a field or split a commit.
-            values = commits.stdout.split(b'\0')
-            if values[-1:] == [b'']:
-                values.pop()
-            rows = [values[index:index + 5] for index in range(0, len(values), 5)]
-            identity['reason'] = (f'the branch adds {len(rows)} commits, each to be by '
-                                  'Conduit work order <work-orders@conduit.invalid>')
-            failures = []
-            invalid_hash = False
-            expected = tuple(field.encode('utf-8') for field in IDENTITY)
-            for fields in rows:
-                if len(fields) != 5 or not COMMIT_HASH.fullmatch(fields[0]):
-                    invalid_hash = True
-                    continue
-                commit = fields[0][:12].decode('ascii')
-                author = tuple(fields[1:3]) != expected
-                committer = tuple(fields[3:5]) != expected
-                if author or committer:
-                    role = 'author and committer' if author and committer else 'author' if author else 'committer'
-                    failures.append(commit + f' ({role})')
-            identity.update(result='PASS', exit=commits.returncode,
-                            seconds=round(time.monotonic() - started, 1))
-            if commits.returncode:
-                identity.update(result='FAIL', why=f'git log exited {commits.returncode}')
-            elif invalid_hash:
-                identity.update(result='FAIL', why=('git log returned a row that is not a commit hash and four '
-                                                    'identity fields; identities are not printed'))
-            elif failures:
-                identity.update(result='FAIL', why=(f'{len(failures)} of {len(rows)} commits are not by '
-                                'Conduit work order <work-orders@conduit.invalid>: ' + ', '.join(failures)
-                                + '; the identities found are not printed; squash again with that identity, '
-                                "as the method as run's squash does"))
+        list_source = 'HEAD'
+        identity_started, identity_clock = utc_now(), time.monotonic()
+        try:
+            if head == merge_base:
+                listed, head_faults = contributors(root, environment, head)
+                if head_faults:
+                    identity.update(result='FAIL', required=True,
+                                    started=identity_started,
+                                    seconds=round(time.monotonic() - identity_clock, 1),
+                                    reason=identity_reason(0, listed, head_faults),
+                                    why=('CONTRIBUTORS at HEAD: ' + ', '.join(head_faults)
+                                         + "; no line is printed; fix each as the file's header says"))
+                else:
+                    identity['why'] = NO_COMMITS
+            elif record.get('stopped_at') is not None:
+                omit(identity)
+            elif options.plan:
+                count = int(git(root, environment, 'rev-list', '--count', merge_base + '..HEAD').stdout)
+                list_source = 'merge base'
+                listed, faults = contributors(root, environment, merge_base)
+                identity.update(result='PASS', reason=identity_reason(count, listed, faults))
+            else:
+                identity['started'] = utc_now()
+                started = time.monotonic()
+                print('running identity: ' + identity['command'], file=sys.stderr)
+                list_source = 'merge base'
+                listed, faults = contributors(root, environment, merge_base)
+                list_source = 'HEAD'
+                _, head_faults = contributors(root, environment, head)
+                commits = git(root, environment, *identity_args)
+                # With -z and the format, NUL ends each of a commit's five fields, so no tab, line end
+                # or Unicode line separator in a name can move a field or split a commit.
+                values = commits.stdout.split(b'\0')
+                if values[-1:] == [b'']:
+                    values.pop()
+                rows = [values[index:index + 5] for index in range(0, len(values), 5)]
+                identity['reason'] = identity_reason(len(rows), listed, faults)
+                failures = []
+                invalid_hash = False
+                expected = tuple(field.encode('utf-8') for field in IDENTITY)
+                admitted = listed | {expected}
+                for fields in rows:
+                    if len(fields) != 5 or not COMMIT_HASH.fullmatch(fields[0]):
+                        invalid_hash = True
+                        continue
+                    commit = fields[0][:12].decode('ascii')
+                    author = tuple(fields[1:3]) not in admitted
+                    committer = tuple(fields[3:5]) not in admitted
+                    if author or committer:
+                        role = 'author and committer' if author and committer else 'author' if author else 'committer'
+                        failures.append(commit + f' ({role})')
+                identity.update(result='PASS', exit=commits.returncode,
+                                seconds=round(time.monotonic() - started, 1))
+                if commits.returncode:
+                    identity.update(result='FAIL', why=f'git log exited {commits.returncode}')
+                elif invalid_hash:
+                    identity.update(result='FAIL', why=('git log returned a row that is not a commit hash and four '
+                                                        'identity fields; identities are not printed'))
+                elif failures:
+                    identity.update(result='FAIL', why=(f'{len(failures)} of {len(rows)} commits are by neither '
+                                    'Conduit work order <work-orders@conduit.invalid> nor a contributor that '
+                                    'CONTRIBUTORS lists at the merge base '
+                                    f'({len(listed)} listed, {len(faults)} faulty): ' + ', '.join(failures)
+                                    + '; the identities found are not printed; a listed contributor commits '
+                                    'with the name and e-mail exactly as listed, one not listed at the merge '
+                                    "base has the owner's line merged or fixed and rebases onto it, and any "
+                                    'other commit is squashed again with the work-order identity, '
+                                    "as the method as run's squash does"))
+                if head_faults:
+                    why = ('CONTRIBUTORS at HEAD: ' + ', '.join(head_faults)
+                           + "; no line is printed; fix each as the file's header says")
+                    if identity['why']:
+                        why += '; ' + identity['why']
+                    identity.update(result='FAIL', why=why)
+        except ContributorsReadError:
+            identity.update(result='FAIL', required=True,
+                            started=identity_started,
+                            seconds=round(time.monotonic() - identity_clock, 1),
+                            reason='the committed CONTRIBUTORS file must be readable',
+                            why=f'git could not read CONTRIBUTORS at {list_source}; no line is printed')
         finish(identity)
 
         commands = [(name, [sys.executable, *args], ['python3', *args]) for name, args in PYTHON_GATES]

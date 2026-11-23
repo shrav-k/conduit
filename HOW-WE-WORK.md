@@ -39,6 +39,12 @@ From [DEC-030](docs/decisions/log.md#dec-030-2026-11-20-how-an-order-runs-and-me
   what settles a doubt; the gate runs everything before each merge. `by review`
 - An order that changes a modelled promise's text marks its row of 012's account "text changed,
   not rerun". `checked: tools/check_model_account.py`
+- A commit passes the gate only when its author and its committer are each `Conduit work
+  order <work-orders@conduit.invalid>` or a human contributor that [CONTRIBUTORS](CONTRIBUTORS)
+  lists at the merge base. (DEC-089) `checked: tools/gate.py`
+- Agents and the coordinator commit as the work-order identity; a listed human commits under
+  their own name and opens their branch's pull request, and its rebase and squash keep them as
+  author; only the owner approves a line of `CONTRIBUTORS`. (DEC-089) `by review`
 
 ## 4. Proof: scenarios, experiments and measurement
 

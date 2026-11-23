@@ -453,7 +453,8 @@ class GateTests(unittest.TestCase):
         self.assertEqual(self.row('identity')['result'], 'PASS')
         self.assertEqual(self.row('identity')['reason'],
                          'the branch adds 3 commits, each to be by Conduit work order '
-                         '<work-orders@conduit.invalid>')
+                         '<work-orders@conduit.invalid> or a contributor that CONTRIBUTORS lists '
+                         'at the merge base (0 listed, 0 faulty)')
         self.git('reset', '--hard', self.base)
         code, output, _ = self.invoke()
         self.assertEqual(code, 0)
@@ -517,6 +518,166 @@ class GateTests(unittest.TestCase):
         self.assertIn('1 of 1 commits', self.row('identity')['why'])
         self.assertIn(original[:12] + ' (author and committer)', self.row('identity')['why'])
         self.assert_private(output + error + self.record_path().read_text(), *planted)
+
+    def test_identity_admits_listed_contributors_by_author_and_committer(self):
+        listed = ('Listed Synthetic', 'listed@example.invalid')
+        other = ('Other Synthetic', 'other@example.invalid')
+        self.write('CONTRIBUTORS', '# Approved entries\n%s <%s>\n' % listed)
+        base = self.commit()
+        self.git('branch', '-f', 'base', base)
+        for index, (author, committer) in enumerate(((listed, listed), (listed, gate.IDENTITY),
+                                                    (gate.IDENTITY, listed))):
+            self.write('change.txt', str(index))
+            self.commit(author=author, committer=committer)
+        code, output, error = self.invoke()
+        with self.subTest(part='admitted'):
+            self.assertEqual(code, 0)
+            self.assertTrue(self.row('identity')['reason'].endswith('(1 listed, 0 faulty)'))
+        self.assert_private(output + error + self.record_path().read_text() + self.logs(),
+                            *listed, *other)
+        code, output, error = self.invoke('--plan')
+        with self.subTest(part='plan'):
+            self.assertIn('(1 listed, 0 faulty)', output)
+        bad = []
+        for index, author in enumerate(((listed[0], other[1]), (other[0], listed[1]))):
+            self.write('mixed.txt', str(index))
+            bad.append(self.commit(author=author))
+        code, output, error = self.invoke()
+        self.assertEqual(code, 1)
+        expected = ('2 of 5 commits are by neither Conduit work order <work-orders@conduit.invalid> '
+                    'nor a contributor that CONTRIBUTORS lists at the merge base (1 listed, 0 faulty): '
+                    + ', '.join(commit[:12] + ' (author)' for commit in reversed(bad))
+                    + '; the identities found are not printed; a listed contributor commits with the '
+                    'name and e-mail exactly as listed, one not listed at the merge base has the '
+                    "owner's line merged or fixed and rebases onto it, and any other commit is squashed "
+                    "again with the work-order identity, as the method as run's squash does")
+        self.assertEqual(self.row('identity')['why'], expected)
+        self.assert_private(output + error + self.record_path().read_text() + self.logs(),
+                            *listed, *other)
+
+    def test_identity_reads_the_list_at_the_merge_base(self):
+        listed = ('Listed Synthetic', 'listed@example.invalid')
+        other = ('Other Synthetic', 'other@example.invalid')
+        self.write('CONTRIBUTORS', '%s <%s>\n' % listed)
+        base = self.commit()
+        self.write('human.txt', 'listed\n')
+        human = self.commit(author=listed, committer=listed)
+        code, output, error = self.invoke()
+        self.assertEqual(code, 1)
+        self.assertIn(human[:12] + ' (author and committer)', self.row('identity')['why'])
+        with self.subTest(part='branch cannot admit itself'):
+            self.assertTrue(self.row('identity')['reason'].endswith('(0 listed, 0 faulty)'))
+        self.git('branch', '-f', 'base', base)
+        with self.subTest(part='merged entry'):
+            self.assertEqual(self.invoke()[0], 0)
+            self.assertTrue(self.row('identity')['reason'].endswith('(1 listed, 0 faulty)'))
+        original = self.git('rev-parse', base + ':CONTRIBUTORS')
+        self.write('CONTRIBUTORS', '%s <%s>\n' % other)
+        replacement = self.git('hash-object', '-w', 'CONTRIBUTORS')
+        self.git('replace', original, replacement)
+        self.write('other.txt', 'other\n')
+        bad = self.commit(author=other, committer=other)
+        # HEAD still lists the admitted identity; only the dirty tree lists the other one.
+        self.write('CONTRIBUTORS', '%s <%s>\n' % listed)
+        self.commit()
+        self.write('CONTRIBUTORS', '%s <%s>\n' % other)
+        code, output, error = self.invoke()
+        self.assertEqual(code, 1)
+        self.assertIn(bad[:12] + ' (author and committer)', self.row('identity')['why'])
+        self.assertNotIn(human[:12], self.row('identity')['why'])
+        self.assertTrue(self.row('identity')['reason'].endswith('(1 listed, 0 faulty)'))
+        self.assert_private(output + error + self.record_path().read_text() + self.logs(),
+                            *listed, *other)
+
+    def test_identity_fails_a_faulty_list_naming_its_lines(self):
+        listed = ('Listed Synthetic', 'listed@example.invalid')
+        entry = '%s <%s>' % listed
+        faulty = ('# Header\nnot-an-entry\nListed\tSynthetic <tab@example.invalid>\n'
+                  'Conduit work order <work-orders@conduit.invalid>\n' + entry + '\n' + entry + '\n')
+        cases = ((faulty.encode(), 'line 2 is not Name <e-mail>, line 3 is not Name <e-mail>, '
+                  'line 4 is the work-order identity, line 6 repeats line 5', 4),
+                 (b'\xff', 'is not UTF-8', 1),
+                 (None, 'is not a regular file', 1))
+        for data, fault, count in cases:
+            with self.subTest(fault=fault):
+                self.git('reset', '--hard', self.base)
+                self.git('branch', '-f', 'base', self.base)
+                target = self.root / 'CONTRIBUTORS'
+                if data is None:
+                    target.symlink_to(entry)
+                else:
+                    target.write_bytes(data)
+                base = self.commit()
+                code, output, error = self.invoke()
+                with self.subTest(part='HEAD'):
+                    self.assertEqual(code, 1)
+                    self.assertEqual(self.row('identity')['why'], 'CONTRIBUTORS at HEAD: ' + fault
+                                     + "; no line is printed; fix each as the file's header says")
+                self.assert_private(output + error + self.record_path().read_text() + self.logs(),
+                                    *listed, 'not-an-entry', 'tab@example.invalid')
+                self.git('branch', '-f', 'base', base)
+                with self.subTest(part='no new commits'):
+                    code, output, error = self.invoke()
+                    self.assertEqual(self.row('identity')['result'], 'FAIL')
+                    self.assertEqual(code, 1)
+                    self.assertTrue(self.row('identity')['required'])
+                    self.assertEqual(self.row('identity')['why'], 'CONTRIBUTORS at HEAD: ' + fault
+                                     + "; no line is printed; fix each as the file's header says")
+                target.unlink()
+                self.write('CONTRIBUTORS', entry + '\n')
+                self.commit()
+                with self.subTest(part='fix'):
+                    self.assertEqual(self.invoke()[0], 0)
+                    self.assertTrue(self.row('identity')['reason'].endswith(f'(0 listed, {count} faulty)'))
+                self.write('human.txt', 'listed\n')
+                bad = self.commit(author=listed, committer=listed)
+                code, output, error = self.invoke()
+                self.assertEqual(code, 1)
+                self.assertIn(bad[:12] + ' (author and committer)', self.row('identity')['why'])
+                self.assertTrue(self.row('identity')['reason'].endswith(f'(0 listed, {count} faulty)'))
+
+        # Valid or absent lists still leave a branch with no new commits nothing to check.
+        for data in (None, entry + '\n'):
+            self.git('reset', '--hard', self.base)
+            base = self.base
+            if data is not None:
+                self.write('CONTRIBUTORS', data)
+                base = self.commit()
+            self.git('branch', '-f', 'base', base)
+            self.assertEqual(self.invoke()[0], 0)
+            self.assertEqual(self.row('identity')['result'], 'NOT RUN')
+            self.assertFalse(self.row('identity')['required'])
+            self.assertEqual(self.row('identity')['why'], gate.NO_COMMITS)
+
+        # Read failures must become safe, required FAIL rows, including without new commits.
+        direct_git = gate.git
+        self.write('CONTRIBUTORS', '# Header\n' + entry + '\n')
+        head = self.commit()
+        for no_commits in (False, True):
+            self.git('branch', '-f', 'base', head if no_commits else base)
+            for ref, label in ((head if no_commits else base, 'merge base'), (head, 'HEAD')):
+                if no_commits and label == 'merge base':
+                    continue
+                blob = self.git('rev-parse', ref + ':CONTRIBUTORS')
+                for operation in ('ls-tree', 'cat-file'):
+                    def unreadable(root, env, *args):
+                        if (args[0] == operation and
+                                ((operation == 'ls-tree' and args[2] == ref) or
+                                 (operation == 'cat-file' and args[2] == blob))):
+                            return subprocess.CompletedProcess(args, 1, b'', b'planted-read-detail')
+                        return direct_git(root, env, *args)
+
+                    with self.subTest(part='read failure', source=label, operation=operation,
+                                      no_commits=no_commits), \
+                            mock.patch.object(gate, 'git', side_effect=unreadable):
+                        code, output, error = self.invoke()
+                        self.assertEqual(code, 1)
+                        self.assertEqual(self.row('identity')['result'], 'FAIL')
+                        self.assertTrue(self.row('identity')['required'])
+                        self.assertEqual(self.row('identity')['why'],
+                                         'git could not read CONTRIBUTORS at ' + label + '; no line is printed')
+                        self.assert_private(output + error + self.record_path().read_text() + self.logs(),
+                                            'planted-read-detail', *listed)
 
     def test_private_names_reach_the_private_paths_gate_alone(self):
         names = self.names_file()

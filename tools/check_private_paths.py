@@ -63,6 +63,31 @@ def reserved(domain):
     return any(domain == name or domain.endswith(b"." + name) for name in RESERVED_DOMAINS)
 
 
+def contributor_entry(line):
+    """Parse one exact Name <e-mail> line, without normalizing either identity field."""
+    if line.startswith('#') or any(ord(char) < 32 or ord(char) == 127 for char in line):
+        return None
+    match = re.fullmatch(r'([^<>]+) <([^<>\s]+)>', line)
+    if not match or match[1] != match[1].strip():
+        return None
+    return match[1], match[2]
+
+
+def contributor_email_spans(data):
+    """Byte spans exempted from the email rule alone; all other rules see the original bytes."""
+    offset = 0
+    spans = []
+    for raw_line in data.split(b'\n'):
+        try:
+            entry = contributor_entry(raw_line.decode('utf-8'))
+        except UnicodeDecodeError:
+            entry = None
+        if entry:
+            spans.append((offset + raw_line.index(b'<') + 1, offset + len(raw_line) - 1))
+        offset += len(raw_line) + 1
+    return spans
+
+
 def check(root=ROOT):
     """Return location/category errors for the tracked files under root.
 
@@ -104,8 +129,12 @@ def check(root=ROOT):
                     continue
                 line = data.count(b"\n", 0, match.start()) + 1
                 errors.append(f"{path}:{line}: {category}")
+        admitted = (contributor_email_spans(data)
+                    if path == 'CONTRIBUTORS' and not target.is_symlink() and target.is_file() else [])
         for match in EMAIL.finditer(data):
             if reserved(match.group(1)) or match.group().lower() in ALLOWED_ADDRESSES:
+                continue
+            if any(start <= match.start() and match.end() <= end for start, end in admitted):
                 continue
             line = data.count(b"\n", 0, match.start()) + 1
             errors.append(f"{path}:{line}: {EMAIL_ERROR}")

@@ -185,7 +185,8 @@ What each check needs:
   it runs itself again under `/usr/bin/python3`, as `check_model_account.py` does. It
   compares the working tree with `origin/main` as last fetched, or with `--base REF`, and
   never fetches, pushes or calls GitHub. It fails a commit since the base whose author or
-  committer is not `Conduit work order <work-orders@conduit.invalid>`.
+  committer is neither `Conduit work order <work-orders@conduit.invalid>` nor a contributor that
+  `CONTRIBUTORS` lists at the merge base.
   `--target-cache DIR` uses one target directory per Rust directory, rebuilds the tree's own
   crates, and holds `DIR/gate.lock` for the run. `--merge-queue` runs the cheap rows first,
   stops at the first required failure and runs test rows side by side; every record holds the
@@ -205,11 +206,10 @@ What each check needs:
   sources; the `CONDUIT_PRIVATE_NAMES` of its own environment it does not use.
   It runs gitleaks only when the release that `.github/workflows/checks.yml` pins is on the
   `PATH`, and otherwise says that it did not. Its last line says PASS only when every
-  required gate passed, and it
-  writes its record under `target/gate/`. `--plan` runs `rust discovery` alone and lists the
-  other gates without running them, and exits 1 when discovery does not pass; `--all` runs
-  every Rust directory and the engine. The admin merges on its PASS on the Mac, and CI runs
-  after, as a second opinion ([ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md)).
+  required gate passed, and it writes its record under `target/gate/`. `--plan` runs
+  `rust discovery` alone and lists the other gates without running them, and exits 1 when
+  discovery does not pass; `--all` runs every Rust directory and the engine. The admin merges
+  on its PASS on the Mac, and CI runs after, as a second opinion ([ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md)).
 
 The names the specification assigns (the core package's address, `apiVersion`, the prefix of
 its `_meta` keys and, since ruling 43, the names of what `identity` carries) are defined once,

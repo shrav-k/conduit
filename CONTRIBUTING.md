@@ -273,23 +273,41 @@ What the checks cover:
   by case. As of 2026-11-10 it also tests the pure core, portable vectors, durable shell,
   runner and HTTP adapter, with scripted clients by default.
   [engine/README.md](engine/README.md) gives the commands and limits.
-- `gate.py` runs on the Mac. It fails a commit since `origin/main` as last fetched that is not by
-  the work-order identity, and for what the branch changes it runs the checks of CI's `checks`
-  workflow: the `docs` job's Python checks, the vector changes, the tools' unit tests and
-  `git diff --check`; `cargo fmt --check`, clippy and `cargo test --release` in each package the
-  branch reaches, the tests alone of each such experiment, and the engine's three when it is
-  reached; and gitleaks when the release that checks.yml pins is installed.
-  With `--derive-private-names`, which each merge uses, it derives the private names from the
-  machine at each run and gives them to `check_private_paths.py` alone, printing only how many
-  it derived and from which sources.
-  It runs each check once and never fetches, pushes or calls GitHub; the nightly job and the
-  Linux leg stay CI's. Its last line says PASS only when every required gate passed, and merges wait on it
-  ([the method as run](docs/implementation/METHOD_AS_RUN.md#7-merge-and-the-record)).
+- `gate.py` runs on the Mac. It fails a commit since `origin/main` as last fetched whose author or
+  committer is neither the work-order identity nor a contributor that `CONTRIBUTORS` lists at the
+  merge base ([human contributors](#commits-by-a-human-contributor)), and for what the branch
+  changes it runs the checks of CI's `checks` workflow: the `docs` job's Python checks, the vector
+  changes, the tools' unit tests and `git diff --check`; `cargo fmt --check`, clippy and `cargo test
+  --release` in each package the branch reaches, the tests alone of each such experiment, and the
+  engine's three when it is reached; and gitleaks when the release that checks.yml pins is
+  installed. With `--derive-private-names`, which each merge uses, it derives the private names from
+  the machine at each run and gives them to `check_private_paths.py` alone, printing only how many
+  it derived and from which sources. It runs each check once and never fetches, pushes or calls
+  GitHub; the nightly job and the Linux leg stay CI's. Its last line says PASS only when every
+  required gate passed, and merges wait on it ([the method as
+  run](docs/implementation/METHOD_AS_RUN.md#7-merge-and-the-record)).
 
 The Python and whitespace checks do not establish engine behavior. As of 2026-11-10, the Rust
 tests exercise the implemented slice; real-client evidence is recorded separately in the
 [increment 3 closeout](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md).
 Passing these checks does not establish whole-language conformance.
+
+## Commits by a human contributor
+
+Agents and the coordinator use the work-order identity. A consenting human commits under their own
+name. To be listed, give the owner `user.name` and `user.email` as git records them; the coordinator
+commits the line in [CONTRIBUTORS](CONTRIBUTORS) as the work-order identity, the owner approves and
+merges it, and the contributor rebases onto it before their first branch. A human who declines is
+not listed; squash their branch as the work-order identity. While any line of CONTRIBUTORS at the
+merge base is faulty, the file admits nobody (the reason shows 0 listed, J faulty) until a fix is
+merged. `check_private_paths.py` lets only the entry's e-mail stand there. The gate admits each
+author and committer from these identities; other commits get a hash and role, never an identity.
+Rebases and [squashes](docs/implementation/METHOD_AS_RUN.md#7-merge-and-the-record) keep the human
+as author; add `--author="Name <e-mail>"` as listed, committing as the work-order identity. GitHub's
+squash takes the pull request's author, as for `0e937eee` (#9). The contributor opens their pull
+request on a branch the coordinator can push to (e.g. allow maintainer edits on a fork); the
+coordinator pushes the squash and checks main's author equals the listed line byte for byte. If it
+differs, the owner approves and merges a corrected line before further branches.
 
 ## Settings this repository relies on
 

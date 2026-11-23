@@ -1,0 +1,7 @@
+# Human contributors whose commits pass the gate's identity row (tools/gate.py), beside
+# Conduit work order <work-orders@conduit.invalid>, which Agents and the coordinator use.
+# The owner approves each line: one per person, the name and e-mail exactly as git records
+# them, as git log --format='%an <%ae>' prints them:
+#   Name <e-mail>
+# The gate reads this file as the branch's merge base holds it, so a line admits commits
+# only once it is merged. CONTRIBUTING.md says how a contributor's commits pass.

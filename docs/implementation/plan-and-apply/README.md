@@ -17,12 +17,13 @@ The three columns follow the shell's [help table](../../../engine/crates/shell/s
 Approval flags in this table are repeatable, each with one generated object name as operand.
 A missing operand is a usage error before any engine read. List and inspect establish whether
 an operand is unused or ambiguous. Either stops the plan before apply sends any planned step.
-`--store DIR` overrides the current engine context. There are no additional options.
+`--store DIR` overrides the current engine context. The one other option is apply's
+`--expect sha256:HEX`.
 
 | Usage | Example | Description |
 | --- | --- | --- |
 | `conduit plan [PROJECT_DIR] [--store DIR] [--reopen OBJECT] [--recreate OBJECT] [--prune OBJECT] [--replace OBJECT] [--adopt OBJECT] [--with-resources OBJECT] [--with-agents OBJECT]` | `conduit plan --replace shared` | Read the project and engine as root, and print the requests apply would send. |
-| `conduit apply [PROJECT_DIR] [--store DIR] [--reopen OBJECT] [--recreate OBJECT] [--prune OBJECT] [--replace OBJECT] [--adopt OBJECT] [--with-resources OBJECT] [--with-agents OBJECT]` | `conduit apply --replace shared` | Compute, print and record the plan, then send its requests as root without a prompt. |
+| `conduit apply [PROJECT_DIR] [--store DIR] [--reopen OBJECT] [--recreate OBJECT] [--prune OBJECT] [--replace OBJECT] [--adopt OBJECT] [--with-resources OBJECT] [--with-agents OBJECT] [--expect sha256:HEX]` | `conduit apply --replace shared` | Compute, print and record the plan, then send its requests as root without a prompt. |
 
 PROJECT_DIR defaults to the current directory. A bare `conduit apply` carries no author-chosen
 value ([ruling 63, point 1](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-63/README.md)). `conduit serve` records the
@@ -33,6 +34,9 @@ If no context or override is available, stop with status 2; context persistence 
 follow O8 below.
 `conduit plan` is available and never required: apply computes its own plan, with no prior plan
 invocation or saved-plan prerequisite ([ruling 76, point 5](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-76/README.md)).
+`conduit apply --expect sha256:HEX` sends nothing unless the plan it computes has that digest,
+which `conduit plan` prints on stderr ([DEC-065](../../decisions/log.md#dec-065-2026-11-22-apply-checks-the-approved-plans-digest);
+[the CLI reference](../../../engine/CLI.md#apply-the-plan-you-reviewed)).
 `--withhold` belongs to batch 2 ([ruling 61, B11](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-61/README.md)).
 This reference does not define install, render, init, sign-in, answer, pending, list or fleet
 commands, apart from the copy `conduit install` keeps in the package cache (O7). Installation
@@ -598,7 +602,7 @@ a no-op leaves kept state unchanged.
 | --- | --- |
 | 0 | Valid plan (even with proposed steps), successful apply, or no changes. Pending sign-in alone is 0 under ruling 76 point 4. |
 | 1 | A sent request did not succeed, verification failed, or transport failed, including unknown delivery; remaining steps not sent. |
-| 2 | Usage, local input/state/persistence error, missing permission, foreign object, drift conflict, blocked tombstone, unresolved unknown or unsupported input; no mutations if detected before sending. |
+| 2 | Usage, local input/state/persistence error, missing permission, foreign object, drift conflict, blocked tombstone, unresolved unknown, unsupported input or a digest other than `--expect`'s; no mutations if detected before sending. |
 
 An I/O failure after partial sending exits 2 and retains the completed journal; it never implies
 rollback. These statuses are CLI choices, not additional core outcomes.

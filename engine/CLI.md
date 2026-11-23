@@ -3,8 +3,8 @@
 Start with the author’s reading path in `spec/README.md` and the short form in
 `spec/promises/sections.yaml`. The specification defines the document format and binds.
 This guide describes the CLI. Use `conduit COMMAND --help` for a command’s own usage.
-`conduit apply` and the approval flags `--reopen`, `--recreate`, `--prune`, `--replace`,
-`--adopt`, `--with-resources` and `--with-agents` are not yet built.
+The approval flags `--prune`, `--adopt`, `--with-resources` and `--with-agents` are not yet
+built.
 
 ## From an empty directory to a plan
 
@@ -18,8 +18,8 @@ This guide describes the CLI. Use `conduit COMMAND --help` for a command’s own
    in the project manifest.
 6. Run `conduit plan` in that directory to print the proposed steps.
 
-Once `conduit apply` ships, it will compute, print and keep its own plan and then send the
-approved steps. Running `conduit plan` first will remain optional.
+`conduit apply` computes, prints and keeps its own ready plan and sends the approved steps.
+Running `conduit plan` first is optional.
 
 ## Engine context
 
@@ -128,8 +128,8 @@ ends with the `dry-run` line shown above.
 ## Plan and apply
 
 ```text
-conduit plan [--store DIR] [PROJECT_DIR]
-conduit apply [PROJECT_DIR] [--store DIR] [--reopen OBJECT] [--recreate OBJECT] [--prune OBJECT] [--replace OBJECT] [--adopt OBJECT] [--with-resources OBJECT] [--with-agents OBJECT]
+conduit plan [PROJECT_DIR] [--store DIR] [--reopen OBJECT] [--recreate OBJECT] [--prune OBJECT] [--replace OBJECT] [--adopt OBJECT] [--with-resources OBJECT] [--with-agents OBJECT]
+conduit apply [PROJECT_DIR] [--store DIR] [--reopen OBJECT] [--recreate OBJECT] [--prune OBJECT] [--replace OBJECT] [--adopt OBJECT] [--with-resources OBJECT] [--with-agents OBJECT] [--expect sha256:HEX]
 ```
 
 `PROJECT_DIR` defaults to the current directory. Planning resolves the project with the pinned
@@ -143,16 +143,103 @@ A version mismatch stops with status 2 before any `list.v1`, `inspect.v1` or pla
 With the context, the shipped planner compares the recorded crate version and build commit
 with its own. With `--store`, it compares the crate version reported by the engine.
 
-The planned apply command will compute, print and keep the same plan, then send its steps
-one by one and wait for each result. The command is the approval. It will prompt for nothing,
-and a previous plan command or saved plan is never required. A stopped plan sends none of
-its numbered steps, including narrowings. A no-op sends no steps and writes no state.
+Apply computes and prints the same plan. When it sends steps, it keeps the plan, sends the
+steps one by one and waits for each result. The command is the approval. It runs without a
+prompt or a prior plan command. A stopped plan sends none of its numbered steps, including
+narrowings. A no-op sends no steps and writes no state.
+
+### Apply the plan you reviewed
+
+`conduit plan` and `conduit apply` compute the same plan given the same project, store and
+approval flags. The digest is `sha256:HEX`, where HEX is the lowercase SHA-256 of the UTF-8
+plan text with LF line ends and one final newline. It starts with `plan` and ends with
+`ready`, `no changes` or `stopped`. These are the exact bytes of plan's stdout and of the
+file apply keeps at `.conduit/plans/HEX.txt` when it sends steps. Results, `verify`, `not sent`
+and panel lines, and stderr are outside the digest. When a plan reaches approval evaluation,
+a used flag appears on its step and the `flags` line. An unused or ambiguous flag produces a
+stop line. Preflight stops such as SEC-001 or a missing package archive occur before approval
+evaluation and print `flags []`. These early stops can have the same digest with or without
+an approval flag. `--expect` and the command spelling are outside the plan text.
+
+```sh
+conduit plan > plan.txt; shasum -a 256 plan.txt
+```
+
+After printing a plan, `conduit plan` flushes stdout and writes this one line to stderr,
+including for stopped plans and plans with no changes. It keeps the plan's exit status.
+
+```text
+conduit plan: digest sha256:HEX; conduit apply --expect sha256:HEX, given the same project, store and approval flags, sends nothing unless the plan it computes has this digest
+```
+
+When plan prints no plan text, it prints no digest. Apply prints no digest announcement.
+
+`conduit apply --expect sha256:HEX` accepts one digest operand among its arguments. The
+following usage errors exit 2 before reading the project or engine, with empty stdout and
+one stderr line. `{VALUE:?}` is the operand as Rust's debug format writes it, quotes included.
+
+Missing operand or operand starting with `-`
+
+```text
+conduit apply: --expect needs sha256:HEX, the digest conduit plan prints; nothing was read or sent
+```
+
+Malformed operand
+
+```text
+conduit apply: --expect {VALUE:?} is not sha256: and 64 lowercase hex digits; nothing was read or sent
+```
+
+`--expect` given twice
+
+```text
+conduit apply: --expect is given twice; give one digest; nothing was read or sent
+```
+
+`--expect` given to plan
+
+```text
+conduit plan: --expect is apply's; conduit plan prints the digest to give it; nothing was read
+```
+
+`conduit apply --expect --help` shows help with status 0.
+
+Apply prints its plan from live state and compares the digest before writing any state or
+sending any step. A match continues with the plan as usual, including a stop if one was
+printed. A mismatch exits 2, writes nothing under `.conduit/` and sends no request after
+the initial reads. Stdout also gets `not sent 1..N` if the plan has N steps. A SEC-001 stop
+has no numbered steps, so stdout contains only its plan text regardless of `--expect`.
+
+The caller supplies only the digest for approval and needs no prior plan invocation or
+plan file. Apply can still read its own kept plan and journal to recover an interrupted
+replacement.
+
+On a mismatch, apply writes one of these lines to stderr, depending on the computed plan.
+
+Ready plan
+
+```text
+conduit apply: the plan computed now has digest sha256:NEW, not sha256:OLD as --expect gives; nothing was sent or kept; stdout holds that plan; the digest covers what it is computed from: the engine, the project files, .conduit/ and the approval flags given; no earlier plan is kept, so the lines that changed are not named; review it, then rerun this command with --expect sha256:NEW to send it
+```
+
+Stopped plan
+
+```text
+conduit apply: the plan computed now has digest sha256:NEW, not sha256:OLD as --expect gives; nothing was sent or kept; stdout holds that plan; the digest covers what it is computed from: the engine, the project files, .conduit/ and the approval flags given; no earlier plan is kept, so the lines that changed are not named; it is stopped, so --expect sha256:NEW sends nothing either: resolve each stop line, run conduit plan with the approval flags apply will be given, and give apply the digest it prints
+```
+
+No changes
+
+```text
+conduit apply: the plan computed now has digest sha256:NEW, not sha256:OLD as --expect gives; nothing was sent or kept; stdout holds that plan; the digest covers what it is computed from: the engine, the project files, .conduit/ and the approval flags given; no earlier plan is kept, so the lines that changed are not named; it has no changes, so there is nothing to send
+```
 
 ### Approval flags
 
-In the planned flag handling, each flag is repeatable and takes one generated object name.
-An unused, ambiguous or contradictory operand stops the plan. The inline template of a
-definition `N` is `N--t`, with instance `N` (SCT-006). A `consumes` item `L` on `N` makes
+Each approval flag is repeatable and takes one generated object name. When the planner
+evaluates approvals, an unused, ambiguous or contradictory operand stops the plan. The
+inline template of a definition `N` is `N--t`, with instance `N` (SCT-006). A `consumes`
+item `L` on `N` makes
 Conduit `N--L` and, for an inline item, template `N--L--t` (SCT-007). An `operator` makes
 `N--operator` and, if
 inline, `N--operator--t` (SCT-009). Authored short-form names contain no `--`, and generated
@@ -179,7 +266,8 @@ names are at most 63 characters (SCT-013).
 
 When a change needs replacement permission, the shipped planner prints a `stop` with
 `requires=--replace NAME`. The stop names the changed place, setting, pin or selected item.
-Passing an approval flag to the shipped planner exits 2 and tells you to plan without it.
+Passing an unbuilt approval flag (`--prune`, `--adopt`, `--with-resources` or `--with-agents`)
+to the planner exits 2 and tells you to plan without it.
 The planner can also show proposed close steps for flag-free narrowing. Previews of
 bounds that would lose coverage and sign-ins that would be lost are planned with the
 replacement flags.
@@ -293,7 +381,7 @@ no changes
 
 ### Apply results and exit statuses
 
-The planned apply command prints `result N OUTCOME JSON` after each step. OUTCOME is
+Apply prints `result N OUTCOME JSON` after each step. OUTCOME is
 `succeeded`, `failed` or `unknown`, or a reason such as `refused`, `invalid`, `conflict` or
 `unavailable`. The JSON is a safe projection in compact, sorted-key form. If a stopped
 plan has steps, `not sent 1..N` lists
@@ -308,12 +396,12 @@ A failed setup still stops apply, and any action it raised is printed (IFC-025, 
 | --- | --- | --- |
 | 0 | Valid plan, successful apply or no changes. Pending sign-in alone is success. | Successful install, restore or dry run. |
 | 1 | Engine read or transport failed, a step did not succeed, or verification failed. | Shared argument-parser error, such as an unknown option or `--store` with no following argument, or an engine request or connection failure. |
-| 2 | Usage, local input or state error, persistence failure, version mismatch or stopped plan. | Missing `--mirror` operand, missing, invalid or stale context, installer input or preflight stop, or a pin left unwritten after successful installs. |
+| 2 | Usage, local input or state error, persistence failure, version mismatch, stopped plan or a digest other than `--expect`'s. | Missing `--mirror` operand, missing, invalid or stale context, installer input or preflight stop, or a pin left unwritten after successful installs. |
 
 ### Stops, repeats and kept state
 
-The planned apply command stops on an unsuccessful step and keeps completed effects. It
-sends no automatic retry and performs no rollback. An explicit new apply reads the engine
+Apply stops on an unsuccessful step and keeps completed effects. It sends no automatic
+retry and performs no rollback. An explicit new apply reads the engine
 and the journal, then resumes verified work still pending. It does not claim a registration with unknown
 delivery from the object’s name alone. Reconcile an invocation reported unknown before
 sending work that reaches its affected objects (OPS-012 to OPS-014).

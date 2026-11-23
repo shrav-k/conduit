@@ -1142,7 +1142,7 @@ async fn review_249_bare_apply_does_not_open_an_adopted_conduit() {
         &BTreeSet::from([Approval::new("--adopt", "grant")]),
     );
     assert_eq!(
-        apply::execute(directory.path(), &plan, f.kept, async |tool, _, _| {
+        apply::execute(directory.path(), &plan, f.kept, None, async |tool, _, _| {
             assert_eq!(tool, "management.inspect.v1");
             Ok(
                 json!({"_meta":{"io.github.shrav-k.conduit/outcome":"succeeded"},
@@ -1163,7 +1163,7 @@ async fn review_249_bare_apply_does_not_open_an_adopted_conduit() {
         "bare apply must not open a foreign grant taken into the ledger by adoption"
     );
     assert_eq!(
-        apply::execute(directory.path(), &plan, kept, async |_, _, _| {
+        apply::execute(directory.path(), &plan, kept, None, async |_, _, _| {
             panic!("bare apply must send nothing for the adopted registered grant")
         })
         .await,

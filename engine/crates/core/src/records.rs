@@ -464,6 +464,7 @@ pub(crate) fn execute(
             "retirement",
             "retirement_tombstone",
             "_value_sources",
+            "_value_origins",
         ] {
             declared.as_object_mut().unwrap().remove(field);
         }

@@ -603,6 +603,28 @@
       ]
     },
     {
+      "id": "registration-replacement-checks",
+      "case": "language/registration/replacement-checks/case.yaml",
+      "promises": [
+        "LIF-009",
+        "INS-013",
+        "OBJ-009",
+        "INS-003",
+        "INS-005",
+        "OBJ-023"
+      ]
+    },
+    {
+      "id": "registration-replacement-sources",
+      "case": "language/registration/replacement-sources/case.yaml",
+      "promises": [
+        "LIF-009",
+        "INS-013",
+        "INS-017",
+        "OBJ-010"
+      ]
+    },
+    {
       "id": "registration-requirement-authored-id",
       "case": "language/registration/requirement-authored-id/case.yaml",
       "promises": [

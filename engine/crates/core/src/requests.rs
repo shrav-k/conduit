@@ -2149,14 +2149,20 @@ pub(crate) fn complete(
         return Ok(());
     }
     let first_record = t.records.len();
-    let usage = if v["discovery"] == "pending" {
-        None
+    let (usage, limits) = if v["discovery"] == "pending" {
+        (None, None)
     } else {
-        crate::usage::take(&mut completion, c)
+        (
+            crate::usage::take(&mut completion, c),
+            crate::limits::Report::take(&mut completion, &v["held_target"], c),
+        )
     };
     complete_call(t, evidence, c, i, v, completion)?;
     if let Some(usage) = usage {
         crate::usage::record_end(t, c, first_record, id, usage);
+    }
+    if let Some(limits) = limits {
+        limits.record_end(t, c, first_record, id);
     }
     Ok(())
 }

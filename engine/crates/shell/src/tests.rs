@@ -1,5 +1,7 @@
 #[path = "fixtures.rs"]
 mod fixtures;
+#[path = "limits_tests.rs"]
+mod limits_tests;
 #[path = "usage_tests.rs"]
 mod usage_tests;
 use super::*;

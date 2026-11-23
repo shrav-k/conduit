@@ -3,13 +3,32 @@ use crate::{Context, Transition, requests::Completion, schemas};
 use serde_json::{Value, json};
 
 pub(crate) fn take(completion: &mut Completion, c: &Context) -> Option<Value> {
+    take_member(completion, c, "usage")
+}
+
+pub(crate) fn take_member(completion: &mut Completion, c: &Context, member: &str) -> Option<Value> {
     let Completion::Result { result } = completion else {
         return None;
     };
     result
         .get_mut("_meta")?
         .as_object_mut()?
-        .remove(&format!("{}usage", c.meta_prefix))
+        .remove(&format!("{}{member}", c.meta_prefix))
+}
+
+pub(crate) fn end_records<'a>(
+    new: &'a mut [Value],
+    stored: &'a mut [Value],
+    invocation: &str,
+) -> Option<(&'a mut Value, &'a mut Value)> {
+    let ended = new.iter_mut().find(|record| {
+        record["type"] == "invocation-ended" && record["data"]["invocation"] == invocation
+    })?;
+    let saved = stored
+        .iter_mut()
+        .rev()
+        .find(|record| record["id"] == ended["id"])?;
+    Some((ended, saved))
 }
 
 pub(crate) fn record_end(
@@ -19,18 +38,11 @@ pub(crate) fn record_end(
     invocation: &str,
     usage: Value,
 ) {
-    let Some(ended) = t.records[first_record..].iter_mut().find(|record| {
-        record["type"] == "invocation-ended" && record["data"]["invocation"] == invocation
-    }) else {
-        return;
-    };
-    let Some(stored) = t
-        .state
-        .records
-        .iter_mut()
-        .rev()
-        .find(|record| record["id"] == ended["id"])
-    else {
+    let Some((ended, stored)) = end_records(
+        &mut t.records[first_record..],
+        &mut t.state.records,
+        invocation,
+    ) else {
         return;
     };
 

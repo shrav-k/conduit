@@ -18,6 +18,8 @@
 #   record.v1      REC-002, LIF-013, SEC-015, SEC-018, PRV-024 (no record holds what the
 #                  `secrets` or the `identity` of `run.v1` hold)
 #   usage.v1       IFC-051 (what one call's model work used, by client and model)
+#   limit-report.v1 IFC-052 (the usage limits one call's client reported)
+#   limit-status.v1 IFC-053 (the newest usage limits an instance shows)
 # Standing: draft specification; see spec/README.md for status and coverage.
 #
 # This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
@@ -158,6 +160,8 @@ metadata:
     recorded action and its full evidence (PND-012). Wire reads withhold code and fingerprint
     values even from answer records (PND-004). An invocation's end record holds in usage its
     result's member, and in usageDropped the warning that dropped one (IFC-051).
+    It also holds its result's limits member in `limits`, or the warning that dropped it
+    in `limitsDropped` (IFC-052).
 spec:
   type: object
   properties:
@@ -192,6 +196,8 @@ spec:
         outputs: {type: object}
         usage: {$ref: github.com/shrav-k/conduit/core#usage.v1}
         usageDropped: {$ref: github.com/shrav-k/conduit/core#diagnostic.v1}
+        limits: {$ref: github.com/shrav-k/conduit/core#limit-report.v1}
+        limitsDropped: {$ref: github.com/shrav-k/conduit/core#diagnostic.v1}
   required: [specversion, id, source, type, time, data]
 ---
 apiVersion: github.com/shrav-k/conduit/v0
@@ -233,6 +239,127 @@ spec:
         additionalProperties: false
   required: [client, models]
   additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: limit-report.v1
+  description: >-
+    The usage limits one call's client reported, as a result carries them under
+    `io.github.shrav-k.conduit/limits` and the record of its end keeps them (IFC-052).
+    `client` gives the client and its version, `method` gives the client's call or event,
+    and `observedAt` gives the time of the report. `usageAllowed` says whether the vendor
+    allows included usage, or is null where the report says neither. Each window gives
+    its package's fixed ID, its length in minutes or null, its used percentage, its reset
+    time or null, its state and the model it limits or null. A report with no windows
+    gives the reason in `noWindows`.
+spec:
+  type: object
+  properties:
+    client:
+      type: object
+      properties:
+        name: {type: string, minLength: 1, maxLength: 256}
+        version: {type: string, minLength: 1, maxLength: 256}
+      required: [name, version]
+      additionalProperties: false
+    method: {type: string, minLength: 1, maxLength: 128}
+    observedAt: {type: string, format: date-time}
+    usageAllowed: {type: [boolean, 'null']}
+    noWindows: {enum: [no-event, read-failed, read-timed-out]}
+    windows:
+      type: array
+      maxItems: 16
+      items:
+        type: object
+        properties:
+          id: {type: string, pattern: '^[a-z]{1,64}/[a-z]{1,64}(/[a-z]{1,64})?$'}
+          windowMinutes: {type: [number, 'null'], minimum: 1}
+          usedPercent: {type: number, minimum: 0}
+          resetsAt: {type: [string, 'null'], format: date-time}
+          state: {enum: [allowed, warning, reached]}
+          scope: {type: [string, 'null'], minLength: 1}
+        required: [id, windowMinutes, usedPercent, resetsAt, state, scope]
+        additionalProperties: false
+  required: [client, method, observedAt, usageAllowed, windows]
+  additionalProperties: false
+  oneOf:
+  - properties:
+      windows: {maxItems: 0}
+    required: [noWindows]
+  - properties:
+      windows: {minItems: 1}
+    not: {required: [noWindows]}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: limit-status.v1
+  description: >-
+    The limits in an Agent's or a login Resource's status (IFC-053). An observed status
+    gives the newest report in `newest`, with its time, record source, instance, invocation,
+    whether the vendor allows included usage and any reason it named no windows. Each
+    window gives its newest reported values, time, record source, instance and invocation.
+    The windows are listed by `id`, in ascending order of Unicode code points.
+    A window's state reads `unknown` at or after its reset time. A status with no report is
+    `unknown`, with no windows and no `newest`.
+spec:
+  $defs:
+    instance:
+      $ref: github.com/shrav-k/conduit/core#object.v1
+      properties:
+        kind: true
+        name: true
+        id: true
+        nested:
+          properties:
+            instance: true
+            name: true
+          additionalProperties: false
+      additionalProperties: false
+  type: object
+  properties:
+    state: {enum: [observed, unknown]}
+    newest:
+      type: object
+      properties:
+        observedAt: {type: string, format: date-time}
+        source: {type: string, format: uri-reference, minLength: 1}
+        instance: {$ref: '#/$defs/instance'}
+        invocation: {$ref: github.com/shrav-k/conduit/core#id.v1}
+        usageAllowed: {type: [boolean, 'null']}
+        noWindows: {enum: [no-event, read-failed, read-timed-out]}
+      required: [observedAt, source, instance, invocation, usageAllowed]
+      additionalProperties: false
+    windows:
+      type: array
+      items:
+        type: object
+        properties:
+          id: {type: string, pattern: '^[a-z]{1,64}/[a-z]{1,64}(/[a-z]{1,64})?$'}
+          windowMinutes: {type: [number, 'null'], minimum: 1}
+          usedPercent: {type: number, minimum: 0}
+          resetsAt: {type: [string, 'null'], format: date-time}
+          state: {enum: [allowed, warning, reached, unknown]}
+          scope: {type: [string, 'null'], minLength: 1}
+          observedAt: {type: string, format: date-time}
+          source: {type: string, format: uri-reference, minLength: 1}
+          instance: {$ref: '#/$defs/instance'}
+          invocation: {$ref: github.com/shrav-k/conduit/core#id.v1}
+        required: [id, windowMinutes, usedPercent, resetsAt, state, scope, observedAt, source,
+                   instance, invocation]
+        additionalProperties: false
+  required: [state, windows]
+  additionalProperties: false
+  if:
+    properties:
+      state: {const: observed}
+  then:
+    required: [newest]
+  else:
+    properties:
+      windows: {maxItems: 0}
+    not: {required: [newest]}
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

@@ -54,3 +54,9 @@ then they are under `docs/proposals/`.
 - Changed: OBJ-013, OBJ-014, INS-003, INS-004 and INS-005, an instance document or a nested instantiation may give an input under `values` as `{kind: Resource, name}`, never under `arguments` too, and it is then supplied as an argument is (DEC-076).
 - Changed: OBJ-009, a `values` entry resolves to a value Resource not retired, tied to no node or the instance's, at no reference place and passing the input's schema, or the document is rejected, with no fallback to a default and no value in the diagnostic (DEC-076).
 - Changed: INS-013 and `inspect.v1`, the instance keeps a source map from each place a value filled to its value Resource, shown under `values` (DEC-076).
+- Added: IFC-052, a result may carry the usage limits its client saw in `_meta`, kept in the end record or dropped with a warning; the consumer's result does not carry it (DEC-077).
+- Added: IFC-053, the status of an Agent or a login Resource shows the newest of each window that its calls, or its Agents', reported, `unknown` after the reset; the engine sums and acts on none (DEC-077).
+- Added: `limit-report.v1` and `limit-status.v1`, the forms of IFC-052 and IFC-053, `record.v1`'s `limits` and `limitsDropped`, and the status's `limits` (DEC-077).
+- Changed: IFC-051, a usage-limit ending's limits are IFC-052's member, no part of usage (DEC-077).
+- Changed: REC-002, the end record also holds the limits member or its warning, whatever `records` states (DEC-077).
+- Changed: OBS-002, IFC-053's `limits` is the one observation not reported as a condition (DEC-077).

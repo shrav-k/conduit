@@ -805,8 +805,66 @@
     ignores the usage member of any read of a secret without checking, keeping or relaying
     it, and writes no warning for it. The record names the target whose call it was (REC-002).
     A call that ends on its client's usage limit is recorded as any other ending: the limit's
-    class, window and time of reset are the implementation's own report in its result,
-    and are no part of this value.
+    class, window and time of reset are the implementation's own report in its result, and the
+    limits its client saw are the member of IFC-052; neither is part of this value.
+
+- id: IFC-052
+  layer: interface
+  level: must
+  when: >-
+    An implementation, whether or not it is marked `plain`, ends a call for a request or a
+    hook, other than a read of a secret under SEC-010, SEC-013 or SEC-023, with a result
+    from which its outcome is read, under IFC-009 or IFC-010, and the result's `_meta` holds
+    `io.github.shrav-k.conduit/limits`.
+  then: >-
+    Where its value conforms to the core schema `limit-report.v1` and names no window `id`
+    twice, the record of the invocation's end holds that value, unchanged, in `limits`.
+    Where it does not, that record holds no part of it, and holds in `limitsDropped` one
+    diagnostic whose `level` is `warning` and whose `ruleId` is the ID of this promise.
+    Nothing else about the call changes.
+  observable: >-
+    The value gives the limits the call's client reported and when, and says why where it has
+    no window. An implementation may carry it on any such result, one that states failed or
+    unknown among them, and answers for it and invents nothing. An `id` is its package's
+    fixed word, never text from the client. The implementation puts no account, plan, credits
+    or billing value in any string. The engine checks only the shape against `limit-report.v1`
+    and that no `id` repeats, and keeps it as received. The warning follows IFC-051's and quotes
+    no value. For a repeated `id`, its location stops at `windows` and it has no `properties`.
+    Where a value also fails the schema, the warning reports only the schema failure.
+    The call's outcome, its result, its other records and every decision are as without the
+    key. The result that the engine gives the consumer does not carry it, so no caller is
+    relayed it. Inspection shows it under IFC-053. The record holds it whatever the type's
+    `records` states (CTR-004). Under SEC-015, the engine ignores the limits member of any
+    read of a secret without checking, keeping or relaying it, and writes no warning for it.
+
+- id: IFC-053
+  layer: interface
+  level: must
+  when: >-
+    An Agent, or a Resource whose Type states `signIn` (CTR-013), is inspected.
+  then: >-
+    Its status holds `limits`, in the form of the core schema `limit-status.v1`. For each
+    window `id` that the limits members of its own calls' end records have named (IFC-052),
+    and, for a login Resource, also those of every Agent whose login place referred to it
+    when the call was made (CTR-013), it gives the newest observation by the member's
+    `observedAt`: the window's values as reported, its `state`, the member's `observedAt`,
+    and as its source the record's `source`, the instance whose call it was and the
+    invocation. The windows are listed by `id`, in ascending order of Unicode code points.
+    Where no such member exists, `state` is `unknown`, with no window and no time.
+  observable: >-
+    `newest` is the newest member, with its `usageAllowed` and any `noWindows`. For `newest`
+    and for each window, where the newest candidates have the same `observedAt`, a member
+    stands only if the engine knows of none whose end record it kept later, whatever their
+    sources. If several remain, the member with the greatest record `source`, then the
+    greatest record `id`, in Unicode code point order, stands. REC-005 governs record reads.
+    An Agent's reports remain eligible for its login Resource's status after the Agent retires
+    or is removed.
+    A window whose `resetsAt` gives a time no later than the inspection's time reads
+    `unknown`, keeping its last values and time, in place of OBS-003's condition (OBS-002),
+    until a newer member names that window. No purge shortens it, as the engine's own state.
+    An inspection of any other object shows no `limits`. The engine sums nothing and
+    compares no allowance, percentage or duration. No outcome, access, dispatch, hold or
+    lifecycle state depends on it, and an inspection starts no call to fill it (OBS-006).
 
 - id: IFC-028
   layer: interface

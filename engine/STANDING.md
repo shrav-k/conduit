@@ -42,10 +42,10 @@ Each number counts promises. The last row counts those whose Engine source is no
 | Promises | language | convention | interface | all |
 | --- | ---: | ---: | ---: | ---: |
 | case passes | 149 | 164 | 28 | 341 |
-| expected failure | 0 | 0 | 0 | 0 |
+| expected failure | 0 | 0 | 2 | 2 |
 | reason, no case | 54 | 17 | 1 | 72 |
 | no case, no reason | 22 | 64 | 19 | 105 |
-| all | 225 | 245 | 48 | 518 |
+| all | 225 | 245 | 50 | 520 |
 | named in engine source | 159 | 175 | 31 | 365 |
 
 ## The promises
@@ -191,6 +191,8 @@ Each number counts promises. The last row counts those whose Engine source is no
 | IFC-049 | interface | must | 7 | 0 | outside | core, shell | case passes |
 | IFC-050 | interface | must | 4 | 0 | outside | core | case passes |
 | IFC-051 | interface | must | 1 | 0 | outside | core, shell | case passes |
+| IFC-052 | interface | must | 1 | 1 | outside | none | expected failure |
+| IFC-053 | interface | must | 1 | 1 | outside | none | expected failure |
 | IMP-001 | convention | must | 0 | 0 | reason | none | reason, no case |
 | IMP-002 | convention | must not | 5 | 0 | cases | core | case passes |
 | IMP-003 | language | must | 0 | 0 | reason | none | reason, no case |
@@ -327,7 +329,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | OBJ-024 | language | must | 0 | 0 | reason | loader | reason, no case |
 | OBJ-025 | convention | must | 3 | 0 | cases | core | case passes |
 | OBS-001 | convention | must not | 0 | 0 | reason | none | reason, no case |
-| OBS-002 | convention | must | 2 | 0 | cases | core | case passes |
+| OBS-002 | convention | must | 3 | 1 | cases | core | case passes |
 | OBS-003 | convention | must | 2 | 0 | outside | core | case passes |
 | OBS-004 | convention | must not | 1 | 0 | outside | core | case passes |
 | OBS-006 | convention | must not | 0 | 0 | reason | none | reason, no case |
@@ -467,7 +469,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | PRV-029 | convention | must | 0 | 0 | outside | core, shell | no case, no reason |
 | PRV-030 | convention | must not | 0 | 0 | outside | none | no case, no reason |
 | REC-001 | convention | must | 14 | 0 | cases | core | case passes |
-| REC-002 | convention | must | 25 | 0 | cases | core | case passes |
+| REC-002 | convention | must | 26 | 1 | cases | core | case passes |
 | REC-003 | convention | must not | 8 | 0 | cases | core, shell | case passes |
 | REC-004 | convention | must | 5 | 0 | cases | core | case passes |
 | REC-005 | convention | must | 2 | 0 | cases | core | case passes |

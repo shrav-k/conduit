@@ -235,6 +235,22 @@
       "safety_rows": []
     },
     {
+      "id": "requests-limits-kept",
+      "case": "conventions/requests/limits-kept/case.yaml",
+      "promises": [
+        "IFC-052",
+        "REC-002"
+      ]
+    },
+    {
+      "id": "requests-limits-latest",
+      "case": "conventions/requests/limits-latest/case.yaml",
+      "promises": [
+        "IFC-053",
+        "OBS-002"
+      ]
+    },
+    {
       "id": "requests-login-resource-lapse",
       "case": "conventions/requests/login-resource-lapse/case.yaml",
       "promises": [

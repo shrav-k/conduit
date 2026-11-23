@@ -51,8 +51,8 @@
     operation need not be; what content is kept is stated by each type's contract, under
     `records` as CTR-004 gives it: the inputs where `inputs` is true, and the outputs where
     `outputs` is true. Except for a read of a secret, the record of an invocation's end also
-    holds the usage member that its result carried, or the warning that dropped one, under
-    IFC-051, whatever `records` states.
+    holds the usage member and the limits member that its result carried, or the warning
+    that dropped each, under IFC-051 and IFC-052, whatever `records` states.
     A record has the form of the core schema `record.v1`: a CloudEvent whose
     `data` holds these fields, the consumer of the Conduit used in `consumer` and the invocation
     served in `serving`. `inspect.v1` returns records in that form, under LIF-013, and an engine

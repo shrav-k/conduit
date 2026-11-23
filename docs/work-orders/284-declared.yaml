@@ -1,0 +1,7 @@
+# Added cases for work order 284.
+- name: requests-limits-kept
+  kind: added
+  cases: [requests-limits-kept]
+- name: requests-limits-latest
+  kind: added
+  cases: [requests-limits-latest]

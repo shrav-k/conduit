@@ -310,11 +310,12 @@ metadata:
     Resource's `declared` shows its `value` and its `node` when given (INS-013). Inspecting an open
     Conduit shows, under each requirement it applies, the implementation that applies it, named by
     its qualified reference.
-    The status holds the lifecycle state, the shutdown of a retired instance and, in `conditions`,
-    the further conditions of the instance and what was observed of it, the state of its run among
-    them, and, in `unreconciled`, the engine's ID for each invocation whose outcome is unknown and
-    that was dispatched to the instance or names it in an input or as its target, which no purge shortens;
-    the status of a node holds fixed labels and, after admission, its machine binding and
+    The status holds the lifecycle state and the shutdown of a retired instance. In `conditions`
+    it holds the further conditions of the instance and what was observed of it, except for
+    `limits` (OBS-002). The state of its run is among its conditions. In `unreconciled` it holds
+    the engine's ID for each invocation whose outcome is unknown and that was dispatched to the
+    instance or names it in an input or as its target. No purge shortens that list.
+    The status of a node holds fixed labels and, after admission, its machine binding and
     enrollment (PLC-008, PLC-026, ENR-010). The status of an instance holds, in `settings`, each
     setting that a control whose outcome is unknown addressed (REV-009), under its JSON Pointer:
     `state` `unknown`, the control's qualified reference as `control` and the engine's ID for the
@@ -323,9 +324,12 @@ metadata:
     succeeds other than by reconciliation (REV-007); a later control whose outcome is unknown and
     that addresses it takes its place, and one that fails changes nothing. No document changes an
     existing instance (OBJ-002), so an instance that replaces another holds none of its settings.
-    `settings` is absent where no setting is unknown, and no purge shortens it. `records` holds the
-    records that name the object, each as a CloudEvent. Where `expectedId` is given and the object
-    named has another ID, the request reports conflict.
+    `settings` is absent where no setting is unknown, and no purge shortens it. `limits` holds
+    the newest observation for each window that an Agent's or a login Resource's calls have
+    reported, including its Agents' calls for a login Resource, or `unknown` with no windows
+    where there is no report, in `limit-status.v1` form (IFC-053). `records` holds the records
+    that name the object, each as a CloudEvent. Where `expectedId` is given and the object named
+    has another ID, the request reports conflict.
 
     An Agent is inspected through its owning Fleet, or management where that Fleet is retired. An
     object that does not exist has no owning Pool or Fleet. Every other object follows ACC-033. inventory
@@ -502,6 +506,8 @@ spec:
               - control
               - invocation
               additionalProperties: false
+          limits:
+            $ref: github.com/shrav-k/conduit/core#limit-status.v1
           pending:
             type: array
             items:

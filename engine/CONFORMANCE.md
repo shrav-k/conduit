@@ -882,7 +882,12 @@ reports invalid when a value Resource supplies a `node` that fails to resolve to
 entries, copies their scalars into the instance and keeps source maps for inspection
 (OBJ-009, INS-013, ACC-057). Control dispatch stores no settings under REV-007, so a
 control leaves the source map as it was, including when the setting is reported
-unknown. A LIF-009 replacement takes the scalar held for its nested input.
-It carries no held source, node constraint, document, entry pointer or authored
-reference. Those replacement checks, source-map propagation and INS-017's comparison
-of held sources are work for the second part.
+unknown.
+
+From order 297, a replacement carries each held value source from origins its
+holder keeps outside `declared`, resolving no source name and reading no value
+Resource. It checks held values against the current template and Type and names
+the original entry when it refuses (INS-013, LIF-009). Two replacements from one
+held nested instantiation are equal under INS-017, held sources and node
+constraints included; registration's own equal instantiations are not yet
+compared.

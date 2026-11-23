@@ -248,7 +248,7 @@ pub(crate) fn restricted_replacement(state: &State, arguments: &Value, context: 
 
 pub(super) type ValueOrigins = BTreeMap<String, ValueOrigin>;
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub(super) struct ValueOrigin {
     id: Value,
     node: Option<Value>,
@@ -696,16 +696,30 @@ impl Builder<'_> {
         definition: &DocumentPlace,
         parent: Option<(&Value, &str, &str)>,
     ) -> Checked<AppliedInputs> {
-        let inherited = parent
-            .and_then(|(parent, slot, local)| {
-                let source = self.sources.get(parent["id"].as_str()?)?;
-                Some(rebase(
-                    &source.destinations,
-                    &format!("/{slot}/{}", crate::schemas::token(local)),
-                    "",
-                ))
-            })
-            .unwrap_or_default();
+        let inherited = if let Some((parent, slot, local)) = parent {
+            let kept;
+            let origins =
+                if let Some(source) = parent["id"].as_str().and_then(|id| self.sources.get(id)) {
+                    &source.destinations
+                } else if self.trusted
+                    && let Some(origins) = parent.get("_value_origins")
+                {
+                    // INS-013 / OBJ-010: a replacement reads only its holder's origins,
+                    // never the Resource or the name that originally supplied a value.
+                    kept = serde_json::from_value::<ValueOrigins>(origins.clone())
+                        .map_err(|_| fault("INS-013", "invalid held value origins"))?;
+                    &kept
+                } else {
+                    &ValueOrigins::new()
+                };
+            rebase(
+                origins,
+                &format!("/{slot}/{}", crate::schemas::token(local)),
+                "",
+            )
+        } else {
+            ValueOrigins::new()
+        };
         for (name, _) in items(document, "values") {
             let place = entry_place(value_declaration, "values", &name);
             if spec["inputs"].get(&name).is_none() {
@@ -742,10 +756,20 @@ impl Builder<'_> {
             if spec["inputs"].get(&name).is_none() {
                 let pointer = format!("/arguments/{}", crate::schemas::token(&name));
                 if let Some(origin) = affected(&inherited, &pointer) {
+                    if !self.trusted {
+                        return Err(origin.failure(
+                            "INS-003",
+                            "the receiving argument names no declared input",
+                            Some(&pointer),
+                        ));
+                    }
                     return Err(origin.failure(
                         "INS-003",
-                        "the receiving argument names no declared input",
-                        Some(&pointer),
+                        &format!(
+                            "the current template {} declares no input {name}",
+                            definition.name
+                        ),
+                        Some("/inputs"),
                     ));
                 }
                 return Err(fault("INS-003", format!("undeclared argument {name}")));

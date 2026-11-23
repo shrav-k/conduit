@@ -41,9 +41,9 @@ Each number counts promises. The last row counts those whose Engine source is no
 
 | Promises | language | convention | interface | all |
 | --- | ---: | ---: | ---: | ---: |
-| case passes | 151 | 164 | 30 | 345 |
+| case passes | 152 | 164 | 30 | 346 |
 | expected failure | 0 | 0 | 0 | 0 |
-| reason, no case | 53 | 17 | 1 | 71 |
+| reason, no case | 52 | 17 | 1 | 70 |
 | no case, no reason | 22 | 64 | 19 | 105 |
 | all | 226 | 245 | 50 | 521 |
 | named in engine source | 161 | 175 | 33 | 369 |
@@ -200,9 +200,9 @@ Each number counts promises. The last row counts those whose Engine source is no
 | IMP-008 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | INS-001 | language | must | 0 | 0 | reason | none | reason, no case |
 | INS-002 | language | must | 7 | 0 | cases | core | case passes |
-| INS-003 | language | must | 3 | 0 | cases | core | case passes |
+| INS-003 | language | must | 4 | 0 | cases | core | case passes |
 | INS-004 | language | must | 5 | 0 | cases | core | case passes |
-| INS-005 | language | must | 4 | 0 | cases | core | case passes |
+| INS-005 | language | must | 5 | 0 | cases | core | case passes |
 | INS-006 | language | must | 5 | 0 | cases | core | case passes |
 | INS-007 | language | must | 2 | 0 | cases | core | case passes |
 | INS-008 | language | must | 2 | 0 | cases | core | case passes |
@@ -210,10 +210,10 @@ Each number counts promises. The last row counts those whose Engine source is no
 | INS-010 | language | must | 1 | 0 | cases | core | case passes |
 | INS-011 | language | must | 1 | 0 | cases | core | case passes |
 | INS-012 | language | must | 3 | 0 | cases | core | case passes |
-| INS-013 | language | must | 6 | 0 | cases | core | case passes |
+| INS-013 | language | must | 8 | 0 | cases | core | case passes |
 | INS-014 | language | must | 1 | 0 | cases | core | case passes |
 | INS-016 | language | must | 11 | 0 | cases | core | case passes |
-| INS-017 | language | must | 0 | 0 | reason | core | reason, no case |
+| INS-017 | language | must | 1 | 0 | reason | core | case passes |
 | INS-018 | language | must not | 1 | 0 | cases | core | case passes |
 | INS-019 | language | must | 5 | 0 | cases | core | case passes |
 | INS-020 | convention | must | 5 | 0 | cases | core, shell | case passes |
@@ -229,7 +229,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | LIF-006 | convention | must not | 4 | 0 | cases | core | case passes |
 | LIF-007 | language | must | 0 | 0 | outside | none | no case, no reason |
 | LIF-008 | convention | must not | 2 | 0 | cases | core | case passes |
-| LIF-009 | convention | must | 10 | 0 | cases | core, shell | case passes |
+| LIF-009 | convention | must | 12 | 0 | cases | core, shell | case passes |
 | LIF-010 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | LIF-011 | convention | must | 2 | 0 | outside | core | case passes |
 | LIF-012 | convention | must | 3 | 0 | cases | core | case passes |
@@ -311,8 +311,8 @@ Each number counts promises. The last row counts those whose Engine source is no
 | OBJ-006 | language | must | 1 | 0 | cases | core | case passes |
 | OBJ-007 | language | must | 1 | 0 | cases | core | case passes |
 | OBJ-008 | language | must | 5 | 0 | cases | core | case passes |
-| OBJ-009 | language | must | 40 | 0 | cases | core | case passes |
-| OBJ-010 | language | must not | 2 | 0 | cases | core | case passes |
+| OBJ-009 | language | must | 41 | 0 | cases | core | case passes |
+| OBJ-010 | language | must not | 3 | 0 | cases | core | case passes |
 | OBJ-011 | language | must | 0 | 0 | reason | core, shell | reason, no case |
 | OBJ-012 | language | must | 0 | 0 | reason | none | reason, no case |
 | OBJ-013 | language | must | 12 | 0 | cases | core | case passes |
@@ -325,7 +325,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | OBJ-020 | language | must | 0 | 0 | reason | loader | reason, no case |
 | OBJ-021 | language | must | 10 | 0 | cases | core | case passes |
 | OBJ-022 | language | must | 1 | 0 | reason | none | case passes |
-| OBJ-023 | convention | must | 2 | 0 | reason | core | case passes |
+| OBJ-023 | convention | must | 3 | 0 | reason | core | case passes |
 | OBJ-024 | language | must | 0 | 0 | reason | loader | reason, no case |
 | OBJ-025 | convention | must | 3 | 0 | cases | core | case passes |
 | OBS-001 | convention | must not | 0 | 0 | reason | none | reason, no case |

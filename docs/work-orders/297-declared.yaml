@@ -1,0 +1,7 @@
+# Added cases for work order 297.
+- name: registration-replacement-sources
+  kind: added
+  cases: [registration-replacement-sources]
+- name: registration-replacement-checks
+  kind: added
+  cases: [registration-replacement-checks]

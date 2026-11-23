@@ -1550,10 +1550,12 @@ fn invoke_inner(
                 rule,
                 None,
                 None,
-                result["message"].as_str().map(|message| {
-                    json!([
-                        {"ruleId":rule,"level":"error","message":{"text":message}}
-                    ])
+                result.get("diagnostics").cloned().or_else(|| {
+                    result["message"].as_str().map(|message| {
+                        json!([
+                            {"ruleId":rule,"level":"error","message":{"text":message}}
+                        ])
+                    })
                 }),
             )?;
             if rule == "LIF-041" {

@@ -531,11 +531,12 @@ struct Builder<'a> {
     reserved_names: BTreeSet<(String, String)>,
     snapshots: Vec<Snapshot>,
     trusted: bool,
+    replacement_declaration: Option<DocumentPlace>,
     submitted_resources: BTreeMap<String, installation_values::SubmittedResource>,
     defer_children: bool,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 struct DocumentPlace {
     name: String,
     pointer: String,
@@ -574,11 +575,34 @@ fn related_locations(diagnostic: &mut ReportedFault, pointers: impl IntoIterator
 
 fn authored_fault(
     label: &str,
-    failure: Fault,
+    mut failure: Fault,
     template_name: &str,
     declaration: Option<&DocumentPlace>,
+    replacement: Option<&DocumentPlace>,
 ) -> ReportedFault {
     if let Some(FaultPointer::Authored(place, pointers)) = failure.pointer {
+        if let Some(holder) = replacement {
+            if let Some(receiving) = pointers.iter().find_map(|pointer| {
+                if let Some(input) = pointer.strip_prefix("/inputs/") {
+                    Some(format!("input {input}"))
+                } else if pointer != "/inputs"
+                    && pointer != "/placement"
+                    && !pointer.starts_with("/objects/")
+                {
+                    Some(format!("destination {pointer}"))
+                } else {
+                    None
+                }
+            }) {
+                failure
+                    .text
+                    .push_str(&format!(" ({receiving} in template {template_name})"));
+            }
+            failure.text.push_str(&format!(
+                "; the replacement takes the value held at registration: replace {template_name} so it accepts it, or register {} again to resolve its values anew",
+                holder.name
+            ));
+        }
         let mut reported = place.locate(
             diagnostic(failure.rule, &place.name, &failure.text, "error"),
             "",
@@ -633,7 +657,11 @@ impl Builder<'_> {
         parent: Option<(&Value, &str, &str)>,
     ) -> Option<DocumentPlace> {
         if let Some((parent, slot, name)) = parent {
-            let source = self.sources.get(parent["id"].as_str()?)?;
+            let Some(source) = self.sources.get(parent["id"].as_str()?) else {
+                // A replacement's holder already exists outside this expansion.
+                // Its held slot is the declaration, never the refused instance.
+                return self.replacement_declaration.clone();
+            };
             if let Some(template) = &source.template {
                 return Some(DocumentPlace {
                     name: template.clone(),
@@ -667,6 +695,7 @@ impl Builder<'_> {
                 declaration
                     .as_ref()
                     .or_else(|| source.and_then(|source| source.declaration.as_ref())),
+                self.replacement_declaration.as_ref(),
             );
         }
         if matches!(fault.pointer, Some(FaultPointer::ValueNode)) {
@@ -977,7 +1006,13 @@ impl Builder<'_> {
             Ok(applied) => applied,
             Err(f) => {
                 let reported = if matches!(f.pointer, Some(FaultPointer::Authored(..))) {
-                    authored_fault(label, f, template_name, value_declaration)
+                    authored_fault(
+                        label,
+                        f,
+                        template_name,
+                        value_declaration,
+                        self.replacement_declaration.as_ref(),
+                    )
                 } else {
                     expanded_fault(f.rule, label, &f.text, "")
                 };
@@ -2762,6 +2797,7 @@ pub(crate) fn prepare(
         reserved_names: named.keys().cloned().collect(),
         snapshots,
         trusted: false,
+        replacement_declaration: None,
         submitted_resources: BTreeMap::new(),
         defer_children: false,
     };
@@ -2839,70 +2875,7 @@ pub(crate) fn prepare(
             Err(f) => b.diagnostics.push(b.instance_diagnostic(object, f)),
         }
     }
-    // The parent keeps the declaration used for a future nested replacement,
-    // including default-filled arguments and references frozen to their IDs.
-    for child in &b.objects {
-        let Some(nested) = child.get("nested") else {
-            continue;
-        };
-        let resolved_child = resolved.iter().find(|o| o["id"] == child["id"]).cloned();
-        let Some(parent) = resolved.iter_mut().find(|o| o["id"] == nested["parent"]) else {
-            continue;
-        };
-        let slot = nested["slot"].as_str().unwrap();
-        let local = nested["name"].as_str().unwrap();
-        parent[slot][local]
-            .as_object_mut()
-            .unwrap()
-            .remove("values");
-        let input_values = child["id"]
-            .as_str()
-            .and_then(|id| b.sources.get(id))
-            .map(|source| &source.input_values);
-        if resolved_child.is_none() && input_values.is_some_and(|origins| !origins.is_empty()) {
-            continue;
-        }
-        if let Some(input_values) = input_values {
-            let prefix = format!("/{slot}/{}", crate::schemas::token(local));
-            for (at, source) in input_values {
-                parent["_value_sources"][format!("{prefix}{at}")] = source.reference();
-            }
-        }
-        let child_held: Held =
-            serde_json::from_value(child["held"].clone()).map_err(|e| e.to_string())?;
-        for (name, value) in items(child, "_argument_values") {
-            let schema = &child["_inputs"][&name]["schema"];
-            match references.schema(
-                &child_held,
-                schema,
-                schema,
-                &value,
-                child.get("entry_pool"),
-                true,
-                0,
-            ) {
-                Ok(value) => parent[slot][local]["arguments"][&name] = value,
-                Err(f) => b.diagnostics.push(b.instance_diagnostic(child, f)),
-            }
-        }
-        if slot == "conduits"
-            && let Some(target) = child.get("target")
-            && let Ok(value) = references.resolve(target, None, child.get("entry_pool"), true)
-        {
-            parent[slot][local]["target"] = value;
-        }
-        if slot == "entries"
-            && let Some(child) = resolved_child
-        {
-            for key in ["placement", "runtime"] {
-                if parent[slot][local].get(key).is_some()
-                    && let Some(value) = child.get(key)
-                {
-                    parent[slot][local][key] = value.clone();
-                }
-            }
-        }
-    }
+    keep_nested_inputs(&mut b, &mut resolved, &references)?;
     // ACC-054 / OPS-023: expansion must not make authority depend on valid targets.
     if !root_own && b.objects.iter().any(|o| root_consumed(&b.state, o, root)) {
         return refuse_root_registration(t, evidence, request, &project.documents, context);
@@ -3576,6 +3549,82 @@ pub(crate) fn supports_filter(
     }
 }
 
+// Shared by initial registration and replacement: newly made holders also keep
+// origins for their own nested instances, outside their declared definition.
+fn keep_nested_inputs(
+    b: &mut Builder<'_>,
+    resolved: &mut [Value],
+    references: &References<'_>,
+) -> Result<()> {
+    // The parent keeps the declaration used for a future nested replacement,
+    // including default-filled arguments and references frozen to their IDs.
+    for child in &b.objects {
+        let Some(nested) = child.get("nested") else {
+            continue;
+        };
+        let resolved_child = resolved.iter().find(|o| o["id"] == child["id"]).cloned();
+        let Some(parent) = resolved.iter_mut().find(|o| o["id"] == nested["parent"]) else {
+            continue;
+        };
+        let slot = nested["slot"].as_str().unwrap();
+        let local = nested["name"].as_str().unwrap();
+        parent[slot][local]
+            .as_object_mut()
+            .unwrap()
+            .remove("values");
+        let input_values = child["id"]
+            .as_str()
+            .and_then(|id| b.sources.get(id))
+            .map(|source| &source.input_values);
+        if resolved_child.is_none() && input_values.is_some_and(|origins| !origins.is_empty()) {
+            continue;
+        }
+        if let Some(input_values) = input_values {
+            let prefix = format!("/{slot}/{}", crate::schemas::token(local));
+            for (at, source) in input_values {
+                parent["_value_sources"][format!("{prefix}{at}")] = source.reference();
+                parent["_value_origins"][format!("{prefix}{at}")] =
+                    serde_json::to_value(source).map_err(|e| e.to_string())?;
+            }
+        }
+        let child_held: Held =
+            serde_json::from_value(child["held"].clone()).map_err(|e| e.to_string())?;
+        for (name, value) in items(child, "_argument_values") {
+            let schema = &child["_inputs"][&name]["schema"];
+            match references.schema(
+                &child_held,
+                schema,
+                schema,
+                &value,
+                child.get("entry_pool"),
+                true,
+                0,
+            ) {
+                Ok(value) => parent[slot][local]["arguments"][&name] = value,
+                Err(f) => b.diagnostics.push(b.instance_diagnostic(child, f)),
+            }
+        }
+        if slot == "conduits"
+            && let Some(target) = child.get("target")
+            && let Ok(value) = references.resolve(target, None, child.get("entry_pool"), true)
+        {
+            parent[slot][local]["target"] = value;
+        }
+        if slot == "entries"
+            && let Some(child) = resolved_child
+        {
+            for key in ["placement", "runtime"] {
+                if parent[slot][local].get(key).is_some()
+                    && let Some(value) = child.get(key)
+                {
+                    parent[slot][local][key] = value.clone();
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
 /// Reuse the registration resolver for an explicit nested replacement. The resolved
 /// declaration is trusted stored data; actor submissions still reject authored IDs.
 pub(crate) fn replacement(
@@ -3614,6 +3663,13 @@ pub(crate) fn replacement(
         reserved_names: BTreeSet::new(),
         snapshots: packages::catalog_entries(&t.state, t.state.preinstalled_snapshots.clone()),
         trusted: true,
+        replacement_declaration: Some(DocumentPlace {
+            name: parent["name"]
+                .as_str()
+                .ok_or("replacement holder has no name")?
+                .into(),
+            pointer: format!("/{slot}/{}", crate::schemas::token(name)),
+        }),
         submitted_resources: BTreeMap::new(),
         defer_children: false,
     };
@@ -3637,7 +3693,9 @@ pub(crate) fn replacement(
         )?;
     }
     if let Some(d) = b.diagnostics.first() {
-        return Ok(json!({"rule":d.rule,"message":d["message"]["text"]}));
+        return Ok(
+            json!({"rule":d.rule,"message":d["message"]["text"],"diagnostics":[d.diagnostic]}),
+        );
     }
     let all: Vec<_> = b.state.objects.iter().chain(&b.objects).cloned().collect();
     let mut resolved = vec![];
@@ -3645,8 +3703,29 @@ pub(crate) fn replacement(
         let source = object["id"].as_str().and_then(|id| b.sources.get(id));
         match resolve_instance(object, &all, context, true, source) {
             Ok(o) => resolved.push(o),
-            Err(f) => return Ok(json!({"rule":f.rule,"message":f.text})),
+            Err(f) => {
+                if !matches!(f.pointer, Some(FaultPointer::Authored(..))) {
+                    return Ok(json!({"rule":f.rule,"message":f.text}));
+                }
+                let d = b.instance_diagnostic(object, f);
+                return Ok(
+                    json!({"rule":d.rule,"message":d["message"]["text"],"diagnostics":[d.diagnostic]}),
+                );
+            }
         }
+    }
+    let references = References {
+        objects: &all,
+        core: &context.core_package,
+        unresolved: None,
+        template_entries: None,
+        collected: None,
+    };
+    keep_nested_inputs(&mut b, &mut resolved, &references)?;
+    if let Some(d) = b.diagnostics.first() {
+        return Ok(
+            json!({"rule":d.rule,"message":d["message"]["text"],"diagnostics":[d.diagnostic]}),
+        );
     }
     let all: Vec<_> = b.state.objects.iter().chain(&resolved).cloned().collect();
     for o in resolved.iter().filter(|o| o["kind"] == "Conduit") {
@@ -3712,3 +3791,7 @@ mod explanation_record_tests {
         assert!(t.records.iter().all(|r| r["data"]["ruleId"] == "SCH-001"));
     }
 }
+
+#[cfg(test)]
+#[path = "registration_value_replacement_tests.rs"]
+mod value_replacement_tests;

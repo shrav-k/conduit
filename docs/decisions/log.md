@@ -1180,3 +1180,99 @@ Owner's words: on the evidence read being HTTP rather than MCP -> "I agree for r
 Lands in: the breadth of ruling 31 I1 ("an implementation is an MCP server, with one tool per operation", IFC-001 to IFC-005) is revisited: what an Agent sees stays MCP, and Conduits between Resources, from Resources to Interfaces and for secrets may use other protocols; a study first, then a decision on its findings
 
 Status: accepted, not done (a study)
+
+## DEC-138, 2026-11-23, the engine's state is a Resource, `store`, of the `system` Pool
+
+Owner's words: whether the store should be a Conduit Resource in a Pool -> "Should this not be a conduit resource in a pool?"; "this entire approach is suspect and holds state in a way that's not configurable or transferrable"; after the study -> "Yes, a Resource (Recommended)"
+
+Lands in: a Resource `store` of a new capability `state-store.v1`, owned by `system`, made by the engine at first start with no document and added to an established store by a one-time upgrade; inspected like any Resource; a size report, a backup and an export asked of it by root while the engine serves; moving, unlocking and restoring are commands on a stopped store; FST-001 and FST-002 gain it
+
+Status: accepted, not done (spec and engine orders after the slimming)
+
+## DEC-139, 2026-11-23, where the state lives is declared in a startup file
+
+Owner's words: where the store's location is declared -> "Research startup flows and discovery, what is k3s and kubernetes and others like?"; then "Startup file, like k3s (Recommended)"
+
+Lands in: a startup file in the store's directory, beside the engine's other startup files, written at init and changed only by a migrate command, names the storage and the key's provider; read before any state; today's file is the default when it is absent; the `store` Resource shows it read-only
+
+Status: accepted, not done (the state chain's orders)
+
+## DEC-140, 2026-11-23, storage code is built into the engine now; separate programs later
+
+Owner's words: whether the code that talks to the storage runs inside the engine -> "What do you mean by backends? This is vague"; then "Built in now; separate later (Recommended)"
+
+Lands in: the file and SQLite (later a Postgres adapter) are built into the engine behind one interface; a separate program over a defined protocol comes later, for storage with no Rust driver
+
+Status: accepted, not done (the state chain's orders)
+
+## DEC-141, 2026-11-23, the signing key is held by a secret provider named at startup
+
+Owner's words: how the engine's signing key is kept -> "Secret resource is the best way, but we should discuss"; then "Startup-named secret provider (Recommended)"
+
+Lands in: the startup file names a secret provider that holds the engine's signing key, started first and trusted because it is named there, shown as a Resource beside `store`; the first is the Mac keychain, a dedicated keychain with no dialogs; until it is built the key stays a file, which backups name and may leave out
+
+Status: accepted, not done (the state chain's orders)
+
+## DEC-142, 2026-11-23, today's file first behind the store's interface, then SQLite
+
+Owner's words: which storage is built first -> "Today's file first, then SQLite (Recommended)"
+
+Lands in: today's state file is wrapped in the store's interface with its test suite first, then SQLite passes the same suite
+
+Status: accepted, not done (the state chain's orders)
+
+## DEC-143, 2026-11-23, the dogfood store moves after the slimming, at a gate
+
+Owner's words: when the dogfood store moves to the new shape -> "After slimming, at a gate (Recommended)"
+
+Lands in: experiment 028's store migrates once the state is slimmed and every reader goes through the engine, at a stage boundary or by a dated amendment
+
+Status: accepted, not done (after the slimming and the readers' order)
+
+## DEC-144, 2026-11-23, the store reports its size and warns; nothing refuses
+
+Owner's words: what the store does about its size -> "Report + warning (Recommended)"
+
+Lands in: the `store` Resource reports bytes, rows and the last commit's duration, and an explicit warning past a threshold the owner sets reaches callers' replies; nothing is refused
+
+Status: accepted, not done (the state chain's orders)
+
+## DEC-145, 2026-11-23, finished requests are remembered for the store's life, for now
+
+Owner's words: how long a repeat is honored after an invocation ends -> "Forever for now but eventually this store can grow infinitely, we should discuss a cost benefit analysis"
+
+Lands in: OPS-008 and OPS-009 stand: each finished invocation's slimmed entry is kept for the store's life; a cost-benefit analysis of the store's unbounded growth comes later, before v1
+
+Status: accepted, not done (the analysis)
+
+## DEC-146, 2026-11-23, a `conduit restore` command
+
+Owner's words: who restores a store from a backup -> "A conduit restore command"
+
+Lands in: root restores a stopped store from a backup by a `conduit restore` command; REC-003 gains a stated exception for a rollback root commands by name while no engine serves, and the engine records the gap under REC-006 at the next open
+
+Status: accepted, not done (a spec order and an engine order)
+
+## DEC-147, 2026-11-23, the engine's address is fixed for the store's life, for now
+
+Owner's words: whether the engine's URL may change after first start -> "Fixed for now (Recommended)"
+
+Lands in: a store moves only to a machine that serves the same address, documented with the move steps; revisited with token expiry (DEC-125, DEC-126)
+
+Status: accepted, not done (the documentation)
+
+## DEC-148, 2026-11-23, package files stored once by digest; run leftovers removed
+
+Owner's words: where installed packages' bytes live -> "In the store, by digest (Recommended)"; run leftovers -> "Remove at run end (Recommended)"
+
+Lands in: each installed archive is kept once by its digest in the store's directory, and a run's program copy once per digest, read-only and checked before each run; the state keeps an index; run directories are removed when the run ends and swept when the store opens
+
+Status: accepted, not done (the slimming orders)
+
+## DEC-149, 2026-11-23, the store is slimmed now
+
+Owner's words: whether to slim today's store before the state chain -> "Yes, order them now (Recommended)"
+
+Lands in: three engine orders now: a finished invocation drops its held copy of the target (its contract stays, which inspection reads), package files by digest (DEC-148), and run leftovers removed (DEC-148)
+
+Status: accepted, not done (the three orders)

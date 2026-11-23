@@ -17,6 +17,7 @@ Read first, in [AGENTS.md's order](../AGENTS.md#read-first):
 The top [README](../README.md) introduces Conduit. The specification's
 [reading paths](../spec/README.md#reading-paths) serve document authors, contract and provider
 writers, and engine builders. Cold readers start at the [readers' guide](guides/cold-readers.md).
+A client built in its own repository starts at the [client guide](clients.md).
 
 ## What each document is
 

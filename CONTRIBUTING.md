@@ -21,6 +21,7 @@ documents, for writing contracts and providers, and for building an engine.
 For a review of the text, follow the [cold readers' instructions](docs/guides/cold-readers.md).
 To run the build, start with [engine/](engine/README.md#running-it); the
 [guides](docs/guides/README.md) cover the owner's setup for later experiments.
+A client built in its own repository starts at the [client guide](docs/clients.md).
 
 ## What binds
 

@@ -1004,3 +1004,75 @@ Owner's words: what happens to runs after serve restarts -> "Restart all local r
 Lands in: PRV-026 extends to every Resource run on the engine's own runner, read secrets included; Agents stay as they are
 
 Status: accepted, not done (a spec order and an engine order)
+
+## DEC-116, 2026-11-23, a model account is its login Resources; limits are enforced there, not in Fleets
+
+Owner's words: where a model account is owned and its limit enforced, after the study DEC-104 asked for -> "Login Resource, as now (Recommended)"
+
+Lands in: a model account is represented by its login Resources, owned by a Pool, one per account per machine; its limits are declared and enforced there; a Fleet owns Agents and nothing else (FLEET-001, FLEET-004 stand); the usage and limit schemas are core because the engine checks them (DEC-045 applied, DEC-104's "Core")
+
+Status: accepted, not done (the definitions row, with the guard's spec orders)
+
+## DEC-117, 2026-11-23, every model turn's record names its Fleet and login
+
+Owner's words: attribution -> "Yes, in v0 (Recommended)"
+
+Lands in: the end record of every call that starts model work names the Agent's Fleet and its login Resource beside the Agent; the CLI lists those records for a login or a Fleet with each one's reported usage and adds nothing up; any total is a UI package's
+
+Status: accepted, not done (a spec order, an engine order and the CLI's listing)
+
+## DEC-118, 2026-11-23, a cap on turns per Conduit waits for v1
+
+Owner's words: a limit on the model turns started through one Conduit -> "v1, on the roadmap (Recommended)"
+
+Lands in: a ROADMAP row for v1; whether the engine applies it from its own dispatch records or an Agent package applies it as a filter is decided when it is designed
+
+Status: accepted, not done (the ROADMAP row)
+
+## DEC-119, 2026-11-23, no Agent tunes a login's usage levers
+
+Owner's words: who may tune a login's levers -> "Not Agents, ever (Recommended)"
+
+Lands in: no Conduit whose consumer is an Agent lists a login Type's admission control, and such an open reports refused; an Interface's client tunes; amends DEC-100
+
+Status: accepted, not done (the guard's spec orders)
+
+## DEC-120, 2026-11-23, the guard checks before each turn and a started turn runs to its end
+
+Owner's words: a turn in flight when a lever says stop -> first "Both packages, after probe (Recommended)"; then, asked how the levers would reach a turn -> "I'm confused as to what this means, let's discuss"; "Would this send this key to Claude/codex, I'm confused? Maybe we should just allow the turn then? I don't want to modify how the models operate just police their usage"; then "Yes, check before turns only (Recommended)"
+
+Lands in: the engine checks the login's report before every call that starts model work and holds the call where the levers refuse it; the engine never stops a dispatched turn and no package ends one for the guard; no lever reaches a turn, and turns stay as they are; an allowed-models setting is met by the Agent's own template; the margin past a threshold is covered by a threshold below 100 and the seat's own console
+
+Status: accepted, not done (the guard's orders)
+
+## DEC-121, 2026-11-23, one login Resource per machine, each with its own levers
+
+Owner's words: one account used on two machines -> "Per machine is fine, if it's a shared account there should be no drift since it should have the same value queried under the hood right?"
+
+Lands in: one login Resource per account per machine, each with its own levers; usage is the account's own and reads the same from both; only declared levers could differ, which declaring both logins from one template prevents
+
+Status: accepted, not done (nothing to build until a second machine runs Agents)
+
+## DEC-122, 2026-11-23, a contributor's Agents use the contributor's own accounts
+
+Owner's words: another contributor's Agents -> "Their own accounts only (Recommended)"
+
+Lands in: a contributor's Agents never name a login Resource of the owner's accounts; they name logins of the contributor's own accounts, which root registers in a Pool and signs in, with the contributor present for their own code through an Interface's client (DEC-103)
+
+Status: accepted, not done (the contributor's onboarding)
+
+## DEC-123, 2026-11-23, a call waits in the request for a fresh usage report
+
+Owner's words: how the engine gets a new report when the last has ended -> "Wait in the request (Recommended)"
+
+Lands in: with no current report, a call that starts model work waits for the login's one ask, bounded by an implementation-defined limit, and is then dispatched or held on its answer, as an admission webhook does; amends DL3 and DL4 for this wait
+
+Status: accepted, not done (the guard's spec and engine orders)
+
+## DEC-124, 2026-11-23, the levers come on new Type versions
+
+Owner's words: whether the guard's required parts come on new Types -> "New Type versions (Recommended)"
+
+Lands in: codex-login.v2, account-home.v2 and the Agent Types' next versions carry the levers, the admission hook and its control; each team seat is registered and signed in once more and each Agent registered again under a Type that lists its login's Type, at one sitting; logins on the old Types have no check, and their status says so
+
+Status: accepted, not done (the package orders and a sitting)

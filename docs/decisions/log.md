@@ -900,3 +900,107 @@ Owner's words: what the team seats do until the guard exists -> "Pairs 1-2 now; 
 Lands in: the team accounts are signed in and their Agents set up, but no Agent on a team seat takes a turn until DEC-093's guard is built and merged; amends DEC-069 for those Agents
 
 Status: accepted, not done (DEC-093's orders)
+
+## DEC-103, 2026-11-23, Interfaces show what only a person may see; the engine renders nothing
+
+Owner's words: what the engine itself still renders -> "What can no client show? Shouldn't the engine just expose a bunch of endpoints or hooks that a display or tool can connect to?"; then "I like the idea of a trusted display, let's discuss, even a cli could be a trusted display or interface. Isn't this just the concept of interfaces from conduit?"; then "Yes, Interfaces show them (Recommended)"
+
+Lands in: PND-004 and its neighbours: sign-in codes, a joining machine's fingerprint and the approval of an app's credential are delivered only to an Interface's client (the CLI, the web UI package, the owner's app), never to an Agent or into a model's turn; the engine exposes everything as endpoints and renders nothing itself; amends DEC-075, whose engine panel (order 051c) is dropped
+
+Status: accepted, not done (a spec order, then an engine order)
+
+## DEC-104, 2026-11-23, the usage report's shape stays in the core, after a study of Agent accounts
+
+Owner's words: where the usage report's shape lives -> "Core, since agents are at the core of conduit as a whole, we should do a study to figure out deeply what contracts we need and if these accounts are better enforced within fleets rather than the pool resource. This has turned into a big design issue so maybe it's worth getting fable's perspective"
+
+Lands in: the report every login implementation gives stays one shape in the spec; a study of what contracts Agents and their model accounts need, and whether accounts and their limits are better enforced by Fleets than by Pool-owned login Resources, comes before DEC-093's orders
+
+Status: accepted, not done (the study is under way)
+
+## DEC-105, 2026-11-23, vendor names and one tool's flags leave the spec now
+
+Owner's words: whether product names and the plan and apply flags leave the specification's own text -> "Now, one docs order (Recommended)"
+
+Lands in: vendor names move to the Agent packages' READMEs and Type descriptions; the plan and apply text moves to the CLI's own guide; the spec README leads with the six families; amends DEC-008's placement of that text
+
+Status: accepted, not done (one or two documentation orders)
+
+## DEC-106, 2026-11-23, plan, apply and author leave the engine, and later become an Interface package
+
+Owner's words: where the command-line client's plan, apply and author go -> "Later an Interface package"
+
+Lands in: plan, apply and author move to a client crate of their own, and once client tokens exist (DEC-108) the command line becomes an Interface package beside the web UI; amends DEC-008's placement
+
+Status: accepted, not done (a move order, then the package after the client token)
+
+## DEC-107, 2026-11-23, an agent kit library now, and the engine's runner pinned
+
+Owner's words: the two Agent packages' shared code and the two ways of running a process -> "Library now, runner pinned (Recommended)"
+
+Lands in: a shared agent kit library both Agent packages depend on, which the engine never depends on; the engine's own runner stays pinned to minimal local runs, and new runtime features go to the runtime kit and local-process; amends DEC-021's timing
+
+Status: accepted, not done (package orders)
+
+## DEC-108, 2026-11-23, the client token first, then the web UI
+
+Owner's words: the web UI's build order -> "Client token, then the page (Recommended)"
+
+Lands in: DEC-074's client token is specified and built (minting, acceptance, records naming the client) before the web UI package's orders; how long it lives waits for the study of how Interfaces are granted access
+
+Status: accepted, not done (a spec order and an engine order first)
+
+## DEC-109, 2026-11-23, the web UI is a Resource the engine runs, given its token as a secret
+
+Owner's words: how the token reaches the page -> "As a secret Resource (Recommended)"; the package's shape -> "A Resource the engine runs (Recommended)"
+
+Lands in: the web UI package's Type is a Resource whose run the engine starts and stops, reporting Running; its client token reaches the run through a secret reference, a file-secret Resource and the get-secret route, with no new mechanism
+
+Status: accepted, not done (the package's orders)
+
+## DEC-110, 2026-11-23, the web UI package is a lightweight proof
+
+Owner's words: where the web UI package lives and who builds it -> "This repo with codex and opus workers, but focus on something super lightweight, Santiago will be building the polished version, our goal is to prove it's possible and promises are met"
+
+Lands in: packages/ in this repository, built through Conduit by Codex or Opus workers and read like every order; as small as proves that an Interface package can meet the client promises; the polished app is the second contributor's
+
+Status: accepted, not done (the package's orders)
+
+## DEC-111, 2026-11-23, only the runtime engine must be Rust
+
+Owner's words: the web page's script -> "The web ui can be built from anything, conduit packages do not need to be in rust, only the runtime engine must be"
+
+Lands in: HOW-WE-WORK's language rule: the engine is Rust; a package may be written in any language; amends DEC-025
+
+Status: accepted, not done (HOW-WE-WORK's rule)
+
+## DEC-112, 2026-11-23, a client's read of the records is itself recorded
+
+Owner's words: how the records pane's reads are recorded -> "Record the export read (Recommended)"
+
+Lands in: reading the records export with a client token writes one record of the read naming the client
+
+Status: accepted, not done (with the client token's engine order)
+
+## DEC-113, 2026-11-23, the web UI first runs on the dogfood store, and the store is studied
+
+Owner's words: which store the web UI first runs against -> "Dogfood store, but also I need a deep analysis of the store, what is this store and how is it structured? Why is it built this way? What are examples and precedents? Use a fable agent if you need to"
+
+Lands in: the web UI package is installed in experiment 028's store after a dated amendment that says what a turn sent from the page counts for; a study of the store's structure, its reasons and precedents
+
+Status: accepted, not done (the amendment, and the study under way)
+
+## DEC-114, 2026-11-23, the instance list gives owner, placement, revision and Running
+
+Owner's words: what list.v1 gives -> "Widen list.v1 (Recommended)"
+
+Lands in: list.v1 gives, for each instance, its owner, its placement, its revision and the status of its Running condition
+
+Status: accepted, not done (a spec order and an engine order)
+
+## DEC-115, 2026-11-23, local runs come back when serve restarts
+
+Owner's words: what happens to runs after serve restarts -> "Restart all local runs (Recommended)"
+
+Lands in: PRV-026 extends to every Resource run on the engine's own runner, read secrets included; Agents stay as they are
+
+Status: accepted, not done (a spec order and an engine order)

@@ -1276,3 +1276,67 @@ Owner's words: whether to slim today's store before the state chain -> "Yes, ord
 Lands in: three engine orders now: a finished invocation drops its held copy of the target (its contract stays, which inspection reads), package files by digest (DEC-148), and run leftovers removed (DEC-148)
 
 Status: accepted, not done (the three orders)
+
+## DEC-150, 2026-11-23, an implementation is reached by the protocol it names; what models see is MCP
+
+Owner's words: what ruling 31 I1 now says -> "MCP only where models see (Recommended)"
+
+Lands in: an implementation is reached by the protocol its item names, `mcp` where it names none, under a binding that states what it carries; the server the engine presents to an Agent, or to any consumer that is a model host, is an MCP server; narrows ruling 31 I1 (IFC-001 to IFC-005) after DEC-137
+
+Status: accepted, not done (spec orders)
+
+## DEC-151, 2026-11-23, the protocol is named on each implementation item
+
+Owner's words: where a connection's protocol is named -> "By each implementation (Recommended)"
+
+Lands in: an implementation item names its `protocol` and `binding`; one capability may be served over different protocols by different implementations; never on a Conduit or a capability
+
+Status: accepted, not done (spec orders)
+
+## DEC-152, 2026-11-23, v0 admits MCP and JSON over a run's pipe
+
+Owner's words: which protocols v0 admits -> "MCP + JSON over a pipe (Recommended)"
+
+Lands in: `mcp` and `stdio-json` (JSON lines over the stdio of a process the engine's own runner starts) in v0; HTTP designed now and written when the first remote non-MCP implementation is named; other protocols later by the same key
+
+Status: accepted, not done (spec and engine orders)
+
+## DEC-153, 2026-11-23, the keychain secret store speaks JSON over its pipe
+
+Owner's words: the keychain's protocol -> "JSON over its pipe (Recommended)"
+
+Lands in: the keychain secret store becomes the first `stdio-json` implementation, on the pipe it has today; each read still decided by Conduits and recorded; the same framing serves its startup role holding the engine's signing key (DEC-141); never on a network port
+
+Status: accepted, not done (a package order)
+
+## DEC-154, 2026-11-23, a full HTTP API after the client token
+
+Owner's words: what non-Agent consumers speak to the engine -> "I'm looking to full http as well, especially since some of the ui and others should reveal things normal agents shouldn't see, like secret values etc right? How much extra lift is this? Let's discuss. We can keep it mcp if it makes sense but otherwise the ui will not be feature complete. A person using the ui with root access should have access to everything"; then "Yes, after the client token (Recommended)"
+
+Lands in: every core operation is also served over HTTP, with its OpenAPI document generated from the operations' schemas and the same credential check, decisions and records as MCP, built after the client token's orders; MCP stays for Agents and model hosts; the conformance cases run over both
+
+Status: accepted, not done (spec and engine orders after DEC-108's)
+
+## DEC-155, 2026-11-23, the owner's admitted clients may read a secret's value
+
+Owner's words: whether a person with root reads secret values through the engine -> "Admitted clients only (Recommended)"
+
+Lands in: an admitted client of root may read a secret's value through a recorded endpoint, never over MCP and never with root's helper token, which the models use (DEC-133); each read is recorded naming the client and holding no value; amends SEC-007 for admitted clients alone
+
+Status: accepted, not done (spec and engine orders)
+
+## DEC-156, 2026-11-23, the records download and the codes read are endpoints for admitted clients
+
+Owner's words: whether the records export and the evidence read are endpoints or operations -> "I don't understand this at all, can you explain"; then "Special, admitted clients only (Recommended)"
+
+Lands in: the records export, the evidence read and the secret read of DEC-155 are endpoints the engine serves only to an admitted client of root, outside the operation model: no tool is ever presented for one, each use is recorded naming the client, and a refusal is recorded
+
+Status: accepted, not done (orders 308 and 309, then the endpoints' engine orders)
+
+## DEC-157, 2026-11-23, no direct wire around the engine in v0
+
+Owner's words: whether a consumer may reach a target with the engine out of the byte path -> "Not in v0 (Recommended)"
+
+Lands in: nothing promised in v0; `protocol` and `binding` leave room; when a scenario needs it, a per-call check by which the engine still decides and records each call is designed first, and Agents stay excluded until a sandbox exists
+
+Status: accepted, not done (nothing to build in v0)

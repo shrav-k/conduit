@@ -152,7 +152,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | IFC-004 | interface | must | 0 | 0 | outside | none | no case, no reason |
 | IFC-005 | interface | must | 0 | 0 | outside | none | no case, no reason |
 | IFC-006 | interface | must | 4 | 1 | outside | core, shell | case passes |
-| IFC-007 | interface | must not | 4 | 0 | cases | core, shell | case passes |
+| IFC-007 | interface | must not | 5 | 1 | cases | core, shell | case passes |
 | IFC-008 | interface | must | 2 | 0 | outside | core | case passes |
 | IFC-009 | interface | must | 11 | 0 | outside | core | case passes |
 | IFC-010 | interface | must | 27 | 0 | cases | core | case passes |
@@ -168,7 +168,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | IFC-021 | interface | must | 2 | 0 | cases | core | case passes |
 | IFC-022 | interface | must | 3 | 0 | cases | core | case passes |
 | IFC-023 | interface | may | 0 | 0 | reason | none | reason, no case |
-| IFC-025 | interface | must | 36 | 0 | cases | loader, core | case passes |
+| IFC-025 | interface | must | 37 | 1 | cases | loader, core | case passes |
 | IFC-026 | interface | must | 4 | 0 | outside | core, shell | case passes |
 | IFC-027 | interface | must | 4 | 0 | outside | core | case passes |
 | IFC-028 | interface | must | 4 | 0 | cases | core | case passes |
@@ -376,7 +376,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | PKG-017 | language | must | 14 | 0 | cases | core | case passes |
 | PKG-018 | language | must | 1 | 0 | cases | core | case passes |
 | PKG-019 | language | must | 0 | 0 | reason | core | reason, no case |
-| PKG-020 | language | must | 9 | 0 | cases | core | case passes |
+| PKG-020 | language | must | 12 | 3 | cases | core | case passes |
 | PKG-021 | language | must | 6 | 0 | cases | core | case passes |
 | PKG-022 | language | must | 15 | 0 | cases | core, shell | case passes |
 | PKG-023 | convention | must | 43 | 0 | cases | core, shell | case passes |

@@ -17,6 +17,18 @@
       "reason": "LIF-028 under ruling 78 point 5: the first build opens the Conduit when a reconciliation records an open as having occurred; review order 22, the engine following SO-B, makes it pass and removes this entry"
     },
     {
+      "id": "requests-attributed-a-hook",
+      "reason": "PKG-020: the first build does not read `attributed`; DEC-067's engine order makes it pass and removes this entry"
+    },
+    {
+      "id": "requests-attributed-not-in-implements",
+      "reason": "PKG-020: the first build does not read `attributed`; DEC-067's engine order makes it pass and removes this entry"
+    },
+    {
+      "id": "requests-attributed-plain-call",
+      "reason": "PKG-020: the first build does not read `attributed`; DEC-067's engine order makes it pass and removes this entry"
+    },
+    {
       "id": "requests-repeat-failed-earlier-succeeded",
       "reason": "OPS-012, F13 of ruling 78 point 6 as ruling 80 point 2 refines it: the first build records failed when a new attempt is answered failed after an earlier attempt's late answer said succeeded; review order 22, the engine following SO-B, makes it pass and removes this entry"
     },

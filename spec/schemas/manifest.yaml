@@ -153,10 +153,11 @@ metadata:
     binds the Package's `runtimeArguments`. An existing server that knows nothing of this
     specification is marked `plain: true`, gives `tools` and states no `supports`, and, where it
     is reached by `command` or `package`, may list in `keyed` the hooks whose calls carry
-    Conduit's keys; that each selection in `keyed` is in `implements`, is a key of `tools` and is
-    one of the core hooks is PKG-020's rule, and not in this schema. An item that is not plain gives
-    no `tools` and no `keyed`, and, where it is reached by `remote`, stands at an `https` URL, since
-    the engine connects to no other, and names no `Authorization`, in any case of its letters, in
+    Conduit's keys and in `attributed` the other operations whose calls carry only their
+    invocation and caller. PKG-020 gives the rules for selections in both lists, which this
+    schema leaves to the engine. An item that is not plain gives no `tools`, no `keyed` and
+    no `attributed`. Such an item reached by `remote` stands at an `https` URL, since the
+    engine connects to no other, and names no `Authorization`, in any case of its letters, in
     `headers`, since the engine presents its own proof in that header.
     `supports` and `nodeSelector`, a label selector, may each be left out. An item may list
     `platforms` beside `command`, whose program must be a relative path under MAN-010. A template
@@ -186,6 +187,11 @@ spec:
       items: {$ref: github.com/shrav-k/conduit/core#selection.v1}
       minItems: 1
       uniqueItems: true
+    attributed:
+      type: array
+      items: {$ref: github.com/shrav-k/conduit/core#selection.v1}
+      minItems: 1
+      uniqueItems: true
     supports: {$ref: '#/$defs/references'}
     tools:
       type: object
@@ -210,6 +216,8 @@ spec:
       not: {required: [remote]}
     keyed:
       not: {required: [remote]}
+    attributed:
+      not: {required: [remote]}
     package:
       properties:
         package:
@@ -233,6 +241,7 @@ spec:
     not: {required: [tools]}
     properties:
       keyed: false
+      attributed: false
       remote:
         properties:
           url: {pattern: '^https://'}

@@ -89,17 +89,17 @@
   when: >-
     A revision of the protocol is used under IFC-003.
   then: >-
-    It provides what this interface relies on. For a call that carries Conduit's keys, that is
+    It provides what this interface relies on. For a call that uses Conduit's extension, that is
     `tools/call` with a `name` and `arguments`; `_meta` on the request, on the result and on a
     tool's definition; `structuredContent`; `isError`, the flag that marks a result as an error;
     a tool's `annotations`; and the negotiation of extensions, by which a server lists the
     extensions it supports in its result of `server/discover`, a client declares an extension on
     each request in `io.modelcontextprotocol/clientCapabilities` with `revision` in the
     extension's settings object, and a server answers with the error -32021 a request that does
-    not declare a capability it requires. For a call to an implementation marked `plain`, other
-    than one for a hook that its item's `keyed` lists (PKG-020), it is
-    `tools/call` with a `name` and `arguments`, `isError`, and `structuredContent` where the
-    operation declares outputs.
+    not declare a capability it requires. For a call that IFC-007 governs, it is `tools/call`
+    with a `name` and `arguments`, `isError`, and `structuredContent` where the operation
+    declares outputs. Where the item's `attributed` lists the operation (PKG-020), it also
+    provides `_meta` on the request.
   observable: >-
     A revision that lacks any of what a call relies on is not used for that call, whatever both
     sides support. A call that IFC-007 governs is declared no extension, so a revision
@@ -172,10 +172,13 @@
     An engine sends a call for a request or a hook to an implementation marked `plain`, other
     than a call for a hook that its item's `keyed` lists (PKG-020).
   then: >-
-    The call carries Conduit's keys.
+    The call carries one of Conduit's keys, other than `io.github.shrav-k.conduit/invocation`
+    and `io.github.shrav-k.conduit/caller` where its item's `attributed` lists the operation
+    (PKG-020).
   observable: >-
     The call's `_meta` holds only keys that the protocol itself defines, such as
-    `io.modelcontextprotocol/protocolVersion`. Its
+    `io.modelcontextprotocol/protocolVersion`, and `io.github.shrav-k.conduit/invocation` and
+    `io.github.shrav-k.conduit/caller` where `attributed` lists the operation. Its
     `io.modelcontextprotocol/clientCapabilities` declares no extension of Conduit's, and
     what it declares is IFC-045's, so a server that needs a capability that the call does
     not declare, such as form-mode elicitation, answers with the protocol's error -32021,
@@ -1099,8 +1102,8 @@
   layer: interface
   level: must
   when: >-
-    The engine is to send a call that carries Conduit's keys to an implementation, for a request
-    or a hook, or to make a provider call under PRV-005 to a provider's implementation item.
+    The engine is to send a call under IFC-006 to an implementation, for a request or a hook,
+    or to make a provider call under PRV-005 to a provider's implementation item.
   then: >-
     Before its first such call to each run of the implementation, which for an implementation
     marked `plain` is its first call for a hook that its item's `keyed` lists (PKG-020), and to
@@ -1117,7 +1120,8 @@
     The revision `v0` is that of this version of the specification. The engine never falls back
     to sending such a call as it would to a plain implementation: only a call that IFC-007
     governs, to an implementation marked `plain` for no hook that its item's `keyed` lists, is
-    sent none of Conduit's keys, and the engine declares no extension of Conduit's on it. Where
+    sent none of Conduit's keys, but its invocation and caller where its item's `attributed`
+    lists the operation, and the engine declares no extension of Conduit's on it. Where
     the discovery result of an implementation marked `plain` whose item states `keyed` does not
     list the extension, only the hooks that `keyed` lists are not dispatched, and its other
     calls are sent as before. What else a call declares beside the extension is IFC-045's.
@@ -1406,8 +1410,8 @@
     one after it had begun would break this promise, since the protocol then has it answer
     -32021. Where it answers so, the outcome of a call for a request or a hook is failed
     under OPS-007, and a repeat of the request is dispatched as a new attempt under OPS-024.
-    A plain implementation, which carries none of Conduit's keys, is bound by no such
-    promise: IFC-010 reads its -32021 as any other error.
+    An implementation answering a call that IFC-007 governs is exempt from this promise.
+    IFC-010 reads its -32021 as any other error.
 
 - id: IFC-050
   layer: interface

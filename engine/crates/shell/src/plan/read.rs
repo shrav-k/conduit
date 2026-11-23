@@ -15,14 +15,14 @@ use rmcp::{
 };
 use std::{fs, io::ErrorKind, time::Duration};
 
-const APPROVALS: &[(&str, bool)] = &[
-    ("--reopen", true),
-    ("--recreate", true),
-    ("--replace", true),
-    ("--prune", false),
-    ("--adopt", false),
-    ("--with-resources", false),
-    ("--with-agents", false),
+const APPROVALS: &[&str] = &[
+    "--reopen",
+    "--recreate",
+    "--replace",
+    "--prune",
+    "--adopt",
+    "--with-resources",
+    "--with-agents",
 ];
 
 fn parse_approvals(text: &str) -> Option<BTreeSet<Approval>> {
@@ -32,7 +32,7 @@ fn parse_approvals(text: &str) -> Option<BTreeSet<Approval>> {
     text.split(',')
         .map(|item| {
             let (flag, operand) = item.split_once(' ')?;
-            (APPROVALS.iter().any(|(known, _)| flag == *known)
+            (APPROVALS.contains(&flag)
                 && !operand.is_empty()
                 && !operand.contains(char::is_whitespace))
             .then(|| Approval::new(flag, operand))
@@ -50,19 +50,11 @@ impl Options {
     fn parse(args: Vec<String>, command: &str) -> Result<Self> {
         let mut project = None;
         let mut store = None;
-        if let Some(flag) = args
-            .iter()
-            .find(|arg| APPROVALS.contains(&(arg.as_str(), false)))
-        {
-            return Err(format!(
-                "{flag} is not built yet; plan without it prints the stop that needs it"
-            ));
-        }
         let mut args = args.into_iter();
         let mut approvals = BTreeSet::new();
         while let Some(arg) = args.next() {
             match arg.as_str() {
-                flag if APPROVALS.contains(&(flag, true)) => {
+                flag if APPROVALS.contains(&flag) => {
                     let operand = args
                         .next()
                         .filter(|name| {
@@ -375,10 +367,7 @@ async fn read_engine(client: &RunningService<RoleClient, ()>, core: &str) -> Res
         if observed["id"] != id {
             return Err(format!("{tool} for {name}: engine returned another ID"));
         }
-        let mut declared = name_refs(&observed["declared"], &names);
-        if let Some(provenance) = observed.get("provenance") {
-            declared["provenance"] = provenance.clone();
-        }
+        let declared = inspection_declaration(&observed, &names);
         let made_by_engine = observed["provenance"]["cause"] == "default"
             || observed["provenance"]["cause"] == "first-start"
             || declared["engine_made"] == true
@@ -446,6 +435,14 @@ pub(super) fn name_refs(value: &Value, names: &BTreeMap<&str, Name>) -> Value {
         Value::Array(values) => Value::Array(values.iter().map(|v| name_refs(v, names)).collect()),
         _ => value.clone(),
     }
+}
+
+pub(super) fn inspection_declaration(observed: &Value, names: &BTreeMap<&str, Name>) -> Value {
+    let mut declared = name_refs(&observed["declared"], names);
+    if let Some(provenance) = observed.get("provenance") {
+        declared["provenance"] = provenance.clone();
+    }
+    declared
 }
 
 pub(super) fn compact_definition(declared: &Value) -> Value {
@@ -526,6 +523,8 @@ impl Ledger {
                 "plans",
                 "journals",
                 "journalUpdate",
+                "cascades",
+                "adopted",
             ]
             .contains(&key.as_str())
             {
@@ -650,6 +649,27 @@ impl Ledger {
                     }
                 }
             }
+            for entry in array(&kept["priorRemovals"])
+                .iter()
+                .map(|saved| &saved["entry"])
+                .chain(array(&kept["entries"]))
+            {
+                if let (Some(name), Some(id), Some(invocation)) = (
+                    Name::object(&entry["arguments"]["instance"]),
+                    entry["arguments"]["expectedId"].as_str(),
+                    entry["result"]["invocation"].as_str(),
+                ) && entry["tool"]
+                    .as_str()
+                    .is_some_and(|tool| tool.ends_with(".retire.v1"))
+                    && entry["flag"]
+                        .as_str()
+                        .and_then(parse_approvals)
+                        .is_some_and(|flags| flags.contains(&Approval::new("--prune", &name.name)))
+                    && apply::dispatched_unsuccessful_retirement(&entry["result"])
+                {
+                    ledger.prune_attempts.insert(id.into(), invocation.into());
+                }
+            }
             if let Some(recorded) = plan_text.as_deref() {
                 let files = kept.get("files").or_else(|| {
                     (ledger.plans.last().and_then(Value::as_str) == Some(digest))
@@ -674,6 +694,91 @@ impl Ledger {
         } else {
             value
         };
+        if let Some(adopted) = value.get("adopted") {
+            let bad = || invalid("/adopted", "expected a sequence of object IDs");
+            for id in adopted.as_array().ok_or_else(bad)? {
+                let id = id
+                    .as_str()
+                    .filter(|id| uuid::Uuid::parse_str(id).is_ok())
+                    .ok_or_else(bad)?;
+                ledger.adopted.insert(id.into());
+            }
+        }
+        if let Some(cascades) = value.get("cascades") {
+            let entries = cascades
+                .as_array()
+                .ok_or_else(|| invalid("/cascades", "expected a sequence"))?;
+            for entry in entries {
+                let bad = || {
+                    invalid(
+                        "/cascades",
+                        "invalid temporary Conduit identity or permission",
+                    )
+                };
+                let conduit = Name::object(&entry["conduit"])
+                    .filter(|name| name.kind == "Conduit")
+                    .ok_or_else(bad)?;
+                let id = entry["id"]
+                    .as_str()
+                    .filter(|id| uuid::Uuid::parse_str(id).is_ok())
+                    .ok_or_else(bad)?;
+                let container = Name::object(&entry["container"]).ok_or_else(bad)?;
+                let flag = match container.kind.as_str() {
+                    "Pool" => "--with-resources",
+                    "Fleet" => "--with-agents",
+                    _ => return Err(bad()),
+                };
+                let approval = Approval::new(flag, &container.name);
+                let retirement = entry
+                    .get("retirement")
+                    .map(|retirement| {
+                        let identities = |field: &str| -> Result<BTreeMap<Name, String>> {
+                            let mut identities = BTreeMap::new();
+                            for row in retirement[field].as_array().ok_or_else(bad)? {
+                                let name = Name::object(row).ok_or_else(bad)?;
+                                let id = row["id"]
+                                    .as_str()
+                                    .filter(|id| uuid::Uuid::parse_str(id).is_ok())
+                                    .ok_or_else(bad)?;
+                                if identities.insert(name, id.into()).is_some() {
+                                    return Err(bad());
+                                }
+                            }
+                            Ok(identities)
+                        };
+                        let objects = identities("objects")?;
+                        if !objects.contains_key(&container) {
+                            return Err(bad());
+                        }
+                        Ok(CascadeRetirement {
+                            objects,
+                            templates: identities("templates")?,
+                            confirmed: retirement["confirmed"].as_bool().ok_or_else(bad)?,
+                        })
+                    })
+                    .transpose()?;
+                let temporary_done = entry
+                    .get("temporaryDone")
+                    .map_or(Ok(false), |done| done.as_bool().ok_or_else(bad))?;
+                if entry["flag"] != approval.to_string()
+                    || ledger
+                        .cascades
+                        .insert(
+                            conduit,
+                            KeptCascade {
+                                id: id.into(),
+                                container,
+                                approval,
+                                temporary_done,
+                                retirement,
+                            },
+                        )
+                        .is_some()
+                {
+                    return Err(bad());
+                }
+            }
+        }
         let mut ids = BTreeSet::new();
         for (index, row) in array(&value["objects"]).iter().enumerate() {
             let place = format!("/objects/{index}");

@@ -23,6 +23,7 @@ pub(super) struct Action {
     pub(super) remakes: BTreeSet<Name>,
     pub(super) replacement_slots: BTreeMap<Name, ReplacementSlot>,
     pub(super) opens: Option<(Name, Value)>,
+    pub(super) track_cascade: Option<(Name, Approval)>,
 }
 
 #[derive(Clone, Debug)]
@@ -37,6 +38,11 @@ pub(super) enum Binding {
         object: String,
         prior_cause: Option<String>,
     },
+    CascadeTombstone {
+        listed: usize,
+        registration: Option<usize>,
+        id: Option<String>,
+    },
 }
 
 #[derive(Clone, Debug, Default)]
@@ -50,6 +56,7 @@ pub(super) enum Effect {
         nested: Vec<NestedRegistration>,
     },
     Replace(Box<ObservedObject>),
+    Adopt(Box<ObservedObject>),
     RegisterReplacement {
         wanted: Box<ObservedObject>,
         parent: Name,
@@ -68,6 +75,12 @@ pub(super) enum Effect {
     },
     Tombstones,
     Lift,
+    LiftCascade(Name),
+    ObserveCascade(Name),
+    Cascade {
+        conduit: Name,
+        retirement: Box<CascadeRetirement>,
+    },
 }
 
 impl Action {
@@ -247,6 +260,47 @@ fn step_arguments(
                 .ok_or("matched tombstone omitted its ID")?;
             args["id"] = json!(id);
         }
+        Some(Binding::CascadeTombstone {
+            listed,
+            registration,
+            id,
+        }) => {
+            let known = if let Some(from) = registration {
+                results
+                    .get(from.checked_sub(1).ok_or("invalid registration binding")?)
+                    .and_then(|result| {
+                        array(&result["objects"]).iter().find(|item| {
+                            item["kind"] == "Conduit" && item["name"] == step.subject.name
+                        })
+                    })
+                    .and_then(|item| item["id"].as_str())
+            } else {
+                id.as_deref()
+            }
+            .ok_or("cascade registration omitted the temporary Conduit's ID")?;
+            let stones = results
+                .get(listed.checked_sub(1).ok_or("invalid list binding")?)
+                .and_then(|result| result["tombstones"].as_array())
+                .ok_or("missing tombstone list")?;
+            let matching: Vec<_> = stones
+                .iter()
+                .filter(|stone| stone["object"]["id"] == known)
+                .collect();
+            let [stone] = matching.as_slice() else {
+                return Err(BindingError::TombstoneMismatch {
+                    listed: *listed,
+                    cause: format!(
+                        "expected one tombstone for the temporary Conduit, found {}",
+                        matching.len()
+                    ),
+                });
+            };
+            args["id"] = json!(
+                stone["id"]
+                    .as_str()
+                    .ok_or("matched tombstone omitted its ID")?
+            );
+        }
         None => {}
     }
     Ok(args)
@@ -298,6 +352,41 @@ fn verify(
         sorted
     };
     (sorted(array(&raw["packages"])) != sorted(&expected.packages)).then(|| "/packages".into())
+}
+
+fn verify_adoption(
+    raw: &Value,
+    expected: &ObservedObject,
+    names: &BTreeMap<String, Name>,
+) -> Option<String> {
+    if raw["id"] != expected.id {
+        return Some("/id".into());
+    }
+    if raw["revision"] != expected.revision {
+        return Some("/revision".into());
+    }
+    let names = names
+        .iter()
+        .map(|(id, name)| (id.as_str(), name.clone()))
+        .collect();
+    let actual = read::compact_definition(&read::inspection_declaration(raw, &names));
+    let mut differences = Vec::new();
+    compare::differences(
+        &safe(&expected.definition),
+        &safe(&actual),
+        "/declared",
+        &mut differences,
+    );
+    differences
+        .into_iter()
+        .next()
+        .or_else(|| {
+            (safe(&raw["packages"]) != safe(&json!(expected.packages))).then(|| "/packages".into())
+        })
+        .or_else(|| {
+            (!expected.is_template() && raw["status"]["state"] != expected.state)
+                .then(|| "/status/state".into())
+        })
 }
 
 fn apply_effect(
@@ -373,6 +462,13 @@ fn apply_effect(
                 ledger.objects.insert(name, object);
             }
         }
+        Effect::Adopt(wanted) => {
+            let mut object = (**wanted).clone();
+            object.definition = safe(&object.definition);
+            object.packages = object.packages.iter().map(safe).collect();
+            ledger.adopted.insert(object.id.clone());
+            ledger.objects.insert(step.subject.clone(), object);
+        }
         Effect::Replace(wanted) => {
             let mut object = (**wanted).clone();
             object.id = step
@@ -431,7 +527,15 @@ fn apply_effect(
             ledger.objects.remove(&step.subject);
             if let Some(id) = &step.expected {
                 names.remove(id);
+                for kept in ledger.cascades.values_mut() {
+                    if let Some(retirement) = &mut kept.retirement
+                        && retirement.templates.get(&step.subject) == Some(id)
+                    {
+                        retirement.templates.remove(&step.subject);
+                    }
+                }
             }
+            ledger.cascades.retain(|_, kept| !kept.finished());
         }
         Effect::Retire {
             closes_on_dispatch,
@@ -456,7 +560,50 @@ fn apply_effect(
             }
         }
         Effect::Tombstones => ledger.tombstones = array(&result["tombstones"]).to_vec(),
-        Effect::Lift => {
+        Effect::Cascade {
+            conduit,
+            retirement,
+        } => {
+            let kept = ledger
+                .cascades
+                .get_mut(conduit)
+                .ok_or("missing kept cascade approval")?;
+            kept.retirement = Some((**retirement).clone());
+            if result["outcome"] == "succeeded" {
+                let id = kept.id.clone();
+                forget_object(ledger, names, conduit, &id);
+                for (name, id) in &retirement.objects {
+                    forget_object(ledger, names, name, id);
+                }
+                for kept in ledger.cascades.values_mut() {
+                    if let Some(prior) = &mut kept.retirement
+                        && kept.container == step.subject
+                        && prior.objects.get(&kept.container)
+                            == retirement.objects.get(&step.subject)
+                    {
+                        prior.confirmed = true;
+                    }
+                }
+                ledger.cascades.retain(|_, kept| !kept.finished());
+            }
+        }
+        Effect::ObserveCascade(conduit) => observe_cascade(ledger, names, conduit, result)?,
+        Effect::Lift | Effect::LiftCascade(_) => {
+            if let Effect::LiftCascade(conduit) = effect {
+                let kept = ledger
+                    .cascades
+                    .get_mut(conduit)
+                    .ok_or("missing kept cascade approval")?;
+                if !array(&result["remaining"])
+                    .iter()
+                    .any(|stone| stone["object"]["id"] == kept.id)
+                {
+                    kept.temporary_done = true;
+                    let id = kept.id.clone();
+                    forget_object(ledger, names, conduit, &id);
+                    ledger.cascades.retain(|_, kept| !kept.finished());
+                }
+            }
             let remaining: BTreeSet<_> = array(&result["remaining"])
                 .iter()
                 .filter_map(|stone| stone["id"].as_str())
@@ -483,6 +630,103 @@ fn apply_effect(
             });
         }
     }
+    Ok(())
+}
+
+fn forget_object(ledger: &mut Ledger, names: &mut BTreeMap<String, Name>, name: &Name, id: &str) {
+    if ledger
+        .objects
+        .get(name)
+        .is_some_and(|object| object.id == id)
+    {
+        ledger.objects.remove(name);
+        names.remove(id);
+    }
+}
+
+fn observe_cascade(
+    ledger: &mut Ledger,
+    names: &mut BTreeMap<String, Name>,
+    conduit: &Name,
+    result: &Value,
+) -> Result<()> {
+    let listed = result["objects"]
+        .as_array()
+        .ok_or("cascade observation omitted objects")?;
+    let stones = result["tombstones"]
+        .as_array()
+        .ok_or("cascade observation omitted tombstones")?;
+    let by_id: BTreeMap<_, _> = listed
+        .iter()
+        .filter_map(|row| Some((row["id"].as_str()?, row)))
+        .collect();
+    let (id, temporary_present, retirement, absent_templates) = {
+        let kept = ledger
+            .cascades
+            .get_mut(conduit)
+            .ok_or("missing kept cascade approval")?;
+        if !kept.temporary_done
+            && listed
+                .iter()
+                .any(|row| Name::object(row).as_ref() == Some(conduit) && row["id"] != kept.id)
+        {
+            return Err(format!(
+                "{conduit}: observed another identity during cascade cleanup"
+            ));
+        }
+        let temporary_present = by_id.contains_key(kept.id.as_str());
+        if !temporary_present && !stones.iter().any(|stone| stone["object"]["id"] == kept.id) {
+            kept.temporary_done = true;
+        }
+        let mut absent_templates = Vec::new();
+        if let Some(retirement) = &mut kept.retirement {
+            if !retirement.confirmed {
+                retirement.confirmed = retirement
+                    .objects
+                    .iter()
+                    .filter(|(name, _)| name.kind != "Conduit")
+                    .all(|(_, id)| !by_id.contains_key(id.as_str()));
+            }
+            retirement.templates.retain(|name, id| {
+                if by_id.contains_key(id.as_str()) {
+                    true
+                } else {
+                    absent_templates.push((name.clone(), id.clone()));
+                    false
+                }
+            });
+        }
+        (
+            kept.id.clone(),
+            temporary_present,
+            kept.retirement.clone(),
+            absent_templates,
+        )
+    };
+    if !temporary_present {
+        forget_object(ledger, names, conduit, &id);
+    }
+    if let Some(retirement) = retirement {
+        for (name, id) in retirement.objects {
+            if let Some(row) = by_id.get(id.as_str()) {
+                if let Some(object) = ledger
+                    .objects
+                    .get_mut(&name)
+                    .filter(|object| object.id == id)
+                    && let Some(state) = row["state"].as_str()
+                {
+                    object.state = state.into();
+                }
+            } else {
+                forget_object(ledger, names, &name, &id);
+            }
+        }
+    }
+    for (name, id) in absent_templates {
+        forget_object(ledger, names, &name, &id);
+    }
+    ledger.tombstones.clone_from(stones);
+    ledger.cascades.retain(|_, kept| !kept.finished());
     Ok(())
 }
 
@@ -523,7 +767,7 @@ fn timestamp_free_state(ledger: &Ledger) -> Value {
             &name.name,
         )
     });
-    json!({
+    let mut state = json!({
         "format":1,"files":ledger.files,"plans":ledger.plans,"journals":ledger.journals,
         "journalUpdate":ledger.journal_update,
         "tombstones":safe(&json!(ledger.tombstones)),
@@ -531,7 +775,46 @@ fn timestamp_free_state(ledger: &Ledger) -> Value {
             name.kind,name.name,object.id,object.revision,object.state,
             safe(&object.definition),safe(&json!(object.packages))
         ])).collect::<Vec<_>>()
-    })
+    });
+    if !ledger.cascades.is_empty() {
+        let identities = |objects: &BTreeMap<Name, String>| {
+            objects
+                .iter()
+                .map(|(name, id)| json!({"kind":name.kind,"name":name.name,"id":id}))
+                .collect::<Vec<_>>()
+        };
+        state["cascades"] = json!(ledger.cascades.iter().map(|(name, cascade)| {
+            let mut row = json!({"conduit":name.reference(),"id":cascade.id,
+                "container":cascade.container.reference(),"flag":cascade.approval.to_string()});
+            if cascade.temporary_done {
+                row["temporaryDone"] = json!(true);
+            }
+            if let Some(retirement) = &cascade.retirement {
+                row["retirement"] = json!({"objects":identities(&retirement.objects),
+                    "templates":identities(&retirement.templates),"confirmed":retirement.confirmed});
+            }
+            row
+        }).collect::<Vec<_>>());
+    }
+    let adopted: Vec<_> = ledger
+        .adopted
+        .iter()
+        .filter(|id| ledger.objects.values().any(|object| object.id == **id))
+        .collect();
+    if !adopted.is_empty() {
+        state["adopted"] = json!(adopted);
+    }
+    state
+}
+
+fn ledger_update(ledger: &mut Ledger, previous: &Value) -> Result<Value> {
+    ledger.journal_update = ledger
+        .journal_update
+        .checked_add(1)
+        .ok_or("ledger update counter exhausted")?;
+    Ok(
+        json!({"from":bytes_digest(previous.to_string().as_bytes()), "state":timestamp_free_state(ledger)}),
+    )
 }
 
 pub(super) fn project_hashes(project: &Path) -> Result<Value> {
@@ -797,7 +1080,28 @@ pub(super) async fn execute(
             entry["replaces"] = previous.reference();
         }
         entries.push(entry);
-        if let Err(error) = save(attempt, &entries, None) {
+        // Preserve the exact scope even if this request's delivery or outcome becomes unknown.
+        if let Effect::Cascade {
+            conduit,
+            retirement,
+        } = &action.effect
+        {
+            let kept = match ledger.cascades.get_mut(conduit) {
+                Some(kept) => kept,
+                None => return local_failure("missing kept cascade approval", number, count),
+            };
+            kept.retirement = Some((**retirement).clone());
+            match ledger_update(&mut ledger, &kept_state).and_then(|mut update| {
+                // Delivery starts only after this state is durable. An interruption
+                // between these writes leaves an unsent request and its original proof.
+                save(attempt, &entries, None)?;
+                kept_state = update["state"].take();
+                save_ledger(&kept_state)
+            }) {
+                Ok(()) => {}
+                Err(error) => return local_failure(&error, number, count),
+            }
+        } else if let Err(error) = save(attempt, &entries, None) {
             return local_failure(&error, number, count);
         }
         let raw = match send(&step.tool, args.clone(), &key).await {
@@ -830,6 +1134,9 @@ pub(super) async fn execute(
             .as_ref()
             .and_then(|check| {
                 if outcome == "succeeded" {
+                    if matches!(action.effect, Effect::Adopt(_)) {
+                        return verify_adoption(&raw["structuredContent"], check, &names);
+                    }
                     verify(
                         &raw["structuredContent"],
                         &args["expectedId"],
@@ -850,7 +1157,7 @@ pub(super) async fn execute(
                 }
             })
             .or_else(|| {
-                (matches!(action.effect, Effect::Lift)
+                (matches!(action.effect, Effect::Lift | Effect::LiftCascade(_))
                     && plan.steps[index + 1..]
                         .iter()
                         .flat_map(|later| later.action.tombstone_candidates())
@@ -871,7 +1178,8 @@ pub(super) async fn execute(
             entries[index]["retirementDispatched"] = json!(true);
         }
         let update = if (outcome == "succeeded" || partial_retirement)
-            && (failed_check.is_none() || matches!(action.effect, Effect::Lift))
+            && (failed_check.is_none()
+                || matches!(action.effect, Effect::Lift | Effect::LiftCascade(_)))
             && !matches!(action.effect, Effect::None)
         {
             let changed = apply_effect(
@@ -883,14 +1191,25 @@ pub(super) async fn execute(
                 &args,
             )
             .and_then(|()| {
-                ledger.journal_update = ledger
-                    .journal_update
-                    .checked_add(1)
-                    .ok_or("ledger update counter exhausted")?;
-                Ok(
-                    json!({"from":bytes_digest(kept_state.to_string().as_bytes()),
-                    "state":timestamp_free_state(&ledger)}),
-                )
+                if let Some((container, approval)) = &action.track_cascade {
+                    let id = ledger
+                        .objects
+                        .get(&step.subject)
+                        .ok_or("registration omitted the temporary Conduit")?
+                        .id
+                        .clone();
+                    ledger.cascades.insert(
+                        step.subject.clone(),
+                        KeptCascade {
+                            id,
+                            container: container.clone(),
+                            approval: approval.clone(),
+                            temporary_done: false,
+                            retirement: None,
+                        },
+                    );
+                }
+                ledger_update(&mut ledger, &kept_state)
             });
             match changed {
                 Ok(update) => Some(update),
@@ -920,7 +1239,10 @@ pub(super) async fn execute(
             not_sent(number + 1, count);
             return 1;
         }
-        if matches!(action.effect, Effect::Tombstones) {
+        if matches!(
+            action.effect,
+            Effect::Tombstones | Effect::ObserveCascade(_)
+        ) {
             listed_tombstones = Some(number);
         }
         results.push(entries[index]["result"].clone());
@@ -983,6 +1305,323 @@ mod tests {
         let digest = plan.digest();
         let hex = digest.trim_start_matches("sha256:");
         crate::boundary::value(&directory.join(format!(".conduit/results/{hex}.yaml"))).unwrap()
+    }
+
+    #[tokio::test]
+    async fn plan_apply_adopt_stops_when_verification_differs() {
+        let mut expected = registered(json!({"resolved":{"config":{"flag":true}},
+            "provenance":{"actor":"root"}}));
+        expected.state = "ready".into();
+        for (field, changed) in [
+            ("id", json!("another-id")),
+            ("revision", json!("another-revision")),
+            ("declared", json!({"config":{"flag":false}})),
+            ("packages", json!([{}])),
+            (
+                "declared",
+                json!({"config":{"flag":true},"provenance":{"actor":"other"}}),
+            ),
+        ] {
+            let directory = tempfile::tempdir().unwrap();
+            let mut inspection = step("fixture.observe");
+            inspection.arguments["expectedId"] = json!(expected.id);
+            inspection.action = Action {
+                approvals: BTreeSet::from([Approval::new("--adopt", "sample")]),
+                check: Some(expected.clone()),
+                effect: Effect::Adopt(Box::new(expected.clone())),
+                ..Action::default()
+            };
+            let plan = Plan {
+                steps: vec![inspection, step("fixture.must_not_send")],
+                ..Plan::default()
+            };
+            let result = execute(
+                directory.path(),
+                &plan,
+                Ledger::default(),
+                async |tool, _, _| {
+                    assert_eq!(
+                        tool, "fixture.observe",
+                        "an adoption mismatch must stop the next request"
+                    );
+                    let mut reply = json!({"id":expected.id,"revision":expected.revision,
+                        "declared":{"config":{"flag":true},"provenance":{"actor":"root"}},
+                        "status":{"state":"ready"}, "packages":[]});
+                    reply[field] = changed.clone();
+                    Ok(response("succeeded", reply))
+                },
+            )
+            .await;
+            assert_eq!(result, 1, "adoption should stop on {field}");
+            assert!(
+                journal(directory.path(), &plan)["entries"][0]["verificationFailed"]
+                    .as_str()
+                    .is_some_and(|place| place.starts_with(&format!("/{field}")))
+            );
+            let ledger = Ledger::read(&directory.path().join(".conduit/state.yaml")).unwrap();
+            assert!(ledger.objects.is_empty());
+        }
+    }
+
+    #[tokio::test]
+    async fn review_249_failed_cascade_keeps_uncertain_members_for_observation() {
+        let directory = tempfile::tempdir().unwrap();
+        let temporary = Name::new("Conduit", "cascade-team");
+        let pool = Name::new("Pool", "team");
+        let member = Name::new("Resource", "sample");
+        let incident = Name::new("Conduit", "incident");
+        let mut previous = Ledger::default();
+        let approval = Approval::new("--with-resources", "team");
+        let mut object = registered(json!({}));
+        previous.cascades.insert(
+            temporary.clone(),
+            KeptCascade {
+                id: object.id.clone(),
+                container: pool.clone(),
+                approval: approval.clone(),
+                temporary_done: false,
+                retirement: None,
+            },
+        );
+        previous.objects.insert(temporary.clone(), object.clone());
+        object.id = "00000000-0000-4000-8000-000000000003".into();
+        previous.objects.insert(pool.clone(), object.clone());
+        let mut resource = registered(json!({"owner":"team"}));
+        resource.id = "00000000-0000-4000-8000-000000000002".into();
+        previous.objects.insert(member.clone(), resource.clone());
+        let mut grant = registered(json!({"target":member.reference()}));
+        grant.id = "00000000-0000-4000-8000-000000000004".into();
+        previous.objects.insert(incident.clone(), grant.clone());
+        let mut retirement = step("fixture.cascade");
+        retirement.subject = pool.clone();
+        retirement.expected = Some(object.id.clone());
+        retirement.action = Action {
+            effect: Effect::Cascade {
+                conduit: temporary.clone(),
+                retirement: Box::new(CascadeRetirement {
+                    objects: BTreeMap::from([
+                        (pool.clone(), object.id.clone()),
+                        (member.clone(), resource.id.clone()),
+                        (incident.clone(), grant.id),
+                    ]),
+                    templates: BTreeMap::new(),
+                    confirmed: false,
+                }),
+            },
+            approvals: BTreeSet::from([approval.clone()]),
+            ..Action::default()
+        };
+        let plan = Plan {
+            steps: vec![retirement],
+            ..Plan::default()
+        };
+        assert_eq!(
+            execute(directory.path(), &plan, previous, async |_, _, _| {
+                Ok(response("failed", json!({"invocation":"cascade-attempt"})))
+            })
+            .await,
+            1
+        );
+        let kept = Ledger::read(&directory.path().join(".conduit/state.yaml")).unwrap();
+        assert!(kept.objects.contains_key(&member));
+        assert!(kept.objects.contains_key(&incident));
+        assert!(
+            !kept.cascades[&temporary]
+                .retirement
+                .as_ref()
+                .unwrap()
+                .confirmed
+        );
+        let mut retired = object;
+        retired.state = "retired".into();
+        retired.status = json!({"shutdown":"pending"});
+        let engine = Engine {
+            objects: BTreeMap::from([(pool.clone(), retired.clone())]),
+            ..Engine::default()
+        };
+        let bare = compare::plan(&Desired::default(), &kept, &engine, &BTreeSet::new());
+        assert!(
+            bare.text()
+                .contains("state=retired requires=--with-resources team LIF-026")
+        );
+        let plan = compare::plan(
+            &Desired::default(),
+            &kept,
+            &engine,
+            &BTreeSet::from([approval]),
+        );
+        assert!(
+            plan.stops.is_empty(),
+            "the observed retired Pool can retry under the cascade approval"
+        );
+        assert!(
+            plan.steps
+                .iter()
+                .any(|step| step.subject == pool && step.tool.ends_with(".retire.v1"))
+        );
+        assert_eq!(execute(directory.path(), &plan, kept, async |tool, _, _| {
+            if tool == "management.list.v1" {
+                return Ok(response("succeeded", json!({"objects":[{"kind":"Pool","name":"team","id":retired.id,"state":"retired"}],"tombstones":[]})));
+            }
+            let readback = Ledger::read(&directory.path().join(".conduit/state.yaml")).unwrap();
+            assert!(!readback.objects.contains_key(&member));
+            assert!(!readback.objects.contains_key(&incident));
+            assert!(!readback.objects.contains_key(&temporary));
+            assert_eq!(readback.objects[&pool].state, "retired");
+            Ok(response("failed", json!({"invocation":"second-attempt"})))
+        }).await, 1);
+    }
+
+    #[test]
+    fn review_249_confirmed_cascade_keeps_template_approval_across_lift() {
+        let temporary = Name::new("Conduit", "cascade-team");
+        let pool = Name::new("Pool", "team");
+        let template = Name::new("Pool", "team--t");
+        let approval = Approval::new("--with-resources", "team");
+        let grant = registered(json!({}));
+        let mut owner = grant.clone();
+        owner.id = "00000000-0000-4000-8000-000000000002".into();
+        let mut old_template = grant.clone();
+        old_template.id = "00000000-0000-4000-8000-000000000003".into();
+        old_template.state = "template".into();
+        let mut ledger = Ledger {
+            files: json!({}),
+            ..Ledger::default()
+        };
+        ledger.objects.extend([
+            (temporary.clone(), grant.clone()),
+            (pool.clone(), owner),
+            (template.clone(), old_template.clone()),
+        ]);
+        ledger.cascades.insert(
+            temporary.clone(),
+            KeptCascade {
+                id: grant.id.clone(),
+                container: pool.clone(),
+                approval: approval.clone(),
+                temporary_done: false,
+                retirement: None,
+            },
+        );
+        let mut retirement = step("fixture.cascade");
+        retirement.subject = pool.clone();
+        let mut names = BTreeMap::new();
+        let owner_id = ledger.objects[&pool].id.clone();
+        apply_effect(
+            &mut ledger,
+            &mut names,
+            &retirement,
+            &Effect::Cascade {
+                conduit: temporary.clone(),
+                retirement: Box::new(CascadeRetirement {
+                    objects: BTreeMap::from([(pool, owner_id)]),
+                    templates: BTreeMap::from([(template.clone(), old_template.id.clone())]),
+                    confirmed: false,
+                }),
+            },
+            &json!({"outcome":"succeeded"}),
+            &json!({}),
+        )
+        .unwrap();
+        let stone = json!({"id":"temporary-stone","object":{"id":grant.id}});
+        ledger.tombstones.push(stone.clone());
+        let mut engine = Engine {
+            objects: BTreeMap::from([(template.clone(), old_template)]),
+            tombstones: vec![stone],
+            ..Engine::default()
+        };
+        let approvals = BTreeSet::from([approval]);
+        let directory = tempfile::tempdir().unwrap();
+        let file = directory.path().join("state.yaml");
+        fs::write(&file, timestamp_free_state(&ledger).to_string()).unwrap();
+        let before = compare::plan(
+            &Desired::default(),
+            &Ledger::read(&file).unwrap(),
+            &engine,
+            &approvals,
+        );
+        apply_effect(
+            &mut ledger,
+            &mut names,
+            &retirement,
+            &Effect::LiftCascade(temporary),
+            &json!({"outcome":"succeeded","remaining":[]}),
+            &json!({"id":"temporary-stone"}),
+        )
+        .unwrap();
+        engine.tombstones.clear();
+        fs::write(&file, timestamp_free_state(&ledger).to_string()).unwrap();
+        let after = compare::plan(
+            &Desired::default(),
+            &Ledger::read(&file).unwrap(),
+            &engine,
+            &approvals,
+        );
+        let cleanup_ready = |plan: &Plan| {
+            plan.stops.is_empty()
+                && plan.steps.iter().any(|step| {
+                    step.subject == template
+                        && step.tool == "management.unregister.v1"
+                        && step.action.approvals == approvals
+                        && step.arguments["revision"] == "revision-1"
+                })
+        };
+        assert_eq!(
+            [cleanup_ready(&before), cleanup_ready(&after)],
+            [true, true],
+            "the same approval must finish template cleanup before and after lift"
+        );
+    }
+
+    #[test]
+    fn review_249_cascade_cleanup_forgets_only_the_verified_temporary_identity() {
+        let temporary = Name::new("Conduit", "cascade-team");
+        let object = registered(json!({}));
+        for lift in [false, true] {
+            let mut ledger = Ledger::default();
+            ledger.objects.insert(temporary.clone(), object.clone());
+            ledger.cascades.insert(
+                temporary.clone(),
+                KeptCascade {
+                    id: object.id.clone(),
+                    container: Name::new("Pool", "team"),
+                    approval: Approval::new("--with-resources", "team"),
+                    temporary_done: false,
+                    retirement: None,
+                },
+            );
+            let mut names = BTreeMap::new();
+            let (effect, reply) = if lift {
+                (
+                    Effect::LiftCascade(temporary.clone()),
+                    json!({"remaining":[]}),
+                )
+            } else {
+                let plan = compare::plan(
+                    &Desired::default(),
+                    &ledger,
+                    &Engine::default(),
+                    &BTreeSet::new(),
+                );
+                assert!(plan.stops.is_empty());
+                assert_eq!(plan.steps.len(), 1);
+                (
+                    plan.steps[0].action.effect.clone(),
+                    json!({"objects":[],"tombstones":[]}),
+                )
+            };
+            apply_effect(
+                &mut ledger,
+                &mut names,
+                &step("fixture.cleanup"),
+                &effect,
+                &reply,
+                &json!({"id":"stone"}),
+            )
+            .unwrap();
+            assert!(ledger.cascades.is_empty());
+            assert!(ledger.objects.is_empty());
+        }
     }
 
     #[tokio::test]

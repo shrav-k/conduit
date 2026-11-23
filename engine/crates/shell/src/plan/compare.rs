@@ -52,6 +52,11 @@ pub(super) fn plan(
         remakes: BTreeMap::new(),
         lifts: BTreeMap::new(),
         lift_permissions: BTreeMap::new(),
+        adoptions: Vec::new(),
+        unregister: BTreeMap::new(),
+        cascades: BTreeMap::new(),
+        cascade_retries: BTreeMap::new(),
+        pruned: BTreeSet::new(),
     };
     changes.collect();
     changes.expand_replacements();
@@ -80,6 +85,11 @@ struct Changes<'a> {
     remakes: BTreeMap<Name, Name>,
     lifts: BTreeMap<String, PlannedLift>,
     lift_permissions: BTreeMap<Name, BTreeSet<Approval>>,
+    adoptions: Vec<Name>,
+    unregister: BTreeMap<Name, Approval>,
+    cascades: BTreeMap<Name, Approval>,
+    cascade_retries: BTreeMap<Name, Name>,
+    pruned: BTreeSet<Name>,
 }
 
 #[derive(Default)]
@@ -192,6 +202,14 @@ impl Changes<'_> {
         let mut names: Vec<_> = names.into_iter().collect();
         names.sort_by_cached_key(|name| nested_slot(self.engine, name).is_some());
         for name in &names {
+            if self
+                .ledger
+                .cascades
+                .get(name)
+                .is_some_and(|kept| !kept.temporary_done)
+            {
+                continue;
+            }
             if nested_slot(self.engine, name)
                 .is_some_and(|(parent, _, _)| self.retire.contains(parent))
                 || self
@@ -216,11 +234,50 @@ impl Changes<'_> {
                 }
                 continue;
             }
+            if self.covered_by_absent_parent(name, old) {
+                continue;
+            }
             if (want.is_some() || owned)
                 && old.is_some_and(|old| {
                     old.state == "retired" && old.status["shutdown"] != "confirmed"
                 })
             {
+                if let Some(observed) = old
+                    && owned
+                    && want.is_none()
+                    && let Some((conduit, kept)) = self.ledger.cascades.iter().find(|(_, kept)| {
+                        kept.container == *name
+                            && kept.retirement.as_ref().is_some_and(|retirement| {
+                                !retirement.confirmed
+                                    && retirement.objects.get(name) == Some(&observed.id)
+                            })
+                    })
+                {
+                    if self.permit(name, "state=retired", &kept.approval, "LIF-026") {
+                        if owns_members(self.engine, name) {
+                            self.stop(name, "state=retired LIF-020");
+                        } else {
+                            self.retire.insert(name.clone());
+                            self.cascade_retries.insert(name.clone(), conduit.clone());
+                            self.replacement_flags
+                                .entry(name.clone())
+                                .or_default()
+                                .insert(kept.approval.clone());
+                            self.cascade_templates(kept);
+                        }
+                    }
+                    continue;
+                }
+                if let Some(observed) = old
+                    && owned
+                    && want.is_none()
+                    && self.ledger.prune_attempts.contains_key(&observed.id)
+                {
+                    if self.flag(name, "state=retired", "--prune", "LIF-026") {
+                        self.prune(name);
+                    }
+                    continue;
+                }
                 let this_copy = owned && kept.is_some_and(|kept| kept.state == "retired");
                 let approvals = self
                     .ledger
@@ -245,9 +302,6 @@ impl Changes<'_> {
                 self.stop(name, cause);
                 continue;
             }
-            if self.covered_by_absent_parent(name, old) {
-                continue;
-            }
             match (want, old, kept) {
                 (Some(want), Some(old), kept) => self.existing(name, want, old, kept),
                 (Some(want), None, kept) => self.missing(name, want, kept),
@@ -261,6 +315,15 @@ impl Changes<'_> {
         if self.desired.objects.contains_key(name) {
             return false;
         }
+        if old.is_some_and(|old| {
+            self.ledger.cascades.values().any(|kept| {
+                kept.retirement
+                    .as_ref()
+                    .is_some_and(|retirement| retirement.templates.get(name) == Some(&old.id))
+            })
+        }) {
+            return true;
+        }
         if let Some(base) = name.name.strip_suffix("--t") {
             let base = Name::new(&name.kind, base);
             if self.engine.objects.get(&base).is_some_and(|o| {
@@ -271,6 +334,17 @@ impl Changes<'_> {
                         .get(&base)
                         .is_some_and(|kept| kept.id == o.id)
             }) && !self.desired.objects.contains_key(&base)
+            {
+                return true;
+            }
+            if !self.engine.objects.contains_key(&base)
+                && self.ledger.cascades.values().any(|cascade| {
+                    self.engine.objects.contains_key(&cascade.container)
+                        && !self.desired.objects.contains_key(&cascade.container)
+                        && self
+                            .removed_cascade_members(&cascade.container)
+                            .contains(&base)
+                })
             {
                 return true;
             }
@@ -319,21 +393,30 @@ impl Changes<'_> {
             );
             return;
         }
-        let Some(kept) =
-            kept.filter(|k| k.id == old.id && (!template || k.revision == old.revision))
-        else {
+        let owned = kept.filter(|k| k.id == old.id && (!template || k.revision == old.revision));
+        let adopting = owned.is_none();
+        let kept = if let Some(kept) = owned {
+            kept
+        } else {
             let show_revision = if template && kept.is_some() {
                 format!(" revision={}", old.revision)
             } else {
                 String::new()
             };
-            self.flag(
+            if old.state == "retired" {
+                self.stop(name, "state=retired rule=none -");
+                return;
+            }
+            if !self.flag(
                 name,
                 &format!("id={}{}", old.id, show_revision),
                 "--adopt",
                 "OBJ-002",
-            );
-            return;
+            ) {
+                return;
+            }
+            self.adoptions.push(name.clone());
+            old
         };
         let previous = comparable(&old.definition);
         let next = comparable(&want.resolved.definition);
@@ -348,6 +431,15 @@ impl Changes<'_> {
                 || !changed_pins.is_empty()
                 || redacted.is_some()
             {
+                if adopting {
+                    if !self.flag(name, "place=/resolved", "--replace", "INS-020") {
+                        return;
+                    }
+                    self.replacement_flags
+                        .entry(name.clone())
+                        .or_default()
+                        .insert(Approval::new("--replace", &name.name));
+                }
                 self.touched.insert(name.clone());
                 self.replace_templates.push((name.clone(), redacted));
             }
@@ -360,7 +452,13 @@ impl Changes<'_> {
             || redacted.is_some()
             || !changed_pins.is_empty() && !same_contracts(want, old, self.desired);
         if places.is_empty() && !changed_execution {
+            if adopting {
+                return;
+            }
             if old.state == "registered" {
+                if self.ledger.adopted.contains(&kept.id) {
+                    return;
+                }
                 if let Some(flags) = self.ledger.registration_flags.get(&kept.id) {
                     if !self.permit_all(name, "state=registered", flags, "LIF-013") {
                         return;
@@ -723,7 +821,7 @@ impl Changes<'_> {
                 continue;
             };
             let old = &self.engine.objects[&endpoint];
-            self.mark_bounds(&endpoint, old, &wanted.resolved);
+            self.mark_bounds(&endpoint, old, Some(&wanted.resolved));
             if endpoint.kind == "Agent" {
                 match self.held_sign_in(old) {
                     Some(true) => {
@@ -842,9 +940,9 @@ impl Changes<'_> {
         .then_some(false)
     }
 
-    fn mark_bounds(&mut self, name: &Name, old: &ObservedObject, new: &ObservedObject) {
+    fn mark_bounds(&mut self, name: &Name, old: &ObservedObject, new: Option<&ObservedObject>) {
         let previous = &old.definition["owner"];
-        let next = &new.definition["owner"];
+        let next = new.map_or(&Value::Null, |new| &new.definition["owner"]);
         for (holder, conduit) in &self.engine.objects {
             if holder.kind != "Conduit" || conduit.state != "ready" {
                 continue;
@@ -898,44 +996,623 @@ impl Changes<'_> {
 
     fn dropped(&mut self, name: &Name, old: &ObservedObject) {
         if old.is_template() {
-            self.flag(name, "absent=file", "--prune", "INS-020");
+            if self.flag(name, "absent=file", "--prune", "INS-020") {
+                self.unregister
+                    .insert(name.clone(), Approval::new("--prune", &name.name));
+            }
         } else if name.kind == "Conduit" {
             self.close.insert(name.clone());
             self.touched.insert(name.clone());
-        } else if owns_members(self.engine, name) {
-            self.flag(
-                name,
-                "absent=file",
+        } else if owns_members(self.engine, name)
+            || self.ledger.cascades.values().any(|cascade| {
+                &cascade.container == name
+                    && cascade.retirement.as_ref().map_or_else(
+                        || {
+                            self.engine
+                                .objects
+                                .values()
+                                .any(|object| object.id == cascade.id)
+                                || self
+                                    .engine
+                                    .tombstones
+                                    .iter()
+                                    .any(|stone| stone["object"]["id"] == cascade.id)
+                        },
+                        |retirement| {
+                            !retirement.confirmed && retirement.objects.get(name) == Some(&old.id)
+                        },
+                    )
+            })
+        {
+            let approval = Approval::new(
                 if name.kind == "Pool" {
                     "--with-resources"
                 } else {
                     "--with-agents"
                 },
-                "LIF-020",
+                &name.name,
             );
-            for (member, old) in &self.engine.objects {
-                if name_reference(&old.definition.get("owner"), &name.kind).as_ref() == Some(name)
-                    && member.kind != name.kind
-                    && !old.is_template()
-                {
-                    self.touched.insert(member.clone());
-                }
+            let members = self.members(name);
+            self.touched.extend(members.iter().cloned());
+            if self.permit(name, "absent=file", &approval, "LIF-020") {
+                self.cascades.insert(name.clone(), approval);
             }
+        } else if self.flag(name, "absent=file", "--prune", "LIF-035") {
+            self.prune(name);
+        }
+    }
+
+    fn prune(&mut self, name: &Name) {
+        let approval = Approval::new("--prune", &name.name);
+        self.retire.insert(name.clone());
+        self.pruned.insert(name.clone());
+        self.replacement_flags
+            .entry(name.clone())
+            .or_default()
+            .insert(approval.clone());
+        self.inline_unregister(name, &approval);
+        self.mark_bounds(name, &self.engine.objects[name], None);
+    }
+
+    fn inline_unregister(&mut self, name: &Name, approval: &Approval) {
+        let template = Name::new(&name.kind, &format!("{}--t", name.name));
+        if !self.desired.objects.contains_key(&template)
+            && self
+                .engine
+                .objects
+                .get(&template)
+                .zip(self.ledger.objects.get(&template))
+                .is_some_and(|(current, kept)| {
+                    current.is_template()
+                        && current.id == kept.id
+                        && current.revision == kept.revision
+                })
+        {
+            self.touched.insert(template.clone());
+            self.unregister.insert(template, approval.clone());
+        }
+    }
+
+    fn cascade_templates(&mut self, kept: &KeptCascade) {
+        let Some(retirement) = &kept.retirement else {
+            return;
+        };
+        for (name, id) in &retirement.templates {
+            if !self.desired.objects.contains_key(name)
+                && self
+                    .ledger
+                    .objects
+                    .get(name)
+                    .is_some_and(|kept| kept.id == *id)
+                && self
+                    .engine
+                    .objects
+                    .get(name)
+                    .is_some_and(|current| current.is_template() && current.id == *id)
+            {
+                self.touched.insert(name.clone());
+                self.unregister.insert(name.clone(), kept.approval.clone());
+            }
+        }
+    }
+
+    fn members(&self, container: &Name) -> BTreeSet<Name> {
+        let family = if container.kind == "Pool" {
+            "Resource"
         } else {
-            self.flag(name, "absent=file", "--prune", "LIF-035");
+            "Agent"
+        };
+        self.engine
+            .objects
+            .iter()
+            .filter(|(name, object)| {
+                name.kind == family
+                    && !object.is_template()
+                    && name_reference(&object.definition.get("owner"), &container.kind).as_ref()
+                        == Some(container)
+            })
+            .map(|(name, _)| name.clone())
+            .collect()
+    }
+
+    fn removed_cascade_members(&self, container: &Name) -> BTreeSet<Name> {
+        if !self
+            .ledger
+            .cascades
+            .values()
+            .any(|cascade| &cascade.container == container)
+        {
+            return BTreeSet::new();
+        }
+        let family = if container.kind == "Pool" {
+            "Resource"
+        } else {
+            "Agent"
+        };
+        self.ledger
+            .objects
+            .iter()
+            .filter(|(name, kept)| {
+                name.kind == family
+                    && !kept.is_template()
+                    && !self.engine.objects.contains_key(*name)
+                    && !self.desired.objects.contains_key(*name)
+                    && name_reference(&kept.definition.get("owner"), &container.kind).as_ref()
+                        == Some(container)
+            })
+            .map(|(name, _)| name.clone())
+            .collect()
+    }
+
+    fn adoption_steps(&mut self) {
+        for name in std::mem::take(&mut self.adoptions) {
+            let old = &self.engine.objects[&name];
+            let route = self.owner_route(&old.definition, &name.kind);
+            let step = self.push(
+                &format!("{route}.inspect.v1"),
+                name.clone(),
+                Some(old.id.clone()),
+                Expected::None,
+                "neither",
+                "OBJ-002",
+            );
+            step.details.push(format!(
+                "adopt {name} id={} revision={} resolved={} pins={}",
+                old.id,
+                old.revision,
+                safe(&old.definition),
+                safe(&json!(old.packages))
+            ));
+            step.action = Action {
+                check: Some(old.clone()),
+                effect: Effect::Adopt(Box::new(old.clone())),
+                approvals: BTreeSet::from([Approval::new("--adopt", &name.name)]),
+                ..Action::default()
+            };
+        }
+    }
+
+    fn unregister_steps(&mut self) {
+        for (name, approval) in std::mem::take(&mut self.unregister) {
+            let old = &self.engine.objects[&name];
+            let step = self.push(
+                "management.unregister.v1",
+                name,
+                Some(old.id.clone()),
+                Expected::None,
+                "removes",
+                "INS-020",
+            );
+            step.arguments["revision"] = json!(old.revision);
+            step.action = Action {
+                effect: Effect::Remove,
+                approvals: BTreeSet::from([approval]),
+                ..Action::default()
+            };
+        }
+    }
+
+    fn retirement_affect(&mut self, step: usize, verb: &str, objects: &BTreeSet<Name>, rule: &str) {
+        if !objects.is_empty() {
+            let names = objects
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>()
+                .join(",");
+            self.result
+                .retirement_affects
+                .push(format!("affects step={step} {verb}=[{names}] {rule}"));
+        }
+    }
+
+    fn cleanup_cascades(&mut self) {
+        for (conduit, kept) in &self.ledger.cascades {
+            let current = (!kept.temporary_done)
+                .then(|| self.engine.objects.get(conduit))
+                .flatten();
+            if let Some(object) = current
+                && (object.id != kept.id || object.made_by_engine)
+            {
+                self.stop(
+                    conduit,
+                    &format!("id={} expected={} LIF-037", object.id, kept.id),
+                );
+                continue;
+            }
+            let stone = !kept.temporary_done
+                && self
+                    .engine
+                    .tombstones
+                    .iter()
+                    .any(|stone| stone["object"]["id"] == kept.id);
+            let approved = self.approvals.contains(&kept.approval);
+            let settled = kept.retirement.as_ref().is_some_and(|retirement| {
+                retirement.confirmed
+                    || retirement
+                        .objects
+                        .iter()
+                        .filter(|(name, _)| name.kind != "Conduit")
+                        .all(|(name, id)| {
+                            self.engine
+                                .objects
+                                .get(name)
+                                .is_none_or(|current| current.id != *id)
+                        })
+            });
+            let pending_templates = settled
+                && kept.retirement.as_ref().is_some_and(|retirement| {
+                    retirement.templates.iter().any(|(name, id)| {
+                        !self.desired.objects.contains_key(name)
+                            && self
+                                .engine
+                                .objects
+                                .get(name)
+                                .is_some_and(|current| current.id == *id)
+                    })
+                });
+            let refresh = (!kept.temporary_done && current.is_none() && !stone)
+                || kept.retirement.as_ref().is_some_and(|retirement| {
+                    !retirement.confirmed
+                        || retirement.templates.iter().any(|(name, id)| {
+                            self.engine
+                                .objects
+                                .get(name)
+                                .is_none_or(|current| current.id != *id)
+                        })
+                });
+            if refresh {
+                self.push(
+                    "management.list.v1",
+                    Name::new("Tombstone", &conduit.name),
+                    None,
+                    Expected::None,
+                    "neither",
+                    "LIF-040",
+                )
+                .action
+                .effect = Effect::ObserveCascade(conduit.clone());
+            }
+            if pending_templates
+                && self.permit(
+                    &kept.container,
+                    "cascade=unfinished",
+                    &kept.approval,
+                    "LIF-021",
+                )
+            {
+                self.cascade_templates(kept);
+            }
+            if let Some(old) = current {
+                self.touched.insert(conduit.clone());
+                let step = self.push(
+                    "management.inspect.v1",
+                    conduit.clone(),
+                    Some(kept.id.clone()),
+                    Expected::None,
+                    "neither",
+                    "LIF-013",
+                );
+                step.action = Action {
+                    check: Some(old.clone()),
+                    effect: Effect::None,
+                    ..Action::default()
+                };
+                let access = self.access().to_owned();
+                let step = self.push(
+                    &format!("{access}.close.v1"),
+                    conduit.clone(),
+                    Some(kept.id.clone()),
+                    Expected::None,
+                    "narrows",
+                    "LIF-037",
+                );
+                step.action = Action {
+                    effect: Effect::Remove,
+                    ..Action::default()
+                };
+                self.result.closed_conduits.insert(conduit.name.clone());
+            }
+            if approved && (current.is_some() || stone) {
+                self.permit(
+                    &kept.container,
+                    "cascade=unfinished",
+                    &kept.approval,
+                    "LIF-021",
+                );
+                self.cascade_lift(conduit, Some(kept.id.clone()), None, &kept.approval);
+            }
+        }
+    }
+
+    fn cascade_lift(
+        &mut self,
+        conduit: &Name,
+        id: Option<String>,
+        registration: Option<usize>,
+        approval: &Approval,
+    ) {
+        let listed = self.result.steps.len() + 1;
+        let stone = Name::new("Tombstone", &conduit.name);
+        self.push(
+            "management.list.v1",
+            stone.clone(),
+            None,
+            Expected::None,
+            "neither",
+            "LIF-040",
+        )
+        .action
+        .effect = Effect::Tombstones;
+        let access = self.access().to_owned();
+        self.push(
+            &format!("{access}.lift.v1"),
+            stone,
+            None,
+            Expected::Step(listed),
+            "neither",
+            "ACC-053",
+        )
+        .action = Action {
+            binding: Some(Binding::CascadeTombstone {
+                listed,
+                registration,
+                id,
+            }),
+            effect: Effect::LiftCascade(conduit.clone()),
+            approvals: BTreeSet::from([approval.clone()]),
+            ..Action::default()
+        };
+    }
+
+    fn cascade_name(&self, container: &Name) -> Name {
+        let base = format!("cascade-{}", container.name);
+        let occupied = |name: &str| {
+            let reference = Name::new("Conduit", name);
+            self.engine.objects.contains_key(&reference)
+                || self.desired.objects.contains_key(&reference)
+                || self.ledger.cascades.contains_key(&reference)
+                || self
+                    .result
+                    .steps
+                    .iter()
+                    .any(|step| step.subject == reference)
+                || self
+                    .engine
+                    .objects
+                    .values()
+                    .any(|object| object.definition["as"] == name)
+                || self
+                    .engine
+                    .tombstones
+                    .iter()
+                    .any(|stone| stone["object"]["name"] == name || stone["localName"] == name)
+        };
+        if base.len() <= 63 && !occupied(&base) {
+            return Name::new("Conduit", &base);
+        }
+        for count in 0u64.. {
+            let digest = bytes_digest(format!("{container}:{count}").as_bytes());
+            let suffix = &digest["sha256:".len()..15];
+            let prefix = &base[..base.len().min(54)];
+            let name = format!("{prefix}-{suffix}");
+            if !occupied(&name) {
+                return Name::new("Conduit", &name);
+            }
+        }
+        unreachable!("out of deterministic cascade names")
+    }
+
+    fn cascade_steps(&mut self) {
+        for (container, approval) in std::mem::take(&mut self.cascades) {
+            let members = self.members(&container);
+            let earlier_members = self.removed_cascade_members(&container);
+            let mut removed = members.clone();
+            removed.insert(container.clone());
+            if let Some(retained) = members
+                .iter()
+                .find(|member| self.desired.objects.contains_key(*member))
+            {
+                self.stop(retained, "owner=absent-file LIF-021");
+                continue;
+            }
+            if let Some(foreign) = members.iter().find(|member| {
+                self.ledger
+                    .objects
+                    .get(*member)
+                    .is_none_or(|kept| kept.id != self.engine.objects[*member].id)
+            }) {
+                self.stop(foreign, "owner=absent-file member=not-kept LIF-021");
+                continue;
+            }
+            let mut closes: BTreeSet<_> = removed
+                .iter()
+                .flat_map(|member| self.incident(member))
+                .filter(|conduit| {
+                    !self.close.contains(conduit)
+                        && !self.result.closed_conduits.contains(&conduit.name)
+                })
+                .collect();
+            let conduit = self.cascade_name(&container);
+            let (template, capability, operation) = if container.kind == "Pool" {
+                (
+                    "retire-pool",
+                    "pool-management.v1",
+                    "retire-with-resources.v1",
+                )
+            } else {
+                (
+                    "retire-fleet",
+                    "fleet-management.v1",
+                    "retire-with-agents.v1",
+                )
+            };
+            let core = &self.desired.core_address;
+            let consumer = Name::new("Interface", "root").reference();
+            let target = container.reference();
+            let template = format!("{core}#{template}");
+            let doc = json!({"apiVersion":"github.com/shrav-k/conduit/v0",
+                "kind":"Conduit","metadata":{"name":conduit.name}, "from":template,
+                "consumer":consumer,"target":target,"as":conduit.name});
+            let definition = json!({"from":template,"consumer":consumer,"target":target,"as":conduit.name,
+                "resolved":{"capability":format!("{core}#{capability}"),"operations":[format!("{core}#{operation}")]}});
+            let blocked =
+                self.engine.tombstones.iter().any(|stone| {
+                    matches_tombstone(&conduit, &definition, stone)
+                        && !self.ledger.cascades.values().any(|kept| {
+                            kept.approval == approval && stone["object"]["id"] == kept.id
+                        })
+                });
+            if blocked {
+                self.stop(&conduit, "tombstone=outside-cascade LIF-041");
+                continue;
+            }
+
+            let temporary = ObservedObject {
+                id: String::new(),
+                revision: String::new(),
+                state: "registered".into(),
+                definition: definition.clone(),
+                packages: vec![self.desired.core_pin.clone()],
+                status: Value::Null,
+                unknown_endings: BTreeMap::new(),
+                inventory: Value::Null,
+                implementations: Value::Null,
+                made_by_engine: false,
+            };
+            let registration = self.result.steps.len() + 1;
+            let relative = Expected::Step(registration);
+            let first = self.push(
+                "management.register.v1",
+                conduit.clone(),
+                None,
+                relative,
+                "adds",
+                "ACC-054",
+            );
+            first.arguments = json!({"documents":[doc]});
+            first.action = Action {
+                effect: Effect::Register {
+                    objects: BTreeMap::from([(conduit.clone(), temporary.clone())]),
+                    defaults: vec![],
+                    nested: vec![],
+                },
+                approvals: BTreeSet::from([approval.clone()]),
+                track_cascade: Some((container.clone(), approval.clone())),
+                ..Action::default()
+            };
+            self.push(
+                "management.inspect.v1",
+                conduit.clone(),
+                None,
+                relative,
+                "neither",
+                "LIF-013",
+            )
+            .action = Action {
+                effect: Effect::None,
+                binding: object_binding(relative, "object"),
+                check: Some(temporary),
+                ..Action::default()
+            };
+            let access = self.access().to_owned();
+            self.push(
+                &format!("{access}.open.v1"),
+                conduit.clone(),
+                None,
+                relative,
+                "widens",
+                "LIF-037",
+            )
+            .action = Action {
+                effect: Effect::SetLifecycle {
+                    state: "ready",
+                    opened_by: None,
+                },
+                binding: object_binding(relative, "conduit"),
+                opens: Some((conduit.clone(), definition)),
+                approvals: BTreeSet::from([approval.clone()]),
+                ..Action::default()
+            };
+            closes.insert(conduit.clone());
+            let cascade = self.result.steps.len() + 1;
+            let id = self.engine.objects[&container].id.clone();
+            self.retirement_affect(cascade, "closes", &closes, "CON-008");
+            self.retirement_affect(cascade, "retires", &members, "LIF-021");
+            for name in std::iter::once(&container).chain(members.iter()) {
+                self.mark_bounds(name, &self.engine.objects[name], None);
+                self.inline_unregister(name, &approval);
+            }
+            for name in &earlier_members {
+                self.inline_unregister(name, &approval);
+            }
+            for kept in self
+                .ledger
+                .cascades
+                .values()
+                .filter(|kept| kept.container == container)
+            {
+                self.cascade_templates(kept);
+            }
+            let mut objects: BTreeMap<_, _> = removed
+                .iter()
+                .chain(&closes)
+                .chain(&earlier_members)
+                .filter_map(|name| {
+                    self.engine
+                        .objects
+                        .get(name)
+                        .or_else(|| self.ledger.objects.get(name))
+                        .map(|object| (name.clone(), object.id.clone()))
+                })
+                .collect();
+            // The temporary Conduit's identity is assigned by its registration step.
+            objects.remove(&conduit);
+            let templates = self
+                .unregister
+                .iter()
+                .filter(|(_, flag)| **flag == approval)
+                .map(|(name, _)| (name.clone(), self.engine.objects[name].id.clone()))
+                .collect();
+            let retirement = self.push(
+                &format!("{}.{operation}", conduit.name),
+                container.clone(),
+                Some(id),
+                Expected::None,
+                "narrows",
+                "LIF-021",
+            );
+            retirement.arguments = json!({});
+            retirement.action = Action {
+                effect: Effect::Cascade {
+                    conduit: conduit.clone(),
+                    retirement: Box::new(CascadeRetirement {
+                        objects,
+                        templates,
+                        confirmed: false,
+                    }),
+                },
+                approvals: BTreeSet::from([approval.clone()]),
+                ..Action::default()
+            };
+            self.cascade_lift(&conduit, None, Some(registration), &approval);
         }
     }
 
     fn steps(&mut self) {
+        self.adoption_steps();
+        self.cleanup_cascades();
         let mut nested_activations = Vec::new();
         for (name, redacted) in std::mem::take(&mut self.replace_templates) {
             let desired = &self.desired.objects[&name];
             let observed = &self.engine.objects[&name];
             let mut details = vec![format!("document={}", safe(&desired.document))];
-            let approval = name
-                .name
-                .strip_suffix("--t")
-                .and_then(|inline| self.replacement_flags.get(&Name::new(&name.kind, inline)))
+            let approval = self
+                .replacement_flags
+                .get(&name)
+                .or_else(|| {
+                    let inline = name.name.strip_suffix("--t")?;
+                    self.replacement_flags.get(&Name::new(&name.kind, inline))
+                })
                 .cloned()
                 .unwrap_or_default();
             let rule = if approval.is_empty() {
@@ -1011,7 +1688,10 @@ impl Changes<'_> {
                 self.add.retain(|n| !templates.contains(n));
             }
         }
-        let removals: Vec<_> = self.close.union(&self.retire).cloned().collect();
+        let mut removals: Vec<_> = self.close.union(&self.retire).cloned().collect();
+        if !self.cascades.is_empty() || !self.pruned.is_empty() {
+            removals.sort_by_key(|name| !self.close.contains(name));
+        }
         let mut remove_steps = BTreeMap::new();
         for name in &removals {
             let previous = &self.engine.objects[name];
@@ -1050,13 +1730,28 @@ impl Changes<'_> {
             } else {
                 BTreeSet::new()
             };
+            if self.pruned.contains(name) || self.cascade_retries.contains_key(name) {
+                let closures = closes.difference(&self.close).cloned().collect();
+                self.retirement_affect(self.result.steps.len() + 1, "closes", &closures, "CON-008");
+            }
             let approvals = self
                 .replacement_flags
                 .get(name)
                 .cloned()
                 .unwrap_or_default();
             remove_steps.insert(name.clone(), self.result.steps.len() + 1);
-            let effect = if retire {
+            let effect = if let Some(conduit) = self.cascade_retries.get(name) {
+                let mut retirement = self.ledger.cascades[conduit].retirement.clone().unwrap();
+                retirement.objects.extend(
+                    closes
+                        .iter()
+                        .map(|child| (child.clone(), self.engine.objects[child].id.clone())),
+                );
+                Effect::Cascade {
+                    conduit: conduit.clone(),
+                    retirement: Box::new(retirement),
+                }
+            } else if retire {
                 let (closes_on_dispatch, closes_on_removal) =
                     closes.into_iter().partition(|child| {
                         self.engine.objects[child].definition["target"] == name.reference()
@@ -1085,7 +1780,12 @@ impl Changes<'_> {
                 ..Action::default()
             };
         }
-        if !remove_steps.is_empty() {
+        let removing = !self.pruned.is_empty() || !self.cascades.is_empty();
+        self.cascade_steps();
+        self.unregister_steps();
+        if !remove_steps.is_empty()
+            && (!removing || !self.pruned.is_empty() || !self.remakes.is_empty())
+        {
             let listed = self.result.steps.len() + 1;
             self.push(
                 "management.list.v1",
@@ -1619,18 +2319,15 @@ impl Changes<'_> {
                 .filter_map(Value::as_str)
                 .map(|id| format!("{prefix} {name} unreconciled={id} OPS-013"))
                 .collect();
-            if let Some(want) = self.desired.objects.get(name) {
-                // Reconciliation settles the invocation's outcome but cannot confirm the
-                // setting. Inspection still omits the per-setting state required by REV-009.
-                for (id, operation) in &old.unknown_endings {
-                    for (setting, controls) in &want.controls {
-                        if controls.contains(operation) {
-                            lines.push(format!(
-                                "{prefix} {name} setting={setting} control={operation} invocation={id} inspection=unknown-settings-not-built REV-009"
-                            ));
-                        }
-                    }
-                }
+            if let Some(settings) = old.status["settings"].as_object() {
+                lines.extend(
+                    settings
+                        .iter()
+                        .filter(|(_, setting)| setting["state"] == "unknown")
+                        .map(|(pointer, _)| {
+                            format!("{prefix} {name} setting={pointer} state=unknown REV-009")
+                        }),
+                );
             }
             if hold {
                 self.result.stops.extend(lines);

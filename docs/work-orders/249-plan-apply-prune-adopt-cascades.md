@@ -276,4 +276,25 @@ Report this list, corrected by what you built:
 
 ## Record
 
-Not yet run.
+Run on 2026-11-22 through Conduit itself, by the dogfood's own Agents, in Pacific time, on
+`main` with orders 245, 271, 247 and 248 stacked while they waited in the merge queue.
+
+**Worker-1's turn** (11:14 to 12:07) gave plan and apply the four remaining approval flags on 247's
+planner-owned actions and 248's operand table: prune retires a dropped, owned instance through its
+managing Conduit and then unregisters its inline template; adoption checks the observed ID,
+revision, resolved definition and pins; the Pool and Fleet cascades run through a one-time
+Conduit whose identity the kept state records, with recovery under the recorded approval. The
+eight tests, which failed first, pass, with apply's and 248's suites and order 241's 60-request
+replay.
+
+**Two blind reads at once** (12:19 to 12:35): `turn-verifier-1.turn.v1` found six musts, the
+Claude reader a should and two nits. One fix turn (12:36 to 13:18) applied all nine, each must
+reproduced first: adoption verifies the definition it printed and grants ledger ownership only; a
+cascade's approval survives an interruption around its steps; a partial cascade keeps its effects
+and retries retirement; prune keeps its new tombstones in the ledger; inspection's unknown
+settings, served since order 270, govern over an older unknown invocation; a stale temporary
+Conduit's state is cleared. Left for a later order: a failed cascade's reply cannot establish
+every member's and grant's outcome, which an exact ledger would need from the engine.
+
+The planner test that expected inspection to omit `status.settings` is order 245's, corrected
+before 245's merge. The gate's run on the squash is the coordinator's, at the merge.

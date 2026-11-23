@@ -270,9 +270,8 @@ stop SUBJECT CAUSE... [requires=REMEDY] PROMISE
 A subject is `KIND/NAME`, `Package/ADDRESS` or `Manifest/-`. Causes use `key=value` fields.
 `place` and `setting` are JSON Pointers. `id`, `revision`, `tombstone`, `unreconciled`,
 `absent`, `state` and `made-by` describe identity or lifecycle. `control`, `changed-by`,
-`item` and `secret` explain controls or hidden item differences. For an unknown control
-outcome, `invocation` names the invocation and `inspection=unknown-settings-not-built`
-says inspection does not expose per-setting unknown state. `pin`, `version`, `digest`,
+`item` and `secret` explain controls or hidden item differences. A setting that the engine's
+status holds as unknown after a control (REV-009) is a stop with `state=unknown`. `pin`, `version`, `digest`,
 `installed` and `archive` describe packages. `rule` identifies a stop with no deciding
 promise, whose trailing promise is `-`. A `requires=` field gives a remedy, such as a flag
 and its operand or `conduit-install`.

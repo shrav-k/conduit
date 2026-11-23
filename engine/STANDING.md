@@ -83,7 +83,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | ACC-039 | convention | must | 0 | 0 | outside | core | no case, no reason |
 | ACC-044 | convention | must | 18 | 1 | outside | core | case passes |
 | ACC-053 | convention | must | 24 | 0 | outside | core, shell | case passes |
-| ACC-054 | convention | must | 7 | 0 | outside | core | case passes |
+| ACC-054 | convention | must | 7 | 0 | outside | core, shell | case passes |
 | ACC-055 | convention | must | 12 | 0 | outside | core | case passes |
 | ACC-056 | convention | must | 5 | 0 | outside | core | case passes |
 | ACC-057 | convention | must | 1 | 0 | outside | core | case passes |
@@ -241,7 +241,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | LIF-018 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | LIF-019 | convention | must not | 2 | 0 | cases | core | case passes |
 | LIF-020 | convention | must | 2 | 0 | outside | core, shell | case passes |
-| LIF-021 | convention | must | 12 | 0 | outside | core | case passes |
+| LIF-021 | convention | must | 12 | 0 | outside | core, shell | case passes |
 | LIF-022 | convention | must not | 0 | 0 | outside | none | no case, no reason |
 | LIF-023 | convention | must not | 0 | 0 | outside | none | no case, no reason |
 | LIF-024 | convention | must | 7 | 0 | cases | core, shell | case passes |

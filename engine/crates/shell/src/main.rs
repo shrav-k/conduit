@@ -35,6 +35,22 @@ fn run() -> Result<()> {
     let command = args
         .next()
         .ok_or("usage: conduit COMMAND [ARGUMENTS]; run conduit --help for commands")?;
+    if command == "value" {
+        use std::io::IsTerminal;
+        let runtime = tokio::runtime::Runtime::new().map_err(|error| error.to_string())?;
+        let arguments: Vec<_> = args.collect();
+        let mut person = conduit_shell::sign_in::Terminal;
+        let code = runtime.block_on(conduit_shell::value::run(
+            &arguments,
+            &mut person,
+            std::io::stdin().is_terminal(),
+            &mut std::io::stdout().lock(),
+        ));
+        if code != 0 {
+            std::process::exit(code);
+        }
+        return Ok(());
+    }
     if matches!(command.as_str(), "plan" | "apply") {
         let repository = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
         let code = match tokio::runtime::Runtime::new() {

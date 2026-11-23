@@ -627,6 +627,7 @@ fn help_describes_every_command_without_store_access() {
         "pending",
         "answer",
         "sign-in",
+        "value",
         "records",
         "serve",
         "tools",

@@ -12,6 +12,7 @@ pub mod server;
 pub mod sign_in;
 mod store;
 pub mod user_config;
+pub mod value;
 use chrono::{DateTime, SecondsFormat, Utc};
 use conduit_core::{Context, Input, RecordFault, State, Transition};
 pub use identity::RunIdentity;

@@ -20,6 +20,9 @@ mod differential;
 pub mod explain;
 pub mod inventory;
 pub mod lifecycle;
+mod limits;
+#[cfg(test)]
+mod limits_tests;
 mod login_resource;
 #[cfg(test)]
 mod login_resource_tests;
@@ -94,6 +97,9 @@ pub struct State {
     pub pending_actions: BTreeMap<String, Value>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub sign_in_holds: BTreeMap<String, Value>,
+    /// IFC-053: observations are engine state and survive a purge of their end records.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub limit_observations: BTreeMap<String, limits::Observations>,
     /// ACC-029 / ACC-053 / ACC-055: immutable kind and owner facts for IDs named by bounds.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub bound_targets: BTreeMap<String, Value>,

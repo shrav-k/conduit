@@ -506,6 +506,9 @@ pub(crate) fn execute(
             }
         }
         let mut status = o.get("status").cloned().unwrap_or(json!({}));
+        if let Some(limits) = crate::limits::status(&t.state, &o, &a.evidence.time, c) {
+            status["limits"] = limits;
+        }
         if let Some(state) = o.get("state") {
             status["state"] = state.clone();
         }

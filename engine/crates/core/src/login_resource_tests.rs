@@ -88,7 +88,7 @@ fn evidence(number: u32) -> Evidence {
     }
 }
 
-fn project(manifest: &str, documents: &str) -> packages::Project {
+pub(super) fn project(manifest: &str, documents: &str) -> packages::Project {
     packages::Project {
         manifest: Some(from_json(manifest)),
         documents: serde_json::from_str(documents).unwrap(),
@@ -181,7 +181,7 @@ fn substitute(value: &mut Value, captures: &BTreeMap<String, Value>) {
     }
 }
 
-fn run_case(
+pub(super) fn run_case(
     source: &str,
     project: packages::Project,
     count: usize,
@@ -236,11 +236,11 @@ fn run_case(
     (state, c, captures)
 }
 
-fn subject<'a>(state: &'a State, kind: &str, name: &str) -> &'a Value {
+pub(super) fn subject<'a>(state: &'a State, kind: &str, name: &str) -> &'a Value {
     access::object(state, &json!({"kind":kind,"name":name})).unwrap()
 }
 
-fn invoke(
+pub(super) fn invoke(
     state: &State,
     c: &Context,
     serial: u32,
@@ -265,7 +265,7 @@ fn invoke(
     .unwrap()
 }
 
-fn complete(
+pub(super) fn complete(
     state: &State,
     c: &Context,
     serial: u32,

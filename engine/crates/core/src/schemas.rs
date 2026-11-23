@@ -444,7 +444,7 @@ impl std::fmt::Display for SchemaFailure {
 
 impl Environment {
     /// Report only schema-defined coordinates. Validator messages and dynamic
-    /// instance keys may contain data from a malformed usage report.
+    /// instance keys may contain data from a malformed report.
     pub(crate) fn first_core_failure(
         &self,
         core: &str,
@@ -470,12 +470,21 @@ impl Environment {
         let mut fixed = String::new();
         let mut node = schema;
         for token in failure.instance_path().as_str().split('/').skip(1) {
-            let Some(property) = node["properties"].pointer(&format!("/{token}")) else {
+            let child = node["properties"]
+                .pointer(&format!("/{token}"))
+                .or_else(|| {
+                    if node["type"] == "array" && token.parse::<usize>().is_ok() {
+                        node.get("items")
+                    } else {
+                        None
+                    }
+                });
+            let Some(child) = child else {
                 break;
             };
             fixed.push('/');
             fixed.push_str(token);
-            node = property;
+            node = child;
         }
         Ok(Some((fixed, failure.evaluation_path().as_str().into())))
     }

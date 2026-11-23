@@ -37,6 +37,37 @@ class PrivatePathChecks(unittest.TestCase):
             status = private_paths.main(self.root)
         return status, output.getvalue()
 
+    def test_contributors_entries_may_hold_an_address(self):
+        address = b'listed@' + b'mail.synthetic'
+        entry = b'Listed Synthetic <' + address + b'>\n'
+        self.track('CONTRIBUTORS', b'# Header\n' + entry)
+        with self.subTest(part='entry'):
+            self.assertEqual(self.run_check(), (0, 'Errors: 0\n'))
+        for data in (b'# ' + entry, entry.rstrip() + address + b'\n',
+                     address + b' <safe@example.invalid>\n',
+                     b' Listed <' + address + b'>\n',
+                     b'Listed\tSynthetic <' + address + b'>\n'):
+            with self.subTest(part='other position', data=data):
+                self.track('CONTRIBUTORS', data)
+                code, output = self.run_check()
+                self.assertEqual(code, 1)
+                self.assertNotIn(address.decode(), output)
+        self.track('CONTRIBUTORS', entry)
+        for path in ('other.txt', 'nested/CONTRIBUTORS'):
+            with self.subTest(path=path):
+                self.track(path, entry)
+                self.assertEqual(self.run_check()[0], 1)
+                self.track(path, b'clean\n')
+        with patch.dict(os.environ, {'CONDUIT_PRIVATE_NAMES': 'Listed Synthetic'}):
+            self.assertIn('private name from CONDUIT_PRIVATE_NAMES', self.run_check()[1])
+        with patch.dict(os.environ, {'CONDUIT_PRIVATE_NAMES': 'mail.synthetic'}):
+            self.assertIn('private name from CONDUIT_PRIVATE_NAMES', self.run_check()[1])
+        target = self.root / 'CONTRIBUTORS'
+        target.unlink()
+        target.symlink_to(entry.decode().rstrip())
+        subprocess.run(['git', 'add', '--', 'CONTRIBUTORS'], cwd=self.root, check=True)
+        self.assertEqual(self.run_check()[0], 1)
+
     def test_clean_tree_is_green_and_untracked_file_is_ignored(self):
         self.track("README.md", b"A clean tree.\n")
         (self.root / "scratch").write_bytes(b"/Users/" + b"synthetic/private")

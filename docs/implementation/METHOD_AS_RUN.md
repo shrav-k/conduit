@@ -284,23 +284,28 @@ git fetch origin && git rebase origin/main && git merge-base --is-ancestor origi
 git diff --name-only HEAD^ HEAD
 ```
 The squash commits with the checkpoints' identity, not the handover's plain `git commit`.
-Check the second command's files against scope; shared remote refs can move between
-commands. Then, on the Mac, with the tree clean, run the gate
+Check the second command's files against scope; shared remote refs can move between commands.
+A listed contributor's branch is squashed with `--author`, pushed to the pull request they
+opened on a branch the coordinator can push to, and main's author checked after the merge
+against the listed line byte for byte. If it differs, the owner approves and merges a corrected
+line before further branches, as
+[CONTRIBUTING.md](../../CONTRIBUTING.md#commits-by-a-human-contributor) says.
+Then, on the Mac, with the tree clean, run the gate
 ([ruling 80](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-80/README.md), point 10 and its later answers), which
 derives the private names from the Mac at each run:
 ```sh
 python3 tools/gate.py --derive-private-names
 ```
 It compares the branch with `origin/main` as last fetched, and never fetches, pushes or
-calls GitHub. It fails a commit since `origin/main` whose author or committer is not the
-work-order identity, as a plain rebase leaves one, and names the commit. For what the
-branch changes it runs the checks of CI's `checks` workflow on the Mac: the `docs` job's
-Python checks in that job's order,
-with the private names it derives (the Mac's account, host and computer names, git's
+calls GitHub. It fails a commit since `origin/main` whose author or committer is neither the
+work-order identity nor a contributor that `CONTRIBUTORS` lists at the merge base, as a
+plain rebase leaves one, and names the commit. For what the branch changes it runs the
+checks of CI's `checks` workflow on the Mac: the `docs` job's Python checks in that job's
+order, with the private names it derives (the Mac's account, host and computer names, git's
 global identity, the repositories beside this one and their remotes, and the tailnet's
 peers, less those shorter than 4 characters, in the origin remote's URL or on its list of
-public words) given to `tools/check_private_paths.py` alone and never printed;
-the vector changes against the declarations the branch adds or changes and `git diff --check`.
+public words) given to `tools/check_private_paths.py` alone and never printed; the vector
+changes against the declarations the branch adds or changes and `git diff --check`.
 The tool tests run with `--all` or when a change touches `tools/`, `.github/workflows/`, or a
 Rust source, `Cargo.toml` or `Cargo.lock` under `packages/` or `experiments/`. The gate runs
 `cargo fmt --check`,

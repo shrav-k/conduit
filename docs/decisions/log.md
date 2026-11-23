@@ -732,3 +732,171 @@ Owner's words: the default Pool -> "pool: like fleet: (Recommended)"
 Lands in: ruling 53 point 6: a Resource that states no owner belongs to the file's `pool:` Pool, as an Agent belongs to its `fleet:` Fleet; `conduit init` writes neither; lands before the S1 rerun's pin or not before it
 
 Status: accepted, not done (a spec order with vectors and a loader order)
+
+## DEC-082, 2026-11-22, an access grant expires, and root sets its length
+
+Owner's words: does a granted access expire, and who sets how long -> "Expires; root sets it (Recommended)"
+
+Lands in: DEC-064's study, question 1: the grant's Conduit carries its own end time, checked at each request; `conduit grant` writes the shorter of the Agent's asked duration and 24 hours, and root may choose from 10 minutes to 14 days; a core requirement `expires.v1` and a promise ACC-059; nothing runs on a timer
+
+Status: accepted, not done (order 299 and the engine order after it)
+
+## DEC-083, 2026-11-22, records name an access request through ordinary records and the granted Conduit
+
+Owner's words: how records name a request and its answer -> "Records + the Conduit (Recommended)"
+
+Lands in: DEC-064's study, question 2: the ask's record and each answering request's record name the action's ID, as PND-012 does; the granted Conduit's provenance gains `answers`, the actions its open answered; no new record type
+
+Status: accepted, not done (order 299)
+
+## DEC-084, 2026-11-22, an access request carries no reason text
+
+Owner's words: may an Agent's ask carry its own reason in words -> "No; say why in the reply (Recommended)"
+
+Lands in: DEC-064's study, question 3: no `reason` input; the action names the turn that asked, and the Agent says why in its reply, read through `history.v1` (DEC-067)
+
+Status: accepted, not done (order 299)
+
+## DEC-085, 2026-11-22, asks for install.v1, management or access are refused
+
+Owner's words: beyond the operations never asked for, what else is refused at once -> "Also install, management, access (Recommended)"
+
+Lands in: DEC-064's study, question 4, ACC-058: an ask for `install.v1`, or whose target is `management` or `access`, is refused and raises nothing
+
+Status: accepted, not done (order 298)
+
+## DEC-086, 2026-11-22, a client outside the repository is not bound by the Rust rule
+
+Owner's words: where the owner's app lives and its language -> "Own repo, his language"
+
+Lands in: the owner's app lives in its own repository, in its builder's language; DEC-025's Rust rule covers the engine, the packages and the tooling in this repository, not clients outside it
+
+Status: accepted (no change in this repository)
+
+## DEC-087, 2026-11-22, the owner's app is its builder's to decide within the client contract
+
+Owner's words: what a second contributor decides -> "The app is his (Recommended)"
+
+Lands in: the app's screens, interaction, stack and code are its builder's to decide, within the client contract; a change to a spec promise, the engine, the client contract, the decision log or how the work is done is proposed to the owner, who rules
+
+Status: accepted
+
+## DEC-088, 2026-11-22, a human contributor's commits carry their own name
+
+Owner's words: whose name goes on a second contributor's commits -> "His own, if he agrees (Recommended)"
+
+Lands in: HOW-WE-WORK.md: the neutral work-order identity is only for commits made by Agents and the coordinator; a human contributor commits under their own name, if they agree
+
+Status: accepted, not done (order 300)
+
+## DEC-089, 2026-11-22, the gate admits commits by listed human contributors
+
+Owner's words: how a human contributor's commits pass the gate's identity row -> "Gate admits listed humans (Recommended)"
+
+Lands in: tools/gate.py's identity row admits, beside the neutral identity, the contributors a root file lists, which the owner approves; squash merges keep the contributor as author
+
+Status: accepted, not done (order 300)
+
+## DEC-090, 2026-11-22, a client uses the conduit CLI until DEC-074's client token exists
+
+Owner's words: how a client authenticates before DEC-074's token exists -> "Through the CLI only (Recommended)"
+
+Lands in: a client outside the engine runs `conduit` commands and reads their JSON; it never opens root's token file; direct MCP comes with DEC-074's client token
+
+Status: accepted (docs/clients.md, order 301)
+
+## DEC-091, 2026-11-22, the owner's app is built now, and its engine needs come later
+
+Owner's words: is the app built now, with its engine needs after the panel -> "Yes, app now; its needs after (Recommended)"
+
+Lands in: the app is built in parallel against what exists; the engine work it needs (its client token, `conduit plan --output json`, the access-request answers) follows
+
+Status: accepted
+
+## DEC-092, 2026-11-22, the public client page goes into the repository
+
+Owner's words: where the page for client builders goes -> "Into the repo now (Recommended)"
+
+Lands in: docs/clients.md, linked from CONTRIBUTING.md, marked a guide; spec/ and engine/CONFORMANCE.md bind
+
+Status: accepted, not done (order 301)
+
+## DEC-093, 2026-11-23, the usage guard is a feature Conduit offers, declared on the login Resource with explicit flags
+
+Owner's words: how a team seat's use is guarded -> "this guard should be something conduit offers"; where -> "on the login resource"; "we should have an explicit flag for this, and flags for allowing for usage credits etc, this should be a core feature of conduit being able to tune this"
+
+Lands in: a guard on each login Resource, tuned by explicit flags including whether usage credits are allowed; general for refusal across account kinds; amends DEC-077's "the engine acts on none"
+
+Status: accepted, not done (a design, then spec, engine and package orders)
+
+## DEC-094, 2026-11-23, usage is self-reported by packages, and the engine trusts the report
+
+Owner's words: who computes usage and its levers -> "the codex package itself should define how to calculate usage statistics and levers. Conduit specifies what must be reported and what contracts must be upheld. The engine then trusts this reporting"
+
+Lands in: each login Type's package defines its levers and how it measures; the spec defines the report every login implementation gives and the contracts it upholds; the engine holds work on the package's report and computes nothing itself
+
+Status: accepted, not done (the design's second version, then its orders)
+
+## DEC-095, 2026-11-23, a guarded hold reports unavailable at the login hold
+
+Owner's words: how the engine stops a turn on a guarded login -> "Accept (Recommended)"
+
+Lands in: the engine holds each call that starts model work on an Agent of a guarded login before dispatch, at PND-005's login hold, reporting unavailable and never queued
+
+Status: accepted, not done (DEC-094's orders)
+
+## DEC-096, 2026-11-23, a usage report may carry paid-usage state
+
+Owner's words: may a limits report carry paid-usage state, with no amounts -> "Accept (Recommended)"
+
+Lands in: IFC-052 amended: a report may carry whether paid usage is possible and in use, each true, false or null, mapped only from a field the client gave; no amount, balance, limit, plan or currency
+
+Status: accepted, not done (DEC-094's orders)
+
+## DEC-097, 2026-11-23, a guard declares the login's billing
+
+Owner's words: should a guard declare included or paid-from-first-token billing -> "Accept (Recommended)"
+
+Lands in: every guard states `billing`: `included` or `paid-from-first-token`; a paid-from-first-token login whose guard refuses paid usage is held for every call
+
+Status: accepted, not done (DEC-094's orders)
+
+## DEC-098, 2026-11-23, an unknown usage report is decided per account kind
+
+Owner's words: what the engine does with no current report -> "Per account kind (Recommended)"
+
+Lands in: Codex logins refuse after a read, stale after 15 minutes; Claude logins allow one warned trial, stale after 60 minutes; under DEC-094 these are each package's levers
+
+Status: accepted, not done (DEC-094's orders)
+
+## DEC-099, 2026-11-23, a guarded hold tells the caller everything but amounts
+
+Owner's words: what the caller is told when a call is held -> "Accept (Recommended)"
+
+Lands in: the hold names the login, the lever and its value, the window, its used percentage, the threshold, the reset, how it lifts and which report, in text and a structured field; amends DEC-077's "nothing relayed to the model" for this diagnostic only
+
+Status: accepted, not done (DEC-094's orders)
+
+## DEC-100, 2026-11-23, any holder of a Conduit listing it tunes a guard
+
+Owner's words: who tunes a login's guard -> "Any holder of a Conduit"
+
+Lands in: the guard's levers are changed by a control that any holder of a Conduit listing it may send
+
+Status: accepted, not done (DEC-094's orders)
+
+## DEC-101, 2026-11-23, the UI is a package, not part of the core
+
+Owner's words: how a simple web page for using Conduit is built -> "UI is not a core part of conduit its a package, reflecting the modular nature of the engine and language"
+
+Lands in: a web UI is an Interface package, held to the same promises as any client; amends DEC-075's engine-owned panel
+
+Status: accepted, not done (a design, then its orders)
+
+## DEC-102, 2026-11-23, team-seat Agents take no turn until the usage guard is built
+
+Owner's words: what the team seats do until the guard exists -> "Pairs 1-2 now; team sign-ins too (Recommended)"
+
+Lands in: the team accounts are signed in and their Agents set up, but no Agent on a team seat takes a turn until DEC-093's guard is built and merged; amends DEC-069 for those Agents
+
+Status: accepted, not done (DEC-093's orders)

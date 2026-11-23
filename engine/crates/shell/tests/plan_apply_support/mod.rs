@@ -278,6 +278,18 @@ impl Executor for ReplayExecutor {
     }
 
     fn dispatch(&self, intent: &Value) -> conduit_shell::Result<Execution> {
+        if intent["implementation"]["selection"] == "example.org/conformance/value-cli#setup-probe"
+        {
+            let result = if intent["call"]["method"] == "server/discover" {
+                json!({"capabilities":{"extensions":{format!("{META}implementation-interface"): {"revision":"v0"}}}})
+            } else {
+                let failed = self.filesystem.fail_setup.swap(false, Ordering::SeqCst);
+                json!({"isError":failed,"content":[],"_meta":{format!("{META}outcome"):if failed {"failed"} else {"succeeded"}}})
+            };
+            return Ok(Execution::Complete(
+                json!({"kind":"result","result":result}),
+            ));
+        }
         if self.agent(&intent["target"]) {
             self.runner.dispatch(intent)
         } else {
@@ -370,6 +382,8 @@ pub struct Engine {
     _store: tempfile::TempDir,
     #[allow(dead_code)]
     fail_setup: Arc<AtomicBool>,
+    #[allow(dead_code)] // The value CLI tests distinguish engine reads from writes.
+    shell: Arc<Shell>,
 }
 
 impl Engine {
@@ -381,6 +395,24 @@ impl Engine {
     #[allow(dead_code)] // Used by the apply integration tests.
     pub fn fail_next_setup(&self) {
         self.fail_setup.store(true, Ordering::SeqCst);
+    }
+
+    #[allow(dead_code)]
+    pub fn write_requests(&self) -> usize {
+        self.shell
+            .state()
+            .unwrap()
+            .records
+            .iter()
+            .filter(|record| {
+                record["type"] == "access-decision"
+                    && record["data"]["operation"]
+                        .as_str()
+                        .is_some_and(|operation| {
+                            !operation.ends_with("#list.v1") && !operation.ends_with("#inspect.v1")
+                        })
+            })
+            .count()
     }
 
     pub async fn start() -> Self {
@@ -453,9 +485,14 @@ impl Engine {
         let (ready, started) = oneshot::channel();
         let stop = shutdown.clone();
         drop(reserved);
-        let server = tokio::spawn(server::serve_with_ready(shell, executor, stop, move || {
-            let _ = ready.send(());
-        }));
+        let server = tokio::spawn(server::serve_with_ready(
+            shell.clone(),
+            executor,
+            stop,
+            move || {
+                let _ = ready.send(());
+            },
+        ));
         timeout(WAIT, started)
             .await
             .expect("server startup timed out")
@@ -486,6 +523,7 @@ impl Engine {
             _runner: runner,
             _store: store,
             fail_setup,
+            shell,
         }
     }
 

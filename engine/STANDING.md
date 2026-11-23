@@ -313,7 +313,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | OBJ-007 | language | must | 1 | 0 | cases | core | case passes |
 | OBJ-008 | language | must | 5 | 0 | cases | core | case passes |
 | OBJ-009 | language | must | 41 | 0 | cases | core | case passes |
-| OBJ-010 | language | must not | 3 | 0 | cases | core | case passes |
+| OBJ-010 | language | must not | 3 | 0 | cases | core, shell | case passes |
 | OBJ-011 | language | must | 0 | 0 | reason | core, shell | reason, no case |
 | OBJ-012 | language | must | 0 | 0 | reason | none | reason, no case |
 | OBJ-013 | language | must | 12 | 0 | cases | core | case passes |

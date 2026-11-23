@@ -125,6 +125,170 @@ remaining releases. Successful installs stand. Pin changes can also say `moved d
 as `archive=absent tried=[...]` or a conflicting digest (PKG-025). A successful dry run
 ends with the `dry-run` line shown above.
 
+## Installation values
+
+```text
+conduit value set NAME [--node NODE] [--store DIR]
+conduit value list [--show] [--store DIR]
+conduit value unset NAME [--store DIR]
+```
+
+Each command uses the engine context or `--store DIR` and sends root's requests through
+that serving engine. Status 0 means saved, unchanged, listed or unset; 2 means a usage
+error, invalid local context or input, refusal or declined save; 1 means an engine read,
+transport or request failure. Here `NAME`, `ID`, `OLD`, `T`, `TIME`, `POOL`, `TYPE`, `URL`
+and `NODE` stand for the corresponding names, IDs and metadata. Quoted values are JSON
+strings, preserving spaces and quotes. Progress goes to stdout; prompts, echoes and
+refusals go to stderr. “Nothing sent” means no write request; preflight can read the engine.
+
+`set` checks names held by Resource templates as well as instances before reading input.
+Each of these refusals is one stderr line, status 2, with no question or write:
+
+```text
+conduit value set: "NAME" is not a name.v1; nothing was read or sent
+conduit value set: root sees no node named "NODE"; its nodes are [N,...]; nothing was read or sent
+conduit value set: Resource/NAME exists with Type TYPE, not value.v1; choose another name; nothing was read or sent
+conduit value set: Resource/NAME is a template, not a value instance; choose another name; nothing was read or sent
+conduit value set: Tombstone id=T of Resource/NAME id=OLD, owned by Pool/POOL, retired at TIME (cause CAUSE), holds the name; to reuse the name, lift it as root first: conduit call --store 'DIR' access.lift.v1 '{"id":"T"}', then run conduit value set NAME again; nothing was read or sent
+conduit value set: reads the value from your terminal, and standard input is not a terminal; a script registers a value Resource as root with management.register.v1 (MCP or conduit call); nothing was read or sent
+```
+
+The name and node in the first two lines use Rust's debug string quoting. `TYPE` is the
+inspected Type reference (for example, `#worker.v1` on a template). `CAUSE` is JSON;
+`DIR` and the lift argument are shell-quoted. The template-specific refusal applies when
+the template has Type `value.v1`; another Type gets the other-Type refusal. A name held
+only by a tombstone is always refused: a removed ID cannot be inspected (LIF-035,
+OPS-029). Root must explicitly lift it before reusing the name. `set` lifts only the
+matching tombstone of the value ID it has itself just retired. It never offers `--file`;
+scripts use `management.register.v1` as root.
+
+At the terminal, `set` tells this warning, then the held-value line if applicable, then
+asks for a line with echo on:
+
+```text
+A value is not secret: the engine keeps it as configuration, conduit inspect and conduit value list --show show it, and conduit records exports it. A password or token goes on a secret Resource, named by a secret reference (SEC-001), never in a value.
+NAME holds "OLD-VALUE" (WHERE) as Resource/NAME id=ID and fills [KIND/NAME POINTER,...]; each keeps "OLD-VALUE" until it is replaced (OBJ-010)
+Type the value of NAME, then Enter:
+NAME = "VALUE" (WHERE)
+NAME = "VALUE" (WHERE), replacing "OLD-VALUE" (OLD-WHERE)
+```
+
+Only one echo line is printed; the replacement form applies when the held value or node
+differs. `WHERE` is `not tied to a node` or `tied to node NODE`. The line ending is removed
+from the typed value. Saving requires `y` or `yes`, in any case, at one of these questions
+(each prompt ends in a space):
+
+```text
+Save it as root in the engine at URL? [y/N]
+Save it as root in the engine at URL? This retires Resource/NAME id=OLD, lifts its tombstone and registers the new value. [y/N]
+Resource/NAME id=ID holds this value and node but is not set up; set it up as root in the engine at URL? [y/N]
+```
+
+If the value and node already match and the Resource is ready, there is no save question;
+stdout is the following line, status 0:
+
+```text
+unchanged Resource/NAME id=ID: the engine holds this value and node; nothing was sent
+```
+
+Each input error or declined save is one stderr line, status 2, with no write. The control
+character position counts Unicode characters from 1 (U+0000–U+001F or U+007F–U+009F).
+A non-UTF-8 line is a terminal read error, including at the save question.
+
+```text
+conduit value set: no value was read: standard input ended; nothing was sent
+conduit value set: the value is empty; nothing was sent
+conduit value set: the value holds a control character at character N; a value is one line of text; nothing was sent
+conduit value set: not saved: the answer was not y; nothing was sent
+conduit value set: could not read the terminal: ERROR; nothing was sent
+conduit value VERB: store is not initialized; run conduit init; nothing was sent
+```
+
+After consent, requests run in this order, each only after the preceding step succeeds:
+
+| State before saving | Requests (in order) |
+| --- | --- |
+| New name | `management.register.v1 Resource/NAME`, `system.set-up.v1 Resource/NAME` |
+| Held value, changed value or node | `system.retire.v1 Resource/NAME`, `management.list.v1 Tombstone/NAME`, `access.lift.v1 Tombstone/NAME`, `management.register.v1 Resource/NAME`, `system.set-up.v1 Resource/NAME` |
+| Same value and node, registered but not ready | `system.set-up.v1 Resource/NAME` |
+| Name held only by a tombstone | Refusal before input; root explicitly lifts it, then reruns `set` as a new name |
+
+The listing finds the tombstone by the retired Resource's ID. A new registration is one
+value Resource document, owned by `system`, from the core `value` template, with `value`
+and optional `node` arguments. Existing instances keep what they hold until replaced
+(OBJ-010). Each request prints the first stdout line below, numbered from 1; a failed
+reply follows as one JSON line. A transport failure has `outcome=unknown`. Success ends
+with `saved`, status 0; `node=-` means no node. No progress line includes the typed value.
+
+```text
+N TOOL SUBJECT outcome=OUTCOME
+saved Resource/NAME id=ID node=NODE
+```
+
+After a failure, remaining requests are reported as `not sent K..M` on stdout (omitted
+if none remain). Status is 1. Stderr identifies the failed step; successful replies
+missing the required result instead identify that missing result:
+
+```text
+conduit value set: N TOOL did not succeed; nothing more was sent
+conduit value set: N management.list.v1 listed no tombstone of Resource/NAME id=OLD; nothing more was sent
+conduit value set: N management.register.v1 returned no ID for Resource/NAME; nothing more was sent
+```
+
+The line has one of these endings where applicable. The first is for set-up failure;
+the second for failure after retirement but before a confirmed lift; the third for
+failure after retirement and confirmed lift. Nothing is retried or undone.
+
+```text
+; Resource/NAME id=ID is registered but not set up; conduit value set NAME again sets it up
+; Resource/NAME id=OLD is retired and its new value is not registered; instances keep what they hold; check management.list.v1 for its tombstone and lift it as root with access.lift.v1 before running conduit value set NAME again
+; Resource/NAME id=OLD is retired and its new value is not registered; instances keep what they hold; conduit value set NAME again registers it
+```
+
+`list` prints one compact, sorted-key JSON line per value Resource root sees, sorted by
+name then ID. `fills` lists live instances, excluding templates and retired instances,
+whose inspected source maps name that ID; entries sort by kind, name and place:
+
+```text
+{"fills":[{"kind":"KIND","name":"NAME","place":"POINTER"}],"id":"ID","live":true,"name":"NAME","node":"NODE"}
+{"fills":[],"id":"ID","live":true,"name":"NAME","node":null,"value":"VALUE"}
+```
+
+The second line illustrates `--show`, which alone adds `value`; `node` is a node's name
+or null. An ID still named by an instance but absent from live value Resources gets
+`"live":false`. Its name and node come from `management.inspect.v1` by ID, each null if
+that inspection fails; with `--show`, its value is also null if unavailable. No rows gives
+this stderr line and status 0:
+
+```text
+conduit value list: root sees no value Resource and no instance filled by one
+```
+
+If inspection of a current instance fails, stdout includes its reply as a JSON line,
+stderr gives the following line, and status is 1:
+
+```text
+conduit value list: inspect.v1 of KIND/NAME did not succeed, so fills may be incomplete
+```
+
+`unset` asks nothing. Either refusal below is stderr, status 2, with no write:
+
+```text
+conduit value unset: root sees no value Resource named NAME; conduit value list names those it sees; nothing was sent
+conduit value unset: Resource/NAME fills [KIND/NAME POINTER,...]; each keeps its value until it is replaced or retired, so a value an instance names is not retired; retire or replace each, then unset again; nothing was sent
+```
+
+Otherwise it sends `system.retire.v1`, with the same outcome and failure-JSON format as
+`set`. On success stdout has these two lines, status 0:
+
+```text
+1 system.retire.v1 Resource/NAME outcome=succeeded
+unset Resource/NAME id=ID: retired; its tombstone holds the name until root lifts it with access.lift.v1; conduit value set NAME then registers it again
+```
+
+A retirement failure exits 1 with stderr
+`conduit value unset: 1 system.retire.v1 did not succeed; nothing more was sent`.
+
 ## Plan and apply
 
 ```text

@@ -1,4 +1,4 @@
-const COMMANDS: [(&str, &str, &str); 17] = [
+const COMMANDS: [(&str, &str, &str); 18] = [
     (
         "init",
         "[--label KEY=VALUE] [--trust-domain DOMAIN]",
@@ -72,8 +72,13 @@ const COMMANDS: [(&str, &str, &str); 17] = [
         "[PROJECT_DIR] [--reopen OBJECT] [--recreate OBJECT] [--prune OBJECT] [--replace OBJECT] [--adopt OBJECT] [--with-resources OBJECT] [--with-agents OBJECT] [--expect sha256:HEX]",
         "apply --replace shared",
     ),
+    (
+        "value",
+        "set NAME [--node NODE] | list [--show] | unset NAME",
+        "value set example-account",
+    ),
 ];
-const DESCRIPTIONS: [&str; 17] = [
+const DESCRIPTIONS: [&str; 18] = [
     "Create the project's conduit.yaml skeleton unless a manifest already exists. With --store, initialize a private store and root identity instead.",
     "Register a local project, open root's submitted Conduits and set up instances. Owns runs until exit; stop serve first. --package explicitly installs an archive before registration.",
     "Submit a project to serve, open root's submitted Conduits and set up instances. Prints each attempted step after its results; completed steps persist on failure. Relative fetch/program values must be made absolute.",
@@ -96,6 +101,7 @@ const DESCRIPTIONS: [&str; 17] = [
      A missing approval operand stops before engine reads. An unused or ambiguous operand stops \
      after discovery. With --expect sha256:HEX, sends nothing unless the plan computed now has \
      that digest.",
+    "Keep installation values, such as an account, as value Resources root registers, which documents name under values:. set shows the value as typed, echoes it and saves it only on y, never from an argument; a script registers one as root. list gives each value's name, node and the instances it fills, the value only with --show. unset retires a value no instance names. A value is not secret: inspect and records show it; a password or token goes on a secret Resource, named by a secret reference (SEC-001).",
 ];
 pub fn print(command: Option<&str>) -> Result<(), String> {
     if let Some(name) = command {

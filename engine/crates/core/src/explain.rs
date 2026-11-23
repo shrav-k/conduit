@@ -68,7 +68,7 @@ pub const REFUSAL_CAUSES: &[(&str, &str)] = &[
     ),
     (
         "ACC-057",
-        "Only root on its own behalf registers a submission containing an Agent.",
+        "Only root on its own behalf registers a submission containing an Agent or a value Resource.",
     ),
     (
         "CTR-013",

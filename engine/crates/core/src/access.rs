@@ -458,6 +458,7 @@ pub(crate) struct Verdict {
     pub(crate) restriction: Option<Value>,
     pub(crate) route: Value,
     pub(crate) independent_schema_failures: Vec<String>,
+    pub(crate) registration_location: Option<String>,
 }
 impl Verdict {
     fn reason(reason: &'static str, rule: &'static str) -> Self {
@@ -467,6 +468,7 @@ impl Verdict {
             restriction: None,
             route: Value::Null,
             independent_schema_failures: Vec::new(),
+            registration_location: None,
         }
     }
     fn restriction(reason: &'static str, rule: &'static str, r: &Value) -> Self {
@@ -894,15 +896,45 @@ fn evaluate_path(
         return Ok(Verdict::reason("refused", "ACC-032"));
     }
     let registration = op == context.qualified("register.v1");
-    // ACC-057: neither delegation nor an onward request serving root may make Agents.
-    if (registration || op == context.qualified("register-replacement.v1"))
-        && (instance["id"] != root["id"] || request.serving.is_some())
-        && (values(&request.arguments, "documents")
-            .any(|d| d["kind"] == "Agent" && d.get("from").is_some())
-            || (request.arguments["template"]["kind"] == "Agent"
-                && request.arguments["template"].get("from").is_some()))
-    {
-        return Ok(Verdict::reason("refused", "ACC-057"));
+    // ACC-057 runs before owner authority and validity. A stored entry's
+    // template can change between its original registration and replacement.
+    if instance["id"] != root["id"] || request.serving.is_some() {
+        if registration {
+            let documents = request.arguments["documents"]
+                .as_array()
+                .map_or(&[][..], Vec::as_slice);
+            if let Some(subject) = crate::registration::restricted_submission(
+                state,
+                documents,
+                request.arguments.get("manifest"),
+                &state.preinstalled_snapshots,
+                context,
+            ) {
+                let mut verdict = Verdict::reason("refused", "ACC-057");
+                if subject.value_resource {
+                    verdict.registration_location = Some(subject.wire_location());
+                }
+                return Ok(verdict);
+            }
+        }
+        if (registration || op == context.qualified("register-replacement.v1"))
+            && request.arguments["template"]["kind"] == "Agent"
+            && request.arguments["template"].get("from").is_some()
+        {
+            return Ok(Verdict::reason("refused", "ACC-057"));
+        }
+        if op == context.qualified("register-replacement.v1") {
+            if values(&request.arguments, "documents")
+                .any(|d| d["kind"] == "Agent" && d.get("from").is_some())
+            {
+                return Ok(Verdict::reason("refused", "ACC-057"));
+            }
+            if crate::registration::restricted_replacement(state, &request.arguments, context) {
+                let mut verdict = Verdict::reason("refused", "ACC-057");
+                verdict.registration_location = Some("/nested".into());
+                return Ok(verdict);
+            }
+        }
     }
     if op == context.qualified("install.v1")
         && request.arguments.get("confirmClientIds").is_some()
@@ -1280,6 +1312,7 @@ fn evaluate_path(
         ],
         restriction: None,
         independent_schema_failures: Vec::new(),
+        registration_location: None,
         route: json!({"consumer":instance["id"],"caller":caller,"conduit":path["id"],"target":target["id"],"operation":op,"arguments":args,"filters":filters,"restrictionMode":"mediated"}),
     })
 }

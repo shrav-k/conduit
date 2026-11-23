@@ -968,7 +968,7 @@
     | ACC-053 | Lifting needs access listing lift and a bound covering the kept IDs and operations. |
     | ACC-054 | Only root on its own behalf opens or registers a Conduit whose consumer is root. |
     | ACC-055 | Reconciliation is limited by the bound or to invocations the holder sent. |
-    | ACC-057 | Only root on its own behalf registers a submission containing an Agent. |
+    | ACC-057 | Only root on its own behalf registers a submission containing an Agent or a value Resource. |
     | CON-008 | Requests need an open Conduit; retirement closes target Conduits (ACC-001, ACC-011). |
     | CON-031 | Explicit open still needs ordinary authority (ACC-006); it is not implied by registration. |
     | CTR-013 | Only root may confirm a shared client ID in install.v1's confirmClientIds. |

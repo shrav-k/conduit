@@ -1,0 +1,16 @@
+# Added cases for work order 288.
+- name: registration-values-resolved
+  kind: added
+  cases: [registration-values-resolved]
+- name: registration-values-unresolved
+  kind: added
+  cases: [registration-values-unresolved]
+- name: registration-values-misplaced
+  kind: added
+  cases: [registration-values-misplaced]
+- name: registration-value-resource-checks
+  kind: added
+  cases: [registration-value-resource-checks]
+- name: access-value-resource-root-only
+  kind: added
+  cases: [access-value-resource-root-only]

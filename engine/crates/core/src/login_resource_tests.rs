@@ -11,7 +11,7 @@ fn yaml(bytes: &[u8]) -> Vec<Value> {
         .collect()
 }
 
-fn context() -> Context {
+pub(super) fn context() -> Context {
     macro_rules! documents {
         ($($file:literal),+ $(,)?) => {
             [$(include_bytes!(concat!("../../../../spec/", $file)).as_slice()),+]

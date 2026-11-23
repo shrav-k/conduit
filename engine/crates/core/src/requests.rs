@@ -1151,6 +1151,23 @@ fn invoke_inner(
                 Some(json!(diagnostics)),
             );
         }
+        if let Some(location) = v.registration_location {
+            let mut diagnostic =
+                crate::explain::diagnostic(&t.state, &rejection_route(&route), c, reason, rule)?;
+            diagnostic["locations"] =
+                json!([{"logicalLocations":[{"fullyQualifiedName":location}]}]);
+            return reject_diagnostics(
+                t,
+                a,
+                c,
+                &route,
+                reason,
+                rule,
+                None,
+                None,
+                Some(json!([diagnostic])),
+            );
+        }
         return reject(t, a, c, &route, reason, rule, None, v.restriction.as_ref());
     }
     if request.sign_in_return.is_some() && route["operation"] != c.qualified("sign-in.v1") {

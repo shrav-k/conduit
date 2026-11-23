@@ -433,6 +433,7 @@ pub(crate) fn standalone_validator(schema: &Value, value: &Value) -> Result<json
 
 pub(crate) struct SchemaFailure {
     pub(crate) instance_pointer: String,
+    pub(crate) keyword: String,
     message: String,
 }
 
@@ -542,6 +543,7 @@ impl Environment {
             };
             SchemaFailure {
                 instance_pointer: instance_pointer.to_owned(),
+                keyword: error.schema_path().to_string(),
                 message,
             }
         }))

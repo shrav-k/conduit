@@ -62,3 +62,4 @@ then they are under `docs/proposals/`.
 - Changed: OBS-002, IFC-053's `limits` is the one observation not reported as a condition (DEC-077).
 - Added: SCT-017, a documents file's `pool: X` makes Pool X from the new core template `pool` and supplies X as the owner of each Resource instance of that file that states none, sectioned or framed; a stated owner is kept (DEC-081).
 - Changed: SCT-001, SCT-003, SCT-004, SCT-006, SCT-013, SCT-014, MAN-011, SUB-010 and SCH-018 name `pool` or SCT-017 beside `fleet` or SCT-011, `sectioned.v1` accepts `pool`, and `sectioned-resource.v1` no longer requires `owner` (DEC-081).
+- Changed: ACC-056, the cause for ACC-057 names a value Resource beside an Agent (DEC-076).

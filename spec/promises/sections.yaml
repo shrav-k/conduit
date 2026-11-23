@@ -137,8 +137,9 @@
   layer: language
   level: must
   when: >-
-    A `consumes` item targets the Resource `management`, or targets the Resource `access`
-    without an explicitly written core `bound.v1` requirement.
+    A `consumes` item targets the Resource `management`, or targets the Resource `access` without an
+    explicitly written core `bound.v1` requirement, unless it is an inline item listing only
+    `request-access.v1`, `withdraw-access-request.v1` or both (ACC-058).
   then: >-
     The sectioned document is rejected. Such a Conduit is written in the `conduits` section,
     with its consumer and target written out.

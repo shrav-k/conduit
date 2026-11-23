@@ -18,18 +18,18 @@ everything the promises say it exports, and everything first start needs.
 | File | Holds |
 | --- | --- |
 | [conduit.yaml](conduit.yaml) | The package's manifest: its address, its version, its exports and its one implementation, the engine itself |
-| [operations.yaml](operations.yaml) | The 38 Operation contracts: every management verb, the setup, retire and sign-in hooks, the operations that the engine invokes by provider calls, and the one operation of a secret Resource |
+| [operations.yaml](operations.yaml) | The 40 Operation contracts: every management verb, the setup, retire and sign-in hooks, the operations that the engine invokes by provider calls, and the one operation of a secret Resource |
 | [capabilities.yaml](capabilities.yaml) | The 8 Capability contracts: what `management`, `access`, Pools and Fleets offer, and the four provider capabilities: a runtime provider, the machine provider, a package-source provider and a secret Resource |
 | [types.yaml](types.yaml) | The 7 Type contracts: the basic Interface, Pool and Fleet types, and the types of a node, of a value, of `management` and of `access` |
 | [requirements.yaml](requirements.yaml) | The 2 Requirement contracts: the bound of a right to open, and the shared-host requirement |
 | [references.yaml](references.yaml) | The 13 reference schemas: the Schema contracts that make a value a reference (OBJ-021), a secret reference among them (SEC-001). Each also accepts the resolved form `{kind, id}`, which only the engine writes |
 | [results.yaml](results.yaml) | 14 Schema contracts: an object as a result names it, a diagnostic, a condition, a record, a call's usage, a call's limits, an instance's limits, an inventory, a tombstone, opening provenance and a trust domain |
-| [templates.yaml](templates.yaml) | The 19 templates: first-start objects and Conduits, file Pools, defaults, scoped administration, explicit cascades and a value Resource |
+| [templates.yaml](templates.yaml) | The 20 templates: first-start objects and Conduits, file Pools, defaults, scoped administration, explicit cascades and a value Resource |
 
 The package also exports the 52 Schema contracts under [spec/schemas](../schemas/README.md),
 which are the schemas of documents themselves. They are part of this package because a `$ref`
 from one schema to another names a Schema contract (SCH-015), and because `register.v1` states
-its inputs with them. In all the package exports 155 documents, 80 of them Schema contracts,
+its inputs with them. In all the package exports 158 documents, 80 of them Schema contracts,
 and has one implementation, which is also an export (PKG-019).
 
 A document of the core package refers to another by its full address, as
@@ -130,6 +130,8 @@ set up by `open.v1` and retired by `close.v1`.
 | `list.v1` | `object-management.v1`, `pool-management.v1`, `fleet-management.v1` | — | — | — | OPS-036, ACC-033 |
 | `retire-with-agents.v1` | `fleet-management.v1` | — | no | — | LIF-021 |
 | `lift.v1` | `access-control.v1` | — | yes | — | ACC-053 |
+| `request-access.v1` | `access-control.v1` | — | yes | — | ACC-058 |
+| `withdraw-access-request.v1` | `access-control.v1` | — | yes | — | ACC-058 |
 | `answer.v1` | `object-management.v1`, `pool-management.v1`, `fleet-management.v1` | — | yes | — | PND-009, ACC-033 |
 | `sign-in.v1` | `pool-management.v1`, `fleet-management.v1` | — | no | — | PND-010, PND-011, IFC-049 |
 | `enroll-machine.v1` | No active capability; binding staged for 049a | — | no | yes | ENR-001, ACC-032, IFC-049 |
@@ -683,6 +685,9 @@ its binding and labels are fixed when made (PLC-008, ENR-010).
 | `trust-domain.v1` | Schema | FST-007 |
 | `list.v1` | Operation | OPS-036, ACC-033, LIF-040 |
 | `lift.v1` | Operation | ACC-053, LIF-040 |
+| `request-access.v1` | Operation | ACC-058 |
+| `withdraw-access-request.v1` | Operation | ACC-058 |
+| `access-request` | Conduit template | ACC-058 |
 | `retire-with-agents.v1` | Operation | LIF-020, LIF-021, REV-014 |
 | `root-pool` | Conduit template | FLEET-005, ACC-024 |
 | `pool-manage` | Conduit template | LIF-013, ACC-033, ACC-055 |

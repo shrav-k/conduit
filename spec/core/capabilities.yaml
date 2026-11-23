@@ -8,7 +8,9 @@
 #                         among it), OPS-019, ACC-032 and CTR-003 (it lists the two
 #                         operations reserved to the root Interface, which only a capability
 #                         of the core package may)
-#   access-control.v1     ACC-006, ACC-012 (the operations of `access`), ACC-033 and OPS-014
+#   access-control.v1     ACC-006, ACC-012 (the operations of `access`), ACC-033 and OPS-014;
+#                         an Agent asks and withdraws through it; a Conduit to `access` listing
+#                         no other operations is an asking Conduit, no right to open (ACC-058)
 #                         (reconciling an open or a close is authorized against `access`, the
 #                         target that authorized it, so the capability includes
 #                         `reconcile.v1`)
@@ -95,17 +97,21 @@ metadata:
   name: access-control.v1
   description: >-
     What the `access` Resource offers: opening and closing Conduits, and reconciling an invocation
-    of one of those operations whose outcome is unknown. An open Conduit to `access` that lists `open.v1`
-    is a right to open.
+    of one of those operations whose outcome is unknown. An open Conduit to `access` that lists
+    `open.v1` is a right to open.
 
-    lift.v1 removes tombstones within the caller's bound (ACC-053); that bound also limits reconciliation
-    (ACC-055).
+    lift.v1 removes tombstones within the caller's bound (ACC-053); that bound also limits
+    reconciliation (ACC-055). An Agent asks for access and withdraws its asks through this
+    capability. A Conduit to `access` listing no other of its operations is an asking Conduit, no
+    right to open (ACC-058).
 spec:
   operations:
   - github.com/shrav-k/conduit/core#open.v1
   - github.com/shrav-k/conduit/core#close.v1
   - github.com/shrav-k/conduit/core#reconcile.v1
   - github.com/shrav-k/conduit/core#lift.v1
+  - github.com/shrav-k/conduit/core#request-access.v1
+  - github.com/shrav-k/conduit/core#withdraw-access-request.v1
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Capability

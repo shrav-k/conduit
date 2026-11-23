@@ -24,21 +24,20 @@
 #         targets: [{kind: Agent, name: reviewer-1}]
 #         operations: [example.org/files#directory.read.v1]
 #
-# Each value in `pools` and `targets` is an item of a list whose `items` is a reference
-# schema, and so is resolved when the Conduit is instantiated and stored as `{kind, id}`
-# (OBJ-021). Each item of `operations` is a qualified reference that names an operation of an
-# installed package or of a submitted project whose manifest states that address (ACC-029,
-# SUB-008, MAN-015). It is data, compared as a name and never resolved, so a project's own
-# template may name the project's operations there by its address (ACC-029, NAM-022), and an
-# item covers the operation of that name in every submission at that address and in a
-# package installed there once no template or instance holds a submission at it (PKG-029). A
-# Conduit to `access` with no bound requirement has no bound and is unlimited, and only an
-# actor whose own Conduit to `access` applies no bound may open or close one (ACC-030); a
-# Conduit whose bound names nothing covers nothing. A Conduit
-# template that applies `bound.v1` more than once is rejected when it is registered, and a
-# Conduit that applies it and whose target is not `access` is not instantiated (CON-028).
-# Each input of `bound.v1` states `default: []`, so each may be left out without being
-# marked optional (OBJ-015), and each default satisfies its input's schema (SCH-019).
+# Each value in `pools` and `targets` is an item of a list whose `items` is a reference schema, and
+# so is resolved when the Conduit is instantiated and stored as `{kind, id}` (OBJ-021). Each item of
+# `operations` is a qualified reference that names an operation of an installed package or of a
+# submitted project whose manifest states that address (ACC-029, SUB-008, MAN-015). It is data,
+# compared as a name and never resolved, so a project's own template may name the project's
+# operations there by its address (ACC-029, NAM-022), and an item covers the operation of that name
+# in every submission at that address and in a package installed there once no template or instance
+# holds a submission at it (PKG-029). A Conduit to `access` with no bound requirement has no bound
+# and, as a right to open, is unlimited, and only an actor whose own Conduit to `access` applies no
+# bound may open or close one (ACC-030); a Conduit whose bound names nothing covers nothing. A
+# Conduit template that applies `bound.v1` more than once is rejected when it is registered, and a
+# Conduit that applies it and whose target is not `access` is not instantiated (CON-028). Each input
+# of `bound.v1` states `default: []`, so each may be left out without being marked optional
+# (OBJ-015), and each default satisfies its input's schema (SCH-019).
 # Standing: draft specification; see spec/README.md for status and coverage.
 #
 # This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
@@ -49,15 +48,14 @@ metadata:
   name: bound.v1
   description: >-
     The bound of a right to open: the Pools, the individual targets and the operations of the
-    Conduits that the consumer of a Conduit to `access` may open and close. Naming a Pool in
-    `pools` covers the Pool itself and every Resource it owns; a Pool named in `targets` covers
-    that Pool alone. The engine applies the bound itself,
-    and never sends it. `operations` names operations by qualified reference: of an installed
-    package, or of a submitted project, as `address#name` with the address its manifest
-    states, even in that project's own documents; each is compared as a name and never
-    resolved, so it covers the operation of that name in every submission at that address,
-    and in a package installed there later. A Conduit template applies it at most once, and
-    only a Conduit to `access` carries it.
+    Conduits that the consumer of a Conduit to `access` may open and close. Naming a Pool in `pools`
+    covers the Pool itself and every Resource it owns; a Pool named in `targets` covers that Pool
+    alone. The engine applies the bound itself, and never sends it. `operations` names operations by
+    qualified reference: of an installed package, or of a submitted project, as `address#name` with
+    the address its manifest states, even in that project's own documents; each is compared as a
+    name and never resolved, so it covers the operation of that name in every submission at that
+    address, and in a package installed there later. A Conduit template applies it at most once, and
+    only a Conduit to `access` carries it. On an asking Conduit it bounds the asks (ACC-058).
 spec:
   inputs:
     pools:
@@ -81,9 +79,9 @@ kind: Requirement
 metadata:
   name: shared-host.v1
   description: >-
-    The consumer and the target of the Conduit run on one machine: the
-    kubernetes.io/hostname labels fixed for their two nodes under ENR-010 are equal. Decided once,
-    when the Conduit is instantiated: a Conduit for which they differ, or either is absent, is
-    not instantiated, and neither is one an end of which has no placement or is one for which
-    no item that is run is selected, since such an end runs on no machine.
+    The consumer and the target of the Conduit run on one machine: the kubernetes.io/hostname labels
+    fixed for their two nodes under ENR-010 are equal. Decided once, when the Conduit is
+    instantiated: a Conduit for which they differ, or either is absent, is not instantiated, and
+    neither is one an end of which has no placement or is one for which no item that is run is
+    selected, since such an end runs on no machine.
 spec: {}

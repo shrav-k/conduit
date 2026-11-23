@@ -69,7 +69,10 @@ fn every_engine_operation_is_executable_or_unfinished_with_its_order() {
         let numbered = (bytes.len() == 3 || bytes.len() == 4)
             && bytes[..3].iter().all(u8::is_ascii_digit)
             && (bytes.len() == 3 || bytes[3].is_ascii_lowercase());
-        if !numbered && order != "none yet: ROADMAP.md S3, AUDIT.md A35" {
+        let decision = order.strip_prefix("DEC-").is_some_and(|digits| {
+            digits.len() == 3 && digits.bytes().all(|byte| byte.is_ascii_digit())
+        });
+        if !numbered && !decision && order != "none yet: ROADMAP.md S3, AUDIT.md A35" {
             faults.push(format!(
                 "{operation}: invalid order {order:?} in UNFINISHED_ENGINE_OPERATIONS"
             ));

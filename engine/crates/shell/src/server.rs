@@ -64,8 +64,11 @@ pub(crate) const EXECUTABLE_ENGINE_OPERATIONS: [&str; 18] = [
 // An order that builds one of these moves it to EXECUTABLE_ENGINE_OPERATIONS.
 // A test in tests.rs checks both lists against the core package (MAN-012).
 #[cfg(test)]
-pub(crate) const UNFINISHED_ENGINE_OPERATIONS: [(&str, &str); 1] =
-    [("declare-lost.v1", "none yet: ROADMAP.md S3, AUDIT.md A35")];
+pub(crate) const UNFINISHED_ENGINE_OPERATIONS: [(&str, &str); 3] = [
+    ("declare-lost.v1", "none yet: ROADMAP.md S3, AUDIT.md A35"),
+    ("request-access.v1", "DEC-064"),
+    ("withdraw-access-request.v1", "DEC-064"),
+];
 fn instance(id: &str) -> Value {
     json!({"kind":"instance","id":id})
 }

@@ -1419,13 +1419,13 @@
     or outcome, the deciding promise's ID and the cause in words. It leaves out only what
     ACC-056, LIF-013 and PND-004 withhold from that caller.
   observable: >-
-    Every reason carries an error diagnostic with the deciding ruleId, including refused
-    under ACC-056 and unavailable under its deciding rule. An engine-decided failed or
-    unknown outcome carries a diagnostic naming its cause. An implementation's own content
-    is passed under IFC-025. The first text block states the reason or outcome and each
-    error diagnostic's message; a condition's message states its cause. A pending notice
-    states its kind, visible subjects, permitted evidence and answer asked. Wording is the
-    engine's choice; the ruleId, reason and refusal.v1 fields are observable.
+    Every reason carries an error diagnostic with the deciding ruleId, including refused under
+    ACC-056 and unavailable under its deciding rule. An engine-decided failed or unknown outcome
+    carries a diagnostic naming its cause. An implementation's own content is passed under IFC-025.
+    The first text block states the reason or outcome and each error diagnostic's message; a
+    condition's message states its cause. A pending notice states its kind, visible subjects,
+    permitted evidence and answer asked. Wording is the engine's choice, except where a promise
+    fixes a message (ACC-058); the ruleId, reason and refusal.v1 fields are observable.
 
 - id: IFC-049
   layer: interface

@@ -63,3 +63,8 @@ then they are under `docs/proposals/`.
 - Added: SCT-017, a documents file's `pool: X` makes Pool X from the new core template `pool` and supplies X as the owner of each Resource instance of that file that states none, sectioned or framed; a stated owner is kept (DEC-081).
 - Changed: SCT-001, SCT-003, SCT-004, SCT-006, SCT-013, SCT-014, MAN-011, SUB-010 and SCH-018 name `pool` or SCT-017 beside `fleet` or SCT-011, `sectioned.v1` accepts `pool`, and `sectioned-resource.v1` no longer requires `owner` (DEC-081).
 - Changed: ACC-056, the cause for ACC-057 names a value Resource beside an Agent (DEC-076).
+- Added: ACC-058's `request-access.v1`, `withdraw-access-request.v1` and the template `access-request`, by which an Agent asks root for access (DEC-064, DEC-079, DEC-084).
+- Added: ACC-058, an Agent asks through its own Conduit to `access`; an ask for 23 operations, `install.v1`, `management` or `access` is refused with a fixed message, raising nothing (DEC-064, DEC-079, DEC-085).
+- Changed: ACC-022, ACC-029, ACC-030, ACC-033, ACC-056 and SCT-008, an asking Conduit is no right to open and needs no bound inline (DEC-064, DEC-079).
+- Changed: IFC-050 permits a promise to fix a message, as ACC-058 does for access-request refusals (DEC-064, DEC-085).
+- Changed: ACC-058 makes the asking Agent the resolved subject and keeps the named target in evidence; root answers and the declined result wait for order 299 (DEC-064, DEC-084).

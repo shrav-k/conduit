@@ -879,24 +879,25 @@ kind: Operation
 metadata:
   name: open.v1
   description: >-
-    Open a Conduit whose state is registered. Dispatched only if the bound of the actor's own Conduit
-    to `access` covers the Conduit's target and names every operation it lists. A Conduit to `access`
-    that applies no bound is unlimited, and is opened only by an actor whose own Conduit to `access`
-    applies no bound. Where the Conduit to be opened is itself one to `access`, the condition is that
-    its bound is within the actor's own, and the actor's bound need not cover `access` as a target.
-    A Conduit that lists an operation reserved to the root Interface is opened only for the root Interface,
-    and one that lists `get-secret.v1` only where the root Interface asks on its own behalf and the
-    consumer is a Resource or an Agent; any other such request reports refused. A request to open
-    a Conduit that is already open changes nothing and succeeds. A closed Conduit has been removed,
-    so a request that names one, like one that names a Conduit that does not exist, reports
-    invalid, or refused where the actor's own Conduit to `access` applies a bound (ACC-029). One
-    to open a Conduit that is not open and whose consumer is retired reports
-    conflict; a Conduit that was open when its consumer was retired is still open, and a request to
-    open it succeeds like any other.
+    Open a Conduit whose state is registered. Dispatched only if the bound of the actor's own
+    Conduit to `access` covers the Conduit's target and names every operation it lists. A right to
+    open that applies no bound is unlimited, and is opened only by an actor whose own Conduit to
+    `access` applies no bound. Where the Conduit to be opened is itself one to `access`, the
+    condition is that its bound is within the actor's own, and the actor's bound need not cover
+    `access` as a target. A Conduit that lists either ask of ACC-058 is opened only as an Agent's
+    asking Conduit (ACC-058). A Conduit that lists an operation reserved to the root Interface is
+    opened only for the root Interface, and one that lists `get-secret.v1` only where the root
+    Interface asks on its own behalf and the consumer is a Resource or an Agent; any other such
+    request reports refused. A request to open a Conduit that is already open changes nothing and
+    succeeds. A closed Conduit has been removed, so a request that names one, like one that names a
+    Conduit that does not exist, reports invalid, or refused where the actor's own Conduit to
+    `access` applies a bound (ACC-029). One to open a Conduit that is not open and whose consumer is
+    retired reports conflict; a Conduit that was open when its consumer was retired is still open,
+    and a request to open it succeeds like any other.
 
     Only root acting on its own behalf opens a root-consumed Conduit (ACC-054). A matching tombstone
-    prevents dispatch with conflict (LIF-041); engine-made defaults are exempt. An already open Conduit
-    preserves its original provenance (ACC-044).
+    prevents dispatch with conflict (LIF-041); engine-made defaults are exempt. An already open
+    Conduit preserves its original provenance (ACC-044).
 
     Where expectedId is given and the resolved Conduit has another ID, the request reports conflict
     and changes nothing, after the access decision (LIF-037).
@@ -1535,6 +1536,79 @@ spec:
   effect: >-
     Removes the named tombstone and each tombstone it caused that the caller is independently authorized
     to lift. Other caused tombstones remain.
+  deduplicates: true
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: request-access.v1
+  description: >-
+    An Agent asks on its own behalf through its own asking Conduit (ACC-058). Exactly one of target
+    and conduit is given: target is the target a Conduit listing the operation would have, under
+    ACC-033's first fitting row, and conduit is a local name of the caller's whose target it takes.
+    A raised result raises one access-request pending action, permitting nothing; unanswered names
+    the same unanswered ask; held means the caller already consumes an open Conduit to that target
+    listing the operation. Each succeeds and reports what happened and what to do in one info
+    diagnostic under ACC-058. `operation` is the operation's qualified reference, `address#name`, as
+    `bound.v1` names it; a tool name is invalid under ACC-058. `action` is the pending action's ID
+    for `raised` and `unanswered`; `expiry` is when that action expires. Both are present for those
+    states. For `held`, `tools` lists the caller's tools that already call the operation on that
+    target. Those tools remain subject to their Conduits' restrictions.
+spec:
+  inputSchema:
+    type: object
+    properties:
+      operation:
+        type: string
+        minLength: 1
+      target:
+        $ref: github.com/shrav-k/conduit/core#target-reference.v1
+      conduit:
+        type: string
+        minLength: 1
+    required:
+    - operation
+  outputSchema:
+    type: object
+    properties:
+      state:
+        type: string
+        enum: [raised, unanswered, held]
+      action:
+        $ref: github.com/shrav-k/conduit/core#id.v1
+      expiry:
+        type: string
+        format: date-time
+      tools:
+        type: array
+        items:
+          type: string
+      diagnostics:
+        type: array
+        items:
+          $ref: github.com/shrav-k/conduit/core#diagnostic.v1
+    required:
+    - state
+    - diagnostics
+  effect: Raises one access-request pending action, which permits nothing.
+  deduplicates: true
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: withdraw-access-request.v1
+  description: >-
+    An Agent withdraws its own access-request action through its own asking Conduit (ACC-058). An
+    action ID other than the caller's own is refused under ACC-058 before invalid.
+spec:
+  inputSchema:
+    type: object
+    properties:
+      action:
+        $ref: github.com/shrav-k/conduit/core#id.v1
+    required:
+    - action
+  effect: Answers the caller's own access-request action withdrawn.
   deduplicates: true
 ---
 apiVersion: github.com/shrav-k/conduit/v0

@@ -1,6 +1,18 @@
 {
   "cases": [
     {
+      "id": "access-ask-offered",
+      "reason": "ACC-058: the first build does not offer request-access.v1; DEC-064's engine orders make it pass"
+    },
+    {
+      "id": "access-ask-refused",
+      "reason": "ACC-058: the first build does not offer request-access.v1; DEC-064's engine orders make it pass"
+    },
+    {
+      "id": "access-ask-states",
+      "reason": "ACC-058: the first build does not offer request-access.v1; DEC-064's engine orders make it pass"
+    },
+    {
       "id": "e4-reconcile-open-records-only",
       "reason": "LIF-028 under ruling 78 point 5: the first build opens the Conduit when a reconciliation records an open as having occurred; review order 22, the engine following SO-B, makes it pass and removes this entry"
     },
@@ -11,6 +23,10 @@
     {
       "id": "requests-repeat-failed-earlier-unanswered",
       "reason": "OPS-012, F13 of ruling 78 point 6: the first build records failed when a new attempt is answered failed while an earlier attempt has no answer; review order 22, the engine following SO-B, makes it pass and removes this entry"
+    },
+    {
+      "id": "sectioned-consumes-asking",
+      "reason": "SCT-008: the first build does not offer request-access.v1; DEC-064's engine orders make it pass"
     }
   ]
 }

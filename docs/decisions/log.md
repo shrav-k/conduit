@@ -1164,3 +1164,19 @@ Owner's words: when the guard's first probe runs -> "Tomorrow morning (Recommend
 Lands in: the probe (A0 of the guard's design) is written on 2026-11-23 and run with the owner present on the morning of 2026-11-24; it reads each team seat's usage and does no model work unless the owner says so (DEC-102)
 
 Status: accepted, not done (the probe's order, then the sitting)
+
+## DEC-136, 2026-11-23, the Interface plan's seven readings
+
+Owner's words: the readings of the Interface plan, each confirmed -> R1 "not via root's helper token", R2 "not to other Interfaces' clients", R4 "helper token may admit clients", R5 "CLI takes a client only by flag", R3 "token never on the wire", R7 "codes by a plain HTTP read", R6 "no history pane"
+
+Lands in: codes and fingerprints go only to admitted clients of root, never to root's helper token, and in v0 to no client of another Interface; root's helper token may admit a client, as the bootstrap; the CLI takes a client token only from an explicit flag; the engine writes a client's token to a file and never returns it in a response; codes and fingerprints leave the engine only by a recorded HTTP read for admitted clients, not as an MCP tool; the web UI proof has no history pane
+
+Status: accepted, not done (orders 308 and 309, then their engine orders)
+
+## DEC-137, 2026-11-23, only what Agents see must be MCP
+
+Owner's words: on the evidence read being HTTP rather than MCP -> "I agree for r7 but I think we've been too attached to everything being mcp, only things agents can see have to be mcp. There can be non mcp conduits between resources and from resources to interfaces etc. also non mcp for secrets, etc. it seems we need to revisit the breadth of that ruling"
+
+Lands in: the breadth of ruling 31 I1 ("an implementation is an MCP server, with one tool per operation", IFC-001 to IFC-005) is revisited: what an Agent sees stays MCP, and Conduits between Resources, from Resources to Interfaces and for secrets may use other protocols; a study first, then a decision on its findings
+
+Status: accepted, not done (a study)

@@ -15,33 +15,65 @@ use rmcp::{
 };
 use std::{fs, io::ErrorKind, time::Duration};
 
-const APPROVALS: &[&str] = &[
-    "--reopen",
-    "--recreate",
-    "--prune",
-    "--replace",
-    "--adopt",
-    "--with-resources",
-    "--with-agents",
+const APPROVALS: &[(&str, bool)] = &[
+    ("--reopen", true),
+    ("--recreate", true),
+    ("--replace", true),
+    ("--prune", false),
+    ("--adopt", false),
+    ("--with-resources", false),
+    ("--with-agents", false),
 ];
+
+fn parse_approvals(text: &str) -> Option<BTreeSet<Approval>> {
+    if text.is_empty() {
+        return Some(BTreeSet::new());
+    }
+    text.split(',')
+        .map(|item| {
+            let (flag, operand) = item.split_once(' ')?;
+            (APPROVALS.iter().any(|(known, _)| flag == *known)
+                && !operand.is_empty()
+                && !operand.contains(char::is_whitespace))
+            .then(|| Approval::new(flag, operand))
+        })
+        .collect()
+}
 
 struct Options {
     project: PathBuf,
     store: Option<PathBuf>,
+    approvals: BTreeSet<Approval>,
 }
 
 impl Options {
     fn parse(args: Vec<String>, command: &str) -> Result<Self> {
         let mut project = None;
         let mut store = None;
-        if let Some(flag) = args.iter().find(|arg| APPROVALS.contains(&arg.as_str())) {
+        if let Some(flag) = args
+            .iter()
+            .find(|arg| APPROVALS.contains(&(arg.as_str(), false)))
+        {
             return Err(format!(
                 "{flag} is not built yet; plan without it prints the stop that needs it"
             ));
         }
         let mut args = args.into_iter();
+        let mut approvals = BTreeSet::new();
         while let Some(arg) = args.next() {
             match arg.as_str() {
+                flag if APPROVALS.contains(&(flag, true)) => {
+                    let operand = args
+                        .next()
+                        .filter(|name| {
+                            !name.starts_with('-')
+                                && !name.is_empty()
+                                && !name.contains(char::is_whitespace)
+                                && !name.contains(',')
+                        })
+                        .ok_or_else(|| format!("{flag} needs OBJECT"))?;
+                    approvals.insert(Approval::new(flag, &operand));
+                }
                 "--store" if store.is_none() => {
                     let directory = args
                         .next()
@@ -63,6 +95,7 @@ impl Options {
         Ok(Self {
             project: project.unwrap_or_else(|| ".".into()),
             store,
+            approvals,
         })
     }
 }
@@ -103,7 +136,10 @@ async fn run(
     let mut project = boundary::project(&options.project, &spec).map_err(local)?;
     // The serving wire accepts values, not a submitted directory (SUB-010).
     project.directory = None;
-    let ledger = Ledger::read(&ledger_at(&options.project)).map_err(local)?;
+    let mut ledger = Ledger::read(&ledger_at(&options.project)).map_err(local)?;
+    if !ledger.replacements.is_empty() {
+        ledger.current_files = Some(apply::project_hashes(&options.project).map_err(local)?);
+    }
     let context = boundary::context(repository).map_err(local)?;
     let prepared = prepare_desired(project, &context).map_err(local)?;
     if prepared
@@ -122,8 +158,9 @@ async fn run(
     let engine = read_engine(&client, &context.core_package)
         .await
         .map_err(|error| (1, error))?;
+    recover_legacy_slots(&mut ledger, &engine);
     let desired = load_desired(prepared, &engine, &ledger).map_err(local)?;
-    let plan = compare(&desired, &ledger, &engine);
+    let plan = compare::plan(&desired, &ledger, &engine, &options.approvals);
     let code = if applying {
         apply::execute(&options.project, &plan, ledger, async |tool, args, key| {
             apply::send(&client, tool, args, key).await
@@ -550,7 +587,10 @@ impl Ledger {
         };
         let current_digest = bytes_digest(value.to_string().as_bytes());
         let mut recovered = None;
-        for (digest, location) in &ledger.journals {
+        for digest in ledger.plans.iter().filter_map(Value::as_str) {
+            let Some(location) = ledger.journals.get(digest) else {
+                continue;
+            };
             let hex = digest.trim_start_matches("sha256:");
             if location != &format!(".conduit/results/{hex}.yaml") {
                 continue;
@@ -563,6 +603,16 @@ impl Ledger {
                 return Err(invalid("/journals", "expected a regular journal file"));
             }
             let kept = boundary::value(&journal).map_err(|error| invalid("/journals", &error))?;
+            let base = file.parent().unwrap();
+            let plans = base.join("plans");
+            let plan_file = plans.join(format!("{hex}.txt"));
+            let plan_text = fs::symlink_metadata(&plans)
+                .ok()
+                .filter(|metadata| metadata.is_dir())
+                .and_then(|_| fs::symlink_metadata(&plan_file).ok())
+                .filter(|metadata| metadata.is_file())
+                .and_then(|_| fs::read_to_string(&plan_file).ok())
+                .filter(|body| bytes_digest(body.as_bytes()) == digest);
             let update = &kept["ledgerUpdate"];
             if update["from"] == current_digest {
                 let next = &update["state"];
@@ -570,7 +620,8 @@ impl Ledger {
                     || journal_update == u64::MAX
                     || array(&kept["entries"]).last().is_none_or(|entry| {
                         entry["result"]["outcome"] != "succeeded"
-                            || entry.get("verificationFailed").is_some()
+                            && !(entry["retirementDispatched"] == true
+                                && apply::dispatched_unsuccessful_retirement(&entry["result"]))
                     })
                     || next["journalUpdate"].as_u64() != journal_update.checked_add(1)
                     || ["format", "files", "plans", "journals"]
@@ -584,29 +635,34 @@ impl Ledger {
                 recovered = Some(next.clone());
             }
             for entry in array(&kept["entries"]) {
-                let Some(flag) = entry["flag"].as_str() else {
-                    continue;
-                };
-                let Some((flag, operand)) = flag.split_once(' ').filter(|(flag, operand)| {
-                    APPROVALS.contains(flag)
-                        && !operand.is_empty()
-                        && !operand.contains(char::is_whitespace)
-                }) else {
-                    return Err(invalid("/journals", "unknown registration flag"));
-                };
-                let approval = Approval {
-                    flag: flag.into(),
-                    operand: operand.into(),
-                };
-                for object in array(&entry["result"]["objects"])
-                    .iter()
-                    .chain(entry["result"].get("object"))
-                {
-                    if let Some(id) = object["id"].as_str() {
-                        ledger
-                            .registration_flags
-                            .insert(id.to_owned(), approval.clone());
+                if let Some(flag) = entry["flag"].as_str() {
+                    let approvals = parse_approvals(flag)
+                        .ok_or_else(|| invalid("/journals", "unknown registration flag"))?;
+                    for object in array(&entry["result"]["objects"])
+                        .iter()
+                        .chain(entry["result"].get("object"))
+                    {
+                        if let Some(id) = object["id"].as_str() {
+                            ledger
+                                .registration_flags
+                                .insert(id.to_owned(), approvals.clone());
+                        }
                     }
+                }
+            }
+            if let Some(recorded) = plan_text.as_deref() {
+                let files = kept.get("files").or_else(|| {
+                    (ledger.plans.last().and_then(Value::as_str) == Some(digest))
+                        .then_some(&ledger.files)
+                });
+                if let Some(files) = files {
+                    keep_replacements(
+                        &mut ledger.replacements,
+                        recorded,
+                        array(&kept["entries"]),
+                        array(&kept["priorRemovals"]),
+                        files,
+                    );
                 }
             }
         }
@@ -667,6 +723,118 @@ impl Ledger {
             }
         }
         Ok(ledger)
+    }
+}
+
+fn keep_replacements(
+    replacements: &mut BTreeMap<String, ReplacementJournal>,
+    recorded: &str,
+    entries: &[Value],
+    prior_removals: &[Value],
+    files: &Value,
+) {
+    let registered: BTreeSet<_> = entries
+        .iter()
+        .filter(|entry| entry["result"]["outcome"] == "succeeded")
+        .flat_map(|entry| {
+            array(&entry["result"]["objects"])
+                .iter()
+                .chain(entry["result"].get("object"))
+                .chain(entry.get("replaces"))
+        })
+        .filter_map(Name::object)
+        .collect();
+    replacements.retain(|_, proof| {
+        proof.remade.retain(|name| !registered.contains(name));
+        !proof.remade.is_empty()
+    });
+    let approval_line = recorded
+        .lines()
+        .find_map(|line| line.strip_prefix("flags [")?.strip_suffix(']'));
+    let Some(approvals) = approval_line
+        .and_then(parse_approvals)
+        .filter(|flags| flags.iter().any(|flag| flag.flag == "--replace"))
+    else {
+        return;
+    };
+    let listed: BTreeSet<_> = recorded
+        .lines()
+        .filter_map(|line| line.strip_prefix("detail objects=[")?.strip_suffix(']'))
+        .flat_map(|names| names.split(','))
+        .filter_map(|name| {
+            name.split_once('/')
+                .map(|(kind, name)| Name::new(kind, name))
+        })
+        .collect();
+    for (entry, files) in prior_removals
+        .iter()
+        .map(|saved| (&saved["entry"], &saved["files"]))
+        .chain(entries.iter().map(|entry| (entry, files)))
+    {
+        let tool = text(&entry["tool"]);
+        let invocation = text(&entry["result"]["invocation"]);
+        let outcome = &entry["result"]["outcome"];
+        if invocation.is_empty()
+            || !(tool.ends_with(".retire.v1")
+                && (outcome == "succeeded"
+                    || apply::dispatched_unsuccessful_retirement(&entry["result"]))
+                || tool.ends_with(".close.v1") && outcome == "succeeded")
+        {
+            continue;
+        }
+        let names = entry
+            .get("remakes")
+            .map(|names| array(names).iter().filter_map(Name::object).collect())
+            .unwrap_or_else(|| listed.clone());
+        let remade: BTreeSet<_> = names.difference(&registered).cloned().collect();
+        if remade.is_empty() {
+            continue;
+        }
+        let step_approvals = entry["flag"]
+            .as_str()
+            .and_then(parse_approvals)
+            .unwrap_or_default();
+        let args = &entry["arguments"];
+        let removed = Name::object(&args["conduit"])
+            .or_else(|| Name::object(&args["instance"]))
+            .zip(args["expectedId"].as_str().map(str::to_owned));
+        replacements.insert(
+            invocation.into(),
+            ReplacementJournal {
+                approvals: approvals.clone(),
+                step_approvals,
+                remade,
+                slots: array(&entry["replacementSlots"])
+                    .iter()
+                    .filter_map(ReplacementSlot::from_kept)
+                    .collect(),
+                removed,
+                files: files.clone(),
+            },
+        );
+    }
+}
+
+fn recover_legacy_slots(ledger: &mut Ledger, engine: &Engine) {
+    for proof in ledger.replacements.values_mut() {
+        let Some((name, id)) = &proof.removed else {
+            continue;
+        };
+        if !proof.remade.contains(name) || proof.slots.contains_key(name) {
+            continue;
+        }
+        if let Some((parent, field, member)) = compare::nested_slot_for(engine, name, id) {
+            proof.slots.insert(
+                name.clone(),
+                ReplacementSlot {
+                    parent: parent.clone(),
+                    parent_id: engine.objects[parent].id.clone(),
+                    field,
+                    member: member.into(),
+                    child_id: id.clone(),
+                },
+            );
+        }
     }
 }
 
@@ -941,7 +1109,7 @@ fn load_desired(prepared: Prepared<'_>, engine: &Engine, ledger: &Ledger) -> Res
     if !desired.stops.is_empty() {
         return Ok(desired);
     }
-    resolve_objects(&mut desired, &cache.state, engine, cache.context)?;
+    resolve_objects(&mut desired, &cache.state, engine, ledger, cache.context)?;
     // Only previously held releases relevant to a moved pin are needed for row 19.
     let need_old: BTreeSet<_> = desired
         .objects
@@ -969,6 +1137,27 @@ fn load_desired(prepared: Prepared<'_>, engine: &Engine, ledger: &Ledger) -> Res
         .collect();
     for pin in &need_old {
         cache.read(pin, true, &mut desired.stops)?;
+    }
+    let core = desired.core_address.as_str();
+    let agent_type_pins = desired
+        .objects
+        .keys()
+        .filter(|name| name.kind == "Agent")
+        .filter_map(|name| engine.objects.get(name))
+        .flat_map(|agent| {
+            let address = text(&agent.definition["resolved"]["type"])
+                .split_once('#')
+                .map(|(address, _)| address);
+            agent.pins().filter(move |pin| {
+                Some(pin.address.as_str()) == address
+                    && pin.version.is_some()
+                    && pin.digest.is_some()
+                    && pin.address != core
+            })
+        })
+        .collect::<BTreeSet<_>>();
+    for pin in &agent_type_pins {
+        cache.read(pin, false, &mut desired.stops)?;
     }
     desired.available_archives = cache.archives;
     Ok(desired)
@@ -1132,6 +1321,7 @@ fn resolve_objects(
     desired: &mut Desired,
     cache: &State,
     engine: &Engine,
+    ledger: &Ledger,
     context: &Context,
 ) -> Result<()> {
     let mut start = evidence(1, 64);
@@ -1304,13 +1494,34 @@ fn resolve_objects(
         for field in ["entries", "conduits"] {
             for (slot, child) in object["slots"][field].as_object().into_iter().flatten() {
                 let prior = &observed.definition["slots"][field][slot];
-                let Some(name) = Name::object(prior).or_else(|| {
-                    engine
-                        .objects
-                        .iter()
-                        .find(|(_, old)| prior["id"] == old.id)
-                        .map(|(name, _)| name.clone())
-                }) else {
+                let Some(name) = Name::object(prior)
+                    .or_else(|| {
+                        engine
+                            .objects
+                            .iter()
+                            .find(|(_, old)| prior["id"] == old.id)
+                            .map(|(name, _)| name.clone())
+                    })
+                    .or_else(|| {
+                        ledger
+                            .replacements
+                            .values()
+                            .flat_map(|proof| {
+                                proof
+                                    .slots
+                                    .iter()
+                                    .filter(|(name, _)| proof.remade.contains(*name))
+                            })
+                            .find(|(_, saved)| {
+                                saved.parent == *parent
+                                    && saved.parent_id == observed.id
+                                    && saved.field == field
+                                    && saved.member == *slot
+                                    && prior["id"] == saved.child_id
+                            })
+                            .map(|(name, _)| name.clone())
+                    })
+                else {
                     continue;
                 };
                 let id = text(&child["id"]);

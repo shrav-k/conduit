@@ -1,7 +1,12 @@
 use super::apply::{Action, Binding, Effect};
 use super::*;
 
-pub(super) fn plan(desired: &Desired, ledger: &Ledger, engine: &Engine) -> Plan {
+pub(super) fn plan(
+    desired: &Desired,
+    ledger: &Ledger,
+    engine: &Engine,
+    approvals: &BTreeSet<Approval>,
+) -> Plan {
     let mut result = Plan {
         stops: desired.stops.clone(),
         names: engine
@@ -33,6 +38,7 @@ pub(super) fn plan(desired: &Desired, ledger: &Ledger, engine: &Engine) -> Plan 
         desired,
         ledger,
         engine,
+        approvals,
         result,
         touched: BTreeSet::new(),
         add: vec![],
@@ -40,10 +46,19 @@ pub(super) fn plan(desired: &Desired, ledger: &Ledger, engine: &Engine) -> Plan 
         close: BTreeSet::new(),
         narrow: BTreeSet::new(),
         resume: vec![],
+        used: BTreeMap::new(),
+        replacement_flags: BTreeMap::new(),
+        retire: BTreeSet::new(),
+        remakes: BTreeMap::new(),
+        lifts: BTreeMap::new(),
+        lift_permissions: BTreeMap::new(),
     };
     changes.collect();
+    changes.expand_replacements();
+    changes.check_tombstones();
     changes.steps();
     changes.unknown();
+    changes.check_operands();
     changes.result
 }
 
@@ -51,6 +66,7 @@ struct Changes<'a> {
     desired: &'a Desired,
     ledger: &'a Ledger,
     engine: &'a Engine,
+    approvals: &'a BTreeSet<Approval>,
     result: Plan,
     touched: BTreeSet<Name>,
     add: Vec<Name>,
@@ -58,6 +74,19 @@ struct Changes<'a> {
     close: BTreeSet<Name>,
     narrow: BTreeSet<Name>,
     resume: Vec<Name>,
+    used: BTreeMap<Approval, BTreeSet<Name>>,
+    replacement_flags: BTreeMap<Name, BTreeSet<Approval>>,
+    retire: BTreeSet<Name>,
+    remakes: BTreeMap<Name, Name>,
+    lifts: BTreeMap<String, PlannedLift>,
+    lift_permissions: BTreeMap<Name, BTreeSet<Approval>>,
+}
+
+#[derive(Default)]
+struct PlannedLift {
+    subject: Option<Name>,
+    approvals: BTreeSet<Approval>,
+    descendants: BTreeSet<Name>,
 }
 
 impl Changes<'_> {
@@ -65,12 +94,80 @@ impl Changes<'_> {
         self.result.stops.insert(format!("stop {name} {cause}"));
     }
 
-    fn flag(&mut self, name: &Name, cause: &str, flag: &str, rule: &str) {
+    fn permit(&mut self, name: &Name, cause: &str, approval: &Approval, rule: &str) -> bool {
         self.touched.insert(name.clone());
-        self.stop(
-            name,
-            &format!("{cause} requires={flag} {} {rule}", name.name),
-        );
+        if self.approvals.contains(approval) {
+            let users = self.used.entry(approval.clone()).or_default();
+            if name.name == approval.operand {
+                users.insert(name.clone());
+            } else if users.is_empty() {
+                users.extend(
+                    self.desired
+                        .objects
+                        .keys()
+                        .filter(|name| name.name == approval.operand)
+                        .cloned(),
+                );
+            }
+            true
+        } else {
+            self.stop(name, &format!("{cause} requires={approval} {rule}"));
+            false
+        }
+    }
+
+    fn flag(&mut self, name: &Name, cause: &str, flag: &str, rule: &str) -> bool {
+        self.permit(name, cause, &Approval::new(flag, &name.name), rule)
+    }
+
+    fn permit_all(
+        &mut self,
+        name: &Name,
+        cause: &str,
+        approvals: &BTreeSet<Approval>,
+        rule: &str,
+    ) -> bool {
+        let mut allowed = true;
+        for approval in approvals {
+            allowed &= self.permit(name, cause, approval, rule);
+        }
+        allowed
+    }
+
+    fn check_operands(&mut self) {
+        for approval in self.approvals {
+            let choice = Name::new("Flag", &approval.flag);
+            match self.used.get(approval) {
+                None => self.stop(&choice, &format!("operand={} use=none -", approval.operand)),
+                Some(names) if names.len() > 1 => self.stop(
+                    &choice,
+                    &format!(
+                        "operand={} use=ambiguous objects=[{}] -",
+                        approval.operand,
+                        names
+                            .iter()
+                            .map(ToString::to_string)
+                            .collect::<Vec<_>>()
+                            .join(",")
+                    ),
+                ),
+                _ => {}
+            }
+        }
+    }
+
+    fn remake(&mut self, name: &Name, approval: Approval) {
+        self.replacement_flags
+            .entry(name.clone())
+            .or_default()
+            .insert(approval);
+        self.remakes.insert(name.clone(), name.clone());
+        if name.kind == "Conduit" {
+            self.close.insert(name.clone());
+            self.narrow.insert(name.clone());
+        } else {
+            self.retire.insert(name.clone());
+        }
     }
 
     fn collect(&mut self) {
@@ -90,7 +187,20 @@ impl Changes<'_> {
             .chain(&protected)
             .cloned()
             .collect();
+        // Decide parents before their declared children, even when kind order would
+        // put a Conduit before its enclosing Interface.
+        let mut names: Vec<_> = names.into_iter().collect();
+        names.sort_by_cached_key(|name| nested_slot(self.engine, name).is_some());
         for name in &names {
+            if nested_slot(self.engine, name)
+                .is_some_and(|(parent, _, _)| self.retire.contains(parent))
+                || self
+                    .ledger
+                    .replacement_slot(self.engine, name)
+                    .is_some_and(|slot| self.retire.contains(&slot.parent))
+            {
+                continue;
+            }
             let want = self.desired.objects.get(name);
             let old = self.engine.objects.get(name);
             let kept = self.ledger.objects.get(name);
@@ -112,6 +222,21 @@ impl Changes<'_> {
                 })
             {
                 let this_copy = owned && kept.is_some_and(|kept| kept.state == "retired");
+                let approvals = self
+                    .ledger
+                    .pending_replacement(name)
+                    .map(|proof| proof.approvals.clone());
+                if owned
+                    && want.is_some()
+                    && let Some(approvals) = approvals
+                {
+                    if self.permit_all(name, "state=retired", &approvals, "LIF-026") {
+                        for flag in approvals {
+                            self.remake(name, flag);
+                        }
+                    }
+                    continue;
+                }
                 let cause = if want.is_none() || this_copy {
                     "state=retired rule=none -"
                 } else {
@@ -236,9 +361,11 @@ impl Changes<'_> {
             || !changed_pins.is_empty() && !same_contracts(want, old, self.desired);
         if places.is_empty() && !changed_execution {
             if old.state == "registered" {
-                if let Some(flag) = self.ledger.registration_flags.get(&kept.id) {
-                    self.stop(name, &format!("state=registered requires={flag} LIF-013"));
-                    return;
+                if let Some(flags) = self.ledger.registration_flags.get(&kept.id) {
+                    if !self.permit_all(name, "state=registered", flags, "LIF-013") {
+                        return;
+                    }
+                    self.replacement_flags.insert(name.clone(), flags.clone());
                 }
                 self.touched.insert(name.clone());
                 self.resume.push(name.clone());
@@ -256,8 +383,13 @@ impl Changes<'_> {
                 self.close.insert(name.clone());
                 self.narrow.insert(name.clone());
                 self.touched.insert(name.clone());
-            } else {
-                self.flag(name, "place=/from", "--replace", "LIF-009");
+            } else if self.flag(name, "place=/from", "--replace", "LIF-009") {
+                if previous["from"] != next["from"] {
+                    // The core uses the parent's held slot, including its original reference.
+                    self.stop(name, "place=/from LIF-009");
+                } else {
+                    self.remake(name, Approval::new("--replace", &name.name));
+                }
             }
             return;
         }
@@ -271,7 +403,9 @@ impl Changes<'_> {
                     places.push("/resolved/operations".into());
                 }
                 for place in places {
-                    self.flag(name, &format!("place={place}"), "--replace", "OBJ-011");
+                    if self.flag(name, &format!("place={place}"), "--replace", "OBJ-011") {
+                        self.remake(name, Approval::new("--replace", &name.name));
+                    }
                 }
             }
             return;
@@ -357,6 +491,14 @@ impl Changes<'_> {
             }
         }
         if replace && !owned {
+            let approval = Approval::new("--replace", &name.name);
+            if self
+                .used
+                .get(&approval)
+                .is_some_and(|names| names.contains(name))
+            {
+                self.remake(name, approval);
+            }
             for (other, conduit) in &self.engine.objects {
                 if other.kind == "Conduit"
                     && !conduit.made_by_engine
@@ -367,10 +509,13 @@ impl Changes<'_> {
                     .contains(&&name.reference())
                 {
                     self.touched.insert(other.clone());
-                    if !self.desired.objects.contains_key(other)
-                        && !self.ledger.objects.contains_key(other)
-                    {
-                        self.flag(other, "absent=file", "--replace", "OBJ-011");
+                    if !self.desired.objects.contains_key(other) {
+                        let endpoint = if conduit.definition["consumer"] == name.reference() {
+                            "consumer"
+                        } else {
+                            "target"
+                        };
+                        self.stop(other, &format!("absent=file place=/{endpoint} CON-008"));
                     }
                 }
             }
@@ -384,18 +529,21 @@ impl Changes<'_> {
             ("--recreate", &*name.kind)
         };
         if !want.resolved.is_template() {
-            if let Some(stone) = self
+            let stones_match = self
                 .engine
                 .tombstones
                 .iter()
-                .find(|s| matches_tombstone(name, &want.resolved.definition, s))
-            {
-                self.flag(
-                    name,
-                    &format!("tombstone={}", text(&stone["id"])),
-                    flag,
-                    "LIF-041",
-                );
+                .any(|stone| matches_tombstone(name, &want.resolved.definition, stone));
+            if let Some(proof) = self.ledger.pending_replacement(name) {
+                if self.permit_all(name, "absent=engine", &proof.approvals, "LIF-040") {
+                    self.replacement_flags
+                        .insert(name.clone(), proof.step_approvals.clone());
+                    self.add.push(name.clone());
+                }
+                return;
+            }
+            if stones_match {
+                self.add.push(name.clone());
                 return;
             }
             if kind == "Conduit"
@@ -410,15 +558,341 @@ impl Changes<'_> {
                         && same_match(&old.definition, &want.resolved.definition)
                 })
             {
-                self.flag(name, &format!("tombstone=({prior})"), flag, "LIF-041");
+                if self.flag(name, &format!("tombstone=({prior})"), flag, "LIF-041") {
+                    let approval = Approval::new(flag, &name.name);
+                    self.remakes.insert(name.clone(), prior.clone());
+                    self.replacement_flags
+                        .entry(name.clone())
+                        .or_default()
+                        .insert(approval.clone());
+                    self.lift_permissions
+                        .entry(prior.clone())
+                        .or_default()
+                        .insert(approval);
+                }
                 return;
             }
         }
         if kept.is_some() {
-            self.flag(name, "absent=engine", flag, "LIF-040");
+            if self.flag(name, "absent=engine", flag, "LIF-040") {
+                self.replacement_flags
+                    .entry(name.clone())
+                    .or_default()
+                    .insert(Approval::new(flag, &name.name));
+                self.add.push(name.clone());
+            }
         } else {
             self.add.push(name.clone());
             self.touched.insert(name.clone());
+        }
+    }
+
+    fn check_tombstones(&mut self) {
+        let additions: BTreeSet<_> = self
+            .add
+            .iter()
+            .chain(self.remakes.keys())
+            .cloned()
+            .collect();
+        let implicit: BTreeMap<_, _> = self
+            .desired
+            .nested
+            .iter()
+            .filter(|child| self.added_with_parent(&child.parent, &additions))
+            .map(|child| (child.name.clone(), &child.resolved.definition))
+            .collect();
+        let checks: BTreeMap<_, _> = additions
+            .iter()
+            .chain(self.resume.iter().filter(|name| name.kind == "Conduit"))
+            .filter_map(|name| {
+                let object = &self.desired.objects[name].resolved;
+                (!object.is_template()).then_some((name.clone(), &object.definition))
+            })
+            .chain(implicit)
+            .collect();
+        let mut blocked = BTreeSet::new();
+        for (name, definition) in checks {
+            for stone in self
+                .engine
+                .tombstones
+                .iter()
+                .filter(|stone| matches_tombstone(&name, definition, stone))
+            {
+                let cause = format!("tombstone={}", text(&stone["id"]));
+                let root = tombstone_root(&self.engine.tombstones, stone);
+                let proof = self
+                    .ledger
+                    .lift_proof(text(&root["cause"]["invocation"]))
+                    .filter(|proof| proof.remade.contains(&name));
+                if let Some(proof) = proof {
+                    if self.permit_all(&name, &cause, &proof.approvals, "LIF-041") {
+                        self.replacement_flags
+                            .entry(name.clone())
+                            .or_default()
+                            .extend(proof.step_approvals.iter().cloned());
+                        // A pending retirement of the same object will bind this stone
+                        // to its earlier, journaled cause when listing after retry.
+                        if self.remakes.get(&name).is_none_or(|removal| {
+                            self.engine.objects[removal].id != root["object"]["id"]
+                        }) {
+                            self.schedule_lift(stone, None);
+                        }
+                    } else {
+                        blocked.insert(name.clone());
+                    }
+                } else {
+                    let flag = if name.kind == "Conduit" {
+                        "--reopen"
+                    } else {
+                        "--recreate"
+                    };
+                    if self.flag(&name, &cause, flag, "LIF-041") {
+                        let approval = Approval::new(flag, &name.name);
+                        self.schedule_lift(stone, Some(approval.clone()));
+                        self.replacement_flags
+                            .entry(name.clone())
+                            .or_default()
+                            .insert(approval);
+                    } else {
+                        blocked.insert(name.clone());
+                    }
+                }
+            }
+        }
+        self.add.retain(|name| !blocked.contains(name));
+        self.resume.retain(|name| !blocked.contains(name));
+    }
+
+    fn added_with_parent(&self, name: &Name, additions: &BTreeSet<Name>) -> bool {
+        additions.contains(name)
+            || self
+                .desired
+                .nested
+                .iter()
+                .find(|child| &child.name == name)
+                .is_some_and(|child| self.added_with_parent(&child.parent, additions))
+    }
+
+    fn schedule_lift(&mut self, stone: &Value, approval: Option<Approval>) {
+        let lift = self.lifts.entry(text(&stone["id"]).to_owned()).or_default();
+        lift.approvals.extend(approval);
+    }
+
+    fn combine_lifts(&mut self) -> Vec<(String, PlannedLift)> {
+        let selected: BTreeSet<_> = self.lifts.keys().cloned().collect();
+        let stones = &self.engine.tombstones;
+        let mut groups = BTreeMap::<_, PlannedLift>::new();
+        for (id, lift) in std::mem::take(&mut self.lifts) {
+            let stone = stones
+                .iter()
+                .find(|stone| stone["id"] == id)
+                .expect("a planned tombstone is in the inspection");
+            // Only merge into an ancestor whose own lift was planned.
+            let root = tombstone_chain(stones, stone)
+                .into_iter()
+                .rfind(|parent| selected.contains(text(&parent["id"])))
+                .unwrap_or(stone);
+            let group = groups.entry(text(&root["id"]).to_owned()).or_default();
+            group.subject = Name::object(&root["object"]);
+            group.approvals.extend(lift.approvals);
+        }
+        let mut groups: Vec<_> = groups.into_iter().collect();
+        for (id, group) in &mut groups {
+            group.descendants.extend(
+                stones
+                    .iter()
+                    .filter(|stone| {
+                        tombstone_chain(stones, stone)
+                            .iter()
+                            .skip(1)
+                            .any(|parent| parent["id"] == *id)
+                    })
+                    .filter_map(|stone| Name::object(&stone["object"])),
+            );
+        }
+        groups.sort_by(|(_, a), (_, b)| a.subject.cmp(&b.subject));
+        groups
+    }
+
+    fn expand_replacements(&mut self) {
+        for name in self.narrow.clone() {
+            self.remakes.entry(name.clone()).or_insert(name);
+        }
+        for endpoint in self.retire.clone() {
+            let Some(wanted) = self.desired.objects.get(&endpoint) else {
+                continue;
+            };
+            let old = &self.engine.objects[&endpoint];
+            self.mark_bounds(&endpoint, old, &wanted.resolved);
+            if endpoint.kind == "Agent" {
+                match self.held_sign_in(old) {
+                    Some(true) => {
+                        self.result.signed_out.insert(endpoint.clone());
+                    }
+                    Some(false) => {}
+                    None => self.stop(&endpoint, "place=/type sign-in=not-shown CTR-013"),
+                }
+            }
+            let approvals = self.replacement_flags[&endpoint].clone();
+            for (name, conduit) in &self.engine.objects {
+                if name.kind != "Conduit"
+                    || !["consumer", "target"]
+                        .iter()
+                        .any(|field| conduit.definition[*field] == endpoint.reference())
+                {
+                    continue;
+                }
+                self.result.closed_conduits.insert(name.name.clone());
+                self.close.remove(name);
+                self.narrow.remove(name);
+                self.touched.insert(name.clone());
+                if self.desired.objects.contains_key(name) {
+                    if let Some((parent, _, _)) = nested_slot(self.engine, name) {
+                        if self.retire.contains(parent) {
+                            self.remakes.remove(name);
+                            self.add.retain(|child| child != name);
+                            self.resume.retain(|child| child != name);
+                            continue;
+                        }
+                        // The surviving parent froze the target reference to the old ID.
+                        // register-replacement.v1 would use that same held reference.
+                        if conduit.definition["target"] == endpoint.reference() {
+                            self.stop(name, "place=/target LIF-009");
+                            self.remakes.remove(name);
+                            continue;
+                        }
+                    }
+                    self.remakes.insert(name.clone(), endpoint.clone());
+                    self.replacement_flags
+                        .entry(name.clone())
+                        .or_default()
+                        .extend(approvals.clone());
+                }
+            }
+        }
+    }
+
+    fn incident(&self, endpoint: &Name) -> BTreeSet<Name> {
+        if endpoint.kind == "Conduit" {
+            return BTreeSet::new();
+        }
+        self.engine
+            .objects
+            .iter()
+            .filter(|(name, conduit)| {
+                name.kind == "Conduit"
+                    && !conduit.is_template()
+                    && ["consumer", "target"]
+                        .iter()
+                        .any(|field| conduit.definition[*field] == endpoint.reference())
+            })
+            .map(|(name, _)| name.clone())
+            .collect()
+    }
+
+    fn held_sign_in(&self, old: &ObservedObject) -> Option<bool> {
+        let ty = text(&old.definition["resolved"]["type"]);
+        if let Some((address, name)) = ty.split_once('#') {
+            let is_type = |doc: &&Value| doc["kind"] == "Type" && doc["metadata"]["name"] == name;
+            for package in &old.packages {
+                if package["address"] != address {
+                    continue;
+                }
+                let archived = Pin::from_value(package)
+                    .and_then(|pin| self.desired.available_archives.get(&pin))
+                    .and_then(|archive| match archive {
+                        Archive::Read(archive) => {
+                            archive.package.project.documents.iter().find(is_type)
+                        }
+                        _ => None,
+                    });
+                let current = || {
+                    let held = array(&package["documents"])
+                        .iter()
+                        .find(|doc| doc["kind"] == "Type" && doc["name"] == name)?;
+                    let candidate = self.desired.project.documents.iter().find(is_type)?;
+                    (conduit_core::packages::document_digest(candidate)
+                        .ok()
+                        .as_deref()
+                        == Some(held["digest"].as_str()?))
+                    .then_some(candidate)
+                };
+                if let Some(document) = archived.or_else(current) {
+                    return Some(document["spec"].get("signIn").is_some());
+                }
+            }
+        }
+        if array(&old.status["pending"])
+            .iter()
+            .any(|action| action["kind"] == "sign-in")
+            || array(&old.status["conditions"])
+                .iter()
+                .any(|condition| condition["type"] == "SignInUndone")
+        {
+            return Some(true);
+        }
+        // A Type with signIn must require all three hooks (CTR-013).
+        (!["account-hook.v1", "sign-in-hook.v1", "sign-out-hook.v1"]
+            .iter()
+            .all(|hook| {
+                old.implementations
+                    .get(format!("{}#{hook}", self.desired.core_address))
+                    .is_some()
+            }))
+        .then_some(false)
+    }
+
+    fn mark_bounds(&mut self, name: &Name, old: &ObservedObject, new: &ObservedObject) {
+        let previous = &old.definition["owner"];
+        let next = &new.definition["owner"];
+        for (holder, conduit) in &self.engine.objects {
+            if holder.kind != "Conduit" || conduit.state != "ready" {
+                continue;
+            }
+            for requirement in conduit.definition["resolved"]["requirements"]
+                .as_object()
+                .into_iter()
+                .flat_map(|r| r.values())
+            {
+                if requirement["requirement"] != format!("{}#bound.v1", self.desired.core_address) {
+                    continue;
+                }
+                let args = &requirement["arguments"];
+                let target = array(&args["targets"])
+                    .iter()
+                    .any(|r| r == &name.reference() || r["id"] == old.id);
+                let pool = |owner: &Value| {
+                    name.kind == "Resource"
+                        && name_reference(&Some(owner), "Pool").is_some_and(|pool| {
+                            array(&args["pools"]).iter().any(|r| {
+                                r == &pool.reference()
+                                    || self
+                                        .engine
+                                        .objects
+                                        .get(&pool)
+                                        .is_some_and(|held| r["id"] == held.id)
+                            })
+                        })
+                };
+                let covered_before = target
+                    || pool(previous)
+                    || name.kind == "Pool"
+                        && array(&args["pools"])
+                            .iter()
+                            .any(|p| p == &name.reference() || p["id"] == old.id);
+                let covered_after = pool(next);
+                match (covered_before, covered_after) {
+                    (false, true) => {
+                        self.result.bounds_added.insert(format!("{holder}:{name}"));
+                    }
+                    (true, false) => {
+                        self.result
+                            .affected_bounds
+                            .insert(format!("{holder}:{name}"));
+                    }
+                    _ => {}
+                }
+            }
         }
     }
 
@@ -458,11 +932,55 @@ impl Changes<'_> {
             let desired = &self.desired.objects[&name];
             let observed = &self.engine.objects[&name];
             let mut details = vec![format!("document={}", safe(&desired.document))];
-            if let Some(manifest) = self.desired.project.manifest.as_ref() {
+            let approval = name
+                .name
+                .strip_suffix("--t")
+                .and_then(|inline| self.replacement_flags.get(&Name::new(&name.kind, inline)))
+                .cloned()
+                .unwrap_or_default();
+            let rule = if approval.is_empty() {
+                "SUB-009"
+            } else {
+                "INS-020"
+            };
+            if !approval.is_empty() {
+                let typed_address = text(&desired.resolved.definition["type"])
+                    .split_once('#')
+                    .map(|(a, _)| a);
+                if let Some(pin) = desired
+                    .resolved
+                    .pins()
+                    .find(|pin| Some(pin.address.as_str()) == typed_address)
+                    && let Some((alias, version)) = short_pin(&pin)
+                    && let Some(digest) = &pin.digest
+                {
+                    let root = safe(&desired.resolved.definition["config"]["root"]);
+                    let root = root["pathSha256"]
+                        .as_str()
+                        .map(|hex| format!(" root-sha256={hex}"))
+                        .unwrap_or_default();
+                    details.push(format!(
+                        "{alias}={version} digest={digest}{root} revision={}",
+                        observed.revision
+                    ));
+                }
+            } else if let Some(manifest) = self.desired.project.manifest.as_ref() {
                 details.push(format!("manifest={}", safe(manifest)));
             }
             if let Some(item) = redacted {
                 details.push(format!("item={item} secret=not-shown SEC-021"));
+            }
+            let mut arguments = json!({"template":desired.document,"revision":observed.revision,
+                "manifest":self.desired.project.manifest});
+            let contracts: Vec<_> = self
+                .desired
+                .project
+                .documents
+                .iter()
+                .filter(|document| conduit_core::packages::contract(document))
+                .collect();
+            if !contracts.is_empty() {
+                arguments["contracts"] = json!(contracts);
             }
             let step = Step {
                 tool: "management.replace.v1".into(),
@@ -470,18 +988,18 @@ impl Changes<'_> {
                 expected: Some(observed.id.clone()),
                 relative: Expected::None,
                 class: "replaces",
-                rule: "SUB-009",
-                arguments: json!({"template":desired.document,"revision":observed.revision,"manifest":self.desired.project.manifest,
-                    "contracts":self.desired.project.documents.iter().filter(|d|conduit_core::packages::contract(d)).collect::<Vec<_>>()}),
+                rule,
+                arguments,
                 details,
                 action: Action {
                     effect: Effect::Replace(Box::new(desired.resolved.clone())),
+                    approvals: approval,
                     ..Action::default()
                 },
             };
             self.result.steps.push(step);
         }
-        if !self.close.is_empty() {
+        if !self.close.is_empty() || !self.retire.is_empty() {
             let templates: Vec<_> = self
                 .add
                 .iter()
@@ -493,24 +1011,82 @@ impl Changes<'_> {
                 self.add.retain(|n| !templates.contains(n));
             }
         }
-        let closes: Vec<_> = self.close.iter().cloned().collect();
-        let mut close_steps = BTreeMap::new();
-        for name in closes {
-            self.result.closed_conduits.insert(name.name.clone());
-            close_steps.insert(name.clone(), self.result.steps.len() + 1);
-            self.push(
-                &format!("{}.close.v1", self.access()),
+        let removals: Vec<_> = self.close.union(&self.retire).cloned().collect();
+        let mut remove_steps = BTreeMap::new();
+        for name in &removals {
+            let previous = &self.engine.objects[name];
+            let retire = self.retire.contains(name);
+            let (tool, rule, field) = if retire {
+                let route = self.owner_route(&previous.definition, &name.kind);
+                (format!("{route}.retire.v1"), "LIF-035", "instance")
+            } else {
+                self.result.closed_conduits.insert(name.name.clone());
+                (format!("{}.close.v1", self.access()), "LIF-037", "conduit")
+            };
+            let remakes: BTreeSet<_> = self
+                .remakes
+                .iter()
+                .filter(|(_, removal)| *removal == name)
+                .map(|(remake, _)| remake.clone())
+                .collect();
+            let replacement_slots = remakes
+                .iter()
+                .filter_map(|child| {
+                    let (parent, field, slot) = nested_slot(self.engine, child)?;
+                    Some((
+                        child.clone(),
+                        ReplacementSlot {
+                            parent: parent.clone(),
+                            parent_id: self.engine.objects[parent].id.clone(),
+                            field,
+                            member: slot.into(),
+                            child_id: self.engine.objects[child].id.clone(),
+                        },
+                    ))
+                })
+                .collect();
+            let closes = if retire {
+                self.incident(name)
+            } else {
+                BTreeSet::new()
+            };
+            let approvals = self
+                .replacement_flags
+                .get(name)
+                .cloned()
+                .unwrap_or_default();
+            remove_steps.insert(name.clone(), self.result.steps.len() + 1);
+            let effect = if retire {
+                let (closes_on_dispatch, closes_on_removal) =
+                    closes.into_iter().partition(|child| {
+                        self.engine.objects[child].definition["target"] == name.reference()
+                    });
+                Effect::Retire {
+                    closes_on_dispatch,
+                    closes_on_removal,
+                }
+            } else {
+                Effect::Remove
+            };
+            let step = self.push(
+                &tool,
                 name.clone(),
-                Some(self.engine.objects[&name].id.clone()),
+                Some(previous.id.clone()),
                 Expected::None,
                 "narrows",
-                "LIF-037",
-            )
-            .action
-            .effect = Effect::Remove;
+                rule,
+            );
+            step.arguments = json!({field:name.reference(),"expectedId":previous.id});
+            step.action = Action {
+                effect,
+                remakes,
+                replacement_slots,
+                approvals,
+                ..Action::default()
+            };
         }
-        if !self.close.is_empty() {
-            let list_at = self.result.steps.len() + 1;
+        if !remove_steps.is_empty() {
+            let listed = self.result.steps.len() + 1;
             self.push(
                 "management.list.v1",
                 Name::new("Tombstone", "*"),
@@ -521,33 +1097,101 @@ impl Changes<'_> {
             )
             .action
             .effect = Effect::Tombstones;
-            let narrow: Vec<_> = self.narrow.iter().cloned().collect();
-            for name in narrow {
+            let causes: BTreeSet<_> = self.remakes.values().cloned().collect();
+            for name in causes {
+                let previous = &self.engine.objects[&name];
+                if previous.state == "retired"
+                    && self.engine.tombstones.iter().any(|stone| {
+                        stone["object"]["id"] == previous.id
+                            && self.lifts.contains_key(text(&stone["id"]))
+                    })
+                {
+                    // An explicitly approved outside stone is lifted by ID below.
+                    continue;
+                }
+                let nested = nested_slot(self.engine, &name);
+                let approvals = self
+                    .lift_permissions
+                    .get(&name)
+                    .cloned()
+                    .or_else(|| nested.and_then(|_| self.replacement_flags.get(&name).cloned()))
+                    .unwrap_or_default();
+                let mut closed = self.incident(&name);
+                closed.retain(|child| !self.engine.objects[child].made_by_engine);
                 let binding = Binding::Tombstone {
-                    closed: close_steps[&name],
-                    listed: list_at,
-                    object: self.engine.objects[&name].id.clone(),
+                    closed: remove_steps[&name],
+                    listed,
+                    object: previous.id.clone(),
+                    prior_cause: self
+                        .engine
+                        .tombstones
+                        .iter()
+                        .filter(|stone| stone["object"]["id"] == previous.id)
+                        .filter_map(|stone| stone["cause"]["invocation"].as_str())
+                        .find(|cause| self.ledger.lift_proof(cause).is_some())
+                        .map(str::to_owned),
                 };
-                self.push(
-                    &format!("{}.lift.v1", self.access()),
+                let access = self.access().to_owned();
+                let step = self.push(
+                    &format!("{access}.lift.v1"),
                     Name::new("Tombstone", &name.name),
                     None,
-                    Expected::Step(list_at),
+                    Expected::Step(listed),
                     "neither",
                     "ACC-053",
-                )
-                .action = Action {
+                );
+                step.action = Action {
                     binding: Some(binding),
                     effect: Effect::Lift,
+                    approvals,
                     ..Action::default()
                 };
-                if let Some((parent, field, slot)) = nested_slot(self.engine, &name) {
-                    nested_activations.push((name, parent.clone(), field, slot.to_owned()));
-                } else {
-                    self.add.push(name);
+                if !closed.is_empty() {
+                    step.details.push(lifts_caused(&closed));
                 }
             }
         }
+        for (id, lift) in self.combine_lifts() {
+            let name = lift.subject.expect("a planned tombstone has an object");
+            let access = self.access().to_owned();
+            let step = self.push(
+                &format!("{access}.lift.v1"),
+                Name::new("Tombstone", &name.name),
+                Some(id.clone()),
+                Expected::None,
+                "neither",
+                "ACC-053",
+            );
+            step.arguments = json!({"id":id});
+            step.action = Action {
+                effect: Effect::Lift,
+                approvals: lift.approvals,
+                ..Action::default()
+            };
+            if !lift.descendants.is_empty() {
+                step.details.push(lifts_caused(&lift.descendants));
+            }
+        }
+        for (name, _) in std::mem::take(&mut self.remakes) {
+            if let Some((parent, field, slot)) = nested_slot(self.engine, &name) {
+                nested_activations.push((name, parent.clone(), field, slot.to_owned()));
+            } else {
+                self.add.push(name);
+            }
+        }
+        self.add.retain(|child| {
+            if let Some(slot) = self.ledger.replacement_slot(self.engine, child) {
+                nested_activations.push((
+                    child.clone(),
+                    slot.parent.clone(),
+                    slot.field,
+                    slot.member.clone(),
+                ));
+                false
+            } else {
+                true
+            }
+        });
         let nested_activations: Vec<_> = nested_activations
             .into_iter()
             .map(|(child, parent, field, slot)| {
@@ -556,11 +1200,11 @@ impl Changes<'_> {
                 self.result.steps.push(Step {
                     tool: "management.register-replacement.v1".into(),
                     subject: parent.clone(),
-                    expected: Some(id),
+                    expected: Some(id.clone()),
                     relative: Expected::None,
                     class: "neither",
                     rule: "LIF-009",
-                    arguments: json!({"instance": parent.reference(), "nested": slot}),
+                    arguments: json!({"instance":{"kind":parent.kind,"id":id}, "nested":slot}),
                     details: vec![format!("nested={slot}")],
                     action: Action {
                         effect: Effect::RegisterReplacement {
@@ -570,6 +1214,11 @@ impl Changes<'_> {
                             slot,
                             previous: child.clone(),
                         },
+                        approvals: self
+                            .replacement_flags
+                            .get(&child)
+                            .cloned()
+                            .unwrap_or_default(),
                         ..Action::default()
                     },
                 });
@@ -583,8 +1232,13 @@ impl Changes<'_> {
         let adds = std::mem::take(&mut self.add);
         if !adds.is_empty() {
             let register = self.result.steps.len() + 1;
-            let rule = if adds.iter().all(|n| self.narrow.contains(n)) {
+            let rule = if adds.iter().all(|n| {
+                n.kind == "Conduit"
+                    && (self.narrow.contains(n) || self.replacement_flags.contains_key(n))
+            }) {
                 "SCT-007"
+            } else if adds.iter().any(|n| self.retire.contains(n)) {
+                "SCT-004"
             } else {
                 "SCT-003"
             };
@@ -607,7 +1261,18 @@ impl Changes<'_> {
     fn activate(&mut self, mut pending: Vec<(Name, Expected, bool)>) {
         pending.sort_by(|(a, _, _), (b, _, _)| {
             let order = ["Pool", "Resource", "Fleet", "Agent", "Interface", "Conduit"];
-            (rank(&a.kind, &order), &a.name).cmp(&(rank(&b.kind, &order), &b.name))
+            let approved = |name: &Name| {
+                name.kind == "Conduit"
+                    && self
+                        .replacement_flags
+                        .get(name)
+                        .is_some_and(|flags| !flags.is_empty())
+            };
+            (rank(&a.kind, &order), approved(a), &a.name).cmp(&(
+                rank(&b.kind, &order),
+                approved(b),
+                &b.name,
+            ))
         });
         let mut awaiting: BTreeSet<_> = pending.iter().map(|(name, _, _)| name.clone()).collect();
         while !pending.is_empty() {
@@ -652,6 +1317,14 @@ impl Changes<'_> {
             if name.kind == "Conduit" {
                 self.open_conduit(&name, subject, expected, relative);
             } else {
+                let mut approvals = self
+                    .replacement_flags
+                    .get(&name)
+                    .cloned()
+                    .unwrap_or_default();
+                if !nested && relative != Expected::None && self.retire.contains(&name) {
+                    approvals.clear();
+                }
                 let class = if want.resolved.definition["resolved"]["conduits"]
                     .as_object()
                     .is_some_and(|m| !m.is_empty())
@@ -675,6 +1348,7 @@ impl Changes<'_> {
                         opened_by: None,
                     },
                     panel: true,
+                    approvals,
                     ..Action::default()
                 };
             }
@@ -689,6 +1363,11 @@ impl Changes<'_> {
         relative: Expected,
     ) {
         let want = &self.desired.objects[name];
+        let approvals = self
+            .replacement_flags
+            .get(name)
+            .cloned()
+            .unwrap_or_default();
         let provenance = self
             .engine
             .objects
@@ -709,6 +1388,8 @@ impl Changes<'_> {
                 state: "ready",
                 opened_by: provenance,
             },
+            approvals,
+            opens: Some((name.clone(), want.resolved.definition.clone())),
             ..Action::default()
         };
         let detail = self.result.steps.last_mut().unwrap();
@@ -745,6 +1426,12 @@ impl Changes<'_> {
         order_registration_documents(&mut docs);
         let names: Vec<_> = docs.iter().filter_map(|d| Name::document(d)).collect();
         let effect = self.registration_effect(&names);
+        let approvals = names
+            .iter()
+            .filter_map(|name| self.replacement_flags.get(name))
+            .flatten()
+            .cloned()
+            .collect();
         let primary = names
             .iter()
             .find(|n| n.kind == "Fleet" && !self.desired.objects[*n].resolved.is_template())
@@ -763,8 +1450,11 @@ impl Changes<'_> {
             "adds",
             rule,
         )
-        .action
-        .effect = effect;
+        .action = Action {
+            effect,
+            approvals,
+            ..Action::default()
+        };
         let step = self.result.steps.last_mut().unwrap();
         let manifest = &self.desired.project.manifest;
         let contracts = self
@@ -780,14 +1470,16 @@ impl Changes<'_> {
         if let Some(manifest) = manifest {
             step.details.push(format!("manifest={}", safe(manifest)));
         }
-        step.details.push(format!(
-            "objects=[{}]",
-            names
-                .iter()
-                .map(ToString::to_string)
-                .collect::<Vec<_>>()
-                .join(",")
-        ));
+        if names.len() > 1 || rule != "SCT-007" {
+            step.details.push(format!(
+                "objects=[{}]",
+                names
+                    .iter()
+                    .map(ToString::to_string)
+                    .collect::<Vec<_>>()
+                    .join(",")
+            ));
+        }
         let defaults: Vec<_> = names
             .iter()
             .filter(|n| {
@@ -835,10 +1527,18 @@ impl Changes<'_> {
             defaults.push((template.to_owned(), view));
         }
         defaults.sort_by(|(_, a), (_, b)| text(&a.definition["as"]).cmp(text(&b.definition["as"])));
+        let roots = names.iter().cloned().collect();
+        let nested = self
+            .desired
+            .nested
+            .iter()
+            .filter(|child| self.added_with_parent(&child.parent, &roots))
+            .cloned()
+            .collect();
         Effect::Register {
             objects,
             defaults,
-            nested: self.desired.nested.clone(),
+            nested,
         }
     }
 
@@ -1050,7 +1750,8 @@ impl Changes<'_> {
     }
 
     fn retains(&self, name: &Name, want: &DesiredObject, old: &ObservedObject) -> bool {
-        !old.is_template()
+        !self.replacement_flags.contains_key(name)
+            && !old.is_template()
             && !held_address_changed(self.desired, old)
             && self
                 .ledger
@@ -1139,13 +1840,21 @@ fn object_binding(relative: Expected, field: &'static str) -> Option<Binding> {
 
 fn nested_slot<'a>(engine: &'a Engine, name: &Name) -> Option<(&'a Name, &'static str, &'a str)> {
     let id = &engine.objects.get(name)?.id;
+    nested_slot_for(engine, name, id)
+}
+
+pub(super) fn nested_slot_for<'a>(
+    engine: &'a Engine,
+    name: &Name,
+    id: &str,
+) -> Option<(&'a Name, &'static str, &'a str)> {
     for (parent, object) in &engine.objects {
         for field in ["entries", "conduits"] {
             if let Some((slot, _)) = object.definition["slots"][field]
                 .as_object()
                 .into_iter()
                 .flatten()
-                .find(|(_, child)| child["id"] == *id || Name::object(child).as_ref() == Some(name))
+                .find(|(_, child)| child["id"] == id || Name::object(child).as_ref() == Some(name))
             {
                 return Some((parent, field, slot));
             }
@@ -1161,20 +1870,58 @@ fn same_match(left: &Value, right: &Value) -> bool {
                 && left["resolved"]["capability"] == right["resolved"]["capability"])
 }
 
-fn matches_tombstone(name: &Name, definition: &Value, stone: &Value) -> bool {
-    if name.kind == "Conduit" {
-        stone["object"]["kind"] == "Conduit"
-            && same_match(
-                definition,
-                &json!({
-                    "consumer":{"kind":stone["consumer"]["kind"],"name":stone["consumer"]["name"]},
-                    "target":{"kind":stone["target"]["kind"],"name":stone["target"]["name"]},
-                    "as":stone["localName"],"resolved":{"capability":stone["capability"]}
-                }),
-            )
-    } else {
-        stone["object"]["kind"] == name.kind && stone["object"]["name"] == name.name
+fn lifts_caused(names: &BTreeSet<Name>) -> String {
+    format!(
+        "lifts-caused=[{}]",
+        names
+            .iter()
+            .map(|name| name.name.as_str())
+            .collect::<Vec<_>>()
+            .join(",")
+    )
+}
+
+fn tombstone_root<'a>(stones: &'a [Value], stone: &'a Value) -> &'a Value {
+    tombstone_chain(stones, stone)
+        .last()
+        .copied()
+        .unwrap_or(stone)
+}
+
+fn tombstone_chain<'a>(stones: &'a [Value], mut stone: &'a Value) -> Vec<&'a Value> {
+    let mut chain = vec![stone];
+    let mut seen = BTreeSet::new();
+    while let Some(parent) = stone["cause"]["tombstone"].as_str() {
+        if !seen.insert(parent) {
+            break;
+        }
+        let Some(ancestor) = stones.iter().find(|candidate| candidate["id"] == parent) else {
+            break;
+        };
+        stone = ancestor;
+        chain.push(stone);
     }
+    chain
+}
+
+pub(super) fn matches_tombstone(name: &Name, definition: &Value, stone: &Value) -> bool {
+    if stone["object"]["kind"] != name.kind {
+        return false;
+    }
+    if name.kind != "Conduit" {
+        return stone["object"]["name"] == name.name;
+    }
+    let same_end = |field: &str| {
+        let (wanted, held) = (&definition[field], &stone[field]);
+        wanted["kind"].is_string()
+            && wanted["kind"] == held["kind"]
+            && wanted["name"].is_string()
+            && wanted["name"] == held["name"]
+    };
+    let local = definition["as"].as_str().unwrap_or(&name.name);
+    same_end("consumer")
+        && (stone["localName"] == local
+            || same_end("target") && stone["capability"] == definition["resolved"]["capability"])
 }
 
 pub(super) fn comparable(value: &Value) -> Value {
@@ -1200,6 +1947,10 @@ pub(super) fn comparable(value: &Value) -> Value {
 
 pub(super) fn differences(left: &Value, right: &Value, pointer: &str, out: &mut Vec<String>) {
     if left == right {
+        return;
+    }
+    if left.get("pathSha256").is_some() && right.get("pathSha256").is_some() {
+        out.push(pointer.to_owned());
         return;
     }
     if let (Some(left), Some(right)) = (left.as_object(), right.as_object()) {

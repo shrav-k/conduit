@@ -46,7 +46,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | reason, no case | 54 | 17 | 1 | 72 |
 | no case, no reason | 22 | 64 | 19 | 105 |
 | all | 225 | 245 | 50 | 520 |
-| named in engine source | 159 | 175 | 31 | 365 |
+| named in engine source | 160 | 175 | 31 | 366 |
 
 ## The promises
 
@@ -92,7 +92,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | CON-004 | convention | must | 12 | 0 | cases | core | case passes |
 | CON-006 | language | must | 0 | 0 | outside | none | no case, no reason |
 | CON-007 | convention | must | 0 | 0 | reason | none | reason, no case |
-| CON-008 | convention | must | 2 | 0 | cases | core | case passes |
+| CON-008 | convention | must | 2 | 0 | cases | core, shell | case passes |
 | CON-011 | convention | must | 1 | 0 | cases | core | case passes |
 | CON-012 | language | must | 0 | 0 | reason | none | reason, no case |
 | CON-013 | convention | must | 0 | 0 | reason | none | reason, no case |
@@ -246,7 +246,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | LIF-023 | convention | must not | 0 | 0 | outside | none | no case, no reason |
 | LIF-024 | convention | must | 7 | 0 | cases | core, shell | case passes |
 | LIF-025 | convention | must | 0 | 0 | outside | core | no case, no reason |
-| LIF-026 | convention | must | 0 | 0 | outside | core | no case, no reason |
+| LIF-026 | convention | must | 0 | 0 | outside | core, shell | no case, no reason |
 | LIF-027 | convention | must not | 8 | 0 | cases | core | case passes |
 | LIF-028 | convention | must | 4 | 1 | outside | core | case passes |
 | LIF-029 | convention | must | 1 | 0 | cases | core | case passes |
@@ -512,7 +512,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | SCT-001 | language | must | 7 | 0 | cases | core | case passes |
 | SCT-002 | language | must | 5 | 0 | cases | loader | case passes |
 | SCT-003 | language | must | 5 | 0 | cases | shell | case passes |
-| SCT-004 | language | must | 4 | 0 | cases | none | case passes |
+| SCT-004 | language | must | 4 | 0 | cases | shell | case passes |
 | SCT-005 | language | must | 3 | 0 | cases | loader | case passes |
 | SCT-006 | language | must | 6 | 0 | cases | loader | case passes |
 | SCT-007 | language | must | 4 | 0 | cases | loader, shell | case passes |

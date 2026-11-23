@@ -282,4 +282,28 @@ failing line on 247's code, then its passing line; each case change with its sen
 
 ## Record
 
-Not yet run.
+Run on 2026-11-22 through Conduit itself, by the dogfood's own Agents, in Pacific time, on
+`main` with orders 245, 271 and 247 stacked while they waited in the merge queue.
+
+**Worker-1's turns.** A first turn (07:37 to 07:41) stopped, rightly: the refusal tests of plan
+and apply listed the flags this order builds, outside its scope. The coordinator widened the
+scope to narrow those tests to the flags order 249 builds. The build (07:42 to 08:53) gave plan
+and apply `--replace`, `--reopen` and `--recreate`, on 247's planner-owned actions: operands in
+one table, approved replacement, lifts bound to the removal and a fresh list, reopen and
+recreate, nested replacement through the parent's slot, recovery of an interrupted replacement
+under its recorded approval, and the printed bounds and sign-in losses. 12 replacement tests,
+which failed first, pass, with the planner's and apply's tests and order 241's 60-request
+replay; the golden cases' plan text, recorded text and digests are unchanged.
+
+**Two blind reads at once** (08:53 to 09:22): `turn-verifier-1.turn.v1` found six musts and a
+should, the Claude reader a should and a nit. The verifier's should came from the coordinator's
+brief, which had said every operand is refused before any read; the order governs: a missing
+operand before reads, an unused or ambiguous one once the plan shows it. One fix turn (09:22 to
+10:21) applied all nine, each must reproduced first: an unrelated edit no longer turns an
+interrupted replacement into a flag-free registration; a nested replacement survives its old
+child's removal; every matching tombstone is checked; a dispatched retirement keeps its partial
+effect in the ledger; an incident nested Conduit goes through its parent; the affects line
+reports effective bounds and the held Type's sign-in. 14 replacement tests pass. Left for a later
+order: inspection gives a held submitted Type's digest, which alone cannot show its `signIn`.
+
+The gate's run on the squash is the coordinator's, at the merge.

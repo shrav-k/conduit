@@ -143,13 +143,109 @@ pub struct Ledger {
     journals: serde_json::Map<String, Value>,
     journal_update: u64,
     recovered_update: bool,
-    registration_flags: BTreeMap<String, Approval>,
+    registration_flags: BTreeMap<String, BTreeSet<Approval>>,
+    replacements: BTreeMap<String, ReplacementJournal>,
+    current_files: Option<Value>,
+}
+
+#[derive(Debug)]
+struct ReplacementJournal {
+    approvals: BTreeSet<Approval>,
+    step_approvals: BTreeSet<Approval>,
+    remade: BTreeSet<Name>,
+    slots: BTreeMap<Name, ReplacementSlot>,
+    removed: Option<(Name, String)>,
+    files: Value,
 }
 
 #[derive(Clone, Debug)]
+struct ReplacementSlot {
+    parent: Name,
+    parent_id: String,
+    field: &'static str,
+    member: String,
+    child_id: String,
+}
+
+impl ReplacementSlot {
+    fn parent_matches(&self, engine: &Engine) -> bool {
+        engine
+            .objects
+            .get(&self.parent)
+            .is_some_and(|parent| parent.id == self.parent_id)
+    }
+
+    fn kept(&self, child: &Name) -> Value {
+        json!({"kind":child.kind,"name":child.name,"parent":self.parent.reference(),
+            "parentId":self.parent_id,"field":self.field,"member":self.member,"childId":self.child_id})
+    }
+
+    fn from_kept(value: &Value) -> Option<(Name, Self)> {
+        let field = match value["field"].as_str()? {
+            "entries" => "entries",
+            "conduits" => "conduits",
+            _ => return None,
+        };
+        Some((
+            Name::object(value)?,
+            Self {
+                parent: Name::object(&value["parent"])?,
+                parent_id: value["parentId"].as_str()?.into(),
+                field,
+                member: value["member"].as_str()?.into(),
+                child_id: value["childId"].as_str()?.into(),
+            },
+        ))
+    }
+}
+
+impl Ledger {
+    fn pending_replacement(&self, name: &Name) -> Option<&ReplacementJournal> {
+        self.replacements
+            .values()
+            .find(|proof| proof.remade.contains(name))
+    }
+
+    fn lift_proof(&self, invocation: &str) -> Option<&ReplacementJournal> {
+        self.replacements.get(invocation).filter(|proof| {
+            self.current_files
+                .as_ref()
+                .is_some_and(|files| files == &proof.files)
+        })
+    }
+
+    fn replacement_slot(&self, engine: &Engine, child: &Name) -> Option<&ReplacementSlot> {
+        self.replacements
+            .values()
+            .filter(|proof| proof.remade.contains(child))
+            .filter_map(|proof| proof.slots.get(child))
+            .find(|slot| slot.parent_matches(engine))
+    }
+}
+
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 struct Approval {
     flag: String,
     operand: String,
+}
+
+impl Approval {
+    fn new(flag: &str, operand: &str) -> Self {
+        Self {
+            flag: flag.into(),
+            operand: operand.into(),
+        }
+    }
+}
+
+fn approval_text(approvals: &BTreeSet<Approval>) -> Option<String> {
+    (!approvals.is_empty()).then(|| {
+        approvals
+            .iter()
+            .map(ToString::to_string)
+            .collect::<Vec<_>>()
+            .join(",")
+    })
 }
 
 impl std::fmt::Display for Approval {
@@ -221,6 +317,8 @@ pub struct Plan {
     pub differences: Vec<String>,
     pub closed_conduits: BTreeSet<String>,
     pub affected_bounds: BTreeSet<String>,
+    bounds_added: BTreeSet<String>,
+    signed_out: BTreeSet<Name>,
 }
 
 impl Plan {
@@ -239,10 +337,9 @@ impl Plan {
                 step.subject,
                 expected,
                 step.class,
-                step.action
-                    .approval
-                    .as_ref()
-                    .map_or_else(|| "-".into(), ToString::to_string),
+                approval_text(&step.action.approvals)
+                    .as_deref()
+                    .unwrap_or("-"),
                 step.rule
             )
             .unwrap();
@@ -254,7 +351,7 @@ impl Plan {
             writeln!(text, "{stop}").unwrap();
         }
         if !self.steps.is_empty() {
-            writeln!(
+            write!(
                 text,
                 "affects bounds=[{}] closed-conduits=[{}]",
                 self.affected_bounds
@@ -269,6 +366,31 @@ impl Plan {
                     .join(",")
             )
             .unwrap();
+            if !self.bounds_added.is_empty() {
+                write!(
+                    text,
+                    " bounds-added=[{}]",
+                    self.bounds_added
+                        .iter()
+                        .cloned()
+                        .collect::<Vec<_>>()
+                        .join(",")
+                )
+                .unwrap();
+            }
+            if !self.signed_out.is_empty() {
+                write!(
+                    text,
+                    " signed-out=[{}]",
+                    self.signed_out
+                        .iter()
+                        .map(ToString::to_string)
+                        .collect::<Vec<_>>()
+                        .join(",")
+                )
+                .unwrap();
+            }
+            text.push('\n');
         }
         for difference in &self.differences {
             writeln!(text, "{difference}").unwrap();
@@ -279,7 +401,7 @@ impl Plan {
             let flags: BTreeSet<_> = self
                 .steps
                 .iter()
-                .filter_map(|step| step.action.approval.as_ref().map(ToString::to_string))
+                .flat_map(|step| step.action.approvals.iter().map(ToString::to_string))
                 .collect();
             writeln!(
                 text,
@@ -302,7 +424,7 @@ impl Plan {
 }
 
 pub fn compare(desired: &Desired, ledger: &Ledger, engine: &Engine) -> Plan {
-    compare::plan(desired, ledger, engine)
+    compare::plan(desired, ledger, engine, &BTreeSet::new())
 }
 
 fn safe(value: &Value) -> Value {

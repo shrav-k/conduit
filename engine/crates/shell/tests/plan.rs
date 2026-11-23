@@ -171,15 +171,7 @@ async fn plan_stops_on_another_engine_version() {
 #[test]
 fn plan_refuses_unbuilt_flags() {
     let dir = tempfile::tempdir().unwrap();
-    for flag in [
-        "--reopen",
-        "--recreate",
-        "--prune",
-        "--replace",
-        "--adopt",
-        "--with-resources",
-        "--with-agents",
-    ] {
+    for flag in ["--prune", "--adopt", "--with-resources", "--with-agents"] {
         for command in ["plan", "apply"] {
             let out = binary(dir.path(), dir.path())
                 .args([command, flag, "object"])

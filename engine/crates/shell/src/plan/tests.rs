@@ -246,10 +246,7 @@ fn row_08_registered_is_verified_and_set_up() {
     ));
     f.kept.registration_flags.insert(
         ID.into(),
-        Approval {
-            flag: "--replace".into(),
-            operand: "original-reader".into(),
-        },
+        BTreeSet::from([Approval::new("--replace", "original-reader")]),
     );
     f.line("stop Resource/reader state=registered requires=--replace original-reader LIF-013");
     assert!(compare(&f.file, &f.kept, &f.engine).steps.is_empty());
@@ -501,7 +498,7 @@ fn row_21_subset_closes_lists_lifts_and_activates_without_a_flag() {
     f.line("6 access.open.v1 Conduit/project expected=(step 4) widens flag=- LIF-037");
     let plan = compare(&f.file, &f.kept, &f.engine);
     assert!(matches!(&plan.steps[2].action.binding,
-        Some(apply::Binding::Tombstone { closed: 1, listed: 2, object }) if object == ID));
+        Some(apply::Binding::Tombstone { closed: 1, listed: 2, object, .. }) if object == ID));
     assert!(plan.steps[4].action.check.is_some());
     assert!(
         plan.steps
@@ -859,4 +856,206 @@ fn review_a_08_runtime_provider_precedes_dependent_and_verification_is_adjacent(
         })
         .collect();
     assert_eq!(activations, [&independent, &provider, &consumer]);
+}
+
+#[test]
+fn review_248_all_matching_tombstones_need_approval() {
+    let mut f = Fixture::default();
+    let name = Name::new("Conduit", "new");
+    f.want(&name, object("registered", grant(&["read"])));
+    for (id, local, target) in [("local", "project", "other"), ("route", "other", "shared")] {
+        f.engine.tombstones.push(json!({
+            "id":id,"object":{"kind":"Conduit","name":id},
+            "consumer":{"kind":"Agent","name":"a"},"target":{"kind":"Resource","name":target},
+            "localName":local,"capability":"example.org/release#files.v1"
+        }));
+    }
+    let check = |f: &Fixture, flags: &[Approval]| {
+        compare::plan(
+            &f.file,
+            &f.kept,
+            &f.engine,
+            &flags.iter().cloned().collect(),
+        )
+    };
+    let stopped = check(&f, &[]);
+    assert_eq!(stopped.stops.len(), 2, "both LIF-041 matches need approval");
+    let allowed = check(&f, &[Approval::new("--reopen", "new")]);
+    assert_eq!(
+        allowed
+            .steps
+            .iter()
+            .filter(|s| s.tool.ends_with(".lift.v1"))
+            .count(),
+        2
+    );
+
+    let mut old = grant(&["read"]);
+    old["resolved"]["capability"] = json!("example.org/old#files.v1");
+    f.observed(&name, object("ready", old));
+    let stopped = check(&f, &[Approval::new("--replace", "new")]);
+    assert!(stopped.stops.iter().any(|s| s.contains("tombstone=route")));
+}
+
+#[test]
+fn review_248_incident_nested_conduit_with_held_target_stops_replacement() {
+    let mut f = Fixture::default();
+    let endpoint = Name::new("Resource", "shared");
+    let parent = Name::new("Agent", "a");
+    let child = Name::new("Conduit", "nested");
+    let before = object(
+        "ready",
+        json!({"owner":"team","resolved":{"config":{"root":"old"}}}),
+    );
+    let mut after = before.clone();
+    after.definition["resolved"]["config"]["root"] = json!("new");
+    f.observed(&endpoint, before);
+    f.want(&endpoint, after);
+    let parent_view = object(
+        "ready",
+        json!({
+            "slots":{"conduits":{"project":child.reference()}},
+            "resolved":{"conduits":{"project":{"from":"files","target":endpoint.reference()}}}
+        }),
+    );
+    f.observed(&parent, parent_view.clone());
+    f.want(&parent, parent_view);
+    let existing = object("ready", grant(&["read"]));
+    f.observed(&child, existing.clone());
+    f.want(&child, existing);
+    let plan = compare::plan(
+        &f.file,
+        &f.kept,
+        &f.engine,
+        &BTreeSet::from([Approval::new("--replace", "shared")]),
+    );
+    assert!(
+        plan.text()
+            .contains("stop Conduit/nested place=/target LIF-009"),
+        "a surviving parent's held target must not be rebound through ordinary registration"
+    );
+}
+
+#[test]
+fn review_248_replacing_parent_registers_implicit_child_once() {
+    let mut f = Fixture::default();
+    let parent = Name::new("Agent", "a");
+    let child = Name::new("Conduit", "nested");
+    let next_child = Name::new("Conduit", "draft-child");
+    let before = object(
+        "ready",
+        json!({"slots":{"conduits":{"project":child.reference()}}}),
+    );
+    let mut after = before.clone();
+    after.definition["annotations"] = json!({"purpose":"replacement"});
+    after.definition["slots"]["conduits"]["project"] = next_child.reference();
+    f.observed(&parent, before);
+    f.want(&parent, after);
+    let view = object("ready", grant(&["read"]));
+    f.observed(&child, view.clone());
+    f.want(&child, view.clone());
+    f.file.nested.push(NestedRegistration {
+        parent: parent.clone(),
+        local: "project".into(),
+        name: next_child.clone(),
+        resolved: view,
+    });
+    let plan = compare::plan(
+        &f.file,
+        &f.kept,
+        &f.engine,
+        &BTreeSet::from([Approval::new("--replace", "a")]),
+    );
+    assert!(plan.stops.is_empty());
+    let registrations: Vec<_> = plan
+        .steps
+        .iter()
+        .filter_map(|step| {
+            if let apply::Effect::Register {
+                objects, nested, ..
+            } = &step.action.effect
+            {
+                Some((objects, nested))
+            } else {
+                None
+            }
+        })
+        .collect();
+    assert_eq!(registrations.len(), 1);
+    let (objects, nested) = registrations[0];
+    assert_eq!(objects.keys().collect::<Vec<_>>(), [&parent]);
+    assert_eq!(nested.len(), 1);
+    assert_eq!(nested[0].name, next_child);
+}
+
+#[test]
+fn review_248_affects_uses_effective_coverage_and_held_type() {
+    let mut f = Fixture::default();
+    let endpoint = Name::new("Resource", "shared");
+    let before = object(
+        "ready",
+        json!({"owner":"old","resolved":{"type":"example.org/release#files.v1"}}),
+    );
+    let mut after = before.clone();
+    after.definition["owner"] = json!("new");
+    f.observed(&endpoint, before);
+    f.want(&endpoint, after);
+    let holder = Name::new("Conduit", "bound");
+    f.engine.objects.insert(holder, object("ready", json!({"resolved":{
+        "requirements":{"bound":{"requirement":format!("{CORE}#bound.v1"),
+            "arguments":{"targets":[endpoint.reference()],"pools":[{"kind":"Pool","name":"new"}]}}}
+    }})));
+    let plan = compare::plan(
+        &f.file,
+        &f.kept,
+        &f.engine,
+        &BTreeSet::from([Approval::new("--replace", "shared")]),
+    );
+    assert!(
+        plan.bounds_added.is_empty(),
+        "coverage already existed through targets"
+    );
+    assert!(plan.affected_bounds.is_empty());
+
+    let agent = Name::new("Agent", "a");
+    let pin = json!({"address":"example.org/release","version":"1.0.0","digest":DIGEST});
+    let Archive::Read(mut archive) = installed(pin.clone()) else {
+        unreachable!()
+    };
+    archive.package.project.documents.push(json!({
+        "kind":"Type","metadata":{"name":"agent.v1"},"spec":{"signIn":{}}
+    }));
+    let mut before = object(
+        "ready",
+        json!({"resolved":{"type":"example.org/release#agent.v1"}}),
+    );
+    before.packages.push(pin.clone());
+    let after = object(
+        "ready",
+        json!({"resolved":{"type":"example.org/no-login#agent.v1"}}),
+    );
+    f.observed(&agent, before);
+    f.want(&agent, after);
+    let key = Pin::from_value(&pin).unwrap();
+    f.file
+        .available_archives
+        .insert(key.clone(), Archive::Read(archive.clone()));
+    let approved = BTreeSet::from([
+        Approval::new("--replace", "a"),
+        Approval::new("--replace", "shared"),
+    ]);
+    let plan = compare::plan(&f.file, &f.kept, &f.engine, &approved);
+    assert!(
+        plan.signed_out.contains(&agent),
+        "the held Type states signIn"
+    );
+    archive.package.project.documents.last_mut().unwrap()["spec"] = json!({});
+    f.file
+        .available_archives
+        .insert(key, Archive::Read(archive));
+    assert!(
+        !compare::plan(&f.file, &f.kept, &f.engine, &approved)
+            .signed_out
+            .contains(&agent)
+    );
 }

@@ -875,3 +875,14 @@ From order 266, `install.v1`, `register.v1` and `replace.v1` compare client IDs 
 Types at other addresses under CTR-013. Only root acting on its own behalf can confirm
 sharing. The `install-archive` input (`conduit register --package`) confirms nothing.
 A request that changes nothing answers as before.
+
+From order 288, root alone registers installation value Resources. Registration
+reports invalid when a value Resource supplies a `node` that fails to resolve to a
+`node.v1` Resource or an owner other than `system`. Registration checks `values`
+entries, copies their scalars into the instance and keeps source maps for inspection
+(OBJ-009, INS-013, ACC-057). Control dispatch stores no settings under REV-007, so a
+control leaves the source map as it was, including when the setting is reported
+unknown. A LIF-009 replacement takes the scalar held for its nested input.
+It carries no held source, node constraint, document, entry pointer or authored
+reference. Those replacement checks, source-map propagation and INS-017's comparison
+of held sources are work for the second part.

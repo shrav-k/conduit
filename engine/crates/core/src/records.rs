@@ -463,6 +463,7 @@ pub(crate) fn execute(
             "open",
             "retirement",
             "retirement_tombstone",
+            "_value_sources",
         ] {
             declared.as_object_mut().unwrap().remove(field);
         }
@@ -662,6 +663,12 @@ pub(crate) fn execute(
             .collect::<Result<_>>()?;
         outputs = json!({"id":o["id"],"revision":o["revision"],"packages":o.get("packages").cloned().unwrap_or_else(|| json!([{ "address":c.core_package,"version":c.builtin.as_ref().and_then(|b| b.manifest.as_ref()).map(|m|m["version"].clone()).unwrap_or(Value::Null)}])),"declared":declared,"status":status,"records":records,"recordGaps":t.state.record_gaps,"recordsComplete":t.state.record_gaps.is_empty()});
         registration::inspect_project_documents(&o, &mut outputs["packages"])?;
+        if let Some(values) = o
+            .get("_value_sources")
+            .filter(|map| map.as_object().is_some_and(|map| !map.is_empty()))
+        {
+            outputs["values"] = values.clone();
+        }
         if let Some(implementations) = registration::inspected_implementations(&o, &c.core_package)
         {
             outputs["implementations"] = implementations;

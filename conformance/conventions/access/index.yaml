@@ -198,6 +198,14 @@
       "promises": [
         "IFC-014"
       ]
+    },
+    {
+      "id": "access-value-resource-root-only",
+      "case": "conventions/access/value-resource-root-only/case.yaml",
+      "promises": [
+        "ACC-057",
+        "ACC-056"
+      ]
     }
   ]
 }

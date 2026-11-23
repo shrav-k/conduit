@@ -10,6 +10,11 @@ use serde_json::{Value, json};
 use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet};
 
+#[path = "registration_values.rs"]
+mod installation_values;
+use installation_values::{ValueOrigins, ValueTrace};
+pub(crate) use installation_values::{restricted_replacement, restricted_submission};
+
 type Indexes = BTreeMap<String, BTreeMap<String, Value>>;
 #[derive(Clone, Serialize, Deserialize)]
 struct Held {
@@ -33,6 +38,8 @@ struct Fault {
 enum FaultPointer {
     Instance(String),
     Configuration(String),
+    Authored(DocumentPlace, Vec<String>),
+    ValueNode,
 }
 
 impl Fault {
@@ -502,9 +509,10 @@ fn assign(spec: &mut Value, pointer: &str, value: Value) -> Checked<()> {
     }
     if let Some(array) = parent.as_array_mut()
         && let Ok(i) = leaf.parse::<usize>()
-        && i < array.len()
+        && leaf == i.to_string()
+        && let Some(item) = array.get_mut(i)
     {
-        array[i] = value;
+        *item = value;
         return Ok(());
     }
     Err(fault("INS-011", pointer))
@@ -523,15 +531,25 @@ struct Builder<'a> {
     reserved_names: BTreeSet<(String, String)>,
     snapshots: Vec<Snapshot>,
     trusted: bool,
+    submitted_resources: BTreeMap<String, installation_values::SubmittedResource>,
+    defer_children: bool,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct DocumentPlace {
     name: String,
     pointer: String,
 }
 
 impl DocumentPlace {
+    fn qualified(&self, suffix: &str) -> String {
+        format!(
+            "/objects/{}{}{suffix}",
+            crate::schemas::token(&self.name),
+            self.pointer
+        )
+    }
+
     fn locate(&self, mut diagnostic: ReportedFault, suffix: &str) -> ReportedFault {
         // Added locations must not change which existing rule decides the reply.
         diagnostic.prior_sort_key = Some(diagnostic.diagnostic.to_string());
@@ -544,13 +562,71 @@ impl DocumentPlace {
     }
 }
 
+fn related_locations(diagnostic: &mut ReportedFault, pointers: impl IntoIterator<Item = String>) {
+    if let Some(locations) = diagnostic.diagnostic["locations"].as_array_mut() {
+        locations.extend(
+            pointers
+                .into_iter()
+                .map(|pointer| json!({"logicalLocations":[{"fullyQualifiedName":pointer}]})),
+        );
+    }
+}
+
+fn authored_fault(
+    label: &str,
+    failure: Fault,
+    template_name: &str,
+    declaration: Option<&DocumentPlace>,
+) -> ReportedFault {
+    if let Some(FaultPointer::Authored(place, pointers)) = failure.pointer {
+        let mut reported = place.locate(
+            diagnostic(failure.rule, &place.name, &failure.text, "error"),
+            "",
+        );
+        let definition = DocumentPlace {
+            name: template_name.to_owned(),
+            pointer: "/spec".into(),
+        };
+        related_locations(
+            &mut reported,
+            pointers.into_iter().map(|pointer| {
+                if pointer.starts_with("/objects/") {
+                    pointer
+                } else if pointer == "/placement"
+                    || installation_values::below(&pointer, "/arguments").is_some()
+                {
+                    declaration.map_or_else(
+                        || format!("/objects/{}{pointer}", crate::schemas::token(label)),
+                        |declaration| declaration.qualified(&pointer),
+                    )
+                } else {
+                    definition.qualified(&pointer)
+                }
+            }),
+        );
+        return reported;
+    }
+    diagnostic(failure.rule, label, &failure.text, "error")
+}
+
 struct InstanceSource {
     declaration: Option<DocumentPlace>,
     template: Option<String>,
+    template_name: String,
     authored_arguments: BTreeSet<String>,
+    input_values: ValueOrigins,
+    destinations: ValueOrigins,
+    value_node_written: Option<installation_values::WrittenNode>,
 }
 
 impl Builder<'_> {
+    fn nested_value_place(&self, parent: &str, slot: &str, name: &str) -> Option<DocumentPlace> {
+        Some(DocumentPlace {
+            name: self.sources.get(parent)?.template_name.clone(),
+            pointer: format!("/spec/{slot}/{}", crate::schemas::token(name)),
+        })
+    }
+
     fn declaration_place(
         &self,
         document: &Value,
@@ -573,13 +649,39 @@ impl Builder<'_> {
     }
 
     fn instance_diagnostic(&self, object: &Value, fault: Fault) -> ReportedFault {
-        let diagnostic = diagnostic(
-            fault.rule,
-            object["name"].as_str().unwrap_or("unnamed"),
-            &fault.text,
-            "error",
-        );
-        let Some(source) = object["id"].as_str().and_then(|id| self.sources.get(id)) else {
+        let name = object["name"].as_str().unwrap_or("unnamed");
+        let source = object["id"].as_str().and_then(|id| self.sources.get(id));
+        if matches!(fault.pointer, Some(FaultPointer::Authored(..))) {
+            let nested = &object["nested"];
+            let declaration = (|| {
+                self.nested_value_place(
+                    nested["parent"].as_str()?,
+                    nested["slot"].as_str()?,
+                    nested["name"].as_str()?,
+                )
+            })();
+            return authored_fault(
+                name,
+                fault,
+                source.map_or(name, |source| source.template_name.as_str()),
+                declaration
+                    .as_ref()
+                    .or_else(|| source.and_then(|source| source.declaration.as_ref())),
+            );
+        }
+        if matches!(fault.pointer, Some(FaultPointer::ValueNode)) {
+            let mut diagnostic =
+                if let Some(node) = source.and_then(|source| source.value_node_written.as_ref()) {
+                    node.place
+                        .locate(diagnostic(fault.rule, name, &fault.text, "error"), "")
+                } else {
+                    self.instance_diagnostic(object, fault.at_configuration("/node"))
+                };
+            related_locations(&mut diagnostic, ["/config/node".to_owned()]);
+            return diagnostic;
+        }
+        let diagnostic = diagnostic(fault.rule, name, &fault.text, "error");
+        let Some(source) = source else {
             return diagnostic;
         };
         match fault.pointer {
@@ -613,7 +715,7 @@ impl Builder<'_> {
                     return declaration.locate(diagnostic, &pointer);
                 }
             }
-            None => {}
+            _ => {}
         }
         if let Some(declaration) = &source.declaration
             && !declaration.pointer.is_empty()
@@ -851,68 +953,39 @@ impl Builder<'_> {
             ));
             return Ok(());
         }
-        let mut argument_values = json!({});
-        let apply = (|| -> Checked<()> {
-            for (name, _) in items(document, "arguments") {
-                if ["owner", "placement", "runtime", "consumer", "target", "as"]
-                    .contains(&name.as_str())
-                {
-                    return Err(fault(
-                        "OBJ-013",
-                        format!("standard argument {name} under arguments"),
-                    ));
-                }
-                if spec["inputs"].get(&name).is_none() {
-                    return Err(fault("INS-003", format!("undeclared argument {name}")));
-                }
-            }
-            for (name, input) in items(&spec, "inputs") {
-                let value = document["arguments"]
-                    .get(&name)
-                    .or_else(|| input.get("default"));
-                let Some(value) = value else {
-                    if input["optional"] == true {
-                        continue;
-                    }
-                    return Err(fault("INS-004", format!("missing input {name}")));
+        let fallback = DocumentPlace {
+            name: label.to_owned(),
+            pointer: String::new(),
+        };
+        let template_name = template["metadata"]["name"].as_str().unwrap_or(label);
+        let definition = DocumentPlace {
+            name: template_name.to_owned(),
+            pointer: "/spec".into(),
+        };
+        let nested = parent.and_then(|(owner, slot, name)| {
+            self.nested_value_place(owner["id"].as_str()?, slot, name)
+        });
+        let value_declaration = nested.as_ref().or(declaration.as_ref());
+        let applied = match self.apply_inputs(
+            document,
+            &mut spec,
+            &h,
+            value_declaration.unwrap_or(&fallback),
+            &definition,
+            parent,
+        ) {
+            Ok(applied) => applied,
+            Err(f) => {
+                let reported = if matches!(f.pointer, Some(FaultPointer::Authored(..))) {
+                    authored_fault(label, f, template_name, value_declaration)
+                } else {
+                    expanded_fault(f.rule, label, &f.text, "")
                 };
-                let value = h
-                    .fill(&input["schema"], value, &self.context.core_package)
-                    .map_err(|e| fault("INS-005", e))?;
-                if let Some(failure) = h
-                    .environment
-                    .failure_at(
-                        &h.scope,
-                        &input["schema"],
-                        "",
-                        &value,
-                        &self.context.core_package,
-                    )
-                    .map_err(|e| fault("INS-005", e))?
-                {
-                    return Err(fault("INS-005", format!("input {name}: {failure}")));
-                }
-                // Expand fixed-kind reference arguments before assigning to a multi-kind target.
-                let value = expand_bare(
-                    &h,
-                    &input["schema"],
-                    &input["schema"],
-                    value,
-                    &self.context.core_package,
-                    0,
-                )?;
-                argument_values[&name] = value.clone();
-                for p in list(&input, "to") {
-                    assign(&mut spec, &p, value.clone())?;
-                }
+                self.diagnostics.push(reported);
+                return Ok(());
             }
-            Ok(())
-        })();
-        if let Err(f) = apply {
-            self.diagnostics
-                .push(expanded_fault(f.rule, label, &f.text, ""));
-            return Ok(());
-        }
+        };
+        let argument_values = applied.arguments;
         let name = if let Some(name) = document["metadata"]["name"].as_str() {
             name.to_owned()
         } else {
@@ -940,11 +1013,15 @@ impl Builder<'_> {
                 template: submitted_template
                     .and_then(|t| t["name"].as_str())
                     .map(str::to_owned),
+                template_name: template_name.to_owned(),
                 authored_arguments: document["arguments"]
                     .as_object()
                     .into_iter()
                     .flat_map(|arguments| arguments.keys().cloned())
                     .collect(),
+                input_values: applied.values,
+                destinations: applied.destinations,
+                value_node_written: applied.node_written,
             },
         );
         let inputs = spec.get("inputs").cloned().unwrap_or(json!({}));
@@ -999,12 +1076,25 @@ impl Builder<'_> {
         }
         let position = self.objects.len();
         self.objects.push(object.clone());
+        if !self.defer_children {
+            self.expand_children(&object, &h, position, depth)?;
+        }
+        Ok(())
+    }
+
+    fn expand_children(
+        &mut self,
+        object: &Value,
+        held: &Held,
+        position: usize,
+        depth: usize,
+    ) -> Result<()> {
         for (slot, family) in [("conduits", "Conduit"), ("entries", "Resource")] {
-            for (local, mut nested) in items(&object, slot) {
+            for (local, mut nested) in items(object, slot) {
                 // Optional declarations are still instantiated; the mark changes setup failure only.
                 nested["kind"] = json!(family);
                 let before = self.objects.len();
-                self.expand(&nested, &h, Some((&object, slot, &local)), depth + 1)?;
+                self.expand(&nested, held, Some((object, slot, &local)), depth + 1)?;
                 if let Some(child) = self.objects.get(before) {
                     self.objects[position]["slots"][slot][&local] =
                         json!({"kind":family,"id":child["id"]});
@@ -1179,6 +1269,71 @@ impl References<'_> {
         authored: bool,
         depth: usize,
     ) -> Checked<Value> {
+        self.schema_with_trace(
+            h,
+            root,
+            schema,
+            value,
+            pool,
+            authored,
+            depth,
+            ValueTrace::default(),
+        )
+    }
+
+    fn guard_schema(
+        &self,
+        held: &Held,
+        schema: &Value,
+        value: &Value,
+        origins: &ValueOrigins,
+        at: &str,
+    ) -> Checked<()> {
+        if origins.is_empty() {
+            return Ok(());
+        }
+        self.schema_with_trace(
+            held,
+            schema,
+            schema,
+            value,
+            None,
+            false,
+            0,
+            ValueTrace::at(origins, at),
+        )
+        .map(|_| ())
+        .map_err(|failure| {
+            if matches!(failure.pointer, Some(FaultPointer::Authored(..))) {
+                return failure;
+            }
+            installation_values::affected(origins, at)
+                .map(|origin| {
+                    origin.failure(
+                        failure.rule,
+                        "the receiving schema could not be checked",
+                        Some(at),
+                    )
+                })
+                .unwrap_or(failure)
+        })
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn schema_with_trace(
+        &self,
+        h: &Held,
+        root: &Value,
+        schema: &Value,
+        value: &Value,
+        pool: Option<&Value>,
+        authored: bool,
+        depth: usize,
+        trace: ValueTrace<'_>,
+    ) -> Checked<Value> {
+        if trace.skip_branch() {
+            return Ok(value.clone());
+        }
         if depth > 128 {
             return Err(fault("SUB-011", "schema reference nesting 128"));
         }
@@ -1188,6 +1343,9 @@ impl References<'_> {
                 && name.ends_with("reference.v1")
                 && !["qualified-reference.v1", "template-reference.v1"].contains(&name)
             {
+                if trace.check_reference()? {
+                    return Ok(result);
+                }
                 let resolution = self
                     .resolve(value, fixed_kind(name), pool, authored)
                     .map_err(|mut fault| {
@@ -1229,7 +1387,7 @@ impl References<'_> {
                 .map_err(|e| fault("SCH-015", e))?;
             let mut h = h.clone();
             h.scope = scope;
-            result = self.schema(
+            result = self.schema_with_trace(
                 &h,
                 if r == "#" || r.starts_with("#/") {
                     root
@@ -1241,6 +1399,7 @@ impl References<'_> {
                 pool,
                 authored,
                 depth + 1,
+                trace.clone(),
             )?;
         }
         // SCH-001 / OBJ-021: follow the applicators at this instance location.
@@ -1251,8 +1410,16 @@ impl References<'_> {
                     || h.valid_in(root, branch, value, self.core)
                         .map_err(|e| fault("SCH-015", e))?
                 {
-                    let resolved =
-                        self.schema(h, root, branch, value, pool, authored, depth + 1)?;
+                    let resolved = self.schema_with_trace(
+                        h,
+                        root,
+                        branch,
+                        value,
+                        pool,
+                        authored,
+                        depth + 1,
+                        trace.clone(),
+                    )?;
                     overlay(&mut result, value, resolved);
                 }
             }
@@ -1262,17 +1429,44 @@ impl References<'_> {
                 .valid_in(root, condition, value, self.core)
                 .map_err(|e| fault("SCH-015", e))?;
             if matches {
-                let resolved = self.schema(h, root, condition, value, pool, authored, depth + 1)?;
+                let resolved = self.schema_with_trace(
+                    h,
+                    root,
+                    condition,
+                    value,
+                    pool,
+                    authored,
+                    depth + 1,
+                    trace.clone(),
+                )?;
                 overlay(&mut result, value, resolved);
             }
             if let Some(branch) = schema.get(if matches { "then" } else { "else" }) {
-                let resolved = self.schema(h, root, branch, value, pool, authored, depth + 1)?;
+                let resolved = self.schema_with_trace(
+                    h,
+                    root,
+                    branch,
+                    value,
+                    pool,
+                    authored,
+                    depth + 1,
+                    trace.clone(),
+                )?;
                 overlay(&mut result, value, resolved);
             }
         }
         for (key, branch) in items(schema, "dependentSchemas") {
             if value.as_object().is_some_and(|map| map.contains_key(&key)) {
-                let resolved = self.schema(h, root, &branch, value, pool, authored, depth + 1)?;
+                let resolved = self.schema_with_trace(
+                    h,
+                    root,
+                    &branch,
+                    value,
+                    pool,
+                    authored,
+                    depth + 1,
+                    trace.clone(),
+                )?;
                 overlay(&mut result, value, resolved);
             }
         }
@@ -1280,9 +1474,20 @@ impl References<'_> {
             for (key, sub) in items(schema, "properties") {
                 if let Some(v) = value.get(&key) {
                     let resolved = self
-                        .schema(h, root, &sub, v, pool, authored, depth + 1)
+                        .schema_with_trace(
+                            h,
+                            root,
+                            &sub,
+                            v,
+                            pool,
+                            authored,
+                            depth + 1,
+                            trace.child(&key),
+                        )
                         .map_err(|mut f| {
-                            f.text = format!("/{key}: {}", f.text);
+                            if !matches!(f.pointer, Some(FaultPointer::Authored(..))) {
+                                f.text = format!("/{key}: {}", f.text);
+                            }
                             f
                         })?;
                     if let Some(current) = map.get_mut(&key) {
@@ -1298,8 +1503,16 @@ impl References<'_> {
                     if pattern.find(key).is_some() {
                         matched.insert(key.clone());
                         if let Some(original) = value.get(key) {
-                            let resolved =
-                                self.schema(h, root, &sub, original, pool, authored, depth + 1)?;
+                            let resolved = self.schema_with_trace(
+                                h,
+                                root,
+                                &sub,
+                                original,
+                                pool,
+                                authored,
+                                depth + 1,
+                                trace.child(key),
+                            )?;
                             overlay(current, original, resolved);
                         }
                     }
@@ -1311,8 +1524,16 @@ impl References<'_> {
                         && !matched.contains(key)
                         && let Some(original) = value.get(key)
                     {
-                        let resolved =
-                            self.schema(h, root, sub, original, pool, authored, depth + 1)?;
+                        let resolved = self.schema_with_trace(
+                            h,
+                            root,
+                            sub,
+                            original,
+                            pool,
+                            authored,
+                            depth + 1,
+                            trace.child(key),
+                        )?;
                         overlay(v, original, resolved);
                     }
                 }
@@ -1328,16 +1549,32 @@ impl References<'_> {
                     .and_then(|p| p.get(index))
                     .or_else(|| schema.get("items"))
                 {
-                    let resolved =
-                        self.schema(h, root, sub, original, pool, authored, depth + 1)?;
+                    let resolved = self.schema_with_trace(
+                        h,
+                        root,
+                        sub,
+                        original,
+                        pool,
+                        authored,
+                        depth + 1,
+                        trace.child(&index.to_string()),
+                    )?;
                     overlay(current, original, resolved);
                 }
                 if let Some(sub) = schema.get("contains")
                     && h.valid_in(root, sub, original, self.core)
                         .map_err(|e| fault("SCH-015", e))?
                 {
-                    let resolved =
-                        self.schema(h, root, sub, original, pool, authored, depth + 1)?;
+                    let resolved = self.schema_with_trace(
+                        h,
+                        root,
+                        sub,
+                        original,
+                        pool,
+                        authored,
+                        depth + 1,
+                        trace.child(&index.to_string()),
+                    )?;
                     overlay(current, original, resolved);
                 }
             }
@@ -1456,6 +1693,7 @@ fn resolve_instance(
     all: &[Value],
     context: &Context,
     trusted: bool,
+    source: Option<&InstanceSource>,
 ) -> Checked<Value> {
     let mut o = object.clone();
     let core = &context.core_package;
@@ -1474,6 +1712,29 @@ fn resolve_instance(
     let entry_pool = pool_value.as_ref();
     let supplied_placement = o.get("placement").cloned();
     let supplied_runtime = o.get("runtime").cloned();
+    let empty = ValueOrigins::new();
+    let destinations = source.map_or(&empty, |source| &source.destinations);
+    let input_values = source.map_or(&empty, |source| &source.input_values);
+    let placement = || {
+        refs.resolve(
+            supplied_placement.as_ref().unwrap_or(&json!("local")),
+            Some("Resource"),
+            entry_pool,
+            !trusted,
+        )
+        .map_err(|failure| fault("PLC-001", failure.text).at_argument("placement"))
+    };
+    let placed_for_values = if input_values.is_empty() {
+        None
+    } else {
+        let placed = matches!(kind.as_str(), "Agent" | "Resource")
+            .then(placement)
+            .transpose()?;
+        for source in input_values.values() {
+            source.check_placement(placed.as_ref(), all)?;
+        }
+        placed
+    };
     let mut standards = vec![];
     if kind == "Resource" {
         standards.push(("owner", Some("Pool")));
@@ -1539,16 +1800,43 @@ fn resolve_instance(
     if kind != "Conduit" {
         let (th, ty, q) = h.select(o["type"].as_str().unwrap_or(""), "Type", core)?;
         o["type"] = json!(q);
+        installation_values::validate_owner(&o, &object["owner"], all, context)?;
         let unconstrained = json!({});
         let schema = ty["spec"].get("schema").unwrap_or(&unconstrained);
-        let config = th
-            .fill(schema, &o["config"], core)
-            .map_err(|e| fault("INS-014", e))?;
+        let config = th.fill(schema, &o["config"], core).map_err(|e| {
+            installation_values::affected(destinations, "/config").map_or_else(
+                || fault("INS-014", e),
+                |source| {
+                    source.failure(
+                        "INS-014",
+                        "the receiving configuration schema could not be applied",
+                        Some("/config"),
+                    )
+                },
+            )
+        })?;
+        refs.guard_schema(&th, schema, &config, destinations, "/config")?;
+        installation_values::validate_node(
+            &o,
+            &config,
+            &refs,
+            entry_pool,
+            !trusted,
+            source.and_then(|source| source.value_node_written.as_ref()),
+        )?;
         if let Some(failure) = th
             .environment
             .failure_at(&th.scope, schema, "", &config, core)
             .map_err(|e| fault("INS-014", e))?
         {
+            let pointer = format!("/config{}", failure.instance_pointer);
+            if let Some(source) = installation_values::affected(destinations, &pointer) {
+                return Err(source.failure(
+                    "INS-014",
+                    &format!("the receiving Type schema failed ({})", failure.keyword),
+                    Some(&pointer),
+                ));
+            }
             return Err(fault(
                 "INS-014",
                 format!("configuration fails Type {q}: {failure}"),
@@ -1581,6 +1869,18 @@ fn resolve_instance(
         let mut arguments = json!({});
         for (key, _) in items(&applied, "arguments") {
             if requirement["spec"]["inputs"].get(&key).is_none() {
+                let at = format!(
+                    "/requirements/{}/arguments/{}",
+                    crate::schemas::token(&name),
+                    crate::schemas::token(&key)
+                );
+                if let Some(source) = installation_values::affected(destinations, &at) {
+                    return Err(source.failure(
+                        "INS-003",
+                        "the receiving requirement does not declare this input",
+                        Some(&at),
+                    ));
+                }
                 return Err(fault(
                     "INS-003",
                     format!("requirement {name}: undeclared argument {key}"),
@@ -1600,14 +1900,50 @@ fn resolve_instance(
                     format!("requirement {name}: missing input {key}"),
                 ));
             };
+            let at = format!(
+                "/requirements/{}/arguments/{}",
+                crate::schemas::token(&name),
+                crate::schemas::token(&key)
+            );
+            let provenance = installation_values::affected(destinations, &at);
+            let failure_for_requirement = |error: String| {
+                provenance.map_or_else(
+                    || fault("INS-005", error),
+                    |source| {
+                        source.failure(
+                            "INS-005",
+                            "the value does not satisfy the requirement input schema",
+                            Some(&at),
+                        )
+                    },
+                )
+            };
             let value = rh
                 .fill(&input["schema"], value, core)
-                .map_err(|e| fault("INS-005", e))?;
+                .map_err(failure_for_requirement)?;
+            refs.guard_schema(&rh, &input["schema"], &value, destinations, &at)?;
             if let Some(failure) = rh
                 .environment
                 .failure_at(&rh.scope, &input["schema"], "", &value, core)
-                .map_err(|e| fault("INS-005", e))?
+                .map_err(failure_for_requirement)?
             {
+                let pointer = format!("{at}{}", failure.instance_pointer);
+                if let Some(source) = installation_values::affected(destinations, &pointer) {
+                    return Err(source.failure(
+                        "INS-005",
+                        &format!("the requirement input schema failed ({})", failure.keyword),
+                        Some(&pointer),
+                    ));
+                }
+                if provenance.is_some() {
+                    return Err(fault(
+                        "INS-005",
+                        format!(
+                            "requirement {name}, input {key}: the requirement input schema failed ({}) at {pointer}",
+                            failure.keyword
+                        ),
+                    ));
+                }
                 return Err(fault(
                     "INS-005",
                     format!("requirement {name}, input {key}: {failure}"),
@@ -1673,10 +2009,7 @@ fn resolve_instance(
         o["conduits"][&local] = declaration;
     }
     if ["Agent", "Resource"].contains(&kind.as_str()) {
-        let placement = supplied_placement.unwrap_or(json!("local"));
-        let placement = refs
-            .resolve(&placement, Some("Resource"), entry_pool, !trusted)
-            .map_err(|f| fault("PLC-001", f.text).at_argument("placement"))?;
+        let placement = placed_for_values.map_or_else(placement, Ok)?;
         let node = all
             .iter()
             .find(|n| n["id"] == placement["id"])
@@ -1782,6 +2115,14 @@ fn resolve_instance(
     o.as_object_mut().unwrap().remove("entry_pool");
     o.as_object_mut().unwrap().remove("_inputs");
     o.as_object_mut().unwrap().remove("_argument_values");
+    if !destinations.is_empty() {
+        o["_value_sources"] = Value::Object(
+            destinations
+                .iter()
+                .map(|(at, source)| (at.clone(), source.reference()))
+                .collect(),
+        );
+    }
     if kind == "Fleet" {
         // FLEET-001: no configuration is exposed on the instance.
         o.as_object_mut().unwrap().remove("config");
@@ -2008,14 +2349,20 @@ pub(crate) fn register(
         .find(|o| o["from"] == context.qualified("root"))
         .ok_or("root absent")?;
     let root_own = root["id"] == request.sender && root["id"] == request.caller;
+    let restricted = (!root_own && permitted)
+        .then(|| {
+            restricted_submission(
+                &t.state,
+                &project.documents,
+                project.manifest.as_ref(),
+                &snapshots,
+                context,
+            )
+        })
+        .flatten();
     let rule = if !permitted {
         Some("ACC-001")
-    } else if !root_own
-        && project
-            .documents
-            .iter()
-            .any(|d| d["kind"] == "Agent" && d.get("from").is_some())
-    {
+    } else if restricted.is_some() {
         Some("ACC-057")
     } else if !pool_authority {
         Some("ACC-033")
@@ -2032,7 +2379,11 @@ pub(crate) fn register(
         ));
         let route = crate::explain::ids(request, json!({"documents":project.documents}));
         end_request(t, evidence, &route, None, "refused", rule, context)?;
-        let diagnostic = crate::explain::diagnostic(&t.state, &route, context, "refused", rule)?;
+        let mut diagnostic =
+            crate::explain::diagnostic(&t.state, &route, context, "refused", rule)?;
+        if let Some(subject) = restricted.filter(|subject| subject.value_resource) {
+            subject.locate(&mut diagnostic, &project.documents);
+        }
         t.reply = json!({"accepted":false,"reason":"refused","diagnostics":[diagnostic]});
         return Ok(());
     }
@@ -2226,10 +2577,13 @@ pub(crate) fn prepare(
     let root_own = root["id"] == request.sender && root["id"] == request.caller;
     // ACC-057 / SEC-008: authority precedes validation, including replacement.
     if !root_own
-        && project
-            .documents
-            .iter()
-            .any(|d| d["kind"] == "Agent" && d.get("from").is_some())
+        && let Some(subject) = restricted_submission(
+            &t.state,
+            &project.documents,
+            project.manifest.as_ref(),
+            &snapshots,
+            context,
+        )
     {
         t.decisions.push(decision(
             "refuse-agent-registration",
@@ -2242,14 +2596,7 @@ pub(crate) fn prepare(
         end_request(t, evidence, &route, None, "refused", "ACC-057", context)?;
         let mut diagnostic =
             crate::explain::diagnostic(&t.state, &route, context, "refused", "ACC-057")?;
-        if let Some(name) = project
-            .documents
-            .iter()
-            .find(|document| document["kind"] == "Agent" && document.get("from").is_some())
-            .and_then(|document| document["metadata"]["name"].as_str())
-        {
-            packages::object_location(&mut diagnostic, name, "");
-        }
+        subject.locate(&mut diagnostic, &project.documents);
         t.reply = json!({"accepted":false,"reason":"refused","diagnostics":[diagnostic]});
         return Ok(Some(crate::explain::Rejection::new("refused", "ACC-057")));
     }
@@ -2415,6 +2762,8 @@ pub(crate) fn prepare(
         reserved_names: named.keys().cloned().collect(),
         snapshots,
         trusted: false,
+        submitted_resources: BTreeMap::new(),
+        defer_children: false,
     };
     for doc in &project.documents {
         if packages::contract(doc) || doc.get("from").is_some() {
@@ -2440,11 +2789,7 @@ pub(crate) fn prepare(
         let packages = h.package_list(&spec, kind, &implementations, &context.core_package)?;
         b.templates.push(json!({"kind":kind,"name":name,"id":id,"revision":revision,"metadata":doc["metadata"],"spec":spec,"resolved_implementations":implementations,"held":h,"packages":packages}));
     }
-    for doc in &project.documents {
-        if doc.get("from").is_some() {
-            b.expand(doc, &h, None, 0)?;
-        }
-    }
+    b.expand_project_instances(&project, &h)?;
     // Inherit the resolved implementation table from the actual selected template.
     for i in 0..b.objects.len() {
         let o = &b.objects[i];
@@ -2488,7 +2833,8 @@ pub(crate) fn prepare(
     }
     let mut resolved = vec![];
     for object in &b.objects {
-        match resolve_instance(object, &all, context, false) {
+        let source = object["id"].as_str().and_then(|id| b.sources.get(id));
+        match resolve_instance(object, &all, context, false, source) {
             Ok(o) => resolved.push(o),
             Err(f) => b.diagnostics.push(b.instance_diagnostic(object, f)),
         }
@@ -2505,6 +2851,23 @@ pub(crate) fn prepare(
         };
         let slot = nested["slot"].as_str().unwrap();
         let local = nested["name"].as_str().unwrap();
+        parent[slot][local]
+            .as_object_mut()
+            .unwrap()
+            .remove("values");
+        let input_values = child["id"]
+            .as_str()
+            .and_then(|id| b.sources.get(id))
+            .map(|source| &source.input_values);
+        if resolved_child.is_none() && input_values.is_some_and(|origins| !origins.is_empty()) {
+            continue;
+        }
+        if let Some(input_values) = input_values {
+            let prefix = format!("/{slot}/{}", crate::schemas::token(local));
+            for (at, source) in input_values {
+                parent["_value_sources"][format!("{prefix}{at}")] = source.reference();
+            }
+        }
         let child_held: Held =
             serde_json::from_value(child["held"].clone()).map_err(|e| e.to_string())?;
         for (name, value) in items(child, "_argument_values") {
@@ -3251,6 +3614,8 @@ pub(crate) fn replacement(
         reserved_names: BTreeSet::new(),
         snapshots: packages::catalog_entries(&t.state, t.state.preinstalled_snapshots.clone()),
         trusted: true,
+        submitted_resources: BTreeMap::new(),
+        defer_children: false,
     };
     b.expand(&doc, &held, Some((parent, slot, name)), 0)?;
     for object in &mut b.objects {
@@ -3277,7 +3642,8 @@ pub(crate) fn replacement(
     let all: Vec<_> = b.state.objects.iter().chain(&b.objects).cloned().collect();
     let mut resolved = vec![];
     for object in &b.objects {
-        match resolve_instance(object, &all, context, true) {
+        let source = object["id"].as_str().and_then(|id| b.sources.get(id));
+        match resolve_instance(object, &all, context, true, source) {
             Ok(o) => resolved.push(o),
             Err(f) => return Ok(json!({"rule":f.rule,"message":f.text})),
         }

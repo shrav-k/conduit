@@ -1027,6 +1027,42 @@
       "safety_rows": [
         "registration"
       ]
+    },
+    {
+      "id": "registration-value-resource-checks",
+      "case": "language/registration/value-resource-checks/case.yaml",
+      "promises": [
+        "OBJ-023",
+        "OBJ-009"
+      ]
+    },
+    {
+      "id": "registration-values-misplaced",
+      "case": "language/registration/values-misplaced/case.yaml",
+      "promises": [
+        "OBJ-009",
+        "OBJ-021",
+        "INS-005"
+      ]
+    },
+    {
+      "id": "registration-values-resolved",
+      "case": "language/registration/values-resolved/case.yaml",
+      "promises": [
+        "OBJ-009",
+        "OBJ-013",
+        "OBJ-014",
+        "INS-004",
+        "INS-013"
+      ]
+    },
+    {
+      "id": "registration-values-unresolved",
+      "case": "language/registration/values-unresolved/case.yaml",
+      "promises": [
+        "OBJ-009",
+        "INS-003"
+      ]
     }
   ]
 }

@@ -569,7 +569,12 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
         let cleanup = self.shutdown().await;
         result.and(cleanup)
     }
-    async fn execute(&self, name: String, args: Value, context: CallContext) -> CallToolResult {
+    fn supports_operation(&self, name: &str) -> bool {
+        schemas::OPERATIONS.contains(&name)
+            && (name != "run.v2" || self.0.backend.declaration().packaged_programs)
+    }
+
+    async fn execute(&self, name: String, mut args: Value, context: CallContext) -> CallToolResult {
         // Register before the first await: even a run stalled in its initial drain is in
         // flight and must observe a later successful stop (order 081).
         let instance = args["instance"].as_str().unwrap().to_owned();
@@ -582,7 +587,7 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
             return answer("unknown", None, "provider is shutting down");
         }
         let drained = self.drain(Some(&context)).await.is_ok();
-        if !drained && name == "run.v1" {
+        if !drained && matches!(name.as_str(), "run.v1" | "run.v2") {
             return answer("unknown", None, "cannot read durable stop obligations");
         }
         let _guard = slot.operation.lock().await;
@@ -594,6 +599,11 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
         if name == "inspect-run.v1" {
             return self.inspect(&instance, &context, &slot).await;
         }
+        if name == "run.v1" {
+            let arguments = args.as_object_mut().unwrap();
+            arguments.remove("program");
+            arguments.remove("archive");
+        }
         let input: RunInput = match serde_json::from_value(args) {
             Ok(input) => input,
             Err(_) => return invalid_call_policy("invalid run inputs"),
@@ -601,12 +611,13 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
         if !bindings_valid(&input) {
             return invalid_call_policy("environment bindings overlap or bind identity variables");
         }
-        if !self
-            .0
-            .backend
-            .declaration()
-            .supports(&input.item, &context.machine)
-        {
+        let declaration = self.0.backend.declaration();
+        let supported = if name == "run.v2" {
+            declaration.supports_packaged_programs(&context.machine)
+        } else {
+            declaration.supports(&input.item, &context.machine)
+        };
+        if !supported {
             return invalid_call_policy("runtime does not run this item on this machine");
         }
         let ledger = match self.0.store.load().await {
@@ -728,7 +739,7 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
         };
         let url = gate.url();
         if cancel.is_cancelled()
-            || !schemas::valid("run.v1", "outputSchema", &json!({"url":url}))
+            || !schemas::valid(&name, "outputSchema", &json!({"url":url}))
             || sensitive_url(&url, &input)
         {
             gate.close().await;
@@ -929,7 +940,7 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> ServerHandler for Handler<B, S, 
         _: Option<PaginatedRequestParams>,
         _: RequestContext<RoleServer>,
     ) -> std::result::Result<ListToolsResult, ErrorData> {
-        let tools=schemas::OPERATIONS.iter().map(|name| {
+        let tools=schemas::OPERATIONS.iter().filter(|name| self.0.supports_operation(name)).map(|name| {
             let mut tool=json!({"name":name,"description":format!("Runtime provider {name}"),"inputSchema":schemas::schema(name,"inputSchema").unwrap()});
             if let Some(output)=schemas::schema(name,"outputSchema") { tool["outputSchema"]=output; }
             serde_json::from_value(tool).unwrap()
@@ -962,11 +973,17 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> ServerHandler for Handler<B, S, 
         }
         let name = request.name.to_string();
         let args = Value::Object(request.arguments.unwrap_or_default());
-        if !schemas::OPERATIONS.contains(&name.as_str()) {
+        if !self.0.supports_operation(&name) {
             return Ok(invalid_call_policy("unknown runtime operation").into());
         }
         if !schemas::valid(&name, "inputSchema", &args) {
             return Ok(invalid_call_policy("arguments do not match operation schema").into());
+        }
+        if name == "run.v2"
+            && let Err(reason) =
+                check_packaged_program(&args["item"], args["program"].as_str().unwrap_or(""))
+        {
+            return Ok(invalid_call_policy(reason).into());
         }
         let Some(context) = context_from(&meta, &args["machine"]) else {
             return Ok(

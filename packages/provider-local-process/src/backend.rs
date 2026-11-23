@@ -202,6 +202,7 @@ impl RuntimeBackend for LocalBackend {
             registry_types: vec![],
             transports: vec![],
             command: true,
+            packaged_programs: false,
             machines: vec![MachineSelector {
                 hostname: Some(canonical_hostname(&self.hostname)),
                 labels: BTreeMap::new(),

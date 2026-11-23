@@ -1,5 +1,7 @@
 #[path = "runtime/reasons.rs"]
 mod reasons;
+#[path = "runtime/run_v2.rs"]
+mod run_v2;
 mod support;
 use rmcp::{ServiceExt, service::ServiceError};
 use runtime_provider_kit::*;

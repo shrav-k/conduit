@@ -1,11 +1,12 @@
 apiVersion: github.com/shrav-k/conduit/v0
 address: example.org/conduit/provider-ssh-runtime
-version: 0.1.0
+version: 0.2.0
 exports: [ssh-runtime.v1]
 implementations:
   provider:
     implements:
     - github.com/shrav-k/conduit/core#run.v1
+    - github.com/shrav-k/conduit/core#run.v2
     - github.com/shrav-k/conduit/core#stop.v1
     - github.com/shrav-k/conduit/core#inspect-run.v1
     command: [bin/provider-ssh-runtime]

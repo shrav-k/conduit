@@ -1,5 +1,9 @@
 {
   "definitions": {
+    "digest.v1": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
     "id.v1": {
       "minLength": 1,
       "type": "string"
@@ -749,6 +753,178 @@
           "item",
           "identity",
           "machine"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "url": {
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "type": "object"
+      }
+    },
+    "run.v2": {
+      "inputSchema": {
+        "properties": {
+          "archive": {
+            "additionalProperties": false,
+            "properties": {
+              "digest": {
+                "$ref": "#/$defs/digest.v1"
+              },
+              "size": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "urls": {
+                "items": {
+                  "format": "uri",
+                  "type": "string"
+                },
+                "minItems": 1,
+                "type": "array"
+              }
+            },
+            "required": [
+              "digest",
+              "size",
+              "urls"
+            ],
+            "type": "object"
+          },
+          "environment": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "identity": {
+            "additionalProperties": false,
+            "properties": {
+              "environment": {
+                "additionalProperties": false,
+                "properties": {
+                  "CONDUIT_IDENTITY_DIR": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "CONDUIT_URL": {
+                    "format": "uri",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "CONDUIT_URL",
+                  "CONDUIT_IDENTITY_DIR"
+                ],
+                "type": "object"
+              },
+              "files": {
+                "additionalProperties": false,
+                "properties": {
+                  "ca.crt": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "engine-id": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "jwks.json": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "tls.crt": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "tls.key": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "token": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "ca.crt",
+                  "jwks.json",
+                  "engine-id",
+                  "token"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "environment",
+              "files"
+            ],
+            "type": "object"
+          },
+          "instance": {
+            "$ref": "#/$defs/id.v1"
+          },
+          "item": {
+            "$ref": "#/$defs/implementation-item.v1"
+          },
+          "machine": {
+            "properties": {
+              "hostname": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "labels": {
+                "$ref": "#/$defs/labels.v1"
+              }
+            },
+            "required": [
+              "hostname",
+              "labels"
+            ],
+            "type": "object"
+          },
+          "packageArguments": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "program": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "secrets": {
+            "properties": {
+              "environment": {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              "packageArguments": {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "instance",
+          "item",
+          "identity",
+          "machine",
+          "program",
+          "archive"
         ],
         "type": "object"
       },

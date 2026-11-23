@@ -75,7 +75,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | ACC-029 | convention | must | 9 | 1 | cases | core | case passes |
 | ACC-030 | convention | must | 10 | 1 | cases | core | case passes |
 | ACC-032 | convention | must | 3 | 0 | cases | core | case passes |
-| ACC-033 | convention | must | 44 | 0 | cases | core, shell | case passes |
+| ACC-033 | convention | must | 45 | 1 | cases | core, shell | case passes |
 | ACC-034 | convention | must | 2 | 0 | cases | core | case passes |
 | ACC-036 | convention | must | 4 | 0 | cases | core | case passes |
 | ACC-037 | convention | must | 2 | 0 | cases | core | case passes |
@@ -364,7 +364,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | OPS-032 | convention | must | 2 | 0 | cases | core | case passes |
 | OPS-033 | convention | must | 5 | 0 | cases | core | case passes |
 | OPS-034 | convention | must | 2 | 0 | cases | core | case passes |
-| OPS-036 | convention | must | 10 | 0 | outside | core, shell | case passes |
+| OPS-036 | convention | must | 11 | 1 | outside | core, shell | case passes |
 | PKG-001 | language | must | 1 | 0 | cases | core | case passes |
 | PKG-003 | language | must | 9 | 0 | cases | core | case passes |
 | PKG-004 | language | must | 7 | 0 | cases | core, shell | case passes |

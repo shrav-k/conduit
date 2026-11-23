@@ -17,6 +17,10 @@
       "reason": "LIF-028 under ruling 78 point 5: the first build opens the Conduit when a reconciliation records an open as having occurred; review order 22, the engine following SO-B, makes it pass and removes this entry"
     },
     {
+      "id": "list-instance-details",
+      "reason": "Work order 302 (DEC-114): list.v1 omits instance owner, placement, revision and Running; the following engine order implementing DEC-114 fills them from inspection state and removes this entry."
+    },
+    {
       "id": "requests-attributed-a-hook",
       "reason": "PKG-020: the first build does not read `attributed`; DEC-067's engine order makes it pass and removes this entry"
     },

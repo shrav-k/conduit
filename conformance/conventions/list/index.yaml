@@ -12,6 +12,15 @@
       "safety_rows": []
     },
     {
+      "id": "list-instance-details",
+      "case": "conventions/list/instance-details/case.yaml",
+      "promises": [
+        "OPS-036",
+        "ACC-033"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "list-kind-filter",
       "case": "conventions/list/kind-filter/case.yaml",
       "promises": [

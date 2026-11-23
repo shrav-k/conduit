@@ -72,3 +72,4 @@ then they are under `docs/proposals/`.
 - Changed: IFC-007 allows invocation and caller on a plain call whose operation its item's `attributed` lists. IFC-037 requires discovery for IFC-006 requests and hooks and PRV-005 provider calls, so an attributed call needs no discovery. IFC-004 requires request metadata support for attributed calls and reserves extension negotiation for calls that use the extension. IFC-047 exempts all calls governed by IFC-007, whose errors IFC-010 handles (DEC-067).
 - Changed: MAN-009 and MAN-010 admit `attributed`, the list of PKG-020 (DEC-067).
 - Added: `attributed` in `implementation-item.v1`, only on a plain item reached by `command` or `package` (DEC-067).
+- Changed: OPS-036 and `list.v1`, instance items give owner, placement, revision and Running status from inspection state without adding authority (DEC-114).

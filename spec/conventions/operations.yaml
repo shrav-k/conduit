@@ -814,7 +814,8 @@
     position or anything from which a hidden count could be read.
   observable: >-
     The container authorizes listing (ACC-033 row 15), and listing adds no inspection authority.
-    Object items have kind, name, ID, whether they are templates, and state for instances;
+    Object items have kind, name, ID, whether they are templates, and state for instances, and for
+    instances their owner, placement, revision and Running status where they have them (DEC-114);
     templates have no lifecycle state (LIF-012). A holder of an open Conduit to `management`
     that lists `inspect.v1` may list installed packages. Tombstones are visible under LIF-040
     and shown in full. An Agent of a live Fleet appears through `management` only to a holder

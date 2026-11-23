@@ -1401,7 +1401,17 @@ metadata:
     shown. Installed packages require inspection authority on management; tombstones follow LIF-040
     and are shown in full. kind optionally narrows object kinds. Templates have no lifecycle state.
     No count, total, cursor or position discloses omitted items. This operation grants no inspection
-    authority.
+    authority. For each instance (an Interface, Agent, Resource, Pool, Fleet or Conduit with
+    template false), owner names its owning Pool or Fleet exactly when it has one (a Resource's
+    Pool or an Agent's Fleet), placement gives its node where placed, revision gives its current
+    revision, and running gives its Running condition, all from the same state inspect.v1 reads,
+    absent for templates and adding no authority. placement is {kind: Resource, id}, as
+    inspect.v1's declared gives it; a client gets the node's name from that node's own list item
+    where the actor may list it, or from inspect.v1 where the actor may inspect it.
+    running is present exactly for an instance whose selected implementation item is run
+    (PRV-009): its Running condition's status, Unknown with no lastHeartbeatTime until the
+    runtime provider reports, and lastHeartbeatTime once it has; it is absent for every other
+    instance.
 spec:
   inputSchema:
     type: object
@@ -1456,6 +1466,25 @@ spec:
               - registered
               - ready
               - retired
+            owner:
+              allOf:
+              - $ref: github.com/shrav-k/conduit/core#object.v1
+              - properties:
+                  kind:
+                    enum: [Pool, Fleet]
+            placement:
+              $ref: github.com/shrav-k/conduit/core#resource-reference.v1
+              type: object
+              required: [kind, id]
+            revision:
+              $ref: github.com/shrav-k/conduit/core#revision.v1
+            running:
+              type: object
+              properties:
+                status: {enum: ['True', 'False', Unknown]}
+                lastHeartbeatTime: {type: string, format: date-time}
+              required: [status]
+              additionalProperties: false
           required:
           - kind
           - name
@@ -1478,8 +1507,12 @@ spec:
             - state
           else:
             not:
-              required:
-              - state
+              anyOf:
+              - required: [state]
+              - required: [owner]
+              - required: [placement]
+              - required: [revision]
+              - required: [running]
       packages:
         type: array
         items:

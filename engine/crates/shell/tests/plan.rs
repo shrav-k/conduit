@@ -527,6 +527,10 @@ async fn review_a_03_live_inspection_cannot_confirm_a_reconciled_control_setting
     );
     assert_eq!(before["outcome"], "succeeded");
     assert_eq!(before["status"]["unreconciled"], json!([control_id]));
+    let unknown_settings = json!({"/limit":{
+        "state":"unknown","control":"example.org/control#set-limit.v1","invocation":control_id
+    }});
+    assert_eq!(before["status"]["settings"], unknown_settings);
     let reconciled = result(
         &engine
             .call(
@@ -542,6 +546,7 @@ async fn review_a_03_live_inspection_cannot_confirm_a_reconciled_control_setting
     let after = result(&engine.call("system.inspect.v1", inspect, None).await);
     assert_eq!(after["outcome"], "succeeded");
     assert_eq!(after["status"]["unreconciled"], json!([]));
+    assert_eq!(after["status"]["settings"], unknown_settings);
 
     fs::write(dir.path().join("conduit.json"), manifest.to_string()).unwrap();
     documents[3]["spec"]["config"]["limit"] = json!(3);
@@ -613,10 +618,14 @@ async fn review_a_03_live_inspection_cannot_confirm_a_reconciled_control_setting
     );
     // Reconciliation settled the invocation but not the setting: the engine's status still
     // holds `/limit` as unknown (REV-009), and plan stops on it.
-    let wanted = "stop Resource/reader setting=/limit state=unknown REV-009";
+    let wanted = format!(
+        "stop Resource/reader setting=/limit state=unknown control=example.org/control#set-limit.v1 invocation={control_id} REV-009"
+    );
     assert!(
         stdin_free(&out).lines().any(|line| line == wanted),
         "missing REV-009 stop for the live control history"
     );
+    assert!(!stdin_free(&out).contains("inspection="));
+    assert!(!stdin_free(&out).contains("unreconciled="));
     engine.close().await;
 }

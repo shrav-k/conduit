@@ -100,8 +100,6 @@ pub struct ObservedObject {
     pub definition: Value,
     pub packages: Vec<Value>,
     pub status: Value,
-    /// Invocation IDs and operations whose inspection records report an unknown outcome.
-    pub unknown_endings: BTreeMap<String, String>,
     pub inventory: Value,
     pub implementations: Value,
     pub made_by_engine: bool,

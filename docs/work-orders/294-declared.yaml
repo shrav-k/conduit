@@ -1,0 +1,10 @@
+# Added cases for work order 294.
+- name: requests-attributed-a-hook
+  kind: added
+  cases: [requests-attributed-a-hook]
+- name: requests-attributed-not-in-implements
+  kind: added
+  cases: [requests-attributed-not-in-implements]
+- name: requests-attributed-plain-call
+  kind: added
+  cases: [requests-attributed-plain-call]

@@ -1,0 +1,15 @@
+# Example. It must be rejected:
+# only an item marked `plain: true` and reached by `command` or `package` states
+# `attributed`, the operations whose calls carry only their invocation and caller (PKG-020).
+# This item is not marked plain and lists its turn under `attributed`.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
+
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/agent
+version: 0.2.0
+implementations:
+  wrapper:
+    implements: ['#turn.v1']
+    command: [agent-wrapper]
+    attributed: ['#turn.v1']

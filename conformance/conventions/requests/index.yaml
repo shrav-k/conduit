@@ -1,6 +1,32 @@
 {
   "cases": [
     {
+      "id": "requests-attributed-a-hook",
+      "case": "conventions/requests/attributed-a-hook/case.yaml",
+      "promises": [
+        "PKG-020"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "requests-attributed-not-in-implements",
+      "case": "conventions/requests/attributed-not-in-implements/case.yaml",
+      "promises": [
+        "PKG-020"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "requests-attributed-plain-call",
+      "case": "conventions/requests/attributed-plain-call/case.yaml",
+      "promises": [
+        "PKG-020",
+        "IFC-007",
+        "IFC-025"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "requests-aware-capability-extension",
       "case": "conventions/requests/aware-capability-extension/case.yaml",
       "promises": [

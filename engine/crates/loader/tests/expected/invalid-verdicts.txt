@@ -57,6 +57,7 @@ OBJ-018-unknown-metadata-key.yaml schema
 OBJ-019-depends-on-in-snake-case.yaml schema
 OBJ-020-unknown-kind.yaml schema
 PKG-004-manifest-digest-in-uppercase.yaml schema
+PKG-020-manifest-attributed-not-plain.yaml schema
 PKG-020-manifest-keyed-not-plain.yaml schema
 PKG-020-manifest-plain-with-supports.yaml schema
 PLC-006-placement-on-a-pool.yaml schema

@@ -68,3 +68,7 @@ then they are under `docs/proposals/`.
 - Changed: ACC-022, ACC-029, ACC-030, ACC-033, ACC-056 and SCT-008, an asking Conduit is no right to open and needs no bound inline (DEC-064, DEC-079).
 - Changed: IFC-050 permits a promise to fix a message, as ACC-058 does for access-request refusals (DEC-064, DEC-085).
 - Changed: ACC-058 makes the asking Agent the resolved subject and keeps the named target in evidence; root answers and the declined result wait for order 299 (DEC-064, DEC-084).
+- Changed: PKG-020, a plain item reached by `command` or `package` may list in `attributed` the operations whose calls carry their invocation and caller, plain in every other way (DEC-067).
+- Changed: IFC-007 allows invocation and caller on a plain call whose operation its item's `attributed` lists. IFC-037 requires discovery for IFC-006 requests and hooks and PRV-005 provider calls, so an attributed call needs no discovery. IFC-004 requires request metadata support for attributed calls and reserves extension negotiation for calls that use the extension. IFC-047 exempts all calls governed by IFC-007, whose errors IFC-010 handles (DEC-067).
+- Changed: MAN-009 and MAN-010 admit `attributed`, the list of PKG-020 (DEC-067).
+- Added: `attributed` in `implementation-item.v1`, only on a plain item reached by `command` or `package` (DEC-067).

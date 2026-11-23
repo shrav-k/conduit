@@ -885,14 +885,46 @@ fn local_failure(error: &str, from: usize, count: usize) -> i32 {
     2
 }
 
+pub(super) fn check_expected(plan: &Plan, expected: &str) -> bool {
+    let digest = plan.digest();
+    if digest == expected {
+        return true;
+    }
+    not_sent(1, plan.steps.len());
+    let tail = if !plan.stops.is_empty() {
+        format!(
+            "it is stopped, so --expect {digest} sends nothing either: resolve each stop line, \
+             run conduit plan with the approval flags apply will be given, and give apply the \
+             digest it prints"
+        )
+    } else if plan.steps.is_empty() {
+        "it has no changes, so there is nothing to send".to_owned()
+    } else {
+        format!("review it, then rerun this command with --expect {digest} to send it")
+    };
+    eprintln!(
+        "conduit apply: the plan computed now has digest {digest}, not {expected} as --expect \
+         gives; nothing was sent or kept; stdout holds that plan; the digest covers what it is \
+         computed from: the engine, the project files, .conduit/ and the approval flags given; \
+         no earlier plan is kept, so the lines that changed are not named; {tail}"
+    );
+    false
+}
+
 pub(super) async fn execute(
     project: &Path,
     plan: &Plan,
     mut ledger: Ledger,
+    expected: Option<&str>,
     mut send: impl AsyncFnMut(&str, Value, &str) -> Result<Value>,
 ) -> i32 {
     let plan_text = plan.text();
     print!("{plan_text}");
+    if let Some(expected) = expected
+        && !check_expected(plan, expected)
+    {
+        return 2;
+    }
     let count = plan.steps.len();
     if !plan.stops.is_empty() {
         not_sent(1, count);
@@ -918,7 +950,7 @@ pub(super) async fn execute(
     let base = project.join(".conduit");
     let plans = base.join("plans");
     let reports = base.join("results");
-    let digest = bytes_digest(plan_text.as_bytes());
+    let digest = expected.map_or_else(|| bytes_digest(plan_text.as_bytes()), str::to_owned);
     let hex = digest.trim_start_matches("sha256:");
     let report_name = format!("{hex}.yaml");
     let journal = reports.join(&report_name);
@@ -1280,7 +1312,7 @@ mod tests {
             step.action = action.clone();
         }
         plan.names.clone_from(&schedule.names);
-        execute(project, &plan, ledger, send).await
+        execute(project, &plan, ledger, None, send).await
     }
 
     fn step(tool: &str) -> Step {
@@ -1339,6 +1371,7 @@ mod tests {
                 directory.path(),
                 &plan,
                 Ledger::default(),
+                None,
                 async |tool, _, _| {
                     assert_eq!(
                         tool, "fixture.observe",
@@ -1416,7 +1449,7 @@ mod tests {
             ..Plan::default()
         };
         assert_eq!(
-            execute(directory.path(), &plan, previous, async |_, _, _| {
+            execute(directory.path(), &plan, previous, None, async |_, _, _| {
                 Ok(response("failed", json!({"invocation":"cascade-attempt"})))
             })
             .await,
@@ -1459,7 +1492,7 @@ mod tests {
                 .iter()
                 .any(|step| step.subject == pool && step.tool.ends_with(".retire.v1"))
         );
-        assert_eq!(execute(directory.path(), &plan, kept, async |tool, _, _| {
+        assert_eq!(execute(directory.path(), &plan, kept, None, async |tool, _, _| {
             if tool == "management.list.v1" {
                 return Ok(response("succeeded", json!({"objects":[{"kind":"Pool","name":"team","id":retired.id,"state":"retired"}],"tombstones":[]})));
             }
@@ -2033,7 +2066,7 @@ mod tests {
             ..Plan::default()
         };
         let before = RefCell::new(Vec::new());
-        let code = execute(directory.path(), &plan, Ledger::default(), async |_, _, _| {
+        let code = execute(directory.path(), &plan, Ledger::default(), None, async |_, _, _| {
             let entry = journal(directory.path(), &plan);
             assert!(entry["entries"][0].get("result").is_none());
             assert_eq!(entry["entries"][0]["flag"], "--replace original-child");
@@ -2080,6 +2113,7 @@ mod tests {
             directory.path(),
             &plan,
             Ledger::default(),
+            None,
             async |_, _, _| {
                 panic!("a plan without all ledger effects must not dispatch");
             },

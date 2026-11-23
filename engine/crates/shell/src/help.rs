@@ -69,7 +69,7 @@ const COMMANDS: [(&str, &str, &str); 17] = [
     ),
     (
         "apply",
-        "[PROJECT_DIR] [--reopen OBJECT] [--recreate OBJECT] [--prune OBJECT] [--replace OBJECT] [--adopt OBJECT] [--with-resources OBJECT] [--with-agents OBJECT]",
+        "[PROJECT_DIR] [--reopen OBJECT] [--recreate OBJECT] [--prune OBJECT] [--replace OBJECT] [--adopt OBJECT] [--with-resources OBJECT] [--with-agents OBJECT] [--expect sha256:HEX]",
         "apply --replace shared",
     ),
 ];
@@ -89,8 +89,13 @@ const DESCRIPTIONS: [&str; 17] = [
     "Hold the store, set up registered instances and serve MCP on its fixed loopback URL. With an https address, also serve /mcp for that address on a second loopback listener. Records the current context before printing its JSON ready line. SIGTERM or Ctrl-C ends runs.",
     "List tools presented to root or a named instance. Set up the instance first and open its Conduits if its list is empty.",
     "Call a presented root tool once through serve. Arguments must be a JSON object (default {}). --arguments-file - reads standard input to its end. Failed or unknown outcomes cause a nonzero exit.",
-    "Read the project and engine as root, and print the requests apply would send. A missing approval operand stops before engine reads. An unused or ambiguous operand stops after discovery.",
-    "Compute, print and record the plan, then send its requests as root without a prompt. A missing approval operand stops before engine reads. An unused or ambiguous operand stops after discovery.",
+    "Read the project and engine as root, and print the requests apply would send. \
+     A missing approval operand stops before engine reads. An unused or ambiguous operand stops \
+     after discovery. Prints the plan's digest on stderr, for apply --expect.",
+    "Compute, print and record the plan, then send its requests as root without a prompt. \
+     A missing approval operand stops before engine reads. An unused or ambiguous operand stops \
+     after discovery. With --expect sha256:HEX, sends nothing unless the plan computed now has \
+     that digest.",
 ];
 pub fn print(command: Option<&str>) -> Result<(), String> {
     if let Some(name) = command {

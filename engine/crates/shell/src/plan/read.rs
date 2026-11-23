@@ -13,7 +13,11 @@ use rmcp::{
         StreamableHttpClientTransport, streamable_http_client::StreamableHttpClientTransportConfig,
     },
 };
-use std::{fs, io::ErrorKind, time::Duration};
+use std::{
+    fs,
+    io::{ErrorKind, Write as _},
+    time::Duration,
+};
 
 const APPROVALS: &[&str] = &[
     "--reopen",
@@ -44,16 +48,22 @@ struct Options {
     project: PathBuf,
     store: Option<PathBuf>,
     approvals: BTreeSet<Approval>,
+    expected: Option<String>,
 }
 
 impl Options {
     fn parse(args: Vec<String>, command: &str) -> Result<Self> {
         let mut project = None;
         let mut store = None;
+        let expected = Self::parse_expected(&args, command)?;
         let mut args = args.into_iter();
         let mut approvals = BTreeSet::new();
         while let Some(arg) = args.next() {
             match arg.as_str() {
+                "--expect" => {
+                    // The operand was validated before checking the other options.
+                    args.next();
+                }
                 flag if APPROVALS.contains(&flag) => {
                     let operand = args
                         .next()
@@ -88,7 +98,42 @@ impl Options {
             project: project.unwrap_or_else(|| ".".into()),
             store,
             approvals,
+            expected,
         })
+    }
+
+    fn parse_expected(args: &[String], command: &str) -> Result<Option<String>> {
+        let mut flags = args
+            .iter()
+            .enumerate()
+            .filter(|(_, arg)| *arg == "--expect");
+        let Some((index, _)) = flags.next() else {
+            return Ok(None);
+        };
+        if command == "plan" {
+            return Err(
+                "--expect is apply's; conduit plan prints the digest to give it; nothing was read"
+                    .into(),
+            );
+        }
+        let value = args
+            .get(index + 1)
+            .filter(|value| !value.starts_with('-'))
+            .ok_or(
+                "--expect needs sha256:HEX, the digest conduit plan prints; nothing was read or sent",
+            )?;
+        if !qualified_digest(value) {
+            return Err(format!(
+                "--expect {value:?} is not sha256: and 64 lowercase hex digits; \
+                 nothing was read or sent"
+            ));
+        }
+        if flags.next().is_some() {
+            return Err(
+                "--expect is given twice; give one digest; nothing was read or sent".into(),
+            );
+        }
+        Ok(Some(value.clone()))
     }
 }
 
@@ -140,10 +185,15 @@ async fn run(
         .iter()
         .any(|stop| stop.ends_with(" SEC-001"))
     {
-        print!(
-            "{}",
-            compare(&prepared.desired, &ledger, &Engine::default()).text()
-        );
+        let plan = compare(&prepared.desired, &ledger, &Engine::default());
+        if applying {
+            print!("{}", plan.text());
+            if let Some(expected) = options.expected.as_deref() {
+                apply::check_expected(&plan, expected);
+            }
+        } else {
+            print_preview(&plan);
+        }
         return Ok(2);
     }
     let client = connect(options.store, version, command).await?;
@@ -154,16 +204,30 @@ async fn run(
     let desired = load_desired(prepared, &engine, &ledger).map_err(local)?;
     let plan = compare::plan(&desired, &ledger, &engine, &options.approvals);
     let code = if applying {
-        apply::execute(&options.project, &plan, ledger, async |tool, args, key| {
-            apply::send(&client, tool, args, key).await
-        })
+        apply::execute(
+            &options.project,
+            &plan,
+            ledger,
+            options.expected.as_deref(),
+            async |tool, args, key| apply::send(&client, tool, args, key).await,
+        )
         .await
     } else {
-        print!("{}", plan.text());
+        print_preview(&plan);
         i32::from(!plan.stops.is_empty()) * 2
     };
     let _ = client.cancel().await;
     Ok(code)
+}
+
+fn print_preview(plan: &Plan) {
+    print!("{}", plan.text());
+    let _ = std::io::stdout().flush();
+    let digest = plan.digest();
+    eprintln!(
+        "conduit plan: digest {digest}; conduit apply --expect {digest}, given the same project, \
+         store and approval flags, sends nothing unless the plan it computes has this digest"
+    );
 }
 
 fn differs(planner: &str, serving: &str) -> (i32, String) {

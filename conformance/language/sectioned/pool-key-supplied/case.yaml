@@ -1,0 +1,51 @@
+{
+  "id": "sectioned-pool-key-supplied",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-017",
+    "SCT-006"
+  ],
+  "title": "A file Pool supplies a missing Resource owner and preserves a stated owner",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.json": "authored.json",
+    "framed.json": "framed.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "framed": "framed.json",
+        "translations": [
+          {
+            "kind": "Pool",
+            "name": "team",
+            "rule": "SCT-017"
+          },
+          {
+            "kind": "Resource",
+            "name": "kept",
+            "rule": "SCT-006"
+          },
+          {
+            "kind": "Resource",
+            "name": "shared",
+            "rule": "SCT-006"
+          }
+        ]
+      }
+    }
+  ]
+}

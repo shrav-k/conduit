@@ -1,0 +1,71 @@
+{
+  "id": "sectioned-pool-key-duplicate-key",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-017",
+    "SCT-014"
+  ],
+  "title": "A second Pool declaration in one file cites both declarations",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.json": "authored.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SCT-017",
+            "level": "error",
+            "properties": {
+              "file": "authored.json",
+              "document": 2
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/pool"
+                  }
+                ]
+              }
+            ],
+            "message": {
+              "text": "a second pool other in the file; the first pool team is in document 1 at /pool"
+            },
+            "relatedLocations": [
+              {
+                "physicalLocation": {
+                  "artifactLocation": {
+                    "uri": "authored.json"
+                  },
+                  "region": {
+                    "startLine": 4,
+                    "startColumn": 13
+                  }
+                },
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/pool"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

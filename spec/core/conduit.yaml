@@ -178,6 +178,7 @@ exports:
   - retire-pool
   - fleet.v1
   - fleet
+  - pool
   - root-fleet
   - retire-fleet
   - fleet-reference.v1

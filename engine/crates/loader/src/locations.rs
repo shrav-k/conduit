@@ -57,7 +57,7 @@ impl Project {
         {
             self.authored_location(owner, "")
         } else {
-            if translation.rule != "SCT-011" {
+            if !matches!(translation.rule, "SCT-011" | "SCT-017") {
                 suffix = strip_field(suffix, "/spec")
                     .or_else(|| strip_field(suffix, "/metadata"))
                     .unwrap_or(suffix);

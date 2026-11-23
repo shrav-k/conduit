@@ -1,0 +1,9 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "pool": "team",
+  "resources": {
+    "b": {
+      "from": "basis"
+    }
+  }
+}

@@ -24,12 +24,12 @@ everything the promises say it exports, and everything first start needs.
 | [requirements.yaml](requirements.yaml) | The 2 Requirement contracts: the bound of a right to open, and the shared-host requirement |
 | [references.yaml](references.yaml) | The 13 reference schemas: the Schema contracts that make a value a reference (OBJ-021), a secret reference among them (SEC-001). Each also accepts the resolved form `{kind, id}`, which only the engine writes |
 | [results.yaml](results.yaml) | 14 Schema contracts: an object as a result names it, a diagnostic, a condition, a record, a call's usage, a call's limits, an instance's limits, an inventory, a tombstone, opening provenance and a trust domain |
-| [templates.yaml](templates.yaml) | The 18 templates: first-start objects and Conduits, defaults, scoped administration, explicit cascades and a value Resource |
+| [templates.yaml](templates.yaml) | The 19 templates: first-start objects and Conduits, file Pools, defaults, scoped administration, explicit cascades and a value Resource |
 
 The package also exports the 52 Schema contracts under [spec/schemas](../schemas/README.md),
 which are the schemas of documents themselves. They are part of this package because a `$ref`
 from one schema to another names a Schema contract (SCH-015), and because `register.v1` states
-its inputs with them. In all the package exports 152 documents, 79 of them Schema contracts,
+its inputs with them. In all the package exports 155 documents, 80 of them Schema contracts,
 and has one implementation, which is also an export (PKG-019).
 
 A document of the core package refers to another by its full address, as
@@ -63,7 +63,7 @@ The convention, which follows the names the promises already use (`local-directo
 | Operation | The verb, in the imperative, as the commands of `kubectl` and `docker` are named. Words are joined by hyphens | `register.v1`, `set-up.v1` |
 | Hook | Named for the invocation it belongs to, then `-hook` | `setup-hook.v1`, `retire-hook.v1` |
 | Type, Capability, Requirement, Schema | A noun, with hyphens | `node.v1`, `access-control.v1`, `bound.v1`, `resource-reference.v1` |
-| Template | Templates of first-start objects usually take the object's name. FST-005 names `node`. Other templates, such as `value`, name their purpose. Conduit templates name their consumer and target or their use | `system`, `root`, `value`, `root-access` |
+| Template | Templates for first-start objects take the object's name, except `node`, which FST-005 names. Other templates, such as `value` and `pool`, take their names from their purpose. Conduit templates name their consumer and target or their use | `system`, `root`, `value`, `pool`, `root-access` |
 | Every contract | Ends in its compatibility version, written `v` and a whole number (CTR-001) | `.v1` |
 
 No two exports share a name, whatever their kinds (PKG-012). That is why the Type of the
@@ -693,6 +693,7 @@ its binding and labels are fixed when made (PLC-008, ENR-010).
 | `retire-pool` | Conduit template | LIF-021 |
 | `fleet.v1` | Type | FLEET-001, FLEET-004 |
 | `fleet` | Fleet template | FLEET-001 |
+| `pool` | Pool template | SCT-017 |
 | `root-fleet` | Conduit template | FLEET-005, ACC-024 |
 | `retire-fleet` | Conduit template | LIF-021 |
 | `fleet-reference.v1` | Schema, a reference schema | FLEET-002, OBJ-006, OBJ-021 |

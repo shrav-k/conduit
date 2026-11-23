@@ -286,7 +286,8 @@
     YAML document that is not a map is, and the JSON form and the YAML form give the same
     diagnostics, under SCH-013. A JSON manifest that holds an array is rejected under MAN-001.
     A value or array item may be a sectioned document under SCT-001; file boundaries remain
-    available for SCT-011. Manifest routing is by MAN-001, never merely the absence of `kind`.
+    available for SCT-011 and SCT-017. Manifest routing is by MAN-001, never merely the
+    absence of `kind`.
 
 
 

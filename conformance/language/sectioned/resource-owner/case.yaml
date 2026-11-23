@@ -39,7 +39,7 @@
           {
             "index": 0,
             "message_contains": [
-              "sectioned-resource.v1"
+              "instance.v1"
             ]
           }
         ]

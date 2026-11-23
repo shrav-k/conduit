@@ -6,7 +6,7 @@
     "properties": {
       "kind": {"enum": ["Interface", "Agent", "Resource", "Pool", "Fleet", "Conduit"]},
       "name": {"type": ["string", "null"]},
-      "rule": {"enum": ["SCT-005", "SCT-006", "SCT-007", "SCT-009", "SCT-011", "SCT-016"]}
+      "rule": {"enum": ["SCT-005", "SCT-006", "SCT-007", "SCT-009", "SCT-011", "SCT-016", "SCT-017"]}
     },
     "required": ["kind", "name", "rule"]
   }

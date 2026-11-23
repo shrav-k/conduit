@@ -1,0 +1,32 @@
+# Added cases and updated Resource owner expectation for work order 286.
+- name: sectioned-pool-key-supplied
+  kind: added
+  cases: [sectioned-pool-key-supplied]
+- name: sectioned-pool-key-framed
+  kind: added
+  cases: [sectioned-pool-key-framed]
+- name: sectioned-pool-key-duplicate-key
+  kind: added
+  cases: [sectioned-pool-key-duplicate-key]
+- name: sectioned-pool-key-file-boundary
+  kind: added
+  cases: [sectioned-pool-key-file-boundary]
+- name: sectioned-pool-key-shared
+  kind: added
+  cases: [sectioned-pool-key-shared]
+- name: sectioned-pool-key-located
+  kind: added
+  cases: [sectioned-pool-key-located]
+- name: sectioned-pool-key-archive
+  kind: added
+  cases: [sectioned-pool-key-archive]
+- name: sectioned-pool-key-registered
+  kind: added
+  cases: [sectioned-pool-key-registered]
+- name: sectioned-resource-owner canonical owner check
+  kind: expectation
+  cases: [sectioned-resource-owner]
+  paths: ['/steps/0/expect/diagnostic_facts/0/message_contains/0']
+  operation: replace
+  before: sectioned-resource.v1
+  after: instance.v1

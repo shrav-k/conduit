@@ -1,0 +1,45 @@
+{
+  "id": "sectioned-pool-key-framed",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCT-017"
+  ],
+  "title": "A framed Resource receives its file Pool only when the owner is absent",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "authored.json": "authored.json",
+    "framed.json": "framed.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "translate",
+        "files": [
+          "authored.json"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "framed": "framed.json",
+        "translations": [
+          {
+            "kind": "Pool",
+            "name": "team",
+            "rule": "SCT-017"
+          },
+          {
+            "kind": "Resource",
+            "name": "shared",
+            "rule": "SCT-017"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -19,7 +19,10 @@ pub(super) struct Action {
     pub(super) check: Option<ObservedObject>,
     pub(super) effect: Effect,
     pub(super) panel: bool,
-    pub(super) approval: Option<Approval>,
+    pub(super) approvals: BTreeSet<Approval>,
+    pub(super) remakes: BTreeSet<Name>,
+    pub(super) replacement_slots: BTreeMap<Name, ReplacementSlot>,
+    pub(super) opens: Option<(Name, Value)>,
 }
 
 #[derive(Clone, Debug)]
@@ -32,6 +35,7 @@ pub(super) enum Binding {
         closed: usize,
         listed: usize,
         object: String,
+        prior_cause: Option<String>,
     },
 }
 
@@ -58,8 +62,41 @@ pub(super) enum Effect {
         opened_by: Option<(String, String)>,
     },
     Remove,
+    Retire {
+        closes_on_dispatch: BTreeSet<Name>,
+        closes_on_removal: BTreeSet<Name>,
+    },
     Tombstones,
     Lift,
+}
+
+impl Action {
+    fn tombstone_candidates(&self) -> Vec<(&Name, &Value)> {
+        match &self.effect {
+            Effect::Register {
+                objects, nested, ..
+            } => objects
+                .iter()
+                .filter(|(_, object)| !object.is_template())
+                .map(|(name, object)| (name, &object.definition))
+                .chain(
+                    nested
+                        .iter()
+                        .map(|child| (&child.name, &child.resolved.definition)),
+                )
+                .collect(),
+            Effect::RegisterReplacement {
+                previous, wanted, ..
+            } => {
+                vec![(previous, &wanted.definition)]
+            }
+            _ => self
+                .opens
+                .iter()
+                .map(|(name, definition)| (name, definition))
+                .collect(),
+        }
+    }
 }
 
 pub(super) async fn send(
@@ -128,7 +165,28 @@ fn outcome(result: &Value) -> &str {
         .unwrap_or("unknown")
 }
 
-fn step_arguments(step: &Step, action: &Action, results: &[Value]) -> Result<Value> {
+pub(super) fn dispatched_unsuccessful_retirement(result: &Value) -> bool {
+    matches!(result["outcome"].as_str(), Some("failed" | "unknown"))
+        && result["invocation"].as_str().is_some()
+}
+
+#[derive(Debug)]
+enum BindingError {
+    Invalid(&'static str),
+    TombstoneMismatch { listed: usize, cause: String },
+}
+
+impl From<&'static str> for BindingError {
+    fn from(message: &'static str) -> Self {
+        Self::Invalid(message)
+    }
+}
+
+fn step_arguments(
+    step: &Step,
+    action: &Action,
+    results: &[Value],
+) -> std::result::Result<Value, BindingError> {
     let mut args = step.arguments.clone();
     match &action.binding {
         Some(Binding::Object { from, field }) => {
@@ -152,6 +210,7 @@ fn step_arguments(step: &Step, action: &Action, results: &[Value]) -> Result<Val
             closed,
             listed,
             object,
+            prior_cause,
         }) => {
             let invocation = results
                 .get(closed.checked_sub(1).ok_or("invalid close binding")?)
@@ -160,13 +219,32 @@ fn step_arguments(step: &Step, action: &Action, results: &[Value]) -> Result<Val
             let result = results
                 .get(listed.checked_sub(1).ok_or("invalid list binding")?)
                 .ok_or("missing tombstone result")?;
-            let id = array(&result["tombstones"])
+            let stones = result["tombstones"]
+                .as_array()
+                .ok_or("tombstone list result omitted its tombstones")?;
+            let matches: Vec<_> = stones
                 .iter()
-                .find(|stone| {
-                    stone["object"]["id"] == *object && stone["cause"]["invocation"] == invocation
-                })
-                .and_then(|stone| stone["id"].as_str())
-                .ok_or("no tombstone for the object and this apply's closing invocation")?;
+                .filter(|stone| stone["object"]["id"] == *object)
+                .collect();
+            let mismatch = |cause| BindingError::TombstoneMismatch {
+                listed: *listed,
+                cause,
+            };
+            let [stone] = matches.as_slice() else {
+                return Err(mismatch(format!(
+                    "expected one tombstone for the removed object, found {}",
+                    matches.len()
+                )));
+            };
+            let cause = text(&stone["cause"]["invocation"]);
+            if cause != invocation && prior_cause.as_deref() != Some(cause) {
+                return Err(mismatch(
+                    "the tombstone was not caused by the planned removal".into(),
+                ));
+            }
+            let id = stone["id"]
+                .as_str()
+                .ok_or("matched tombstone omitted its ID")?;
             args["id"] = json!(id);
         }
         None => {}
@@ -355,8 +433,55 @@ fn apply_effect(
                 names.remove(id);
             }
         }
+        Effect::Retire {
+            closes_on_dispatch,
+            closes_on_removal,
+        } => {
+            let removed = result["outcome"] == "succeeded";
+            if removed {
+                ledger.objects.remove(&step.subject);
+            } else if let Some(object) = ledger.objects.get_mut(&step.subject) {
+                object.state = "retired".into();
+            }
+            let closes = closes_on_dispatch
+                .iter()
+                .chain(closes_on_removal.iter().filter(|_| removed));
+            for closed in closes {
+                if let Some(object) = ledger.objects.remove(closed) {
+                    names.remove(&object.id);
+                }
+            }
+            if removed && let Some(id) = &step.expected {
+                names.remove(id);
+            }
+        }
         Effect::Tombstones => ledger.tombstones = array(&result["tombstones"]).to_vec(),
-        Effect::Lift => ledger.tombstones.retain(|stone| stone["id"] != args["id"]),
+        Effect::Lift => {
+            let remaining: BTreeSet<_> = array(&result["remaining"])
+                .iter()
+                .filter_map(|stone| stone["id"].as_str())
+                .collect();
+            let mut lifted = BTreeSet::from([text(&args["id"]).to_owned()]);
+            loop {
+                let descendents: Vec<_> = ledger
+                    .tombstones
+                    .iter()
+                    .filter(|stone| {
+                        lifted.contains(text(&stone["cause"]["tombstone"]))
+                            && !lifted.contains(text(&stone["id"]))
+                    })
+                    .map(|stone| text(&stone["id"]).to_owned())
+                    .collect();
+                if descendents.is_empty() {
+                    break;
+                }
+                lifted.extend(descendents);
+            }
+            ledger.tombstones.retain(|stone| {
+                let id = text(&stone["id"]);
+                !lifted.contains(id) || remaining.contains(id)
+            });
+        }
     }
     Ok(())
 }
@@ -409,7 +534,7 @@ fn timestamp_free_state(ledger: &Ledger) -> Value {
     })
 }
 
-fn project_hashes(project: &Path) -> Result<Value> {
+pub(super) fn project_hashes(project: &Path) -> Result<Value> {
     let mut files = serde_json::Map::new();
     for entry in fs::read_dir(project).map_err(|e| e.to_string())? {
         let entry = entry.map_err(|e| e.to_string())?;
@@ -514,17 +639,9 @@ pub(super) async fn execute(
     let hex = digest.trim_start_matches("sha256:");
     let report_name = format!("{hex}.yaml");
     let journal = reports.join(&report_name);
-    let save = |attempt, entries: &[Value], update: Option<&Value>| {
-        let mut report = json!({"attempt":attempt,"entries":entries});
-        if let Some(update) = update {
-            report["ledgerUpdate"] = update.clone();
-        }
-        write(
-            &reports,
-            &report_name,
-            report.to_string().as_bytes(),
-            ".conduit/results",
-        )
+    let files = match project_hashes(project) {
+        Ok(files) => files,
+        Err(error) => return local_failure(&error, 1, count),
     };
     let save_ledger = |state: &Value| {
         write(
@@ -534,15 +651,34 @@ pub(super) async fn execute(
             ".conduit",
         )
     };
-    let prepare = || -> Result<u64> {
+    let prepare = || -> Result<(u64, Vec<Value>)> {
         directory(&base, ".conduit")?;
         directory(&plans, ".conduit/plans")?;
         directory(&reports, ".conduit/results")?;
-        let attempt = match fs::symlink_metadata(&journal) {
-            Err(e) if e.kind() == ErrorKind::NotFound => 1,
-            Ok(meta) if meta.is_file() => next_attempt(
-                &crate::boundary::value(&journal).map_err(|_| "cannot read kept journal")?,
-            )?,
+        let (attempt, prior_removals) = match fs::symlink_metadata(&journal) {
+            Err(e) if e.kind() == ErrorKind::NotFound => (1, vec![]),
+            Ok(meta) if meta.is_file() => {
+                let prior =
+                    crate::boundary::value(&journal).map_err(|_| "cannot read kept journal")?;
+                let pending = |entry: &Value| {
+                    ledger
+                        .replacements
+                        .contains_key(text(&entry["result"]["invocation"]))
+                };
+                let old_files = prior.get("files").unwrap_or(&ledger.files);
+                let removals = array(&prior["priorRemovals"])
+                    .iter()
+                    .filter(|saved| pending(&saved["entry"]))
+                    .cloned()
+                    .chain(
+                        array(&prior["entries"])
+                            .iter()
+                            .filter(|entry| pending(entry))
+                            .map(|entry| json!({"entry":entry,"files":old_files})),
+                    )
+                    .collect();
+                (next_attempt(&prior)?, removals)
+            }
             _ => return Err("journal is not a readable regular file".into()),
         };
         write(
@@ -551,11 +687,26 @@ pub(super) async fn execute(
             plan_text.as_bytes(),
             ".conduit/plans",
         )?;
-        Ok(attempt)
+        Ok((attempt, prior_removals))
     };
-    let attempt = match prepare() {
-        Ok(attempt) => attempt,
+    let (attempt, prior_removals) = match prepare() {
+        Ok(prepared) => prepared,
         Err(error) => return local_failure(&error, 1, count),
+    };
+    let save = |attempt, entries: &[Value], update: Option<&Value>| {
+        let mut report = json!({"attempt":attempt,"entries":entries,"files":files});
+        if !prior_removals.is_empty() {
+            report["priorRemovals"] = json!(prior_removals);
+        }
+        if let Some(update) = update {
+            report["ledgerUpdate"] = update.clone();
+        }
+        write(
+            &reports,
+            &report_name,
+            report.to_string().as_bytes(),
+            ".conduit/results",
+        )
     };
     // The old journal may be this attempt's only durable proof of a prior update.
     if ledger.recovered_update
@@ -570,30 +721,82 @@ pub(super) async fn execute(
         digest.clone(),
         json!(format!(".conduit/results/{report_name}")),
     );
-    ledger.files = match project_hashes(project) {
-        Ok(files) => files,
-        Err(error) => return local_failure(&error, 1, count),
-    };
+    ledger.files = files.clone();
     let mut kept_state = timestamp_free_state(&ledger);
     if let Err(error) = save(attempt, &[], None).and_then(|()| save_ledger(&kept_state)) {
         return local_failure(&error, 1, count);
     }
-    let mut entries = Vec::new();
+    let mut entries: Vec<Value> = Vec::new();
     let mut results = Vec::new();
     let mut shown = BTreeSet::new();
     let mut names = plan.names.clone();
+    let mut listed_tombstones = None;
     for (index, step) in plan.steps.iter().enumerate() {
         let action = &step.action;
         let number = index + 1;
         let key = format!("plan:{hex}:{attempt}:{number}");
         let args = match step_arguments(step, action, &results) {
             Ok(args) => args,
-            Err(error) => return local_failure(&format!("step {number}: {error}"), number, count),
+            Err(BindingError::TombstoneMismatch { listed, cause }) => {
+                if let Some(entry) = entries.last_mut() {
+                    entry["verificationFailed"] = json!("/tombstones");
+                }
+                if let Err(error) = save(attempt, &entries, None) {
+                    return local_failure(&error, number, count);
+                }
+                println!("verify {number} failed {} place=/tombstones", step.subject);
+                eprintln!("conduit apply: lift step {number} read list step {listed}: {cause}");
+                not_sent(number, count);
+                return 1;
+            }
+            Err(BindingError::Invalid(error)) => {
+                return local_failure(&format!("step {number}: {error}"), number, count);
+            }
         };
-        entries.push(
-            json!({"step":number,"tool":step.tool,"arguments":safe(&args),"key":key,
-                "flag":action.approval.as_ref().map(ToString::to_string)}),
+        if let Some(listed) = listed_tombstones
+            && let Some(stone) = ledger.tombstones.iter().find(|stone| {
+                action
+                    .tombstone_candidates()
+                    .into_iter()
+                    .any(|(name, definition)| compare::matches_tombstone(name, definition, stone))
+            })
+        {
+            if let Some(entry) = entries.last_mut() {
+                entry["verificationFailed"] = json!("/tombstones");
+            }
+            if let Err(error) = save(attempt, &entries, None) {
+                return local_failure(&error, number, count);
+            }
+            println!("verify {number} failed {} place=/tombstones", step.subject);
+            eprintln!(
+                "conduit apply: tombstone {} from list step {listed} still matches step {number}",
+                user_config::escape_line_breaks(text(&stone["id"]))
+            );
+            not_sent(number, count);
+            return 1;
+        }
+        let mut entry = json!({"step":number,"tool":step.tool,"arguments":safe(&args),"key":key,
+            "flag":approval_text(&action.approvals)});
+        entry["remakes"] = json!(
+            action
+                .remakes
+                .iter()
+                .map(Name::reference)
+                .collect::<Vec<_>>()
         );
+        if !action.replacement_slots.is_empty() {
+            entry["replacementSlots"] = json!(
+                action
+                    .replacement_slots
+                    .iter()
+                    .map(|(name, slot)| slot.kept(name))
+                    .collect::<Vec<_>>()
+            );
+        }
+        if let Effect::RegisterReplacement { previous, .. } = &action.effect {
+            entry["replaces"] = previous.reference();
+        }
+        entries.push(entry);
         if let Err(error) = save(attempt, &entries, None) {
             return local_failure(&error, number, count);
         }
@@ -622,33 +825,53 @@ pub(super) async fn execute(
                 }
             }
         }
-        let failed_check = action.check.as_ref().and_then(|check| {
-            if outcome == "succeeded" {
-                verify(
-                    &raw["structuredContent"],
-                    &args["expectedId"],
-                    check,
-                    &names,
-                )
-            } else if outcome == "conflict"
-                && array(&result["diagnostics"]).iter().any(|diagnostic| {
-                    diagnostic["ruleId"] == "LIF-037"
-                        && diagnostic["properties"]["expectedId"] == args["expectedId"]
-                        && diagnostic["properties"]["actualId"].as_str().is_some()
-                        && diagnostic["properties"]["actualId"] != args["expectedId"]
-                })
-            {
-                Some("/id".into())
-            } else {
-                None
-            }
-        });
+        let failed_check = action
+            .check
+            .as_ref()
+            .and_then(|check| {
+                if outcome == "succeeded" {
+                    verify(
+                        &raw["structuredContent"],
+                        &args["expectedId"],
+                        check,
+                        &names,
+                    )
+                } else if outcome == "conflict"
+                    && array(&result["diagnostics"]).iter().any(|diagnostic| {
+                        diagnostic["ruleId"] == "LIF-037"
+                            && diagnostic["properties"]["expectedId"] == args["expectedId"]
+                            && diagnostic["properties"]["actualId"].as_str().is_some()
+                            && diagnostic["properties"]["actualId"] != args["expectedId"]
+                    })
+                {
+                    Some("/id".into())
+                } else {
+                    None
+                }
+            })
+            .or_else(|| {
+                (matches!(action.effect, Effect::Lift)
+                    && plan.steps[index + 1..]
+                        .iter()
+                        .flat_map(|later| later.action.tombstone_candidates())
+                        .any(|(name, definition)| {
+                            array(&result["remaining"])
+                                .iter()
+                                .any(|stone| compare::matches_tombstone(name, definition, stone))
+                        }))
+                .then(|| "/remaining".into())
+            });
         entries[index]["result"] = result;
         if let Some(place) = &failed_check {
             entries[index]["verificationFailed"] = json!(place);
         }
-        let update = if outcome == "succeeded"
-            && failed_check.is_none()
+        let partial_retirement = matches!(action.effect, Effect::Retire { .. })
+            && dispatched_unsuccessful_retirement(&entries[index]["result"]);
+        if partial_retirement {
+            entries[index]["retirementDispatched"] = json!(true);
+        }
+        let update = if (outcome == "succeeded" || partial_retirement)
+            && (failed_check.is_none() || matches!(action.effect, Effect::Lift))
             && !matches!(action.effect, Effect::None)
         {
             let changed = apply_effect(
@@ -682,6 +905,12 @@ pub(super) async fn execute(
         if let Err(error) = save(attempt, &entries, update.as_ref()) {
             return local_failure(&error, number + 1, count);
         }
+        if let Some(mut update) = update {
+            kept_state = update["state"].take();
+            if let Err(error) = save_ledger(&kept_state) {
+                return local_failure(&error, number + 1, count);
+            }
+        }
         if let Some(place) = failed_check {
             println!("verify {number} failed {} place={place}", step.subject);
             not_sent(number + 1, count);
@@ -691,11 +920,8 @@ pub(super) async fn execute(
             not_sent(number + 1, count);
             return 1;
         }
-        if let Some(mut update) = update {
-            kept_state = update["state"].take();
-            if let Err(error) = save_ledger(&kept_state) {
-                return local_failure(&error, number + 1, count);
-            }
+        if matches!(action.effect, Effect::Tombstones) {
+            listed_tombstones = Some(number);
         }
         results.push(entries[index]["result"].clone());
     }
@@ -757,6 +983,182 @@ mod tests {
         let digest = plan.digest();
         let hex = digest.trim_start_matches("sha256:");
         crate::boundary::value(&directory.join(format!(".conduit/results/{hex}.yaml"))).unwrap()
+    }
+
+    #[tokio::test]
+    async fn review_248_lift_remaining_and_fresh_list_use_grant_matching() {
+        for remaining in [false, true] {
+            let directory = tempfile::tempdir().unwrap();
+            let name = Name::new("Conduit", "new-grant");
+            let definition = json!({
+                "consumer":{"kind":"Agent","name":"a"},"target":{"kind":"Resource","name":"new"},
+                "as":"files","resolved":{"capability":"example.org/files#files.v1"}
+            });
+            let blocker = json!({
+                "id":"blocking-stone","object":{"kind":"Conduit","name":"different","id":"different-id"},
+                "consumer":{"kind":"Agent","name":"a"},"target":{"kind":"Resource","name":"old"},
+                "localName":"files","capability":"example.org/files#files.v1"
+            });
+            let mut lift = step("fixture.lift");
+            lift.arguments = json!({"id":"planned-stone"});
+            let plan = Plan {
+                steps: vec![step("fixture.list"), lift, step("fixture.open")],
+                ..Plan::default()
+            };
+            let schedule = Schedule {
+                actions: vec![
+                    Action {
+                        effect: Effect::Tombstones,
+                        ..no_effect()
+                    },
+                    Action {
+                        effect: Effect::Lift,
+                        ..no_effect()
+                    },
+                    Action {
+                        opens: Some((name, definition)),
+                        ..no_effect()
+                    },
+                ],
+                names: BTreeMap::new(),
+            };
+            let code = execute_fixture(
+                directory.path(),
+                &plan,
+                &schedule,
+                Ledger::default(),
+                async |tool, _, _| match tool {
+                    "fixture.list" => Ok(response(
+                        "succeeded",
+                        json!({"tombstones":[blocker.clone()]}),
+                    )),
+                    "fixture.lift" => Ok(response(
+                        "succeeded",
+                        json!({"remaining":if remaining { vec![blocker.clone()] } else { vec![] }}),
+                    )),
+                    _ => panic!("a known tombstone must stop the open"),
+                },
+            )
+            .await;
+            assert_eq!(code, 1);
+            let journal = journal(directory.path(), &plan);
+            assert_eq!(array(&journal["entries"]).len(), 2);
+            assert_eq!(
+                journal["entries"][1]["verificationFailed"],
+                if remaining {
+                    "/remaining"
+                } else {
+                    "/tombstones"
+                }
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn review_248_unconfirmed_retirement_keeps_its_partial_effect() {
+        let directory = tempfile::tempdir().unwrap();
+        let mut retire = step("fixture.retire.v1");
+        let id = "00000000-0000-4000-8000-000000000001";
+        retire.expected = Some(id.into());
+        let target = Name::new("Conduit", "target");
+        let consumer = Name::new("Conduit", "consumer");
+        let observation = |id: &str, definition| ObservedObject {
+            id: id.into(),
+            revision: "r1".into(),
+            state: "ready".into(),
+            definition,
+            packages: vec![],
+            status: Value::Null,
+            unknown_endings: BTreeMap::new(),
+            inventory: Value::Null,
+            implementations: Value::Null,
+            made_by_engine: false,
+        };
+        let ledger = Ledger {
+            objects: BTreeMap::from([
+                (retire.subject.clone(), observation(id, json!({}))),
+                (
+                    target.clone(),
+                    observation(
+                        "00000000-0000-4000-8000-000000000002",
+                        json!({"target":retire.subject.reference()}),
+                    ),
+                ),
+                (
+                    consumer.clone(),
+                    observation(
+                        "00000000-0000-4000-8000-000000000003",
+                        json!({"consumer":retire.subject.reference()}),
+                    ),
+                ),
+            ]),
+            ..Ledger::default()
+        };
+        let plan = Plan {
+            steps: vec![retire, step("fixture.must_not_send")],
+            ..Plan::default()
+        };
+        let schedule = Schedule {
+            actions: vec![
+                Action {
+                    effect: Effect::Retire {
+                        closes_on_dispatch: BTreeSet::from([target.clone()]),
+                        closes_on_removal: BTreeSet::from([consumer.clone()]),
+                    },
+                    approvals: BTreeSet::from([Approval::new("--replace", "sample")]),
+                    remakes: BTreeSet::from([plan.steps[0].subject.clone()]),
+                    ..no_effect()
+                },
+                no_effect(),
+            ],
+            names: BTreeMap::new(),
+        };
+        let state = directory.path().join(".conduit/state.yaml");
+        let before_reply = RefCell::new(None);
+        let outcome = execute_fixture(
+            directory.path(),
+            &plan,
+            &schedule,
+            ledger,
+            async |tool, _, _| {
+                assert_eq!(tool, "fixture.retire.v1");
+                before_reply.replace(Some(fs::read(&state).unwrap()));
+                let mut reply = response("unknown", json!({}));
+                reply["_meta"][format!("{META}invocation")] = json!("retirement-invocation");
+                Ok(reply)
+            },
+        )
+        .await;
+        assert_eq!(outcome, 1);
+        let assert_partial = |kept: &Ledger| {
+            assert_eq!(kept.objects[&plan.steps[0].subject].state, "retired");
+            assert!(!kept.objects.contains_key(&target));
+            assert!(kept.objects.contains_key(&consumer));
+        };
+        assert_partial(&Ledger::read(&state).unwrap());
+        fs::write(&state, before_reply.into_inner().unwrap()).unwrap();
+        let recovered = Ledger::read(&state).unwrap();
+        assert!(recovered.recovered_update);
+        assert_partial(&recovered);
+        let code = execute_fixture(
+            directory.path(),
+            &plan,
+            &schedule,
+            recovered,
+            async |tool, _, _| {
+                assert_eq!(tool, "fixture.retire.v1");
+                Err("scripted reply loss".into())
+            },
+        )
+        .await;
+        assert_eq!(code, 1);
+        let after_retry = Ledger::read(&state).unwrap();
+        assert_partial(&after_retry);
+        assert!(
+            after_retry
+                .pending_replacement(&plan.steps[0].subject)
+                .is_some()
+        );
     }
 
     #[tokio::test]
@@ -979,10 +1381,7 @@ mod tests {
         let mut publish = step("fixture.publish");
         let object = registered(json!({}));
         publish.action = Action {
-            approval: Some(Approval {
-                flag: "--replace".into(),
-                operand: "original-child".into(),
-            }),
+            approvals: BTreeSet::from([Approval::new("--replace", "original-child")]),
             effect: Effect::Register {
                 objects: BTreeMap::from([(publish.subject.clone(), object.clone())]),
                 defaults: vec![],
@@ -1021,8 +1420,8 @@ mod tests {
             "a durable registration reply must recover ownership"
         );
         assert_eq!(
-            recovered.registration_flags[&object.id].to_string(),
-            "--replace original-child"
+            approval_text(&recovered.registration_flags[&object.id]).as_deref(),
+            Some("--replace original-child")
         );
         assert!(recovered.recovered_update);
         fs::write(&file, timestamp_free_state(&recovered).to_string()).unwrap();
@@ -1117,6 +1516,7 @@ mod tests {
                 closed: 1,
                 listed: 2,
                 object: "previous".into(),
+                prior_cause: None,
             }),
             ..no_effect()
         };
@@ -1134,6 +1534,18 @@ mod tests {
         listed["tombstones"][0]["cause"]["invocation"] = json!("this-close");
         let args = step_arguments(&step("fixture.lift"), &action, &[close, listed]).unwrap();
         assert_eq!(args["id"], "stone");
+
+        let binding = &step("fixture.lift");
+        let close = json!({"invocation":"this-close"});
+        assert!(matches!(
+            step_arguments(binding, &action, std::slice::from_ref(&close)),
+            Err(BindingError::Invalid("missing tombstone result"))
+        ));
+        let empty = json!({"tombstones":[]});
+        assert!(matches!(
+            step_arguments(binding, &action, &[close, empty]),
+            Err(BindingError::TombstoneMismatch { listed: 2, cause }) if cause.ends_with("found 0")
+        ));
     }
 
     #[tokio::test]
@@ -1194,8 +1606,8 @@ mod tests {
         }).to_string()).unwrap();
         let actual = Ledger::read(&file).expect("a kept approval includes its operand");
         assert_eq!(
-            actual.registration_flags[&object.id].to_string(),
-            "--replace original-child"
+            approval_text(&actual.registration_flags[&object.id]).as_deref(),
+            Some("--replace original-child")
         );
     }
 

@@ -15,6 +15,8 @@ Authors get the [CLI format guide](../../../engine/CLI.md), and this page, writt
 
 The three columns follow the shell's [help table](../../../engine/crates/shell/src/help.rs).
 Approval flags in this table are repeatable, each with one generated object name as operand.
+A missing operand is a usage error before any engine read. List and inspect establish whether
+an operand is unused or ambiguous. Either stops the plan before apply sends any planned step.
 `--store DIR` overrides the current engine context. There are no additional options.
 
 | Usage | Example | Description |
@@ -294,12 +296,16 @@ in the detail. It generates a new name and ID; show its later references as
 `Kind/(step N).object expected=(step N)`. Before it, the plan lifts the tombstone that its own
 close or retirement of the nested instance left, where the new one would match it (LIF-041),
 under the same flag (row 20). Old retired nested names remain occupied until removed. The
-local name of a declared Conduit remains unchanged.
+local name of a declared Conduit remains unchanged. A replaced parent creates its declared
+children in its own registration. For a surviving parent, a declared Conduit with a held
+reference to an endpoint that would be removed stops at `place=/target LIF-009` before
+retirement.
 
 A tombstone made outside this apply needs `--reopen` (Conduit) or `--recreate` (other instance)
 under the rule below, even if a line was renamed or records purged (LIF-040, LIF-041).
-An interrupted apply's own journal may establish the same apply and cause; otherwise require
-the named flag.
+An interrupted replacement still requires its original approval after a source edit. An
+interrupted apply's journal may establish the same apply and cause for a lift where the
+source fingerprints still match. Otherwise the lift requires its own named flag.
 
 - **Which tombstones apply lifts with no further flag.** Apply lifts a tombstone this command
   caused, with no further flag, when the same command makes the same object again under
@@ -313,6 +319,11 @@ the named flag.
   Conduit or by `--prune`, including Conduits a pruned instance's retirement closes under
   CON-008. Reopening still takes a flag
   ([ruling 76, What it amends](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-76/README.md#what-it-amends)).
+
+Check all tombstones that match a planned registration or open under LIF-041. The same
+matching rules apply to a lift's `remaining` tombstones. When a lift cannot verify a unique
+tombstone from its planned removal, the verification line names the unsent lift. Stderr
+names the list step it read and gives the cause.
 
 A Conduit renamed in the file that keeps its consumer, target and capability is a flag-free
 close of OLD and a new Conduit whose registration matches OLD's tombstone (LIF-041). The plan
@@ -547,6 +558,19 @@ their present form.
 A stopped plan has one form, case 09's: `plan`, its steps and their `detail` lines, its stop
 lines, any `affects` and `difference` lines, its `flags` line, then `stopped`. A stop of row 4
 still prints no step, `detail` or `difference` line, but prints `flags []` before `stopped`.
+
+An unused operand prints `stop Flag/FLAG operand=NAME use=none -`. An operand matching
+two kinds prints `stop Flag/FLAG operand=NAME use=ambiguous objects=[KIND/NAME,...] -`.
+A Conduit absent from the file that points to a replacement's old endpoint prints
+`stop Conduit/NAME absent=file place=/target CON-008`, or `place=/consumer`.
+
+In `affects bounds=[Conduit/HOLDER:KIND/NAME,...]`, each pair names a bound that stops
+covering the replaced instance, including holders outside the file. An item in `targets` keeps
+the old ID. An item in `pools` that covers a Resource still covers its replacement in the same
+Pool, and stops covering it only on an owner change (ACC-029). Compare the combined coverage of
+both lists. On an owner change, append `bounds-added=[...]` after `closed-conduits=` for bounds
+that cover the replacement for the first time. Append `signed-out=[Agent/NAME,...]` last if the
+held Type of any replaced Agent declares sign-in.
 
 | Class | Meaning |
 | --- | --- |

@@ -167,6 +167,8 @@ fn fake_error(reason: &Mutex<Option<String>>) -> Unavailable {
 }
 #[derive(Default)]
 pub struct FakeBackend {
+    pub packaged_programs: AtomicBool,
+    pub staged_programs: Mutex<Vec<Value>>,
     pub calls: AtomicUsize,
     pub stages: AtomicUsize,
     pub starts: AtomicUsize,
@@ -233,6 +235,7 @@ impl RuntimeBackend for FakeBackend {
             registry_types: vec!["oci".into()],
             transports: vec!["stdio".into()],
             command: true,
+            packaged_programs: self.packaged_programs.load(Ordering::SeqCst),
             machines: vec![MachineSelector {
                 hostname: Some(machine().hostname),
                 labels: BTreeMap::new(),
@@ -260,6 +263,13 @@ impl RuntimeBackend for FakeBackend {
     ) -> Result<Staged> {
         self.note(context);
         self.stages.fetch_add(1, Ordering::SeqCst);
+        let archive = input.archive.as_ref().map(
+            |archive| json!({"digest":archive.digest,"size":archive.size,"urls":archive.urls}),
+        );
+        self.staged_programs
+            .lock()
+            .unwrap()
+            .push(json!({"program":input.program,"archive":archive}));
         let expected = run_args();
         let valid = input
             .identity

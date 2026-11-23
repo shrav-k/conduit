@@ -5,8 +5,11 @@ A63-RK1/RK2's standalone library, `runtime_provider_kit`, implements the MCP ser
 mechanisms below. The kit has no Type, package manifest or archive and depends on no other
 repository crate. Its lockfile and Rust 1.97.1 toolchain travel with it.
 
-The server offers exactly `run.v1`, `stop.v1` and `inspect-run.v1`, and advertises Conduit's
-implementation-interface extension at revision `v0` through `server/discover`. Every call must
+The server offers `run.v1`, `stop.v1` and `inspect-run.v1`. A runtime with
+`Declaration.packaged_programs` set to true also lists and serves `run.v2`. Otherwise a
+`run.v2` call fails with `unknown runtime operation` before reaching the backend.
+The server advertises Conduit's implementation-interface extension at revision `v0`
+through `server/discover`. Every call must
 itself declare that revision in `io.modelcontextprotocol/clientCapabilities`. A missing or
 unsupported revision gives -32021 with `data.requiredCapabilities`, before any backend effect.
 Other rejected calls return failed tool results with fixed diagnostics. All tool results carry
@@ -40,9 +43,9 @@ must apply the same rule to their own logging.
 
 | Interface | Runtime responsibility |
 | --- | --- |
-| `RuntimeBackend::declaration` / `Declaration` / `MachineSelector` | List registry types, package transports, whether commands run, and hostname/label selectors for machines. Outside the declaration, staging and start are never called. Remote items and relative command paths cannot be run. |
+| `RuntimeBackend::declaration` / `Declaration` / `MachineSelector` | List registry types, package transports, whether commands and packaged programs run, and hostname/label selectors for machines. Relative command paths are accepted only through `run.v2`. |
 | `RuntimeBackend::inventory` | Enumerate every potentially live run, including those absent from the kit ledger, with the original provider-call context. This is administrative recovery before any current call exists; an incomplete inventory fails construction. It does not read configuration from the environment. |
-| `RuntimeBackend::stage` | Prepare the item, package arguments, ordinary environment, secrets and identity for the specified instance and machine. `Staged` is an opaque runtime-owned value and may represent staging on another machine. |
+| `RuntimeBackend::stage` | Prepare the item, package arguments, ordinary environment, secrets and identity for the specified instance and machine. For `run.v2`, also receive the selected `program` and `archive` descriptor. `Staged` is an opaque runtime-owned value and may represent staging on another machine. |
 | `RuntimeBackend::start` | Consume staged material and return `Channel`, a duplex stream to the run's stdio. Apply the lifetime bound on the run's machine as well as observing cancellation. |
 | `RuntimeBackend::stop` | Stop the entire tree on the context's machine. Return success only when no run for that ID there can remain or restart, including queued launches and backend restart jobs. An unavailable machine returns `Unavailable`. |
 | `RuntimeBackend::state` | Return running, stopped or unknown for all runs this provider started for that ID on the machine. Stopped proves none may remain. Errors become unknown. |
@@ -263,10 +266,18 @@ and owed-stop flag. The ledger never holds an item, ordinary/secret environment,
 identity, URL or staged material. The kit writes no log lines. A gate's in-memory URL belongs
 to that gate and is not persisted.
 
+The kit checks two requirements of `run.v2` before any backend effect. An invalid item
+reports `run.v2 item must be a command item with a relative program that states platforms`.
+A selected `program` that starts with `/` or has a `..` segment reports
+`run.v2 program must be a relative path inside the archive`. Valid calls use the same drain,
+repeat, owed-stop, admission and gate policies as `run.v1`. The runtime is responsible for
+checking the archive on the node before each unpacking (PRV-019). For `run.v1` the kit ignores
+any `program` or `archive` arguments. Neither member enters the run ledger.
+
 ## Schema copies and checks
 
 [src/schemas.json](src/schemas.json) holds both schemas where present for each operation;
-`stop.v1` has no output schema in the specification. The eight transitively reached Schema
+`stop.v1` has no output schema in the specification. The nine transitively reached Schema
 contracts are copied alongside them. Each core-qualified reference becomes `#/$defs/name`;
 a definition's local `#/$defs/member` becomes `#/$defs/name/$defs/member`. Tool schemas attach
 the complete shared `$defs` map, so both input and output schemas stand alone and resolution

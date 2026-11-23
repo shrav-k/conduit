@@ -26,6 +26,9 @@ use tokio::{
 };
 use tokio_util::sync::CancellationToken;
 
+mod archives;
+use archives::RunArchive;
+
 const START_BOUND: Duration = Duration::from_secs(10);
 const POLL: Duration = Duration::from_millis(25);
 #[derive(Clone, Serialize, Deserialize)]
@@ -50,6 +53,7 @@ struct Inner {
     part: String,
     sockets: PathBuf,
     connections: BTreeMap<String, AsyncMutex<Connection>>,
+    archive_locks: BTreeMap<String, AsyncMutex<()>>,
     diagnostics: Mutex<File>,
     marker_lock: Mutex<()>,
     _owner: OwnerLock,
@@ -219,6 +223,11 @@ impl SshBackend {
                 )
             })
             .collect();
+        let archive_locks = config
+            .machines
+            .iter()
+            .map(|machine| (machine.hostname.clone(), AsyncMutex::new(())))
+            .collect();
         Ok(Self(Arc::new(Inner {
             config,
             root,
@@ -227,6 +236,7 @@ impl SshBackend {
             part,
             sockets,
             connections,
+            archive_locks,
             diagnostics: Mutex::new(diagnostics),
             marker_lock: Mutex::new(()),
             _owner: owner,
@@ -799,6 +809,7 @@ impl RuntimeBackend for SshBackend {
             registry_types: vec![],
             transports: vec![],
             command: true,
+            packaged_programs: true,
             machines: self
                 .0
                 .config
@@ -851,7 +862,14 @@ impl RuntimeBackend for SshBackend {
         input: &RunInput,
         cancel: &CancellationToken,
     ) -> Result<Staged> {
-        if !self.declaration().supports(&input.item, &context.machine) {
+        let packaged = RunArchive::from_input(input).map_err(|reason| self.error(reason))?;
+        let declaration = self.declaration();
+        let supported = if packaged.is_some() {
+            declaration.supports_packaged_programs(&context.machine)
+        } else {
+            declaration.supports(&input.item, &context.machine)
+        };
+        if !supported {
             return self.refusal("unsupported machine or command item");
         }
         if !input.package_arguments.is_empty() || !input.secrets.package_arguments.is_empty() {
@@ -933,15 +951,35 @@ impl RuntimeBackend for SshBackend {
             command: vec![],
             armed: true,
         };
-        let mut script = format!(
-            "set -eu\numask 077\n/bin/rm -rf -- {}\n/bin/mkdir -p -- {} {}\n/bin/chmod -- 700 {} {} {}\n",
-            quote(&parent),
+        // Archive transfers and ordinary staging do not hold the master mutex.
+        // The kit serializes this instance's stage and stop.
+        let call = self.invocation(
+            &context.machine.hostname,
+            Some(&["/bin/sh".into(), "-s".into()]),
+        )?;
+        drop(conn);
+        let mut script = String::from("set -eu\numask 077\n");
+        if let Some(archive) = packaged {
+            command[0] = self
+                .stage_archive(
+                    &context.machine.hostname,
+                    &archive,
+                    &directory,
+                    &values["PATH"],
+                    cancel,
+                )
+                .await?;
+        } else {
+            script.push_str(&format!("/bin/rm -rf -- {}\n", quote(&parent)));
+        }
+        script.push_str(&format!(
+            "/bin/mkdir -p -- {} {}\n/bin/chmod -- 700 {} {} {}\n",
             quote(&identity),
             quote(&state),
             quote(&directory),
             quote(&identity),
             quote(&state)
-        );
+        ));
         for (name, value) in &input.identity.files {
             codec::write_file(&mut script, &format!("{identity}/{name}"), value.as_bytes());
         }
@@ -951,10 +989,7 @@ impl RuntimeBackend for SshBackend {
             &environment,
         );
         // Resolve against precisely the effective run PATH, delivered only through stdin.
-        script.push_str(&format!(
-            "PATH=$(printf '%b' '{}x'); PATH=${{PATH%x}}; export PATH\n",
-            codec::octal(values["PATH"].as_bytes())
-        ));
+        script.push_str(&codec::run_path(&values["PATH"]));
         if command[0].starts_with('/') {
             script.push_str(&format!(
                 "test -x {} && printf '%s\\n' {}\n",
@@ -985,13 +1020,6 @@ done
 "#,
             );
         }
-        // Never hold the master mutex while staging: an unrelated stop must not wait
-        // for this transfer. The kit serializes this instance's own stage and stop.
-        let call = self.invocation(
-            &context.machine.hostname,
-            Some(&["/bin/sh".into(), "-s".into()]),
-        )?;
-        drop(conn);
         let output = self
             .0
             .executor

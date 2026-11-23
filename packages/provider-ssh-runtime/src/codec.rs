@@ -53,6 +53,13 @@ pub fn environment(values: &BTreeMap<String, String>) -> Result<Vec<u8>, String>
 pub fn octal(bytes: &[u8]) -> String {
     bytes.iter().map(|b| format!("\\{b:03o}")).collect()
 }
+
+pub fn run_path(path: &str) -> String {
+    format!(
+        "PATH=$(printf '%b' '{}x'); PATH=${{PATH%x}}; export PATH\n",
+        octal(path.as_bytes())
+    )
+}
 pub fn write_file(script: &mut String, path: &str, bytes: &[u8]) {
     script.push_str(&format!(
         "printf '%b' '{}' > {}\n/bin/chmod -- 600 {}\n",

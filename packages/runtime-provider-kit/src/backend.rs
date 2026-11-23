@@ -1,6 +1,6 @@
 //! Runtime-owned mechanisms. None of the sensitive input types implements Debug or Serialize.
 use async_trait::async_trait;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, de};
 use serde_json::Value;
 use std::{collections::BTreeMap, sync::Arc};
 use tokio::io::{AsyncRead, AsyncWrite};
@@ -96,12 +96,39 @@ pub struct RunInput {
     #[serde(default)]
     pub secrets: Secrets,
     pub identity: Identity,
+    pub program: Option<String>,
+    pub archive: Option<ArchiveDescriptor>,
 }
+
+#[derive(Deserialize)]
+pub struct ArchiveDescriptor {
+    pub digest: String,
+    #[serde(deserialize_with = "archive_size")]
+    pub size: u64,
+    pub urls: Vec<String>,
+}
+
+fn archive_size<'de, D: Deserializer<'de>>(deserializer: D) -> std::result::Result<u64, D::Error> {
+    let number = serde_json::Number::deserialize(deserializer)?;
+    if let Some(size) = number.as_u64() {
+        return Ok(size);
+    }
+    // JSON Schema accepts integral decimals. The upper bound is exclusive because
+    // u64::MAX rounds up to 2^64 as an f64.
+    const U64_END: f64 = 18_446_744_073_709_551_616.0;
+    number
+        .as_f64()
+        .filter(|size| (0.0..U64_END).contains(size) && size.fract() == 0.0)
+        .map(|size| size as u64)
+        .ok_or_else(|| de::Error::custom("archive size is not an unsigned 64-bit integer"))
+}
+
 /// An explicit declaration, evaluated before staging. Machine labels are exact selectors.
 pub struct Declaration {
     pub registry_types: Vec<String>,
     pub transports: Vec<String>,
     pub command: bool,
+    pub packaged_programs: bool,
     pub machines: Vec<MachineSelector>,
 }
 pub struct MachineSelector {
@@ -110,14 +137,21 @@ pub struct MachineSelector {
     pub labels: BTreeMap<String, String>,
 }
 impl Declaration {
-    pub fn supports(&self, item: &Value, machine: &Machine) -> bool {
-        let machine_ok = self.machines.iter().any(|s| {
+    fn supports_machine(&self, machine: &Machine) -> bool {
+        self.machines.iter().any(|s| {
             s.hostname.as_ref().is_none_or(|h| h == &machine.hostname)
                 && s.labels
                     .iter()
                     .all(|(k, v)| machine.labels.get(k) == Some(v))
-        });
-        if !machine_ok {
+        })
+    }
+
+    pub fn supports_packaged_programs(&self, machine: &Machine) -> bool {
+        self.packaged_programs && self.command && self.supports_machine(machine)
+    }
+
+    pub fn supports(&self, item: &Value, machine: &Machine) -> bool {
+        if !self.supports_machine(machine) {
             return false;
         }
         if let Some(command) = item.get("command") {
@@ -136,6 +170,33 @@ impl Declaration {
                 .iter()
                 .any(|s| package["transport"]["type"] == *s)
     }
+}
+
+/// Semantic checks shared by the protocol handler and packaged-program backends.
+pub fn check_packaged_program(
+    item: &Value,
+    program: &str,
+) -> std::result::Result<(), &'static str> {
+    let original = item["command"][0].as_str();
+    if !original.is_some_and(|path| path.contains('/') && !path.starts_with('/'))
+        || !item["platforms"]
+            .as_array()
+            .is_some_and(|pairs| !pairs.is_empty())
+        || item.get("package").is_some()
+        || item.get("remote").is_some()
+    {
+        return Err(
+            "run.v2 item must be a command item with a relative program that states platforms",
+        );
+    }
+    if program.is_empty()
+        || program.starts_with('/')
+        || program.contains('\0')
+        || program.split('/').any(|part| part == "..")
+    {
+        return Err("run.v2 program must be a relative path inside the archive");
+    }
+    Ok(())
 }
 pub trait ByteChannel: AsyncRead + AsyncWrite + Unpin + Send {}
 impl<T: AsyncRead + AsyncWrite + Unpin + Send> ByteChannel for T {}

@@ -24,13 +24,76 @@ metadata:
     from other users, not this shared user. The kit gate also needs a separate OS principal
     from untrusted runs; SSH keeps those runs on the remote, but does not isolate them from each other.
 
-    Only configured machines and `command` items run. A command's program must be absolute or a
-    bare name resolving to an absolute executable through the effective run PATH on the remote.
-    Relative paths containing `/`, package items and all package_arguments end failed. Remote
-    commands contain POSIX single-quoted words. Environment values, secrets and identity file
-    contents travel only through `/bin/sh -s` stdin, never in local or remote arguments. SSH is
-    resolved on the provider's PATH once at startup, then invoked by absolute path with an empty
-    environment and all configuration files disabled. Its ed25519 host keys are pinned.
+    Only configured machines and `command` items run. For `run.v1` the program must be absolute
+    or a bare name resolving to an absolute executable through the effective run PATH on the
+    node. Relative paths containing `/` fail under `run.v1`. Package items and package arguments
+    are unsupported. Remote commands contain POSIX single-quoted words. Environment values,
+    secrets and identity file contents travel through `/bin/sh -s` stdin, never in local or remote
+    arguments. SSH is resolved on the provider's PATH once at startup, then invoked by absolute
+    path with an empty environment and all configuration files disabled. Its ed25519 host keys
+    are pinned.
+
+    For `run.v2`, the item states `platforms` beside a relative command. The provider opens the
+    engine's archive at `urls[0]`, a percent-decoded `file:///` or `file://localhost/` URL on the
+    provider's machine. On a cache miss, SSH carries the raw archive bytes on stdin and publishes
+    the completed temporary file by rename. Each node keeps one copy per digest at
+    `<base>/<part>/archives/<hex>`. Sweeps and stops leave those copies in place. The operator
+    removes them.
+
+    Before each unpacking, the node captures the kept archive once in shell memory with
+    `base64`. The snapshot has no pathname and all three consumers read streams decoded
+    from it. The node checks length with `wc -c` and then checks SHA-256 with `sha256sum`.
+    On a match, `gzip` and `tar` unpack the same bytes into the generation's new `package/`
+    directory. All five tools use the effective run PATH. The archive scripts also need
+    `/bin/sh`, `/bin/mkdir`, `/bin/rm`, `/bin/cat`, `/bin/mv`, `/bin/ls`,
+    `/usr/bin/mktemp` and `/usr/bin/wc`.
+
+    The selected `program` must be a regular file that its owner may execute. The provider
+    substitutes its absolute path for the first command string and keeps the remaining strings
+    as arguments. Another run under the shared `conduit-run` user can alter a program after
+    unpacking and before start. PRV-025's isolation is unmet.
+
+    Staging reports these failures:
+
+    - `machine <hostname> lacks <tool> on the run PATH`
+    - `archive URL is not a file URL on the provider's machine`
+    - `the engine's copy of the archive cannot be read`
+    - `archive staging directory <directory> on machine <hostname> could not be prepared; check
+      that its parent can be cleared and the directory created and entered`
+    - `kept archive <path> on machine <hostname> is not a regular file; remove it`
+    - `archive pre-check for <path> on machine <hostname> returned no recognizable result; check
+      the node's shell and run PATH`
+    - `archive transfer to <path> on machine <hostname> failed: <reason>`. Reasons identify
+      failure to create the archive directory or temporary file, write the received bytes,
+      count them, match the sent byte count, rename the temporary file into place, or a
+      destination entry that already exists or an unrecognized remote shell reply.
+    - `archive <digest> on machine <hostname> could not enter run directory <directory>`
+    - `archive <digest> on machine <hostname> is no longer a regular file at <path> for run
+      directory <directory>`
+    - `archive <digest> on machine <hostname> could not be read from <path> into the snapshot
+      for <directory>`
+    - `archive check on machine <hostname> gave no readable length`
+    - `archive check on machine <hostname> gave no readable digest`
+    - `archive on machine <hostname> has <found> bytes; the call gave <size>`
+    - `archive on machine <hostname> has digest <found>; the call gave <digest>`
+    - `archive <digest> on machine <hostname> could not create the empty directory
+      <directory>/package`
+    - `archive <digest> on machine <hostname> could not be unpacked into <directory>/package
+      (gzip or tar failed); the kept copy is unchanged`
+    - `archive on machine <hostname> holds no executable <program>`
+    - `archive <digest> check on machine <hostname> for <directory> returned no recognizable
+      result`
+    - `kept archive <path> on machine <hostname> could not be removed; it is ineligible until
+      removal succeeds`
+    - `archive <digest> on machine <hostname>: could not <read|save|clear> the provider's
+      verification marker`
+    - `ssh archive operation on machine <hostname> unavailable`
+
+    Digests are written `sha256:<hex>`. A mismatch starts nothing. The provider tries to
+    remove the kept copy named by the call's digest. If deletion fails, the provider records
+    the removal error in its diagnostics and keeps the copy ineligible, including across
+    restarts, until deletion succeeds. The next run after deletion carries the engine's copy
+    again. If that fresh copy also mismatches, check the descriptor and the engine's archive.
 
     The first start durably makes a random 64-bit part in the durable instance subdirectory. Units
     are `<prefix><part>-<SHA-256(instance-ID)>.service`; remote directories are
@@ -55,7 +118,7 @@ metadata:
     these values: it holds a private key path, the operator-installed private key, pinned public
     host keys, markers, generation reservations, the ledger and diagnostics. Run stderr goes continuously into a private
     0600 local `CONDUIT_STATE_DIR/stderr/<marker>-<generation>.log` file, removed with the instance;
-    a run can itself print credentials there. Diagnostics never include values or subprocess output.
+    a run can itself print credentials there. Diagnostics never include secret values, identity values or raw subprocess output.
 
     Every run has the lifetime the kit supplies (at most maxLifetime), enforced remotely by
     RuntimeMaxSec, and TimeoutStopSec from stopTimeout. systemd stops the whole unit cgroup,
@@ -214,9 +277,10 @@ metadata:
 spec:
   family: Resource
   offers: [github.com/shrav-k/conduit/core#runtime-provider.v1]
-  requires: []
+  requires: [github.com/shrav-k/conduit/core#run.v2]
   implementation:
     github.com/shrav-k/conduit/core#run.v1: '#provider'
+    github.com/shrav-k/conduit/core#run.v2: '#provider'
     github.com/shrav-k/conduit/core#stop.v1: '#provider'
     github.com/shrav-k/conduit/core#inspect-run.v1: '#provider'
   records:

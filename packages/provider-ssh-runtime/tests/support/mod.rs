@@ -131,6 +131,7 @@ pub struct Fake {
     pub stops_in_flight: Arc<AtomicUsize>,
     pub live_masters: Arc<AtomicUsize>,
     pub stage_hold: AtomicBool,
+    pub block_archive_removal: AtomicBool,
     pub staged: tokio::sync::Notify,
     pub stage_release: tokio::sync::Notify,
     pub show_hold: Mutex<Option<String>>,
@@ -160,6 +161,7 @@ impl Default for Fake {
             stops_in_flight: Arc::new(AtomicUsize::new(0)),
             live_masters: Arc::new(AtomicUsize::new(0)),
             stage_hold: AtomicBool::new(false),
+            block_archive_removal: AtomicBool::new(false),
             staged: tokio::sync::Notify::new(),
             stage_release: tokio::sync::Notify::new(),
             show_hold: Mutex::new(None),
@@ -301,8 +303,11 @@ impl Executor for Fake {
         }
         if words[0] == "/bin/sh" {
             let staging = input.windows(9).any(|w| w == b"umask 077");
+            assert!(
+                (words.len() == 2 && words[1] == "-s") || (words.len() == 3 && words[1] == "-c")
+            );
             let mut child = tokio::process::Command::new("/bin/sh")
-                .arg("-s")
+                .args(&words[1..])
                 .env_clear()
                 .stdin(Stdio::piped())
                 .stdout(Stdio::piped())
@@ -310,7 +315,18 @@ impl Executor for Fake {
                 .spawn()
                 .unwrap();
             let mut stdin = child.stdin.take().unwrap();
-            stdin.write_all(&input).await.unwrap();
+            const REMOVE_ARCHIVE: &str = "/bin/rm -f -- \"$kept\"";
+            if words[1] == "-s"
+                && self.block_archive_removal.load(Ordering::SeqCst)
+                && input
+                    .windows(REMOVE_ARCHIVE.len())
+                    .any(|word| word == REMOVE_ARCHIVE.as_bytes())
+            {
+                let script = String::from_utf8_lossy(&input).replace(REMOVE_ARCHIVE, "false");
+                stdin.write_all(script.as_bytes()).await.unwrap();
+            } else {
+                stdin.write_all(&input).await.unwrap();
+            }
             drop(stdin);
             let out = child.wait_with_output().await.unwrap();
             if staging && self.stage_hold.load(Ordering::SeqCst) {
@@ -492,12 +508,15 @@ impl Fixture {
         Self::with_prefix("conduit-run-")
     }
     pub fn with_prefix(prefix: &str) -> Self {
-        Self::configured(prefix, 62)
+        Self::configured(prefix, 62, None)
     }
     pub fn with_limit(limit: usize) -> Self {
-        Self::configured("conduit-run-", limit)
+        Self::configured("conduit-run-", limit, None)
     }
-    fn configured(prefix: &str, limit: usize) -> Self {
+    pub fn with_run_path(run_path: &str) -> Self {
+        Self::configured("conduit-run-", 62, Some(run_path))
+    }
+    fn configured(prefix: &str, limit: usize, run_path: Option<&str>) -> Self {
         let root = tempfile::Builder::new()
             .prefix("ssh state % ")
             .tempdir()
@@ -518,6 +537,9 @@ impl Fixture {
         let mut config = config(&durable, remote.path());
         config.prefix = prefix.into();
         config.run_limit = limit;
+        if let Some(path) = run_path {
+            config.run_path = path.into();
+        }
         let fake = Arc::new(Fake::default());
         let backend = SshBackend::with_executor(
             &durable,

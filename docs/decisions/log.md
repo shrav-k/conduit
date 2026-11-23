@@ -1076,3 +1076,59 @@ Owner's words: whether the guard's required parts come on new Types -> "New Type
 Lands in: codex-login.v2, account-home.v2 and the Agent Types' next versions carry the levers, the admission hook and its control; each team seat is registered and signed in once more and each Agent registered again under a Type that lists its login's Type, at one sitting; logins on the old Types have no check, and their status says so
 
 Status: accepted, not done (the package orders and a sitting)
+
+## DEC-125, 2026-11-23, one token per client now; expiry later, documented
+
+Owner's words: the shape of a client's credential -> "Let's do one token for now, we can add expiry later but I don't want to slow down development"; how long a token lasts -> "Let's focus on expiry later, and document it, for now I don't want to pause work"
+
+Lands in: each admitted client of an Interface holds one token that lasts as long as its admission and is revoked by removing the client, as runs' tokens are today; no token endpoint yet; the missing expiry is documented as a known gap; fixes DEC-108's open question on the token's life
+
+Status: accepted, not done (the client token's spec and engine orders)
+
+## DEC-126, 2026-11-23, when expiry comes, a client ends at a fixed end and when idle
+
+Owner's words: when an admitted client ends without a revocation -> "Fixed end + idle end (Recommended)"
+
+Lands in: once expiry is added (DEC-125), root sets a fixed end at admission, 1 to 365 days and 180 by default, and a client also ends after 90 days with no use; both checked at the next request, nothing on a timer
+
+Status: accepted, not done (after DEC-125's orders)
+
+## DEC-127, 2026-11-23, in v0 a client's token is a file the owner hands over
+
+Owner's words: how a client is admitted -> "Key file only in v0"
+
+Lands in: the owner makes a client's token and hands the file to the client (the web UI's as a secret Resource, DEC-109; a script's; the second contributor's app's); no invite route in v0
+
+Status: accepted, not done (the client token's orders)
+
+## DEC-128, 2026-11-23, no display mark; a model-driven program gets an Interface of its own
+
+Owner's words: how sign-in codes are kept from models that run the CLI -> "No mark; models get own Interface"
+
+Lands in: every client of root is the owner's and may receive codes, fingerprints and approvals (DEC-103); a program a model drives (the coordinator, the workers, an app's model) acts through an Interface of its own, under DEC-074's steps; no client scope is added, and DEC-074's "no scope" stands. The coordinator's reading, open to the owner's strike (DEC-029): until those Interfaces' orders land, the model-driven programs keep acting as root as today, and no model runs a sign-in or an enrollment; the owner does those at the owner's own terminal
+
+Status: accepted, not done (the Interface orders)
+
+## DEC-129, 2026-11-23, root's helper token stays for now
+
+Owner's words: root's 100-year helper token -> "Keep it for now (Recommended)"
+
+Lands in: root's helper token stays as the store owner's documented bootstrap, its risk documented (a copy is root until the store is replaced); it is retired, refusing every copy, when expiry lands
+
+Status: accepted, not done (the documentation, then with expiry)
+
+## DEC-130, 2026-11-23, the web UI is a display, behind a browser cookie
+
+Owner's words: the web UI's mark and a credential for its browser leg -> "A display, with the cookie"
+
+Lands in: the web UI package, a client of root, receives codes and fingerprints once DEC-103's orders land, and keeps them out of every log and off the page once answered; its browser leg takes an HttpOnly, SameSite=Strict cookie set from a start secret only the owner's user can read
+
+Status: accepted, not done (the web UI package's orders)
+
+## DEC-131, 2026-11-23, clients use plain http on loopback for now
+
+Owner's words: the address clients connect to -> "Plain http on loopback (Recommended)"
+
+Lands in: clients reach the engine over plain http on loopback, with the risk while serve is down documented; TLS on loopback later, the store's CA in the client's file
+
+Status: accepted, not done (the documentation; TLS later)

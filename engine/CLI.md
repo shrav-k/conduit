@@ -261,7 +261,7 @@ names are at most 63 characters (SCT-013).
 | Drop a Pool with members or a Fleet with members | `--with-resources NAME` for the Pool, `--with-agents NAME` for the Fleet. The cascade is one approval. | LIF-020, LIF-021, CON-008 |
 | Protected engine object, change to placement or runtime, or replacement of an owner with members | Stop. No flag permits these changes. | ACC-024, FLEET-005, LIF-020 |
 | Control changed a setting | Print a difference if the file still holds the ledger value. Stop if the file has a third value or the plan would replace the instance and revert the control’s change. No flag permits that stop. | REV-007 |
-| Unreconciled outcome | Stop if a numbered step would reach the affected object. Reconcile an unknown invocation explicitly. A stop can also report when inspection cannot confirm a setting’s unknown state. | OPS-012 to OPS-014, REV-009 |
+| Unreconciled outcome | Stop if a numbered step would reach the affected object. Reconcile an unknown invocation explicitly. A setting's stop holds after reconciliation until a later control that was sent a value for that setting, or for one that contains it, succeeds other than by reconciliation (REV-007, REV-010); apply never sends that control. Then plan again. | OPS-012 to OPS-014, REV-009 |
 | Unsupported input, such as a relative program in a submission of values | Stop and name the input. No flag permits it. | SUB-010 |
 
 When a change needs replacement permission, the shipped planner prints a `stop` with
@@ -357,12 +357,20 @@ stop SUBJECT CAUSE... [requires=REMEDY] PROMISE
 
 A subject is `KIND/NAME`, `Package/ADDRESS` or `Manifest/-`. Causes use `key=value` fields.
 `place` and `setting` are JSON Pointers. `id`, `revision`, `tombstone`, `unreconciled`,
-`absent`, `state` and `made-by` describe identity or lifecycle. `control`, `changed-by`,
-`item` and `secret` explain controls or hidden item differences. A setting that the engine's
-status holds as unknown after a control (REV-009) is a stop with `state=unknown`. `pin`, `version`, `digest`,
-`installed` and `archive` describe packages. `rule` identifies a stop with no deciding
-promise, whose trailing promise is `-`. A `requires=` field gives a remedy, such as a flag
-and its operand or `conduit-install`.
+`absent`, `state` and `made-by` describe identity or lifecycle. `control`, `invocation`,
+`changed-by`, `item` and `secret` explain controls or hidden item differences. A setting that the
+engine's status holds as unknown after a control (REV-009) has this stop line:
+
+```text
+stop KIND/NAME setting=POINTER state=unknown control=CONTROL invocation=ID REV-009
+```
+
+It holds after reconciliation until a later control that was sent a value for that setting, or
+for one that contains it, succeeds other than by reconciliation (REV-007, REV-010). Apply never
+sends that control; after it succeeds, plan again. `pin`, `version`, `digest`, `installed` and
+`archive` describe packages. `rule` identifies a stop with no deciding promise, whose trailing
+promise is `-`. A `requires=` field gives a remedy, such as a flag and its operand or
+`conduit-install`.
 
 ```text
 plan

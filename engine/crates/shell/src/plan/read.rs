@@ -441,22 +441,6 @@ async fn read_engine(client: &RunningService<RoleClient, ()>, core: &str) -> Res
                 (name.kind.as_str(), name.name.as_str()),
                 ("Pool", "system") | ("Interface", "root") | ("Resource", "access" | "management")
             );
-        let unknown_endings = array(&observed["records"])
-            .iter()
-            .filter_map(|event| {
-                let data = &event["data"];
-                if event["type"] != "invocation-ended"
-                    || data["outcome"] != "unknown"
-                    || data["target"] != id
-                {
-                    return None;
-                }
-                Some((
-                    data["invocation"].as_str()?.to_owned(),
-                    data["operation"].as_str()?.to_owned(),
-                ))
-            })
-            .collect();
         engine.objects.insert(
             name,
             ObservedObject {
@@ -470,7 +454,6 @@ async fn read_engine(client: &RunningService<RoleClient, ()>, core: &str) -> Res
                 definition: compact_definition(&declared),
                 packages: array(&observed["packages"]).to_vec(),
                 status: observed["status"].clone(),
-                unknown_endings,
                 inventory: observed["inventory"].clone(),
                 implementations: observed["implementations"].clone(),
                 made_by_engine,
@@ -883,7 +866,6 @@ impl Ledger {
                         inventory: Value::Null,
                         implementations: Value::Null,
                         made_by_engine: definition["engine-made"] == true,
-                        unknown_endings: BTreeMap::new(),
                     },
                 )
                 .is_some()
@@ -1827,6 +1809,5 @@ fn resolved_view(
         inventory: Value::Null,
         implementations,
         made_by_engine: false,
-        unknown_endings: BTreeMap::new(),
     })
 }

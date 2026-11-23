@@ -39,7 +39,6 @@ fn object(state: &str, definition: Value) -> ObservedObject {
         definition,
         packages: vec![],
         status: Value::Null,
-        unknown_endings: BTreeMap::new(),
         inventory: Value::Null,
         implementations: Value::Null,
         made_by_engine: false,
@@ -197,6 +196,29 @@ fn row_05_unknown_looks_ahead_and_preserves_other_stops() {
     f.want(&name, old);
     f.line("stop Resource/shared setting=/root requires=--replace shared OBJ-011");
     f.line("stop Resource/shared unreconciled=invocation OPS-013");
+}
+
+#[test]
+fn row_05_served_unknown_setting_holds_after_reconciliation() {
+    let mut f = Fixture::default();
+    let name = Name::new("Resource", "shared");
+    let mut old = object("ready", json!({"resolved":{"config":{"root":"before"}}}));
+    old.status = json!({"unreconciled":[],"settings":{
+        "/limit":{"state":"unknown","control":"example.org/control#set-limit.v1","invocation":"invocation"}
+    }});
+    f.observed(&name, old.clone());
+    assert!(f.want(&name, old.clone()).controls.is_empty());
+    f.line("difference Resource/shared setting=/limit state=unknown control=example.org/control#set-limit.v1 invocation=invocation REV-009");
+    assert!(compare(&f.file, &f.kept, &f.engine).stops.is_empty());
+
+    old.definition["resolved"]["config"]["root"] = json!("after");
+    f.want(&name, old);
+    f.line("stop Resource/shared setting=/root requires=--replace shared OBJ-011");
+    f.line("stop Resource/shared setting=/limit state=unknown control=example.org/control#set-limit.v1 invocation=invocation REV-009");
+
+    f.file.objects.clear();
+    f.line("stop Resource/shared absent=file requires=--prune shared LIF-035");
+    f.line("stop Resource/shared setting=/limit state=unknown control=example.org/control#set-limit.v1 invocation=invocation REV-009");
 }
 
 #[test]
@@ -1177,9 +1199,6 @@ fn review_249_settled_setting_ignores_old_unknown_record() {
     let name = Name::new("Resource", "shared");
     let mut observed = object("ready", json!({"resolved":{"config":{"limit":10}}}));
     observed.status = json!({"unreconciled":[]});
-    observed
-        .unknown_endings
-        .insert("old-unknown".into(), "configure.v1".into());
     f.observed(&name, observed.clone());
     observed.definition["resolved"]["config"]["limit"] = json!(20);
     f.want(&name, observed)

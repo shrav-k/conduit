@@ -1474,7 +1474,6 @@ impl Changes<'_> {
                 definition: definition.clone(),
                 packages: vec![self.desired.core_pin.clone()],
                 status: Value::Null,
-                unknown_endings: BTreeMap::new(),
                 inventory: Value::Null,
                 implementations: Value::Null,
                 made_by_engine: false,
@@ -2324,8 +2323,10 @@ impl Changes<'_> {
                     settings
                         .iter()
                         .filter(|(_, setting)| setting["state"] == "unknown")
-                        .map(|(pointer, _)| {
-                            format!("{prefix} {name} setting={pointer} state=unknown REV-009")
+                        .map(|(pointer, setting)| {
+                            let control = text(&setting["control"]);
+                            let invocation = text(&setting["invocation"]);
+                            format!("{prefix} {name} setting={pointer} state=unknown control={control} invocation={invocation} REV-009")
                         }),
                 );
             }

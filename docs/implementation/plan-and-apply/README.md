@@ -73,8 +73,9 @@ only [core operations](../../../spec/core/operations.yaml), adding no operation 
    and through management where that owner is retired (ACC-033 rows 6 and 6A); everything else
    through management. Each inspection uses `expectedId`
    from the list. Read resolved definitions, held packages, revisions, lifecycle, inventories,
-   tombstones and unreconciled invocations (OPS-036, LIF-013, LIF-040). No private snapshot is
-   an acceptable substitute. Read all visible objects to find bounds and outside Conduits.
+   tombstones, unreconciled invocations and the settings a control left unknown (OPS-036,
+   LIF-013, LIF-040, REV-009). No private snapshot is an acceptable substitute. Read all visible
+   objects to find bounds and outside Conduits.
 3. Compare desired translation, last applied definitions/IDs and observed definitions/IDs.
    Print every difference, including drift, control changes, operation contracts, implementation
    maps, nested entries and declared Conduits, including package-provided ones. Comparisons that
@@ -150,7 +151,7 @@ retained-pin `difference` line and case 07's `remains ready` line, are printed a
 | 2 | The archive of a package the manifest pins, of a package that an archive's manifest lists, through every dependency, other than the core package (NAM-009), or of a release an object holds that row 19 compares, is not in the package cache, or its cached bytes do not hash to its digest | Stop: `stop Package/ADDRESS version=VERSION digest=sha256:HEX archive=absent requires=conduit-install PKG-004`, or `archive=mismatch`. Installing that archive again fills the cache and changes nothing in the engine (PKG-027) | O7; PKG-004, PKG-027 |
 | 3 | A relative `fetch`, or a program given as a relative path | Stop, as O1 says: `stop KIND/NAME place=POINTER SUB-010`, with `Manifest/-` as the subject in the project's manifest | O1; SUB-010 |
 | 4 | A literal or a bare name at a place that `secret-reference.v1` governs | Stop, as O5 says: `stop KIND/NAME place=POINTER SEC-001`, with no step, `detail` or `difference` line | O5; SEC-001, SEC-003 |
-| 5 | An object with an unreconciled invocation, or an instance with a setting reported unknown, that a step of this plan would reach: a step that the rows below give it, read as though this row did not hold, or would give under the flag that one of their stops requires, or a step that another object's row sends to it, as a cascade does | Stop while the invocation is unreconciled or the setting is reported unknown, as "Stops, unknown outcomes and repeats" says: `stop KIND/NAME unreconciled=ID OPS-013`, or `stop KIND/NAME setting=POINTER state=unknown REV-009`, and print beside it every stop that the rows below give the object. Apply sends no reconciliation and no control. Where no step would reach the object, this row does not decide it: the first row below whose condition holds does, as for any other object, whether that is row 17's nothing, row 19's retained-pin line or a stop such as row 27's. Beside that row's decision the plan prints the same cause as a `difference` line: `difference KIND/NAME unreconciled=ID OPS-013`, or `difference KIND/NAME setting=POINTER state=unknown REV-009` | OPS-012 to OPS-014, REV-009, LIF-013; ruling 78 point 5 |
+| 5 | An object with an unreconciled invocation, or an instance with a setting reported unknown, that a step of this plan would reach: a step that the rows below give it, read as though this row did not hold, or would give under the flag that one of their stops requires, or a step that another object's row sends to it, as a cascade does | Stop while the invocation is unreconciled or the setting is reported unknown, as "Stops, unknown outcomes and repeats" says: `stop KIND/NAME unreconciled=ID OPS-013`, or `stop KIND/NAME setting=POINTER state=unknown control=CONTROL invocation=ID REV-009`, the setting's CONTROL and ID as the instance's `status.settings` gives them, before and after reconciliation (REV-010), and print beside it every stop that the rows below give the object. Apply sends no reconciliation and no control. Where no step would reach the object, this row does not decide it: the first row below whose condition holds does, as for any other object, whether that is row 17's nothing, row 19's retained-pin line or a stop such as row 27's. Beside that row's decision the plan prints the same cause as a `difference` line: `difference KIND/NAME unreconciled=ID OPS-013`, or `difference KIND/NAME setting=POINTER state=unknown control=CONTROL invocation=ID REV-009` | OPS-012 to OPS-014, REV-009, REV-010, LIF-013; ruling 78 point 5 |
 | 6 | An object the engine made: root's first-start objects, or a FLEET-005 default | Nothing is sent to it, and no later row closes, replaces or adopts it. A default closes only when its Pool or Fleet retires (CON-008), which the plan prints under `affects`. Where the file holds a document of its kind and name: `stop KIND/NAME made-by=engine ACC-024` for a Conduit, or with OBJ-002 for another object; no flag permits it | ACC-024, FLEET-005, CON-008, OBJ-002; safety case 13 |
 | 7 | A retired instance whose shutdown is unconfirmed: one this working copy retired, or one the file holds that this working copy did not retire | A further retirement under the flag that permitted the retirement, which this command names again (LIF-026); never `unregister.v1` (LIF-017). Without the flag: `stop KIND/NAME state=retired requires=FLAG NAME LIF-026`. For an instance that `--prune` named, once it is removed, `unregister.v1` of its inline template `N--t` follows under the same flag, as row 15 says. Where the file holds an instance that this working copy did not retire, because another actor retired it or its node was declared lost (PLC-017, PLC-024): `stop KIND/NAME state=retired LIF-024`, with no `requires=`. No later row decides it; once its shutdown is confirmed, row 11 does (safety case 3) | LIF-024, LIF-026, LIF-017 |
 | 8 | An instance this working copy registered that is still registered: an earlier apply stopped before its setup or open | Where no place of it differs from the file's: inspect and verify it, then set it up or open it under the flag its registration carried, as the journal shows. Where that was a flag this command does not name: `stop KIND/NAME state=registered requires=FLAG NAME LIF-013`. Where a place differs, rows 17 to 26 decide it | LIF-013, LIF-037, TPL-012 |
@@ -440,11 +441,15 @@ The difference table makes planning total, not applying atomic. A step can still
 earlier steps succeeded; apply then stops, prints `not sent N..M`, exits 1 and rolls nothing
 back, and the next plan starts from what the engine shows.
 
-For unknown, show the invocation ID from the result or LIF-013's `unreconciled`, the affected
-objects and the steps withheld. Refuse a plan that would mutate, replace or reactivate an affected
-object until an actor explicitly reconciles it (OPS-012 to OPS-014); this planner sends no
-reconcile. Even where OPS-012 permits a deduplicating retry, it does not do one automatically.
-Unrelated work can be planned separately, with the unknown difference printed.
+For unknown, show the invocation ID from the result, LIF-013's `unreconciled` or, for a setting,
+`status.settings` (REV-009), the affected objects and the steps withheld. For an `unreconciled=`
+line, refuse a plan that would mutate, replace or reactivate an affected object until an actor
+explicitly reconciles the invocation (OPS-012 to OPS-014); this planner sends no reconcile.
+Reconciling the invocation does not clear a setting's stop. To clear it, explicitly send a
+control a value for POINTER or a setting that contains it and obtain success other than by
+reconciliation (REV-007, REV-010), then plan again. Apply never sends that control. Even where
+OPS-012 permits a deduplicating retry, it does not do one automatically. Unrelated work can be
+planned separately, with the unknown difference printed.
 
 Repeating an identical plan is not permission to repeat its effects. Each request key is
 `plan:<hex digest>:<attempt>:<step>`, carried in
@@ -547,11 +552,11 @@ stop SUBJECT CAUSE... [requires=REMEDY] PROMISE
 
 SUBJECT is `KIND/NAME` for an object, `Package/ADDRESS` for a package, or `Manifest/-` for the
 project's manifest. CAUSE is one or more `key=value` items, as the row of the difference table
-gives them. The keys are `place`, `setting`, `pin`, `control`, `tombstone`, `id`, `revision`,
-`absent`, `state`, `unreconciled`, `made-by`, `changed-by`, `installed`, `archive`, `version`,
-`digest` and `rule`. `requires=` gives the flag and its operand that would permit the step, or
-`conduit-install`; it is absent where nothing would. PROMISE is the promise that decides, or
-`-` where none does.
+gives them. The keys are `place`, `setting`, `pin`, `control`, `invocation`, `tombstone`, `id`,
+`revision`, `absent`, `state`, `unreconciled`, `made-by`, `changed-by`, `installed`, `archive`,
+`version`, `digest` and `rule`. `requires=` gives the flag and its operand that would permit the
+step, or `conduit-install`; it is absent where nothing would. PROMISE is the promise that
+decides, or `-` where none does.
 
 A plan prints one stop line for each cause. Stop lines follow the steps and their `detail`
 lines and come before `affects`, sorted by subject and then by the whole line, in byte order.

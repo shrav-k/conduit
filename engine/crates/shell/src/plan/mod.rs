@@ -146,6 +146,35 @@ pub struct Ledger {
     registration_flags: BTreeMap<String, BTreeSet<Approval>>,
     replacements: BTreeMap<String, ReplacementJournal>,
     current_files: Option<Value>,
+    prune_attempts: BTreeMap<String, String>,
+    adopted: BTreeSet<String>,
+    cascades: BTreeMap<Name, KeptCascade>,
+}
+
+#[derive(Clone, Debug)]
+struct KeptCascade {
+    id: String,
+    container: Name,
+    approval: Approval,
+    temporary_done: bool,
+    retirement: Option<CascadeRetirement>,
+}
+
+#[derive(Clone, Debug)]
+struct CascadeRetirement {
+    objects: BTreeMap<Name, String>,
+    templates: BTreeMap<Name, String>,
+    confirmed: bool,
+}
+
+impl KeptCascade {
+    fn finished(&self) -> bool {
+        self.temporary_done
+            && self
+                .retirement
+                .as_ref()
+                .is_none_or(|retirement| retirement.confirmed && retirement.templates.is_empty())
+    }
 }
 
 #[derive(Debug)]
@@ -319,6 +348,7 @@ pub struct Plan {
     pub affected_bounds: BTreeSet<String>,
     bounds_added: BTreeSet<String>,
     signed_out: BTreeSet<Name>,
+    retirement_affects: Vec<String>,
 }
 
 impl Plan {
@@ -391,6 +421,9 @@ impl Plan {
                 .unwrap();
             }
             text.push('\n');
+        }
+        for affect in &self.retirement_affects {
+            writeln!(text, "{affect}").unwrap();
         }
         for difference in &self.differences {
             writeln!(text, "{difference}").unwrap();

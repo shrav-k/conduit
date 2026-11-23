@@ -64,12 +64,12 @@ const COMMANDS: [(&str, &str, &str); 17] = [
     ),
     (
         "plan",
-        "[PROJECT_DIR] [--reopen OBJECT] [--recreate OBJECT] [--replace OBJECT]",
+        "[PROJECT_DIR] [--reopen OBJECT] [--recreate OBJECT] [--prune OBJECT] [--replace OBJECT] [--adopt OBJECT] [--with-resources OBJECT] [--with-agents OBJECT]",
         "plan --replace shared",
     ),
     (
         "apply",
-        "[PROJECT_DIR] [--reopen OBJECT] [--recreate OBJECT] [--replace OBJECT]",
+        "[PROJECT_DIR] [--reopen OBJECT] [--recreate OBJECT] [--prune OBJECT] [--replace OBJECT] [--adopt OBJECT] [--with-resources OBJECT] [--with-agents OBJECT]",
         "apply --replace shared",
     ),
 ];

@@ -1059,3 +1059,242 @@ fn review_248_affects_uses_effective_coverage_and_held_type() {
             .contains(&agent)
     );
 }
+
+#[test]
+fn plan_apply_prune_removes_templates_and_retries() {
+    let mut f = Fixture::default();
+    let template = Name::new("Conduit", "unused");
+    f.observed(&template, object("template", json!({})));
+    let approval = BTreeSet::from([Approval::new("--prune", "unused")]);
+    let plan = compare::plan(&f.file, &f.kept, &f.engine, &approval);
+    assert!(
+        plan.text()
+            .contains("management.unregister.v1 Conduit/unused"),
+        "approved standalone template removal needs unregister.v1"
+    );
+
+    let instance = Name::new("Resource", "history");
+    let mut old = object("retired", json!({"owner":"team"}));
+    old.status = json!({"shutdown":"pending"});
+    f.observed(&instance, old);
+    // Recover the permission of a dispatched retirement from its kept journal.
+    let dir = tempfile::tempdir().unwrap();
+    let base = dir.path().join(".conduit");
+    std::fs::create_dir_all(base.join("plans")).unwrap();
+    std::fs::create_dir_all(base.join("results")).unwrap();
+    let recorded = "plan\nflags [--prune history]\nready\n";
+    let digest = bytes_digest(recorded.as_bytes());
+    let hex = digest.trim_start_matches("sha256:");
+    std::fs::write(base.join(format!("plans/{hex}.txt")), recorded).unwrap();
+    std::fs::write(
+        base.join(format!("results/{hex}.yaml")),
+        json!({"attempt":1,"entries":[{
+        "tool":"team.retire.v1","flag":"--prune history","retirementDispatched":true,
+        "arguments":{"instance":instance.reference(),"expectedId":ID},
+        "result":{"outcome":"failed","invocation":"retirement"}}]})
+        .to_string(),
+    )
+    .unwrap();
+    std::fs::write(base.join("state.yaml"), json!({"format":1,"objects":[["Resource","history",ID,"r1","retired",{"owner":"team"},[]]],
+        "files":{},"plans":[digest],"tombstones":[],"journals":{(digest.clone()):format!(".conduit/results/{hex}.yaml")}}).to_string()).unwrap();
+    f.kept = Ledger::read(&base.join("state.yaml")).unwrap();
+    f.observed(
+        &Name::new("Resource", "history--t"),
+        object("template", json!({})),
+    );
+    let plan = compare::plan(&f.file, &f.kept, &f.engine, &BTreeSet::new());
+    assert!(
+        plan.text()
+            .contains("state=retired requires=--prune history LIF-026")
+    );
+    let plan = compare::plan(
+        &f.file,
+        &f.kept,
+        &f.engine,
+        &BTreeSet::from([Approval::new("--prune", "history")]),
+    );
+    assert!(plan.stops.is_empty());
+    assert_eq!(
+        plan.steps
+            .iter()
+            .map(|s| s.tool.as_str())
+            .collect::<Vec<_>>(),
+        [
+            "team.retire.v1",
+            "management.unregister.v1",
+            "management.list.v1"
+        ]
+    );
+}
+
+#[tokio::test]
+async fn review_249_bare_apply_does_not_open_an_adopted_conduit() {
+    let mut f = Fixture::default();
+    let name = Name::new("Conduit", "grant");
+    let view = object("registered", json!({}));
+    f.engine.objects.insert(name.clone(), view.clone());
+    f.want(&name, view);
+    let directory = tempfile::tempdir().unwrap();
+    let plan = compare::plan(
+        &f.file,
+        &f.kept,
+        &f.engine,
+        &BTreeSet::from([Approval::new("--adopt", "grant")]),
+    );
+    assert_eq!(
+        apply::execute(directory.path(), &plan, f.kept, async |tool, _, _| {
+            assert_eq!(tool, "management.inspect.v1");
+            Ok(
+                json!({"_meta":{"io.github.shrav-k.conduit/outcome":"succeeded"},
+            "structuredContent":{"id":ID,"revision":"r1","declared":{},"packages":[],
+                "status":{"state":"registered"}}}),
+            )
+        })
+        .await,
+        0
+    );
+    let kept = Ledger::read(&directory.path().join(".conduit/state.yaml")).unwrap();
+    let plan = compare::plan(&f.file, &kept, &f.engine, &BTreeSet::new());
+    assert!(
+        !plan
+            .steps
+            .iter()
+            .any(|step| step.tool.ends_with(".open.v1")),
+        "bare apply must not open a foreign grant taken into the ledger by adoption"
+    );
+    assert_eq!(
+        apply::execute(directory.path(), &plan, kept, async |_, _, _| {
+            panic!("bare apply must send nothing for the adopted registered grant")
+        })
+        .await,
+        0
+    );
+}
+
+#[test]
+fn review_249_settled_setting_ignores_old_unknown_record() {
+    let mut f = Fixture::default();
+    let name = Name::new("Resource", "shared");
+    let mut observed = object("ready", json!({"resolved":{"config":{"limit":10}}}));
+    observed.status = json!({"unreconciled":[]});
+    observed
+        .unknown_endings
+        .insert("old-unknown".into(), "configure.v1".into());
+    f.observed(&name, observed.clone());
+    observed.definition["resolved"]["config"]["limit"] = json!(20);
+    f.want(&name, observed)
+        .controls
+        .insert("/limit".into(), BTreeSet::from(["configure.v1".into()]));
+    let plan = compare::plan(
+        &f.file,
+        &f.kept,
+        &f.engine,
+        &BTreeSet::from([Approval::new("--replace", "shared")]),
+    );
+    assert!(
+        !plan.text().contains("REV-009"),
+        "a settled setting must not stop the replacement"
+    );
+}
+
+#[test]
+fn review_249_foreign_retired_object_reports_a_stop() {
+    let mut f = Fixture::default();
+    let name = Name::new("Resource", "history");
+    let mut view = object("retired", json!({}));
+    view.status = json!({"shutdown":"confirmed"});
+    f.engine.objects.insert(name.clone(), view.clone());
+    f.want(&name, view);
+    f.line("stop Resource/history state=retired rule=none -");
+}
+
+#[test]
+fn plan_apply_with_resources_stops_and_cleans_up() {
+    let mut f = Fixture::default();
+    let pool = Name::new("Pool", "team");
+    let member = Name::new("Resource", "history");
+    let grant = Name::new("Conduit", "cascade-team");
+    f.observed(&pool, object("ready", json!({})));
+    let mut old = object("ready", json!({"owner":"team"}));
+    old.id = "00000000-0000-4000-8000-000000000002".into();
+    old.status = json!({"unreconciled":["unknown-call"]});
+    f.observed(&member, old);
+    let approved = BTreeSet::from([Approval::new("--with-resources", "team")]);
+    let plan = compare::plan(&f.file, &f.kept, &f.engine, &approved);
+    assert!(
+        plan.text()
+            .contains("stop Resource/history unreconciled=unknown-call OPS-013")
+    );
+    assert!(
+        plan.steps
+            .iter()
+            .any(|step| step.tool == "cascade-team.retire-with-resources.v1"),
+        "cascade is planned before the row 5 stop withholds it"
+    );
+
+    let mut current = object(
+        "ready",
+        json!({
+            "from":format!("{CORE}#retire-pool"),"consumer":{"kind":"Interface","name":"root"},
+            "target":pool.reference(),"as":grant.name
+        }),
+    );
+    current.id = "00000000-0000-4000-8000-000000000003".into();
+    f.engine.objects.insert(grant.clone(), current.clone());
+    f.engine.objects.get_mut(&member).unwrap().status = Value::Null;
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("state.yaml"),
+        json!({"format":1,
+        "objects":[["Pool","team",ID,"r1","ready",{},[]],
+            ["Resource","history",f.engine.objects[&member].id,"r1","ready",{"owner":"team"},[]]],
+        "files":{},"plans":[],"tombstones":[],"journals":{},"cascades":[{
+            "conduit":grant.reference(),"id":current.id,"container":pool.reference(),
+            "flag":"--with-resources team"}]})
+        .to_string(),
+    )
+    .unwrap();
+    f.kept = Ledger::read(&dir.path().join("state.yaml")).unwrap();
+    let plan = compare::plan(&f.file, &f.kept, &f.engine, &approved);
+    assert!(plan.stops.is_empty());
+    assert_eq!(
+        plan.steps
+            .iter()
+            .take(4)
+            .map(|step| step.tool.as_str())
+            .collect::<Vec<_>>(),
+        [
+            "management.inspect.v1",
+            "access.close.v1",
+            "management.list.v1",
+            "access.lift.v1"
+        ]
+    );
+    let bare = compare::plan(&f.file, &f.kept, &f.engine, &BTreeSet::new());
+    assert!(bare.steps.iter().any(|step| step.tool == "access.close.v1"));
+    assert!(!bare.steps.iter().any(|step| step.tool == "access.lift.v1"));
+    let template = Name::new("Resource", "history--t");
+    let mut template_view = object("template", json!({}));
+    template_view.id = "00000000-0000-4000-8000-000000000004".into();
+    f.observed(&template, template_view);
+    f.engine.objects.remove(&member);
+    let resumed = compare::plan(&f.file, &f.kept, &f.engine, &approved);
+    assert!(resumed.stops.is_empty());
+    assert!(resumed.steps.iter().any(|step| step.subject == template
+        && step.tool == "management.unregister.v1"
+        && step.action.approvals == approved));
+    f.engine.objects.get_mut(&grant).unwrap().id = "another-id".into();
+    let changed = compare::plan(&f.file, &f.kept, &f.engine, &approved);
+    assert!(
+        changed
+            .stops
+            .iter()
+            .any(|stop| stop.starts_with("stop Conduit/cascade-team "))
+    );
+    assert!(
+        !changed
+            .steps
+            .iter()
+            .any(|step| step.subject == grant && step.tool.ends_with(".close.v1"))
+    );
+}

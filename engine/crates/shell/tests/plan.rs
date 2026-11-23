@@ -168,27 +168,6 @@ async fn plan_stops_on_another_engine_version() {
     engine.close().await;
 }
 
-#[test]
-fn plan_refuses_unbuilt_flags() {
-    let dir = tempfile::tempdir().unwrap();
-    for flag in ["--prune", "--adopt", "--with-resources", "--with-agents"] {
-        for command in ["plan", "apply"] {
-            let out = binary(dir.path(), dir.path())
-                .args([command, flag, "object"])
-                .output()
-                .unwrap();
-            assert_eq!(out.status.code(), Some(2));
-            assert!(out.stdout.is_empty());
-            assert_eq!(
-                String::from_utf8(out.stderr).unwrap(),
-                format!(
-                    "conduit {command}: {flag} is not built yet; plan without it prints the stop that needs it\n"
-                )
-            );
-        }
-    }
-}
-
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn plan_secret_literal_leaves_no_trace() {
     let engine = Engine::start().await;
@@ -632,9 +611,9 @@ async fn review_a_03_live_inspection_cannot_confirm_a_reconciled_control_setting
         "{}",
         String::from_utf8_lossy(&out.stderr)
     );
-    let wanted = format!(
-        "stop Resource/reader setting=/limit control=example.org/control#set-limit.v1 invocation={control_id} inspection=unknown-settings-not-built REV-009"
-    );
+    // Reconciliation settled the invocation but not the setting: the engine's status still
+    // holds `/limit` as unknown (REV-009), and plan stops on it.
+    let wanted = "stop Resource/reader setting=/limit state=unknown REV-009";
     assert!(
         stdin_free(&out).lines().any(|line| line == wanted),
         "missing REV-009 stop for the live control history"

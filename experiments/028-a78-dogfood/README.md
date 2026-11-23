@@ -1125,3 +1125,158 @@ new documents and an amendment, as [the registration](#pair-4-by-measurement) sa
 an Agent placed on another machine. An account added changes the account map, which ends stage 3
 unless a dated amendment merged before says otherwise. Stage 3 still claims nothing about speed
 (D54).
+
+## Amendment of 2026-11-23: stage 3's setup, steps 1 to 9
+
+Amended on 2026-11-23 (PST), before stage 3's first turn, as
+[the registration](#before-the-sitting-and-at-it) asks: steps 1 to 9 with their evidence, from the
+store's setup and serve logs, its records and the coordinator's notes (private). The coordinator
+wrote it outside every turn. The bar on orders that change this directory covers orders sent
+through the Fleet
+([DEC-057](../../docs/decisions/log.md#dec-057-2026-11-22-order-235s-change-was-no-breach)), so
+this breaches nothing. Paths are written `<slot-N>`, `<codex-path>` and `<claude-path>`, and no
+account value appears. Times are PST. *Coordinator's* marks a line open to the owner's strike
+(ruling 92, point 6).
+
+**The setup, in the order it was done**, on 2026-11-22:
+
+- **Before the switch.** Serve on the engine at `b897d316` was stopped, and the records were
+  exported at 13:18: 2,482 lines, nothing on the error output. It was the old engine's last export.
+- **Step 1.** The dogfood engine was built at `M`, `933eae2210d640d6d9b34f9b2bf282da8673a279`.
+  `git merge-base --is-ancestor` exits 0 at `M` for seven commits: orders 258 (`37c10930`), 260
+  (`2194bb0b`), 262 (`97a4b721`), 269 (`dc172970`), 277 (`4f14b1db`) and 279 (`faddf9c6`), and
+  [the amendment of 2026-11-22](#amendment-of-2026-11-22-stage-3-under-dec-068-to-dec-071)
+  (`14d89630`). Serve started on it at 13:21:30, by hand under `env -i`, with a call timeout of
+  15000 s, above the workers' 14400 s deadline. It printed its ready line, raised no action, and
+  opened the store made at `b897d316` with stage 2's five Agents set up. Codex 0.167.1 at
+  `<codex-path>` and Claude Code 2.1.318 at `<claude-path>`, read from their package files at
+  13:35, and read again at 18:19, unchanged. They read the same again on 2026-11-23 at about 08:05, before the first sign-in.
+- **The render.** 277's documents were rendered at `M` by a one-time Python script (a gap,
+  below). It filled every placeholder but the accounts and wrote each account line with its
+  placeholder. Each folder was read back against its values, with only the account placeholders
+  left. The two schemas went in as they are at `M`: `<report-schema>` with SHA-256
+  `a10a24a0bce7a102d9864a708ae6938277ef0cf2a76b3cf3c32dd9bfb3a11e5d` and `<verify-schema>` with
+  `2dfe62ff7517965078ca9aedd587369a0c5143f2f2f69e4c02076029477ed36b`. For `<codex-model>`: stage
+  2's four Codex Agents declare the model `""`, read from one field of the store's inspection, so
+  stage 2 ran on the client's own default. The render took `gpt-6.1-sol` as a candidate, first in
+  the model catalog compiled into the installed Codex client. `<slot-3>`, `<slot-4>` and `<slot-d>` were cloned at `M`, each with no change.
+- **Step 2.** At about 14:2x, agent-codex 0.2.5,
+  `sha256:143b69af6ddd6f8ae3d458513ad994df79b285c4b6d678ffa6093f02040f0008`, and
+  agent-claude-code 0.2.5,
+  `sha256:fbf4ed90d15998308e889f2c7391ab4ac41bd82a92f3d699e320e0ede89973c9`, both built at `M`,
+  were installed into stage 2's store, each by a dry run and then the install. Both dry runs and both installs exited 0, between about 14:20 and 14:22; the coordinator's notes keep no closer time. The gate's builds of 0.2.5 in two other directories gave the same two
+  digests. Stage 2 had ended at order 239's merge
+  ([DEC-059](../../docs/decisions/log.md#dec-059-2026-11-22-stage-2-ended-at-order-239s-merge)),
+  and stage 3 had taken no turn, so the install came at a stage boundary
+  ([DEC-080](../../docs/decisions/log.md#dec-080-2026-11-22-the-per-node-chain-is-finished-now)).
+  The amendment of 2026-11-22, merged before it, says step 2's install ends nothing
+  ([DEC-070](../../docs/decisions/log.md#dec-070-2026-11-22-stage-3-is-judged-on-access)).
+  *Coordinator's*: the registration's 0.2.4 is read as 0.2.5, which that amendment's "whatever
+  release `main` then carries" allows. Condition 10 is read by the installed release's README.
+  From `4f14b1db` to `933eae22` neither package README's "Usage in each turn's result" section
+  changed, so condition 10 still judges no order of stage 3.
+- **Step 3, `base/`.** Submitted at about 14:22, before any account was written. The
+  registration, the open of `Conduit/root-logins` and the setup of `Pool/logins` each succeeded,
+  with no rule ID. Root's tools then held seven `root-logins.*` and nine `logins.*`, and no action
+  was pending.
+- **Step 4 asked.** At 14:33 the coordinator asked the owner in chat to
+  type the account line in each login Resource's copy, `primary-chatgpt`'s included (below), and
+  to give each account's plan and weekly reset day by label.
+- **16:14, a restart that is not step 9.** At 15:03 the coordinator cancelled a turn of stage 2's
+  `verifier-2`. Its session then refused an implicit restart, and its next turn failed at once, at
+  15:58. Stage 2's Conduits from root grant only `turn.v1`, so only a restart of serve freed it.
+  With no turn in flight, the coordinator exported the records (2,904 lines) and restarted serve
+  at 16:14:17 by step 1's command line in a shell wrapper. Turns went on at 16:15. After it all five turn tools answered, serve's error output was empty and no action was pending. It came after step 2 and `base/`, and step 9 follows step 8, so it is not
+  step 9.
+- **The model, about 18:25 to 18:38.** The owner struck `gpt-6.1-sol` for `gpt-6-astra`.
+  `base/` was rendered again with it into a new folder and read back against its values, and the
+  `worker-role` and `verifier-role` templates were replaced from that folder, each succeeding
+  with no action pending. Both read `gpt-6-astra` at 18:38. No Agent of stage 3 existed yet, so
+  no instance moved. In the same answers the owner gave each account's plan by label, kept in the
+  coordinator's notes (private). No reset day was given then.
+- **Steps 5 and 6.** *Coordinator's*: step 5's signal was the owner's message of about 17:50,
+  which gave about 19:00 for the sitting. From 18:38, with no turn in flight, `worker-1`,
+  `verifier-1`, `worker-2` and `verifier-2` were retired one at a time, from 18:39 to 18:40. Each
+  exited 0 with outcome `succeeded`. The stat line of the everyday Codex login file, which was
+  never opened, was equal before and after each. Their four tombstones were lifted, and with them
+  those of root's `turn-worker-1`, `turn-verifier-1`, `turn-worker-2` and `turn-verifier-2`. None
+  of the eight was then listed. `reader-1` and `turn-reader-1` stayed, and no action was pending.
+  The everyday Claude login and a revocation by the vendor are not shown. From then on no Codex
+  lane ran.
+- **The postponement.** At about 18:56 the owner moved the sitting to the morning of 2026-11-23.
+- **Step 3's Resource, `primary-chatgpt`.** It came after steps 5 and 6, not before them as the
+  registration lists it. *Coordinator's*: neither depends on the other, and the coordinator had
+  extended
+  [DEC-068](../../docs/decisions/log.md#dec-068-2026-11-22-the-second-account-sitting-runs-by-hand-tonight)'s
+  by-hand typing, which names only the two second accounts, to `primary-chatgpt`. The owner chose
+  otherwise. At about 19:59 the owner gave the account in chat, the coordinator showed it back,
+  the owner confirmed it, and the coordinator wrote it into the copy, as
+  [the registration](#stage-3s-documents) has it write a value it is given. The line was not read back against that value; only the checks below ran. The coordinator has seen that one account value, only in
+  that chat. The copy passed the checks: mode 600, one `account:` line holding one double-quoted
+  value, no placeholder or angle bracket. At 20:00 its registration and
+  `setup Resource/primary-chatgpt` succeeded with no rule ID. The setup found no login and raised
+  one sign-in action at root, the only one pending.
+- **No sign-in that night.** At about 23:54 the owner said that no account signs in that night.
+  Its action was still pending at the first sign-in the next morning.
+
+**At the sitting, 2026-11-23:**
+
+- **Step 4, the second accounts.** At about 08:30 the owner gave the two second accounts' lines in
+  chat, as for `primary-chatgpt`: the coordinator showed both back, the owner confirmed them, and
+  the coordinator wrote each into its copy. Neither was read back against the value; both copies
+  passed the checks. No weekly reset day was given; each account's week is measured from its first
+  use.
+- **The owner's ruling before the team accounts.** The owner ruled that a usage guard is a
+  feature Conduit offers, declared on the login Resource with explicit flags, and that no Agent on
+  a team seat (`second-chatgpt`'s pairs 3 and 4, `second-claude`'s `reader-a` and `drafter`) takes
+  a turn until it is built and merged. *Coordinator's*: this holds those Agents back further than
+  [DEC-069](../../docs/decisions/log.md#dec-069-2026-11-22-pairs-1-and-2-and-one-reader-take-turns-first)
+  does; `reader-1` keeps the reads on the primary Claude account meanwhile, and step 10 waits.
+- **Step 7.** `primary-chatgpt` signed in at 08:11: outcome `succeeded`, the account present and
+  answered signed in, no action pending after. Before `second-chatgpt`'s first use the
+  coordinator gave its notice; its submission and setup succeeded at 08:31 with its one sign-in
+  action pending, and it signed in at 08:47, `succeeded`, nothing pending after. Then the same for
+  `second-claude`: its notice, the owner's "go", its submission and setup at 08:49, and its
+  sign-in at 08:51, `succeeded`, nothing pending after; the owner mentioned no Keychain dialog.
+  The everyday Codex login's stat line was equal before and after each.
+- **Step 8.** At 09:12 the ten Agents and root's ten Conduits to them were submitted in one
+  registration: the registration, the ten opens and the ten setups each succeeded, with no rule
+  ID and no action pending, and root's tools held the twenty `root-*` tools.
+- *Coordinator's*: stage 3's first turn is read as the first turn of a stage-3 order, which
+  [the registration](#stage-3-registered-before-its-first-turn) places after step 9's restart.
+  The smoke turns, outside every order, are not it, and no install was made after the first of
+  them.
+- **The smoke turns.** *Coordinator's*: they are recorded here as setup evidence, outside every
+  order of stage 3. `worker-1` alone (ending 09:12:53); then `verifier-1`, `worker-2` and
+  `verifier-2` at once (09:14:28 to 09:15:04), the first parallel use of one shared login; then a
+  second turn on `worker-1` in the same conversation (09:15:18). Each exited 0 with a structured
+  report naming its own working copy and no change, the second naming the first. Each end record
+  holds `usage`, with client 0.167.1 and the model `gpt-6-astra`; none holds `limits`. `reader-a`
+  took none, by the owner's ruling above.
+- **Step 9.** The records were exported before the TERM: 3,983 lines, nothing on the error
+  output. The TERM went at 09:15:57; serve exited after 44 s and printed its ready line 183 s
+  after the TERM (stage 2's restarts took 19 to 24 s). Every instance came back ready with its
+  setup `succeeded`, no action was pending, and root's tools held the twenty, `turn-reader-1`,
+  seven `root-logins.*` and nine `logins.*`.
+- The owner stopped no account; the account map is as registered.
+
+**The records exports** stay uncommitted until scrubbed. Each is then committed as
+[DEC-058](../../docs/decisions/log.md#dec-058-2026-11-22-records-exports-committed-by-order)
+says: every account name replaced by its label, checked by the private-paths guard, and split
+into each order's results directory. They are 13:18 on 2026-11-22, 2,482 lines; 16:14, 2,904
+lines; the smoke turns', 3,983 lines; and step 9's, 3,983 lines. *Coordinator's*: the parts that belong to no
+order, the smoke turns among them, stay uncommitted unless the owner rules otherwise.
+
+**Turns outside both stages.** Every turn on stage 2's Agents after order 239's merge, those on
+the engine at `M` included, belongs to neither stage (DEC-059). The coordinator's notes list each order whose turns ran on stage 2's Agents after that merge. Orders 292 and 295 had their first turns before step 9, so they are not stage 3's (the
+registration). *Coordinator's*: their reads and fixes go to stage 3's Agents only after this
+amendment merges, and count toward neither stage 3's first five orders nor pair 4's five.
+
+**Gaps**, each in the coordinator's notes (private), to be ordered as engine and package work
+(ruling 92, points 2 and 9): the engine and archives built by the retired harness's setup step;
+serve started and restarted by hand, by step 1's command line in a shell wrapper; the render, by
+a one-time Python script, against
+[HOW-WE-WORK's rule 2](../../HOW-WE-WORK.md#1-the-rules-of-the-work) (ruling 92, point 2); the
+working copies cloned by hand; the account lines' copies and their checks, until `value.v1`
+(DEC-076) replaces them (DEC-068); and a cancelled turn on a stage-2 Agent, which only a restart
+of serve cleared.

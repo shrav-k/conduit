@@ -1132,3 +1132,35 @@ Owner's words: the address clients connect to -> "Plain http on loopback (Recomm
 Lands in: clients reach the engine over plain http on loopback, with the risk while serve is down documented; TLS on loopback later, the store's CA in the client's file
 
 Status: accepted, not done (the documentation; TLS later)
+
+## DEC-132, 2026-11-23, DEC-111 frees packages only
+
+Owner's words: whether "only the runtime engine must be Rust" also frees experiments and tooling -> "Packages only (Recommended)"
+
+Lands in: the engine is Rust; a package may be written in any language; experiments and the coordinator's tooling stay Rust, and orchestration around the engine stays an engine gap written as orders; narrows DEC-111
+
+Status: accepted, not done (order 306)
+
+## DEC-133, 2026-11-23, model-driven programs keep root until their Interface lands
+
+Owner's words: the transition DEC-128 leaves -> "Confirm (Recommended)"
+
+Lands in: until model-driven programs have an Interface of their own, the coordinator and the workers keep acting as root through the CLI, and no model runs a sign-in or an enrollment; the owner does those at the owner's own terminal; confirms DEC-128's reading
+
+Status: accepted, not done (ends with the model-driven Interface's orders)
+
+## DEC-134, 2026-11-23, a turn's record is readable through its login's Pool
+
+Owner's words: whether naming the login in a turn's record widens who may read it -> "Accept (Recommended)"
+
+Lands in: a model turn's end record that names a login Resource (DEC-117) is visible to whoever may inspect that login's Pool, and to management, beside the Agent's side
+
+Status: accepted, not done (order 305 and its engine order)
+
+## DEC-135, 2026-11-23, the usage guard's probe runs at a sitting on 2026-11-24
+
+Owner's words: when the guard's first probe runs -> "Tomorrow morning (Recommended)"
+
+Lands in: the probe (A0 of the guard's design) is written on 2026-11-23 and run with the owner present on the morning of 2026-11-24; it reads each team seat's usage and does no model work unless the owner says so (DEC-102)
+
+Status: accepted, not done (the probe's order, then the sitting)

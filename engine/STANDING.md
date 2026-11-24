@@ -41,9 +41,9 @@ Each number counts promises. The last row counts those whose Engine source is no
 
 | Promises | language | convention | interface | all |
 | --- | ---: | ---: | ---: | ---: |
-| case passes | 152 | 163 | 30 | 345 |
+| case passes | 153 | 163 | 30 | 346 |
 | expected failure | 0 | 3 | 0 | 3 |
-| reason, no case | 52 | 17 | 1 | 70 |
+| reason, no case | 51 | 17 | 1 | 69 |
 | no case, no reason | 22 | 63 | 19 | 104 |
 | all | 226 | 246 | 50 | 522 |
 | named in engine source | 162 | 175 | 33 | 370 |
@@ -267,11 +267,11 @@ Each number counts promises. The last row counts those whose Engine source is no
 | MAN-005 | language | must | 0 | 0 | reason | none | reason, no case |
 | MAN-006 | language | must | 1 | 0 | cases | loader, core | case passes |
 | MAN-007 | language | must | 1 | 0 | cases | core | case passes |
-| MAN-009 | language | must | 0 | 0 | reason | none | reason, no case |
-| MAN-010 | language | must | 8 | 0 | cases | loader, core | case passes |
+| MAN-009 | language | must | 2 | 0 | reason | none | case passes |
+| MAN-010 | language | must | 9 | 0 | cases | loader, core | case passes |
 | MAN-011 | language | must | 16 | 0 | cases | loader, core, shell | case passes |
 | MAN-012 | language | must | 0 | 0 | reason | shell | reason, no case |
-| MAN-013 | language | must | 8 | 0 | cases | core | case passes |
+| MAN-013 | language | must | 9 | 0 | cases | core | case passes |
 | MAN-014 | language | must | 7 | 0 | cases | core, shell | case passes |
 | MAN-015 | language | must | 1 | 0 | cases | core | case passes |
 | MAN-016 | language | must | 6 | 0 | cases | core | case passes |
@@ -379,7 +379,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | PKG-020 | language | must | 12 | 3 | cases | core | case passes |
 | PKG-021 | language | must | 6 | 0 | cases | core | case passes |
 | PKG-022 | language | must | 15 | 0 | cases | core, shell | case passes |
-| PKG-023 | convention | must | 43 | 0 | cases | core, shell | case passes |
+| PKG-023 | convention | must | 44 | 0 | cases | core, shell | case passes |
 | PKG-024 | convention | must | 2 | 0 | cases | core | case passes |
 | PKG-025 | convention | must | 2 | 0 | cases | core, shell | case passes |
 | PKG-026 | language | must | 7 | 0 | cases | core | case passes |

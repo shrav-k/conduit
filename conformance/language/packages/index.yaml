@@ -415,6 +415,14 @@
       ]
     },
     {
+      "id": "packages-platforms-program",
+      "case": "language/packages/platforms-program/case.yaml",
+      "promises": [
+        "MAN-010",
+        "MAN-009"
+      ]
+    },
+    {
       "id": "packages-prerelease-mismatch",
       "case": "language/packages/prerelease-mismatch/case.yaml",
       "promises": [

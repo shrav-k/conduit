@@ -1,0 +1,159 @@
+{
+  "id": "packages-platforms-program",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "MAN-010",
+    "MAN-009"
+  ],
+  "title": "Platforms require a relative command and well-formed pairs",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "contracts.json": "contracts.json",
+    "absolute-manifest.json": "absolute-manifest.json",
+    "absolute.json": "absolute.json",
+    "bare-manifest.json": "bare-manifest.json",
+    "bare.json": "bare.json",
+    "conduit.json": "package-manifest.json",
+    "conduit.yaml": "empty-manifest.json",
+    "conduit.yml": "duplicate-manifest.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "absolute.json"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "diagnostics": [
+            {
+              "ruleId": "MAN-010",
+              "level": "error",
+              "message": {
+                "text": "server: platforms is stated beside /usr/bin/server, which is not a relative path"
+              }
+            }
+          ],
+          "reason": "invalid"
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "MAN-010"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "bare.json"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "diagnostics": [
+            {
+              "ruleId": "MAN-010",
+              "level": "error",
+              "message": {
+                "text": "server: platforms is stated beside server, which is not a relative path"
+              }
+            }
+          ],
+          "reason": "invalid"
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "MAN-010"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "conduit.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/implementations/server"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "conduit.yaml"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/implementations/server/platforms"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "conduit.yml"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/implementations/server/platforms"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

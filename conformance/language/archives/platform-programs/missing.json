@@ -1,0 +1,11 @@
+{
+  "name": "platforms-missing.tar.gz",
+  "address": "example.org/conformance/platforms",
+  "version": "1.0.0",
+  "digest": "sha256:7595a9593c38020c13f431fdbc015bb6106d27ba62a2a435033057b73ab65314",
+  "directory": "file:///archive/platforms/",
+  "completion": {
+    "status": "complete",
+    "file": "platforms-missing.tar.gz"
+  }
+}

@@ -965,6 +965,52 @@ fn rejected(diagnostics: Vec<Value>) -> Resolution {
         decisions: vec![d],
     }
 }
+pub(crate) fn relative_program(program: &str) -> bool {
+    program.contains('/') && !program.starts_with('/')
+}
+
+fn recognized_platform(pair: &str) -> bool {
+    let Some((os, arch)) = pair.split_once('/') else {
+        return false;
+    };
+    // MAN-010 and PRV-014 use the component values from Go's platform list
+    // (`go tool dist list`). Membership of each component is independent.
+    matches!(
+        os,
+        "aix"
+            | "android"
+            | "darwin"
+            | "dragonfly"
+            | "freebsd"
+            | "illumos"
+            | "ios"
+            | "js"
+            | "linux"
+            | "netbsd"
+            | "openbsd"
+            | "plan9"
+            | "solaris"
+            | "wasip1"
+            | "windows"
+    ) && matches!(
+        arch,
+        "386"
+            | "amd64"
+            | "arm"
+            | "arm64"
+            | "loong64"
+            | "mips"
+            | "mips64"
+            | "mips64le"
+            | "mipsle"
+            | "ppc64"
+            | "ppc64le"
+            | "riscv64"
+            | "s390x"
+            | "wasm"
+    )
+}
+
 fn expand_manifest(p: &Project, diagnostics: &mut Vec<Value>) -> Result<Value> {
     let mut m = manifest(p);
     let base = p
@@ -1002,10 +1048,22 @@ fn expand_manifest(p: &Project, diagnostics: &mut Vec<Value>) -> Result<Value> {
     }
     if let Some(implementations) = m["implementations"].as_object_mut() {
         for (name, item) in implementations {
-            if let Some(program) = item["command"][0].as_str()
-                && program.contains('/')
-                && !program.starts_with('/')
-            {
+            let Some(program) = item["command"][0].as_str() else {
+                continue;
+            };
+            if relative_program(program) {
+                for pair in item["platforms"]
+                    .as_array()
+                    .into_iter()
+                    .flatten()
+                    .filter_map(Value::as_str)
+                {
+                    if !recognized_platform(pair) {
+                        diagnostics.push(diag("MAN-010", format!(
+                            "{name}: platforms lists {pair}, which does not use recognized GOOS and GOARCH values (PRV-014)"
+                        )));
+                    }
+                }
                 if let Some(base) = &base {
                     let directory = percent_encoding::percent_decode_str(base.path().as_str())
                         .decode_utf8()
@@ -1023,6 +1081,13 @@ fn expand_manifest(p: &Project, diagnostics: &mut Vec<Value>) -> Result<Value> {
                         format!("{name}: relative program {program} has no directory"),
                     ));
                 }
+            } else if item.get("platforms").is_some() {
+                diagnostics.push(diag(
+                    "MAN-010",
+                    format!(
+                        "{name}: platforms is stated beside {program}, which is not a relative path"
+                    ),
+                ));
             }
         }
     }

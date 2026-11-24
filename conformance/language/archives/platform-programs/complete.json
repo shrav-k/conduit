@@ -1,0 +1,11 @@
+{
+  "name": "platforms-complete.tar.gz",
+  "address": "example.org/conformance/platforms",
+  "version": "1.0.0",
+  "digest": "sha256:0a3757376f08b6237a8cce568072e4e68b8d715db18b05f007dc93fe73442d9c",
+  "directory": "file:///archive/platforms/",
+  "completion": {
+    "status": "complete",
+    "file": "platforms-complete.tar.gz"
+  }
+}

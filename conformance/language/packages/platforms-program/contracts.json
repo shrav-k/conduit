@@ -1,0 +1,10 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Operation",
+    "metadata": {
+      "name": "probe.v1"
+    },
+    "spec": {}
+  }
+]

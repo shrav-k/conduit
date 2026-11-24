@@ -2,9 +2,9 @@
 mod archive;
 mod pin;
 
-use crate::{author, boundary, server, user_config};
+use crate::{author, boundary, server, store, user_config};
 use conduit_core::{
-    Context, Input, State,
+    Context, Input,
     archives::{ArchiveInput, FetchCompletion},
     packages::bytes_digest,
 };
@@ -490,8 +490,7 @@ impl Walk<'_> {
         if self.ordered.is_empty() {
             return Ok(());
         }
-        let mut snapshot: State = serde_json::from_value(author::state(directory)?)
-            .map_err(|_| "cannot read the engine's package snapshot")?;
+        let mut snapshot = store::read_stored(directory)?.state;
         let builtin = context.builtin.as_ref().ok_or("missing built-in package")?;
         for candidate in &self.ordered {
             let input = Input::InstallArchive {

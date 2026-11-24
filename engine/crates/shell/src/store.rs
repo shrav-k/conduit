@@ -1,13 +1,22 @@
 //! A process lease and one atomic, fsynced state file. Credential bytes live elsewhere.
 use crate::Result;
-use conduit_core::State;
+use crate::boundary::archive_metadata::unpack;
+use conduit_core::{
+    State,
+    archives::Member,
+    packages::{Snapshot, bytes_digest},
+};
 use fs2::FileExt;
 use serde::{Deserialize, Serialize};
 use std::fs::{self, DirBuilder, File, OpenOptions};
 use std::io::Write;
-use std::os::unix::fs::{DirBuilderExt, OpenOptionsExt, PermissionsExt};
+use std::os::unix::fs::{DirBuilderExt, FileTypeExt, OpenOptionsExt, PermissionsExt};
 use std::path::{Path, PathBuf};
-use std::{cell::RefCell, collections::BTreeMap, sync::Arc};
+use std::{
+    cell::RefCell,
+    collections::{BTreeMap, BTreeSet},
+    sync::Arc,
+};
 use uuid::Uuid;
 
 pub(crate) const VERSION: u32 = 1;
@@ -30,7 +39,128 @@ impl Default for Stored {
     }
 }
 
-pub(crate) fn private_directory(path: &Path) -> Result<()> {
+fn archive_hex(digest: &str) -> Result<&str> {
+    digest
+        .strip_prefix("sha256:")
+        .filter(|hex| {
+            hex.len() == 64
+                && hex
+                    .bytes()
+                    .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+        })
+        .ok_or_else(|| "invalid kept archive digest".into())
+}
+
+fn is_archive_directory(metadata: &fs::Metadata) -> bool {
+    metadata.is_dir() && metadata.permissions().mode() & 0o7777 == 0o700
+}
+
+fn read_archive(directory: &Path, package: &Snapshot) -> Result<BTreeMap<String, Member>> {
+    let archives = directory.join("packages");
+    let path = archives.join(archive_hex(&package.digest)?);
+    let error = |message: &str| {
+        format!(
+            "package {} {} archive {}: {message}",
+            package.address,
+            package.version,
+            path.display()
+        )
+    };
+    let metadata = |path: &Path| {
+        fs::symlink_metadata(path).map_err(|e| {
+            if e.kind() == std::io::ErrorKind::NotFound {
+                error("absent")
+            } else {
+                error(&e.to_string())
+            }
+        })
+    };
+    if !is_archive_directory(&metadata(&archives)?) {
+        return Err(error("packages must be a real directory with mode 0700"));
+    }
+    let meta = metadata(&path)?;
+    if !meta.is_file() {
+        let ty = meta.file_type();
+        let kind = if ty.is_dir() {
+            "directory"
+        } else if ty.is_symlink() {
+            "symbolic link"
+        } else if ty.is_fifo() {
+            "FIFO"
+        } else if ty.is_socket() {
+            "socket"
+        } else if ty.is_block_device() {
+            "block device"
+        } else {
+            "character device"
+        };
+        return Err(error(&format!("found {kind}, expected a regular file")));
+    }
+    let mode = meta.permissions().mode() & 0o7777;
+    if mode != 0o600 {
+        return Err(error(&format!("found mode {mode:04o}, expected 0600")));
+    }
+    let bytes = fs::read(&path).map_err(|e| error(&e.to_string()))?;
+    let found = bytes_digest(&bytes);
+    if found != package.digest {
+        return Err(error(&format!(
+            "found digest {found}, expected {}",
+            package.digest
+        )));
+    }
+    unpack(&bytes).map_err(|(rule, message)| error(&format!("{rule}: {message}")))
+}
+
+fn read_disk(directory: &Path) -> Result<(Stored, BTreeSet<String>)> {
+    let path = directory.join("state.json");
+    if !path.try_exists().map_err(|e| e.to_string())? {
+        return Ok((Stored::default(), BTreeSet::new()));
+    }
+    let bytes = private_read(&path)?;
+    // A valid document can already be 128 levels deep before State adds its
+    // own wrappers and held contexts. The loader governs authored document depth.
+    let mut deserializer = serde_json::Deserializer::from_slice(&bytes);
+    deserializer.disable_recursion_limit();
+    let mut header = serde_json::Value::deserialize(&mut deserializer)
+        .map_err(|_| "invalid store".to_string())?;
+    deserializer
+        .end()
+        .map_err(|_| "invalid store".to_string())?;
+    if header["version"] != VERSION {
+        return Err("unsupported store format version".into());
+    }
+    // Version 1 kept inline files even when empty. Omission denotes a kept copy;
+    // an unreferenced copy left by a failed commit does not migrate an old package.
+    let mut external = Vec::new();
+    if let Some(packages) = header
+        .pointer_mut("/state/installed_packages")
+        .and_then(serde_json::Value::as_array_mut)
+    {
+        for (index, entry) in packages.iter_mut().enumerate() {
+            if let Some(fields) = entry.as_object_mut()
+                && !fields.contains_key("files")
+            {
+                fields.insert("files".into(), serde_json::json!({}));
+                external.push(index);
+            }
+        }
+    }
+    let mut stored: Stored =
+        serde_json::from_value(header).map_err(|_| "invalid store state".to_string())?;
+    let mut kept = BTreeSet::new();
+    for index in external {
+        let entry = &mut stored.state.installed_packages[index];
+        entry.files = read_archive(directory, &entry.package)?;
+        kept.insert(entry.package.digest.clone());
+    }
+    Ok((stored, kept))
+}
+
+pub(crate) fn read_stored(directory: &Path) -> Result<Stored> {
+    read_disk(directory).map(|(stored, _)| stored)
+}
+
+fn create_store_directory(path: &Path) -> Result<fs::Metadata> {
     match DirBuilder::new().mode(0o700).create(path) {
         Ok(()) => {
             if let Some(parent) = path.parent() {
@@ -42,7 +172,11 @@ pub(crate) fn private_directory(path: &Path) -> Result<()> {
         Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {}
         Err(e) => return Err(e.to_string()),
     }
-    let metadata = fs::symlink_metadata(path).map_err(|e| e.to_string())?;
+    fs::symlink_metadata(path).map_err(|e| e.to_string())
+}
+
+pub(crate) fn private_directory(path: &Path) -> Result<()> {
+    let metadata = create_store_directory(path)?;
     if !metadata.is_dir() || metadata.permissions().mode() & 0o777 != 0o700 {
         return Err("store directories must be real directories with mode 0700".into());
     }
@@ -156,6 +290,7 @@ pub(crate) struct Store {
     _lease: File,
     // DL2: accessed only under Shell's writer mutex while this Store holds its lease.
     cached: RefCell<Option<Memory>>,
+    kept_archives: RefCell<BTreeSet<String>>,
     #[cfg(test)]
     pub fault: RefCell<Option<WriteFault>>,
     #[cfg(test)]
@@ -214,6 +349,7 @@ impl Store {
             directory,
             _lease: lease,
             cached: RefCell::new(None),
+            kept_archives: RefCell::new(BTreeSet::new()),
             #[cfg(test)]
             fault: RefCell::new(None),
             #[cfg(test)]
@@ -224,25 +360,20 @@ impl Store {
         Ok(store)
     }
     pub fn read(&self) -> Result<Stored> {
-        let path = self.directory.join("state.json");
-        if !path.try_exists().map_err(|e| e.to_string())? {
-            return Ok(Stored::default());
+        let (stored, kept) = read_disk(&self.directory)?;
+        self.kept_archives.replace(kept);
+        Ok(stored)
+    }
+
+    pub fn keep_archive(&self, digest: &str, bytes: &[u8]) -> Result<()> {
+        let archives = self.directory.join("packages");
+        let hex = archive_hex(digest)?;
+        if !is_archive_directory(&create_store_directory(&archives)?) {
+            return Err("packages must be a real directory with mode 0700".into());
         }
-        let bytes = private_read(&path)?;
-        // A valid document can already be 128 levels deep before State adds its
-        // own wrappers and held contexts. The loader, not serde's default JSON
-        // recursion limit, governs authored document depth.
-        let mut deserializer = serde_json::Deserializer::from_slice(&bytes);
-        deserializer.disable_recursion_limit();
-        let header = serde_json::Value::deserialize(&mut deserializer)
-            .map_err(|_| "invalid store".to_string())?;
-        deserializer
-            .end()
-            .map_err(|_| "invalid store".to_string())?;
-        if header["version"] != VERSION {
-            return Err("unsupported store format version".into());
-        }
-        serde_json::from_value(header).map_err(|_| "invalid store state".into())
+        atomic_write(&archives, hex, bytes)?;
+        self.kept_archives.borrow_mut().insert(digest.into());
+        Ok(())
     }
     fn load(&self) -> Result<()> {
         // DL2: a missing cache means open or a failed/consumed commit; disk is authoritative.
@@ -274,17 +405,32 @@ impl Store {
         state: &State,
         output_times: &BTreeMap<String, String>,
     ) -> std::result::Result<usize, StateWriteError> {
-        // DL2: identical version-1 field order and bytes, serialized from references.
+        // DL2: retain version-1 layout and inline files for legacy packages.
         self.cached.borrow_mut().take();
         #[derive(Serialize)]
-        struct StoredRef<'a> {
+        struct StoredRef<'a, S> {
             version: u32,
-            state: &'a State,
+            state: S,
             output_times: &'a BTreeMap<String, String>,
         }
+        #[derive(Serialize)]
+        struct PackageRef<'a> {
+            package: &'a Snapshot,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            files: Option<&'a BTreeMap<String, Member>>,
+        }
+        let kept = self.kept_archives.borrow();
+        let packages: Vec<_> = state
+            .installed_packages
+            .iter()
+            .map(|entry| PackageRef {
+                package: &entry.package,
+                files: (!kept.contains(&entry.package.digest)).then_some(&entry.files),
+            })
+            .collect();
         let bytes = serde_json::to_vec(&StoredRef {
             version: VERSION,
-            state,
+            state: state.with_installed_packages(&packages),
             output_times,
         })
         .map_err(|e| StateWriteError {

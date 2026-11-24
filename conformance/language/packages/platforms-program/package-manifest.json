@@ -1,0 +1,21 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "address": "example.org/conformance/platforms",
+  "implementations": {
+    "server": {
+      "implements": [
+        "#probe.v1"
+      ],
+      "platforms": [
+        "linux/arm64"
+      ],
+      "package": {
+        "registryType": "oci",
+        "identifier": "example.org/fixture@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "transport": {
+          "type": "stdio"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "address": "example.org/conformance/platforms",
+  "implementations": {
+    "server": {
+      "implements": [
+        "#probe.v1"
+      ],
+      "platforms": [
+        "linux/arm64",
+        "linux/arm64"
+      ],
+      "command": [
+        "bin/server"
+      ]
+    }
+  }
+}

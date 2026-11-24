@@ -1,0 +1,10 @@
+# Added cases for work order 314.
+- name: contracts-admission-shape
+  kind: added
+  cases: [contracts-admission-shape]
+- name: registration-admission-checks
+  kind: added
+  cases: [registration-admission-checks]
+- name: requests-admission-report-kept
+  kind: added
+  cases: [requests-admission-report-kept]

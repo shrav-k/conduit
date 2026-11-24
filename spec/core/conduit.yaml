@@ -32,6 +32,7 @@ exports:
   - sign-in-hook.v1
   - account-hook.v1
   - sign-out-hook.v1
+  - admission-hook.v1
   - pending-action.v1
   - evidence-item.v1
   - refusal.v1
@@ -108,6 +109,7 @@ exports:
   - usage.v1
   - limit-report.v1
   - limit-status.v1
+  - admission-report.v1
   # Schemas of documents (spec/schemas/).
   - name.v1
   - export-name.v1

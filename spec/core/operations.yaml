@@ -1827,6 +1827,40 @@ metadata:
 spec:
   effect: Remove the instance client sign-in.
 
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: admission-hook.v1
+  description: >-
+    Answer whether model work may start on this login now, under the levers given
+    (CTR-015, IFC-054). A Type stating `signIn` and `admission` requires it. The engine
+    alone invokes it, as its own invocation of the login Resource, through no Conduit
+    and with no filter, never as a part, only to decide a call that starts model work on
+    an Agent of the login; it is in no capability, so no Conduit lists it, and no
+    inspection calls it (OBS-006). It starts no model work and changes nothing of the
+    login. `levers` is the value at the Type's levers place, `limits` the login's limits
+    as inspection shows them (IFC-053), and `previous` the newest report the hook gave,
+    a single-use one included, or null.
+spec:
+  inputSchema:
+    type: object
+    properties:
+      levers: {type: object}
+      limits: {$ref: github.com/shrav-k/conduit/core#limit-status.v1}
+      previous:
+        anyOf:
+        - $ref: github.com/shrav-k/conduit/core#admission-report.v1
+        - type: 'null'
+    required: [levers, limits, previous]
+    additionalProperties: false
+  outputSchema:
+    type: object
+    properties:
+      admission: {$ref: github.com/shrav-k/conduit/core#admission-report.v1}
+    required: [admission]
+    additionalProperties: false
+
 # --- Enrollment operations (ENR-001 to ENR-012, PND-008).
 ---
 apiVersion: github.com/shrav-k/conduit/v0

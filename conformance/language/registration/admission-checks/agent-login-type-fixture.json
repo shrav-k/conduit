@@ -1,0 +1,10 @@
+{
+  "snapshots": [],
+  "project": {
+    "directory": null,
+    "files": {
+      "conduit.json": "agent-login-type-manifest",
+      "documents.json": "agent-login-type-documents"
+    }
+  }
+}

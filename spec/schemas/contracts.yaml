@@ -14,7 +14,10 @@
 #                           `sign-out-hook.v1` under `requires`; `loginResource` holds
 #                           exactly `place`, a pointer, only for family Agent and never
 #                           beside `signIn`), CTR-014 (`toolsDirectory`
-#                           holds exactly `directory`, a pointer; only family Agent states it)
+#                           holds exactly `directory`, a pointer; only family Agent states it),
+#                           CTR-015 (the closed admission alternatives: levers and control
+#                           on a signIn Resource requiring admission-hook.v1, or a non-empty
+#                           unique loginTypes list on an Agent stating loginResource)
 #   sign-in-login.v1        CTR-013 (literal logins, their four return kinds and members)
 #   capability-spec.v1      CTR-003
 #   operation-spec.v1       CTR-002 (`inputSchema` and `outputSchema`, whose properties are
@@ -62,6 +65,9 @@
 # `signIn`, `toolsDirectory` or `loginResource` has `changes` reaching its place (CTR-013,
 # CTR-014), which needs the contracts of the controls; that a `default` satisfies its schema
 # (SCH-019);
+# CTR-015's levers place, required path, absence of defaults, fixed lever enums, control
+# selection and exclusive changes pointer, loginTypes selections and instance compatibility,
+# and levers value pair rule;
 # compatibility between releases (NAM-024); and CTR-013's other rules: distinct login names,
 # no URL matching two logins, and client IDs shared across addresses.
 # tools/check_schemas.py also checks some of these, as far as the documents in front of it show:
@@ -145,6 +151,9 @@ metadata:
     `toolsDirectory` holds exactly a `directory` pointer and is allowed only for family Agent
     (CTR-014). `loginResource` holds exactly a required `place` pointer and is allowed only
     for family Agent, never beside `signIn` (CTR-013).
+    `admission` holds exactly `levers` and `control` on a Resource stating `signIn` and
+    requiring `admission-hook.v1`, or exactly a non-empty unique `loginTypes` list on an
+    Agent stating `loginResource` (CTR-015).
 spec:
   type: object
   properties:
@@ -206,6 +215,25 @@ spec:
         directory: {$ref: github.com/shrav-k/conduit/core#pointer.v1}
       required: [directory]
       additionalProperties: false
+    admission:
+      type: object
+      properties:
+        levers: {$ref: github.com/shrav-k/conduit/core#pointer.v1}
+        control: {$ref: github.com/shrav-k/conduit/core#selection.v1}
+        loginTypes:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items: {$ref: github.com/shrav-k/conduit/core#selection.v1}
+      oneOf:
+      - required: [levers, control]
+        not: {required: [loginTypes]}
+      - required: [loginTypes]
+        not:
+          anyOf:
+          - required: [levers]
+          - required: [control]
+      additionalProperties: false
     loginResource:
       type: object
       properties:
@@ -216,6 +244,18 @@ spec:
   - family
   additionalProperties: false
   dependentSchemas:
+    admission:
+      anyOf:
+      - required: [signIn, requires]
+        properties:
+          family: {const: Resource}
+          admission: {required: [levers, control]}
+          requires:
+            contains:
+              const: github.com/shrav-k/conduit/core#admission-hook.v1
+      - required: [loginResource]
+        properties:
+          admission: {required: [loginTypes]}
     toolsDirectory:
       properties:
         family:

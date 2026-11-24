@@ -849,7 +849,8 @@
     follows IFC-051's and quotes no value. For a repeated `id`, its location stops at
     `windows` and it has no `properties`. Where a value also fails the schema, the
     warning reports only the schema failure. The call's outcome, its result, its other
-    records and every decision are as without the key. The result that the engine gives
+    records and every decision are as without the key, but that keeping it may end a
+    login's admission report under IFC-054. The result that the engine gives
     the consumer does not carry it, so no caller is relayed it. Inspection shows it
     under IFC-053. The record holds it whatever the type's `records` states (CTR-004).
     Under SEC-015, the engine ignores the limits member of any read of a secret without
@@ -893,8 +894,48 @@
     gave other than null is absent, and `signals` is absent where none is given. An
     inspection of any other object shows no `limits`. The engine sums nothing and
     compares no allowance, percentage or duration. No outcome, access, dispatch, hold or
-    lifecycle state depends on it, and an inspection starts no call to fill it
+    lifecycle state depends on it, apart from ending a login's admission report under
+    IFC-054, and an inspection starts no call to fill it
     (OBS-006).
+
+- id: IFC-054
+  layer: interface
+  level: must
+  when: >-
+    The engine's call of `admission-hook.v1` on a login Resource whose Type states
+    `admission` (CTR-015) ends.
+  then: >-
+    Where it succeeded, the record of its end holds its output `admission`, unchanged,
+    in `admission`, whatever the Type's `records` states, and the engine keeps that
+    report as the login's newest, with that record's `time` as its keep time. A call
+    that failed or ended unknown, one whose output fails `admission-report.v1` among
+    them (OPS-007), gives no report, and its record holds no `admission`. A kept report
+    is current from its keep time until the first of these ends it for good: for a
+    report that is not single use, `validForSeconds` seconds pass on the engine's own
+    clock; a single-use report admits its one call; the engine keeps a limits member
+    (IFC-052) in the end record of a call to the login, or to an Agent whose login place
+    refers to it, other than the hook's call that gave the report; or a control stores a
+    value at or under the Type's levers place (REV-007).
+  observable: >-
+    This version keeps the report and decides nothing from it: whether the engine asks
+    for one before a call that starts model work, and holds or refuses that call, is
+    not yet specified. A login's levers are declared and its reports kept, but no call
+    is yet held or refused on them (CTR-015).
+    Validity counts from the keep time, never from `observedAt`, with no minimum or
+    bound beyond `admission-report.v1`'s schema. The engine checks only the output's
+    shape and keeps the report as received; the implementation answers for what it says.
+    Each reported client value maps a field its client gave, by a table in its package's
+    documentation, and is null where none does; nothing is inferred. No string names an
+    account, plan, amount, balance, limit or currency. A window `id` is the package's
+    fixed word, as under IFC-052. `lever.pointer` lies at or under the Type's levers
+    place, and a `cannot-tell` report names the `whenUnknown` lever. Where the client
+    gives an included-usage signal, a null value of it is no answer, and the report is
+    `cannot-tell`. `lifts` says how a refusal ends: `at-time` when its validity ends,
+    `newer-report` once a newer observation says otherwise, and `lever-change` only once
+    the levers change. `previous` is the newest report the hook gave, single use or
+    ended included, or null. A member IFC-052 drops ends no report. The engine calls the
+    hook only to decide a call that starts model work on an Agent of the login, and no
+    inspection calls it (OBS-006).
 
 - id: IFC-028
   layer: interface

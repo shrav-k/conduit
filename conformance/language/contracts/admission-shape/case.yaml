@@ -1,0 +1,36 @@
+{
+  "id": "contracts-admission-shape",
+  "title": "A login Type's admission holds its levers and control, an Agent Type's its login Types, and no other shape",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "CTR-015"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "manifest": "conduit.json",
+    "valid-documents": "valid-documents.json",
+    "valid-fixture": "valid-fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "valid-fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [],
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

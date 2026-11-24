@@ -1,6 +1,13 @@
 {
   "cases": [
     {
+      "id": "registration-admission-checks",
+      "case": "language/registration/admission-checks/case.yaml",
+      "promises": [
+        "CTR-015"
+      ]
+    },
+    {
       "id": "registration-agent-v2-account-binding",
       "case": "language/registration/agent-v2-account-binding/case.yaml",
       "promises": [

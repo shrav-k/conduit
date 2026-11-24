@@ -1,0 +1,423 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Operation",
+    "metadata": {
+      "name": "turn.v1"
+    },
+    "spec": {
+      "startsModelWork": true,
+      "effect": "Starts a scripted model turn."
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Operation",
+    "metadata": {
+      "name": "status.v1"
+    },
+    "spec": {
+      "inputSchema": {
+        "type": "object"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Capability",
+    "metadata": {
+      "name": "turns.v1"
+    },
+    "spec": {
+      "operations": [
+        "#turn.v1",
+        "#status.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "turns"
+    },
+    "spec": {
+      "capability": "#turns.v1",
+      "operations": [
+        "#turn.v1",
+        "#status.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Pool",
+    "metadata": {
+      "name": "login-pool"
+    },
+    "spec": {
+      "type": "github.com/shrav-k/conduit/core#pool.v1"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Pool",
+    "metadata": {
+      "name": "logins"
+    },
+    "from": "login-pool"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Fleet",
+    "metadata": {
+      "name": "workers"
+    },
+    "from": "github.com/shrav-k/conduit/core#fleet"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "login-holder.v1"
+    },
+    "spec": {
+      "family": "Resource",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "account": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "admission": {
+            "type": "object",
+            "properties": {
+              "billing": {
+                "enum": [
+                  "included",
+                  "paid-from-first-token"
+                ]
+              },
+              "paidUsage": {
+                "enum": [
+                  "allow",
+                  "refuse",
+                  "refuse-if-possible"
+                ]
+              },
+              "whenUnknown": {
+                "enum": [
+                  "refuse",
+                  "one-trial",
+                  "admit"
+                ]
+              }
+            },
+            "required": [
+              "billing",
+              "paidUsage",
+              "whenUnknown"
+            ],
+            "if": {
+              "properties": {
+                "whenUnknown": {
+                  "const": "admit"
+                }
+              },
+              "required": [
+                "whenUnknown"
+              ]
+            },
+            "then": {
+              "properties": {
+                "paidUsage": {
+                  "const": "allow"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "account",
+          "admission"
+        ]
+      },
+      "signIn": {
+        "account": "/account",
+        "logins": [
+          {
+            "name": "browser",
+            "return": "redirect",
+            "authorization": "https://example.org/authorize",
+            "clientId": "placeholder-signed-agent",
+            "redirect": {
+              "host": "127.0.0.1",
+              "ports": [
+                8400,
+                8401
+              ],
+              "path": "/callback"
+            },
+            "carried": true
+          },
+          {
+            "name": "device",
+            "return": "device",
+            "authorization": "https://example.org/device",
+            "clientId": "placeholder-signed-agent"
+          }
+        ]
+      },
+      "requires": [
+        "github.com/shrav-k/conduit/core#account-hook.v1",
+        "github.com/shrav-k/conduit/core#sign-in-hook.v1",
+        "github.com/shrav-k/conduit/core#sign-out-hook.v1",
+        "github.com/shrav-k/conduit/core#admission-hook.v1"
+      ],
+      "implementation": {
+        "github.com/shrav-k/conduit/core#account-hook.v1": "#resource",
+        "github.com/shrav-k/conduit/core#sign-in-hook.v1": "#resource",
+        "github.com/shrav-k/conduit/core#sign-out-hook.v1": "#resource",
+        "github.com/shrav-k/conduit/core#admission-hook.v1": "#resource",
+        "#set-admission.v1": "#resource",
+        "#set-unknown.v1": "#resource"
+      },
+      "admission": {
+        "levers": "/admission",
+        "control": "#set-admission.v1"
+      },
+      "controls": [
+        "#set-admission.v1",
+        "#set-unknown.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "login-holder"
+    },
+    "spec": {
+      "type": "#login-holder.v1",
+      "config": {
+        "account": "example-account",
+        "admission": {
+          "billing": "included",
+          "paidUsage": "refuse",
+          "whenUnknown": "refuse"
+        }
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "login"
+    },
+    "from": "login-holder",
+    "owner": "logins"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "shared-agent.v1"
+    },
+    "spec": {
+      "family": "Agent",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "login": {
+            "$ref": "github.com/shrav-k/conduit/core#resource-reference.v1"
+          }
+        },
+        "required": [
+          "login"
+        ]
+      },
+      "loginResource": {
+        "place": "/login"
+      },
+      "offers": [
+        "#turns.v1"
+      ],
+      "implementation": {
+        "#turn.v1": "#plain-agent",
+        "#status.v1": "#plain-agent"
+      },
+      "admission": {
+        "loginTypes": [
+          "#login-holder.v1"
+        ]
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Agent",
+    "metadata": {
+      "name": "worker"
+    },
+    "spec": {
+      "type": "#shared-agent.v1",
+      "config": {
+        "login": "login"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Agent",
+    "metadata": {
+      "name": "a"
+    },
+    "from": "worker",
+    "owner": "workers"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Agent",
+    "metadata": {
+      "name": "b"
+    },
+    "from": "worker",
+    "owner": "workers"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "call-a"
+    },
+    "from": "turns",
+    "consumer": {
+      "kind": "Interface",
+      "name": "root"
+    },
+    "target": {
+      "kind": "Agent",
+      "name": "a"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "call-b"
+    },
+    "from": "turns",
+    "consumer": {
+      "kind": "Interface",
+      "name": "root"
+    },
+    "target": {
+      "kind": "Agent",
+      "name": "b"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "gone"
+    },
+    "from": "login-holder",
+    "owner": "logins"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Interface",
+    "metadata": {
+      "name": "observer-template"
+    },
+    "spec": {
+      "type": "github.com/shrav-k/conduit/core#interface.v1"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Interface",
+    "metadata": {
+      "name": "observer"
+    },
+    "from": "observer-template"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "observer-scope"
+    },
+    "from": "github.com/shrav-k/conduit/core#fleet-manage",
+    "consumer": {
+      "kind": "Interface",
+      "name": "observer"
+    },
+    "target": {
+      "kind": "Fleet",
+      "name": "workers"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Operation",
+    "metadata": {
+      "name": "set-admission.v1"
+    },
+    "spec": {
+      "changes": {
+        "levers": "/admission"
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "levers": {
+            "type": "object"
+          },
+          "revision": {
+            "$ref": "github.com/shrav-k/conduit/core#revision.v1"
+          }
+        },
+        "required": [
+          "revision"
+        ]
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Operation",
+    "metadata": {
+      "name": "set-unknown.v1"
+    },
+    "spec": {
+      "changes": {
+        "only": "/admission/whenUnknown"
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "$ref": "github.com/shrav-k/conduit/core#revision.v1"
+          },
+          "only": {
+            "enum": [
+              "refuse",
+              "one-trial",
+              "admit"
+            ]
+          }
+        },
+        "required": [
+          "revision"
+        ]
+      }
+    }
+  }
+]

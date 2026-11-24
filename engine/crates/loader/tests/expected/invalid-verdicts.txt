@@ -21,6 +21,12 @@ CTR-012-control-input-schema-with-another-root-keyword.yaml schema
 CTR-013-page-with-user-information.yaml schema
 CTR-013-redirect-path-with-a-fragment.yaml schema
 CTR-013-redirect-path-with-a-query.yaml schema
+CTR-015-admission-agent-sign-in.yaml schema
+CTR-015-admission-empty-types.yaml schema
+CTR-015-admission-extra.yaml schema
+CTR-015-admission-mixed.yaml schema
+CTR-015-admission-no-hook.yaml schema
+CTR-015-admission-no-sign-in.yaml schema
 IFC-043-manifest-remote-item-names-authorization.yaml schema
 IFC-044-manifest-remote-item-not-plain-at-http.yaml schema
 INS-001-instance-with-spec.yaml schema

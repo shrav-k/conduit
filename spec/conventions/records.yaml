@@ -70,6 +70,8 @@
     it. The engine sums or compares no usage of the records that name a Fleet or a login
     Resource: each record shows only its own `usage` member, as its turn reported it, under
     IFC-051.
+    The end record of a login's `admission-hook.v1` call that succeeded also holds its report in
+    `admission`, under IFC-054, whatever `records` states.
     A record has the form of the core schema `record.v1`: a CloudEvent whose
     `data` holds these fields, the consumer of the Conduit used in `consumer` and the invocation
     served in `serving`. `inspect.v1` returns records in that form, under LIF-013, and an engine

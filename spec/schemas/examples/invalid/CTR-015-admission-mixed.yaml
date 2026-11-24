@@ -1,0 +1,28 @@
+# Example. Invalid: admission mixes login and Agent members (CTR-015).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: shared-agent.v1
+spec:
+  family: Agent
+  schema:
+    type: object
+    properties:
+      login:
+        $ref: github.com/shrav-k/conduit/core#resource-reference.v1
+    required:
+    - login
+  loginResource:
+    place: /login
+  offers:
+  - '#turns.v1'
+  implementation:
+    '#turn.v1': '#plain-agent'
+    '#status.v1': '#plain-agent'
+  admission:
+    loginTypes:
+    - '#login-holder.v1'
+    levers: /admission

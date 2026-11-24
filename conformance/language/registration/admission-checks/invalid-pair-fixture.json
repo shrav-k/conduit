@@ -1,0 +1,10 @@
+{
+  "snapshots": [],
+  "project": {
+    "directory": null,
+    "files": {
+      "conduit.json": "invalid-pair-manifest",
+      "documents.json": "invalid-pair-documents"
+    }
+  }
+}

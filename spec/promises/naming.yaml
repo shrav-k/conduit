@@ -408,28 +408,28 @@
     a Type's `schema`, at any depth, and an input that it adds to a Requirement contract, state
     no `default`. It does not remove or change anything the earlier one held.
   observable: >-
-    Comparing the two contracts shows only such additions. Any other change is made as a new
-    contract, under a name with another version segment, as NAM-015 states. A request that was
-    dispatched under the earlier release, made again with the same target and inputs, names no
-    further operation, since a request that names an operation that the version the target holds
-    does not include reaches no implementation, under NAM-026; so a further operation changes
-    nothing such a request may do. A login, or a member of a login, added later would change
-    what such a request may do: a `sign-in.v1` that names no login may start any of its Type's
-    logins, the hook choosing among them under PND-010, and a member such as `issuer` adds a
-    check of that login's carried return under PND-013. So a login, or a member of one, that the
-    first release exporting a Type under its name does not state is stated only under a name
-    with another version segment. An input of a
-    requirement that states a `default` is filled in and sent with every filter of it, under
-    NAM-019 and IFC-018, and an implementation built for the earlier release cannot apply a
-    filter whose `arguments` hold an input that its version does not declare, under IFC-019,
-    so such an input would make every request through a Conduit that applies the filter report
-    unavailable there. An added input that states none is sent only where a document writes
-    it. Under SCH-009 an added property's default would change what an unchanged document
-    means when it is next registered after a pin moves. A default requires a new version
-    segment, as in `claude-code.v2` and `codex.v2`. When installing a release while another at
-    the same address is installed, a same-named contract that breaks this rule is rejected:
-    installation reports invalid under PKG-023, with a NAM-024 diagnostic naming the contract
-    and changed pointer.
+    Comparing the two contracts shows only such additions. Any other change is made as a
+    new contract, under a name with another version segment, as NAM-015 states. A request
+    that was dispatched under the earlier release, made again with the same target and
+    inputs, names no further operation, since a request that names an operation that the
+    version the target holds does not include reaches no implementation, under NAM-026; so
+    a further operation changes nothing such a request may do. A login, or a member of a
+    login, added later would change what such a request may do: a `sign-in.v1` that names
+    no login may start any of its Type's logins, the hook choosing among them under
+    PND-010, and a member such as `issuer` adds a check of that login's carried return
+    under PND-013. So a login, or a member of one, that the first release exporting a Type
+    under its name does not state is stated only under a name with another version
+    segment. An input of a requirement that states a `default` is filled in and sent with
+    every filter of it, under NAM-019 and IFC-018, and an implementation built for the
+    earlier release cannot apply a filter whose `arguments` hold an input that its version
+    does not declare, under IFC-019, so such an input would make every request through a
+    Conduit that applies the filter report unavailable there. An added input that states
+    none is sent only where a document writes it. Under SCH-009 an added property's
+    default would change what an unchanged document means when it is next registered after
+    a pin moves. A default requires a new version segment. When installing a release while
+    another at the same address is installed, a same-named contract that breaks this rule
+    is rejected: installation reports invalid under PKG-023, with a NAM-024 diagnostic
+    naming the contract and changed pointer.
 
 - id: NAM-025
   layer: language

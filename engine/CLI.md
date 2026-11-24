@@ -2,7 +2,8 @@
 
 Start with the author’s reading path in `spec/README.md` and the short form in
 `spec/promises/sections.yaml`. The specification defines the document format and binds.
-This guide describes the CLI. Use `conduit COMMAND --help` for a command’s own usage.
+This guide describes the CLI. None of its commands is an engine operation. Use `conduit
+COMMAND --help` for a command’s own usage.
 The approval flags `--prune`, `--adopt`, `--with-resources` and `--with-agents` are not yet
 built.
 
@@ -311,6 +312,63 @@ Apply computes and prints the same plan. When it sends steps, it keeps the plan,
 steps one by one and waits for each result. The command is the approval. It runs without a
 prompt or a prior plan command. A stopped plan sends none of its numbered steps, including
 narrowings. A no-op sends no steps and writes no state.
+
+### Duties under the short form
+
+The current CLI behavior is described above. These are the reference CLI's duties under
+the short form, which defines registration by translation
+([specification](../spec/README.md#what-the-short-forms-meaning-covers)); the approval
+flags listed above as not yet built, `--withhold` and the `values` stop with
+`conduit value set <name>` are not yet built.
+
+Plan and apply are tooling composed of existing requests. The plan is printed, and apply
+records it; nothing runs automatically. `conduit apply` computes and prints its own plan,
+records it when it has a request to send, and then sends its requests; `conduit plan`
+prints the same plan, sends none of its requests and records no plan; the reads it makes
+to compute the plan are inspections, which change nothing and are recorded as any request
+is (REC-001). Plan is available and never required. A plan resolves each `values` entry
+from the value Resources it inspects, under OBJ-009, and a plan and its record name each
+value by its value Resource and hold no value. Where an entry does not resolve, the plan
+stops at its document, naming the place, the value Resource and `conduit value set
+<name>`: that command registers a value Resource as root, from the person's terminal,
+showing the value as typed and saving it only on y. In v0 the command is the approval.
+Every dangerous act needs a named flag, recorded with the plan when used: `--reopen`,
+`--recreate`, `--prune`, `--replace`, `--adopt`, and the cascade flags `--with-resources`
+and `--with-agents`. Each flag names one object by its name, the generated name where the
+short form makes one (SCT-013), such as `--reopen auditor--catalog`. Each cascade is one
+command under one flag, printed and recorded with the plan: register a one-time Conduit to
+the Pool or Fleet, open it, and call the cascade operation through it. The target's
+retirement closes and removes that Conduit (CON-008, LIF-035), so apply sends no close;
+root then lifts the Conduit's tombstone (LIF-040, ACC-053). A cascade that does not
+succeed stops apply as any failure does, and its one-time Conduit may already be removed:
+a later apply under the same flag closes it only if inspection finds that same Conduit,
+and lifts only the tombstone that retains its ID. The `--withhold` flag belongs with the
+withhold behavior in batch 2. Narrowing never waits and never needs a flag: a Conduit the
+file no longer names is closed on apply, and so is a narrowing of a Conduit's operations,
+and the plan prints and records each closing; `--prune` is for removing another object the
+file no longer names. A plan prints and records every widening, including one caused by
+moving a package pin or changing a reusable template's operations (PKG-031). A package
+should keep a standard template's operations across releases; the plan still checks the
+operations that actually resolve. A plan prints, beside each Agent it registers or
+replaces, the `ownTools` member that inspection would show (CTR-014, LIF-013). Beside each
+Conduit it opens whose target is an Agent and that lists an operation marked
+`startsModelWork: true`, it prints the target's `ownTools` member.
+
+A command that talks to a serving engine finds it through the person's current engine
+context, as kubectl's and Docker's commands do: `conduit serve` records the engine it
+serves as current, and `--store` on a command overrides the context for that command. When
+a set-up that apply sends raises pending sign-in actions (IFC-025, PND-005), apply goes on
+to its next step: a sign-in never stops it. It prints each as the person's action at the
+panel, listed apart from authored lines, and answers none. A set-up that does not succeed
+stops apply as any failure does, and any sign-in it raised is still printed.
+
+Replacement keeps names stable (SCT-004, SCT-013): retire and remove the old instance
+before making its replacement under the same name, lifting its tombstone wherever
+necessary (LIF-035, LIF-041, ACC-053). This accepts a longer window without access. Plans
+print affected bounds as well as the Conduits they recreate: an individual target's bound
+keeps its old ID, while an owning Pool's bound covers a new Resource in that same Pool
+(ACC-029). These are tooling duties and limits of the registration equivalence, not
+further engine operations.
 
 ### Apply the plan you reviewed
 

@@ -1,31 +1,18 @@
 # Conduit specification
 
-Status on 2026-11-11: draft, begun 2026-11-05. Incomplete, and not a release. Every area has
-been written as promises, and the core package, the JSON Schemas of documents and the
-manifest's format have been written as documents. The first build has a strict loader, a pure
-core on S1 and a runnable engine shell in [engine/](../engine/README.md).
-Portable vectors under [conformance/](../conformance/README.md) test slices of promises, and
-the [manifest](../conformance/manifest.yaml) records the coverage and its gaps; the runner reports
-how many there are.
-This remains a draft: the model and vectors do not yet cover the whole specification, and the
-next cold read follows the first build. Ruling 38, point 4, asks for agreement between the
-core, vectors and promises, and no unsafe finding in the latest round of readers.
-
-This page describes the specification as it stands now. The decision records are listed under
-[Where the reasons are](#where-the-reasons-are).
-
-Accepted decisions still waiting to be written are listed in [IN_FORCE.md](../IN_FORCE.md).
-The promises here determine the language; those decisions supply no missing promise.
-
-The specification alone binds. Nothing under [docs/protocol](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md) binds:
-it is the design as it stood before the specification, superseded, and kept as source material
-for the type contracts that are still to be written. A behavior that is missing from `spec/` is
-a gap in `spec/`, and no older document supplies it.
-
 ## What this is
 
 Conduit is a configuration language for the relationships between independent agents and the
 things they share. This directory is its specification: the documents that bind every engine.
+
+A set of documents declares objects of six families: Interface, Agent, Resource, Pool,
+Fleet and Conduit. An Interface is where a person, or a system outside, acts, and an Agent
+is a participant whose model decides its own actions: the two actors, which make requests
+on their own behalf. A Resource is a shared thing that instances use, owned by exactly one
+Pool, and a Fleet owns Agents as a Pool owns Resources. A Conduit is the relationship of
+one consumer to one target for one capability, and every permission is an open Conduit.
+Each object is a template or an instance made from one
+([definitions.md](definitions.md#objects-and-documents)).
 
 Conduit innovates only on connection and access
 ([ruling 40](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-40/README.md)). What is its own is its documents;
@@ -38,21 +25,7 @@ instance is placed on them, the fetching of packages, and the stores of secrets
 ([promises/providers.yaml](promises/providers.yaml),
 [promises/secrets.yaml](promises/secrets.yaml)). The engine's own runner, its own machine
 provider and its own fetching of `https:` and `file:` URLs serve where the user picks none
-(PRV-003), and no store of secrets is built into the engine (SEC-020). The storage of records
-and the engine's own state stay each engine's choice for now, in standard formats (DL2, DL8),
-and so does the mechanism that proves who is who, by a cryptographic proof wherever a request
-crosses machines, within two standard forms: mutual TLS with certificates in the form of an
-X509-SVID, and signed tokens in the form of a JWT-SVID, which the engine's address at an
-`https` URL always accepts as the protocol's own authorization (IFC-022, IFC-042, DL13).
-A run is given what it presents, and the engine's address, in the input `identity` of `run.v1`,
-under names fixed for every engine (PRV-022). Every server that the engine does not run itself,
-other than a `plain` server reached by `remote`, stands behind a gate: the server of a run that
-a runtime provider makes, and a `remote` server that takes Conduit's keys. That gate admits only
-the proof of an enforcement point, which in this version the engine alone makes, and the engine
-sends it nothing until it has proved who it is (PRV-025, PRV-028, IFC-017, IFC-041). A `plain`
-server reached by `remote` takes none of Conduit's keys, and whatever can reach its URL reaches
-it (IFC-007, IFC-041). Whether a restriction can be enforced depends on the runtime provider;
-this version reports every restriction as mediated (ACC-027).
+(PRV-003), and no store of secrets is built into the engine (SEC-020).
 
 The specification has three layers, and every promise says in its `layer` field which one it
 belongs to.
@@ -71,6 +44,22 @@ the engine asks of a provider, by a provider call or by a read of a secret, and 
 must do are `convention`, as in PRV-005, PRV-007, PRV-011, PRV-022 and SEC-010; and what an
 implementation of `get-secret.v1` must do with a secret, and what any implementation that is
 given one must not do with it, are `interface`, as in SEC-006 and SEC-019.
+
+The storage of records and the engine's own state stay each engine's choice for now, in
+standard formats (DL2, DL8), and so does the mechanism that proves who is who, by a
+cryptographic proof wherever a request crosses machines, within two standard forms: mutual
+TLS with certificates in the form of an X509-SVID, and signed tokens in the form of a
+JWT-SVID, which the engine's address at an `https` URL always accepts as the protocol's
+own authorization (IFC-022, IFC-042, DL13). A run is given what it presents, and the
+engine's address, in the input `identity` of `run.v1`, under names fixed for every engine
+(PRV-022). Every server that the engine does not run itself, other than a `plain` server
+reached by `remote`, stands behind a gate: the server of a run that a runtime provider
+makes, and a `remote` server that takes Conduit's keys. That gate admits only the proof of
+an enforcement point, which in this version the engine alone makes, and the engine sends
+it nothing until it has proved who it is (PRV-025, PRV-028, IFC-017, IFC-041). A `plain`
+server reached by `remote` takes none of Conduit's keys, and whatever can reach its URL
+reaches it (IFC-007, IFC-041). Whether a restriction can be enforced depends on the
+runtime provider; this version reports every restriction as mediated (ACC-027).
 
 The following are deliberately outside it. How one type behaves, such as the conditions it defines
 (running or paused, for example) or a directory's edge cases, belongs to that type's contract;
@@ -96,6 +85,30 @@ secret: the read again for a connection that a setup made, once the engine has l
 (SEC-023), and, once the engine has restarted, the reads before it runs again a Resource whose
 run on its own runner ended with it, for the setup that last asked for that run (PRV-026).
 
+## Status
+
+Status on 2026-11-11: draft, begun 2026-11-05. Incomplete, and not a release. Every area has
+been written as promises, and the core package, the JSON Schemas of documents and the
+manifest's format have been written as documents. The first build has a strict loader, a pure
+core on S1 and a runnable engine shell in [engine/](../engine/README.md).
+Portable vectors under [conformance/](../conformance/README.md) test slices of promises, and
+the [manifest](../conformance/manifest.yaml) records the coverage and its gaps; the runner reports
+how many there are.
+This remains a draft: the model and vectors do not yet cover the whole specification, and the
+next cold read follows the first build. Ruling 38, point 4, asks for agreement between the
+core, vectors and promises, and no unsafe finding in the latest round of readers.
+
+This page describes the specification as it stands now. The decision records are listed under
+[Where the reasons are](#where-the-reasons-are).
+
+Accepted decisions still waiting to be written are listed in [IN_FORCE.md](../IN_FORCE.md).
+The promises here determine the language; those decisions supply no missing promise.
+
+The specification alone binds. Nothing under [docs/protocol](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md) binds:
+it is the design as it stood before the specification, superseded, and kept as source material
+for the type contracts that are still to be written. A behavior that is missing from `spec/` is
+a gap in `spec/`, and no older document supplies it.
+
 ## Reading paths
 
 Begin with [definitions.md](definitions.md): its first table gives the core terms in one line
@@ -116,12 +129,7 @@ to that tool. The [limits of the short form](#what-the-short-forms-meaning-cover
 registration meaning from changing a running project.
 
 Definitions and Conduits in examples and guides use YAML flow style (`{...}` and `[...]`);
-block style remains equally legal under SCH-013. `conduit init` writes a flow-style skeleton.
-It writes neither `fleet` nor `pool`.
-Package pins belong to the manifest: `conduit install ARCHIVE#HEX` writes the given archive's
-pin into the author's file, at exactly its version and digest, after installing what that
-archive lists, and pins no dependency.
-These tools keep its `apiVersion`. Neither command is an engine operation.
+block style remains equally legal under SCH-013. Package pins belong to the manifest.
 
 1. The shape of a document, its names and references, and schemas:
    `promises/objects.yaml`, `promises/schemas.yaml` and [schema-profile.md](schema-profile.md).
@@ -358,53 +366,9 @@ to the translation apart from IDs, held package pins and configuration values ch
 controls (INS-013, NAM-010, REV-007).
 An existing closed Conduit stays closed until an explicit permitted opening.
 
-Plan and apply are tooling composed of existing requests. The plan is printed, and apply
-records it; nothing runs automatically. `conduit apply` computes and prints its own plan,
-records it when it has a request to send, and then sends its requests; `conduit plan`
-prints the same plan, sends none of its requests and records no plan; the reads it makes to
-compute the plan are inspections, which change nothing and are recorded as any request is
-(REC-001). Plan is available and never required.
-A plan resolves each `values` entry from the value Resources it inspects, under OBJ-009,
-and a plan and its record name each value by its value Resource and hold no value. Where an
-entry does not resolve, the plan stops at its document, naming the place, the value Resource
-and `conduit value set <name>`: that command registers a value Resource as root, from the
-person's terminal, showing the value as typed and saving it only on y.
-In v0 the command is the approval. Every dangerous act needs a named flag, recorded with
-the plan when used: `--reopen`, `--recreate`, `--prune`, `--replace`, `--adopt`, and the
-cascade flags `--with-resources` and `--with-agents`. Each flag names one object by its
-name, the generated name where the short form makes one (SCT-013), such as
-`--reopen auditor--catalog`. Each cascade is one command under one flag, printed and
-recorded with the plan: register a one-time Conduit to the Pool or Fleet, open it, and call
-the cascade operation through it. The target's retirement closes and removes that Conduit
-(CON-008, LIF-035), so apply sends no close; root then lifts the Conduit's tombstone
-(LIF-040, ACC-053). A cascade that does not succeed stops apply as any failure does, and
-its one-time Conduit may already be removed: a later apply under the same flag closes it
-only if inspection finds that same Conduit, and lifts only the tombstone that retains its
-ID. The `--withhold` flag belongs
-with the withhold behavior in batch 2. Narrowing never waits and never needs a flag: a Conduit the file no longer names is closed on apply,
-and so is a narrowing of a Conduit's operations, and the plan prints and records each closing;
-`--prune` is for removing another object the file no longer names. A plan prints and records every
-widening, including one caused by moving a package pin or changing a reusable template's
-operations (PKG-031). A package should keep a standard template's operations across releases;
-the plan still checks the operations that actually resolve. A plan prints, beside each Agent
-it registers or replaces, the `ownTools` member that inspection would show (CTR-014, LIF-013).
-Beside each Conduit it opens whose target is an Agent and that lists an operation marked
-`startsModelWork: true`, it prints the target's `ownTools` member.
-
-A command that talks to a serving engine finds it through the person's current engine
-context, as kubectl's and Docker's commands do: `conduit serve` records the engine it serves
-as current, and `--store` on a command overrides the context for that command. When a set-up
-that apply sends raises pending sign-in actions (IFC-025, PND-005), apply goes on to its
-next step: a sign-in never stops it. It prints each as the person's action at the panel,
-listed apart from authored lines, and answers none. A set-up that does not succeed stops
-apply as any failure does, and any sign-in it raised is still printed.
-
-Replacement keeps names stable (SCT-004, SCT-013): retire and remove the old instance before
-making its replacement under the same name, lifting its tombstone wherever necessary
-(LIF-035, LIF-041, ACC-053). This accepts a longer window without access. Plans print affected
-bounds as well as the Conduits they recreate: an individual target's bound keeps its old ID,
-while an owning Pool's bound covers a new Resource in that same Pool (ACC-029). These are
-tooling duties and limits of the registration equivalence, not further engine operations.
+Plan and apply, the reference CLI's commands that bring a running project to its
+documents, are tooling composed of existing requests and no engine operation; [the CLI's
+guide](../engine/CLI.md#duties-under-the-short-form) holds their duties and flags.
 
 ### Fleets, discovery and tombstones
 
@@ -472,29 +436,25 @@ describes (PRV-029; DEC-042); the engine does not check that placement in v0 (ru
 In v0 the person's Interface runs on the engine's machine. From another machine or a phone,
 the person reaches it over SSH and pastes the return, or uses a device code. A phone
 Interface is v1's; root on another machine waits until Agents are confined (ruling 75 C4, C5).
-Claude Code Agent Types state carried: false in v0, because Anthropic's terms forbid
-intermediating Claude.ai credentials: Conduit never reads, holds or relays the credential that
-such a sign-in returns. The person completes the login on the Agent's own machine, at it or
-over a connection that Conduit opens, limits and closes, the tunnel or SSH session, by remote
-desktop or by SSH, pasting the code or forwarding the port (ruling 80 point 8, amending ruling
-75 C3; IFC-049). This is to be revisited in v1 (ruling 75 C3). The Interface receiving a
-sign-in is root in practice in v0, within PND-010's scoped authority (ruling 75 C2).
+In v0 a login whose return the engine may not carry states carried: false: Conduit never
+reads, holds or relays the credential that such a sign-in returns. The person completes
+the login on the Agent's own machine, at it or over a connection that Conduit opens,
+limits and closes, the tunnel or SSH session, by remote desktop or by SSH, pasting the
+code or forwarding the port (ruling 80 point 8, amending ruling 75 C3; IFC-049). This is
+to be revisited in v1 (ruling 75 C3). The Interface receiving a sign-in is root in
+practice in v0, within PND-010's scoped authority (ruling 75 C2).
 
-That connection serves only logins stating carried: false; nothing changes for carried: true.
-The channel that carries the return ends at each end in a program that is not Conduit's: the
-node's own server for the route, and that route's client on the person's side. No process
-running Conduit's code decrypts, terminates or copies it. A forward opens only after IFC-049
-relayed this sign-in's URL, for the port its redirect_uri names, to that node's loopback only,
-and closes when sign-in.v1 ends; where the local port cannot be bound, the Interface says so,
-naming the port, and opens no forward on another port. A Claude Agent's paste route is the
-person's own delivery, on the node, of the return or of a page login's code, held by no engine
-or Interface process (IFC-049). The connection Conduit manages for a Claude sign-in does not
-bind the person who completes the login; the expected account (PND-011) remains the only
-binding.
-
-On the engine's own runner, Codex's browser login may open the default browser of the engine
-user's graphical session, where one exists. The hook still relays the printed URL under
-IFC-049, and the account check (PND-011) stays the only guard.
+That connection serves only logins stating carried: false; nothing changes for carried:
+true. The channel that carries the return ends at each end in a program that is not
+Conduit's: the node's own server for the route, and that route's client on the person's
+side. No process running Conduit's code decrypts, terminates or copies it. A forward opens
+only after IFC-049 relayed this sign-in's URL, for the port its redirect_uri names, to
+that node's loopback only, and closes when sign-in.v1 ends; where the local port cannot be
+bound, the Interface says so, naming the port, and opens no forward on another port. A
+carried: false login's paste route is the person's own delivery, on the node, of the
+return or of a page login's code, held by no engine or Interface process (IFC-049). The
+connection Conduit manages for a carried: false sign-in does not bind the person who
+completes the login; the expected account (PND-011) remains the only binding.
 
 Network membership grants nothing. Identity is per instance, and the target's owner authorizes
 every request (PRV-018, IFC-022, ACC-001). A relationship across parties has two halves, each

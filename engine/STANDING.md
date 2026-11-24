@@ -41,8 +41,8 @@ Each number counts promises. The last row counts those whose Engine source is no
 
 | Promises | language | convention | interface | all |
 | --- | ---: | ---: | ---: | ---: |
-| case passes | 152 | 164 | 30 | 346 |
-| expected failure | 0 | 1 | 0 | 1 |
+| case passes | 152 | 162 | 30 | 344 |
+| expected failure | 0 | 3 | 0 | 3 |
 | reason, no case | 52 | 17 | 1 | 70 |
 | no case, no reason | 22 | 64 | 19 | 105 |
 | all | 226 | 246 | 50 | 522 |
@@ -332,7 +332,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | OBS-001 | convention | must not | 0 | 0 | reason | none | reason, no case |
 | OBS-002 | convention | must | 3 | 0 | cases | core | case passes |
 | OBS-003 | convention | must | 2 | 0 | outside | core | case passes |
-| OBS-004 | convention | must not | 1 | 0 | outside | core | case passes |
+| OBS-004 | convention | must not | 1 | 1 | outside | core | expected failure |
 | OBS-006 | convention | must not | 0 | 0 | reason | none | reason, no case |
 | OPS-001 | convention | must | 17 | 0 | cases | core | case passes |
 | OPS-002 | convention | must | 1 | 0 | cases | core | case passes |
@@ -447,7 +447,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | PRV-006 | language | must | 5 | 0 | cases | core | case passes |
 | PRV-007 | convention | must | 10 | 0 | cases | core | case passes |
 | PRV-008 | convention | must | 1 | 0 | cases | core | case passes |
-| PRV-009 | convention | must | 5 | 0 | cases | core | case passes |
+| PRV-009 | convention | must | 6 | 1 | cases | core | case passes |
 | PRV-010 | convention | may | 0 | 0 | outside | none | no case, no reason |
 | PRV-011 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | PRV-012 | convention | must | 0 | 0 | outside | none | no case, no reason |
@@ -464,7 +464,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | PRV-023 | convention | must | 0 | 0 | outside | shell | no case, no reason |
 | PRV-024 | convention | must not | 0 | 0 | reason | none | reason, no case |
 | PRV-025 | convention | must | 0 | 0 | outside | none | no case, no reason |
-| PRV-026 | convention | must | 1 | 0 | outside | core, shell | case passes |
+| PRV-026 | convention | must | 1 | 1 | outside | core, shell | expected failure |
 | PRV-027 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | PRV-028 | convention | must | 0 | 0 | outside | core | no case, no reason |
 | PRV-029 | convention | must | 0 | 0 | outside | core, shell | no case, no reason |
@@ -535,13 +535,13 @@ Each number counts promises. The last row counts those whose Engine source is no
 | SEC-008 | convention | must | 6 | 0 | outside | core | case passes |
 | SEC-009 | language | must | 0 | 0 | outside | none | no case, no reason |
 | SEC-010 | convention | must | 7 | 0 | outside | core | case passes |
-| SEC-011 | convention | must | 5 | 0 | outside | core | case passes |
+| SEC-011 | convention | must | 5 | 1 | outside | core | case passes |
 | SEC-012 | convention | must | 5 | 0 | outside | none | case passes |
 | SEC-013 | convention | must | 0 | 0 | outside | none | no case, no reason |
-| SEC-014 | convention | must | 2 | 0 | outside | none | case passes |
+| SEC-014 | convention | must | 2 | 1 | outside | none | case passes |
 | SEC-015 | convention | must not | 3 | 0 | outside | none | case passes |
 | SEC-016 | convention | must | 0 | 0 | outside | core, shell | no case, no reason |
-| SEC-017 | convention | must not | 2 | 0 | outside | none | case passes |
+| SEC-017 | convention | must not | 2 | 1 | outside | none | case passes |
 | SEC-018 | convention | must not | 2 | 0 | outside | none | case passes |
 | SEC-019 | interface | must not | 0 | 0 | outside | none | no case, no reason |
 | SEC-020 | convention | must not | 1 | 0 | outside | none | case passes |

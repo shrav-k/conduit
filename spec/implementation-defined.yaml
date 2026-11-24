@@ -186,10 +186,10 @@
     the unit by which it stops a run, and which processes of a run can leave that unit, under
     PRV-030; and what becomes of the processes it started when the engine stops and when it
     starts again,
-    apart from the servers of the runtime, machine and package-source providers, and the
-    processes of the secret Resources that it runs, which PRV-026 has the engine run again when
-    it first needs each. A process that runs as the engine's own operating-system user can read
-    the engine's keys and what every run under that user presents, so it is inside the domain of
+    apart from the processes of the Resources that it runs, which PRV-026 has the engine run
+    again once it has restarted. A process that runs as the engine's own operating-system user
+    can read the engine's keys and what every run under that user presents, so it is inside the
+    domain of
     trust and can get past every gate, under IFC-022. The engine's own runner is the runtime
     provider here, so this item is the contract that PRV-011 and SEC-020 leave to a runtime
     provider.
@@ -212,10 +212,10 @@
     committed against the state that it read, as an etcd transaction compares a key's revision
     before it writes, so that two parts that read the same state do not both commit. An
     invocation in progress on a part that stops ends unknown, as under IMP-007, although the
-    engine as a whole goes on. A part that stops so counts as a restart for the runs that it
-    held of providers and of secret Resources on the engine's own runner: they end with it, and
-    PRV-026 runs each again before the engine next needs it. A part that pauses after it has
-    acted and sends later may still land an effect late, as a request on a connection that was
+    engine as a whole goes on. A part that stops so counts as a restart for the runs of
+    Resources that it held on the engine's own runner: they end with it, and PRV-026 runs each
+    again. A part that pauses after it has acted and sends later may still land an effect late,
+    as a request on a connection that was
     cut may, under OPS-027; the engine's own credential, which DL13 makes short-lived on an
     engine of several parts, bounds how late only where what receives the request checks that
     credential on the request itself, as a gate checks the `exp` of a token; a request on a

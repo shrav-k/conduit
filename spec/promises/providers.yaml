@@ -63,10 +63,11 @@
     socket that its configuration names, so no provider is run by another provider and the
     machine provider is not asked where to place one. The engine reaches the provider's server
     over stdio, so no gate stands before it, under PRV-025; that server ends when the engine
-    stops, or the part of it that holds the server under DL17, and the engine runs it again when
-    it first needs it, under PRV-026. A secret Resource is not among them: it is placed and run
-    as any other Resource is, and where the engine's own runner runs it, its process too is
-    reached over stdio and ends as that server does, and it is run again under PRV-026.
+    stops, or the part of it that holds the server under DL17, and the engine runs it again once
+    it has restarted, or that part has stopped, under PRV-026. A secret Resource is not among
+    them: it is placed and run as any other Resource is, and where the engine's own runner runs
+    it, its process too is reached over stdio and ends as that server does, and it is run again
+    under PRV-026.
 
 - id: PRV-003
   layer: convention
@@ -664,25 +665,24 @@
     its allocations: the runtime provider plays the part of their node agents. The engine keeps
     no memory of a run once its instance is removed: the last stop it asks for is the one that a
     request to unregister the instance asks for, under LIF-036, so what becomes of a run left on
-    a machine that comes back after its node was declared lost is what the runtime
-    provider's contract states under this promise. A later instance, a replacement under LIF-009
-    included, may be set up and run beside the earlier run, before or after removal: nothing
-    ties its run to this stop or to the earlier run, under LIF-036. The provider's own server
-    runs on the engine's own runner, under PRV-002: it ends when the engine stops, runs again
-    only when the engine next has a call to make of it, under PRV-026, which for a provider that
-    no instance names may be never, and does not run again once the provider is retired, once no
-    instance names it, under PRV-020 and PRV-008. A stop that only that server carries out so
-    waits while the server does not run, and is never carried out once the provider is retired;
-    a contract under which the provider does what it states through both keeps the stop where
-    something that runs without that server carries it out, such as the provider's own part on
-    the run's machine, which stops the run itself once it is cut off for long enough, as a
-    disconnected Nomad client stops its allocations after `stop_on_client_after`, and then keeps
-    nothing on the engine's side. The engine asks no other provider for the stop. A stop carried
-    out later ends whatever run of that ID is running then, one restarted meanwhile included,
-    under PRV-030; this obliges no provider to carry it out beyond what its contract states. A
-    provider's contract may promise to carry out every stop it still owes on a machine before
-    starting any run there. Under such a contract, a start under `run.v1` that finds a stop
-    still owed fails, naming that stop, and may be retried once the stop is carried out
+    a machine that comes back after its node was declared lost is what the runtime provider's
+    contract states under this promise. A later instance, a replacement under LIF-009 included,
+    may be set up and run beside the earlier run, before or after removal: nothing ties its run
+    to this stop or to the earlier run, under LIF-036. The provider's own server runs on the
+    engine's own runner, under PRV-002: it ends when the engine stops, runs again once the
+    engine has restarted, under PRV-026, and does not run again once the provider is retired,
+    once no instance names it, under PRV-020 and PRV-008. A stop that only that server carries
+    out so waits while the server does not run, and is never carried out once the provider is
+    retired; a contract under which the provider does what it states through both keeps the stop
+    where something that runs without that server carries it out, such as the provider's own
+    part on the run's machine, which stops the run itself once it is cut off for long enough, as
+    a disconnected Nomad client stops its allocations after `stop_on_client_after`, and then
+    keeps nothing on the engine's side. The engine asks no other provider for the stop. A stop
+    carried out later ends whatever run of that ID is running then, one restarted meanwhile
+    included, under PRV-030; this obliges no provider to carry it out beyond what its contract
+    states. A provider's contract may promise to carry out every stop it still owes on a machine
+    before starting any run there. Under such a contract, a start under `run.v1` that finds a
+    stop still owed fails, naming that stop, and may be retried once the stop is carried out
     (PRV-019). This is the provider's obligation under its contract, not an engine rule.
 
 - id: PRV-022
@@ -888,44 +888,59 @@
   layer: convention
   level: must
   when: >-
-    After the engine restarts, or a part of it that held a provider's run stops while the engine
-    goes on, under DL17, the engine is to make a provider call to a provider whose type offers
-    `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1`, or to read a secret
-    through a secret Resource, that is not retired and whose run on the engine's own runner,
-    under PRV-002 or PRV-003, ended when the engine or that part stopped, and has not been asked
-    for since.
+    The engine restarts, or a part of it that held runs of the engine's own runner stops while
+    the engine goes on, under DL17; and a Resource that is not retired had a run on that runner,
+    under PRV-002 or PRV-006, that ended when the engine or that part stopped, and no run of it
+    has been asked for by a setup since.
   then: >-
-    Before the call or the read, the engine has its own runner run that provider again, as
-    PRV-007 and PRV-003 have it run an item, with each secret that the run needs read again
-    under SEC-010 for the caller of the setup that last asked for the provider's run, decided by
-    the provider's own Conduit to the secret Resource and the filters on that Conduit as they
-    stand when the read is made.
+    Without waiting for a request, the engine makes one attempt to have its own runner run that
+    Resource again, as PRV-007 and PRV-003 have it run an item, with each secret that the run
+    needs read again under SEC-010 for the caller of the setup that last asked for the
+    Resource's run, decided by the Resource's own Conduit to the secret Resource and the filters
+    on that Conduit as they stand when the read is made; where a read does not succeed, SEC-012
+    holds. Where the Resource is a provider under PRV-002 or a secret Resource, and the engine
+    is to make a provider call to it or read a secret through it before its run is asked for by
+    a setup, the engine runs it so first.
   observable: >-
-    The servers of the runtime, machine and package-source providers are processes of the
-    engine's own runner, reached over stdio, under PRV-002, so they end when the engine stops,
-    or when the part of the engine that holds them stops, under DL17, and so does the process of
-    a secret Resource that names no `runtime`, under PRV-002 and PRV-003; DL16 leaves each to
-    this promise. The engine runs one again only for a call or a read that it must make, its
-    regular report from the machine provider under DL5 and a read again under SEC-023 among
-    them, and not because the run has ended, under OBS-004, and doing so starts no model work,
+    The engine's own runner reaches each process it starts over stdio, under PRV-003, so the run
+    of each Resource on it ends when the engine, or the part of it that holds the run, stops,
+    under DL17: the server of each provider under PRV-002, and the process of every other
+    Resource that names no `runtime`, under PRV-006; DL16 leaves each to this promise. For each
+    restart the engine makes one attempt at each such run without a request, and another before
+    each provider call or read that needs the run before it is asked for by a setup: it runs one
+    again because its own stop ended the run, not because a run is seen to have stopped, under
+    OBS-004, so a run that ends while the engine, and the part of it that holds the run, go on
+    is run again only by its runner's restart policy, under PRV-010, or by a further setup,
+    under PRV-007. At a restart the engine first runs each provider and secret Resource whose
+    run another such run needs, then the Resources that read through them or call them; a
+    Resource other than a provider under PRV-002 or a secret Resource gets one attempt per
+    restart, and a provider under PRV-002 or a secret Resource one more before each call or read
+    that needs it while its run is not running and no setup has asked for its run since the
+    engine or that part stopped. These further attempts apply only while recovery of the run
+    that ended with the engine or its part has not succeeded. Doing so starts no model work,
     under IMP-002. An Agent's run on that runner is not run again so: a further setup asks for
-    it, under PRV-007. This is the run's counterpart of SEC-023: each read is a request with its
-    own access decision and record, under SEC-011 and SEC-015, and belongs to the setup that
-    last asked for the provider's run, whose caller it has, although that setup has ended. A run
-    that this promise makes is asked for by no setup, so after a further restart the reads are
-    again for the caller of that setup. Nothing is kept across the restart to stand in for a
-    value, under SEC-017. Where a read does not succeed, as where that Conduit has been closed
-    or a filter on it now refuses the read, nothing is run, under SEC-012, and the call or the
-    read is not made: what needed it reports unavailable, or, for a call that the engine would
-    make of its own accord, counts as a report not received, as where the provider's result of
-    `server/discover` lacks Conduit's extension, under PRV-005. So the secret Resources that a
-    provider reads belong on `local`: one placed on another node is not read for a runtime or a
-    package-source provider while its machine is reported unreachable or omitted, as until the
-    first report after a restart, under PLC-023. One that holds a secret of the machine provider
-    is read all the same, under PLC-023, since that provider's report is what ends that state,
-    and where its machine cannot be reached, no report arrives until the read succeeds. A
-    further setup of the provider leaves a running run as it is,
-    under PRV-007.
+    it, under PRV-007. The attempt is made through the engine's own runner without a provider
+    call, under PRV-003. Each read that it needs is recorded with how it ended, under REC-001
+    and SEC-015. Where the attempt does not succeed, or a read it needs does not, the Resource
+    keeps its lifecycle state; its condition `Running` reports `False` or `Unknown` under
+    PRV-009, as the runner last reported or, where it has not reported, as OBS-003 requires. A
+    Resource other than a provider under PRV-002 or a secret Resource then waits for a further
+    setup to ask for its run, under PRV-007; a provider under PRV-002 or a secret Resource
+    remains eligible for the further attempts before calls or reads. Each read is a request with
+    its own access decision and record, under SEC-011 and SEC-015, for the caller of a setup
+    that has ended; a run that this promise makes is asked for by no setup, so after a further
+    restart the reads are again for the caller of that setup. Nothing is kept across the restart
+    to stand in for a value, under SEC-017. Where a read does not succeed, as where that Conduit
+    is closed or a filter on it now refuses it, SEC-012 follows, and a call that the engine
+    makes of its own accord counts as a report not received. So the secret Resources that such a
+    run reads belong on `local`: until the first report after the restart, PLC-023 holds back
+    each read through one on another node but the machine provider's. Where PLC-023 holds back
+    such a read through a secret Resource on another node, the read reports unavailable and
+    SEC-012 follows: the Resource does not run on that attempt. A Resource other than a provider
+    under PRV-002 or a secret Resource then waits for a further setup, even after the machine is
+    reported reachable; the further attempts for providers and secret Resources, and PLC-023's
+    exception for the machine provider's read, still hold. A further setup of the Resource
+    leaves a running run as it is, under PRV-007.
 
 - id: PRV-027
   layer: convention

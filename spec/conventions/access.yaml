@@ -347,7 +347,7 @@
     `io.github.shrav-k.conduit/serving`, or one that the engine makes itself because of work
     that the invocation's operation arranged, other than the read of a secret that SEC-023 makes
     again, for the caller of the setup that made a connection, once that connection's values are
-    lost, and the read of a secret for a provider's run that PRV-026 asks for again once the
+    lost, and the read of a secret for a Resource's run that PRV-026 asks for again once the
     engine has restarted, or the part of it that held that run has stopped, for the caller of
     the setup that last asked for that run.
   observable: >-
@@ -367,10 +367,10 @@
     connection that lasts has lost its values, as after the engine restarts, on its machine or
     on another: SEC-023 then reads again, for the caller of the setup that made the connection,
     as the instance's own Conduit to the secret Resource and the filters on it decide when the
-    read is made, so closing that Conduit stops it; or where a provider's run ended with the
-    engine, or with the part of it that held the run, and the engine first needs the provider
-    again: PRV-026 then asks for the run anew, with reads for the caller of the setup that last
-    asked for it, decided in the same way, under SEC-011. None is made when a runtime provider
+    read is made, so closing that Conduit stops it; or where a Resource's run on the engine's
+    own runner ended with the engine, or with the part of it that held the run: PRV-026 then
+    asks for the run anew, with reads for the caller of the setup that last asked for it,
+    decided in the same way, under SEC-011. None is made when a runtime provider
     restarts a run of its own accord, under PRV-010. An invocation that outlasts its call has
     not ended: IFC-016 says how its result is read, and until it ends its onward requests are
     decided under ACC-016 and ACC-017, like any other. A new attempt is dispatched only for a

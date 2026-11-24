@@ -1375,8 +1375,9 @@ metadata:
     has lost the values of such a connection, as when it restarts, its read again, for the
     caller of the setup that made the connection, of each secret Resource that setup read; and,
     once the engine has restarted or the part of it that held the run has stopped, its reads
-    before it runs again a provider whose run ended with it, for the caller of the setup that
-    last asked for that run. Each is made for an instance and through that instance's own open
+    before it runs again a Resource whose run on its own runner ended with it, for the caller of
+    the setup that last asked for that run. Each is made for an instance and through that
+    instance's own open
     Conduit to the secret Resource, as it stands when the read is made. The server that gives
     the value, where a runtime provider other than the engine's own runner runs it, or where it
     is reached by `remote` and is not `plain`, is reached only with the engine's proof: the run

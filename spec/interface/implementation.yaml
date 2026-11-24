@@ -492,9 +492,9 @@
     restarted or the part of the engine that held it has stopped, under DL17, nothing is sent: a
     request or a hook that needs it is not dispatched and reports unavailable, or its part does,
     as where the engine cannot verify who answers, until a further setup asks for the run again,
-    under PRV-007. Two runs are asked for again before that: the run of a secret Resource that
-    PRV-026 makes again before a read, and the run that a retirement asks for to serve its
-    retire hook, under TPL-018. The promises of this file hold
+    under PRV-007. Two runs are asked for again before that: the run of a Resource that PRV-026
+    makes again once the engine has restarted, or that part has stopped, and the run that a
+    retirement asks for to serve its retire hook, under TPL-018. The promises of this file hold
     whatever runtime provider runs the item.
 
 

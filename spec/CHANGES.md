@@ -73,3 +73,5 @@ then they are under `docs/proposals/`.
 - Changed: MAN-009 and MAN-010 admit `attributed`, the list of PKG-020 (DEC-067).
 - Added: `attributed` in `implementation-item.v1`, only on a plain item reached by `command` or `package` (DEC-067).
 - Changed: OPS-036 and `list.v1`, instance items give owner, placement, revision and Running status from inspection state without adding authority (DEC-114).
+- Changed: PRV-026, once the engine restarts it runs again, without waiting for a request, each Resource that is not retired whose run on its own runner ended with it, its secrets read for the caller of the setup that last asked for that run; an Agent's run waits for a further setup (DEC-115).
+- Changed: OBS-004, PRV-002, PRV-021, SEC-010, SEC-011, SEC-012, SEC-014, SEC-017, REC-002, ACC-019, IFC-017, DL16, DL17 and `get-secret.v1` say a Resource's run where PRV-026 made a provider's again (DEC-115).

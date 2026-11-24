@@ -109,3 +109,83 @@ fn a_secret_read_ignores_its_limits_in_its_invocation_end() {
         }
     }
 }
+
+#[test]
+fn limits_signals_read_from_an_earlier_engines_store() {
+    // DL2: opening and inspecting an older observation neither fills nor writes signals.
+    let temp = temporary();
+    let shell = established(temp.path());
+    let agent = actor(&shell, "agent-b");
+    let entry = json!({"newest":{"observedAt":"2026-11-21T13:00:00Z",
+        "source":shell.context.record_source,
+        "instance":{"kind":"Agent","name":"agent-b","id":agent},
+        "invocation":"00000000-0000-4000-8000-000000315001","usageAllowed":null},
+        "windows":{}});
+    drop(shell);
+    let mut stored: store::Stored =
+        serde_json::from_slice(&fs::read(temp.path().join("state.json")).unwrap()).unwrap();
+    stored.state.limit_observations.insert(
+        agent.clone(),
+        serde_json::from_value(entry.clone()).unwrap(),
+    );
+    let store = Store::open(temp.path()).unwrap();
+    store.write(&stored).unwrap();
+    drop(store);
+    for _ in 0..2 {
+        let shell = open(temp.path());
+        let root = actor(&shell, "root");
+        let fleet = actor(&shell, "s1");
+        let snapshot = shell.state().unwrap();
+        assert_eq!(
+            serde_json::to_value(&snapshot.limit_observations[&agent]).unwrap(),
+            entry
+        );
+        let route = snapshot
+            .objects
+            .iter()
+            .find(|o| {
+                o["kind"] == "Conduit"
+                    && o["consumer"] == root
+                    && o["target"] == fleet
+                    && o.get("spec").is_none()
+            })
+            .unwrap()["local_name"]
+            .as_str()
+            .unwrap();
+        let reply = shell
+            .submit(
+                json!({"kind":"invoke","request":{
+            "identity":{"kind":"instance","id":root},"tool":format!("{route}.inspect.v1"),
+            "arguments":{"object":{"kind":"Agent","name":"agent-b"}}}}),
+                &MissingExecutor,
+            )
+            .unwrap();
+        assert_eq!(reply["isError"], false);
+        let status = &reply["structuredContent"]["status"]["limits"];
+        assert_eq!(
+            status,
+            &json!({"state":"observed","newest":entry["newest"],"windows":[]})
+        );
+        let spec = conduit_loader::Specification::read(&repository().join("spec")).unwrap();
+        assert!(
+            spec.contract_validator("limit-status.v1")
+                .unwrap()
+                .is_valid(status)
+        );
+        assert_memory_equals_disk(&shell);
+        let memory = shell.state().unwrap();
+        assert_eq!(
+            serde_json::to_value(&memory.limit_observations[&agent]).unwrap(),
+            entry
+        );
+        let disk: store::Stored =
+            serde_json::from_slice(&fs::read(temp.path().join("state.json")).unwrap()).unwrap();
+        assert_eq!(
+            serde_json::to_value(&disk.state.limit_observations[&agent]).unwrap(),
+            entry
+        );
+        let disk: Value =
+            serde_json::from_slice(&fs::read(temp.path().join("state.json")).unwrap()).unwrap();
+        assert_eq!(disk["state"]["limit_observations"][&agent], entry);
+    }
+}

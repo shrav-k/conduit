@@ -416,3 +416,197 @@ fn only_agents_and_login_resources_show_limits() {
         captures["failedTurn"]
     );
 }
+
+fn checked_limits(state: &State, c: &Context) -> Vec<Value> {
+    [
+        ("workers", "Agent", "a"),
+        ("workers", "Agent", "b"),
+        ("logins", "Resource", "login"),
+    ]
+    .into_iter()
+    .map(|(route, kind, name)| {
+        let status = inspect(state, c, 301, route, kind, name)["limits"].clone();
+        assert_eq!(
+            c.core_environment
+                .first_core_failure(&c.core_package, "limit-status.v1", &status)
+                .unwrap(),
+            None
+        );
+        status
+    })
+    .collect()
+}
+
+#[test]
+fn limits_newest_keeps_paid_usage_and_left_out_windows() {
+    // IFC-052 / IFC-053: newest keeps optional report fields whole.
+    let (state, c, _) = limits_case(LATEST, login_project(), 17);
+    let before = checked_limits(&state, &c);
+    let mut member = report("2026-11-21T13:05:00Z", 0);
+    member["usageAllowed"] = json!(false);
+    member["paidUsage"] = json!({"possible":true,"inUse":null,"resetsAt":"2026-11-21T14:00:00Z"});
+    member["windowsOmitted"] = json!(1);
+    member["windows"] = json!([{"id":"example/all/300m","windowMinutes":300,
+        "usedPercent":null,"resetsAt":null,"state":"reached","scope":null}]);
+    let call = root_call(&state, &c, 302, "call-a.turn.v1", json!({}));
+    let ended = finish_call(&call, &c, 303, &member);
+    assert!(ended.reply["_meta"].get(KEY).is_none());
+    let record = ending(&ended, &call);
+    assert_eq!(record["data"]["limits"], member);
+    assert!(record["data"].get("limitsDropped").is_none());
+    let first = checked_limits(&ended.state, &c);
+    for index in [0, 2] {
+        assert_eq!(first[index]["newest"]["paidUsage"], member["paidUsage"]);
+        assert_eq!(first[index]["newest"]["windowsOmitted"], 1);
+        let mut expected = before[index]["windows"].as_array().unwrap().clone();
+        let mut window = member["windows"][0].clone();
+        for field in ["observedAt", "source", "instance", "invocation"] {
+            window[field] = first[index]["newest"][field].clone();
+        }
+        expected.push(window);
+        expected.sort_by(|a, b| a["id"].as_str().cmp(&b["id"].as_str()));
+        assert_eq!(first[index]["windows"], json!(expected));
+    }
+    member["observedAt"] = json!("2026-11-21T13:06:00Z");
+    member["windows"] = json!([]);
+    member["windowsOmitted"] = json!(2);
+    member.as_object_mut().unwrap().remove("paidUsage");
+    let call = root_call(&ended.state, &c, 304, "call-a.turn.v1", json!({}));
+    let ended = finish_call(&call, &c, 305, &member);
+    let second = checked_limits(&ended.state, &c);
+    for index in [0, 2] {
+        assert_eq!(second[index]["newest"]["windowsOmitted"], 2);
+        assert!(second[index]["newest"].get("paidUsage").is_none());
+        assert!(second[index]["newest"].get("noWindows").is_none());
+        assert_eq!(second[index]["windows"], first[index]["windows"]);
+    }
+    assert_eq!(second[1], before[1]);
+}
+
+fn expected_signal(record: &Value, instance: &Value, field: &str) -> Value {
+    let member = &record["data"]["limits"];
+    let mut signal = json!({"observedAt":member["observedAt"],"source":record["source"],
+        "instance":{"kind":instance["kind"],"name":instance["name"],"id":instance["id"]},
+        "invocation":record["data"]["invocation"]});
+    if field == "usageAllowed" {
+        signal["value"] = member[field].clone();
+    } else {
+        signal["value"] = member["paidUsage"][field].clone();
+        signal["resetsAt"] = member["paidUsage"]["resetsAt"].clone();
+    }
+    signal
+}
+
+#[test]
+fn limits_signals_keep_the_newest_value_other_than_null() {
+    // IFC-053 / OBS-002: each signal keeps its own time and source, through nulls and purge.
+    let (mut state, c, _) = limits_case(LATEST, login_project(), 17);
+    let a = subject(&state, "Agent", "a").clone();
+    let b = subject(&state, "Agent", "b").clone();
+    let baseline = checked_limits(&state, &c);
+    let initial = |at: &str, instance: &Value| {
+        let record = state
+            .records
+            .iter()
+            .find(|r| r["data"]["limits"]["observedAt"] == at)
+            .unwrap();
+        expected_signal(record, instance, "usageAllowed")
+    };
+    let mut a_signals = json!({"usageAllowed":initial("2026-11-21T13:01:00Z", &a)});
+    let mut login_signals = json!({"usageAllowed":initial("2026-11-21T13:02:00Z", &b)});
+    assert_eq!(baseline[0]["signals"], a_signals);
+    assert_eq!(baseline[1]["signals"], login_signals);
+    assert_eq!(baseline[2]["signals"], login_signals);
+    let mut newest = Value::Null;
+    for (index, at, allowed, paid) in [
+        (
+            0,
+            "2026-11-21T13:05:00Z",
+            Value::Null,
+            Some(json!({"possible":true,"inUse":null,"resetsAt":"2026-11-21T14:00:00Z"})),
+        ),
+        (
+            1,
+            "2026-11-21T13:04:00Z",
+            json!(false),
+            Some(json!({"possible":false,"inUse":true,"resetsAt":null})),
+        ),
+        (2, "2026-11-21T15:04:00+02:00", json!(true), None),
+        (
+            3,
+            "2026-11-21T13:07:00Z",
+            json!(false),
+            Some(json!({"possible":false,"inUse":false,"resetsAt":null,"amount":5})),
+        ),
+    ] {
+        let mut member = report(at, 0);
+        member["usageAllowed"] = allowed;
+        member["windows"] = json!([]);
+        member["noWindows"] = json!("no-event");
+        if let Some(paid) = paid {
+            member["paidUsage"] = paid;
+        }
+        let call = root_call(&state, &c, 310 + index * 2, "call-a.turn.v1", json!({}));
+        let ended = finish_call(&call, &c, 311 + index * 2, &member);
+        let record = ending(&ended, &call);
+        assert!(ended.reply["_meta"].get(KEY).is_none());
+        if index == 3 {
+            assert!(record["data"].get("limits").is_none());
+            assert_eq!(record["data"]["limitsDropped"]["ruleId"], "IFC-052");
+        } else {
+            assert_eq!(record["data"]["limits"], member);
+            assert!(record["data"].get("limitsDropped").is_none());
+            if index == 0 {
+                a_signals["paidUsage"] =
+                    json!({"possible":expected_signal(record, &a, "possible")});
+                login_signals["paidUsage"] = a_signals["paidUsage"].clone();
+                newest = json!({"observedAt":at,"source":record["source"],
+                    "instance":{"kind":"Agent","name":"a","id":a["id"]},
+                    "invocation":call.reply["invocation"],"usageAllowed":null,
+                    "noWindows":"no-event","paidUsage":member["paidUsage"]});
+            } else {
+                a_signals["usageAllowed"] = expected_signal(record, &a, "usageAllowed");
+                login_signals["usageAllowed"] = a_signals["usageAllowed"].clone();
+                if index == 1 {
+                    a_signals["paidUsage"]["inUse"] = expected_signal(record, &a, "inUse");
+                    login_signals["paidUsage"] = a_signals["paidUsage"].clone();
+                }
+            }
+        }
+        state = ended.state;
+        let statuses = checked_limits(&state, &c);
+        assert_eq!(statuses[0]["signals"], a_signals);
+        assert_eq!(statuses[2]["signals"], login_signals);
+        for position in [0, 2] {
+            assert_eq!(statuses[position]["newest"], newest);
+            assert_eq!(statuses[position]["windows"], baseline[position]["windows"]);
+        }
+        assert_eq!(statuses[1], baseline[1]);
+    }
+    let before = checked_limits(&state, &c);
+    let purged = root_call(
+        &state,
+        &c,
+        320,
+        "management.purge.v1",
+        json!({"before":"2026-11-21T13:08:00Z"}),
+    );
+    assert_eq!(purged.reply["isError"], false);
+    assert!(
+        purged
+            .state
+            .records
+            .iter()
+            .all(|r| r["data"].get("limits").is_none())
+    );
+    assert_eq!(checked_limits(&purged.state, &c), before);
+    let reloaded: State =
+        serde_json::from_slice(&serde_json::to_vec(&purged.state).unwrap()).unwrap();
+    assert_eq!(reloaded, purged.state);
+    assert_eq!(checked_limits(&reloaded, &c), before);
+    for instance in [&a, &b, subject(&reloaded, "Resource", "login")] {
+        let later = limits::status(&reloaded, instance, "2026-11-21T16:00:00Z", &c).unwrap();
+        let earlier = limits::status(&reloaded, instance, "2026-11-21T13:00:00Z", &c).unwrap();
+        assert_eq!(later["signals"], earlier["signals"]);
+    }
+}

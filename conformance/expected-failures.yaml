@@ -33,10 +33,6 @@
       "reason": "PKG-020: the first build does not read `attributed`; DEC-067's engine order makes it pass and removes this entry"
     },
     {
-      "id": "requests-limits-signals",
-      "reason": "IFC-053, order 307: the first build keeps no usage signal, paid usage or left-out count in a status; the engine's limits order makes it pass"
-    },
-    {
       "id": "requests-repeat-failed-earlier-succeeded",
       "reason": "OPS-012, F13 of ruling 78 point 6 as ruling 80 point 2 refines it: the first build records failed when a new attempt is answered failed after an earlier attempt's late answer said succeeded; review order 22, the engine following SO-B, makes it pass and removes this entry"
     },

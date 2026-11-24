@@ -1280,3 +1280,40 @@ a one-time Python script, against
 working copies cloned by hand; the account lines' copies and their checks, until `value.v1`
 (DEC-076) replaces them (DEC-068); and a cancelled turn on a stage-2 Agent, which only a restart
 of serve cleared.
+
+## Amendment of 2026-11-24: a fifth pair on the Business seat
+
+Amended on 2026-11-24 (PST), before the fifth pair's first turn, by the coordinator outside every
+turn, as [DEC-203](../../docs/decisions/log.md#dec-203-2026-11-24-a-fifth-pair-on-the-mac-this-week-on-the-business-seat)
+asks: more lanes come first
+([DEC-182](../../docs/decisions/log.md#dec-182-2026-11-24-everything-stays-in-v0-more-accounts-and-machines-come-first)),
+and one account's login serves several Agents (DEC-042, DEC-046), so a fifth pair needs no new
+account and no sign-in. The bar on orders that change this directory covers orders sent through
+the Fleet (DEC-057), so this breaches nothing.
+
+**The documents.** [The fifth pair's document](stage-3/fleet/pair-5.yaml) adds `worker-5` and
+`verifier-5` from the `worker-role` and `verifier-role` templates, sharing the working copy
+`<slot-5>`, on stage 3's login Resource `second-chatgpt` with pairs 3 and 4; and root's Conduits
+`root-worker-5` and `root-verifier-5` from the Codex package's `conversation` template. Its
+manifest is stage 3's. One placeholder is added, filled only in the rendered copy and never
+committed: `<slot-5>`, the absolute path of the fifth pair's working copy (class path).
+
+| Agent | Type | Account | Directory | Deadline | Root's Conduit |
+| --- | --- | --- | --- | --- | --- |
+| `worker-5` | `codex.v4` | `second-chatgpt` | `<slot-5>` | 14400 s | `root-worker-5` |
+| `verifier-5` | `codex.v4` | `second-chatgpt` | `<slot-5>` | 3600 s | `root-verifier-5` |
+
+**The steps**, each recorded with its evidence by a later dated amendment: the coordinator clones
+`<slot-5>` at `main` and renders the document as one part; after this amendment merges, submits
+it and sets it up, with no sign-in, and root's tools then hold `root-worker-5.*` and
+`root-verifier-5.*`; then sends the pair its first turn.
+
+**What it changes.** The fifth pair works as pairs 1 to 4 do and is judged by the same
+conditions; its turns count toward stage 3's measures from its first turn. The Business seat's
+usage is now shared by six Agents; until the usage guard's chain is merged and the login
+Resource is its `.v2`, the coordinator watches it by hand, as for the team seats (DEC-179), and a
+new account is asked for only when the seat's limit binds. The pair stays on this machine: a node
+never moves (PLC-009), so the first pair on another machine is a sixth
+([DEC-202](../../docs/decisions/log.md#dec-202-2026-11-24-the-first-remote-lane-is-a-new-pair-on-the-windows-node)).
+*Coordinator's*: the Mac's load with five building pairs is measured from the turns' durations
+and reported with the stage's measures.

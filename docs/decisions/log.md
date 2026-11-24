@@ -1484,3 +1484,51 @@ Owner's words: where order 402 goes once the coordinator corrected its premise (
 Lands in: order 402 is defense in depth for hand builds and the gate's default mode, dispatched after the usage guard's chain with the coordinator's Rust replacements (DEC-171); amends DEC-172
 
 Status: accepted, not done (order 402)
+
+## DEC-176, 2026-11-24, serve stops gracefully
+
+Owner's words: whether serve stops gracefully -> "Yes, graceful stop (Recommended)"
+
+Lands in: a stop of serve takes no new request and lets those in progress finish within a bound; a spec order and an engine order; the restart script retires
+
+Status: accepted, not done (orders 410 and 411)
+
+## DEC-177, 2026-11-24, changelog fragments and no stored counts
+
+Owner's words: how merges stop conflicting on count lines and the changelog -> "Changelog fragments, no stored counts"
+
+Lands in: each order adds its own changelog fragment instead of editing one file, and counts in READMEs and rows are computed by the checkers instead of stored, so two orders never conflict on them
+
+Status: accepted, not done (a documentation and tools order, replacing order 400's merge drivers)
+
+## DEC-178, 2026-11-24, serve runs under launchd after the graceful stop
+
+Owner's words: whether serve runs as a launchd service -> "Yes, after the graceful stop (Recommended)"
+
+Lands in: once DEC-176 is built, a private launchd job runs serve, restarting it on a crash or a reboot and keeping the machine awake while it runs
+
+Status: accepted, not done (after orders 410 and 411)
+
+## DEC-179, 2026-11-24, both team seats are used now
+
+Owner's words: using the team seats before the usage guard is built, after the probe showed the Business workspace has no credits and the Team seat has usage credits on with no cap -> "Both seats now"
+
+Lands in: the team-seat Agents (worker-3, worker-4, verifier-3, verifier-4, reader-a, drafter) take turns now; the owner accepts that a Team-seat turn past its included usage could bill the organization's credits until the guard is built; amends DEC-102
+
+Status: accepted, not done (in use from 2026-11-24)
+
+## DEC-180, 2026-11-24, parallel tracks on the accounts
+
+Owner's words: how the new seats work -> "Parallel tracks (Recommended)"; and "We should also likely rewrite everything we can into the engine now using the new accounts we have access to"
+
+Lands in: pairs 1 and 2 finish the usage guard; pairs 3 and 4 take the engine and Rust work now (the kit's replacements and other engine gaps); reader-a does the Claude reads; the drafter drafts orders through Conduit; amends DEC-166, DEC-171 and DEC-175 for pairs 3 and 4
+
+Status: accepted, not done (in use from 2026-11-24)
+
+## DEC-181, 2026-11-24, a durable ongoing record and parallel work at the split, planned by Fable
+
+Owner's words: "rather than a one time handoff, we should use fable to plan what we're going to try to do long term so new agents and coordinators can get full context on conduit and all of its constituent parts. Let's discuss on how we can keep a durable ongoing record and how when we split the packages and the organization how we can work in parallel with multiple agents. Creating handoffs like this is bespoke."
+
+Lands in: a Fable study plans the long-term work, a durable record kept current as part of the work itself (not a bespoke handoff) that gives any new agent or coordinator full context on Conduit and each of its parts, and how several agents work in parallel once the packages and the organization split
+
+Status: accepted, not done (the study)

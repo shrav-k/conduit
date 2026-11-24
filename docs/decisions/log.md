@@ -1660,3 +1660,107 @@ Owner's words: a map of all of Conduit's parts -> "Catalog file per part, checke
 Lands in: each part has a catalog entry (owner, interfaces, status) and its own AGENTS.md; a check fails any part or file nobody claims and renders the parts map; kept current by every order that touches a part
 
 Status: accepted, not done
+
+## DEC-198, 2026-11-24, a machine is a node; no new core kind
+
+Owner's words: how Conduit represents a machine -> "Node only, no new kinds (Recommended)"
+
+Lands in: a machine is a node and nothing else; before admission it is a row in its provider's report; the enrollment is the claim before the join and the node's status the claim after; a group of machines is the machine provider's own configuration; labels stay fixed at admission
+
+Status: accepted, not done
+
+## DEC-199, 2026-11-24, several machine providers, decided at the EC2 order
+
+Owner's words: whether more than one machine provider may stand (PRV-013) -> "Several, decided at the EC2 order (Recommended)"
+
+Lands in: more than one machine provider may stand, each node naming its provider and no two reporting one hostname; PRV-013 is amended at the EC2 order, not before
+
+Status: accepted, not done
+
+## DEC-200, 2026-11-24, scaling tooling proposes; the owner admits each machine
+
+Owner's words: who scales cloud machines and who admits each -> "Tool proposes, you admit (Recommended)"
+
+Lands in: root-side tooling proposes one enrollment per wanted machine under a configured maximum and the usage guard's status, and proposes retirement when idle; the owner opens and admits each enrollment at the owner's terminal; the engine never launches or terminates a machine; DEC-128, DEC-133 and ENR-007 stand
+
+Status: accepted, not done
+
+## DEC-201, 2026-11-24, a cordon in weeks 3 to 4, before any spot machine
+
+Owner's words: when a node's cordon is built -> "Weeks 3-4, before any spot (Recommended)"
+
+Lands in: a node has a cordon condition, set by root or by its provider's draining report: placement never names it, a new model-work request to an instance on it reports unavailable naming the cordon, and turns in progress finish (DEC-176's shape, per node); until then the coordinator's dispatch avoids a node about to pause
+
+Status: accepted, not done
+
+## DEC-202, 2026-11-24, the first remote lane is a new pair on the Windows node
+
+Owner's words: the first remote lane -> "New pair there, ~12-13 (Recommended)"
+
+Lands in: a new worker and verifier pair with its own login Resources on the Windows node (DEC-121), under run.v2; pairs 3 and 4 stay on the Mac while they build the chain; the joining sitting about 2026-12-13; the long-term plan's earlier move date gives way to it
+
+Status: accepted, not done
+
+## DEC-203, 2026-11-24, a fifth pair on the Mac this week, on the Business seat
+
+Owner's words: what adds capacity this week -> "A fifth pair on the Mac (Recommended)"; the account -> "Another ChatGPT/Codex seat"; then, at the sitting's question -> "Why do we need new accounts again? Why can't we use the existing accounts?"; then -> "Business seat, no sitting (Recommended)"
+
+Lands in: a fifth Codex pair, worker-5 and verifier-5, on the Business seat's existing login with pairs 3 and 4 (DEC-042, DEC-046): no new account and no sign-in; it stays on the Mac (PLC-009) and the Windows pair is a sixth; a new account comes only when an existing account's usage limit binds, by measurement
+
+Status: accepted, not done
+
+## DEC-204, 2026-11-24, remote sign-in by the carried return, on pairs 1 and 2 now
+
+Owner's words: how an Agent on another machine signs in -> "Carried return, pairs 1-2 now (Recommended)"
+
+Lands in: the carried return (orders 048a-7, 048a-8, 050o, 051b-3) is built by pairs 1 and 2 now
+
+Status: accepted, not done
+
+## DEC-205, 2026-11-24, the Pi joins as a plain arm64 node with no login
+
+Owner's words: the Raspberry Pi's role -> "Plain arm64 node, no login (Recommended)"
+
+Lands in: after its setup sitting the Pi joins as a plain linux/arm64 node with no model login; the trial hub waits for the state chain and for ruling 75 C4
+
+Status: accepted, not done
+
+## DEC-206, 2026-11-24, test builds on the Pi; a check Type order
+
+Owner's words: checks on the Pi -> "Test builds OK; check Type order (Recommended)"
+
+Lands in: DEC-080's 'builds nothing' means no release build, so test builds are allowed on the Pi; a check Type and its trigger become one spec order; the Pi's checks follow in week 4
+
+Status: accepted, not done
+
+## DEC-207, 2026-11-24, the Pi's setup sitting this week
+
+Owner's words: when the Pi's wipe, imaging and first boot happen -> "This week"
+
+Lands in: the Pi's setup sitting (about an hour) is this week, from a written step-by-step guide
+
+Status: accepted, not done
+
+## DEC-208, 2026-11-24, EC2 instances are reached through AWS Session Manager
+
+Owner's words: how EC2 instances are reached -> "AWS Session Manager"
+
+Lands in: a new runtime provider over AWS Session Manager; no tailnet and no inbound port on instances; no private key on an instance
+
+Status: accepted, not done
+
+## DEC-209, 2026-11-24, temporary AWS credentials, registered once Agents are confined
+
+Owner's words: the EC2 provider's credential and when EC2 may start -> "Temporary creds, once Agents are confined (Recommended)"
+
+Lands in: the EC2 provider is registered only when no unconfined Agent runs on the engine's machine; its credential is temporary (IAM Roles Anywhere, or a role assumed per AWS account), held as a secret Resource, scoped to the named launch template and the provider's tag, explicit and never a fallback; one provider Resource per AWS account; Agent instances carry no instance profile and require IMDSv2 with hop limit 1
+
+Status: accepted, not done
+
+## DEC-210, 2026-11-24, spot only for short turns, after the cordon
+
+Owner's words: spot instances -> "Short turns only, after cordon (Recommended)"
+
+Lands in: no spot machine until the cordon exists; then spot only for short-turn Agents (verifiers, readers) under a tier label the owner names; workers run on demand
+
+Status: accepted, not done

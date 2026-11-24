@@ -11,6 +11,12 @@ use std::collections::BTreeMap;
 pub struct Observations {
     newest: Value,
     windows: BTreeMap<String, Value>,
+    /// IFC-053 signals in limit-status.v1 form: usageAllowed beside paidUsage's
+    /// possible and inUse. Each holds value, observedAt, source, instance and
+    /// invocation; paid signals also hold resetsAt. Empty for an entry an earlier
+    /// engine wrote, and then not serialized, preserving its stored form (DL2).
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    signals: BTreeMap<String, Value>,
 }
 
 pub(crate) struct Report {
@@ -70,10 +76,38 @@ impl Report {
                 if let Some(reason) = self.value.get("noWindows") {
                     newest["noWindows"] = reason.clone();
                 }
+                for key in ["paidUsage", "windowsOmitted"] {
+                    if let Some(value) = self.value.get(key) {
+                        newest[key] = value.clone();
+                    }
+                }
                 let windows = self.value["windows"].as_array().expect("validated windows");
                 for id in std::iter::once(id).chain(self.login.as_deref()) {
                     let observations = t.state.limit_observations.entry(id.to_owned()).or_default();
                     keep_latest(&mut observations.newest, newest.clone());
+                    // IFC-053 / OBS-002: signals advance independently, only on non-null values.
+                    for (key, value, paid) in [
+                        ("usageAllowed", &self.value["usageAllowed"], false),
+                        ("possible", &self.value["paidUsage"]["possible"], true),
+                        ("inUse", &self.value["paidUsage"]["inUse"], true),
+                    ] {
+                        if value.is_null() {
+                            continue;
+                        }
+                        let mut signal = evidence.clone();
+                        signal["value"] = value.clone();
+                        let current = if paid {
+                            signal["resetsAt"] = self.value["paidUsage"]["resetsAt"].clone();
+                            let paid_usage = observations
+                                .signals
+                                .entry("paidUsage".into())
+                                .or_insert_with(|| json!({}));
+                            &mut paid_usage[key]
+                        } else {
+                            observations.signals.entry(key.into()).or_default()
+                        };
+                        keep_latest(current, signal);
+                    }
                     for reported in windows {
                         let key = reported["id"].as_str().expect("validated window ID");
                         let mut window = reported.as_object().expect("validated window").clone();
@@ -195,5 +229,9 @@ pub(crate) fn status(state: &State, instance: &Value, time: &str, c: &Context) -
             window
         })
         .collect();
-    Some(json!({"state":"observed","newest":observations.newest,"windows":windows}))
+    let mut status = json!({"state":"observed","newest":observations.newest,"windows":windows});
+    if !observations.signals.is_empty() {
+        status["signals"] = json!(observations.signals);
+    }
+    Some(status)
 }

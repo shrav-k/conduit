@@ -193,7 +193,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | IFC-050 | interface | must | 4 | 0 | outside | core | case passes |
 | IFC-051 | interface | must | 2 | 1 | outside | core, shell | case passes |
 | IFC-052 | interface | must | 2 | 0 | outside | core | case passes |
-| IFC-053 | interface | must | 2 | 1 | outside | core | case passes |
+| IFC-053 | interface | must | 2 | 0 | outside | core | case passes |
 | IMP-001 | convention | must | 0 | 0 | reason | none | reason, no case |
 | IMP-002 | convention | must not | 5 | 0 | cases | core | case passes |
 | IMP-003 | language | must | 0 | 0 | reason | none | reason, no case |

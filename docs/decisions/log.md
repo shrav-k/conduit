@@ -1412,3 +1412,43 @@ Owner's words: how the idle team seats are brought into use -> "Guard chain firs
 Lands in: both workers take only the usage guard's orders, in dependency order, until it is built; other ready orders wait; the team seats stay idle until then (DEC-102)
 
 Status: accepted, not done (the guard's orders)
+
+## DEC-167, 2026-11-23, an Agent's status shows its login's guard report
+
+Owner's words: whether an Agent's status shows the guard report of the login it uses -> "Show it on the Agent (Recommended)"
+
+Lands in: an Agent's status shows why its next call that starts model work would run or be held, the lever that applied, the window and the paid-usage state, with no amounts, to whoever may inspect the Agent, as DEC-099 gives a held call's caller
+
+Status: accepted, not done (orders 316 and 317, then the hold's engine order)
+
+## DEC-168, 2026-11-23, a report ask's records name what caused it
+
+Owner's words: striking the coordinator's choice that a report ask's records name no cause -> "Record the ask's cause"
+
+Lands in: the records of a login's report ask name the invocation whose wait caused it
+
+Status: accepted, not done (order 316, then the ask's engine order)
+
+## DEC-169, 2026-11-23, a lever change makes waiting calls wait for a fresh ask
+
+Owner's words: striking the coordinator's choice that a report ended by a lever change holds its waiting calls -> "Change 'levers-changed' hold"
+
+Lands in: when a control changes a login's levers, the report it ended holds no call; the calls waiting on it wait for a fresh ask, within DL21
+
+Status: accepted, not done (order 316, then the hold's engine order)
+
+## DEC-170, 2026-11-23, a waiting call's access is checked once, at dispatch
+
+Owner's words: striking the coordinator's choice that a waiting call's access is decided again as a second recorded decision -> "Dispatch-time check instead"
+
+Lands in: when a call's wait for a report ends, its access is checked once at dispatch against the Conduits as they then stand; a call that no longer has access is held unavailable naming why, with no second access-decision record
+
+Status: accepted, not done (order 316, then the hold's engine order)
+
+## DEC-171, 2026-11-23, the coordinator hands off through written state; its kit's Rust replacements follow the guard
+
+Owner's words: on handing the coordinator's work to another agent -> "We are running out of usage, we should plan how to generate handoff resources so another agent can pick up this work. This will also be a useful practice for when the coordinator works through conduit"; the successor -> "A Fable session"; how -> "Write now, verify blind (Recommended)"; the kit -> "Order Rust replacements first"; when they run -> "After the guard chain (Recommended)"
+
+Lands in: the coordinator keeps a private handoff (current state, playbook, its own account, the kit) current at every change, verified by a successor's blind dry-run; the kit's shell and Python helpers are a marked stopgap whose Rust replacements are written as orders now and dispatched after the usage guard's chain (DEC-166)
+
+Status: accepted, not done (the replacement orders)

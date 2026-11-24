@@ -337,6 +337,77 @@ impl RecordInputs<'_> {
         Ok(())
     }
 }
+/// CTR-004 / REC-002: the held Type's input/output policy, including lift.v1.
+/// None means the Type could not be read; compaction must keep that held copy.
+/// Borrow the selected contract instead of decoding the entire schema environment
+/// for every ended entry on every open (DL2, DL10).
+pub fn held_record_content(target: &Value, operation: &str, c: &Context) -> Option<[bool; 2]> {
+    let reference = target["type"].as_str()?;
+    let (address, name) = reference.split_once('#')?;
+    let scopes = target["schema_environment"]["scopes"].as_object()?;
+    let own_key = target["contract_scope"].as_str()?;
+    let own = scopes.get(own_key)?;
+    let own_address = own["address"].as_str()?;
+    let selected = if address.is_empty() || address == own_address {
+        own_key
+    } else if address == c.core_package {
+        scopes
+            .iter()
+            .find(|(_, scope)| scope["address"] == address)?
+            .0
+    } else {
+        own["manifest"][address].as_str()?
+    };
+    let scope = scopes.get(selected)?;
+    if (!address.is_empty() && scope["address"] != address)
+        || (selected != own_key
+            && scope.get("exports").is_some_and(|exports| {
+                !exports.is_null()
+                    && exports
+                        .as_array()
+                        .is_none_or(|names| !names.iter().any(|export| export == name))
+            }))
+    {
+        return None;
+    }
+    let ty = scope["contracts"].get(name)?;
+    if ty["kind"] != "Type" || !ty["spec"].is_object() {
+        return None;
+    }
+    Some(record_content_flags(ty, operation, c))
+}
+
+fn record_content_flags(ty: &Value, operation: &str, c: &Context) -> [bool; 2] {
+    [
+        ty["spec"]["records"]["inputs"] == true || operation == c.qualified("lift.v1"),
+        ty["spec"]["records"]["outputs"] == true,
+    ]
+}
+
+/// DL2, DEC-149: an ended entry is neither in-progress nor unknown; reconciliation
+/// moves an unknown entry to succeeded. Drop implementation and, unless later
+/// records may keep content or the held Type cannot be read, held_target.
+/// Keep contract for REV-009/REV-010 inspection, and the index, retained results,
+/// cause and control fields for OPS-008/OPS-009/OPS-034 repeats and attribution.
+/// Call only after the transition's last record for this entry.
+pub(crate) fn compact_ended_invocation(v: &mut Value, c: &Context) {
+    if matches!(v["state"].as_str(), Some("in-progress" | "unknown")) {
+        return;
+    }
+    let keep_target = v.get("held_target").is_some_and(|target| {
+        v["operation"]
+            .as_str()
+            .and_then(|op| held_record_content(target, op, c))
+            .is_none_or(|keeps| keeps.into_iter().any(|keep| keep))
+    });
+    if let Some(fields) = v.as_object_mut() {
+        fields.remove("implementation");
+        if !keep_target {
+            fields.remove("held_target");
+        }
+    }
+}
+
 pub(crate) fn record_content(t: &Transition, c: &Context, data: &mut Value) -> Result<()> {
     let invocation = t
         .state
@@ -413,18 +484,24 @@ pub(crate) fn record_content(t: &Transition, c: &Context, data: &mut Value) -> R
     let Some(ty) = target["type"].as_str() else {
         return Ok(());
     };
-    let (_, _, ty) = schemas::operation(&target, ty, &c.core_package)?;
     let Some(op) = data["operation"].as_str().map(str::to_owned) else {
         return Ok(());
     };
+    let keeps = match held_record_content(&target, &op, c) {
+        Some(keeps) => keeps,
+        None => {
+            // The conservative compaction check does not reject records. Preserve
+            // the old resolver's error, or apply the old content rule to its result.
+            let (_, _, ty) = schemas::operation(&target, ty, &c.core_package)?;
+            record_content_flags(&ty, &op, c)
+        }
+    };
     let (env, scope, contract) = schemas::operation(&target, &op, &c.core_package)?;
-    for (value, setting, schema_key) in [
-        (arguments, "inputs", "inputSchema"),
-        (outputs, "outputs", "outputSchema"),
+    for (value, setting, schema_key, keep) in [
+        (arguments, "inputs", "inputSchema", keeps[0]),
+        (outputs, "outputs", "outputSchema", keeps[1]),
     ] {
-        if ty["spec"]["records"][setting] != true
-            && !(setting == "inputs" && op == c.qualified("lift.v1"))
-        {
+        if !keep {
             continue;
         }
         if setting == "outputs" && op == c.qualified("get-secret.v1") {
@@ -1901,6 +1978,7 @@ fn invoke_inner(
                 crate::retirement::remove(t, a, c, i, &object)?;
             }
         }
+        compact_ended_invocation(&mut t.state.invocations[reconciled], c);
         finish(t, a, c, i, "succeeded", json!({}), json!([]), None)?;
     } else if let Some(mut trial) = installation {
         if let Some(inputs) = crate::client_ids::confirmation_inputs(&route["arguments"])
@@ -2131,7 +2209,9 @@ pub(crate) fn finish(
         Some(outcome),
         None,
         Some(&v["id"]),
-    )
+    )?;
+    compact_ended_invocation(&mut t.state.invocations[i], c);
+    Ok(())
 }
 pub(crate) fn complete(
     t: &mut Transition,
@@ -2335,7 +2415,7 @@ fn complete_call(
                         .is_some_and(|f| f.contains(restriction))
                 {
                     t.validated_reason = Some((reason.into(), restriction.clone()));
-                    restore_or_remove_invocation(&mut t.state, i, &v);
+                    let restored = restore_or_remove_invocation(&mut t.state, i, &v);
                     reject(
                         t,
                         &mut a,
@@ -2346,6 +2426,9 @@ fn complete_call(
                         None,
                         Some(restriction),
                     )?;
+                    if let Some(i) = restored {
+                        compact_ended_invocation(&mut t.state.invocations[i], c);
+                    }
                     t.request_replies.push(crate::RequestReply {
                         invocation: id.into(),
                         attempt,
@@ -2469,9 +2552,12 @@ pub(crate) fn record_fault_reason(
         ended["refusalTier"] = json!(explain::tier(&t.state, &route, c)?);
     }
     record(t, a, c, "invocation-ended", ended)?;
-    restore_or_remove_invocation(&mut t.state, i, &v);
+    let restored = restore_or_remove_invocation(&mut t.state, i, &v);
     route["arguments"] = v["arguments"].clone();
     reject(t, a, c, &route, reason, "IFC-026", None, Some(restriction))?;
+    if let Some(i) = restored {
+        compact_ended_invocation(&mut t.state.invocations[i], c);
+    }
     fault_reply(t, &v)?;
     crate::lifecycle::child_answered(t, a, c, &v, reason)
 }
@@ -2518,7 +2604,7 @@ fn reject_unsent(
         data["ruleId"] = json!("REC-007");
         record(t, a, c, "access-decision", data)?;
     }
-    restore_or_remove_invocation(&mut t.state, i, &v);
+    let restored = restore_or_remove_invocation(&mut t.state, i, &v);
     if matches!(stage, UnsentDispatch::ReadBack) {
         let operation = v["operation"]
             .as_str()
@@ -2537,6 +2623,9 @@ fn reject_unsent(
         )?;
     } else {
         reject(t, a, c, &route, "unavailable", "REC-007", None, None)?;
+    }
+    if let Some(i) = restored {
+        compact_ended_invocation(&mut t.state.invocations[i], c);
     }
     Ok(v)
 }
@@ -2567,7 +2656,7 @@ fn fault_reply(t: &mut Transition, invocation: &Value) -> Result<()> {
     Ok(())
 }
 
-fn restore_or_remove_invocation(state: &mut State, i: usize, v: &Value) {
+fn restore_or_remove_invocation(state: &mut State, i: usize, v: &Value) -> Option<usize> {
     if let Some(previous) = v.get("previous") {
         let invocation = &mut state.invocations[i];
         invocation["state"] = previous["state"].clone();
@@ -2601,8 +2690,10 @@ fn restore_or_remove_invocation(state: &mut State, i: usize, v: &Value) {
             }
         }
         fields.remove("previous");
+        Some(i)
     } else {
         state.invocations.remove(i);
+        None
     }
 }
 
@@ -2717,7 +2808,7 @@ fn complete_discovery(
         &v["held_target"],
         &cause,
     );
-    restore_or_remove_invocation(&mut t.state, i, v);
+    let restored = restore_or_remove_invocation(&mut t.state, i, v);
     reject_diagnostics(
         t,
         a,
@@ -2729,6 +2820,9 @@ fn complete_discovery(
         None,
         rejection.diagnostics,
     )?;
+    if let Some(i) = restored {
+        compact_ended_invocation(&mut t.state.invocations[i], c);
+    }
     t.request_replies.push(crate::RequestReply {
         invocation: v["id"].as_str().ok_or("hook has no ID")?.into(),
         attempt: v["attempt"].as_u64().ok_or("hook has no attempt")?,
@@ -3026,10 +3120,13 @@ pub(crate) fn recover(t: &mut Transition, evidence: &Evidence, c: &Context) -> R
             }
         }
     }
+    for invocation in &mut t.state.invocations {
+        compact_ended_invocation(invocation, c);
+    }
     t.decisions.push(decision(
         "recover-interrupted-invocations",
         &["IMP-007", "OPS-013", "OPS-018"],
-        &["DL2"],
+        &["DL2", "DL10"],
         json!({}),
         vec![],
     ));
@@ -3755,6 +3852,467 @@ mod tests {
         let ended = step(&ready.state, control_completion(&ready, answer), c).unwrap();
         assert_eq!(ended.reply["_meta"][mark(c, "outcome")], outcome);
         ended
+    }
+
+    fn held_copy_without_fields(mut v: Value) -> Value {
+        v.as_object_mut().unwrap().remove("held_target");
+        v.as_object_mut().unwrap().remove("implementation");
+        v
+    }
+
+    // Captured on main e13f4c9a without order 311: canonical hashes cover every key/value.
+    // Includes order 272's supplied-only control inputs and order 275's core environment.
+    fn held_copy_baseline(label: &str, value: &Value, expected: &str) {
+        let digest = packages::bytes_digest(&serde_json_canonicalizer::to_vec(value).unwrap());
+        assert_eq!(digest, expected, "baseline {label}");
+    }
+
+    fn held_copy_reconcile(state: &State, c: &Context, id: &Value) -> Transition {
+        let (_, _, mut request) = control_request_fixture();
+        request.tool = "owners.reconcile.v1".into();
+        request.arguments = json!({"invocation":id,"occurred":true,"checked":"observed"});
+        let result = step(
+            state,
+            Input::Invoke {
+                evidence: unused_evidence(state),
+                request,
+                key: None,
+                archive: None,
+            },
+            c,
+        )
+        .unwrap();
+        assert_eq!(result.reply["isError"], false);
+        result
+    }
+
+    #[test]
+    fn held_copy_record_fallback_preserves_legacy_content() {
+        // REC-002, CTR-004: a conservative compaction check must not reject a
+        // record that the existing schema resolver and content rule accepted.
+        for (label, ty, operation, inputs, outputs) in [
+            (
+                "null spec",
+                json!({"kind":"Type","spec":null}),
+                "read.v1",
+                false,
+                false,
+            ),
+            (
+                "array spec",
+                json!({"kind":"Type","spec":[]}),
+                "read.v1",
+                false,
+                false,
+            ),
+            (
+                "other kind",
+                json!({"kind":"Schema","spec":{}}),
+                "read.v1",
+                false,
+                false,
+            ),
+            (
+                "legacy flags",
+                json!({"kind":"Schema","spec":{"records":{"inputs":true,"outputs":true}}}),
+                "read.v1",
+                true,
+                true,
+            ),
+            (
+                "lift without spec",
+                json!({"kind":"Type"}),
+                "lift.v1",
+                true,
+                false,
+            ),
+        ] {
+            let (mut t, c) =
+                recording_fixture(operation, json!({"type":"object"}), json!({"value":7}));
+            let v = &mut t.state.invocations[0];
+            v["state"] = json!("succeeded");
+            v["implementation"] = json!({"source":"engine"});
+            v["held_target"]["schema_environment"]["scopes"]["core"]["contracts"]["recording.v1"] =
+                ty;
+            let target = v["held_target"].clone();
+            let op = c.qualified(operation);
+            assert!(schemas::operation(&target, "#recording.v1", &c.core_package).is_ok());
+            assert_eq!(held_record_content(&target, &op, &c), None);
+            compact_ended_invocation(v, &c);
+            assert_eq!(v["held_target"], target);
+            assert!(v.get("implementation").is_none());
+            let evidence = evidence();
+            let mut allocation = Allocation {
+                evidence: &evidence,
+                cursor: 0,
+            };
+            let result = record(
+                &mut t,
+                &mut allocation,
+                &c,
+                "invocation-ended",
+                json!({"invocation":"invocation-id","outcome":"succeeded","outputs":{"answer":42}}),
+            );
+            assert!(
+                result.is_ok(),
+                "legacy record fallback failed for {label}: {result:?}"
+            );
+            assert_eq!(t.records.len(), 1);
+            let data = &t.records[0]["data"];
+            assert_eq!(
+                data.get("inputs"),
+                inputs.then(|| json!({"value":7})).as_ref(),
+                "{label}"
+            );
+            assert_eq!(
+                data.get("outputs"),
+                outputs.then(|| json!({"answer":42})).as_ref(),
+                "{label}"
+            );
+            assert_eq!(t.state.records, t.records);
+        }
+    }
+
+    #[test]
+    fn held_copy_dropped_at_each_end() {
+        // OPS-008, OPS-009, OPS-014, DL2: only the two disposable fields change.
+        let mut ended_entries = vec![];
+        for outcome in ["succeeded", "failed", "unknown"] {
+            let (state, c, request) = control_request_fixture();
+            let pending = invoke_control(&state, &c, &request, "key");
+            let ended = answer_control(&pending, &c, outcome);
+            let v = &ended.state.invocations[0];
+            let expected = match outcome {
+                "succeeded" => {
+                    "sha256:b84ffc114e23b7cdc24925084b6e8b4f8c4a9fc81be3b028461cbc8141b30094"
+                }
+                "failed" => {
+                    "sha256:78f0e13bcbc11b8e361cb353d58a6de770a2c08f7437092296a813f7427d5e9c"
+                }
+                _ => "sha256:1e636dcd3322f34544672c0bbe180ed633d5b6c4d82e4798e3f6d3cc3550f4ee",
+            };
+            held_copy_baseline(
+                outcome,
+                &if outcome == "unknown" {
+                    v.clone()
+                } else {
+                    held_copy_without_fields(v.clone())
+                },
+                expected,
+            );
+            if outcome == "unknown" {
+                assert_eq!(
+                    v["held_target"],
+                    pending.state.invocations[0]["held_target"]
+                );
+                assert_eq!(
+                    v["implementation"],
+                    pending.state.invocations[0]["implementation"]
+                );
+                let reconciled = held_copy_reconcile(&ended.state, &c, &v["id"]);
+                ended_entries.push(reconciled.state.invocations[0].clone());
+            } else {
+                ended_entries.push(v.clone());
+            }
+        }
+        for v in ended_entries {
+            assert!(
+                v.get("implementation").is_none(),
+                "ended implementation remains"
+            );
+            assert!(v.get("held_target").is_none(), "ended held_target remains");
+        }
+    }
+
+    #[test]
+    fn held_copy_end_record_unchanged() {
+        // REC-002, CTR-004: capture all ending records, including their IDs and times.
+        let mut entries = vec![];
+        for keeps in [true, false] {
+            let (mut state, c, request) = control_request_fixture();
+            let target = state.objects.iter_mut().find(|o| o["id"] == "o1").unwrap();
+            target["schema_environment"]["scopes"]["core"]["contracts"]["type.v1"]["spec"]["records"] =
+                json!({"inputs":keeps,"outputs":keeps});
+            let pending = invoke_control(&state, &c, &request, "key");
+            let ended = answer_control(&pending, &c, "succeeded");
+            held_copy_baseline(
+                if keeps {
+                    "records-kept"
+                } else {
+                    "records-omitted"
+                },
+                &json!(ended.records),
+                if keeps {
+                    "sha256:17e30171d1092481b17237d760f3bd4ea5f1ccc7eceaaa53991248d67f89c591"
+                } else {
+                    "sha256:99f4731185f01883e4879972c781874b26dce5666004b21ab1719022ba094937"
+                },
+            );
+            let repeated = invoke_repeat(&ended.state, &c, &request);
+            assert!(repeated.external_intents.is_empty());
+            let record = repeated
+                .records
+                .iter()
+                .find(|r| r["type"] == "request-ended")
+                .unwrap();
+            assert_eq!(record["data"].get("inputs").is_some(), keeps);
+            if keeps {
+                assert_eq!(
+                    record["data"]["inputs"],
+                    ended.state.invocations[0]["arguments"]
+                );
+            } else {
+                assert!(ended.records.iter().all(
+                    |r| r["data"].get("inputs").is_none() && r["data"].get("outputs").is_none()
+                ));
+            }
+            entries.push((keeps, ended.state.invocations[0].clone()));
+        }
+        for (keeps, v) in entries {
+            assert!(
+                v.get("implementation").is_none(),
+                "recording entry implementation remains"
+            );
+            assert_eq!(v.get("held_target").is_some(), keeps);
+        }
+    }
+
+    #[test]
+    fn held_copy_repeat_after_the_end_answers_as_before() {
+        // OPS-008, OPS-009, OPS-034: repeats cannot compact legacy state as a side effect.
+        let (mut state, c, request) = repeat_fixture(false);
+        state.objects[3]["schema_environment"]["scopes"]["core"]["contracts"]["reserved.v1"]["spec"]
+            ["outputSchema"] = json!({"type":"object"});
+        let pending = invoke_repeat(&state, &c, &request);
+        let ended = answer(
+            &pending,
+            &c,
+            Completion::Result {
+                result: json!({"_meta":{mark(&c,"outcome"):"succeeded"},"structuredContent":{"answer":42}}),
+            },
+        );
+        for expired in [false, true] {
+            let current = if expired {
+                step(
+                    &ended.state,
+                    Input::ExpireOutputs {
+                        invocation: ended.state.invocations[0]["id"].as_str().unwrap().into(),
+                    },
+                    &c,
+                )
+                .unwrap()
+                .state
+            } else {
+                ended.state.clone()
+            };
+            let mut legacy = current.clone();
+            for field in ["held_target", "implementation"] {
+                legacy.invocations[0][field] = pending.state.invocations[0][field].clone();
+            }
+            let repeated = invoke_repeat(&current, &c, &request);
+            let old_repeat = invoke_repeat(&legacy, &c, &request);
+            assert_eq!(repeated.reply, old_repeat.reply);
+            assert_eq!(repeated.records, old_repeat.records);
+            assert_eq!(
+                json!(repeated.request_replies),
+                json!(old_repeat.request_replies)
+            );
+            assert_eq!(repeated.state.invocations, current.invocations);
+            assert_eq!(old_repeat.state.invocations, legacy.invocations);
+            assert!(repeated.external_intents.is_empty());
+            assert_eq!(
+                repeated.reply["_meta"][mark(&c, "invocation")],
+                current.invocations[0]["id"]
+            );
+            if expired {
+                assert_eq!(repeated.reply["_meta"][mark(&c, "reason")], "conflict");
+            } else {
+                assert_eq!(repeated.reply["structuredContent"], json!({"answer":42}));
+            }
+        }
+        assert!(
+            ended.state.invocations[0].get("held_target").is_none(),
+            "repeat entry held_target remains"
+        );
+    }
+
+    #[test]
+    fn held_copy_inspection_reads_ended_controls() {
+        // REV-007, REV-009, REV-010: reconciliation does not settle unknown settings.
+        let (state, c, mut request) = control_request_fixture();
+        let pending = invoke_control(&state, &c, &request, "first");
+        let unknown = answer_control(&pending, &c, "unknown");
+        let id = &unknown.state.invocations[0]["id"];
+        let before = inspect_settings(&unknown.state, &c)["status"]["settings"].clone();
+        assert_eq!(before["/limit"], unknown_setting(&c, id.as_str().unwrap()));
+        let reconciled = held_copy_reconcile(&unknown.state, &c, id);
+        assert_eq!(
+            inspect_settings(&reconciled.state, &c)["status"]["settings"],
+            before
+        );
+        assert_eq!(
+            reconciled.state.invocations[0]["contract"],
+            unknown.state.invocations[0]["contract"]
+        );
+        request.arguments["revision"] = inspect_settings(&reconciled.state, &c)["revision"].clone();
+        let later = invoke_control(&reconciled.state, &c, &request, "later");
+        let succeeded = answer_control(&later, &c, "succeeded");
+        assert!(
+            inspect_settings(&succeeded.state, &c)["status"]["settings"]
+                .get("/limit")
+                .is_none()
+        );
+        for v in succeeded
+            .state
+            .invocations
+            .iter()
+            .filter(|v| v["operation"] == c.qualified("configure.v1"))
+        {
+            assert!(
+                v.get("implementation").is_none(),
+                "inspected control implementation remains"
+            );
+            assert!(v.get("held_target").is_none());
+        }
+    }
+
+    #[test]
+    fn held_copy_restored_after_a_refused_redispatch() {
+        // OPS-024, REV-009, REC-007: an unsent redispatch restores the failed control.
+        let (state, c, request) = control_request_fixture();
+        let pending = invoke_control(&state, &c, &request, "key");
+        let failed = answer_control(&pending, &c, "failed");
+        let before = inspect_settings(&failed.state, &c)["status"]["settings"].clone();
+        let retry = invoke_control(&failed.state, &c, &request, "key");
+        assert_eq!(
+            retry.state.invocations[0]["previous"],
+            failed.state.invocations[0]
+        );
+        assert_eq!(retry.state.invocations[0]["discovery"], "pending");
+        let restored = step(
+            &retry.state,
+            Input::Recover {
+                evidence: unused_evidence(&retry.state),
+            },
+            &c,
+        )
+        .unwrap();
+        let v = &restored.state.invocations[0];
+        assert_eq!(v["state"], "failed");
+        assert_eq!(v["contract"], failed.state.invocations[0]["contract"]);
+        assert_eq!(
+            inspect_settings(&restored.state, &c)["status"]["settings"],
+            before
+        );
+        assert!(
+            v.get("implementation").is_none(),
+            "restored implementation remains"
+        );
+        assert!(v.get("held_target").is_none());
+    }
+
+    #[test]
+    fn held_copy_recover_compacts_earlier_entries() {
+        // DL2, DL10, IMP-007: migration is idempotent and leaves uncertain work held.
+        let (mut state, c, request) = control_request_fixture();
+        state.objects.iter_mut().find(|o| o["id"] == "o1").unwrap()["schema_environment"]["scopes"]
+            ["core"]["contracts"]["configure.v1"]["spec"]["outputSchema"] =
+            json!({"type":"object"});
+        let pending = invoke_control(&state, &c, &request, "key");
+        let ended = answer_control(&pending, &c, "succeeded");
+        let mut legacy = ended.state.clone();
+        for field in ["held_target", "implementation"] {
+            legacy.invocations[0][field] = pending.state.invocations[0][field].clone();
+        }
+        let original = legacy.invocations[0].clone();
+        for (id, outcome) in [
+            ("failed", "failed"),
+            ("reconciled", "succeeded"),
+            ("recording", "succeeded"),
+            ("missing-type", "failed"),
+            ("unknown", "unknown"),
+            ("interrupted", "in-progress"),
+        ] {
+            let mut v = original.clone();
+            v["id"] = json!(id);
+            v["state"] = json!(outcome);
+            v["key"] = json!(id);
+            if id == "reconciled" {
+                v["reconciled_control"] = json!(true);
+            }
+            if id == "recording" {
+                let name = v["held_target"]["type"]
+                    .as_str()
+                    .unwrap()
+                    .split_once('#')
+                    .unwrap()
+                    .1
+                    .to_owned();
+                v["held_target"]["schema_environment"]["scopes"]["core"]["contracts"][name]["spec"]
+                    ["records"] = json!({"inputs":true});
+            }
+            if id == "missing-type" {
+                v["held_target"]["type"] = json!(c.qualified("absent.v1"));
+            }
+            if id == "interrupted" {
+                v["contract"]["spec"]
+                    .as_object_mut()
+                    .unwrap()
+                    .remove("changes");
+                v["operation"] = json!(c.qualified("reserved.v1"));
+            }
+            legacy.invocations.push(v);
+        }
+        let before = inspect_settings(&legacy, &c)["status"]["settings"].clone();
+        let recovered = step(
+            &legacy,
+            Input::Recover {
+                evidence: unused_evidence(&legacy),
+            },
+            &c,
+        )
+        .unwrap();
+        assert_eq!(recovered.reply, json!({"restored":true}));
+        let again = step(
+            &recovered.state,
+            Input::Recover {
+                evidence: unused_evidence(&recovered.state),
+            },
+            &c,
+        )
+        .unwrap();
+        assert_eq!(again.state.invocations, recovered.state.invocations);
+        assert_eq!(
+            inspect_settings(&recovered.state, &c)["status"]["settings"],
+            before
+        );
+        let repeated = invoke_repeat(&recovered.state, &c, &request);
+        assert_eq!(
+            repeated.reply,
+            invoke_repeat(&ended.state, &c, &request).reply
+        );
+        assert_eq!(repeated.reply["isError"], false);
+        assert_eq!(repeated.reply["structuredContent"], json!({}));
+        assert!(repeated.external_intents.is_empty());
+        for (i, v) in recovered.state.invocations.iter().enumerate() {
+            if i < 3 {
+                assert_eq!(
+                    *v,
+                    held_copy_without_fields(legacy.invocations[i].clone()),
+                    "legacy ended entry {i}"
+                );
+            } else if i < 5 {
+                let mut expected = legacy.invocations[i].clone();
+                expected.as_object_mut().unwrap().remove("implementation");
+                assert_eq!(*v, expected);
+            } else if i == 5 {
+                assert_eq!(*v, legacy.invocations[i]);
+            } else {
+                assert_eq!(v["state"], "unknown");
+                assert_eq!(v["held_target"], legacy.invocations[i]["held_target"]);
+                assert_eq!(v["implementation"], legacy.invocations[i]["implementation"]);
+            }
+        }
     }
 
     #[test]

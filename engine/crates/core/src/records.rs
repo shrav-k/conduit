@@ -841,6 +841,7 @@ pub(crate) fn registration_boundary(
     ended["outcome"] = json!("succeeded");
     requests::record(t, &mut a, c, "invocation-ended", ended.clone())?;
     requests::record(t, &mut a, c, "request-ended", ended)?;
+    requests::compact_ended_invocation(t.state.invocations.last_mut().unwrap(), c);
     t.decisions.push(decision(
         "record-registration-request",
         &["REC-001", "REC-002", "REC-003", "OPS-008", "ACC-002"],

@@ -1,5 +1,7 @@
 #[path = "fixtures.rs"]
 mod fixtures;
+#[path = "held_copy_tests.rs"]
+mod held_copy_tests;
 #[path = "limits_tests.rs"]
 mod limits_tests;
 #[path = "usage_tests.rs"]

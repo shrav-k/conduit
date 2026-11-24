@@ -470,7 +470,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | PRV-029 | convention | must | 0 | 0 | outside | core, shell | no case, no reason |
 | PRV-030 | convention | must not | 0 | 0 | outside | none | no case, no reason |
 | REC-001 | convention | must | 14 | 0 | cases | core | case passes |
-| REC-002 | convention | must | 28 | 1 | cases | core | case passes |
+| REC-002 | convention | must | 28 | 1 | cases | core, shell | case passes |
 | REC-003 | convention | must not | 8 | 0 | cases | core, shell | case passes |
 | REC-004 | convention | must | 5 | 0 | cases | core | case passes |
 | REC-005 | convention | must | 2 | 0 | cases | core | case passes |
@@ -482,7 +482,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | REV-004 | convention | must not | 3 | 0 | cases | core | case passes |
 | REV-005 | convention | must not | 0 | 0 | reason | none | reason, no case |
 | REV-006 | convention | must | 1 | 0 | outside | none | case passes |
-| REV-007 | convention | must | 0 | 0 | outside | shell | no case, no reason |
+| REV-007 | convention | must | 0 | 0 | outside | core, shell | no case, no reason |
 | REV-009 | convention | must | 1 | 0 | outside | core, shell | case passes |
 | REV-010 | convention | must | 4 | 0 | outside | core | case passes |
 | REV-011 | convention | must | 0 | 0 | reason | core | reason, no case |

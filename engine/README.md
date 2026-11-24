@@ -672,7 +672,8 @@ index separately, their signed growth since the preceding step, and each invocat
 keyed status and outcome. Record-gap metadata is reported separately. These are measurements
 of this representation, including retained outputs and held contexts, not estimates of a
 storage backend's cost. An empty array occupies two bytes. Purge leaves prior invocation
-entries and retained results intact; there is no compaction or key expiry.
+entries and retained results intact; there is no key expiry, and no compaction but the held
+copy an ended invocation drops (order 311).
 
 The return review validates successful built-in outputs against their core contracts and
 checks supplied keys on outer access/ending records independently of invocation correlation.

@@ -17,6 +17,7 @@ then they are under `docs/proposals/`.
 
 ## [Unreleased]
 
+- Changed: `inspect.v1`'s `packages` lists each package an object reaches through a contract of its submitted project, so a moved pin of a package that only such a contract names shows in that package's item, not only as a moved submission digest, and an instance of a template that reaches such a package needs that release installed (order 267's finding; NAM-009, PKG-007; ruling 52).
 - Added: `inspect.v1`'s `packages`: the submitted project's item lists `documents`, the kind, name and digest of each contract document of that submission, the digest taken by SUB-008's canonical form, so a moved submission digest says which contract changed; no content is shown (order 245's finding; ruling 52).
 - Added: `inspect.v1`'s status member `settings`: under the JSON Pointer of each setting that a control whose outcome is unknown addressed (REV-009), `state` `unknown`, the control and the invocation, and no value, kept after reconciliation (REV-010) until a later control settles it (order 245's finding; ruling 52).
 

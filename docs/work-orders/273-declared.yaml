@@ -1,0 +1,4 @@
+# Added case for work order 273.
+- name: registration-reached-package-inspected
+  kind: added
+  cases: [registration-reached-package-inspected]

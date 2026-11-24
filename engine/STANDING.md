@@ -285,7 +285,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | NAM-006 | language | must | 0 | 0 | reason | none | reason, no case |
 | NAM-007 | language | must | 2 | 0 | cases | core | case passes |
 | NAM-008 | language | must | 1 | 0 | cases | core | case passes |
-| NAM-009 | language | must | 11 | 0 | cases | core | case passes |
+| NAM-009 | language | must | 12 | 0 | cases | core | case passes |
 | NAM-010 | language | must | 3 | 0 | cases | core, shell | case passes |
 | NAM-011 | language | must | 1 | 0 | cases | none | case passes |
 | NAM-012 | language | must | 0 | 0 | reason | none | reason, no case |
@@ -370,7 +370,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | PKG-004 | language | must | 7 | 0 | cases | core, shell | case passes |
 | PKG-005 | language | must | 2 | 0 | cases | none | case passes |
 | PKG-006 | language | must | 12 | 0 | cases | core, shell | case passes |
-| PKG-007 | language | must | 2 | 0 | cases | core | case passes |
+| PKG-007 | language | must | 3 | 0 | cases | core | case passes |
 | PKG-012 | language | must | 1 | 0 | cases | core | case passes |
 | PKG-016 | interface | must not | 0 | 0 | outside | none | no case, no reason |
 | PKG-017 | language | must | 14 | 0 | cases | core | case passes |

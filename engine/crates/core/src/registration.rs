@@ -355,16 +355,59 @@ impl Held {
         implementations: &Value,
         core: &str,
     ) -> Result<Value> {
+        let packages = self
+            .package_scopes(spec, kind, implementations, core)?
+            .into_keys()
+            .map(|scope| package_item(&self.contexts[&scope]))
+            .collect::<Vec<_>>();
+        Ok(json!(packages))
+    }
+    fn package_scopes(
+        &self,
+        spec: &Value,
+        kind: &str,
+        implementations: &Value,
+        core: &str,
+    ) -> Result<BTreeMap<String, Option<String>>> {
         let mut selections = vec![];
         packages::selections_document(
             &json!({"kind":kind,"spec":spec}),
             self.scope != "project",
             &mut selections,
         )?;
-        let mut scopes = BTreeSet::new();
-        for (reference, kind) in selections {
-            if let Ok((held, _, _)) = self.select(&reference, &kind, core) {
-                scopes.insert(held.scope);
+        // Direct selections take precedence over a project contract that reaches the same scope.
+        let mut scopes = BTreeMap::new();
+        let mut direct = selections.into_iter();
+        let mut project = None;
+        let mut project_selections = Vec::new();
+        let mut visited = BTreeSet::new();
+        while let Some((source, (reference, kind), contract)) = direct
+            .next()
+            .map(|selection| (self, selection, None))
+            .or_else(|| {
+                let (selection, contract) = project_selections.pop()?;
+                Some((project.as_ref()?, selection, contract))
+            })
+        {
+            let Ok((held, document, qualified)) = source.select(&reference, &kind, core) else {
+                continue;
+            };
+            scopes.entry(held.scope.clone()).or_insert(contract);
+            // A release's digest already covers its own pins.
+            if held.scope == "project" && packages::contract(&document) && visited.insert(qualified)
+            {
+                let contract = document["kind"]
+                    .as_str()
+                    .zip(document["metadata"]["name"].as_str())
+                    .map(|(kind, name)| format!("{kind} {name}"));
+                let mut selections = Vec::new();
+                packages::selections_document(&document, false, &mut selections)?;
+                project_selections.extend(
+                    selections
+                        .into_iter()
+                        .map(|selection| (selection, contract.clone())),
+                );
+                project.get_or_insert(held);
             }
         }
         for implementation in implementations
@@ -373,17 +416,13 @@ impl Held {
             .flat_map(|m| m.values())
         {
             if let Some(scope) = implementation["scope"].as_str() {
-                scopes.insert(scope.into());
+                scopes.insert(scope.into(), None);
             }
             if implementation["source"] == "engine" {
-                scopes.insert("core".into());
+                scopes.insert("core".into(), None);
             }
         }
-        let packages = scopes
-            .into_iter()
-            .map(|scope| package_item(&self.contexts[&scope]))
-            .collect::<Vec<_>>();
-        Ok(json!(packages))
+        Ok(scopes)
     }
     fn valid_in(&self, root: &Value, schema: &Value, value: &Value, core: &str) -> Result<bool> {
         fn locate(root: &Value, wanted: &Value, at: String) -> Option<String> {
@@ -820,6 +859,7 @@ impl Builder<'_> {
         if doc.get("spec").is_none() {
             return Err(fault("INS-002", format!("{name} is an instance")));
         }
+        let held = serde_json::from_value::<Held>(doc["held"].clone());
         // The definition's resolution context stays frozen, but a later catalog
         // must still contain the exact package identities that definition uses.
         for package in doc["packages"]
@@ -839,19 +879,33 @@ impl Builder<'_> {
                     )
                     && package["digest"] == s.digest
             }) {
-                return Err(fault(
-                    "PKG-007",
-                    format!(
-                        "required package {} version {} ({}) is not installed",
-                        package["address"].as_str().unwrap_or(""),
-                        package["version"].as_str().unwrap_or(""),
-                        package["digest"].as_str().unwrap_or("")
-                    ),
-                ));
+                let mut message = format!(
+                    "required package {} version {} ({}) is not installed",
+                    package["address"].as_str().unwrap_or(""),
+                    package["version"].as_str().unwrap_or(""),
+                    package["digest"].as_str().unwrap_or("")
+                );
+                let contract = held.as_ref().ok().and_then(|h| {
+                    h.package_scopes(
+                        &doc["spec"],
+                        kind,
+                        &doc["resolved_implementations"],
+                        &self.context.core_package,
+                    )
+                    .ok()?
+                    .into_iter()
+                    .find(|(scope, _)| package_item(&h.contexts[scope]) == *package)
+                    .and_then(|(_, contract)| contract)
+                });
+                if let Some(contract) = contract {
+                    message.push_str(&format!(
+                        "; template {name} reaches it through its project's {contract}"
+                    ));
+                }
+                return Err(fault("PKG-007", message));
             }
         }
-        let h = serde_json::from_value(doc["held"].clone())
-            .map_err(|_| fault("INS-002", "template context missing"))?;
+        let h = held.map_err(|_| fault("INS-002", "template context missing"))?;
         Ok((
             json!({"kind":kind,"metadata":{"name":name},"spec":doc["spec"]}),
             h,

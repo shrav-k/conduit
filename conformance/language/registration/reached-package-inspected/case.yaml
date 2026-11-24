@@ -1,0 +1,389 @@
+id: registration-reached-package-inspected
+title: Inspection lists package pins reached through submitted contracts
+layers:
+- language
+- convention
+promises:
+- NAM-009
+- PKG-007
+profile: first-build
+initial:
+  recipe: empty
+files:
+  reached-one: reached-one.json
+  reached-contracts: reached-contracts.json
+  reached-two: reached-two.json
+  unreached: unreached.json
+  unreached-contracts: unreached-contracts.json
+  contracts: contracts.json
+  manifest-one: manifest-one.json
+  one: one.json
+  fixture-one: fixture-one.json
+  manifest-two: manifest-two.json
+  two: two.json
+  fixture-two: fixture-two.json
+  later-manifest: later-manifest.json
+  later: later.json
+  fixture-later: fixture-later.json
+steps:
+- input:
+    kind: first-start
+    evidence:
+      time: '2026-11-21T12:00:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000001
+      - 00000000-0000-4000-8000-000000000002
+      - 00000000-0000-4000-8000-000000000003
+      - 00000000-0000-4000-8000-000000000004
+      - 00000000-0000-4000-8000-000000000005
+      - 00000000-0000-4000-8000-000000000006
+      - 00000000-0000-4000-8000-000000000007
+      - 00000000-0000-4000-8000-000000000008
+      - 00000000-0000-4000-8000-000000000009
+      - 00000000-0000-4000-8000-000000000010
+      - 00000000-0000-4000-8000-000000000011
+      - 00000000-0000-4000-8000-000000000012
+      - 00000000-0000-4000-8000-000000000013
+      - 00000000-0000-4000-8000-000000000014
+      - 00000000-0000-4000-8000-000000000015
+      - 00000000-0000-4000-8000-000000000016
+      - 00000000-0000-4000-8000-000000000017
+      - 00000000-0000-4000-8000-000000000018
+      - 00000000-0000-4000-8000-000000000019
+      - 00000000-0000-4000-8000-000000000020
+      - 00000000-0000-4000-8000-000000000021
+      - 00000000-0000-4000-8000-000000000022
+      - 00000000-0000-4000-8000-000000000023
+      - 00000000-0000-4000-8000-000000000024
+      revisions:
+      - r0-0
+      - r0-1
+      - r0-2
+      - r0-3
+      - r0-4
+      - r0-5
+      - r0-6
+      - r0-7
+      suffixes:
+      - abc01
+      - abc02
+      - abc03
+    machine:
+      hostname: workstation.example
+      labels:
+        kubernetes.io/hostname: workstation.example
+        kubernetes.io/os: linux
+        kubernetes.io/arch: arm64
+      state: reachable
+    trustDomain: vectors-273.example
+  expect:
+    reply:
+      started: true
+    external_intents: []
+    required_promises:
+    - FST-001
+    state:
+      started: true
+    record_facts:
+    - type: object-change
+- input:
+    kind: register-project
+    file: fixture-one
+    request:
+      sender: 00000000-0000-4000-8000-000000000005
+      caller: 00000000-0000-4000-8000-000000000005
+      conduit: 00000000-0000-4000-8000-000000000006
+      target: 00000000-0000-4000-8000-000000000003
+      operation: '@core#register.v1'
+    evidence:
+      time: '2026-11-21T12:01:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000100
+      - 00000000-0000-4000-8000-000000000101
+      - 00000000-0000-4000-8000-000000000102
+      - 00000000-0000-4000-8000-000000000103
+      - 00000000-0000-4000-8000-000000000104
+      - 00000000-0000-4000-8000-000000000105
+      - 00000000-0000-4000-8000-000000000106
+      - 00000000-0000-4000-8000-000000000107
+      - 00000000-0000-4000-8000-000000000108
+      - 00000000-0000-4000-8000-000000000109
+      - 00000000-0000-4000-8000-000000000110
+      - 00000000-0000-4000-8000-000000000111
+      - 00000000-0000-4000-8000-000000000112
+      - 00000000-0000-4000-8000-000000000113
+      - 00000000-0000-4000-8000-000000000114
+      - 00000000-0000-4000-8000-000000000115
+      revisions:
+      - r1-0
+      - r1-1
+      - r1-2
+      - r1-3
+      - r1-4
+      - r1-5
+      - r1-6
+      - r1-7
+      suffixes:
+      - b1000
+      - b1001
+      - b1002
+      - b1003
+      - b1004
+      - b1005
+  expect:
+    reply:
+      accepted: true
+    external_intents: []
+    required_promises:
+    - SUB-008
+    - SUB-010
+    state:
+      started: true
+    record_facts:
+    - type: object-change
+- input:
+    kind: register-project
+    file: fixture-two
+    request:
+      sender: 00000000-0000-4000-8000-000000000005
+      caller: 00000000-0000-4000-8000-000000000005
+      conduit: 00000000-0000-4000-8000-000000000006
+      target: 00000000-0000-4000-8000-000000000003
+      operation: '@core#register.v1'
+    evidence:
+      time: '2026-11-21T12:02:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000200
+      - 00000000-0000-4000-8000-000000000201
+      - 00000000-0000-4000-8000-000000000202
+      - 00000000-0000-4000-8000-000000000203
+      - 00000000-0000-4000-8000-000000000204
+      - 00000000-0000-4000-8000-000000000205
+      - 00000000-0000-4000-8000-000000000206
+      - 00000000-0000-4000-8000-000000000207
+      - 00000000-0000-4000-8000-000000000208
+      - 00000000-0000-4000-8000-000000000209
+      - 00000000-0000-4000-8000-000000000210
+      - 00000000-0000-4000-8000-000000000211
+      - 00000000-0000-4000-8000-000000000212
+      - 00000000-0000-4000-8000-000000000213
+      - 00000000-0000-4000-8000-000000000214
+      - 00000000-0000-4000-8000-000000000215
+      revisions:
+      - r2-0
+      - r2-1
+      - r2-2
+      - r2-3
+      - r2-4
+      - r2-5
+      - r2-6
+      - r2-7
+      suffixes:
+      - b2000
+      - b2001
+      - b2002
+      - b2003
+      - b2004
+      - b2005
+  expect:
+    reply:
+      accepted: true
+    external_intents: []
+    required_promises:
+    - SUB-008
+    - SUB-010
+    state:
+      started: true
+    record_facts:
+    - type: object-change
+- input:
+    kind: invoke
+    request:
+      identity:
+        kind: instance
+        id: 00000000-0000-4000-8000-000000000005
+      tool: management.inspect.v1
+      arguments:
+        object:
+          kind: Resource
+          name: reader-one
+    evidence:
+      time: '2026-11-21T12:03:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000300
+      - 00000000-0000-4000-8000-000000000301
+      - 00000000-0000-4000-8000-000000000302
+      - 00000000-0000-4000-8000-000000000303
+      - 00000000-0000-4000-8000-000000000304
+      - 00000000-0000-4000-8000-000000000305
+  expect:
+    reply:
+      structuredContent:
+        packages:
+        - address: example.org/reaching
+          digest: sha256:ab434e999624d41aee72f9c06e75da24fe44367baf999dbde01a3bfa1005b75d
+          documents:
+          - kind: Capability
+            name: reading.v1
+            digest: sha256:212b09662b35815fe0dc63e172a355db631005860f279585dd9dbd86f55a2f0d
+          - kind: Operation
+            name: read.v1
+            digest: sha256:a0eb013f8e642ee0dce2113da44fc95e6eab1b1d03556a8f5ed144cccfadd064
+          - kind: Schema
+            name: spare.v1
+            digest: sha256:00a00799b058924fe0152bebf80b136c31bd22d2d469d864f07321317d407c68
+          - kind: Type
+            name: reader.v1
+            digest: sha256:b6245edcea864928b12ff3f9a204b0c404bd71098e4384bdcc52a9d5b0c40a15
+        - address: example.org/reached
+          version: 1.0.0
+          digest: sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    external_intents: []
+- input:
+    kind: invoke
+    request:
+      identity:
+        kind: instance
+        id: 00000000-0000-4000-8000-000000000005
+      tool: management.inspect.v1
+      arguments:
+        object:
+          kind: Resource
+          name: reader-two
+    evidence:
+      time: '2026-11-21T12:04:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000400
+      - 00000000-0000-4000-8000-000000000401
+      - 00000000-0000-4000-8000-000000000402
+      - 00000000-0000-4000-8000-000000000403
+      - 00000000-0000-4000-8000-000000000404
+      - 00000000-0000-4000-8000-000000000405
+  expect:
+    reply:
+      structuredContent:
+        packages:
+        - address: example.org/reaching
+          digest: sha256:66e76d63c15e6fedcda6be5966c20747f7b8387e779b9397ff810911b1d59c26
+          documents:
+          - kind: Capability
+            name: reading.v1
+            digest: sha256:212b09662b35815fe0dc63e172a355db631005860f279585dd9dbd86f55a2f0d
+          - kind: Operation
+            name: read.v1
+            digest: sha256:a0eb013f8e642ee0dce2113da44fc95e6eab1b1d03556a8f5ed144cccfadd064
+          - kind: Schema
+            name: spare.v1
+            digest: sha256:00a00799b058924fe0152bebf80b136c31bd22d2d469d864f07321317d407c68
+          - kind: Type
+            name: reader.v1
+            digest: sha256:b6245edcea864928b12ff3f9a204b0c404bd71098e4384bdcc52a9d5b0c40a15
+        - address: example.org/reached
+          version: 2.0.0
+          digest: sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+    external_intents: []
+- input:
+    kind: invoke
+    request:
+      identity:
+        kind: instance
+        id: 00000000-0000-4000-8000-000000000005
+      tool: system.inspect.v1
+      arguments:
+        object:
+          kind: Resource
+          name: one
+    evidence:
+      time: '2026-11-21T12:05:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000500
+      - 00000000-0000-4000-8000-000000000501
+      - 00000000-0000-4000-8000-000000000502
+      - 00000000-0000-4000-8000-000000000503
+      - 00000000-0000-4000-8000-000000000504
+      - 00000000-0000-4000-8000-000000000505
+  expect:
+    reply:
+      structuredContent:
+        packages:
+        - address: example.org/reaching
+          digest: sha256:ab434e999624d41aee72f9c06e75da24fe44367baf999dbde01a3bfa1005b75d
+          documents:
+          - kind: Capability
+            name: reading.v1
+            digest: sha256:212b09662b35815fe0dc63e172a355db631005860f279585dd9dbd86f55a2f0d
+          - kind: Operation
+            name: read.v1
+            digest: sha256:a0eb013f8e642ee0dce2113da44fc95e6eab1b1d03556a8f5ed144cccfadd064
+          - kind: Schema
+            name: spare.v1
+            digest: sha256:00a00799b058924fe0152bebf80b136c31bd22d2d469d864f07321317d407c68
+          - kind: Type
+            name: reader.v1
+            digest: sha256:b6245edcea864928b12ff3f9a204b0c404bd71098e4384bdcc52a9d5b0c40a15
+        - address: example.org/reached
+          version: 1.0.0
+          digest: sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    external_intents: []
+- input:
+    kind: register-project
+    file: fixture-later
+    request:
+      sender: 00000000-0000-4000-8000-000000000005
+      caller: 00000000-0000-4000-8000-000000000005
+      conduit: 00000000-0000-4000-8000-000000000006
+      target: 00000000-0000-4000-8000-000000000003
+      operation: '@core#register.v1'
+    evidence:
+      time: '2026-11-21T12:06:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000600
+      - 00000000-0000-4000-8000-000000000601
+      - 00000000-0000-4000-8000-000000000602
+      - 00000000-0000-4000-8000-000000000603
+      - 00000000-0000-4000-8000-000000000604
+      - 00000000-0000-4000-8000-000000000605
+      - 00000000-0000-4000-8000-000000000606
+      - 00000000-0000-4000-8000-000000000607
+      - 00000000-0000-4000-8000-000000000608
+      - 00000000-0000-4000-8000-000000000609
+      - 00000000-0000-4000-8000-000000000610
+      - 00000000-0000-4000-8000-000000000611
+      - 00000000-0000-4000-8000-000000000612
+      - 00000000-0000-4000-8000-000000000613
+      - 00000000-0000-4000-8000-000000000614
+      - 00000000-0000-4000-8000-000000000615
+      revisions:
+      - r6-0
+      - r6-1
+      - r6-2
+      - r6-3
+      - r6-4
+      - r6-5
+      - r6-6
+      - r6-7
+      suffixes:
+      - b6000
+      - b6001
+      - b6002
+      - b6003
+      - b6004
+      - b6005
+  expect:
+    reply:
+      accepted: false
+      reason: invalid
+      diagnostics:
+      - ruleId: PKG-007
+        message:
+          text: 'three: required package example.org/reached version 1.0.0 (sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa)
+            is not installed; template reader-one reaches it through its project''s Operation read.v1'
+    external_intents: []
+    required_promises:
+    - PKG-007
+    stateUnchanged: true
+    record_facts:
+    - type: access-decision
+      data:
+        reason: invalid
+        dispatched: false

@@ -238,4 +238,18 @@ Named here and not in this order:
 
 ## Record
 
-Not yet run.
+Run on 2026-11-22 through Conduit itself, by the dogfood's own Agents, in Pacific time, on
+`main` with order 270 stacked while it waited in the merge queue. A first turn stopped at the
+start check, rightly: the coordinator had stacked it on an older base without order 268.
+
+**Worker-2's turn** (06:50 to 07:00) added `Environment::fill_control_inputs` beside `fill` and
+called it from `access::evaluate` where the contract has `changes`: a control keeps exactly the
+inputs its caller supplied, with defaults filled only within supplied values, through
+validation, the digest, the repeat comparison, storage and the `tools/call`. `fill` and its other
+callers are unchanged, and order 270's supplied-input count stands. The dispatch regression
+first failed on the stored arguments' extra `label`; the new case `change-omitted-input` first
+failed at step 7 on `/external_intents/0/call/params/arguments/label`; both pass, with 189 core
+tests and the whole vectors test.
+
+**Two blind reads at once** (07:00 to 07:03): `turn-verifier-2.turn.v1` and the Claude reader
+both passed it with no findings. The gate's run on the squash is the coordinator's, at the merge.

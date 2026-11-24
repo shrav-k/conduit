@@ -1,6 +1,15 @@
 {
   "cases": [
     {
+      "id": "change-omitted-input",
+      "case": "conventions/changes/omitted-input/case.yaml",
+      "promises": [
+        "REV-006",
+        "OPS-026"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "change-retirement",
       "case": "conventions/changes/retirement/case.yaml",
       "promises": [

@@ -2054,7 +2054,7 @@ pub(crate) fn finish(
                 }
             }
             // A failed or unsent attempt leaves the earlier setting effect in place.
-            // Retries that do run can supply different inputs with the same normalized arguments.
+            // A retry of a control has its first attempt's supplied inputs.
             if control_attempt_dispatched(v) && outcome != "failed" {
                 uncertainty.retain(|input, _| !control_input_supplied(v, input));
             }
@@ -3852,7 +3852,57 @@ mod tests {
     }
 
     #[test]
-    fn successful_control_retry_leaves_the_previously_supplied_setting_unknown() {
+    fn control_dispatch_sends_only_supplied_inputs() {
+        let (mut state, c, mut request) = control_request_fixture();
+        let assert_dispatch = |state: &State, request: &AccessRequest, expected: Value| {
+            let initiated = invoke_control(state, &c, request, "dispatched-control");
+            let invocation = initiated
+                .state
+                .invocations
+                .iter()
+                .find(|v| v["id"] == initiated.reply["invocation"])
+                .unwrap();
+            assert_eq!(
+                invocation["arguments"], expected,
+                "stored control arguments"
+            );
+
+            let dispatched = step(
+                &initiated.state,
+                control_completion(&initiated, advertised_extension(&c)),
+                &c,
+            )
+            .unwrap();
+            assert_eq!(dispatched.external_intents.len(), 1);
+            let call = &dispatched.external_intents[0]["call"];
+            assert_eq!(call["method"], "tools/call");
+            assert_eq!(
+                call["params"]["arguments"], expected,
+                "sent control arguments"
+            );
+        };
+        assert_dispatch(
+            &state,
+            &request,
+            json!({"revision":"initial-revision","limit":20}),
+        );
+
+        let resource = state.objects.iter_mut().find(|o| o["id"] == "o1").unwrap();
+        let spec = &mut resource["schema_environment"]["scopes"]["core"]["contracts"]["configure.v1"]
+            ["spec"];
+        spec["changes"]["options"] = json!("/options");
+        spec["inputSchema"]["properties"]["options"] =
+            json!({"type":"object","properties":{"depth":{"type":"integer","default":1}}});
+        request.arguments["options"] = json!({});
+        assert_dispatch(
+            &state,
+            &request,
+            json!({"revision":"initial-revision","limit":20,"options":{"depth":1}}),
+        );
+    }
+
+    #[test]
+    fn control_repeat_writing_out_a_default_conflicts() {
         let (state, c, request) = control_request_fixture();
         let mut first_request = request.clone();
         first_request.arguments["label"] = json!("default label");
@@ -3860,14 +3910,31 @@ mod tests {
         let invocation = first.reply["invocation"].as_str().unwrap();
         let unknown = answer_control(&first, &c, "unknown");
 
-        // Normalized arguments still match even when the caller omits the default.
-        let retry = invoke_control(&unknown.state, &c, &request, "repeated");
-        assert_eq!(retry.reply["invocation"], invocation);
-        assert_eq!(retry.reply["attempt"], 2);
-        let succeeded = answer_control(&retry, &c, "succeeded");
+        let retry = step(
+            &unknown.state,
+            Input::Invoke {
+                evidence: unused_evidence(&unknown.state),
+                request,
+                key: Some("repeated".into()),
+                archive: None,
+            },
+            &c,
+        )
+        .unwrap();
         assert_eq!(
-            inspect_settings(&succeeded.state, &c)["status"]["settings"],
-            json!({"/label":unknown_setting(&c, invocation)})
+            retry.reply["_meta"][mark(&c, "reason")],
+            "conflict",
+            "omitting a previously supplied input changes the repeat"
+        );
+        assert_eq!(
+            retry.reply["structuredContent"]["diagnostics"][0]["ruleId"],
+            "OPS-010"
+        );
+        assert!(retry.external_intents.is_empty());
+        assert!(retry.state.invocations == unknown.state.invocations);
+        assert_eq!(
+            inspect_settings(&retry.state, &c)["status"]["settings"],
+            json!({"/limit":unknown_setting(&c, invocation),"/label":unknown_setting(&c, invocation)})
         );
     }
 

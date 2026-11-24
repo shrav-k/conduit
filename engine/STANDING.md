@@ -41,12 +41,12 @@ Each number counts promises. The last row counts those whose Engine source is no
 
 | Promises | language | convention | interface | all |
 | --- | ---: | ---: | ---: | ---: |
-| case passes | 152 | 162 | 30 | 344 |
+| case passes | 152 | 163 | 30 | 345 |
 | expected failure | 0 | 3 | 0 | 3 |
 | reason, no case | 52 | 17 | 1 | 70 |
-| no case, no reason | 22 | 64 | 19 | 105 |
+| no case, no reason | 22 | 63 | 19 | 104 |
 | all | 226 | 246 | 50 | 522 |
-| named in engine source | 161 | 175 | 33 | 369 |
+| named in engine source | 162 | 175 | 33 | 370 |
 
 ## The promises
 
@@ -119,7 +119,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | CTR-007 | language | must | 0 | 0 | reason | none | reason, no case |
 | CTR-008 | language | must | 0 | 0 | reason | none | reason, no case |
 | CTR-009 | language | must | 0 | 0 | reason | none | reason, no case |
-| CTR-012 | language | must | 0 | 0 | reason | none | reason, no case |
+| CTR-012 | language | must | 0 | 0 | reason | core | reason, no case |
 | CTR-013 | language | must | 7 | 0 | outside | core, shell | case passes |
 | CTR-014 | language | must | 6 | 0 | outside | core, shell | case passes |
 | ENR-001 | convention | must | 0 | 0 | outside | none | no case, no reason |
@@ -356,7 +356,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | OPS-023 | convention | must | 25 | 0 | cases | core, shell | case passes |
 | OPS-024 | convention | must | 7 | 0 | cases | core | case passes |
 | OPS-025 | convention | must | 1 | 0 | cases | core | case passes |
-| OPS-026 | convention | must | 3 | 0 | cases | core | case passes |
+| OPS-026 | convention | must | 4 | 0 | cases | core | case passes |
 | OPS-027 | convention | must | 5 | 0 | cases | core | case passes |
 | OPS-028 | convention | must | 3 | 0 | cases | core | case passes |
 | OPS-029 | convention | must | 9 | 0 | cases | core, shell | case passes |
@@ -481,7 +481,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | REV-003 | convention | must | 0 | 0 | reason | none | reason, no case |
 | REV-004 | convention | must not | 3 | 0 | cases | core | case passes |
 | REV-005 | convention | must not | 0 | 0 | reason | none | reason, no case |
-| REV-006 | convention | must | 0 | 0 | outside | none | no case, no reason |
+| REV-006 | convention | must | 1 | 0 | outside | none | case passes |
 | REV-007 | convention | must | 0 | 0 | outside | shell | no case, no reason |
 | REV-009 | convention | must | 1 | 0 | outside | core, shell | case passes |
 | REV-010 | convention | must | 4 | 0 | outside | core | case passes |

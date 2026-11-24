@@ -793,6 +793,29 @@ impl Environment {
             self.filled(scope, schema, schema, value, core, 0)
         }
     }
+
+    pub(crate) fn fill_control_inputs(
+        &self,
+        scope: &str,
+        schema: &Value,
+        value: &Value,
+        core: &str,
+    ) -> Result<Value> {
+        let Some(object) = value.as_object() else {
+            return Ok(value.clone());
+        };
+        let mut supplied = object.clone();
+        // CTR-012 limits the root to named properties and additionalProperties.
+        for (name, held) in &mut supplied {
+            if let Some(sub) = schema["properties"]
+                .get(name)
+                .or_else(|| schema.get("additionalProperties"))
+            {
+                *held = self.filled(scope, schema, sub, held, core, 1)?;
+            }
+        }
+        Ok(Value::Object(supplied))
+    }
 }
 
 /// Schema roots held by actual authored documents; paths also locate admission diagnostics.

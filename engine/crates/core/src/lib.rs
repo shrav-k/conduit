@@ -84,7 +84,7 @@ pub struct Context {
     pub core_environment: schemas::Environment,
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct State {
     pub started: bool,
@@ -111,6 +111,82 @@ pub struct State {
     pub installed_packages: Vec<archives::InstalledPackage>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub preinstalled_snapshots: Vec<packages::Snapshot>,
+}
+
+impl State {
+    /// Keep the State serialization layout while allowing the store to supply its
+    /// archive-backed package representation without cloning or serializing members.
+    pub fn with_installed_packages<'a, P: Serialize>(
+        &'a self,
+        installed_packages: &'a [P],
+    ) -> impl Serialize + 'a {
+        // Keep this exhaustive so a new State field cannot silently be lost on disk.
+        let State {
+            started,
+            objects,
+            records,
+            allocated_ids,
+            tombstones,
+            pending_actions,
+            sign_in_holds,
+            limit_observations,
+            bound_targets,
+            record_gaps,
+            invocations,
+            installed_packages: _,
+            preinstalled_snapshots,
+        } = self;
+        #[derive(Serialize)]
+        struct StateRef<'a, P> {
+            started: bool,
+            objects: &'a [Value],
+            records: &'a [Value],
+            allocated_ids: &'a BTreeSet<String>,
+            #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+            tombstones: &'a BTreeMap<String, Value>,
+            #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+            pending_actions: &'a BTreeMap<String, Value>,
+            #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+            sign_in_holds: &'a BTreeMap<String, Value>,
+            #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+            limit_observations: &'a BTreeMap<String, limits::Observations>,
+            #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+            bound_targets: &'a BTreeMap<String, Value>,
+            #[serde(skip_serializing_if = "<[Value]>::is_empty")]
+            record_gaps: &'a [Value],
+            #[serde(skip_serializing_if = "<[Value]>::is_empty")]
+            invocations: &'a [Value],
+            #[serde(skip_serializing_if = "<[P]>::is_empty")]
+            installed_packages: &'a [P],
+            #[serde(skip_serializing_if = "<[packages::Snapshot]>::is_empty")]
+            preinstalled_snapshots: &'a [packages::Snapshot],
+        }
+        StateRef {
+            started: *started,
+            objects,
+            records,
+            allocated_ids,
+            tombstones,
+            pending_actions,
+            sign_in_holds,
+            limit_observations,
+            bound_targets,
+            record_gaps,
+            invocations,
+            installed_packages,
+            preinstalled_snapshots,
+        }
+    }
+}
+
+impl Serialize for State {
+    fn serialize<S: serde::Serializer>(
+        &self,
+        serializer: S,
+    ) -> std::result::Result<S::Ok, S::Error> {
+        self.with_installed_packages(&self.installed_packages)
+            .serialize(serializer)
+    }
 }
 
 #[derive(Clone, Debug, Deserialize)]

@@ -843,7 +843,28 @@ impl Shell {
         let failed = if prewrite_failed {
             Some(false)
         } else {
-            match self.persist(&writer, &mut stored, &t) {
+            let persisted = (|| {
+                if let Some(installed) = t.decisions.iter().find(|d| d.action == "install-archive")
+                {
+                    let digest = installed.facts["digest"]
+                        .as_str()
+                        .ok_or("installed archive has no digest")?;
+                    let bytes: Vec<u8> =
+                        serde::Deserialize::deserialize(&input["archive"]["completion"]["bytes"])
+                            .map_err(|e| format!("installed archive evidence: {e}"))?;
+                    writer
+                        .store
+                        .keep_archive(digest, &bytes)
+                        .map_err(|message| {
+                            PersistenceError::Write(StateWriteError {
+                                renamed: false,
+                                message,
+                            })
+                        })?;
+                }
+                self.persist(&writer, &mut stored, &t)
+            })();
+            match persisted {
                 Ok(written) => {
                     measures.written(written);
                     None

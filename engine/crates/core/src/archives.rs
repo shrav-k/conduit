@@ -346,6 +346,39 @@ pub(crate) fn install_with_confirmation(
         }
         return Ok(Some(reject(t, diagnostics)));
     }
+    if let Some(items) = package
+        .project
+        .manifest
+        .as_ref()
+        .and_then(|manifest| manifest["implementations"].as_object())
+    {
+        for (name, item) in items {
+            let Some(program) = item["command"][0]
+                .as_str()
+                .filter(|p| crate::packages::relative_program(p))
+            else {
+                continue;
+            };
+            for pair in item["platforms"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter_map(serde_json::Value::as_str)
+            {
+                let path = format!("platforms/{pair}/{program}");
+                if !matches!(resolve(&files, &path), Ok(Some(Member::File { mode, .. })) if mode & 0o100 != 0)
+                {
+                    diagnostics.push(diagnostic("MAN-013", format!(
+                        "{}: {name} lists platform {pair}, and {path} is not an executable regular file in the archive",
+                        input.name
+                    )));
+                }
+            }
+        }
+    }
+    if !diagnostics.is_empty() {
+        return Ok(Some(reject(t, diagnostics)));
+    }
     // Resolve first so local and Schema-contract refs use the admitted catalog,
     // including each release's own dependency pins (NAM-014, SCH-015).
     let env = serde_json::from_value(resolution.reply["environment"].clone())

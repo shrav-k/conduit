@@ -1,0 +1,11 @@
+{
+  "name": "platforms-not-executable.tar.gz",
+  "address": "example.org/conformance/platforms",
+  "version": "1.0.0",
+  "digest": "sha256:b5347e9b5c452dc78397feac0bb70c173c66018ad5f860a0f5fae8a7f47c3b0c",
+  "directory": "file:///archive/platforms/",
+  "completion": {
+    "status": "complete",
+    "file": "platforms-not-executable.tar.gz"
+  }
+}

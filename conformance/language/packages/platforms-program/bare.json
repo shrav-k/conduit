@@ -1,0 +1,10 @@
+{
+  "snapshots": [],
+  "project": {
+    "directory": "file:///project/platforms/",
+    "files": {
+      "conduit.json": "bare-manifest.json",
+      "contracts.json": "contracts.json"
+    }
+  }
+}

@@ -358,8 +358,11 @@ fn release_fixtures(root: &Path, check: bool, generated: &mut BTreeMap<String, V
 }
 
 fn member(name: &str, data: &[u8], kind: u8, target: &str) -> Vec<u8> {
+    member_with_mode(name, data, kind, target, 0o644)
+}
+fn member_with_mode(name: &str, data: &[u8], kind: u8, target: &str, mode: u32) -> Vec<u8> {
     let mut h = tar::Header::new_ustar();
-    h.set_mode(0o644);
+    h.set_mode(mode);
     h.set_uid(0);
     h.set_gid(0);
     h.set_mtime(0);
@@ -606,6 +609,37 @@ fn main() {
     generated.insert("hardlink".into(), archive(hard));
     generated.insert("not-gzip".into(), b"not a gzip archive".to_vec());
     generated.insert("not-tar".into(), gzip(b"not a tar archive"));
+    for (name, linux_mode) in [
+        ("platforms-missing", None),
+        ("platforms-not-executable", Some(0o644)),
+        ("platforms-complete", Some(0o755)),
+    ] {
+        let manifest = format!(
+            "{api}\naddress: example.org/conformance/platforms\nversion: 1.0.0\nimplementations:\n  server:\n    implements: ['#probe.v1']\n    command: [bin/server]\n    platforms: [darwin/arm64, linux/arm64]\n"
+        );
+        let contract =
+            format!("{api}\nkind: Operation\nmetadata: {{name: probe.v1}}\nspec: {{}}\n");
+        let mut tar = member("conduit.yaml", manifest.as_bytes(), b'0', "");
+        tar.extend(member("contracts.yaml", contract.as_bytes(), b'0', ""));
+        tar.extend(member_with_mode(
+            "platforms/darwin/arm64/bin/server",
+            b"darwin fixture",
+            b'0',
+            "",
+            0o755,
+        ));
+        if let Some(mode) = linux_mode {
+            tar.extend(member_with_mode(
+                "platforms/linux/arm64/bin/server",
+                b"linux fixture",
+                b'0',
+                "",
+                mode,
+            ));
+        }
+        tar.extend([0; 1024]);
+        generated.insert(name.into(), gzip(&tar));
+    }
     release_fixtures(&root, check, &mut generated);
     for (name, bytes) in &generated {
         let path = out.join(format!("{name}.tar.gz"));

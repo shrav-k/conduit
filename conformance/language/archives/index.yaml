@@ -332,6 +332,15 @@
       ]
     },
     {
+      "id": "archives-platform-programs",
+      "case": "language/archives/platform-programs/case.yaml",
+      "promises": [
+        "MAN-013",
+        "MAN-009",
+        "PKG-023"
+      ]
+    },
+    {
       "id": "archives-program",
       "case": "language/archives/program/case.yaml",
       "promises": [

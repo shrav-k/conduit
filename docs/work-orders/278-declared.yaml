@@ -1,0 +1,7 @@
+# Added cases for work order 278.
+- name: archives-platform-programs
+  kind: added
+  cases: [archives-platform-programs]
+- name: packages-platforms-program
+  kind: added
+  cases: [packages-platforms-program]

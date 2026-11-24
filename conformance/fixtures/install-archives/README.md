@@ -42,3 +42,8 @@ The escape vectors assert both the archive name and the offending member `escape
 The sectioned archive fixtures export the Pool template `catalog` from a templates-only
 package, or contain a `fleet` key or an empty `agents` section that installation rejects
 under MAN-011.
+
+The platform fixtures declare `darwin/arm64` and `linux/arm64` for one relative command.
+`platforms-missing` omits the Linux program, `platforms-not-executable` gives it mode 0644,
+and `platforms-complete` gives both platform programs mode 0755. The fixtures contain only
+inert program bytes.

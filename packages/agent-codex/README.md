@@ -768,12 +768,14 @@ return guard direct calls. The device login needs F83's code path and order 051c
 Under PND-013 the engine carries no return, so sign-in completes only when the person's
 browser can reach the login's loopback port on the engine's machine.
 
-The browser limit is in the [specification](../../spec/README.md#pending-actions-sign-in-and-the-network).
+On the engine's own runner, Codex's browser login may open the default browser of the
+engine user's graphical session, where one exists. The hook still relays the printed URL
+under IFC-049, and the account check (PND-011) stays the only guard.
 Order 050n's accounts guide tells the person to close the browser window on the engine's
-machine and keep that browser free of an OpenAI session. The account check alone decides
-who signed in (PND-011). Under PND-010 the engine serializes sign-ins with the same fixed
-ports. Another program using the first port makes the hook fail, and another program can
-take the port between the check and Codex's bind. The build uses a scripted stand-in.
+machine and keep that browser free of an OpenAI session. Under PND-010 the engine
+serializes sign-ins with the same fixed ports. Another program using the first port makes
+the hook fail, and another program can take the port between the check and Codex's bind.
+The build uses a scripted stand-in.
 Only A5's stage 1, step 1 observes the hook against Codex. The source read covers 0.167.1.
 The fixed scope, originator and flow flags the hook accepts were read at rust-v0.167.1
 (`codex-rs/login/src/server.rs:580-623`, `codex-rs/login/src/auth/default_client.rs:42`); a bump

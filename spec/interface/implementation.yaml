@@ -1462,63 +1462,64 @@
     carrying a secret is shown only in the engine's own panel, never relayed (ENR-003).
   observable: >-
     There is no elicitationId or completion notification. The engine correlates retries
-    through its own integrity-protected requestState, an opaque value bound to the Interface
-    that the request establishes under IFC-022 and to the originating invocation, expiring
-    with DL18. The
-    client echoes it exactly; the engine treats it as attacker-controlled and rejects
-    tampering, replay of a consumed state or another principal. Each retry consumes its
-    state; another input-required response issues a fresh state for that same invocation.
-    For sign-in, accept means consent, not completion: retries poll under PND-010, blocking
-    or returning another InputRequiredResult until the account appears or the wait ends.
-    The engine checks the expected account under PND-011. A client need never retry; no
-    later hook runs on its behalf. Enrollment differs: once enroll.v1 succeeds and ENR-001's
-    evidence-kind checks pass, the enrollment opens and its pending action is raised once.
-    No subsequent client action changes either. A retry, accepting, declining or cancelling,
-    gets the two IDs immediately with no polling, and the invocation succeeds; the person
-    sees the join at the panel (ENR-004). If no retry arrives within DL18, the invocation
-    ends succeeded with those same outputs, returned on a repeat under OPS-009. This is the
-    enrollment exception to DL18's unknown ending. Task input
-    requests are surfaced by tasks/get and fulfilled by tasks/update with no requestState,
-    subject to IFC-016's access checks and the same expiry: sign-in polls the account;
-    enrollment returns its IDs on any answer or at DL18. Only tools/call, resources/read and
-    prompts/get support the protocol's InputRequiredResult; this specification exposes the
-    URL action by tools/call. Codes and fingerprints go only to the engine's panel and
-    recorded answer (PND-004); no pending machine evidence is relayed (PND-008).
-    A sign-in-hook.v1 URL matches exactly one login the instance's Type states, and the one
-    asked for where present (PND-010). Its origin and path equal authorization; it has no
-    user information, fragment or repeated parameter. For device it is authorization itself,
-    with no query, code or client. For redirect, page and service, client_id equals clientId,
-    response_type is code, and redirect_uri is for redirect http:// with the stated host,
-    one stated port (or 1024 to 65535 for any) and stated path, without query; for page and
-    service it is the stated page. For redirect and page, code_challenge_method is S256,
-    code_challenge is 43 base64url-alphabet characters (RFC 7636), and state is at least 22
-    RFC 3986 unreserved characters. A URL failing a check is not relayed: sign-in.v1 ends
-    failed with a diagnostic naming IFC-049, the check and field, holding no URL value,
-    code or state. The engine never opens, fetches or follows a relayed URL.
+    through its own integrity-protected requestState, an opaque value bound to the
+    Interface that the request establishes under IFC-022 and to the originating
+    invocation, expiring with DL18. The client echoes it exactly; the engine treats it as
+    attacker-controlled and rejects tampering, replay of a consumed state or another
+    principal. Each retry consumes its state; another input-required response issues a
+    fresh state for that same invocation. For sign-in, accept means consent, not
+    completion: retries poll under PND-010, blocking or returning another
+    InputRequiredResult until the account appears or the wait ends. The engine checks the
+    expected account under PND-011. A client need never retry; no later hook runs on its
+    behalf. Enrollment differs: once enroll.v1 succeeds and ENR-001's evidence-kind checks
+    pass, the enrollment opens and its pending action is raised once. No subsequent client
+    action changes either. A retry, accepting, declining or cancelling, gets the two IDs
+    immediately with no polling, and the invocation succeeds; the person sees the join at
+    the panel (ENR-004). If no retry arrives within DL18, the invocation ends succeeded
+    with those same outputs, returned on a repeat under OPS-009. This is the enrollment
+    exception to DL18's unknown ending. Task input requests are surfaced by tasks/get and
+    fulfilled by tasks/update with no requestState, subject to IFC-016's access checks and
+    the same expiry: sign-in polls the account; enrollment returns its IDs on any answer
+    or at DL18. Only tools/call, resources/read and prompts/get support the protocol's
+    InputRequiredResult; this specification exposes the URL action by tools/call. Codes
+    and fingerprints go only to the engine's panel and recorded answer (PND-004); no
+    pending machine evidence is relayed (PND-008). A sign-in-hook.v1 URL matches exactly
+    one login the instance's Type states, and the one asked for where present (PND-010).
+    Its origin and path equal authorization; it has no user information, fragment or
+    repeated parameter. For device it is authorization itself, with no query, code or
+    client. For redirect, page and service, client_id equals clientId, response_type is
+    code, and redirect_uri is for redirect http:// with the stated host, one stated port
+    (or 1024 to 65535 for any) and stated path, without query; for page and service it is
+    the stated page. For redirect and page, code_challenge_method is S256, code_challenge
+    is 43 base64url-alphabet characters (RFC 7636), and state is at least 22 RFC 3986
+    unreserved characters. A URL failing a check is not relayed: sign-in.v1 ends failed
+    with a diagnostic naming IFC-049, the check and field, holding no URL value, code or
+    state. The engine never opens, fetches or follows a relayed URL.
     `io.github.shrav-k.conduit/signInLogin` optionally holds {name} in an Interface's
-    sign-in.v1 request _meta, asking for that login. In each sign-in.v1 InputRequiredResult
-    and its final result it holds {name, return, node, acceptsReturn} for the relayed login:
-    node names the instance's node as object.v1 names an object; acceptsReturn is true
-    exactly where PND-013's first check passes. After a retry carrying a return it also holds
-    returned and, where PND-013 gives them, reason or error. It is in the result's own _meta,
-    never in its input request, which holds only mode, message and url.
-    `io.github.shrav-k.conduit/signInReturn` holds {value, via} in an Interface's retry _meta,
-    via being listener or paste, and {value} in the engine's sign-in-hook.v1 retry (IFC-006).
-    It is kept nowhere (PND-014). PND-013 alone accepts it, only from
-    the Interface that received the sign-in, in its bound invocation. No Agent
-    receives a sign-in's URL, login metadata or return (PND-002, IFC-016).
-    Where Conduit manages the connection over which a person completes a login stating
-    carried: false (spec/README.md), the connection meets these conditions; nothing here
-    changes a login stating carried: true. The channel that carries the return ends at each
-    end in a program that is not Conduit's: the node's own server for the route, and that
-    route's client on the person's side. No process running Conduit's code decrypts,
-    terminates or copies it, and no engine, Interface or provider log, record or diagnostic
-    holds what passes over it. A forward opens only after the engine relayed this sign-in's
-    URL under this rule, for the port its redirect_uri names, to that node's loopback only,
-    and closes when sign-in.v1 ends, signed in, failed or unknown at DL18. Where the local
+    sign-in.v1 request _meta, asking for that login. In each sign-in.v1
+    InputRequiredResult and its final result it holds {name, return, node, acceptsReturn}
+    for the relayed login: node names the instance's node as object.v1 names an object;
+    acceptsReturn is true exactly where PND-013's first check passes. After a retry
+    carrying a return it also holds returned and, where PND-013 gives them, reason or
+    error. It is in the result's own _meta, never in its input request, which holds only
+    mode, message and url. `io.github.shrav-k.conduit/signInReturn` holds {value, via} in
+    an Interface's retry _meta, via being listener or paste, and {value} in the engine's
+    sign-in-hook.v1 retry (IFC-006). It is kept nowhere (PND-014). PND-013 alone accepts
+    it, only from the Interface that received the sign-in, in its bound invocation. No
+    Agent receives a sign-in's URL, login metadata or return (PND-002, IFC-016). Where
+    Conduit manages the connection over which a person completes a login stating carried:
+    false (spec/README.md), the connection meets these conditions; nothing here changes a
+    login stating carried: true. The channel that carries the return ends at each end in a
+    program that is not Conduit's: the node's own server for the route, and that route's
+    client on the person's side. No process running Conduit's code decrypts, terminates or
+    copies it, and no engine, Interface or provider log, record or diagnostic holds what
+    passes over it. A forward opens only after the engine relayed this sign-in's URL under
+    this rule, for the port its redirect_uri names, to that node's loopback only, and
+    closes when sign-in.v1 ends, signed in, failed or unknown at DL18. Where the local
     port cannot be bound, the Interface says so, naming the port, and opens no forward on
-    another port. A Claude Agent's paste route, the person's own delivery, on the node, of the
-    return or of a page login's code, is held by no engine or Interface process, and no
-    result, record, diagnostic or log of either holds a page login's code, as PND-014 holds
-    for a carried value. The connection Conduit manages for a Claude sign-in does not bind the
-    person who completes the login; the expected account (PND-011) remains the only binding.
+    another port. A carried: false login's paste route, the person's own delivery, on the
+    node, of the return or of a page login's code, is held by no engine or Interface
+    process, and no result, record, diagnostic or log of either holds a page login's code,
+    as PND-014 holds for a carried value. The connection Conduit manages for a carried:
+    false sign-in does not bind the person who completes the login; the expected account
+    (PND-011) remains the only binding.

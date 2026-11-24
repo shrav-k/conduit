@@ -75,3 +75,7 @@ then they are under `docs/proposals/`.
 - Changed: OPS-036 and `list.v1`, instance items give owner, placement, revision and Running status from inspection state without adding authority (DEC-114).
 - Changed: PRV-026, once the engine restarts it runs again, without waiting for a request, each Resource that is not retired whose run on its own runner ended with it, its secrets read for the caller of the setup that last asked for that run; an Agent's run waits for a further setup (DEC-115).
 - Changed: OBS-004, PRV-002, PRV-021, SEC-010, SEC-011, SEC-012, SEC-014, SEC-017, REC-002, ACC-019, IFC-017, DL16, DL17 and `get-secret.v1` say a Resource's run where PRV-026 made a provider's again (DEC-115).
+- Changed: CTR-013, IFC-049 and NAM-024 name no Agent product in their observables, IFC-049 scoping by `carried: false` instead, and what each promises is unchanged (DEC-105).
+- Changed: `spec/README.md#pending-actions-sign-in-and-the-network` names no Agent product, scoping by `carried: false` instead, and the Agent packages' READMEs hold the rest (DEC-105).
+- Changed: plan and apply's duties and flags leave `spec/README.md#what-the-short-forms-meaning-covers`, and two commands' sentences leave the author path, for the CLI's guide, `engine/CLI.md` (DEC-105).
+- Changed: `spec/README.md#what-this-is` opens the page and leads with the six families; the proof of identity follows the layers, and the status follows under its own heading (DEC-105).

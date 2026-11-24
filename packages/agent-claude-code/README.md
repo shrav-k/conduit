@@ -494,6 +494,10 @@ its default in `implementation`. A string at `/account` is the expected account,
 disables both sign-in actions and the account check (CTR-013). The engine dispatches the hooks
 only as parts of `sign-in.v1` or of a setup (CTR-013, PND-011).
 
+`claude-code.v2` and `account-home.v1` state `carried: false` in v0 because Anthropic's
+terms forbid intermediating Claude.ai credentials. What Conduit then does is in the
+[specification](../../spec/README.md#pending-actions-sign-in-and-the-network).
+
 The logins' literals, the authorization URL and the client ID that the two share, the browser
 login's redirect host and path, and the code-page login's page, are in `contracts.yaml` alone.
 The browser login's redirect states `ports: any`, since the client's listener takes a port that

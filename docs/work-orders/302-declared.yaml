@@ -1,0 +1,4 @@
+# Added case for work order 302.
+- name: list-instance-details
+  kind: added
+  cases: [list-instance-details]

@@ -67,9 +67,12 @@
     The difference appears in the instance's status and stays until an actor asks for an
     operation that removes it. No setup, control, open or retire is dispatched because of it. A
     runtime provider that restarts a run does so under its own restart policy, under
-    PRV-010, and the engine dispatches nothing because of it. Once the engine has restarted, it
-    runs a provider whose run ended with it again only when it must make a provider call to
-    that provider, under PRV-026, and not because the run is seen to have stopped.
+    PRV-010, and the engine dispatches nothing because of it. Once the engine has restarted, or
+    a part of it that held runs of its own runner has stopped under DL17, it runs again each
+    Resource whose run there ended with it, or with that part, under PRV-026, because its own
+    stop ended that run, not because the run is seen to have stopped: a run that ends while the
+    engine, and the part of it that holds the run, go on is run again only under its runner's
+    restart policy, under PRV-010, or by a further setup.
 
 - id: OBS-006
   layer: convention

@@ -1,5 +1,5 @@
 id: secret-reads-provider-restart
-title: After engine restart a read first runs the secret store again
+title: After engine restart the store and the consumer run again without a further setup
 layers:
 - convention
 - interface
@@ -9,6 +9,7 @@ promises:
 - SEC-017
 - SEC-011
 - OBS-004
+- PRV-009
 profile: first-build
 initial:
   recipe: empty
@@ -618,21 +619,6 @@ steps:
         outcome: succeeded
 - input:
     kind: restore-state
-  expect:
-    reply:
-      restored: true
-    external_intents: []
-- input:
-    kind: invoke
-    request:
-      identity:
-        kind: instance
-        id: 00000000-0000-4000-8000-000000000005
-      tool: demo.set-up.v1
-      arguments:
-        instance:
-          kind: Resource
-          name: $consumerName
     evidence:
       time: '2026-11-09T12:10:00Z'
       ids:
@@ -663,60 +649,19 @@ steps:
       - 00000000-0000-4000-8000-000000000654
   expect:
     reply:
-      pending: true
-    external_intents:
-    - kind: builtin-runner
-      operation: '@core#inspect-run.v1'
-      subject: $consumer
-  capture:
-    afterRestart: /reply/invocation
-- input:
-    kind: setup-report
-    invocation: $afterRestart
-    report:
-      kind: inspect-run
-      state: stopped
-    evidence:
-      time: '2026-11-09T12:11:00Z'
-      ids:
-      - 00000000-0000-4000-8000-000000000683
-      - 00000000-0000-4000-8000-000000000684
-      - 00000000-0000-4000-8000-000000000685
-      - 00000000-0000-4000-8000-000000000686
-      - 00000000-0000-4000-8000-000000000687
-      - 00000000-0000-4000-8000-000000000688
-      - 00000000-0000-4000-8000-000000000689
-      - 00000000-0000-4000-8000-000000000690
-      - 00000000-0000-4000-8000-000000000691
-      - 00000000-0000-4000-8000-000000000692
-      - 00000000-0000-4000-8000-000000000693
-      - 00000000-0000-4000-8000-000000000694
-      - 00000000-0000-4000-8000-000000000695
-      - 00000000-0000-4000-8000-000000000696
-      - 00000000-0000-4000-8000-000000000697
-      - 00000000-0000-4000-8000-000000000698
-      - 00000000-0000-4000-8000-000000000699
-      - 00000000-0000-4000-8000-000000000700
-      - 00000000-0000-4000-8000-000000000701
-      - 00000000-0000-4000-8000-000000000702
-      - 00000000-0000-4000-8000-000000000703
-      - 00000000-0000-4000-8000-000000000704
-      - 00000000-0000-4000-8000-000000000705
-      - 00000000-0000-4000-8000-000000000706
-      - 00000000-0000-4000-8000-000000000707
-  expect:
+      restored: true
     external_intents:
     - kind: builtin-runner
       operation: '@core#run.v1'
       subject: $provider
-      invocation: 00000000-0000-4000-8000-000000000685
+      invocation: 00000000-0000-4000-8000-000000000630
     absent:
     - text: '@core#get-secret.v1'
       under:
       - /records
 - input:
     kind: setup-report
-    invocation: 00000000-0000-4000-8000-000000000685
+    invocation: 00000000-0000-4000-8000-000000000630
     report:
       kind: run
       outcome: succeeded
@@ -754,9 +699,10 @@ steps:
       target: $provider
       call:
         method: server/discover
+      invocation: 00000000-0000-4000-8000-000000000631
 - input:
     kind: complete
-    invocation: 00000000-0000-4000-8000-000000000684
+    invocation: 00000000-0000-4000-8000-000000000631
     attempt: 1
     completion:
       kind: result
@@ -798,8 +744,8 @@ steps:
     - type: access-decision
       data:
         permitted: true
-        invocation: 00000000-0000-4000-8000-000000000684
-        serving: $afterRestart
+        invocation: 00000000-0000-4000-8000-000000000631
+        serving: $consumerSetup
         caller: 00000000-0000-4000-8000-000000000005
         consumer: $consumer
         conduit: $conduit
@@ -808,8 +754,8 @@ steps:
       time: '2026-11-09T12:13:00Z'
     - type: invocation-dispatched
       data:
-        invocation: 00000000-0000-4000-8000-000000000684
-        serving: $afterRestart
+        invocation: 00000000-0000-4000-8000-000000000631
+        serving: $consumerSetup
         caller: 00000000-0000-4000-8000-000000000005
         consumer: $consumer
         conduit: $conduit
@@ -819,7 +765,7 @@ steps:
     external_intents:
     - kind: dispatch
       target: $provider
-      invocation: 00000000-0000-4000-8000-000000000684
+      invocation: 00000000-0000-4000-8000-000000000631
       call:
         method: tools/call
         params:
@@ -829,7 +775,7 @@ steps:
             io.github.shrav-k.conduit/conduit: $conduit
             io.github.shrav-k.conduit/instance: $provider
             io.github.shrav-k.conduit/caller: 00000000-0000-4000-8000-000000000005
-            io.github.shrav-k.conduit/invocation: 00000000-0000-4000-8000-000000000684
+            io.github.shrav-k.conduit/invocation: 00000000-0000-4000-8000-000000000631
             io.github.shrav-k.conduit/operation: '@core#get-secret.v1'
             io.github.shrav-k.conduit/revision: revision-7
             io.github.shrav-k.conduit/filters:
@@ -889,7 +835,7 @@ steps:
     - type: invocation-ended
       data:
         invocation: $readTwo
-        serving: $afterRestart
+        serving: $consumerSetup
         caller: 00000000-0000-4000-8000-000000000005
         consumer: $consumer
         conduit: $conduit
@@ -900,7 +846,7 @@ steps:
     - type: request-ended
       data:
         invocation: $readTwo
-        serving: $afterRestart
+        serving: $consumerSetup
         caller: 00000000-0000-4000-8000-000000000005
         consumer: $consumer
         conduit: $conduit
@@ -911,7 +857,7 @@ steps:
     external_intents:
     - kind: builtin-runner
       operation: '@core#run.v1'
-      invocation: $afterRestart
+      invocation: 00000000-0000-4000-8000-000000000632
       subject: $consumer
       inputs:
         environment:
@@ -931,7 +877,7 @@ steps:
     - /external_intents/0/inputs/secrets
 - input:
     kind: setup-report
-    invocation: $afterRestart
+    invocation: 00000000-0000-4000-8000-000000000632
     report:
       kind: run
       outcome: succeeded
@@ -965,8 +911,51 @@ steps:
       - 00000000-0000-4000-8000-000000000919
   expect:
     external_intents: []
-    record_facts:
-    - type: invocation-ended
-      data:
-        invocation: $afterRestart
-        outcome: succeeded
+- input:
+    kind: invoke
+    request:
+      identity:
+        kind: instance
+        id: 00000000-0000-4000-8000-000000000005
+      tool: demo.inspect.v1
+      arguments:
+        object:
+          kind: Resource
+          name: $consumerName
+    evidence:
+      time: '2026-11-09T12:16:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000948
+      - 00000000-0000-4000-8000-000000000949
+      - 00000000-0000-4000-8000-000000000950
+      - 00000000-0000-4000-8000-000000000951
+      - 00000000-0000-4000-8000-000000000952
+      - 00000000-0000-4000-8000-000000000953
+      - 00000000-0000-4000-8000-000000000954
+      - 00000000-0000-4000-8000-000000000955
+      - 00000000-0000-4000-8000-000000000956
+      - 00000000-0000-4000-8000-000000000957
+      - 00000000-0000-4000-8000-000000000958
+      - 00000000-0000-4000-8000-000000000959
+      - 00000000-0000-4000-8000-000000000960
+      - 00000000-0000-4000-8000-000000000961
+      - 00000000-0000-4000-8000-000000000962
+      - 00000000-0000-4000-8000-000000000963
+      - 00000000-0000-4000-8000-000000000964
+      - 00000000-0000-4000-8000-000000000965
+      - 00000000-0000-4000-8000-000000000966
+      - 00000000-0000-4000-8000-000000000967
+      - 00000000-0000-4000-8000-000000000968
+      - 00000000-0000-4000-8000-000000000969
+      - 00000000-0000-4000-8000-000000000970
+      - 00000000-0000-4000-8000-000000000971
+      - 00000000-0000-4000-8000-000000000972
+  expect:
+    reply:
+      structuredContent:
+        status:
+          conditions:
+          - type: Running
+            status: 'True'
+            source: urn:conduit:builtin-runner
+    external_intents: []

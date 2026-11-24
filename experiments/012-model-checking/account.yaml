@@ -287,11 +287,13 @@
   note: 'MC6: “A static decision, to be shown by vectors.”'
 - id: PRV-002
   class: safety
-  standing: holds, not graded
+  standing: text changed, not rerun
+  was: holds, not graded
   model: placement::P9
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: 27b19a9c1cfbc0c9e2a06063ad95ce3564da9856a3d46260a69d93062211a92e
-  note: 'Source row: “P9, engine and local provider server lifecycle”.'
+  note: 'Source row: “P9, engine and local provider server lifecycle”. Order 303 (DEC-115): PRV-026
+    runs again at a restart every Resource on the engine''s own runner; text changed, not rerun.'
 - id: PRV-003
   class: safety
   standing: static
@@ -442,12 +444,14 @@
     has a user of its own (ruling 77).'
 - id: PRV-026
   class: safety
-  standing: searched
+  standing: text changed, not rerun
+  was: searched
   model: secrets::F
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: 2cd2717570df781fd1a43a572629edc4c39e8c56966ab3ad723e85e453256588
-  note: 'Source row: “F: provider run and fresh read precede post-restart calls”. Graded from holds by FR-460. Searched
-    for a Conduit open or closed; no filter.'
+  note: 'Source row: “F: provider run and fresh read precede post-restart calls”. Graded from
+    holds by FR-460. Searched for a Conduit open or closed; no filter. Order 303 (DEC-115): PRV-026
+    runs again at a restart every Resource on the engine''s own runner; text changed, not rerun.'
 - id: PRV-027
   class: safety
   standing: holds, not graded
@@ -610,11 +614,14 @@
   note: 'Source row: “P: original setup invocation and caller, also for re-reads”. Graded from holds by FR-460.'
 - id: SEC-012
   class: safety
-  standing: searched
+  standing: text changed, not rerun
+  was: searched
   model: secrets::S
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: 8b63054595ac6958691252c67d49bc0112aa0d2662e8f5d39adcdbbb7630719d
-  note: 'Source row: “S: failed reads prevent their identified work”. Graded from holds by FR-460.'
+  note: 'Source row: “S: failed reads prevent their identified work”. Graded from holds by FR-460.
+    Order 303 (DEC-115): PRV-026 runs again at a restart every Resource on the engine''s own runner;
+    text changed, not rerun.'
 - id: SEC-013
   class: safety
   standing: static
@@ -641,11 +648,14 @@
     Work order 254 made it REC-007''s case for reads.'
 - id: SEC-017
   class: safety
-  standing: searched
+  standing: text changed, not rerun
+  was: searched
   model: secrets::V
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: e8bef928d1160c008ee479eba03c3577f2404ba588e89d78ac9f57196b233297
-  note: 'Source row: “V: no cache substituting for a later read”. Graded from holds by FR-460.'
+  note: 'Source row: “V: no cache substituting for a later read”. Graded from holds by FR-460.
+    Order 303 (DEC-115): PRV-026 runs again at a restart every Resource on the engine''s own runner;
+    text changed, not rerun.'
 - id: SEC-018
   class: safety
   standing: static
@@ -989,11 +999,14 @@
   note: 'Supersedes MC3’s “belongs to the lifecycle model”. MC6 partial exclusion: “TPL-017/ACC-018 filters”.'
 - id: ACC-019
   class: safety
-  standing: holds, not graded
+  standing: text changed, not rerun
+  was: holds, not graded
   model: access::O
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: 96f55feb861a46cd41223d59e1b2f74b3d910ddc8bdae55bfb9bbf9bce3064c7
-  note: MC3’s T-to-U onward chain only; no long chains or secret-read exceptions modelled.
+  note: 'MC3’s T-to-U onward chain only; no long chains or secret-read exceptions modelled. Order
+    303 (DEC-115): PRV-026 runs again at a restart every Resource on the engine''s own runner;
+    text changed, not rerun.'
 - id: ACC-023
   class: safety
   standing: static

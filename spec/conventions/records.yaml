@@ -65,7 +65,7 @@
     POOL-013 or a Resource's retirement under LIF-021, it is the invocation that the part
     belongs to: the setup, the retirement or sign-in.v1 (PND-011);
     for a read made again under SEC-023 it is the setup that made the connection;
-    and for a read for a provider's run that PRV-026 asks for again, it is the setup that last
+    and for a read for a Resource's run that PRV-026 asks for again, it is the setup that last
     asked for that run. A provider call's record names none. The records of an invocation's
     parts are those whose invocation or invocation served is that invocation, whatever their
     source, under REC-005. A record of `run.v1`, `run.v2`, `stop.v1` or `inspect-run.v1` names in

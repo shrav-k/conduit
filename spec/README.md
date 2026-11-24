@@ -93,8 +93,8 @@ operation arranges, through the engine, work that starts or runs after its own i
 ended; work that is to happen later is asked for later, by an actor (ACC-019). The
 requests that the engine makes on behalf of an invocation that has ended are two reads of a
 secret: the read again for a connection that a setup made, once the engine has lost its values
-(SEC-023), and, once the engine has restarted, the reads before it runs again a provider whose
-run ended with it, for the setup that last asked for that run (PRV-026).
+(SEC-023), and, once the engine has restarted, the reads before it runs again a Resource whose
+run on its own runner ended with it, for the setup that last asked for that run (PRV-026).
 
 ## Reading paths
 
@@ -218,7 +218,7 @@ lists each S1 promise's vectors, or the reason it has none.
 | [promises/placement.yaml](promises/placement.yaml) | Where an Agent or Resource runs: nodes, machines, labels and placement by the provider, and values tied to a node | Draft; 21 promises; vectors test slices of 7 promises |
 | [promises/conduits.yaml](promises/conduits.yaml) | What a Conduit is, what its template holds, when it exists and when it is open | Draft; 22 promises; vectors test slices of 12 promises |
 | [promises/first-start.yaml](promises/first-start.yaml) | The objects that exist before anything is submitted | Draft; 6 promises; vectors test slices of 6 promises |
-| [promises/providers.yaml](promises/providers.yaml) | Providers: what one is and how the user picks one; the runtime provider and its runs, what a run is given to reach the engine, the gate before every server that the engine does not run itself, other than a `plain` server reached by `remote`, and how what answers at a run's URL proves itself, a stop that cannot be carried out now, and what the engine's own runner passes to a process; the machine provider, package sources, the provider call, and a provider's run made again after the engine restarts | Draft; 30 promises; vectors test slices of 9 promises |
+| [promises/providers.yaml](promises/providers.yaml) | Providers: what one is and how the user picks one; the runtime provider and its runs, what a run is given to reach the engine, the gate before every server that the engine does not run itself, other than a `plain` server reached by `remote`, and how what answers at a run's URL proves itself, a stop that cannot be carried out now, and what the engine's own runner passes to a process; the machine provider, package sources, the provider call, and a Resource's run made again after the engine restarts | Draft; 30 promises; vectors test slices of 9 promises |
 | [promises/enrollment.yaml](promises/enrollment.yaml) | Managed machine enrollment, provider evidence, root admission and refusal, expiry, fixed labels and removal questions (rulings 50, 51, 52, 56 and 68); six contracts live, capability and engine bindings staged for 049a and 049b | Draft; 12 promises; no vectors yet |
 | [promises/pending.yaml](promises/pending.yaml) | Pending actions, scope delivery, evidence, answers, sign-in, setup, notices and enrollment | Draft; 14 promises; no vectors yet |
 | [promises/secrets.yaml](promises/secrets.yaml) | Secrets: how a document marks one, which Resources hold one and what else their type may offer, who may have one read, how the engine reads one before a run or a connection, and again once it has lost a connection's values, and where the value may go, a header that carries one among it | Draft; 24 promises; vectors test slices of 2 promises |
@@ -594,8 +594,9 @@ it. Each point cites the promises that state its parts; the reasons are in the
   show (PRV-007, SEC-010).
 - A value rotated in its store reaches an instance's implementation only in a later run, one
   that a further setup, or a retirement that is to send the retire hook, asks for once the run
-  has ended, or one that PRV-026 makes again for a provider after the engine restarts, or the
-  part of it that held the run stops. It reaches a `remote` item only at a later connection,
+  has ended, or one that PRV-026 makes again for a Resource on the engine's own runner after the
+  engine restarts, or the part of it that held the run stops. It reaches a `remote` item only at
+  a later connection,
   which a further setup or such a retirement makes, or at the read again of SEC-023 once the
   engine has lost a connection's values, as after it restarts (SEC-014, SEC-013, SEC-023,
   PRV-026, TPL-018). No operation ends the run of an instance that is ready, so through Conduit
@@ -624,9 +625,9 @@ it. Each point cites the promises that state its parts; the reasons are in the
   it reads again the secret Resources that the setup which made the connection read for its
   headers, after that setup has ended, for that setup's caller, as the instance's own Conduit
   and its filters decide then; closing that Conduit stops it (SEC-023). Once it has restarted,
-  or the part of it that held a provider's run has stopped, it reads in the same way the secrets
-  of a provider whose run ended with it, a secret Resource that its own runner ran among them,
-  before it runs that provider again (PRV-026).
+  or the part of it that held a run of its own runner has stopped, it reads in the same way the
+  secrets of each Resource whose run there ended with it, before it runs that Resource again
+  without waiting for a request (PRV-026).
 - A header that carries a secret, and the value that an implementation of `get-secret.v1`
   reached by `remote` returns, cross only an `https` URL, or an `http` URL whose host is a
   loopback address on an engine that, as configured, can neither restart on another machine nor
@@ -653,7 +654,7 @@ it. Each point cites the promises that state its parts; the reasons are in the
   PRV-020): once the instance is removed, the engine asks for nothing more. So a stop that the
   provider never received, as where its server was not running, is lost. A stop that only the
   provider's own server carries out waits while that server does not run, as after the engine
-  restarts while no call needs that provider, and is never carried out once the provider is
+  restarts until PRV-026 runs that server again, and is never carried out once the provider is
   retired; a contract that keeps its stops through both has something that runs without that
   server carry them out, such as the provider's own part on the run's machine (PRV-021).
   Any later instance may be set up and run beside the earlier run, a replacement under

@@ -1,0 +1,483 @@
+# Work order 303 (DEC-115): automatic Resource runs after restart.
+- name: Restart case promises
+  kind: metadata
+  cases:
+  - secret-reads-provider-restart
+  paths:
+  - /promises/5
+  operation: add
+  after: PRV-009
+- name: Restart case title
+  kind: metadata
+  cases:
+  - secret-reads-provider-restart
+  paths:
+  - /title
+  operation: replace
+  before: After engine restart a read first runs the secret store again
+  after: After engine restart the store and the consumer run again without a further setup
+- name: Restart recovery step 10 expectation
+  kind: expectation
+  cases:
+  - secret-reads-provider-restart
+  paths:
+  - /steps/9/expect/absent/0/text
+  - /steps/9/expect/absent/0/under/0
+  - /steps/9/expect/external_intents/0/invocation
+  - /steps/9/expect/external_intents/0/kind
+  - /steps/9/expect/external_intents/0/operation
+  - /steps/9/expect/external_intents/0/subject
+- name: Restart recovery step 10 input
+  kind: input
+  cases:
+  - secret-reads-provider-restart
+  paths:
+  - /steps/9/input/evidence/ids/0
+  - /steps/9/input/evidence/ids/1
+  - /steps/9/input/evidence/ids/2
+  - /steps/9/input/evidence/ids/3
+  - /steps/9/input/evidence/ids/4
+  - /steps/9/input/evidence/ids/5
+  - /steps/9/input/evidence/ids/6
+  - /steps/9/input/evidence/ids/7
+  - /steps/9/input/evidence/ids/8
+  - /steps/9/input/evidence/ids/9
+  - /steps/9/input/evidence/ids/10
+  - /steps/9/input/evidence/ids/11
+  - /steps/9/input/evidence/ids/12
+  - /steps/9/input/evidence/ids/13
+  - /steps/9/input/evidence/ids/14
+  - /steps/9/input/evidence/ids/15
+  - /steps/9/input/evidence/ids/16
+  - /steps/9/input/evidence/ids/17
+  - /steps/9/input/evidence/ids/18
+  - /steps/9/input/evidence/ids/19
+  - /steps/9/input/evidence/ids/20
+  - /steps/9/input/evidence/ids/21
+  - /steps/9/input/evidence/ids/22
+  - /steps/9/input/evidence/ids/23
+  - /steps/9/input/evidence/ids/24
+  - /steps/9/input/evidence/time
+- name: Restart recovery step 11 input
+  kind: input
+  cases:
+  - secret-reads-provider-restart
+  paths:
+  - /steps/10/capture/afterRestart
+  - /steps/10/input/evidence/ids/0
+  - /steps/10/input/evidence/ids/1
+  - /steps/10/input/evidence/ids/2
+  - /steps/10/input/evidence/ids/3
+  - /steps/10/input/evidence/ids/4
+  - /steps/10/input/evidence/ids/5
+  - /steps/10/input/evidence/ids/6
+  - /steps/10/input/evidence/ids/7
+  - /steps/10/input/evidence/ids/8
+  - /steps/10/input/evidence/ids/9
+  - /steps/10/input/evidence/ids/10
+  - /steps/10/input/evidence/ids/11
+  - /steps/10/input/evidence/ids/12
+  - /steps/10/input/evidence/ids/13
+  - /steps/10/input/evidence/ids/14
+  - /steps/10/input/evidence/ids/15
+  - /steps/10/input/evidence/ids/16
+  - /steps/10/input/evidence/ids/17
+  - /steps/10/input/evidence/ids/18
+  - /steps/10/input/evidence/ids/19
+  - /steps/10/input/evidence/ids/20
+  - /steps/10/input/evidence/ids/21
+  - /steps/10/input/evidence/ids/22
+  - /steps/10/input/evidence/ids/23
+  - /steps/10/input/evidence/ids/24
+  - /steps/10/input/evidence/time
+  - /steps/10/input/invocation
+  - /steps/10/input/kind
+  - /steps/10/input/report/kind
+  - /steps/10/input/report/outcome
+  - /steps/10/input/request/arguments/instance/kind
+  - /steps/10/input/request/arguments/instance/name
+  - /steps/10/input/request/identity/id
+  - /steps/10/input/request/identity/kind
+  - /steps/10/input/request/tool
+- name: Restart recovery step 11 expectation
+  kind: expectation
+  cases:
+  - secret-reads-provider-restart
+  paths:
+  - /steps/10/expect/external_intents/0/call/method
+  - /steps/10/expect/external_intents/0/invocation
+  - /steps/10/expect/external_intents/0/kind
+  - /steps/10/expect/external_intents/0/operation
+  - /steps/10/expect/external_intents/0/subject
+  - /steps/10/expect/external_intents/0/target
+  - /steps/10/expect/reply/pending
+- name: Restart recovery step 12 input
+  kind: input
+  cases:
+  - secret-reads-provider-restart
+  paths:
+  - /steps/11/capture/readTwo
+  - /steps/11/input/attempt
+  - /steps/11/input/completion/kind
+  - /steps/11/input/completion/result/capabilities/extensions/io.github.shrav-k.conduit~1implementation-interface/revision
+  - /steps/11/input/evidence/ids/0
+  - /steps/11/input/evidence/ids/1
+  - /steps/11/input/evidence/ids/2
+  - /steps/11/input/evidence/ids/3
+  - /steps/11/input/evidence/ids/4
+  - /steps/11/input/evidence/ids/5
+  - /steps/11/input/evidence/ids/6
+  - /steps/11/input/evidence/ids/7
+  - /steps/11/input/evidence/ids/8
+  - /steps/11/input/evidence/ids/9
+  - /steps/11/input/evidence/ids/10
+  - /steps/11/input/evidence/ids/11
+  - /steps/11/input/evidence/ids/12
+  - /steps/11/input/evidence/ids/13
+  - /steps/11/input/evidence/ids/14
+  - /steps/11/input/evidence/ids/15
+  - /steps/11/input/evidence/ids/16
+  - /steps/11/input/evidence/ids/17
+  - /steps/11/input/evidence/ids/18
+  - /steps/11/input/evidence/ids/19
+  - /steps/11/input/evidence/ids/20
+  - /steps/11/input/evidence/ids/21
+  - /steps/11/input/evidence/ids/22
+  - /steps/11/input/evidence/ids/23
+  - /steps/11/input/evidence/ids/24
+  - /steps/11/input/evidence/time
+  - /steps/11/input/invocation
+  - /steps/11/input/kind
+  - /steps/11/input/report/kind
+  - /steps/11/input/report/state
+- name: Restart recovery step 12 expectation
+  kind: expectation
+  cases:
+  - secret-reads-provider-restart
+  paths:
+  - /steps/11/expect/absent/0
+  - /steps/11/expect/external_intents/0/call/method
+  - /steps/11/expect/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1caller
+  - /steps/11/expect/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1conduit
+  - /steps/11/expect/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1filters/0/arguments/label
+  - /steps/11/expect/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1filters/0/requirement
+  - /steps/11/expect/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1instance
+  - /steps/11/expect/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1invocation
+  - /steps/11/expect/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1operation
+  - /steps/11/expect/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1revision
+  - /steps/11/expect/external_intents/0/call/params/_meta/io.modelcontextprotocol~1clientCapabilities/extensions/io.github.shrav-k.conduit~1implementation-interface/revision
+  - /steps/11/expect/external_intents/0/call/params/arguments
+  - /steps/11/expect/external_intents/0/call/params/name
+  - /steps/11/expect/external_intents/0/invocation
+  - /steps/11/expect/external_intents/0/kind
+  - /steps/11/expect/external_intents/0/operation
+  - /steps/11/expect/external_intents/0/subject
+  - /steps/11/expect/external_intents/0/target
+  - /steps/11/expect/record_facts/0/data/caller
+  - /steps/11/expect/record_facts/0/data/conduit
+  - /steps/11/expect/record_facts/0/data/consumer
+  - /steps/11/expect/record_facts/0/data/invocation
+  - /steps/11/expect/record_facts/0/data/operation
+  - /steps/11/expect/record_facts/0/data/permitted
+  - /steps/11/expect/record_facts/0/data/serving
+  - /steps/11/expect/record_facts/0/data/target
+  - /steps/11/expect/record_facts/0/time
+  - /steps/11/expect/record_facts/0/type
+  - /steps/11/expect/record_facts/1/data/caller
+  - /steps/11/expect/record_facts/1/data/conduit
+  - /steps/11/expect/record_facts/1/data/consumer
+  - /steps/11/expect/record_facts/1/data/invocation
+  - /steps/11/expect/record_facts/1/data/operation
+  - /steps/11/expect/record_facts/1/data/serving
+  - /steps/11/expect/record_facts/1/data/target
+  - /steps/11/expect/record_facts/1/time
+  - /steps/11/expect/record_facts/1/type
+- name: Restart recovery step 13 expectation
+  kind: expectation
+  cases:
+  - secret-reads-provider-restart
+  paths:
+  - /steps/12/expect/absent/0/text
+  - /steps/12/expect/absent/0/under/0
+  - /steps/12/expect/absent/0/under/1
+  - /steps/12/expect/absent/0/under/2
+  - /steps/12/expect/absent/0/under/3
+  - /steps/12/expect/absent/1
+  - /steps/12/expect/external_intents/0/call/method
+  - /steps/12/expect/external_intents/0/inputs/environment/TEST_DIR
+  - /steps/12/expect/external_intents/0/inputs/packageArguments
+  - /steps/12/expect/external_intents/0/invocation
+  - /steps/12/expect/external_intents/0/kind
+  - /steps/12/expect/external_intents/0/operation
+  - /steps/12/expect/external_intents/0/secretBindings/environment/TEST_VALUE
+  - /steps/12/expect/external_intents/0/secretBindings/packageArguments
+  - /steps/12/expect/external_intents/0/subject
+  - /steps/12/expect/external_intents/0/target
+  - /steps/12/expect/record_facts/0/data/caller
+  - /steps/12/expect/record_facts/0/data/conduit
+  - /steps/12/expect/record_facts/0/data/consumer
+  - /steps/12/expect/record_facts/0/data/invocation
+  - /steps/12/expect/record_facts/0/data/operation
+  - /steps/12/expect/record_facts/0/data/outcome
+  - /steps/12/expect/record_facts/0/data/serving
+  - /steps/12/expect/record_facts/0/data/target
+  - /steps/12/expect/record_facts/0/time
+  - /steps/12/expect/record_facts/0/type
+  - /steps/12/expect/record_facts/1/data/caller
+  - /steps/12/expect/record_facts/1/data/conduit
+  - /steps/12/expect/record_facts/1/data/consumer
+  - /steps/12/expect/record_facts/1/data/invocation
+  - /steps/12/expect/record_facts/1/data/operation
+  - /steps/12/expect/record_facts/1/data/outcome
+  - /steps/12/expect/record_facts/1/data/serving
+  - /steps/12/expect/record_facts/1/data/target
+  - /steps/12/expect/record_facts/1/time
+  - /steps/12/expect/record_facts/1/type
+- name: Restart recovery step 13 input
+  kind: input
+  cases:
+  - secret-reads-provider-restart
+  paths:
+  - /steps/12/input/attempt
+  - /steps/12/input/completion/kind
+  - /steps/12/input/completion/result/_meta/io.github.shrav-k.conduit~1outcome
+  - /steps/12/input/completion/result/isError
+  - /steps/12/input/completion/result/structuredContent/value
+  - /steps/12/input/evidence/ids/0
+  - /steps/12/input/evidence/ids/1
+  - /steps/12/input/evidence/ids/2
+  - /steps/12/input/evidence/ids/3
+  - /steps/12/input/evidence/ids/4
+  - /steps/12/input/evidence/ids/5
+  - /steps/12/input/evidence/ids/6
+  - /steps/12/input/evidence/ids/7
+  - /steps/12/input/evidence/ids/8
+  - /steps/12/input/evidence/ids/9
+  - /steps/12/input/evidence/ids/10
+  - /steps/12/input/evidence/ids/11
+  - /steps/12/input/evidence/ids/12
+  - /steps/12/input/evidence/ids/13
+  - /steps/12/input/evidence/ids/14
+  - /steps/12/input/evidence/ids/15
+  - /steps/12/input/evidence/ids/16
+  - /steps/12/input/evidence/ids/17
+  - /steps/12/input/evidence/ids/18
+  - /steps/12/input/evidence/ids/19
+  - /steps/12/input/evidence/ids/20
+  - /steps/12/input/evidence/ids/21
+  - /steps/12/input/evidence/ids/22
+  - /steps/12/input/evidence/ids/23
+  - /steps/12/input/evidence/ids/24
+  - /steps/12/input/evidence/time
+  - /steps/12/input/invocation
+  - /steps/12/input/kind
+  - /steps/12/input/report/kind
+  - /steps/12/input/report/outcome
+- name: Restart recovery step 14 input
+  kind: input
+  cases:
+  - secret-reads-provider-restart
+  paths:
+  - /steps/13/capture/readTwo
+  - /steps/13/input/attempt
+  - /steps/13/input/completion/kind
+  - /steps/13/input/completion/result/capabilities/extensions/io.github.shrav-k.conduit~1implementation-interface/revision
+  - /steps/13/input/evidence/ids/0
+  - /steps/13/input/evidence/ids/1
+  - /steps/13/input/evidence/ids/2
+  - /steps/13/input/evidence/ids/3
+  - /steps/13/input/evidence/ids/4
+  - /steps/13/input/evidence/ids/5
+  - /steps/13/input/evidence/ids/6
+  - /steps/13/input/evidence/ids/7
+  - /steps/13/input/evidence/ids/8
+  - /steps/13/input/evidence/ids/9
+  - /steps/13/input/evidence/ids/10
+  - /steps/13/input/evidence/ids/11
+  - /steps/13/input/evidence/ids/12
+  - /steps/13/input/evidence/ids/13
+  - /steps/13/input/evidence/ids/14
+  - /steps/13/input/evidence/ids/15
+  - /steps/13/input/evidence/ids/16
+  - /steps/13/input/evidence/ids/17
+  - /steps/13/input/evidence/ids/18
+  - /steps/13/input/evidence/ids/19
+  - /steps/13/input/evidence/ids/20
+  - /steps/13/input/evidence/ids/21
+  - /steps/13/input/evidence/ids/22
+  - /steps/13/input/evidence/ids/23
+  - /steps/13/input/evidence/ids/24
+  - /steps/13/input/evidence/time
+  - /steps/13/input/invocation
+  - /steps/13/input/kind
+  - /steps/13/input/report/kind
+  - /steps/13/input/report/outcome
+- name: Restart recovery step 14 expectation
+  kind: expectation
+  cases:
+  - secret-reads-provider-restart
+  paths:
+  - /steps/13/expect/absent/0
+  - /steps/13/expect/external_intents/0/call/method
+  - /steps/13/expect/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1caller
+  - /steps/13/expect/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1conduit
+  - /steps/13/expect/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1filters/0/arguments/label
+  - /steps/13/expect/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1filters/0/requirement
+  - /steps/13/expect/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1instance
+  - /steps/13/expect/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1invocation
+  - /steps/13/expect/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1operation
+  - /steps/13/expect/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1revision
+  - /steps/13/expect/external_intents/0/call/params/_meta/io.modelcontextprotocol~1clientCapabilities/extensions/io.github.shrav-k.conduit~1implementation-interface/revision
+  - /steps/13/expect/external_intents/0/call/params/arguments
+  - /steps/13/expect/external_intents/0/call/params/name
+  - /steps/13/expect/external_intents/0/invocation
+  - /steps/13/expect/external_intents/0/kind
+  - /steps/13/expect/external_intents/0/target
+  - /steps/13/expect/record_facts/0/data/caller
+  - /steps/13/expect/record_facts/0/data/conduit
+  - /steps/13/expect/record_facts/0/data/consumer
+  - /steps/13/expect/record_facts/0/data/invocation
+  - /steps/13/expect/record_facts/0/data/operation
+  - /steps/13/expect/record_facts/0/data/permitted
+  - /steps/13/expect/record_facts/0/data/serving
+  - /steps/13/expect/record_facts/0/data/target
+  - /steps/13/expect/record_facts/0/time
+  - /steps/13/expect/record_facts/0/type
+  - /steps/13/expect/record_facts/1/data/caller
+  - /steps/13/expect/record_facts/1/data/conduit
+  - /steps/13/expect/record_facts/1/data/consumer
+  - /steps/13/expect/record_facts/1/data/invocation
+  - /steps/13/expect/record_facts/1/data/operation
+  - /steps/13/expect/record_facts/1/data/serving
+  - /steps/13/expect/record_facts/1/data/target
+  - /steps/13/expect/record_facts/1/time
+  - /steps/13/expect/record_facts/1/type
+- name: Restart recovery step 15 expectation
+  kind: expectation
+  cases:
+  - secret-reads-provider-restart
+  paths:
+  - /steps/14/expect/absent/0/text
+  - /steps/14/expect/absent/0/under/0
+  - /steps/14/expect/absent/0/under/1
+  - /steps/14/expect/absent/0/under/2
+  - /steps/14/expect/absent/0/under/3
+  - /steps/14/expect/absent/1
+  - /steps/14/expect/external_intents/0/inputs/environment/TEST_DIR
+  - /steps/14/expect/external_intents/0/inputs/packageArguments
+  - /steps/14/expect/external_intents/0/invocation
+  - /steps/14/expect/external_intents/0/kind
+  - /steps/14/expect/external_intents/0/operation
+  - /steps/14/expect/external_intents/0/secretBindings/environment/TEST_VALUE
+  - /steps/14/expect/external_intents/0/secretBindings/packageArguments
+  - /steps/14/expect/external_intents/0/subject
+  - /steps/14/expect/record_facts/0/data/caller
+  - /steps/14/expect/record_facts/0/data/conduit
+  - /steps/14/expect/record_facts/0/data/consumer
+  - /steps/14/expect/record_facts/0/data/invocation
+  - /steps/14/expect/record_facts/0/data/operation
+  - /steps/14/expect/record_facts/0/data/outcome
+  - /steps/14/expect/record_facts/0/data/serving
+  - /steps/14/expect/record_facts/0/data/target
+  - /steps/14/expect/record_facts/0/time
+  - /steps/14/expect/record_facts/0/type
+  - /steps/14/expect/record_facts/1/data/caller
+  - /steps/14/expect/record_facts/1/data/conduit
+  - /steps/14/expect/record_facts/1/data/consumer
+  - /steps/14/expect/record_facts/1/data/invocation
+  - /steps/14/expect/record_facts/1/data/operation
+  - /steps/14/expect/record_facts/1/data/outcome
+  - /steps/14/expect/record_facts/1/data/serving
+  - /steps/14/expect/record_facts/1/data/target
+  - /steps/14/expect/record_facts/1/time
+  - /steps/14/expect/record_facts/1/type
+  - /steps/14/expect/reply/structuredContent/status/conditions/0/source
+  - /steps/14/expect/reply/structuredContent/status/conditions/0/status
+  - /steps/14/expect/reply/structuredContent/status/conditions/0/type
+- name: Restart recovery step 15 input
+  kind: input
+  cases:
+  - secret-reads-provider-restart
+  paths:
+  - /steps/14/input/attempt
+  - /steps/14/input/completion/kind
+  - /steps/14/input/completion/result/_meta/io.github.shrav-k.conduit~1outcome
+  - /steps/14/input/completion/result/isError
+  - /steps/14/input/completion/result/structuredContent/value
+  - /steps/14/input/evidence/ids/0
+  - /steps/14/input/evidence/ids/1
+  - /steps/14/input/evidence/ids/2
+  - /steps/14/input/evidence/ids/3
+  - /steps/14/input/evidence/ids/4
+  - /steps/14/input/evidence/ids/5
+  - /steps/14/input/evidence/ids/6
+  - /steps/14/input/evidence/ids/7
+  - /steps/14/input/evidence/ids/8
+  - /steps/14/input/evidence/ids/9
+  - /steps/14/input/evidence/ids/10
+  - /steps/14/input/evidence/ids/11
+  - /steps/14/input/evidence/ids/12
+  - /steps/14/input/evidence/ids/13
+  - /steps/14/input/evidence/ids/14
+  - /steps/14/input/evidence/ids/15
+  - /steps/14/input/evidence/ids/16
+  - /steps/14/input/evidence/ids/17
+  - /steps/14/input/evidence/ids/18
+  - /steps/14/input/evidence/ids/19
+  - /steps/14/input/evidence/ids/20
+  - /steps/14/input/evidence/ids/21
+  - /steps/14/input/evidence/ids/22
+  - /steps/14/input/evidence/ids/23
+  - /steps/14/input/evidence/ids/24
+  - /steps/14/input/evidence/time
+  - /steps/14/input/invocation
+  - /steps/14/input/kind
+  - /steps/14/input/request/arguments/object/kind
+  - /steps/14/input/request/arguments/object/name
+  - /steps/14/input/request/identity/id
+  - /steps/14/input/request/identity/kind
+  - /steps/14/input/request/tool
+- name: Restart recovery step 16 expectation
+  kind: expectation
+  cases:
+  - secret-reads-provider-restart
+  paths:
+  - /steps/15/expect/external_intents
+  - /steps/15/expect/record_facts/0/data/invocation
+  - /steps/15/expect/record_facts/0/data/outcome
+  - /steps/15/expect/record_facts/0/type
+- name: Restart recovery step 16 input
+  kind: input
+  cases:
+  - secret-reads-provider-restart
+  paths:
+  - /steps/15/input/evidence/ids/0
+  - /steps/15/input/evidence/ids/1
+  - /steps/15/input/evidence/ids/2
+  - /steps/15/input/evidence/ids/3
+  - /steps/15/input/evidence/ids/4
+  - /steps/15/input/evidence/ids/5
+  - /steps/15/input/evidence/ids/6
+  - /steps/15/input/evidence/ids/7
+  - /steps/15/input/evidence/ids/8
+  - /steps/15/input/evidence/ids/9
+  - /steps/15/input/evidence/ids/10
+  - /steps/15/input/evidence/ids/11
+  - /steps/15/input/evidence/ids/12
+  - /steps/15/input/evidence/ids/13
+  - /steps/15/input/evidence/ids/14
+  - /steps/15/input/evidence/ids/15
+  - /steps/15/input/evidence/ids/16
+  - /steps/15/input/evidence/ids/17
+  - /steps/15/input/evidence/ids/18
+  - /steps/15/input/evidence/ids/19
+  - /steps/15/input/evidence/ids/20
+  - /steps/15/input/evidence/ids/21
+  - /steps/15/input/evidence/ids/22
+  - /steps/15/input/evidence/ids/23
+  - /steps/15/input/evidence/ids/24
+  - /steps/15/input/evidence/time
+  - /steps/15/input/invocation
+  - /steps/15/input/kind
+  - /steps/15/input/report/kind
+  - /steps/15/input/report/outcome

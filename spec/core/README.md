@@ -468,10 +468,9 @@ own retirement loses (PRV-021), and the engine asks for the stop once more when 
 unregisters a retired instance (LIF-036). The servers of the runtime, machine and
 package-source providers run on the engine's own runner, so they end when the engine does, or
 the part of it that holds them; once it has restarted, or that part has stopped, the engine
-runs each again when it first needs it, reading its secrets for the caller of the setup that
-last asked for its run, and so it does a secret Resource that its own runner ran, before the
-first read through it (PRV-026).
-A provider call declares Conduit's extension (PRV-005, IFC-037), so no plain implementation
+runs each again without waiting for a call, reading its secrets for the caller of the setup that
+last asked for its run, and so it does every other Resource that its own runner ran (PRV-026). A
+provider call declares Conduit's extension (PRV-005, IFC-037), so no plain implementation
 implements an operation of `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1`
 (PKG-020).
 

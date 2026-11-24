@@ -1,0 +1,4 @@
+# Added case for work order 275.
+- name: setup-children-returned
+  kind: added
+  cases: [setup-children-returned]

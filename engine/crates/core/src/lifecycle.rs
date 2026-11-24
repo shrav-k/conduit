@@ -390,6 +390,47 @@ pub(crate) fn report_sign_in_undone(
     Ok(())
 }
 
+fn setup_outputs(state: &State, instance: &Value) -> Value {
+    fn children<'a>(
+        state: &'a State,
+        parent: &'a Value,
+        slot: &'static str,
+    ) -> impl Iterator<Item = &'a Value> {
+        state.objects.iter().filter(move |child| {
+            child["nested"]["parent"] == *parent
+                && child["nested"]["slot"] == slot
+                && child["state"] != "retired"
+        })
+    }
+
+    fn item(child: &Value) -> Value {
+        json!({
+            "kind": child["kind"],
+            "name": child["name"],
+            "id": child["id"],
+            "nested": {
+                "instance": child["nested"]["parent"],
+                "name": child["nested"]["name"],
+            },
+            "state": child["state"],
+            "revision": child["revision"],
+        })
+    }
+
+    let mut objects = Vec::new();
+    if let Some(parent) = access::object(state, instance) {
+        if parent["kind"] == "Pool" {
+            for entry in children(state, instance, "entries") {
+                objects.push(item(entry));
+                objects.extend(children(state, &entry["id"], "conduits").map(item));
+            }
+        } else {
+            objects.extend(children(state, instance, "conduits").map(item));
+        }
+    }
+    json!({"objects": objects})
+}
+
 fn settle(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) -> Result<()> {
     let v = t.state.invocations[i].clone();
     let parts = v["setup"]["parts"].as_array().unwrap();
@@ -442,7 +483,12 @@ fn settle(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) -> 
             &format!("The sign-out hook ended {sign_out} after the account check found an account other than the expected one, so SignInUndone is False and requests to the instance other than the parts of sign-in.v1, of a setup and of its retirement report unavailable until an account check finds the expected account or none."),
         )?);
     }
-    requests::finish(t, a, c, i, outcome, json!({}), json!([]), cause)
+    let outputs = if all {
+        setup_outputs(&t.state, &v["object"])
+    } else {
+        json!({})
+    };
+    requests::finish(t, a, c, i, outcome, outputs, json!([]), cause)
 }
 fn request_for(
     t: &Transition,
@@ -2199,6 +2245,258 @@ mod explanation_tests {
         );
         assert_eq!(*parts, t.state.objects[5]["status"]["setup"]["parts"]);
         assert!(t.reply["structuredContent"].get("parts").is_none());
+    }
+
+    #[test]
+    fn pool_setup_names_each_entry_and_its_declared_conduits() {
+        let (mut state, c) = setup_fixture("declarations");
+        let pool = &mut state.objects[5];
+        pool["entries"] = json!({"base":{},"spare":{"optional":true}});
+        pool["slots"]["entries"] = json!({
+            "base":{"kind":"Resource","id":"base-resource"},
+            "spare":{"kind":"Resource","id":"spare-resource"},
+        });
+        state.objects.extend([
+            json!({
+                "kind":"Resource","id":"base-resource","name":"base-resource",
+                "state":"ready","revision":"base-revision",
+                "nested":{"parent":"owners","slot":"entries","name":"base"},
+                "conduits":{"link":{}},
+                "slots":{"conduits":{"link":{"kind":"Conduit","id":"base-link"}}},
+            }),
+            json!({
+                "kind":"Conduit","id":"base-link","name":"base-link",
+                "state":"ready","revision":"link-revision",
+                "nested":{"parent":"base-resource","slot":"conduits","name":"link"},
+            }),
+            json!({
+                "kind":"Resource","id":"spare-resource","name":"spare-resource",
+                "state":"registered","revision":"spare-revision","owner":{"kind":"Pool","id":"owners"},
+                "nested":{"parent":"owners","slot":"entries","name":"spare"},
+            }),
+        ]);
+        let mut t = transition(state);
+        let evidence = evidence();
+        let mut a = Allocation {
+            evidence: &evidence,
+            cursor: 0,
+        };
+        advance(&mut t, &mut a, &c, 0).unwrap();
+
+        let setup = &t.state.invocations[0];
+        assert_eq!(setup["state"], "succeeded");
+        assert_eq!(setup["setup"]["parts"][1]["name"], "spare");
+        assert_eq!(setup["setup"]["parts"][1]["outcome"], "refused");
+        assert_eq!(
+            setup["retained"]["outputs"]["objects"],
+            json!([
+                {"kind":"Resource","id":"base-resource","name":"base-resource",
+                 "state":"ready","revision":"base-revision",
+                 "nested":{"instance":"owners","name":"base"}},
+                {"kind":"Conduit","id":"base-link","name":"base-link",
+                 "state":"ready","revision":"link-revision",
+                 "nested":{"instance":"base-resource","name":"link"}},
+                {"kind":"Resource","id":"spare-resource","name":"spare-resource",
+                 "state":"registered","revision":"spare-revision",
+                 "nested":{"instance":"owners","name":"spare"}},
+            ])
+        );
+    }
+
+    #[test]
+    fn fresh_setup_uses_the_pools_held_contract() {
+        use crate::packages::{Catalog, Project, contract};
+        use conduit_loader::{Syntax, read_bytes};
+
+        let yaml = |bytes: &[u8]| {
+            read_bytes(Syntax::Yaml, bytes)
+                .unwrap()
+                .iter()
+                .map(|doc| doc.to_json())
+                .collect::<Vec<_>>()
+        };
+        macro_rules! documents {
+            ($($file:literal),+ $(,)?) => {
+                [$(include_bytes!(concat!("../../../../spec/", $file)).as_slice()),+]
+                    .into_iter().flat_map(yaml).collect()
+            };
+        }
+        let builtin = Project {
+            manifest: yaml(include_bytes!("../../../../spec/core/conduit.yaml")).pop(),
+            documents: documents![
+                "core/capabilities.yaml",
+                "core/operations.yaml",
+                "core/references.yaml",
+                "core/requirements.yaml",
+                "core/results.yaml",
+                "core/templates.yaml",
+                "core/types.yaml",
+                "schemas/contracts.yaml",
+                "schemas/document.yaml",
+                "schemas/envelope.yaml",
+                "schemas/instances.yaml",
+                "schemas/manifest.yaml",
+                "schemas/schema.yaml",
+                "schemas/sectioned.yaml",
+                "schemas/templates.yaml",
+                "schemas/values.yaml",
+            ],
+            directory: None,
+        };
+        let templates = builtin
+            .documents
+            .iter()
+            .filter(|doc| !contract(doc))
+            .map(|doc| {
+                (
+                    doc["metadata"]["name"].as_str().unwrap().into(),
+                    doc.clone(),
+                )
+            })
+            .collect();
+        let names = yaml(include_bytes!("../../../../spec/names.yaml"))
+            .pop()
+            .unwrap();
+        let (core_environment, _) = Catalog::diagnostic_context(&builtin, &[], &builtin);
+        let current = Context {
+            builtin: Some(builtin),
+            core_package: names["corePackage"].as_str().unwrap().into(),
+            meta_prefix: names["metaPrefix"].as_str().unwrap().into(),
+            templates,
+            record_source: "urn:test".into(),
+            core_environment,
+        };
+        let mut earlier = current.clone();
+        let old_core = earlier.builtin.as_mut().unwrap();
+        let old_version = "0.0.0";
+        old_core.manifest.as_mut().unwrap()["version"] = json!(old_version);
+        old_core
+            .documents
+            .iter_mut()
+            .find(|doc| doc["metadata"]["name"] == "set-up.v1")
+            .unwrap()["spec"]
+            .as_object_mut()
+            .unwrap()
+            .remove("outputSchema")
+            .unwrap();
+        (earlier.core_environment, _) = Catalog::diagnostic_context(old_core, &[], old_core);
+
+        let evidence_for = |serial, suffixes| crate::Evidence {
+            time: evidence().time,
+            ids: (1..40)
+                .map(|i| format!("00000000-0000-4000-8000-{:012}", serial * 100 + i))
+                .collect(),
+            revisions: (0..8).map(|i| format!("r{serial}-{i}")).collect(),
+            suffixes: (0..suffixes)
+                .map(|i| format!("{serial:02}{i:03}"))
+                .collect(),
+        };
+        let initial = step(
+            &State::default(),
+            Input::FirstStart {
+                evidence: evidence_for(0, 3),
+                machine: crate::Machine {
+                    hostname: "workstation.example".into(),
+                    labels: BTreeMap::from([
+                        (
+                            "kubernetes.io/hostname".into(),
+                            "workstation.example".into(),
+                        ),
+                        ("kubernetes.io/os".into(), "linux".into()),
+                        ("kubernetes.io/arch".into(), "arm64".into()),
+                    ]),
+                    state: "reachable".into(),
+                },
+                trust_domain: "setup-holds.example".into(),
+            },
+            &earlier,
+        )
+        .unwrap()
+        .state;
+        let first_start_id = |template: &str| {
+            initial
+                .objects
+                .iter()
+                .find(|object| object["from"] == current.qualified(template))
+                .unwrap()["id"]
+                .as_str()
+                .unwrap()
+                .to_owned()
+        };
+        let root = first_start_id("root");
+        let register_pool = |state: &State, context: &Context, name: &str, serial| {
+            let api = &names["apiVersion"];
+            let project = Project {
+                manifest: Some(json!({"apiVersion":api,"address":format!("example.org/{name}")})),
+                documents: vec![
+                    json!({"apiVersion":api,"kind":"Pool","metadata":{"name":format!("{name}-t")},
+                           "spec":{"type":current.qualified("pool.v1")}}),
+                    json!({"apiVersion":api,"kind":"Pool","metadata":{"name":name},
+                           "from":format!("{name}-t")}),
+                    json!({"apiVersion":api,"kind":"Type","metadata":{"name":"member.v1"},
+                           "spec":{"family":"Resource"}}),
+                    json!({"apiVersion":api,"kind":"Resource","metadata":{"name":format!("{name}-member-t")},
+                           "spec":{"type":"#member.v1"}}),
+                    json!({"apiVersion":api,"kind":"Resource","metadata":{"name":format!("{name}-member")},
+                           "from":format!("{name}-member-t"),"owner":name}),
+                ],
+                directory: None,
+            };
+            let registered = step(
+                state,
+                Input::RegisterProject {
+                    snapshots: vec![],
+                    builtin: context.builtin.clone().unwrap(),
+                    project,
+                    evidence: evidence_for(serial, 6),
+                    request: crate::Request {
+                        sender: root.clone(),
+                        caller: root.clone(),
+                        target: first_start_id("management"),
+                        conduit: first_start_id("root-management"),
+                        operation: context.qualified("register.v1"),
+                    },
+                },
+                context,
+            )
+            .unwrap();
+            assert_eq!(registered.reply["accepted"], true, "registration of {name}");
+            registered.state
+        };
+        let legacy = register_pool(&initial, &earlier, "legacy", 1);
+        let state = register_pool(&legacy, &current, "current", 2);
+        for (pool, serial) in [("legacy", 3), ("current", 4)] {
+            let setup = step(
+                &state,
+                Input::Invoke {
+                    evidence: evidence_for(serial, 0),
+                    request: access::AccessRequest {
+                        identity: access::Identity::Instance { id: root.clone() },
+                        tool: format!("{pool}.set-up.v1"),
+                        arguments: json!({"instance":{"kind":"Resource","name":format!("{pool}-member")}}),
+                        serving: None,
+                        readable: true,
+                        authority_readable: true,
+                        client_capabilities: None,
+                        sign_in_login: None,
+                        sign_in_return: None,
+                    },
+                    key: None,
+                    archive: None,
+                },
+                &current,
+            )
+            .unwrap();
+            assert_eq!(
+                setup.reply["_meta"]["io.github.shrav-k.conduit/outcome"],
+                "succeeded"
+            );
+            if pool == "legacy" {
+                assert!(setup.reply.get("structuredContent").is_none());
+            } else {
+                assert_eq!(setup.reply["structuredContent"], json!({"objects":[]}));
+            }
+        }
     }
 
     fn refused_part(child_request: bool, sender: &str) -> Transition {

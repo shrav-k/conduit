@@ -41,6 +41,10 @@
       "reason": "OPS-012, F13 of ruling 78 point 6: the first build records failed when a new attempt is answered failed while an earlier attempt has no answer; review order 22, the engine following SO-B, makes it pass and removes this entry"
     },
     {
+      "id": "requests-turn-names-fleet-and-login",
+      "reason": "REC-002, order 305: no model turn's end record names its Fleet or login Resource yet; DEC-117's engine order makes it pass and removes this entry"
+    },
+    {
       "id": "secret-reads-provider-restart",
       "reason": "PRV-026 as DEC-115 extends it: the first build runs nothing at a restart; DEC-115's engine order makes it pass"
     },

@@ -162,6 +162,10 @@ metadata:
     result's member, and in usageDropped the warning that dropped one (IFC-051).
     It also holds its result's limits member in `limits`, or the warning that dropped it
     in `limitsDropped` (IFC-052).
+    The end record of a call of an operation marked `startsModelWork: true` whose target is
+    an Agent names in `fleet` the Agent's owning Fleet and, where the Agent's Type states
+    `loginResource`, in `loginResource` the login Resource its login place referred to when
+    the call was made (REC-002).
 spec:
   type: object
   properties:
@@ -179,6 +183,8 @@ spec:
         consumer: {$ref: github.com/shrav-k/conduit/core#id.v1}
         conduit: {$ref: github.com/shrav-k/conduit/core#id.v1}
         target: {$ref: github.com/shrav-k/conduit/core#id.v1}
+        fleet: {$ref: github.com/shrav-k/conduit/core#id.v1}
+        loginResource: {$ref: github.com/shrav-k/conduit/core#id.v1}
         operation: {$ref: github.com/shrav-k/conduit/core#qualified-reference.v1}
         invocation: {$ref: github.com/shrav-k/conduit/core#id.v1}
         serving: {$ref: github.com/shrav-k/conduit/core#id.v1}

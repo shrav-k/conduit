@@ -806,7 +806,9 @@
     record holds it whatever the type's `records` states, since the value is no output
     (CTR-004), and the record is read as any other (LIF-013). Under SEC-015, the engine
     ignores the usage member of any read of a secret without checking, keeping or relaying
-    it, and writes no warning for it. The record names the target whose call it was (REC-002).
+    it, and writes no warning for it. The record names the target whose call it was and,
+    where that target is an Agent and the call starts model work, its owning Fleet and, where
+    its Type states `loginResource`, its login Resource (REC-002).
     A call that ends on its client's usage limit is recorded as any other ending: the limit's
     class, window and time of reset are the implementation's own report in its result, and the
     limits its client saw are the member of IFC-052; neither is part of this value.

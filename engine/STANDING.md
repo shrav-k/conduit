@@ -191,7 +191,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | IFC-047 | interface | must | 2 | 0 | outside | core | case passes |
 | IFC-049 | interface | must | 7 | 0 | outside | core, shell | case passes |
 | IFC-050 | interface | must | 4 | 0 | outside | core | case passes |
-| IFC-051 | interface | must | 1 | 0 | outside | core, shell | case passes |
+| IFC-051 | interface | must | 2 | 1 | outside | core, shell | case passes |
 | IFC-052 | interface | must | 1 | 0 | outside | core | case passes |
 | IFC-053 | interface | must | 1 | 0 | outside | core | case passes |
 | IMP-001 | convention | must | 0 | 0 | reason | none | reason, no case |
@@ -234,7 +234,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | LIF-010 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | LIF-011 | convention | must | 2 | 0 | outside | core | case passes |
 | LIF-012 | convention | must | 3 | 0 | cases | core | case passes |
-| LIF-013 | convention | must | 18 | 0 | cases | core, shell | case passes |
+| LIF-013 | convention | must | 19 | 1 | cases | core, shell | case passes |
 | LIF-014 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | LIF-015 | convention | must | 0 | 0 | outside | core | no case, no reason |
 | LIF-016 | convention | must not | 0 | 0 | outside | none | no case, no reason |
@@ -470,7 +470,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | PRV-029 | convention | must | 0 | 0 | outside | core, shell | no case, no reason |
 | PRV-030 | convention | must not | 0 | 0 | outside | none | no case, no reason |
 | REC-001 | convention | must | 14 | 0 | cases | core | case passes |
-| REC-002 | convention | must | 26 | 0 | cases | core | case passes |
+| REC-002 | convention | must | 27 | 1 | cases | core | case passes |
 | REC-003 | convention | must not | 8 | 0 | cases | core, shell | case passes |
 | REC-004 | convention | must | 5 | 0 | cases | core | case passes |
 | REC-005 | convention | must | 2 | 0 | cases | core | case passes |

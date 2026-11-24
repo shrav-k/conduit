@@ -26,7 +26,7 @@
   subject: An invocation that does not end until an actor replies
   document: >-
     How long the engine waits for the reply, and what happens to a reply given twice or given
-    while the engine cannot receive it. No promise limits how long an invocation is in progress:
+    while the engine cannot receive it. No promise limits how long an invocation is in progress, PND-016's ask apart, which DL21 bounds:
     until it ends, a repeat of its request reports conflict under OPS-032, and one for which the
     engine stops waiting has the outcome OPS-007 gives where no result arrives.
 - id: DL4
@@ -260,3 +260,17 @@
     The duration of each pending-action kind, and how its expiry is computed and shown. Every
     action has an expiry (PND-003); on expiry it reads expired with no actor and dispatches
     nothing. Vectors supply clock input rather than relying on elapsed wall time.
+
+- id: DL21
+  subject: A login's ask for an admission report
+  document: >-
+    How long the ask that PND-016 starts on a login, the engine's call of
+    `admission-hook.v1`, is waited for, counted on the engine's own clock from the time
+    the engine starts it; no request waiting on it waits longer. The wait is finite: at
+    its end an ask that has not ended ends unknown, a later answer gives no report, and
+    every request that waited on it is held under PND-016. DL10's time allowed for a
+    call bounds the ask as well: where it comes first, the ask ends unknown then, as at
+    DL21's end. It is distinct from DL3's wait for an actor's reply and DL18's for a
+    person's completion, and the 60 seconds after an ask that gave no report are
+    PND-016's, not this item's. Vectors supply clock input rather than relying on
+    elapsed wall time.

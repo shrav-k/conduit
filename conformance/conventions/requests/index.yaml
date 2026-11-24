@@ -1,9 +1,50 @@
 {
   "cases": [
     {
+      "id": "requests-admission-hold",
+      "case": "conventions/requests/admission-hold/case.yaml",
+      "promises": [
+        "PND-016",
+        "IFC-054"
+      ]
+    },
+    {
+      "id": "requests-admission-no-report",
+      "case": "conventions/requests/admission-no-report/case.yaml",
+      "promises": [
+        "PND-016",
+        "IFC-054"
+      ]
+    },
+    {
+      "id": "requests-admission-not-checked",
+      "case": "conventions/requests/admission-not-checked/case.yaml",
+      "promises": [
+        "IFC-054",
+        "PND-016"
+      ]
+    },
+    {
       "id": "requests-admission-report-kept",
       "case": "conventions/requests/admission-report-kept/case.yaml",
       "promises": [
+        "IFC-054",
+        "PND-016"
+      ]
+    },
+    {
+      "id": "requests-admission-single-use",
+      "case": "conventions/requests/admission-single-use/case.yaml",
+      "promises": [
+        "PND-016",
+        "IFC-054"
+      ]
+    },
+    {
+      "id": "requests-admission-wait-ends",
+      "case": "conventions/requests/admission-wait-ends/case.yaml",
+      "promises": [
+        "PND-016",
         "IFC-054"
       ]
     },

@@ -110,6 +110,8 @@ exports:
   - limit-report.v1
   - limit-status.v1
   - admission-report.v1
+  - admission-hold.v1
+  - admission-status.v1
   # Schemas of documents (spec/schemas/).
   - name.v1
   - export-name.v1

@@ -191,7 +191,123 @@
     and stating the one-at-a-time rule. pendingAction lists only IDs that exist, the hold's
     first. The notice's expiry lifts nothing: after it, the next call held back raises a new
     notice, never expiry alone.
-    Otherwise calls on one login run in parallel.
+    Otherwise calls on one login run in parallel, subject to PND-016.
+
+- id: PND-016
+  layer: convention
+  level: must
+  when: >-
+    The engine would dispatch a request, or a new attempt of one (OPS-012, OPS-024), for
+    an operation whose contract is marked `startsModelWork: true` to an Agent whose
+    login place refers to a Resource whose Type states `admission` (CTR-015), its login:
+    OPS-023's reasons and the holds of PND-005 and PND-011 have been decided, and none
+    applies.
+  then: >-
+    Before dispatch the request is decided on the login's admission report (IFC-054).
+    Where one is current, the request is dispatched if the report's `admit` is true and
+    held if it is false, and nothing is asked. Where none is current, the request waits,
+    not dispatched, for the login's ask: the engine's call of `admission-hook.v1` on the
+    login, at most one in progress per login, which the engine starts where none is and
+    which every request so waiting on that login shares. When the ask ends, as it does
+    at the latest when DL21 ends, the holds of PND-005 and PND-011 apply to each request
+    still waiting; where neither applies, a report that IFC-054 keeps already ended
+    because the levers changed decides none of them: they keep waiting for a fresh ask
+    under the stored levers, shared by that login's waiting requests and bounded by DL21
+    from its own start. Otherwise each is decided on the report the ask gave as on a
+    current one, except that a single-use report admits one request alone, the earliest
+    still waiting on its ask whose dispatch-time check passes, and holds every other
+    request still waiting. A request whose dispatch-time check fails spends no
+    single-use report. Before a waiting request would be dispatched, the dispatch-time
+    check below must pass. An ask that gives no report holds every request that waited
+    on it, with no older report used; until 60 seconds after its end on the engine's own
+    clock, no ask starts on the login and every request this promise decides there is
+    held without waiting. A request held on a report or for want of one is not
+    dispatched and reports unavailable, with an error diagnostic whose `ruleId` is
+    PND-016 and whose `properties.admission` has the form of the core schema
+    `admission-hold.v1`. Every held request ends finally: nothing of it is queued,
+    resumed or dispatched after it ends.
+  observable: >-
+    Every request this promise covers is checked, regardless of operation or caller,
+    including an Agent's onward request. A caller without access starts no ask:
+    OPS-023's reasons are decided first. The ask is no request and no part: the engine
+    dispatches it as its own invocation of the login, through no Conduit and with no
+    filter, for the caller of the request whose wait started it; its records name that
+    caller and name in `causedBy` the engine's ID for the request whose wait started the
+    ask, the ID its invocation takes if it is dispatched; they hold no `serving`, since
+    the ask serves no dispatched invocation; its input is the one `admission-hook.v1`
+    describes; it starts no model work, and no inspection starts one (OBS-006). At
+    DL21's end the engine stops waiting for the ask, which ends unknown as OPS-007 has a
+    call that gives no result, and a later answer gives no report (OPS-013); an ask
+    gives no report where it fails, ends unknown (an answer that fails
+    `admission-report.v1` among them), passes DL21 or cannot be dispatched. The
+    request's initial access decision is made and recorded under ACC-036 and REC-001
+    before any ask starts. Ending its wait makes no second access decision. Instead,
+    immediately before dispatch the engine checks once, from the Conduits as they then
+    stand, that each Conduit of its chain is open and lists the operation, none has a
+    retired consumer (ACC-039), and the invocation an onward request serves is still in
+    progress (ACC-019, IFC-028). This is a condition of dispatch for the same permitted
+    request, not a decision on a new request or permission taken from an earlier state:
+    model work starts only through an open Conduit (IMP-001). If a condition no longer
+    holds, or its current state cannot be established, the request is not dispatched and
+    ends unavailable under PND-016. Its diagnostic says which dispatch condition failed
+    or could not be checked, names a Conduit or invocation only where the caller may
+    inspect it, and carries no `properties.admission`. It also says that the call was
+    not dispatched, started no model work and is not queued, and that a request sent
+    again is decided afresh. Its request-ended record names PND-016 and the reason; no
+    second access-decision record is made. A hold of PND-005 or PND-011 that began
+    meanwhile holds the request under that promise. A report that IFC-054 keeps already
+    ended because a control stored the levers decides no waiting request. Each request
+    still waiting keeps its ID and its place among the waiters and waits for the login's
+    fresh ask; none ends merely because the report ended, and no 60 seconds follow that
+    report. The earliest request still waiting starts the fresh ask, whose records name
+    that request in `causedBy` and its caller. Each fresh ask has its own DL21 bound; a
+    later answer after that bound gives no report. If no request is still waiting, no
+    fresh ask starts. Cancellation of the request that caused an ask does not change
+    that ask's `causedBy` or its caller. A single-use report on whose ask no request
+    waits admits the next request this promise decides while it is current (IFC-054).
+    While a request waits, the engine's ID for it is the one its invocation takes if it
+    is dispatched, and a cancel names that ID; a request cancelled while it waits, by
+    the means OPS-027 names, is not dispatched and reports unavailable under this
+    promise, its diagnostic saying that it was cancelled while it waited and carrying no
+    `properties.admission`, and its record says so where the protocol has the engine
+    send no response; the ask goes on for the others; at a restart, a request that waits
+    ends unavailable under REC-007, as any request decided and not dispatched does, and
+    an ask in progress ends unknown under IMP-007 and gives no report; a request that
+    matches a waiting one, as OPS-009 describes a match, is not dispatched and reports
+    conflict, its diagnostic naming this promise, saying that the earlier request waits
+    for its login's report and carrying no `properties.admission`. For a hold on a
+    report or for want of one, the diagnostic's text names the login by kind, name and
+    ID; says that its admission report says model work may not start on it now, or that
+    it has no report that admits this call; says that the call was not dispatched and
+    started no model work, that nothing of it is queued, and that a call sent again, at
+    `retryAt` or after the lift, is decided afresh; for `after-call`, also says that the
+    caller need not wait for the admitted call to end before sending again; for a
+    report, says why in its reason's words, naming the lever and its value (for
+    `threshold`, the threshold), the window with its used percentage, its time and its
+    reset, and the paid usage read, each "not reported" where null; for no report, the
+    ask and why it gave none; for a single-use report, the call it admitted; then how
+    the hold lifts, by `lifts`, with `retryAt`; and, unless `lifts` is `lever-change`,
+    that a change of the levers by the Type's control, sent by an Interface, also ends
+    the report; `admission-hold.v1` gives the same in its fields, and neither names an
+    amount, a balance or a currency. Who is named: an Agent's call only where the caller
+    may inspect that Agent, otherwise as a call of an Agent of the login; the ask only
+    where the caller may inspect the login; the login always, as PND-005 names it.
+    `lifts` and `retryAt`: a refusal's `lifts` is its report's, and `retryAt` its keep
+    time plus its `validForSeconds`, null for `lever-change`; after an ask that gave no
+    report, `at-time` and that ask's end plus 60 seconds; for a request held because a
+    single-use report admitted another, `after-call` means that another call took the
+    report and spent it at once, and `retryAt` is the ask's end plus 60 seconds. This is
+    a retry time, not an earliest permitted retry or a guarantee that the admitted call
+    has ended. A request sent again need not wait for that call to end: it is decided
+    afresh under this promise, and where no report is current and no other hold applies,
+    it waits for the login's ask. The next ask receives the spent report as `previous`,
+    unless the engine has kept a newer report (IFC-054). Nothing lifts a hold by itself.
+    A dispatched request runs to its end: the engine never stops or cancels it under
+    this promise, whatever a later report says; it is sent exactly as with no
+    `admission` stated, so nothing of this promise reaches the Agent's implementation;
+    the requests one report admits run in parallel, as PND-005 lets calls on one login.
+    A login whose Type states no `admission` is not checked: its Agents' requests are
+    dispatched as without this promise, and its status says so (IFC-054).
 
 - id: PND-010
   layer: convention
@@ -300,7 +416,8 @@
     invocation's caller and filters, through no Conduit, never on an implementation
     notification. `admission-hook.v1` is the one exception (CTR-013, CTR-015): the
     engine invokes it as its own invocation of the login Resource, with no filter, never
-    as a part and never on an implementation notification (IFC-054). Setup checks the
+    as a part and never on an implementation notification (IFC-054), for the caller of
+    the request whose wait started it (PND-016). Setup checks the
     account after its run and connections and before its setup
     hook, in TPL-012's order; no account or a different account raises the action under PND-005,
     and a different account is undone by a sign-out-hook.v1 part before setup proceeds. A setup

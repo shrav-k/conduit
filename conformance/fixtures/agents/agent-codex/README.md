@@ -1,7 +1,7 @@
 # Pinned agent-codex contracts
 
 The two YAML files are byte-for-byte copies of
-[the package](../../../../packages/agent-codex/README.md) at version 0.2.5 (work order 279). The accompanying
+[the package](../../../../packages/agent-codex/README.md) at version 0.2.6 (work order 296). The accompanying
 `contracts.tar.gz` pins just those files as deterministic gzip/USTAR evidence for the
 registration vector; it contains no host executable and cannot run an Agent. The package's
 own `cargo run --release --bin package` produces the runnable host archive with its digest.

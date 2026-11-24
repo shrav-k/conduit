@@ -13,11 +13,19 @@ fn shared_login_type(name: &Value) -> bool {
             "codex-login.v1"
                 | "codex.v3"
                 | "codex.v4"
+                | "codex.v5"
                 | "account-home.v1"
                 | "claude-code.v3"
                 | "claude-code.v4"
                 | "claude-code.v5"
         )
+    )
+}
+
+fn history_contract(name: &Value) -> bool {
+    matches!(
+        name.as_str(),
+        Some("history-reading.v1" | "history.v1" | "history")
     )
 }
 
@@ -46,9 +54,11 @@ fn json_bytes(value: &Value) -> Vec<u8> {
 fn agent_contracts_v020(path: &Path) -> Vec<Value> {
     let mut docs = documents(path);
     docs.retain(|d| {
+        let name = &d["metadata"]["name"];
         d["kind"] != "Conduit"
-            && (d["kind"] != "Operation" || d["metadata"]["name"] != NEW_CONVERSATION)
-            && (d["kind"] != "Type" || !shared_login_type(&d["metadata"]["name"]))
+            && (d["kind"] != "Operation" || name != NEW_CONVERSATION)
+            && (d["kind"] != "Type" || !shared_login_type(name))
+            && !history_contract(name)
     });
     for doc in &mut docs {
         match doc["kind"].as_str() {
@@ -98,7 +108,11 @@ fn agent_fixtures(root: &Path, check: bool, generated: &mut BTreeMap<String, Vec
     manifest["address"] = json!("example.org/conformance/codex-no-account-hook");
     manifest["version"] = json!("0.2.0");
     manifest["exports"].as_array_mut().unwrap().retain(|op| {
-        op != NEW_CONVERSATION && op != "turn" && op != "conversation" && !shared_login_type(op)
+        op != NEW_CONVERSATION
+            && op != "turn"
+            && op != "conversation"
+            && !shared_login_type(op)
+            && !history_contract(op)
     });
     let mut wrapper = manifest["implementations"]["wrapper-v2"].take();
     let account = wrapper["implements"]

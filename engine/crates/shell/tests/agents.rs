@@ -291,7 +291,7 @@ fn setup_s1(parent: &Path) -> (Arc<Shell>, PathBuf, Duration) {
         let template = parent.join(format!("template-{name}"));
         fs::create_dir(&template).unwrap();
         let (ty, version) = if name == "agent-codex" {
-            ("codex.v1", "0.2.5")
+            ("codex.v1", "0.2.6")
         } else {
             ("claude-code.v1", "0.2.5")
         };

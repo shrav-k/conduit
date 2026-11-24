@@ -119,7 +119,7 @@ pub(super) fn limit(result: &Value) -> Value {
     json!({"window":null, "windowMinutes":window_minutes, "resetsAt":resets_at})
 }
 
-fn utc(seconds: i64) -> Option<String> {
+pub(crate) fn utc(seconds: i64) -> Option<String> {
     const SECONDS_PER_DAY: i64 = 86_400;
     // Convert to a March-based civil calendar so February ends each year.
     let day = seconds.div_euclid(SECONDS_PER_DAY) + 719_468;

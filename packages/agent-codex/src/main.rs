@@ -1,6 +1,6 @@
 use agent_adapter::{
     Config, FailedTurn, LOGIN_MESSAGE, LoginLapsed, Mode, Session, SignIn, SignInCall, WRAPPER,
-    header, prepare,
+    header, history, prepare,
 };
 use anyhow::Result;
 use rmcp::{
@@ -21,7 +21,12 @@ use tokio::{
     sync::Mutex,
 };
 #[derive(Clone)]
-struct Wrapper(Arc<Mutex<Session>>, bool, Mode);
+struct Wrapper(
+    Arc<Mutex<Session>>,
+    bool,
+    Mode,
+    Option<Arc<history::History>>,
+);
 
 impl Wrapper {
     fn has_login_hooks(&self) -> bool {
@@ -96,6 +101,16 @@ impl ServerHandler for Wrapper {
             .unwrap(),
             );
         }
+        if self.3.is_some() {
+            tools.push(serde_json::from_value(json!({
+                "name":"history",
+                "description":"Read this Agent's recorded turns in order without starting model work.",
+                "inputSchema":{"type":"object","properties":{
+                    "since":{"type":"integer","minimum":0,"default":0},
+                    "count":{"type":"integer","minimum":1,"maximum":50,"default":20}
+                },"required":[],"additionalProperties":false}
+            })).unwrap());
+        }
         Ok(ListToolsResult::with_all_items(tools))
     }
     async fn call_tool(
@@ -103,6 +118,24 @@ impl ServerHandler for Wrapper {
         r: CallToolRequestParams,
         context: RequestContext<RoleServer>,
     ) -> Result<CallToolResponse, ErrorData> {
+        if r.name == "history"
+            && let Some(history) = &self.3
+        {
+            let arguments = r.arguments.unwrap_or_default();
+            let (since, count) = history::paging(&arguments)
+                .map_err(|error| ErrorData::invalid_params(error, None))?;
+            let result = match history.page(since, count) {
+                Ok(value) => {
+                    let mut result =
+                        CallToolResult::success(vec![ContentBlock::text(value.to_string())]);
+                    result.structured_content = Some(value);
+                    result.result_type = Some(ResultType::COMPLETE);
+                    result
+                }
+                Err(error) => CallToolResult::error(vec![ContentBlock::text(error.to_string())]),
+            };
+            return Ok(result.into());
+        }
         if (r.name == "retire" && self.1) || (r.name == "setup" && self.2 == Mode::SharedLoginAgent)
         {
             if r.arguments.as_ref().is_some_and(|args| !args.is_empty()) {
@@ -261,13 +294,15 @@ impl ServerHandler for Wrapper {
         if context.ct.is_cancelled() {
             return Err(cancelled());
         }
-        let turn = tokio::select! {
-            biased;
-            _ = context.ct.cancelled() => {
-                Err(session.cancel().await)
-            }
-            result = session.turn(message) => result,
-        };
+        let attribution = |key| context.meta.get(key).and_then(serde_json::Value::as_str);
+        let turn = session
+            .serve_turn(
+                message,
+                attribution("io.github.shrav-k.conduit/invocation"),
+                attribution("io.github.shrav-k.conduit/caller"),
+                context.ct.cancelled(),
+            )
+            .await;
         let result = match turn {
             Err(error) if error.is::<LoginLapsed>() => {
                 return Ok(serde_json::from_value::<InputRequiredResult>(json!({
@@ -366,6 +401,12 @@ async fn run() -> Result<()> {
         [flag, program, rest @ ..] if flag == "--client-program" => (Some(program), rest),
         args => (None, args),
     };
+    let (mode_args, history_enabled) = match mode_args {
+        [login, history] if login == "--shared-login" && history == "--history" => {
+            (&mode_args[..1], true)
+        }
+        _ => (mode_args, false),
+    };
     let mode = match mode_args {
         [] => Mode::Agent,
         [flag] if flag == "--login-resource" => Mode::LoginResource,
@@ -384,7 +425,8 @@ async fn run() -> Result<()> {
         .then(|| signal(SignalKind::terminate()))
         .transpose()?;
     let v2 = config.v2;
-    let session = Session::new(config);
+    let mut session = Session::new(config);
+    let history = history_enabled.then(|| session.enable_history());
     let tree = session.tree();
     // Held until the process exits, so a TERM stop never drops the client before its tree read.
     let session = Arc::new(Mutex::new(session));
@@ -405,7 +447,7 @@ async fn run() -> Result<()> {
     }
     let serving = session.clone();
     let serve = async move {
-        let service = WrapperProtocol(Wrapper(serving.clone(), v2, mode))
+        let service = WrapperProtocol(Wrapper(serving.clone(), v2, mode, history))
             .serve(rmcp::transport::stdio())
             .await?;
         let result = service.waiting().await;

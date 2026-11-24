@@ -1,5 +1,6 @@
 //! Client adapter. This source is copied into each independently buildable package.
 mod client_version;
+pub mod history;
 mod usage;
 
 use anyhow::{Context, Result, bail, ensure};
@@ -494,19 +495,20 @@ pub fn client_home(c: &Config) -> Result<PathBuf> {
 }
 
 fn resolve_client_home(c: &Config, create: bool) -> Result<PathBuf> {
+    resolve_home(c.state_dir.as_deref(), c.mode, create)
+}
+
+fn resolve_home(state_dir: Option<&Path>, mode: Mode, create: bool) -> Result<PathBuf> {
     use std::io::ErrorKind::NotFound;
 
-    let label = home_label(c.mode);
-    let state_dir = c
-        .state_dir
-        .as_ref()
-        .with_context(|| format!("{label}: CONDUIT_STATE_DIR is unset"))?;
+    let label = home_label(mode);
+    let state_dir = state_dir.with_context(|| format!("{label}: CONDUIT_STATE_DIR is unset"))?;
     let state_dir = state_dir
         .canonicalize()
         .ok()
         .filter(|dir| dir.is_dir())
         .with_context(|| format!("{label}: CONDUIT_STATE_DIR is not an existing directory"))?;
-    let home = state_dir.join(if c.mode == Mode::LoginResource {
+    let home = state_dir.join(if mode == Mode::LoginResource {
         LOGIN_HOME_NAME
     } else {
         HOME_NAME
@@ -1899,10 +1901,6 @@ impl Stream {
             state.as_ref().is_none_or(|state| !state.closed),
             "client did not start"
         );
-        if c.output_schema.is_some() {
-            prepare(c)
-                .map_err(|_| anyhow::anyhow!("invalid configuration: cannot prepare run files"))?;
-        }
         let mut child = client_command(c, home, args)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
@@ -2092,6 +2090,7 @@ pub struct Session {
     login: Option<Login>,
     usage_totals: Option<usage::Totals>,
     client_version: Option<Option<String>>,
+    history: Option<Arc<history::History>>,
 }
 impl Session {
     pub fn new(config: Config) -> Self {
@@ -2107,7 +2106,14 @@ impl Session {
             login: None,
             usage_totals: None,
             client_version: None,
+            history: None,
         }
+    }
+
+    pub fn enable_history(&mut self) -> Arc<history::History> {
+        self.history
+            .get_or_insert_with(|| Arc::new(history::History::new(&self.config)))
+            .clone()
     }
     pub fn tree(&self) -> ClientTree {
         self.tree.clone()
@@ -2132,19 +2138,72 @@ impl Session {
         Ok(json!({"conversation": self.conversation, "ended": ended}))
     }
 
-    pub async fn turn(&mut self, message: &str) -> Result<Value> {
+    fn turn_ready(&self) -> Result<()> {
         if let Some(error) = &self.config.configuration_error {
             bail!("{error}");
         }
-        if self.retired {
-            bail!("{RETIRED_REFUSAL}");
+        ensure!(!self.retired, "{RETIRED_REFUSAL}");
+        Ok(())
+    }
+
+    pub async fn serve_turn(
+        &mut self,
+        message: &str,
+        invocation: Option<&str>,
+        caller: Option<&str>,
+        cancelled: impl Future<Output = ()>,
+    ) -> Result<Value> {
+        let history = self.history.clone();
+        let (start, launch) = if let Some(history) = &history {
+            self.turn_ready()?;
+            let launch = if self.failed.is_some() {
+                Ok(None)
+            } else {
+                self.prepare_turn_launch()
+            };
+            let launch = match launch {
+                Err(error) if !error.is::<LoginLapsed>() => return Err(error),
+                launch => launch,
+            };
+            (
+                Some(history.start(message, invocation, caller)?),
+                Some(launch),
+            )
+        } else {
+            (None, None)
+        };
+        let result = tokio::select! {
+            biased;
+            _ = cancelled => Err(self.cancel().await),
+            result = self.turn_with_launch(message, launch) => result,
+        };
+        if let Some(start) = start {
+            start.finish(
+                result
+                    .as_ref()
+                    .ok()
+                    .and_then(|value| value["text"].as_str()),
+            );
         }
+        result
+    }
+
+    pub async fn turn(&mut self, message: &str) -> Result<Value> {
+        self.turn_with_launch(message, None).await
+    }
+
+    async fn turn_with_launch(
+        &mut self,
+        message: &str,
+        launch: Option<Result<Option<PathBuf>>>,
+    ) -> Result<Value> {
+        self.turn_ready()?;
         if let Some((k, cause)) = &self.failed {
             bail!("session failed at turn {k}: {cause}; implicit restart refused");
         }
         let duration = self.config.timeout;
         let deadline = Instant::now() + duration;
-        let result = match tokio::time::timeout_at(deadline, self.run_turn(message)).await {
+        let result = match tokio::time::timeout_at(deadline, self.run_turn(message, launch)).await {
             Ok(result) => result,
             Err(_) => Err(anyhow::anyhow!(
                 "deadline: no turn boundary within {} seconds{}",
@@ -2193,8 +2252,8 @@ impl Session {
             }
         }
     }
-    async fn run_turn(&mut self, message: &str) -> Result<(Value, Option<usage::Totals>)> {
-        let home = if self.stream.is_some() || !self.config.v2 {
+    fn turn_home(&self) -> Result<Option<PathBuf>> {
+        if self.stream.is_some() || !self.config.v2 {
             Ok(None)
         } else if self.config.mode == Mode::SharedLoginAgent {
             link_login(&self.config).and_then(|home| match fs::metadata(home.join(LOGIN_FILE)) {
@@ -2204,7 +2263,24 @@ impl Session {
             })
         } else {
             client_home(&self.config).map(Some)
-        };
+        }
+    }
+
+    fn prepare_turn_launch(&self) -> Result<Option<PathBuf>> {
+        let home = self.turn_home()?;
+        if self.stream.is_none() && self.config.output_schema.is_some() {
+            prepare(&self.config)
+                .map_err(|_| anyhow::anyhow!("invalid configuration: cannot prepare run files"))?;
+        }
+        Ok(home)
+    }
+
+    async fn run_turn(
+        &mut self,
+        message: &str,
+        launch: Option<Result<Option<PathBuf>>>,
+    ) -> Result<(Value, Option<usage::Totals>)> {
+        let home = launch.unwrap_or_else(|| self.prepare_turn_launch());
         if home.as_ref().is_err_and(|error| error.is::<LoginLapsed>()) {
             return Err(LoginLapsed.into());
         }
@@ -2412,16 +2488,23 @@ impl Session {
             bail!("{error}");
         }
         self.retired = true;
+        if let Some(history) = &self.history {
+            history.retire();
+        }
         if let Some(note) = self.shutdown().await.note() {
             bail!("{note}");
         }
         let home = client_home(&self.config)?;
         if self.config.mode == Mode::SharedLoginAgent {
+            if let Some(history) = &self.history {
+                history.remove()?;
+            }
             empty_home(&home, self.config.mode)?;
-            return Ok(
+            return Ok(if self.history.is_some() {
+                "client stopped, its history removed and its home emptied; the login was left to its login Resource"
+            } else {
                 "client stopped and its home emptied; the login was left to its login Resource"
-                    .into(),
-            );
+            }.into());
         }
         logout(&self.config, &home, &self.tree, deadline).await?;
         ensure!(

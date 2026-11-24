@@ -348,3 +348,129 @@ spec:
     'github.com/shrav-k/conduit/core#setup-hook.v1': '#wrapper-v4'
     'github.com/shrav-k/conduit/core#retire-hook.v1': '#wrapper-v4'
   records: {inputs: false, outputs: false}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: codex.v5
+  description: >-
+    Runs an explicit native-client conversation in the directory that `directory` names, or in
+    a private directory of the run's own when it is null. When the configuration names a directory,
+    the client's own tools are on: shell, code execution, file edits and network, with the
+    client's sandbox and approval prompts off. On the engine's own runner, they run as the
+    engine's operating-system user and nothing confines them in v0. They reach every file,
+    process, network address, credential and
+    signed-in account that user can reach: the engine's store, root's client token, this run's
+    token, the user's git and cloud credentials, and the user's own client logins with their
+    connectors and apps. That reach does not pass through Conduit: no Conduit grants, limits or
+    records it (ruling 70). On the login Resource's node, the engine's own runner supplies
+    the Agent's state directory and the login Resource's directory (PRV-029).
+    The client's own browser, desktop-control, goal, image-generation,
+    hook and plugin tools stay off, and so do its multi-agent features, although Codex
+    still offers its collaboration tools. Apps follow accountServices, and so does hosted
+    search when a directory is named. The shell can still reach the same services and the user's
+    browser and desktop, so accountServices false shapes only the client's tool list. With
+    directory null the client has codex.v1's tools and sandbox. A turn longer than
+    turnDeadlineSeconds fails and ends the conversation, and the engine's call timeout
+    (`conduit serve --call-timeout-seconds`) must be longer.
+    Its login is its login Resource's, linked into the Agent's own state directory.
+    The wrapper keeps each turn's message, final text, invocation, caller and times, with
+    its index and state, in the state directory until the retire hook removes the history.
+    Configuration refusals, including the home and login-directory checks, and turns after
+    the retire hook leave no entry. History keeps the message and final text as written.
+    It keeps no separate tool calls or results, file reads or their contents, reasoning, usage,
+    usage limits, failure text, other client output, credentials, environment or configuration
+    values, or paths.
+    The retire hook stops the client, removes the history and empties the home without logging out.
+    The wrapper adds instructions to the client's own as developer instructions.
+    outputSchema is the JSON text of a JSON Schema whose type is object, constrains the final
+    response, and the turn returns the parsed object in structured.
+spec:
+  family: Agent
+  schema:
+    type: object
+    properties:
+      directory: {type: [string, 'null'], default: null}
+      turnDeadlineSeconds: {type: integer, minimum: 1, maximum: 604800, default: 180}
+      effort: {type: string, default: ''}
+      accountServices: {type: boolean, default: false}
+      model: {type: string, default: ''}
+      login: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}
+      instructions: {type: [string, 'null'], minLength: 1, maxLength: 21841, default: null}
+      outputSchema: {type: [string, 'null'], minLength: 1, maxLength: 32762, default: null}
+    required: [directory, turnDeadlineSeconds, effort, accountServices, model, login, instructions, outputSchema]
+    additionalProperties: false
+  toolsDirectory: {directory: /directory}
+  loginResource: {place: /login}
+  offers: ['#conversation.v1', '#history-reading.v1']
+  requires:
+  - 'github.com/shrav-k/conduit/core#setup-hook.v1'
+  - 'github.com/shrav-k/conduit/core#retire-hook.v1'
+  implementation:
+    '#turn.v1': '#wrapper-v5'
+    '#new-conversation.v1': '#wrapper-v5'
+    'github.com/shrav-k/conduit/core#setup-hook.v1': '#wrapper-v5'
+    'github.com/shrav-k/conduit/core#retire-hook.v1': '#wrapper-v5'
+    '#history.v1': '#wrapper-v5'
+  records: {inputs: false, outputs: false}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Capability
+metadata:
+  name: history-reading.v1
+spec:
+  operations: ['#history.v1']
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: history.v1
+  description: >-
+    Read this Agent's recorded turns, oldest first, without starting a client or model work.
+    History keeps the caller's message and final text as written. It discards tool calls,
+    tool results, file reads and their contents, and usage limits even when the client stream
+    carries them.
+    since excludes indices through that value and defaults to 0. count limits the page to
+    1 through 50 turns and defaults to 20. latest is the highest index kept, or 0 when there
+    are no turns. A turn is running while this run serves it, completed when it returns final
+    text, failed for any other reply, or interrupted if its end was not kept and this run is
+    no longer serving it. To read a running entry again, set since to one below its index.
+spec:
+  startsModelWork: false
+  inputSchema:
+    type: object
+    properties:
+      since: {type: integer, minimum: 0, default: 0}
+      count: {type: integer, minimum: 1, maximum: 50, default: 20}
+    required: []
+    additionalProperties: false
+  outputSchema:
+    type: object
+    properties:
+      turns:
+        type: array
+        maxItems: 50
+        items:
+          type: object
+          properties:
+            index: {type: integer, minimum: 1}
+            invocation: {type: [string, 'null']}
+            caller: {type: [string, 'null']}
+            message: {type: string}
+            text: {type: [string, 'null']}
+            state: {type: string, enum: [running, completed, failed, interrupted]}
+            startedAt: {type: string, format: date-time}
+            endedAt: {type: [string, 'null'], format: date-time}
+          required: [index, invocation, caller, message, text, state, startedAt, endedAt]
+          additionalProperties: false
+      latest: {type: integer, minimum: 0}
+    required: [turns, latest]
+    additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: history
+spec:
+  capability: '#history-reading.v1'
+  operations: ['#history.v1']

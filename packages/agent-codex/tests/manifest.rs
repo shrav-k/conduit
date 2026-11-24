@@ -38,6 +38,7 @@ fn wrapper_v2_path_changes_only_the_program() {
         "login",
         "wrapper-v3",
         "wrapper-v4",
+        "wrapper-v5",
     ];
     for (index, expected) in expected_names.iter().enumerate() {
         assert_eq!(
@@ -50,7 +51,7 @@ fn wrapper_v2_path_changes_only_the_program() {
     assert_eq!(
         items.len(),
         expected_names.len(),
-        "wrapper-v4: expected end after item, extra header line {:?}",
+        "wrapper-v5: expected end after item, extra header line {:?}",
         items.get(expected_names.len()).map(|(name, _)| name)
     );
 
@@ -94,4 +95,27 @@ fn wrapper_v2_path_changes_only_the_program() {
             index + 1
         );
     }
+}
+
+#[test]
+fn wrapper_v5_is_wrapper_v4_with_history() {
+    let manifest = include_str!("../conduit.yaml");
+    let (v4, v5) = manifest
+        .split_once("\n  wrapper-v4:\n")
+        .unwrap()
+        .1
+        .split_once("\n  wrapper-v5:\n")
+        .expect("missing wrapper-v5");
+    let expected = v4
+        .trim_end()
+        .replace(
+            "    command: [bin/agent-codex, --shared-login]",
+            "    - '#history.v1'\n    command: [bin/agent-codex, --shared-login, --history]",
+        )
+        .replace(
+            "    plain: true\n",
+            "    plain: true\n    attributed: ['#turn.v1']\n",
+        )
+        + "\n      '#history.v1': history";
+    assert_eq!(v5.trim_end(), expected);
 }

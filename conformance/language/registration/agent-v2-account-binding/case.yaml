@@ -144,8 +144,8 @@
             {
               "package": {
                 "address": "example.org/conduit/agent-codex",
-                "version": "0.2.5",
-                "digest": "sha256:acaba1e431793bf5d5ae40df1d115851a69e3019004959ae2402464894b20a5e"
+                "version": "0.2.6",
+                "digest": "sha256:a4b3bfde69f0809ee0d24bc0c1c8f129e616ad33d53f47c39b4574235d9493a2"
               }
             }
           ]

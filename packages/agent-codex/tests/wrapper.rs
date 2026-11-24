@@ -4291,6 +4291,15 @@ impl LoginTestWrapper {
         directory: Option<&Path>,
         program: Option<&Path>,
     ) -> Self {
+        Self::start_with_args(c, mode, directory, program).await
+    }
+
+    async fn start_with_args<'a>(
+        c: &Config,
+        args: impl IntoIterator<Item = &'a str>,
+        directory: Option<&Path>,
+        program: Option<&Path>,
+    ) -> Self {
         use tokio::io::AsyncBufReadExt;
         let mut child = tokio::process::Command::new(binary())
             .args(
@@ -4298,7 +4307,7 @@ impl LoginTestWrapper {
                     .into_iter()
                     .flat_map(|path| [std::ffi::OsStr::new("--client-program"), path.as_os_str()]),
             )
-            .args(mode)
+            .args(args)
             .env_clear()
             .envs(&c.env)
             .env("AGENT_ACCOUNT_SERVICES", "false")
@@ -4342,15 +4351,17 @@ impl LoginTestWrapper {
             .unwrap();
     }
 
-    async fn request(&mut self, method: &str, mut params: Value) -> Value {
+    async fn begin_request(&mut self, method: &str, mut params: Value) -> u64 {
         let id = self.next_id;
         self.next_id += 1;
-        params["_meta"] = json!({
-            "io.modelcontextprotocol/protocolVersion": "2026-07-28",
-            "io.modelcontextprotocol/clientCapabilities": {}
-        });
+        params["_meta"]["io.modelcontextprotocol/protocolVersion"] = json!("2026-07-28");
+        params["_meta"]["io.modelcontextprotocol/clientCapabilities"] = json!({});
         self.send(json!({"jsonrpc": "2.0", "id": id, "method": method, "params": params}))
             .await;
+        id
+    }
+
+    async fn reply_to(&mut self, id: u64) -> Value {
         tokio::time::timeout(Duration::from_secs(30), async {
             loop {
                 let line = self
@@ -4367,6 +4378,11 @@ impl LoginTestWrapper {
         })
         .await
         .expect("wrapper reply timed out")
+    }
+
+    async fn request(&mut self, method: &str, params: Value) -> Value {
+        let id = self.begin_request(method, params).await;
+        self.reply_to(id).await
     }
 
     async fn call(&mut self, name: &str, arguments: Value) -> Value {
@@ -5375,4 +5391,648 @@ async fn setup_probe_stops_the_launcher_and_its_child() {
         ],
         "version probe left a scripted child or launcher running"
     );
+}
+
+const HISTORY_INVOCATION: &str = "io.github.shrav-k.conduit/invocation";
+const HISTORY_CALLER: &str = "io.github.shrav-k.conduit/caller";
+
+fn history_location(c: &Config) -> std::path::PathBuf {
+    c.state_dir.as_ref().unwrap().join("history.jsonl")
+}
+
+fn history_login(parent: &Path) -> std::path::PathBuf {
+    let login = parent.join("login");
+    fs::write(login_test_home(&login).join("auth.json"), "fixture login").unwrap();
+    login
+}
+
+async fn history_wrapper(c: &Config, login: &Path) -> LoginTestWrapper {
+    LoginTestWrapper::start_with_args(
+        c,
+        ["--shared-login", "--history"],
+        Some(login),
+        Some(&c.program),
+    )
+    .await
+}
+
+async fn history_page(wrapper: &mut LoginTestWrapper, arguments: Value) -> Value {
+    let reply = wrapper.call("history", arguments).await;
+    assert_eq!(reply["isError"], false);
+    let page = &reply["structuredContent"];
+    let text: Value = serde_json::from_str(reply["content"][0]["text"].as_str().unwrap()).unwrap();
+    assert_eq!(&text, page);
+    page.clone()
+}
+
+async fn attributed_turn(
+    wrapper: &mut LoginTestWrapper,
+    message: &str,
+    invocation: &str,
+    caller: &str,
+) -> Value {
+    wrapper
+        .request(
+            "tools/call",
+            json!({"name":"turn", "arguments":{"message":message}, "_meta":{
+                HISTORY_INVOCATION:invocation, HISTORY_CALLER:caller
+            }}),
+        )
+        .await["result"]
+        .clone()
+}
+
+fn assert_history_time(value: &Value) {
+    let time = value.as_str().expect("expected a UTC date-time");
+    assert_eq!(time.len(), 20);
+    assert_eq!(&time[4..5], "-");
+    assert_eq!(&time[10..11], "T");
+    assert!(time.ends_with('Z'));
+}
+
+#[tokio::test]
+async fn v5_history_keeps_each_turn_with_its_invocation_and_caller() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = config(parent.path(), false, false);
+    let login = history_login(parent.path());
+    let mut wrapper = history_wrapper(&c, &login).await;
+    let listed = wrapper.request("tools/list", json!({})).await;
+    let tool = listed["result"]["tools"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|tool| tool["name"] == "history")
+        .expect("history must be listed");
+    assert_eq!(
+        tool["inputSchema"],
+        json!({"type":"object","properties":{
+            "since":{"type":"integer","minimum":0,"default":0},
+            "count":{"type":"integer","minimum":1,"maximum":50,"default":20}
+        },"required":[],"additionalProperties":false})
+    );
+
+    let completed = attributed_turn(&mut wrapper, "first prompt", "turn-1", "reader-1").await;
+    let failed = attributed_turn(&mut wrapper, "FAIL:network", "turn-2", "reader-2").await;
+    let repeated = attributed_turn(&mut wrapper, "retry", "turn-2", "reader-2").await;
+    let unattributed = wrapper.turn("unattributed").await;
+    assert_eq!(completed["isError"], false);
+    for reply in [&failed, &repeated, &unattributed] {
+        assert_eq!(reply["isError"], true);
+    }
+    assert!(
+        repeated["content"][0]["text"]
+            .as_str()
+            .unwrap()
+            .contains("implicit restart refused")
+    );
+
+    let page = history_page(&mut wrapper, json!({})).await;
+    assert_eq!(page["latest"], 4);
+    let turns = page["turns"].as_array().unwrap();
+    assert_eq!(turns.len(), 4);
+    for (index, (entry, (message, invocation, caller))) in turns
+        .iter()
+        .zip([
+            ("first prompt", Some("turn-1"), Some("reader-1")),
+            ("FAIL:network", Some("turn-2"), Some("reader-2")),
+            ("retry", Some("turn-2"), Some("reader-2")),
+            ("unattributed", None, None),
+        ])
+        .enumerate()
+    {
+        assert_history_time(&entry["startedAt"]);
+        assert_history_time(&entry["endedAt"]);
+        let (state, final_text) = if index == 0 {
+            ("completed", completed["structuredContent"]["text"].clone())
+        } else {
+            ("failed", Value::Null)
+        };
+        assert_eq!(
+            *entry,
+            json!({
+                "index":index+1, "invocation":invocation, "caller":caller,
+                "message":message, "text":final_text, "state":state,
+                "startedAt":entry["startedAt"], "endedAt":entry["endedAt"]
+            })
+        );
+    }
+    wrapper.close().await;
+}
+
+#[tokio::test]
+async fn v5_history_pages_by_since_and_count() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = config(parent.path(), false, false);
+    let login = history_login(parent.path());
+    let mut wrapper = history_wrapper(&c, &login).await;
+    assert_eq!(
+        history_page(&mut wrapper, json!({})).await,
+        json!({"turns":[],"latest":0})
+    );
+    for index in 1..=21 {
+        assert_eq!(
+            wrapper.turn(&format!("prompt {index}")).await["isError"],
+            false
+        );
+    }
+    let defaults = history_page(&mut wrapper, json!({})).await;
+    let indices: Vec<_> = defaults["turns"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|turn| turn["index"].as_u64().unwrap())
+        .collect();
+    assert_eq!(indices, (1..=20).collect::<Vec<_>>());
+    assert_eq!(defaults["latest"], 21);
+    let page = history_page(&mut wrapper, json!({"since":19,"count":1})).await;
+    assert_eq!(page["turns"].as_array().unwrap().len(), 1);
+    assert_eq!(page["turns"][0]["index"], 20);
+    assert_eq!(page["latest"], 21);
+    assert_eq!(
+        history_page(&mut wrapper, json!({"since":21})).await,
+        json!({"turns":[],"latest":21})
+    );
+    for (arguments, error) in [
+        (
+            json!({"since":-1}),
+            "history: since must be a whole number from 0, the index of the last turn already read",
+        ),
+        (
+            json!({"since":"1"}),
+            "history: since must be a whole number from 0, the index of the last turn already read",
+        ),
+        (
+            json!({"count":0}),
+            "history: count must be a whole number from 1 to 50",
+        ),
+        (
+            json!({"count":51}),
+            "history: count must be a whole number from 1 to 50",
+        ),
+        (
+            json!({"extra":true}),
+            "history: expected only since and count",
+        ),
+    ] {
+        let reply = wrapper
+            .request(
+                "tools/call",
+                json!({"name":"history","arguments":arguments}),
+            )
+            .await;
+        assert_eq!(reply["error"]["code"], -32602);
+        assert_eq!(reply["error"]["message"], error);
+    }
+    wrapper.close().await;
+}
+
+#[tokio::test]
+async fn v5_history_answers_while_a_turn_runs() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = config(parent.path(), false, false);
+    let login = history_login(parent.path());
+    let mut wrapper = history_wrapper(&c, &login).await;
+    let turn = wrapper
+        .begin_request(
+            "tools/call",
+            json!({"name":"turn","arguments":{"message":"BLOCK"}}),
+        )
+        .await;
+    wait_for(&c.cwd.join("blocked")).await;
+    let page = tokio::time::timeout(
+        Duration::from_secs(2),
+        history_page(&mut wrapper, json!({})),
+    )
+    .await
+    .unwrap();
+    assert_eq!(page["latest"], 1);
+    assert_eq!(page["turns"][0]["state"], "running");
+    assert_eq!(page["turns"][0]["endedAt"], Value::Null);
+    assert_eq!(page["turns"][0]["text"], Value::Null);
+    fs::write(c.cwd.join("release"), "").unwrap();
+    let complete = wrapper.reply_to(turn).await;
+    assert_eq!(complete["result"]["isError"], false);
+    let page = history_page(&mut wrapper, json!({})).await;
+    assert_eq!(page["turns"][0]["state"], "completed");
+    assert_eq!(
+        page["turns"][0]["text"],
+        complete["result"]["structuredContent"]["text"]
+    );
+    assert_history_time(&page["turns"][0]["endedAt"]);
+    wrapper.close().await;
+}
+
+#[tokio::test]
+async fn v5_history_holds_no_tool_call_file_or_usage() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = config(parent.path(), false, false);
+    let login = history_login(parent.path());
+    let mut wrapper = history_wrapper(&c, &login).await;
+    let completed = wrapper.turn("HISTORY-DETAILS").await;
+    assert_eq!(
+        completed["structuredContent"]["text"],
+        "public final answer"
+    );
+    assert!(completed["_meta"][USAGE_MEMBER].is_object());
+    assert_eq!(
+        wrapper.call("new-conversation", json!({})).await["isError"],
+        false
+    );
+    assert_eq!(wrapper.turn("FAIL:network").await["isError"], true);
+    assert_eq!(
+        wrapper.call("new-conversation", json!({})).await["isError"],
+        false
+    );
+    fs::write(
+        c.cwd.join("usage-limits.json"),
+        json!({"answer":{"rateLimits":{"primary":{
+            "usedPercent":100,"windowDurationMins":315,"resetsAt":1730948100
+        }}}})
+        .to_string(),
+    )
+    .unwrap();
+    let reply = wrapper.turn("FAIL:quota").await;
+    assert_eq!(scripted_failed_turn(&reply)["limit"]["windowMinutes"], 315);
+
+    let page = history_page(&mut wrapper, json!({})).await;
+    assert_eq!(page["latest"], 3);
+    assert_eq!(page["turns"][0]["text"], "public final answer");
+    for index in 1..=2 {
+        assert_eq!(page["turns"][index]["state"], "failed");
+        assert_eq!(page["turns"][index]["text"], Value::Null);
+    }
+    let file = history_location(&c);
+    assert_eq!(
+        fs::metadata(&file).unwrap().permissions().mode() & 0o777,
+        0o600
+    );
+    let stored = fs::read_to_string(file).unwrap();
+    let entries: Vec<Value> = stored
+        .lines()
+        .map(|line| serde_json::from_str(line).unwrap())
+        .collect();
+    assert_eq!(json!(entries), page["turns"]);
+    for body in [page.to_string(), stored] {
+        for excluded in [
+            "canary",
+            "438291",
+            "764812",
+            "349821",
+            "usage",
+            "windowMinutes",
+            "client failure:",
+            "failedTurn",
+            "sentinel-secret",
+            parent.path().to_str().unwrap(),
+        ] {
+            assert!(
+                !body.contains(excluded),
+                "history contains excluded client data"
+            );
+        }
+    }
+    wrapper.close().await;
+}
+
+#[tokio::test]
+async fn v5_history_outlives_new_conversations_and_runs() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = config(parent.path(), false, false);
+    let login = history_login(parent.path());
+    let mut wrapper = history_wrapper(&c, &login).await;
+    assert_eq!(wrapper.turn("first").await["isError"], false);
+    assert_eq!(
+        wrapper.call("new-conversation", json!({})).await["isError"],
+        false
+    );
+    assert_eq!(wrapper.turn("second").await["isError"], false);
+    wrapper
+        .begin_request(
+            "tools/call",
+            json!({"name":"turn","arguments":{"message":"BLOCK"}}),
+        )
+        .await;
+    wait_for(&c.cwd.join("blocked")).await;
+    // TERM stops the fake client tree and exits without completing the blocked turn.
+    assert_eq!(
+        unsafe { libc::kill(wrapper.child.id().unwrap() as i32, libc::SIGTERM) },
+        0
+    );
+    assert_eq!(wrapper.child.wait().await.unwrap().code(), Some(143));
+    let mut wrapper = history_wrapper(&c, &login).await;
+    let page = history_page(&mut wrapper, json!({})).await;
+    assert_eq!(page["latest"], 3);
+    for (index, state) in ["completed", "completed", "interrupted"]
+        .into_iter()
+        .enumerate()
+    {
+        assert_eq!(page["turns"][index]["index"], index + 1);
+        assert_eq!(page["turns"][index]["state"], state);
+    }
+    assert_eq!(page["turns"][2]["endedAt"], Value::Null);
+    assert_eq!(page["turns"][2]["text"], Value::Null);
+    assert_eq!(wrapper.turn("in the new run").await["isError"], false);
+    let page = history_page(&mut wrapper, json!({"since":3})).await;
+    assert_eq!(page["latest"], 4);
+    assert_eq!(page["turns"][0]["index"], 4);
+    wrapper.close().await;
+}
+
+#[tokio::test]
+async fn v5_history_write_and_read_refusals() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = config(parent.path(), false, false);
+    let login = history_login(parent.path());
+    let file = history_location(&c);
+    fs::create_dir(&file).unwrap();
+    let mut wrapper = history_wrapper(&c, &login).await;
+    let refusal = wrapper.turn("first").await;
+    assert_eq!(refusal["isError"], true);
+    assert_eq!(
+        refusal["content"][0]["text"],
+        "history (history.jsonl): cannot keep this turn in CONDUIT_STATE_DIR; no client started, the conversation is unchanged; call again once it is writable"
+    );
+    assert!(!c.cwd.join("client-started").exists());
+    let refusal = wrapper.call("history", json!({})).await;
+    assert_eq!(refusal["isError"], true);
+    assert_eq!(
+        refusal["content"][0]["text"],
+        "history (history.jsonl): cannot read the history in CONDUIT_STATE_DIR"
+    );
+    fs::remove_dir(&file).unwrap();
+    assert_eq!(wrapper.turn("first").await["isError"], false);
+    assert_eq!(history_page(&mut wrapper, json!({})).await["latest"], 1);
+
+    let turn = wrapper
+        .begin_request(
+            "tools/call",
+            json!({"name":"turn","arguments":{"message":"BLOCK"}}),
+        )
+        .await;
+    wait_for(&c.cwd.join("blocked")).await;
+    let saved = file.with_extension("saved");
+    fs::rename(&file, &saved).unwrap();
+    fs::create_dir(&file).unwrap();
+    fs::write(c.cwd.join("release"), "").unwrap();
+    assert_eq!(wrapper.reply_to(turn).await["result"]["isError"], false);
+    fs::remove_dir(&file).unwrap();
+    fs::rename(saved, file).unwrap();
+    let page = history_page(&mut wrapper, json!({})).await;
+    assert_eq!(page["turns"][1]["state"], "interrupted");
+    assert_eq!(page["turns"][1]["endedAt"], Value::Null);
+    wrapper.close().await;
+}
+
+#[tokio::test]
+async fn v5_history_preserves_turn_text_quoting_an_excluded_event() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = config(parent.path(), false, false);
+    let login = history_login(parent.path());
+    let mut wrapper = history_wrapper(&c, &login).await;
+    let prompt = "HISTORY-QUOTED command-output-canary";
+    let answer = "The final answer quotes command-output-canary.";
+    assert_eq!(
+        wrapper.turn(prompt).await["structuredContent"]["text"],
+        answer
+    );
+    let page = history_page(&mut wrapper, json!({})).await;
+    let stored = fs::read_to_string(history_location(&c)).unwrap();
+    let entry: Value = serde_json::from_str(&stored).unwrap();
+    assert_eq!(entry, page["turns"][0]);
+    assert_eq!(entry["message"], prompt);
+    assert_eq!(entry["text"], answer);
+    assert_eq!(stored.matches("command-output-canary").count(), 2);
+    for excluded in [
+        "tool-command-canary",
+        "mcp-call-canary",
+        "mcp-result-canary",
+        "file-change-canary",
+        "reasoning-canary",
+        "438291",
+    ] {
+        assert!(
+            !stored.contains(excluded),
+            "an excluded event entered history"
+        );
+    }
+    wrapper.close().await;
+}
+
+#[tokio::test]
+async fn v5_history_does_not_record_late_output_schema_refusals() {
+    let parent = tempfile::tempdir().unwrap();
+    let mut c = config(parent.path(), false, false);
+    c.env.insert(
+        "AGENT_OUTPUT_SCHEMA".into(),
+        json!({"type":"object"}).to_string(),
+    );
+    let login = history_login(parent.path());
+    let mut wrapper = history_wrapper(&c, &login).await;
+    let schema = c.cwd.join("output-schema.json");
+    fs::remove_file(&schema).unwrap();
+    fs::create_dir(&schema).unwrap();
+
+    let refusal = wrapper.turn("refused before launch").await;
+    assert_eq!(refusal["isError"], true);
+    assert!(
+        refusal["content"][0]["text"]
+            .as_str()
+            .unwrap()
+            .contains("invalid configuration: cannot prepare run files")
+    );
+    assert!(!c.cwd.join("client-started").exists());
+    assert_eq!(
+        history_page(&mut wrapper, json!({})).await,
+        json!({"turns":[],"latest":0})
+    );
+    assert!(!history_location(&c).exists());
+
+    fs::remove_dir(schema).unwrap();
+    assert_eq!(wrapper.turn("first kept turn").await["isError"], false);
+    let page = history_page(&mut wrapper, json!({})).await;
+    assert_eq!(page["latest"], 1);
+    assert_eq!(page["turns"][0]["message"], "first kept turn");
+    wrapper.close().await;
+}
+
+#[tokio::test]
+async fn v5_history_rejects_invalid_persisted_timestamps() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = config(parent.path(), false, false);
+    let login = history_login(parent.path());
+    let mut wrapper = history_wrapper(&c, &login).await;
+    let file = history_location(&c);
+    let entry = json!({
+        "index":1,"invocation":null,"caller":null,"message":"prompt","text":"answer",
+        "state":"completed","startedAt":"2024-02-29T10:11:12.123Z",
+        "endedAt":"2024-02-29T10:11:13+00:00"
+    });
+    fs::write(&file, format!("{entry}\n")).unwrap();
+    assert_eq!(
+        history_page(&mut wrapper, json!({})).await["turns"][0],
+        entry
+    );
+    for (key, timestamp) in [
+        ("startedAt", "not a date"),
+        ("startedAt", "2026-02-29T10:11:12Z"),
+        ("startedAt", "2026-01-01T10:11:12.Z"),
+        ("endedAt", "2026-04-31T10:11:12Z"),
+        ("endedAt", "2026-01-01T24:00:00Z"),
+        ("endedAt", "2026-01-01T10:11:12+01:00"),
+        ("endedAt", "2026-01-01T10:11:12"),
+    ] {
+        let mut invalid = entry.clone();
+        invalid[key] = json!(timestamp);
+        fs::write(&file, format!("{invalid}\n")).unwrap();
+        let reply = wrapper.call("history", json!({})).await;
+        assert_eq!(reply["isError"], true, "history accepted {key}={timestamp}");
+        assert_eq!(
+            reply["content"][0]["text"],
+            "history (history.jsonl): cannot read the history in CONDUIT_STATE_DIR"
+        );
+    }
+    assert!(!c.cwd.join("client-started").exists());
+    wrapper.close().await;
+}
+
+#[tokio::test]
+async fn v5_history_names_invalid_file_and_its_remedy() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = config(parent.path(), false, false);
+    let login = history_login(parent.path());
+    let file = history_location(&c);
+    let mut wrapper = history_wrapper(&c, &login).await;
+
+    for invalid in ["malformed fixture line\n", "{}\n"] {
+        fs::write(&file, invalid).unwrap();
+        let launch = wrapper.turn("cannot be kept").await;
+        assert_eq!(launch["isError"], true);
+        assert_eq!(
+            launch["content"][0]["text"],
+            "history (history.jsonl): the history in CONDUIT_STATE_DIR is invalid; no client started, the conversation is unchanged; retire the Agent to remove it"
+        );
+        assert!(!c.cwd.join("client-started").exists());
+        let page = wrapper.call("history", json!({})).await;
+        assert_eq!(page["isError"], true);
+        assert_eq!(
+            page["content"][0]["text"],
+            "history (history.jsonl): the history in CONDUIT_STATE_DIR is invalid; retire the Agent to remove it"
+        );
+        assert_eq!(fs::read_to_string(&file).unwrap(), invalid);
+    }
+    assert_eq!(wrapper.call("retire", json!({})).await["isError"], false);
+    assert!(!file.exists());
+    wrapper.close().await;
+}
+
+#[tokio::test]
+async fn v5_history_distinguishes_home_configuration_from_a_lapsed_login() {
+    let parent = tempfile::tempdir().unwrap();
+    let c = config(parent.path(), false, false);
+    let login = history_login(parent.path());
+    let mut wrapper = history_wrapper(&c, &login).await;
+    let home = c.state_dir.as_ref().unwrap().join(HOME_NAME);
+    fs::create_dir(&home).unwrap();
+    let dotenv = home.join(".env");
+    fs::write(&dotenv, "fixture").unwrap();
+    let refusal = wrapper.turn("home refused").await;
+    assert_eq!(refusal["isError"], true);
+    assert!(
+        refusal["content"][0]["text"]
+            .as_str()
+            .unwrap()
+            .contains("home holds a .env")
+    );
+    fs::remove_file(dotenv).unwrap();
+    assert_eq!(
+        history_page(&mut wrapper, json!({})).await,
+        json!({"turns":[],"latest":0})
+    );
+
+    fs::remove_file(login.join("codex-home/auth.json")).unwrap();
+    let lapse = wrapper.turn("login lapsed").await;
+    assert_eq!(lapse["resultType"], "input_required");
+    assert!(!c.cwd.join("client-started").exists());
+    let page = history_page(&mut wrapper, json!({})).await;
+    assert_eq!(page["latest"], 1);
+    assert_eq!(page["turns"][0]["message"], "login lapsed");
+    assert_eq!(page["turns"][0]["state"], "failed");
+    wrapper.close().await;
+}
+
+#[tokio::test]
+async fn v5_retire_removes_the_history() {
+    for removal_fails in [false, true] {
+        let parent = tempfile::tempdir().unwrap();
+        let c = config(parent.path(), false, false);
+        let login = history_login(parent.path());
+        let mut wrapper = history_wrapper(&c, &login).await;
+        assert_eq!(wrapper.turn("initial").await["isError"], false);
+        let file = history_location(&c);
+        let home = c.state_dir.as_ref().unwrap().join(HOME_NAME);
+        fs::write(home.join("fixture"), "").unwrap();
+        if removal_fails {
+            fs::remove_file(&file).unwrap();
+            fs::create_dir(&file).unwrap();
+            fs::write(file.join("fixture"), "").unwrap();
+        }
+        let reply = wrapper.call("retire", json!({})).await;
+        assert_eq!(reply["isError"], removal_fails);
+        if removal_fails {
+            assert_eq!(
+                reply["content"][0]["text"],
+                "client stopped; history (history.jsonl): cannot remove the history in CONDUIT_STATE_DIR; the home was not emptied"
+            );
+            assert!(home.join("fixture").is_file());
+        } else {
+            assert_eq!(
+                reply["content"][0]["text"],
+                "client stopped, its history removed and its home emptied; the login was left to its login Resource"
+            );
+            assert!(entry_names(&home).is_empty());
+            assert!(!file.exists());
+        }
+        let retired = wrapper.call("history", json!({})).await;
+        assert_eq!(retired["isError"], true);
+        assert_eq!(
+            retired["content"][0]["text"],
+            "history: session retired; its history is no longer served"
+        );
+        assert_eq!(wrapper.turn("after retirement").await["isError"], true);
+        assert_eq!(file.exists(), removal_fails);
+        wrapper.close().await;
+    }
+}
+
+#[tokio::test]
+async fn older_items_keep_no_history() {
+    for mode in [Some("--shared-login"), None] {
+        let parent = tempfile::tempdir().unwrap();
+        let c = config(parent.path(), false, false);
+        let login = history_login(parent.path());
+        let mut wrapper = LoginTestWrapper::start(&c, mode, mode.map(|_| login.as_path())).await;
+        let list = wrapper.request("tools/list", json!({})).await;
+        assert!(
+            !list["result"]["tools"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|tool| tool["name"] == "history")
+        );
+        let missing = wrapper
+            .request("tools/call", json!({"name":"history","arguments":{}}))
+            .await;
+        assert_eq!(missing["error"]["code"], -32602);
+        assert_eq!(missing["error"]["message"], "unknown tool");
+        assert_eq!(wrapper.turn("old item").await["isError"], false);
+        assert!(!history_location(&c).exists());
+        if mode.is_some() {
+            let reply = wrapper.call("retire", json!({})).await;
+            assert_eq!(
+                reply["content"][0]["text"],
+                "client stopped and its home emptied; the login was left to its login Resource"
+            );
+        }
+        wrapper.close().await;
+    }
 }

@@ -6,9 +6,10 @@ The admin's [real-client closeout](https://github.com/shrav-k/conduit/blob/077fa
 and [increment 4 log](../../docs/implementation/first-build/log-increment-4.md) record subsequent trials on 2026-11-10.
 
 This standalone Rust crate has no dependency on another repository directory. Its lockfile
-and pinned toolchain travel with it. Its manifest exports four Agent Types, a login Resource
-Type, and a conversation capability with two explicit operations, `turn.v1` and
-`new-conversation.v1`. The plain Agent wrapper exposes `turn` and `new-conversation`. Each
+and pinned toolchain travel with it. Its manifest exports five Agent Types, a login Resource
+Type, a conversation capability with `turn.v1` and `new-conversation.v1`, and a history-reading
+capability with `history.v1`. The plain Agent wrapper exposes `turn` and `new-conversation`.
+The `.v5` item also exposes `history`. Each
 `.v2` item also exposes the hook tools `retire`, `account`, `sign-out` and `sign-in`.
 The manifest maps each versioned operation or hook to its tool. In `.v1`, both reach inputs
 are required booleans.
@@ -918,6 +919,39 @@ The wrapper returns the final message as `text`. If the text parses as a JSON ob
 result also gives the parsed object in `structured`. Codex's model service enforces the
 schema.
 
+## The .v5 Agent and its history
+
+`codex.v5` keeps turns that take the session, including a lapsed login or a refusal after
+a failed turn. Configuration refusals, including the home and login-directory checks, and
+turns after the retire hook leave no entry. Each entry has an index starting at 1, the
+caller's message, the final `text` of a completed turn, and the invocation, caller, state
+and UTC timestamps. Attempts of the same invocation have separate indices. `invocation`
+and `caller` are null until the engine sends them.
+
+History keeps the message and final text as written. It discards separate tool calls,
+tool results, file reads and their contents, and usage limits even when the client stream
+carries them. It also discards reasoning, usage counts, failure text, other client output,
+and separate credential, environment or configuration values and paths. The engine keeps
+none of this history.
+
+The wrapper writes `history.jsonl` beside `client-home` in `CONDUIT_STATE_DIR`, mode 0600.
+It records a turn before the client starts and writes its end before replying. A turn whose
+start cannot be written fails without starting a client. A failed end write leaves the reply
+as it was and the entry reads as `interrupted`. History lasts for the instance's life across
+new conversations and runs. History has no size limit and grows with each turn's message
+and final text. The retire hook stops the client, removes history and then empties the home.
+The engine's own runner removes the state directory with the instance
+(PRV-029, LIF-035). For another runtime provider, its contract governs removal. When the
+Agent's own tools are enabled, they can change the file (ruling 70). If a change makes the
+file invalid, retire the Agent to remove the file and register a replacement.
+
+`history.v1` returns the oldest entries with `index` above `since` (default 0), up to
+`count` entries (1 to 50, default 20), and the highest index kept in `latest` (0 for an
+empty history). A `running` entry has null `text` and `endedAt`. Read it again from one
+below its index. A turn is `completed` when it returns final text and `failed` for any other
+reply. An entry whose end was never kept and which no turn serves reads `interrupted`, with
+null `endedAt`. Reading works during a turn and starts no client or model work.
+
 ## Usage in each turn's result
 
 Completed turns can report `io.github.shrav-k.conduit/usage` in the result's `_meta`. The
@@ -984,6 +1018,21 @@ From 0.2.2, `turn` grants `turn.v1` alone, and `conversation` grants both `turn.
 conversation. A later release keeps each template's operation list. A wider grant takes a new
 template (PKG-031).
 
+From 0.2.6, `history` grants `history.v1` alone for a `codex.v5` Agent. If root only
+needs to read history, put `operator: {from: example.org/conduit/agent-codex#history}`
+in the Agent definition. If `codex-worker` already has a `turn` or `conversation`
+operator, add a separate grant under the document's `conduits` key. Its distinct `as`
+name gives root the tool `codex-worker-history.history.v1` (SCT-009, IFC-014).
+
+```yaml
+conduits:
+  codex-worker-history:
+    from: example.org/conduit/agent-codex#history
+    consumer: {kind: Interface, name: root}
+    target: {kind: Agent, name: codex-worker}
+    as: codex-worker-history
+```
+
 The 0.2.2 templates left the 0.2.1 Types, homes, and sign-in in place.
 
 ## Moving to 0.2.3
@@ -1005,3 +1054,9 @@ A `.v4` Agent replacing a `.v3` Agent can use the same `login` Resource without 
 
 Install the 0.2.5 archive, move the project pin to its version and digest, and replace each
 Agent that should check its client.
+
+## Moving to 0.2.6
+
+Install the 0.2.6 archive and move the project pin to its version and digest. Replace each
+Agent that should keep history with a `codex.v5` Agent. The same `login` Resource works
+without another sign-in.

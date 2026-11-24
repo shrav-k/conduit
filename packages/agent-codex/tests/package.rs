@@ -67,8 +67,8 @@ fn standard_conduit_templates_keep_their_operations() {
         .take_while(|line| line.starts_with("- "))
         .collect();
     assert!(
-        exports.ends_with(&["- turn", "- conversation"]),
-        "exports must end with turn and conversation"
+        exports.ends_with(&["- turn", "- conversation", "- history"]),
+        "exports must end with turn, conversation and history"
     );
     let contracts = include_str!("../contracts.yaml");
     for template in [
@@ -89,6 +89,15 @@ metadata:
 spec:
   capability: '#conversation.v1'
   operations: ['#turn.v1', '#new-conversation.v1']
+"#,
+        r#"---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: history
+spec:
+  capability: '#history-reading.v1'
+  operations: ['#history.v1']
 "#,
     ] {
         assert_eq!(
@@ -184,4 +193,105 @@ fn codex_v4_keeps_its_shape() {
     assert!(manifest.contains("- codex.v3\n- codex.v4\n"));
     assert!(manifest.contains("      AGENT_INSTRUCTIONS: /instructions\n"));
     assert!(manifest.contains("      AGENT_OUTPUT_SCHEMA: /outputSchema\n"));
+}
+
+#[test]
+fn codex_v5_keeps_its_shape() {
+    let contracts = include_str!("../contracts.yaml");
+    let document = |name: &str| {
+        contracts
+            .split("\n---\n")
+            .find(|doc| doc.lines().any(|line| line == format!("  name: {name}")))
+            .unwrap_or_else(|| panic!("missing contract {name}"))
+    };
+    let v5 = document("codex.v5");
+    let v4 = document("codex.v4");
+    let spec = |doc: &'static str| doc.split_once("\nspec:\n").unwrap().1;
+    assert_eq!(
+        spec(v5),
+        spec(v4)
+            .replace(
+                "offers: ['#conversation.v1']",
+                "offers: ['#conversation.v1', '#history-reading.v1']"
+            )
+            .replace("#wrapper-v4", "#wrapper-v5")
+            .replace("  records:", "    '#history.v1': '#wrapper-v5'\n  records:")
+    );
+    let capability = document("history-reading.v1");
+    assert!(capability.contains("kind: Capability\n"));
+    assert!(capability.ends_with("  operations: ['#history.v1']"));
+    let operation = document("history.v1");
+    assert!(operation.contains("kind: Operation\n"));
+    assert!(operation.contains("  startsModelWork: false\n"));
+    assert!(!operation.contains("\n  effect:"));
+    for shape in [
+        "since: {type: integer, minimum: 0, default: 0}",
+        "count: {type: integer, minimum: 1, maximum: 50, default: 20}",
+        "maxItems: 50",
+        "latest: {type: integer, minimum: 0}",
+        "enum: [running, completed, failed, interrupted]",
+        "required: [index, invocation, caller, message, text, state, startedAt, endedAt]",
+        "required: [turns, latest]",
+    ] {
+        assert!(operation.contains(shape), "missing history shape: {shape}");
+    }
+    assert_eq!(operation.matches("additionalProperties: false").count(), 3);
+}
+
+#[test]
+fn history_documents_the_boundary_between_turn_text_and_events() {
+    let contracts = include_str!("../contracts.yaml");
+    let (_, history) = contracts.split_once("\n  name: history.v1\n").unwrap();
+    let (description, _) = history.split_once("\nspec:\n").unwrap();
+    let readme = include_str!("../README.md");
+    for (source, text) in [("contract", description), ("README", readme)] {
+        let text = text.split_whitespace().collect::<Vec<_>>().join(" ");
+        assert!(
+            text.contains("message and final text as written"),
+            "{source} must state that turn text is kept as written"
+        );
+        assert!(
+            text.contains("even when the client stream carries them"),
+            "{source} must state that excluded events are discarded"
+        );
+    }
+}
+
+#[test]
+fn history_readme_uses_sectioned_conduit_forms() {
+    let readme = include_str!("../README.md");
+    assert!(
+        !readme.contains("reader: {from: example.org/conduit/agent-codex#history}"),
+        "a sectioned Agent does not accept a reader key"
+    );
+    assert!(readme.contains("operator: {from: example.org/conduit/agent-codex#history}"));
+    let standalone =
+        "\nconduits:\n  codex-worker-history:\n    from: example.org/conduit/agent-codex#history\n";
+    let (_, example) = readme
+        .split_once(standalone)
+        .expect("standalone history grant");
+    assert!(example.starts_with(concat!(
+        "    consumer: {kind: Interface, name: root}\n",
+        "    target: {kind: Agent, name: codex-worker}\n",
+        "    as: codex-worker-history\n",
+    )));
+}
+
+#[test]
+fn history_documents_configuration_and_retirement_refusals() {
+    let (codex_v5, _) = include_str!("../contracts.yaml")
+        .split_once("\n  name: codex.v5\n")
+        .unwrap()
+        .1
+        .split_once("\nspec:\n")
+        .unwrap();
+    let readme = include_str!("../README.md");
+    for (source, text) in [("Type", codex_v5), ("README", readme)] {
+        let text = text.split_whitespace().collect::<Vec<_>>().join(" ");
+        assert!(
+            text.contains("Configuration refusals, including the home and login-directory checks,"),
+            "{source} must name home checks as configuration refusals"
+        );
+        assert!(text.contains("turns after the retire hook leave no entry"));
+    }
 }

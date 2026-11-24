@@ -131,6 +131,30 @@ async fn plant_tree() {
 }
 
 async fn turn(args: &[String], message: &str, number: usize) {
+    if matches!(
+        message,
+        "HISTORY-DETAILS" | "HISTORY-QUOTED command-output-canary"
+    ) {
+        let answer = if message == "HISTORY-DETAILS" {
+            "public final answer"
+        } else {
+            "The final answer quotes command-output-canary."
+        };
+        emit(json!({"type":"thread.started", "thread_id":"history-thread"}));
+        for item in [
+            json!({"type":"command_execution","command":"tool-command-canary","aggregated_output":"command-output-canary","exit_code":0}),
+            json!({"type":"mcp_tool_call","tool":"mcp-call-canary","arguments":{},"result":{"content":[{"type":"text","text":"mcp-result-canary"}]}}),
+            json!({"type":"file_change","changes":[{"path":"file-change-canary","kind":"update"}]}),
+            json!({"type":"reasoning","text":"reasoning-canary"}),
+            json!({"type":"agent_message","text":answer}),
+        ] {
+            emit(json!({"type":"item.completed","item":item}));
+        }
+        emit(
+            json!({"type":"turn.completed","usage":{"input_tokens":438291,"output_tokens":764812,"reasoning_output_tokens":349821}}),
+        );
+        return;
+    }
     if let Some(fixture) = message.strip_prefix("ORDER-260:") {
         let fixture: Value = serde_json::from_str(fixture).unwrap();
         emit(json!({"type":"thread.started", "thread_id":"fixture-exact-thread"}));

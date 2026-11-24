@@ -70,13 +70,19 @@ if a line of IN_FORCE.md differs from them ([ruling 67](https://github.com/shrav
   Before proposing an experiment or a probe, check the roadmap's
   [register](ROADMAP.md#experiments-and-probes): name the row it serves, or say that it is new
   and what it feeds, and follow [the rules for proposing one](ROADMAP.md#proposing-an-experiment).
-- **Code** is Rust, with a lockfile, a pinned toolchain and ignored build output: a probe or an
-  evaluation in its own directory under [experiments/](experiments/README.md); a provider
-  package, one crate per provider, under [packages/](packages/) (ruling 40), which as of
-  2026-11-10 holds the Claude Code and Codex Agent packages; and the first build, its core and
-  its shell, in the workspace under
-  [engine/](engine/README.md) (ruling 46). The only exception is the Python
-  checkers in `tools/`.
+- **Code**: the engine is Rust, and a package may be written in any language; other code is Rust
+  ([DEC-111](docs/decisions/log.md#dec-111-2026-11-23-only-the-runtime-engine-must-be-rust);
+  [DEC-132](docs/decisions/log.md#dec-132-2026-11-23-dec-111-frees-packages-only) keeps experiments
+  and tooling in Rust). A package in another language still carries its manifest (`conduit.yaml`)
+  and its contracts (`contracts.yaml`), meets the conformance cases of what it provides, and, if it
+  is a client, keeps [the client contract](docs/clients.md). Rust code keeps a `Cargo.lock` and a
+  pinned toolchain (`rust-toolchain.toml`); code in another language keeps its own lockfile and pins
+  its toolchain's version. All of it ignores its build output. Where code goes: a probe or an
+  evaluation in its own directory under [experiments/](experiments/README.md); a package under
+  [packages/](packages/) (a provider, one per provider, an Agent or an Interface such as the web UI;
+  ruling 40), which as of 2026-11-10 holds the Claude Code and Codex Agent packages; and the first
+  build, its core and its shell, in the workspace under [engine/](engine/README.md) (ruling 46). The
+  only exception is the Python checkers in `tools/`.
 - **History** is in [docs/archive/](docs/archive/README.md): completed reviews, attribution and
   dissent.
 
@@ -413,6 +419,6 @@ This guide adds no promise about releases.
 
 The [organization and publication plan](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/ruling-47/README.md) records the
 owner's decision for the transition after a v0 engine passes the full experiment program and
-the owner judges it worth publishing. The in-tree Rust convention above applies to prototype
-providers. Official integrations will then have their own maintainers and release repositories.
+the owner judges it worth publishing. Official integrations will then have their own maintainers
+and release repositories.
 Outside authors can build packages in any language that implements the published contracts.

@@ -86,7 +86,7 @@ yet.
 | `conformance/` | Public conformance vectors and the adapter contract | Yes | Yes |
 | `conformance-held-out/` | Vectors withheld from builders, run only by the comparer | No | No |
 | `engine/` | The reference engine in Rust | Yes, holding the first build (ruling 46) | No |
-| `packages/` | The first providers, one Rust crate per provider (ruling 40) | Yes | No |
+| `packages/` | The first providers, one package per provider, each in any language (ruling 40, DEC-111) | Yes | No |
 | `docs/`, `experiments/` | Explanation, research, history, proposals, exploratory code | Yes | No |
 | The reference engine, its standard library of type contracts and its conformance document | The one full engine | No | No |
 

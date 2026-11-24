@@ -82,3 +82,7 @@ then they are under `docs/proposals/`.
 - Changed: plan and apply's duties and flags leave `spec/README.md#what-the-short-forms-meaning-covers`, and two commands' sentences leave the author path, for the CLI's guide, `engine/CLI.md` (DEC-105).
 - Changed: `spec/README.md#what-this-is` opens the page and leads with the six families; the proof of identity follows the layers, and the status follows under its own heading (DEC-105).
 - Changed: REC-002, IFC-051 and `record.v1`, the end record of a call that starts model work on an Agent names its Fleet in `fleet` and, where its Type states one, its login Resource in `loginResource`, and the engine adds no usage up (DEC-117).
+- Changed: IFC-052 and `limit-report.v1`, a report may carry `paidUsage`, with no amount, a null `usedPercent`, `windowsOmitted` and window IDs with digits and hyphens (DEC-094, DEC-096).
+- Changed: IFC-053, OBS-002, `limit-status.v1` and `inspect.v1`'s description, a status keeps in `signals` each usage signal's newest value other than null (DEC-094, DEC-096).
+- Changed: IFC-052 and `limit-report.v1`, a report may carry `paidUsage`, with explicit client-field meanings and omission rules and no amount, a null `usedPercent`, `windowsOmitted` and window IDs with digits and hyphens (DEC-094, DEC-096).
+- Changed: IFC-053, OBS-002, `limit-status.v1` and `inspect.v1`'s description, a status keeps in `signals` each usage signal's newest value other than null; a newer window's null percentage replaces its earlier number (DEC-094, DEC-096).

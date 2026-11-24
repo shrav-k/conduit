@@ -33,11 +33,14 @@
   observable: >-
     Every observation in an inspection result has both. An observation is reported as a
     condition of LIF-011, its time in `lastHeartbeatTime` and its source in `source`, a
-    URI-reference that the engine names, as it names the `source` of a record under REC-005.
-    `limits`, under IFC-053, is the one observation not reported as a condition: each
-    window, and its newest report, carries its time in `observedAt` and its source in
-    `source`, with the instance and invocation that reported it, and one no longer current
-    reads `unknown` there, in place of OBS-003's condition.
+    URI-reference that the engine names, as it names the `source` of a record under
+    REC-005. `limits`, under IFC-053, is the one observation not reported as a
+    condition: each window, and its newest report, carries its time in `observedAt` and
+    its source in `source`, with the instance and invocation that reported it, and one
+    no longer current reads `unknown` there, in place of OBS-003's condition. Each usage
+    signal in `limits` carries its time and source in the same way and keeps its value,
+    never reading `unknown` under OBS-003: it is shown with that time, not as current,
+    and its reader judges whether it still holds.
 
 - id: OBS-003
   layer: convention

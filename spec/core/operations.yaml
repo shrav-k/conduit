@@ -331,9 +331,10 @@ metadata:
     `settings` is absent where no setting is unknown, and no purge shortens it. `limits` holds
     the newest observation for each window that an Agent's or a login Resource's calls have
     reported, including its Agents' calls for a login Resource, or `unknown` with no windows
-    where there is no report, in `limit-status.v1` form (IFC-053). `records` holds the records
-    that name the object, each as a CloudEvent. Where `expectedId` is given and the object named
-    has another ID, the request reports conflict.
+    where there is no report, in `limit-status.v1` form (IFC-053). In `limits`, `signals` holds
+    the newest value other than null of each usage signal those calls reported. `records` holds
+    the records that name the object, each as a CloudEvent. Where `expectedId` is given and the
+    object named has another ID, the request reports conflict.
 
     An Agent is inspected through its owning Fleet, or management where that Fleet is retired. An
     object that does not exist has no owning Pool or Fleet. Every other object follows ACC-033. inventory

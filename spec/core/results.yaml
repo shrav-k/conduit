@@ -253,12 +253,25 @@ metadata:
   description: >-
     The usage limits one call's client reported, as a result carries them under
     `io.github.shrav-k.conduit/limits` and the record of its end keeps them (IFC-052).
-    `client` gives the client and its version, `method` gives the client's call or event,
-    and `observedAt` gives the time of the report. `usageAllowed` says whether the vendor
-    allows included usage, or is null where the report says neither. Each window gives
-    its package's fixed ID, its length in minutes or null, its used percentage, its reset
-    time or null, its state and the model it limits or null. A report with no windows
-    gives the reason in `noWindows`.
+    `client` gives the client and its version, `method` gives the client's call or
+    event, and `observedAt` gives the time of the report. `usageAllowed` says whether
+    the vendor allows included usage, or is null where the report says neither.
+    `paidUsage` describes usage beyond the included usage; it holds no amount.
+    `possible` says whether the client reports that usage beyond the included usage
+    would be billed rather than refused. `inUse` says whether the client reports that
+    usage beyond the included usage is being billed now. Each is true, false or null.
+    `resetsAt` gives the client's reported time for the next change to the paid-usage
+    state described by `possible` and `inUse`, or null. Each value maps only a client
+    field with that meaning, and one that no field gives is null, never inferred.
+    A package whose client gives none of these fields leaves `paidUsage` out; if the
+    client gives at least one, the package includes all three members. An explicitly
+    null client field maps to null and counts as a field given.
+    Each window gives its package's fixed ID, its length in minutes
+    or null, its used percentage or null, its reset time or null, its state and the
+    model it limits or null. `windowsOmitted` counts the windows the client gave that
+    the package has no fixed ID for, which `windows` leaves out. A report with no
+    windows gives the reason in `noWindows` or, where it left out every window the
+    client gave, `windowsOmitted`, never both.
 spec:
   type: object
   properties:
@@ -272,16 +285,25 @@ spec:
     method: {type: string, minLength: 1, maxLength: 128}
     observedAt: {type: string, format: date-time}
     usageAllowed: {type: [boolean, 'null']}
+    paidUsage:
+      type: object
+      properties:
+        possible: {type: [boolean, 'null']}
+        inUse: {type: [boolean, 'null']}
+        resetsAt: {type: [string, 'null'], format: date-time}
+      required: [possible, inUse, resetsAt]
+      additionalProperties: false
     noWindows: {enum: [no-event, read-failed, read-timed-out]}
+    windowsOmitted: {type: integer, minimum: 1, maximum: 64}
     windows:
       type: array
       maxItems: 16
       items:
         type: object
         properties:
-          id: {type: string, pattern: '^[a-z]{1,64}/[a-z]{1,64}(/[a-z]{1,64})?$'}
+          id: {type: string, pattern: '^[a-z]{1,64}/[a-z0-9][a-z0-9-]{0,63}(/[a-z0-9][a-z0-9-]{0,63})?$'}
           windowMinutes: {type: [number, 'null'], minimum: 1}
-          usedPercent: {type: number, minimum: 0}
+          usedPercent: {type: [number, 'null'], minimum: 0}
           resetsAt: {type: [string, 'null'], format: date-time}
           state: {enum: [allowed, warning, reached]}
           scope: {type: [string, 'null'], minLength: 1}
@@ -292,7 +314,9 @@ spec:
   oneOf:
   - properties:
       windows: {maxItems: 0}
-    required: [noWindows]
+    oneOf:
+    - required: [noWindows]
+    - required: [windowsOmitted]
   - properties:
       windows: {minItems: 1}
     not: {required: [noWindows]}
@@ -303,12 +327,19 @@ metadata:
   name: limit-status.v1
   description: >-
     The limits in an Agent's or a login Resource's status (IFC-053). An observed status
-    gives the newest report in `newest`, with its time, record source, instance, invocation,
-    whether the vendor allows included usage and any reason it named no windows. Each
-    window gives its newest reported values, time, record source, instance and invocation.
-    The windows are listed by `id`, in ascending order of Unicode code points.
-    A window's state reads `unknown` at or after its reset time. A status with no report is
-    `unknown`, with no windows and no `newest`.
+    gives the newest report in `newest`, with its time, record source, instance,
+    invocation, whether the vendor allows included usage, and any paid usage, reason it
+    named no windows and count of windows left out that it gave. Each window gives its
+    newest reported values, time, record source, instance and invocation. The windows
+    are listed by `id`, in ascending order of Unicode code points. A window's state
+    reads `unknown` at or after its reset time. `signals` gives, for `usageAllowed` and
+    paid usage's `possible` and `inUse`, the newest value other than null a report gave,
+    with its time, record source, instance and invocation, and for paid usage that
+    report's reset time; a signal no report gave other than null is absent, and so is
+    `signals` where none was given. A window keeps the newest member's values whole,
+    so a null `usedPercent` there replaces an earlier percentage; only `signals` keep
+    their last value other than null. A status with no report is `unknown`, with no
+    windows, no `newest` and no `signals`.
 spec:
   $defs:
     instance:
@@ -323,6 +354,27 @@ spec:
             name: true
           additionalProperties: false
       additionalProperties: false
+    signal:
+      type: object
+      properties:
+        value: {type: boolean}
+        observedAt: {type: string, format: date-time}
+        source: {type: string, format: uri-reference, minLength: 1}
+        instance: {$ref: '#/$defs/instance'}
+        invocation: {$ref: github.com/shrav-k/conduit/core#id.v1}
+      required: [value, observedAt, source, instance, invocation]
+      additionalProperties: false
+    paidSignal:
+      type: object
+      properties:
+        value: {type: boolean}
+        resetsAt: {type: [string, 'null'], format: date-time}
+        observedAt: {type: string, format: date-time}
+        source: {type: string, format: uri-reference, minLength: 1}
+        instance: {$ref: '#/$defs/instance'}
+        invocation: {$ref: github.com/shrav-k/conduit/core#id.v1}
+      required: [value, resetsAt, observedAt, source, instance, invocation]
+      additionalProperties: false
   type: object
   properties:
     state: {enum: [observed, unknown]}
@@ -334,17 +386,39 @@ spec:
         instance: {$ref: '#/$defs/instance'}
         invocation: {$ref: github.com/shrav-k/conduit/core#id.v1}
         usageAllowed: {type: [boolean, 'null']}
+        paidUsage:
+          type: object
+          properties:
+            possible: {type: [boolean, 'null']}
+            inUse: {type: [boolean, 'null']}
+            resetsAt: {type: [string, 'null'], format: date-time}
+          required: [possible, inUse, resetsAt]
+          additionalProperties: false
         noWindows: {enum: [no-event, read-failed, read-timed-out]}
+        windowsOmitted: {type: integer, minimum: 1, maximum: 64}
       required: [observedAt, source, instance, invocation, usageAllowed]
+      additionalProperties: false
+    signals:
+      type: object
+      properties:
+        usageAllowed: {$ref: '#/$defs/signal'}
+        paidUsage:
+          type: object
+          properties:
+            possible: {$ref: '#/$defs/paidSignal'}
+            inUse: {$ref: '#/$defs/paidSignal'}
+          minProperties: 1
+          additionalProperties: false
+      minProperties: 1
       additionalProperties: false
     windows:
       type: array
       items:
         type: object
         properties:
-          id: {type: string, pattern: '^[a-z]{1,64}/[a-z]{1,64}(/[a-z]{1,64})?$'}
+          id: {type: string, pattern: '^[a-z]{1,64}/[a-z0-9][a-z0-9-]{0,63}(/[a-z0-9][a-z0-9-]{0,63})?$'}
           windowMinutes: {type: [number, 'null'], minimum: 1}
-          usedPercent: {type: number, minimum: 0}
+          usedPercent: {type: [number, 'null'], minimum: 0}
           resetsAt: {type: [string, 'null'], format: date-time}
           state: {enum: [allowed, warning, reached, unknown]}
           scope: {type: [string, 'null'], minLength: 1}
@@ -365,7 +439,10 @@ spec:
   else:
     properties:
       windows: {maxItems: 0}
-    not: {required: [newest]}
+    not:
+      anyOf:
+      - required: [newest]
+      - required: [signals]
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

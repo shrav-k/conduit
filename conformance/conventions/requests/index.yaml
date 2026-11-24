@@ -277,6 +277,21 @@
       ]
     },
     {
+      "id": "requests-limits-paid-usage",
+      "case": "conventions/requests/limits-paid-usage/case.yaml",
+      "promises": [
+        "IFC-052",
+        "REC-002"
+      ]
+    },
+    {
+      "id": "requests-limits-signals",
+      "case": "conventions/requests/limits-signals/case.yaml",
+      "promises": [
+        "IFC-053"
+      ]
+    },
+    {
       "id": "requests-login-resource-lapse",
       "case": "conventions/requests/login-resource-lapse/case.yaml",
       "promises": [

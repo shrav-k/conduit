@@ -20,6 +20,25 @@ reading of work order 023's optional model input.
 Setup initializes the wrapper and starts no native client or model work. Inputs and outputs
 are excluded from Conduit records by the Type.
 
+**Compatibility only.** Under
+[DEC-078](../../docs/decisions/log.md#dec-078-2026-11-22-only-login-resources-sign-in-trimmed-after-the-sitting),
+only a login Resource signs in, and an Agent's login place refers to one. `claude-code.v1` and
+`claude-code.v2` break that rule and are kept for compatibility only. `claude-code.v1` has no
+login place: its client uses the subscription login in the engine user's default home, and
+Conduit neither signs that login in nor checks it. `claude-code.v2` states `signIn` on the
+Agent, and each of its Agents signs in to its own home. For a new Agent, write
+`claude-code.v3`, `claude-code.v4` or `claude-code.v5`: its `login` refers to an
+[`account-home.v1` Resource](#the-account-home-resource), which root signs in for all its
+Agents. [Moving to 0.2.3](#moving-to-023) says how to move a `.v2` Agent to `.v3`. A `.v1` Agent has
+no login of its own to log out: replace it with a `.v3` or later Agent whose `login` names a
+signed-in `account-home.v1` Resource. The first
+release of this package after the second-account sitting
+([DEC-068](../../docs/decisions/log.md#dec-068-2026-11-22-the-second-account-sitting-runs-by-hand-tonight))
+removes `claude-code.v1`, `claude-code.v2` and their items `wrapper` and `wrapper-v2`.
+Until then, both Types work as this README describes. An Agent already registered with either
+keeps the release it resolved and goes on working after that release; it moves only when it is
+replaced, as above.
+
 Run these commands in this directory:
 
 ```sh
@@ -89,6 +108,8 @@ reach. For `.v1`, the shared login, and for both, OS-user access to files and ru
 credentials remain mediated limits; these launch settings do not provide OS isolation.
 
 ## The .v2 Agent
+
+`claude-code.v2` is kept for compatibility only, as [the top of this README](#agent-claude-code) says.
 
 The package also exports claude-code.v2, implemented by the separate `wrapper-v2` item.
 All properties are required in the resolved instance configuration after SCH-009 fills their defaults.

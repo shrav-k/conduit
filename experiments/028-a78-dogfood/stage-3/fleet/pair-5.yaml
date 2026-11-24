@@ -1,0 +1,49 @@
+# The fifth pair of the conduit-core Fleet for stage 3 of A78, on the Business seat's login with
+# pairs 3 and 4, by the amendment of 2026-11-24 (DEC-203). Submitted as one part after stage 3's
+# own documents, with no sign-in: the login Resource second-chatgpt is stage 3's. The coordinator
+# fills <slot-5> into a copy outside the repository; this file is not submittable as it stands.
+# Its manifest is the one stage 3's documents use.
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: worker-5
+from: worker-role
+owner: conduit-core
+arguments:
+  directory: <slot-5>
+  login: second-chatgpt
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: verifier-5
+from: verifier-role
+owner: conduit-core
+arguments:
+  directory: <slot-5>
+  login: second-chatgpt
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: root-worker-5
+from: example.org/conduit/agent-codex#conversation
+consumer:
+  kind: Interface
+  name: root
+target:
+  kind: Agent
+  name: worker-5
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: root-verifier-5
+from: example.org/conduit/agent-codex#conversation
+consumer:
+  kind: Interface
+  name: root
+target:
+  kind: Agent
+  name: verifier-5

@@ -1,0 +1,7 @@
+# Added cases for work order 307.
+- name: requests-limits-paid-usage
+  kind: added
+  cases: [requests-limits-paid-usage]
+- name: requests-limits-signals
+  kind: added
+  cases: [requests-limits-signals]

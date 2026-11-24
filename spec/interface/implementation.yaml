@@ -828,19 +828,32 @@
     diagnostic whose `level` is `warning` and whose `ruleId` is the ID of this promise.
     Nothing else about the call changes.
   observable: >-
-    The value gives the limits the call's client reported and when, and says why where it has
-    no window. An implementation may carry it on any such result, one that states failed or
-    unknown among them, and answers for it and invents nothing. An `id` is its package's
-    fixed word, never text from the client. The implementation puts no account, plan, credits
-    or billing value in any string. The engine checks only the shape against `limit-report.v1`
-    and that no `id` repeats, and keeps it as received. The warning follows IFC-051's and quotes
-    no value. For a repeated `id`, its location stops at `windows` and it has no `properties`.
-    Where a value also fails the schema, the warning reports only the schema failure.
-    The call's outcome, its result, its other records and every decision are as without the
-    key. The result that the engine gives the consumer does not carry it, so no caller is
-    relayed it. Inspection shows it under IFC-053. The record holds it whatever the type's
-    `records` states (CTR-004). Under SEC-015, the engine ignores the limits member of any
-    read of a secret without checking, keeping or relaying it, and writes no warning for it.
+    The value gives the limits the call's client reported and when, and says why where
+    it has no window. An implementation may carry it on any such result, one that states
+    failed or unknown among them, and answers for it and invents nothing. An `id` is its
+    package's fixed word, never text from the client. In `paidUsage`, `possible` says
+    whether the client reports that usage beyond the included usage would be billed
+    rather than refused. `inUse` says whether the client reports that usage beyond the
+    included usage is being billed now. Each is true, false or null. `resetsAt` gives
+    the client's reported time for the next change to the paid-usage state described
+    by `possible` and `inUse`, or null. Each value maps only a client field with that
+    meaning, and one that no field gives is null, never inferred. A package whose
+    client gives none of these fields leaves `paidUsage` out; if the client gives at
+    least one, the package includes all three members. An explicitly null client field
+    maps to null and counts as a field given. A window whose percentage the client did not
+    give has a null `usedPercent`, and one the package has no fixed ID for is left out
+    of `windows` and counted in `windowsOmitted`. The implementation puts no account,
+    plan, credits or billing value in any string, and nothing in `paidUsage` names an
+    amount, balance, limit, plan or currency. The engine checks only the shape against
+    `limit-report.v1` and that no `id` repeats, and keeps it as received. The warning
+    follows IFC-051's and quotes no value. For a repeated `id`, its location stops at
+    `windows` and it has no `properties`. Where a value also fails the schema, the
+    warning reports only the schema failure. The call's outcome, its result, its other
+    records and every decision are as without the key. The result that the engine gives
+    the consumer does not carry it, so no caller is relayed it. Inspection shows it
+    under IFC-053. The record holds it whatever the type's `records` states (CTR-004).
+    Under SEC-015, the engine ignores the limits member of any read of a secret without
+    checking, keeping or relaying it, and writes no warning for it.
 
 - id: IFC-053
   layer: interface
@@ -848,28 +861,40 @@
   when: >-
     An Agent, or a Resource whose Type states `signIn` (CTR-013), is inspected.
   then: >-
-    Its status holds `limits`, in the form of the core schema `limit-status.v1`. For each
-    window `id` that the limits members of its own calls' end records have named (IFC-052),
-    and, for a login Resource, also those of every Agent whose login place referred to it
-    when the call was made (CTR-013), it gives the newest observation by the member's
-    `observedAt`: the window's values as reported, its `state`, the member's `observedAt`,
-    and as its source the record's `source`, the instance whose call it was and the
-    invocation. The windows are listed by `id`, in ascending order of Unicode code points.
-    Where no such member exists, `state` is `unknown`, with no window and no time.
+    Its status holds `limits`, in the form of the core schema `limit-status.v1`. For
+    each window `id` that the limits members of its own calls' end records have named
+    (IFC-052), and, for a login Resource, also those of every Agent whose login place
+    referred to it when the call was made (CTR-013), it gives the newest observation by
+    the member's `observedAt`: the window's values as reported, its `state`, the
+    member's `observedAt`, and as its source the record's `source`, the instance whose
+    call it was and the invocation. The windows are listed by `id`, in ascending order
+    of Unicode code points. For each of three signals, `usageAllowed` and `paidUsage`'s
+    `possible` and `inUse`, `signals` gives the newest observation by the member's
+    `observedAt` among the members that gave it a value other than null: that value, the
+    member's `observedAt`, for `possible` and `inUse` the member's `paidUsage.resetsAt`,
+    and the same source as a window. Where no such member exists, `state` is `unknown`,
+    with no window, no signal and no time.
   observable: >-
-    `newest` is the newest member, with its `usageAllowed` and any `noWindows`. For `newest`
-    and for each window, where the newest candidates have the same `observedAt`, a member
-    stands only if the engine knows of none whose end record it kept later, whatever their
+    `newest` is the newest member, with its `usageAllowed`, null or not, and any
+    `paidUsage`, `noWindows` and `windowsOmitted` it gave. For `newest`, each window and
+    each signal, where the newest candidates have the same `observedAt`, a member stands
+    only if the engine knows of none whose end record it kept later, whatever their
     sources. If several remain, the member with the greatest record `source`, then the
-    greatest record `id`, in Unicode code point order, stands. REC-005 governs record reads.
-    An Agent's reports remain eligible for its login Resource's status after the Agent retires
-    or is removed.
-    A window whose `resetsAt` gives a time no later than the inspection's time reads
-    `unknown`, keeping its last values and time, in place of OBS-003's condition (OBS-002),
-    until a newer member names that window. No purge shortens it, as the engine's own state.
-    An inspection of any other object shows no `limits`. The engine sums nothing and
+    greatest record `id`, in Unicode code point order, stands. REC-005 governs record
+    reads. An Agent's reports remain eligible for its login Resource's status after the
+    Agent retires or is removed. A window whose `resetsAt` gives a time no later than
+    the inspection's time reads `unknown`, keeping its last values and time, in place of
+    OBS-003's condition (OBS-002), until a newer member names that window. No purge
+    shortens it, as the engine's own state. A window keeps the newest member's values
+    whole, so a null `usedPercent` there replaces an earlier percentage; only `signals`
+    keep their last value other than null. A member that gives a signal null, or no
+    `paidUsage`, leaves that signal as it stands, and no time or purge changes it: only
+    a newer member that gives it a value other than null does. A signal that no member
+    gave other than null is absent, and `signals` is absent where none is given. An
+    inspection of any other object shows no `limits`. The engine sums nothing and
     compares no allowance, percentage or duration. No outcome, access, dispatch, hold or
-    lifecycle state depends on it, and an inspection starts no call to fill it (OBS-006).
+    lifecycle state depends on it, and an inspection starts no call to fill it
+    (OBS-006).
 
 - id: IFC-028
   layer: interface

@@ -826,37 +826,47 @@ impl Inner {
         let selected = object["resolved_implementations"]
             .as_object()
             .and_then(|m| m.values().find(|v| &v["item"] == item));
-        let original = selected
-            .and_then(|v| v["selection"].as_str())
-            .and_then(|q| q.rsplit_once('#'));
-        let held = selected.map(|v| &object["held"]["contexts"][v["scope"].as_str().unwrap_or("")]);
-        let installed = original.and_then(|(address, name)| {
-            state.installed_packages.iter().find_map(|p| {
-                let cmd = &p.package.project.manifest.as_ref()?["implementations"][name]["command"];
-                (p.package.address == address
-                    && held.is_some_and(|h| {
-                        h["version"] == p.package.version && h["digest"] == p.package.digest
-                    }))
-                .then_some((p, cmd))
-            })
-        });
-        let was_relative = selected.is_some_and(|v| {
-            object["held"]["contexts"][v["scope"].as_str().unwrap_or("")]["relative_programs"]
-                .as_array()
-                .is_some_and(|names| {
-                    v["selection"]
-                        .as_str()
-                        .and_then(|q| q.rsplit_once('#'))
-                        .is_some_and(|(_, name)| names.contains(&json!(name)))
-                })
-        });
-        let program = if let Some((package, cmd)) = installed.filter(|(_, cmd)| {
-            cmd[0]
+        let installed = selected.and_then(|v| state.selected_package_item(object, v));
+        let was_relative =
+            selected.is_some_and(|v| conduit_core::selected_relative_program(object, v));
+        let program = if let Some((package, original)) = installed.filter(|(_, original)| {
+            original["command"][0]
                 .as_str()
-                .is_some_and(|s| s.contains('/') && !Path::new(s).is_absolute())
+                .is_some_and(|program| program.contains('/') && !Path::new(program).is_absolute())
         }) {
+            let command = original["command"][0].as_str().unwrap();
+            let path = if let Some(platforms) = original["platforms"].as_array() {
+                let local = state
+                    .objects
+                    .iter()
+                    .find(|node| {
+                        node["kind"] == "Resource"
+                            && node["name"] == "local"
+                            && node.get("spec").is_none()
+                    })
+                    .ok_or("local node missing")?;
+                let pair = conduit_core::platform_pair(&local["status"]["labels"]);
+                let Some(listed_pair) = pair
+                    .as_ref()
+                    .filter(|pair| platforms.iter().any(|platform| platform == *pair))
+                else {
+                    let item_name = selected
+                        .and_then(|selection| selection["selection"].as_str())
+                        .and_then(|selection| selection.rsplit_once('#'))
+                        .map_or("implementation", |(_, name)| name);
+                    return Err(conduit_core::platform_mismatch_message(
+                        item_name,
+                        "local",
+                        pair.as_deref(),
+                        platforms,
+                    ));
+                };
+                format!("platforms/{listed_pair}/{command}")
+            } else {
+                command.into()
+            };
             let root = self.materialize_package(package)?;
-            program_path(&root, cmd[0].as_str().unwrap())?
+            program_path(&root, &path)?
         } else if was_relative {
             return Err("relative program has no installed package files".into());
         } else if Path::new(raw).is_absolute() || !raw.contains('/') {
@@ -1705,6 +1715,7 @@ mod provider {
             // Both parts are fixed by this module, never provider content or arguments.
             let operation = match operation.rsplit('#').next() {
                 Some("run.v1") => "run.v1",
+                Some("run.v2") => "run.v2",
                 Some("stop.v1") => "stop.v1",
                 Some("inspect-run.v1") => "inspect-run.v1",
                 _ => "provider operation",
@@ -1843,14 +1854,16 @@ mod provider {
         ) -> Result<Execution> {
             let shell = self.shell.upgrade().ok_or("shell stopped")?;
             let operation = string(intent, "operation")?;
-            if !["run.v1", "stop.v1", "inspect-run.v1"]
-                .iter()
-                .any(|n| operation == format!("{}#{n}", shell.context.core_package))
+            let is_run = shell.context.is_run_operation(operation);
+            if !is_run
+                && !["stop.v1", "inspect-run.v1"]
+                    .iter()
+                    .any(|n| operation == format!("{}#{n}", shell.context.core_package))
             {
                 return Ok(Execution::Missing);
             }
             let mut inputs = intent["inputs"].clone();
-            let missing_identity = operation.ends_with("#run.v1") && identity.is_none();
+            let missing_identity = is_run && identity.is_none();
             if let Some(identity) = identity {
                 inputs["identity"] =
                     json!({"environment":identity.environment,"files":identity.files});
@@ -1871,17 +1884,17 @@ mod provider {
                 json!({"kind":"provider-discovery-unavailable","operation":operation})
             } else if reply == ProviderReply::NotSent {
                 json!({"kind":"provider-call-unavailable","operation":operation})
-            } else if operation.ends_with("#run.v1") {
+            } else if is_run {
                 match reply {
                     ProviderReply::Succeeded(outputs) => {
                         let url = outputs["url"].as_str().unwrap_or("");
                         this.start_bridge(subject, setup, url, operation).await
                             .unwrap_or(BridgeStart::Unproved)
                             .unavailable(operation)
-                            .unwrap_or_else(|| json!({"kind":"run","outcome":"succeeded","url":url}))
+                            .unwrap_or_else(|| json!({"kind":"run","operation":operation,"outcome":"succeeded","url":url}))
                     }
-                    ProviderReply::Failed | ProviderReply::Nothing => json!({"kind":"run","outcome":"failed"}),
-                    _ => json!({"kind":"run","outcome":"unknown"}),
+                    ProviderReply::Failed | ProviderReply::Nothing => json!({"kind":"run","operation":operation,"outcome":"failed"}),
+                    _ => json!({"kind":"run","operation":operation,"outcome":"unknown"}),
                 }
             } else if operation.ends_with("#stop.v1") {
                 json!({"kind":"stop","outcome":match reply { ProviderReply::Succeeded(_) => "succeeded", ProviderReply::Failed => "failed", _ => "unknown" }})

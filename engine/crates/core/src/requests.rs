@@ -535,12 +535,15 @@ pub(crate) fn record_content(t: &Transition, c: &Context, data: &mut Value) -> R
             {
                 outputs.remove("pending");
             }
-            if op == c.qualified("run.v1") && setting == "inputs" {
-                value
-                    .as_object_mut()
-                    .ok_or("invalid run inputs")?
-                    .remove("secrets");
-                value.as_object_mut().unwrap().remove("identity");
+            if c.is_run_operation(&op) && setting == "inputs" {
+                let inputs = value.as_object_mut().ok_or("invalid run inputs")?;
+                inputs.remove("secrets");
+                inputs.remove("identity");
+                if op == c.qualified("run.v2")
+                    && let Some(archive) = inputs.get_mut("archive").and_then(Value::as_object_mut)
+                {
+                    archive.retain(|key, _| key == "digest");
+                }
             }
             if let Some(schema) = contract["spec"].get(schema_key) {
                 let mut redactor = RecordInputs {

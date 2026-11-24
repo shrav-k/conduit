@@ -8,6 +8,7 @@ use conduit_core::{
 };
 use fs2::FileExt;
 use serde::{Deserialize, Serialize};
+use serde_json::{Value, json};
 use std::fs::{self, DirBuilder, File, OpenOptions};
 use std::io::Write;
 use std::os::unix::fs::{DirBuilderExt, FileTypeExt, OpenOptionsExt, PermissionsExt};
@@ -55,6 +56,26 @@ fn is_archive_directory(metadata: &fs::Metadata) -> bool {
     metadata.is_dir() && metadata.permissions().mode() & 0o7777 == 0o700
 }
 
+fn archive_file_kind(ty: fs::FileType) -> &'static str {
+    if ty.is_dir() {
+        "directory"
+    } else if ty.is_symlink() {
+        "symbolic link"
+    } else if ty.is_fifo() {
+        "FIFO"
+    } else if ty.is_socket() {
+        "socket"
+    } else if ty.is_block_device() {
+        "block device"
+    } else if ty.is_char_device() {
+        "character device"
+    } else if ty.is_file() {
+        "regular file"
+    } else {
+        "file of another kind"
+    }
+}
+
 fn read_archive(directory: &Path, package: &Snapshot) -> Result<BTreeMap<String, Member>> {
     let archives = directory.join("packages");
     let path = archives.join(archive_hex(&package.digest)?);
@@ -80,20 +101,7 @@ fn read_archive(directory: &Path, package: &Snapshot) -> Result<BTreeMap<String,
     }
     let meta = metadata(&path)?;
     if !meta.is_file() {
-        let ty = meta.file_type();
-        let kind = if ty.is_dir() {
-            "directory"
-        } else if ty.is_symlink() {
-            "symbolic link"
-        } else if ty.is_fifo() {
-            "FIFO"
-        } else if ty.is_socket() {
-            "socket"
-        } else if ty.is_block_device() {
-            "block device"
-        } else {
-            "character device"
-        };
+        let kind = archive_file_kind(meta.file_type());
         return Err(error(&format!("found {kind}, expected a regular file")));
     }
     let mode = meta.permissions().mode() & 0o7777;
@@ -374,6 +382,43 @@ impl Store {
         atomic_write(&archives, hex, bytes)?;
         self.kept_archives.borrow_mut().insert(digest.into());
         Ok(())
+    }
+
+    pub(crate) fn archive_descriptor(&self, digest: &str) -> Result<Value> {
+        let directory = self.directory.join("packages");
+        let path = directory.join(archive_hex(digest)?);
+        let error = |cause: &str| format!("archive {}: {cause}", path.display());
+        if !self.kept_archives.borrow().contains(digest) {
+            return Err(error("no kept archive"));
+        }
+        let metadata = |path: &Path| {
+            fs::symlink_metadata(path).map_err(|e| {
+                if e.kind() == std::io::ErrorKind::NotFound {
+                    error("absent")
+                } else {
+                    error(&e.to_string())
+                }
+            })
+        };
+        let parent = metadata(&directory)?;
+        if !parent.is_dir() {
+            return Err(error(&format!(
+                "packages is a {}",
+                archive_file_kind(parent.file_type())
+            )));
+        }
+        let file = metadata(&path)?;
+        if !file.is_file() {
+            return Err(error(&format!(
+                "found {}, expected a regular file",
+                archive_file_kind(file.file_type())
+            )));
+        }
+        if file.len() == 0 {
+            return Err(error("empty regular file"));
+        }
+        let url = url::Url::from_file_path(&path).map_err(|_| error("cannot form file URL"))?;
+        Ok(json!({"digest":digest,"size":file.len(),"urls":[url.as_str()]}))
     }
     fn load(&self) -> Result<()> {
         // DL2: a missing cache means open or a failed/consumed commit; disk is authoritative.

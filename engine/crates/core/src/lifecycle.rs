@@ -18,6 +18,8 @@ pub enum Report {
         outcome: String,
         #[serde(default)]
         url: Option<String>,
+        #[serde(default)]
+        operation: Option<String>,
     },
     Stop {
         outcome: String,
@@ -34,6 +36,10 @@ pub enum Report {
     },
     ProviderCallUnavailable {
         operation: String,
+    },
+    ProviderRunRefused {
+        operation: String,
+        message: String,
     },
     ProviderRunUnproved {
         operation: String,
@@ -1162,6 +1168,11 @@ fn withhold_provider_call(
             ),
         ),
     };
+    let message = if operation == c.qualified("run.v2") {
+        format!("run.v2: {message}")
+    } else {
+        message
+    };
     facts.as_object_mut().unwrap().remove("inputs");
     facts["phase"] = json!("ended");
     facts["reason"] = json!("unavailable");
@@ -1213,15 +1224,39 @@ pub(crate) fn provider_part_unavailable(
     if t.state.invocations[i].get("retirement").is_some() {
         crate::retirement::provider_unavailable(t, a, c, i, diagnostic)
     } else {
-        finish_unavailable_run(t, a, c, i, Some(diagnostic))
+        finish_run_part(t, a, c, i, "unavailable", Some(diagnostic))
     }
+}
+
+pub(crate) fn run_failed(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    message: String,
+) -> Result<()> {
+    let subject = t.state.invocations[i]["object"].clone();
+    let diagnostic = json!({"ruleId":"PRV-007","level":"error","message":{"text":message}});
+    cite(t, "refuse-provider-run", &["PRV-007"], &subject);
+    if t.state.invocations[i].get("retirement").is_some() {
+        crate::retirement::run_failed(t, a, c, i, diagnostic)
+    } else {
+        finish_run_part(t, a, c, i, "failed", Some(diagnostic))
+    }
+}
+
+pub(crate) fn reported_run_operation(invocation: &Value, c: &Context) -> String {
+    invocation["provider_call"]["operation"]
+        .as_str()
+        .filter(|operation| c.is_run_operation(operation))
+        .map_or_else(|| c.qualified("run.v1"), str::to_owned)
 }
 
 pub(crate) fn report(
     t: &mut Transition,
     evidence: &Evidence,
     id: &str,
-    report: Report,
+    mut report: Report,
     c: &Context,
 ) -> Result<()> {
     let i = t
@@ -1263,6 +1298,41 @@ pub(crate) fn report(
     if let Report::ProviderCallUnavailable { operation } = &report {
         return withhold_provider_call(t, &mut a, c, i, operation, ProviderRefusal::NotReached);
     }
+    if let Report::ProviderRunRefused { operation, message } = report {
+        if operation != c.qualified("run.v2")
+            || v["provider_call"]["operation"] != operation
+            || v["provider_call"]["made"] == true
+            || v["cancelled"] == true
+        {
+            t.reply = json!({"ignored":true});
+            return Ok(());
+        }
+        t.state.invocations[i]
+            .as_object_mut()
+            .unwrap()
+            .remove("provider_call");
+        return run_failed(t, &mut a, c, i, message);
+    }
+    // The pending call supplies the operation for the common run report, including
+    // reports from existing executors that know only the report's outcome and URL.
+    let run_operation = reported_run_operation(&v, c);
+    if let Report::Run {
+        operation: Some(operation),
+        ..
+    } = &report
+        && *operation != run_operation
+    {
+        t.reply = json!({"ignored":true});
+        return Ok(());
+    }
+    if run_operation == c.qualified("run.v2")
+        && let Report::Run {
+            outcome, url: None, ..
+        } = &mut report
+        && outcome == "succeeded"
+    {
+        *outcome = "unknown".into();
+    }
     let bridge_failure = match &report {
         Report::ProviderRunUnproved { operation } => Some((
             operation,
@@ -1285,31 +1355,40 @@ pub(crate) fn report(
         return Ok(());
     }
     let provider_outcome = match &report {
-        Report::InspectRun { state } => {
-            Some(("inspect-run.v1", "succeeded", json!({"state":state})))
+        Report::InspectRun { state } => Some((
+            c.qualified("inspect-run.v1"),
+            "succeeded",
+            json!({"state":state}),
+        )),
+        Report::Run { outcome, url, .. } => {
+            Some((run_operation.clone(), outcome.as_str(), json!({"url":url})))
         }
-        Report::Run { outcome, url } => Some(("run.v1", outcome.as_str(), json!({"url":url}))),
-        Report::Stop { outcome } => Some(("stop.v1", outcome.as_str(), json!({}))),
+        Report::Stop { outcome } => Some((c.qualified("stop.v1"), outcome.as_str(), json!({}))),
         Report::ProviderRunUnproved { operation }
         | Report::ProviderBridgeUninitialized { operation } => {
             if *operation == c.qualified("inspect-run.v1") {
-                Some(("inspect-run.v1", "succeeded", json!({"state":"running"})))
-            } else if *operation == c.qualified("run.v1") {
-                Some(("run.v1", "succeeded", json!({})))
+                Some((operation.clone(), "succeeded", json!({"state":"running"})))
+            } else if c.is_run_operation(operation) {
+                Some((operation.clone(), "succeeded", json!({})))
             } else {
-                return Err("a provider bridge report requires run.v1 or inspect-run.v1".into());
+                return Err(
+                    "a provider bridge report requires run.v1, run.v2 or inspect-run.v1".into(),
+                );
             }
         }
         _ => None,
     };
     if let Some((operation, outcome, outputs)) = provider_outcome
-        && v["provider_call"]["operation"] == c.qualified(operation)
+        && v["provider_call"]["operation"] == operation
     {
-        let mut facts = t.state.invocations[i]
-            .as_object_mut()
-            .unwrap()
-            .remove("provider_call")
-            .unwrap();
+        let mut facts = v["provider_call"].clone();
+        // The retirement handler uses the pending operation in its part report.
+        if v.get("retirement").is_none() || !matches!(report, Report::Run { .. }) {
+            t.state.invocations[i]
+                .as_object_mut()
+                .unwrap()
+                .remove("provider_call");
+        }
         if facts.as_object_mut().unwrap().remove("made") == Some(json!(true)) {
             facts.as_object_mut().unwrap().remove("inputs");
             facts["phase"] = json!("ended");
@@ -1328,7 +1407,7 @@ pub(crate) fn report(
         observe_run(object, "running", &evidence.time)?;
         // The run succeeded even though the engine cannot use its endpoint.
         // OPS-022 still counts that effect when settling the enclosing change.
-        if *operation == c.qualified("run.v1") {
+        if c.is_run_operation(operation) {
             let part = if v.get("retirement").is_some() {
                 "retirement"
             } else {
@@ -1362,9 +1441,16 @@ pub(crate) fn report(
                 &v["object"],
             );
         }
-        let diagnostic = json!({"ruleId":rule,"level":"error","message":{
-            "text":format!("The runtime provider reported a running process for instance {}, but {message}",v["object"].as_str().unwrap())
-        }});
+        let subject = v["object"].as_str().unwrap();
+        let text = format!(
+            "The runtime provider reported a running process for instance {subject}, but {message}"
+        );
+        let text = if *operation == c.qualified("run.v2") {
+            format!("run.v2: {text}")
+        } else {
+            text
+        };
+        let diagnostic = json!({"ruleId":rule,"level":"error","message":{"text":text}});
         return provider_part_unavailable(t, &mut a, c, i, diagnostic);
     }
     if crate::secrets::lifecycle_report(t, &mut a, c, i, &report)? {
@@ -1378,7 +1464,7 @@ pub(crate) fn report(
         Report::InspectRun { state } => {
             json!({"operation":c.qualified("inspect-run.v1"),"runState":state})
         }
-        Report::Run { outcome, .. } => json!({"operation":c.qualified("run.v1"),"outcome":outcome}),
+        Report::Run { outcome, .. } => json!({"operation":run_operation,"outcome":outcome}),
         Report::Stop { .. } => return Err("stop report for setup".into()),
         Report::Connected { part, outcome } => json!({"part":part,"outcome":outcome}),
         _ => unreachable!("provider discovery is handled before setup parts"),
@@ -1424,27 +1510,6 @@ pub(crate) fn report(
                 && v["cancelled"] != true
                 && access::object(&t.state, &v["object"]).unwrap()["state"] != "retired"
             {
-                let o = access::object(&t.state, &v["object"]).unwrap();
-                let selected = &v["setup"]["item"];
-                let relative = selected["selection"].as_str().and_then(|q| q.rsplit_once('#')).is_some_and(|(_, name)| {
-                    o["held"]["contexts"][selected["scope"].as_str().unwrap_or("")]["relative_programs"]
-                        .as_array().is_some_and(|names| names.contains(&json!(name)))
-                });
-                if o.get("runtime").is_some() && relative {
-                    part(t, i, "run", "failed", true, false, Value::Null);
-                    t.state.invocations[i]["setup"]["run_phase"] = json!("ended");
-                    cite(
-                        t,
-                        "refuse-relative-program-provider-run",
-                        &["PRV-007"],
-                        &v["object"],
-                    );
-                    advance(t, &mut a, c, i)?;
-                    if t.state.invocations[i]["state"] != "in-progress" {
-                        child_ended(t, &mut a, c, i)?;
-                    }
-                    return Ok(());
-                }
                 return crate::secrets::prepare_run(t, &mut a, c, i);
             }
             part(
@@ -1462,7 +1527,7 @@ pub(crate) fn report(
             );
             t.state.invocations[i]["setup"]["run_phase"] = json!("ended");
         }
-        Report::Run { outcome, url } if phase == "run" => {
+        Report::Run { outcome, url, .. } if phase == "run" => {
             if !["succeeded", "failed", "unknown"].contains(&outcome.as_str()) {
                 return Err("invalid run outcome".into());
             }
@@ -1519,18 +1584,19 @@ pub(crate) fn run_unavailable(
     c: &Context,
     i: usize,
 ) -> Result<()> {
-    finish_unavailable_run(t, a, c, i, None)
+    finish_run_part(t, a, c, i, "unavailable", None)
 }
 
-fn finish_unavailable_run(
+fn finish_run_part(
     t: &mut Transition,
     a: &mut Allocation<'_>,
     c: &Context,
     i: usize,
+    outcome: &str,
     diagnostic: Option<Value>,
 ) -> Result<()> {
     let effect = t.state.invocations[i]["setup"]["run_effect_observed"] == true;
-    part(t, i, "run", "unavailable", effect, false, Value::Null);
+    part(t, i, "run", outcome, effect, false, Value::Null);
     if let Some(diagnostic) = diagnostic {
         t.state.invocations[i]["setup"]["parts"]
             .as_array_mut()

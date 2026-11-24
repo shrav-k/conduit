@@ -1,0 +1,33 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "address": "example.org/conformance/platform-run",
+  "packages": {
+    "example.org/conformance/platform-resource": {
+      "version": "1.0.0",
+      "digest": "sha256:2f311b1f35683b45b1128898f900614829bf7cefdf0d18ff97b389f27a8bcaa0"
+    }
+  },
+  "implementations": {
+    "provider-v1": {
+      "command": [
+        "fixture-runtime"
+      ],
+      "implements": [
+        "github.com/shrav-k/conduit/core#inspect-run.v1",
+        "github.com/shrav-k/conduit/core#run.v1",
+        "github.com/shrav-k/conduit/core#stop.v1"
+      ]
+    },
+    "provider-v2": {
+      "command": [
+        "fixture-runtime"
+      ],
+      "implements": [
+        "github.com/shrav-k/conduit/core#inspect-run.v1",
+        "github.com/shrav-k/conduit/core#run.v1",
+        "github.com/shrav-k/conduit/core#stop.v1",
+        "github.com/shrav-k/conduit/core#run.v2"
+      ]
+    }
+  }
+}

@@ -114,6 +114,26 @@ pub struct State {
 }
 
 impl State {
+    pub fn selected_package_item(
+        &self,
+        object: &Value,
+        selected: &Value,
+    ) -> Option<(&archives::InstalledPackage, &Value)> {
+        let (address, name) = selected["selection"].as_str()?.rsplit_once('#')?;
+        let held = object["held"]["contexts"].get(selected["scope"].as_str()?)?;
+        self.installed_packages.iter().find_map(|installed| {
+            let package = &installed.package;
+            if address != package.address
+                || held["version"] != package.version
+                || held["digest"] != package.digest
+            {
+                return None;
+            }
+            let item = package.project.manifest.as_ref()?["implementations"].get(name)?;
+            Some((installed, item))
+        })
+    }
+
     /// Keep the State serialization layout while allowing the store to supply its
     /// archive-backed package representation without cloning or serializing members.
     pub fn with_installed_packages<'a, P: Serialize>(
@@ -466,11 +486,52 @@ impl Context {
     fn qualified(&self, name: &str) -> String {
         format!("{}#{name}", self.core_package)
     }
+    pub fn is_run_operation(&self, operation: &str) -> bool {
+        operation.rsplit_once('#').is_some_and(|(address, name)| {
+            address == self.core_package && matches!(name, "run.v1" | "run.v2")
+        })
+    }
     fn template(&self, name: &str) -> Result<&Value> {
         self.templates
             .get(name)
             .ok_or_else(|| format!("missing built-in template {name}"))
     }
+}
+
+pub fn platform_pair(labels: &Value) -> Option<String> {
+    let os = labels["kubernetes.io/os"].as_str()?;
+    let arch = labels["kubernetes.io/arch"].as_str()?;
+    Some(format!("{os}/{arch}"))
+}
+
+pub fn platform_mismatch_message(
+    item: &str,
+    node: &str,
+    pair: Option<&str>,
+    platforms: &[Value],
+) -> String {
+    let listed = platforms
+        .iter()
+        .filter_map(Value::as_str)
+        .collect::<Vec<_>>();
+    format!(
+        "{item} lists platforms {}; node {node} is {}",
+        listed.join(", "),
+        pair.unwrap_or("none")
+    )
+}
+
+pub fn selected_relative_program(object: &Value, selected: &Value) -> bool {
+    let Some((_, name)) = selected["selection"]
+        .as_str()
+        .and_then(|q| q.rsplit_once('#'))
+    else {
+        return false;
+    };
+    let scope = selected["scope"].as_str().unwrap_or("");
+    object["held"]["contexts"][scope]["relative_programs"]
+        .as_array()
+        .is_some_and(|names| names.iter().any(|value| value == name))
 }
 
 /// One atomic transition. Errors leave the caller's state untouched, including allocations.

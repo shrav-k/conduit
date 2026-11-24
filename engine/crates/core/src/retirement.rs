@@ -446,10 +446,19 @@ pub(crate) fn report(
         .clone();
     let phase = v["retirement"]["phase"].as_str().unwrap();
     let (operation, outcome) = match &report {
-        lifecycle::Report::InspectRun { .. } => ("inspect-run.v1", "succeeded"),
-        lifecycle::Report::Run { outcome, .. } => ("run.v1", outcome.as_str()),
-        lifecycle::Report::Stop { outcome } => ("stop.v1", outcome.as_str()),
-        lifecycle::Report::Connected { outcome, .. } => ("connect", outcome.as_str()),
+        lifecycle::Report::InspectRun { .. } => (c.qualified("inspect-run.v1"), "succeeded"),
+        lifecycle::Report::Run { outcome, .. } => {
+            let operation = lifecycle::reported_run_operation(&v, c);
+            if v["provider_call"]["operation"] == operation {
+                t.state.invocations[i]
+                    .as_object_mut()
+                    .unwrap()
+                    .remove("provider_call");
+            }
+            (operation, outcome.as_str())
+        }
+        lifecycle::Report::Stop { outcome } => (c.qualified("stop.v1"), outcome.as_str()),
+        lifecycle::Report::Connected { outcome, .. } => (c.qualified("connect"), outcome.as_str()),
         _ => unreachable!("provider discovery is handled before retirement parts"),
     };
     if !["succeeded", "failed", "unknown"].contains(&outcome) {
@@ -462,7 +471,7 @@ pub(crate) fn report(
         i,
         &o["id"],
         "retirement-part-reported",
-        json!({"partOperation":c.qualified(operation),"outcome":outcome}),
+        json!({"partOperation":operation,"outcome":outcome}),
     )?;
     match report {
         lifecycle::Report::InspectRun { state } if phase == "inspect-run" => {
@@ -499,6 +508,24 @@ pub(crate) fn report(
         _ => return Err("report does not match retirement part".into()),
     }
     stop(t, a, c, i, &o)
+}
+
+pub(crate) fn run_failed(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    diagnostic: Value,
+) -> Result<()> {
+    add(t, i, "hook-run", "failed");
+    let part = t.state.invocations[i]["retirement"]["parts"]
+        .as_array_mut()
+        .unwrap()
+        .last_mut()
+        .unwrap();
+    part["effect"] = json!(false);
+    part["diagnostics"] = json!([diagnostic]);
+    run_unavailable(t, a, c, i)
 }
 pub(crate) fn provider_unavailable(
     t: &mut Transition,

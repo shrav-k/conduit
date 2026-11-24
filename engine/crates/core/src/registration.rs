@@ -2134,13 +2134,14 @@ fn resolve_instance(
             }
             o["runtime"] = runtime;
         }
-        let running = items(&o, "resolved_implementations")
+        let implementations = items(&o, "resolved_implementations");
+        let running = implementations
             .iter()
             .any(|(_, i)| i["item"].get("command").is_some() || i["item"].get("package").is_some());
         if running {
             let (_, ty, _) = h.select(o["type"].as_str().unwrap(), "Type", core)?;
             let mut selector = ty["spec"].get("nodeSelector").cloned().unwrap_or(json!({}));
-            for (_, implementation) in items(&o, "resolved_implementations") {
+            for (_, implementation) in &implementations {
                 for (key, value) in items(&implementation["item"], "nodeSelector") {
                     if selector.get(&key).is_some_and(|v| *v != value) {
                         return Err(fault("PLC-025", "conflicting node selector labels"));
@@ -2168,6 +2169,35 @@ fn resolve_instance(
             for (key, value) in selector.as_object().into_iter().flatten() {
                 if node["status"]["labels"][key] != *value {
                     return Err(fault("PLC-007", format!("node does not match {key}")));
+                }
+            }
+            let pair = crate::platform_pair(&node["status"]["labels"]);
+            for (_, implementation) in implementations {
+                let item = &implementation["item"];
+                let platforms = item["platforms"]
+                    .as_array()
+                    .map(Vec::as_slice)
+                    .unwrap_or_default();
+                if (item.get("command").is_some() || item.get("package").is_some())
+                    && item.get("platforms").is_some()
+                    && !pair
+                        .as_ref()
+                        .is_some_and(|pair| platforms.iter().any(|platform| platform == pair))
+                {
+                    let name = implementation["selection"]
+                        .as_str()
+                        .and_then(|selection| selection.rsplit_once('#'))
+                        .map_or("implementation", |(_, name)| name);
+                    let node_name = node["name"].as_str().unwrap_or("unknown");
+                    return Err(fault(
+                        "PLC-007",
+                        crate::platform_mismatch_message(
+                            name,
+                            node_name,
+                            pair.as_deref(),
+                            platforms,
+                        ),
+                    ));
                 }
             }
         }
@@ -3480,6 +3510,26 @@ pub(crate) fn publication_object(object: &Value, context: &Context) -> Result<Va
         }
     }
     Ok(view)
+}
+
+pub(crate) fn requires_operation(
+    object: &Value,
+    operation: &str,
+    context: &Context,
+) -> Result<bool> {
+    if object["resolved_implementations"].get(operation).is_none() {
+        return Ok(false);
+    }
+    let held: Held = serde_json::from_value(object["held"].clone()).map_err(|e| e.to_string())?;
+    let core = &context.core_package;
+    let (type_scope, ty, _) = held
+        .select(object["type"].as_str().ok_or("missing Type")?, "Type", core)
+        .map_err(|fault| fault.text)?;
+    Ok(list(&ty["spec"], "requires").iter().any(|reference| {
+        type_scope
+            .select(reference, "Operation", core)
+            .is_ok_and(|(_, _, qualified)| qualified == operation)
+    }))
 }
 
 fn check_conduit(

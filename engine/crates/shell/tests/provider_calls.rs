@@ -1,3 +1,4 @@
+mod run_v2;
 mod runtime_support;
 use conduit_shell::{Config, Executor, MissingExecutor, Shell, boundary, runner::Runner};
 use runtime_support::*;
@@ -61,34 +62,47 @@ impl Fixture {
         Self::with_initialize_timeout(mode, Duration::from_secs(5))
     }
     fn with_initialize_timeout(mode: &str, initialize_timeout: Duration) -> Self {
+        Self::with_store(mode, initialize_timeout, false, |_, shell| shell)
+    }
+    fn with_store(
+        mode: &str,
+        initialize_timeout: Duration,
+        run_v2: bool,
+        prepare: impl FnOnce(&Path, Shell) -> Shell,
+    ) -> Self {
         assert!(std::env::var_os("CARGO_MANIFEST_DIR").is_some());
         let temp = tempfile::tempdir().unwrap();
         fs::write(temp.path().join("mode"), mode).unwrap();
-        let shell = Arc::new(
-            Shell::open(
-                &temp.path().join("store"),
-                boundary::context(&repository()).unwrap(),
-                Config {
-                    engine_https_url: if mode == "no-https" {
-                        None
-                    } else {
-                        Some("https://engine.test/mcp".into())
-                    },
-                    pass_environment: vec!["CARGO_MANIFEST_DIR".into()],
-                    call_timeout: Duration::from_secs(5),
-                    initialize_timeout,
-                    ..Config::default()
+        let shell = Shell::open(
+            &temp.path().join("store"),
+            boundary::context(&repository()).unwrap(),
+            Config {
+                engine_https_url: if mode == "no-https" {
+                    None
+                } else {
+                    Some("https://engine.test/mcp".into())
                 },
-            )
-            .unwrap(),
-        );
+                pass_environment: vec!["CARGO_MANIFEST_DIR".into()],
+                call_timeout: Duration::from_secs(5),
+                initialize_timeout,
+                ..Config::default()
+            },
+        )
+        .unwrap();
         shell.submit(json!({"kind":"first-start","machine":conduit_shell::local_machine(BTreeMap::new()).unwrap()}), &MissingExecutor).unwrap();
+        let shell = Arc::new(prepare(temp.path(), shell));
+        let run_v2_operation = format!("{}#run.v2", shell.context.core_package);
         let base = repository().join("conformance/conventions/setup/review-relative-provider");
         let mut documents: Value =
             serde_json::from_slice(&fs::read(base.join("documents.json")).unwrap()).unwrap();
         for doc in documents.as_array_mut().unwrap() {
             if doc["metadata"]["name"] == "provider.v1" {
                 doc["spec"]["schema"] = json!({"type":"object","properties":{"root":{"type":"string"}},"required":["root"]});
+                if run_v2 {
+                    doc["spec"]["requires"] = json!([run_v2_operation]);
+                    doc["spec"]["implementation"][&run_v2_operation] = json!("#provider-server");
+                    doc["spec"]["records"] = json!({"inputs":true});
+                }
             }
             if doc["metadata"]["name"] == "test.v1" {
                 doc["spec"]["schema"] = json!({"type":"object","properties":{"binding":{"type":"string"}},"required":["binding"]});
@@ -106,6 +120,12 @@ impl Fixture {
             json!({"apiVersion":api,"kind":"Conduit","metadata":{"name":"runtime-test"},"from":"test-call","consumer":{"kind":"Interface","name":"root"},"target":{"kind":"Agent","name":"a"}}),
         ]);
         let mut manifest = boundary::value(&base.join("manifest.json")).unwrap();
+        if run_v2 {
+            manifest["implementations"]["provider-server"]["implements"]
+                .as_array_mut()
+                .unwrap()
+                .push(json!(run_v2_operation));
+        }
         manifest["implementations"]["provider-server"]["command"] = json!([
             std::env::current_exe().unwrap().to_str().unwrap(),
             "--exact",
@@ -200,7 +220,9 @@ fn scripted_runtime_provider() {
 
         let method = value["method"].as_str().unwrap_or("");
         let mut recorded = value.clone();
-        if method == "tools/call" && value["params"]["name"] == "run.v1" {
+        if method == "tools/call"
+            && matches!(value["params"]["name"].as_str(), Some("run.v1" | "run.v2"))
+        {
             let identity = &value["params"]["arguments"]["identity"];
             let files = identity["files"].as_object().unwrap();
             let expected = [
@@ -333,7 +355,7 @@ fn scripted_runtime_provider() {
                             outputs = json!({"state":"stopped"});
                         }
                     }
-                    "run.v1" => {
+                    "run.v1" | "run.v2" => {
                         outputs = json!({"url":gate.as_ref().unwrap().url});
                         if mode == "failed" || mode == "unknown" {
                             stated = if mode == "failed" {

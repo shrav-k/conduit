@@ -997,6 +997,15 @@
       "safety_rows": []
     },
     {
+      "id": "requests-turn-names-fleet-and-login",
+      "case": "conventions/requests/turn-names-fleet-and-login/case.yaml",
+      "promises": [
+        "REC-002",
+        "IFC-051",
+        "LIF-013"
+      ]
+    },
+    {
       "id": "requests-unknown-write",
       "case": "conventions/requests/unknown-write/case.yaml",
       "promises": [

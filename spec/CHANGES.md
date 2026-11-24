@@ -81,3 +81,4 @@ then they are under `docs/proposals/`.
 - Changed: `spec/README.md#pending-actions-sign-in-and-the-network` names no Agent product, scoping by `carried: false` instead, and the Agent packages' READMEs hold the rest (DEC-105).
 - Changed: plan and apply's duties and flags leave `spec/README.md#what-the-short-forms-meaning-covers`, and two commands' sentences leave the author path, for the CLI's guide, `engine/CLI.md` (DEC-105).
 - Changed: `spec/README.md#what-this-is` opens the page and leads with the six families; the proof of identity follows the layers, and the status follows under its own heading (DEC-105).
+- Changed: REC-002, IFC-051 and `record.v1`, the end record of a call that starts model work on an Agent names its Fleet in `fleet` and, where its Type states one, its login Resource in `loginResource`, and the engine adds no usage up (DEC-117).

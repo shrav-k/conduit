@@ -46,6 +46,10 @@
     the operation, the engine's ID for the invocation, the engine's ID for the
     invocation that it serves where it serves one, the idempotency key if the caller supplied
     one or the engine gave one under OPS-028, the time, and how it ended.
+    The record of an invocation's end, where the operation's contract is marked
+    `startsModelWork: true` and the target is an Agent, also holds the Agent's owning Fleet
+    and, where the Agent's Type states `loginResource`, the login Resource that its login
+    place referred to when the call was made (CTR-013).
   observable: >-
     Each of those is present in every record to which it applies. The inputs and outputs of the
     operation need not be; what content is kept is stated by each type's contract, under
@@ -53,6 +57,19 @@
     `outputs` is true. Except for a read of a secret, the record of an invocation's end also
     holds the usage member and the limits member that its result carried, or the warning
     that dropped each, under IFC-051 and IFC-052, whatever `records` states.
+    The Agent's Fleet and login Resource are `fleet` and `loginResource` in `record.v1`,
+    each an ID, as the record names the caller and the target. Both are held whatever
+    `records` states and however the invocation ended, in an end recorded late under REC-007
+    or as unknown at a restart under IMP-007 too; `loginResource` is absent where the
+    Agent's Type states no `loginResource`. No other record holds the members `fleet` and
+    `loginResource`: neither the other records of the same request, nor the record of a
+    request that ends without being dispatched, which starts no model work, nor the end
+    record of a call whose target is not an Agent; so a turn still running appears under
+    neither until its end is recorded. The record names that Fleet and that login Resource,
+    so inspecting either finds it, under LIF-013, by the authority ACC-033 gives for inspecting
+    it. The engine sums or compares no usage of the records that name a Fleet or a login
+    Resource: each record shows only its own `usage` member, as its turn reported it, under
+    IFC-051.
     A record has the form of the core schema `record.v1`: a CloudEvent whose
     `data` holds these fields, the consumer of the Conduit used in `consumer` and the invocation
     served in `serving`. `inspect.v1` returns records in that form, under LIF-013, and an engine

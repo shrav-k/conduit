@@ -525,6 +525,14 @@
       ]
     },
     {
+      "id": "registration-reached-package-inspected",
+      "case": "language/registration/reached-package-inspected/case.yaml",
+      "promises": [
+        "NAM-009",
+        "PKG-007"
+      ]
+    },
+    {
       "id": "registration-reference-authored-id",
       "case": "language/registration/reference-authored-id/case.yaml",
       "promises": [

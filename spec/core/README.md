@@ -377,9 +377,11 @@ marked `startsModelWork: true` carries the target's `ownTools` as `targetOwnTool
 consumer including root: one hop of own tools reach, disclosing only that configuration value
 and pointer (CTR-014, LIF-013).
 The `system` status also holds `trustDomain` (FST-007).
-`packages` is a list. A package's item has `address`, `version` and `digest`; the core package's
-item has no `digest`; and the item of a submitted project has `address`, the digest that
-identifies the contracts of that submission and `version` where its manifest states one,
+`packages` is a list of each package the object refers to, directly or through a contract of its
+submitted project that it reaches (NAM-022). A package's item has `address`, `version` and
+`digest`; the core package's item has no `digest`; and the item of a submitted project has
+`address`, the digest that identifies the contracts of that submission and `version` where
+its manifest states one,
 and `documents`, the kind, name and digest of each of that submission's contract documents, taken
 as SUB-008 takes the submission's (NAM-009, PKG-005, SUB-008). `implementations`, for a template
 or an instance, other than a Conduit, a Conduit template or a first-start object, gives for

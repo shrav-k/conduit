@@ -1,0 +1,15 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "reader-two"
+    },
+    "spec": {
+      "type": "#reader.v1",
+      "implementation": {
+        "#read.v1": "#server"
+      }
+    }
+  }
+]

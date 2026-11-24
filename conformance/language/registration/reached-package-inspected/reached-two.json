@@ -1,0 +1,8 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "address": "example.org/reached",
+  "version": "2.0.0",
+  "exports": [
+    "note.v1"
+  ]
+}

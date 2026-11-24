@@ -1,0 +1,36 @@
+{
+  "snapshots": [
+    {
+      "source": "preinstalled-snapshot",
+      "address": "example.org/reached",
+      "version": "2.0.0",
+      "digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "project": {
+        "files": {
+          "conduit.json": "reached-two",
+          "documents.json": "reached-contracts"
+        }
+      }
+    },
+    {
+      "source": "preinstalled-snapshot",
+      "address": "example.org/unreached",
+      "version": "1.0.0",
+      "digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "project": {
+        "files": {
+          "conduit.json": "unreached",
+          "documents.json": "unreached-contracts"
+        }
+      }
+    }
+  ],
+  "project": {
+    "directory": "file:///projects/two/",
+    "files": {
+      "conduit.json": "manifest-two",
+      "contracts.json": "contracts",
+      "objects.json": "two"
+    }
+  }
+}

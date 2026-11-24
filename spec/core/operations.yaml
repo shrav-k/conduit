@@ -292,7 +292,11 @@ metadata:
     is authorized against `management` alone: it has no owning Pool. With that authority it reports
     invalid; a caller with only a Pool's authority reports refused, before any diagnostic, and learns
     nothing of whether it existed, under OPS-023. `packages` lists the packages the object holds:
-    a package's item has `address`, `version` and `digest`; the core package's item has no `digest`;
+    each package it refers to, directly or through a contract of its submitted project that it
+    reaches (NAM-022), so that a moved pin of a package that only such a contract names shows in
+    that package's item. A package that only another package's contracts name is not listed,
+    since that other package's digest covers its pin (PKG-004). A package's item has `address`,
+    `version` and `digest`; the core package's item has no `digest`;
     and the item of the submitted project whose contracts the object holds has `address`, the digest
     that identifies that submission's contracts, and `version` where its manifest states one.
     That item also has `documents`: for each contract document of that submission, in the order

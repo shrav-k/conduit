@@ -1,0 +1,10 @@
+{
+  "snapshots": [],
+  "project": {
+    "directory": "file:///projects/later/",
+    "files": {
+      "conduit.json": "later-manifest",
+      "objects.json": "later"
+    }
+  }
+}

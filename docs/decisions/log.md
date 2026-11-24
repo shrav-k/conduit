@@ -1452,3 +1452,35 @@ Owner's words: on handing the coordinator's work to another agent -> "We are run
 Lands in: the coordinator keeps a private handoff (current state, playbook, its own account, the kit) current at every change, verified by a successor's blind dry-run; the kit's shell and Python helpers are a marked stopgap whose Rust replacements are written as orders now and dispatched after the usage guard's chain (DEC-166)
 
 Status: accepted, not done (the replacement orders)
+
+## DEC-172, 2026-11-23, the gate's stale build cache is fixed next
+
+Owner's words: whether the gate's stale-cache fix runs before the guard chain ends -> "Yes, next (Recommended)"
+
+Lands in: the order that keeps the gate from building a branch against a stale copy of a crate from its shared target directory (order 278's merge met it) runs next, ahead of the guard's remaining orders; amends DEC-166 for this one order
+
+Status: accepted, not done (order 402)
+
+## DEC-173, 2026-11-23, merging through Conduit uses a second fine-grained GitHub token
+
+Owner's words: which GitHub credential lets root's GitHub Conduit create and merge pull requests -> "A second fine-grained token (Recommended)"
+
+Lands in: a separate fine-grained token with pull-request write on this repository only, held as a secret Resource, which the owner creates; the read-only token stays as it is
+
+Status: accepted, not done (order 412)
+
+## DEC-174, 2026-11-23, the coordinator's Rust tooling lives in experiment 028
+
+Owner's words: where the coordinator's Rust tooling lives -> "Inside experiment 028 (Recommended)"
+
+Lands in: experiments/028-a78-dogfood/coordinator, through the gate, in Rust (DEC-132)
+
+Status: accepted, not done (orders 400 onward)
+
+## DEC-175, 2026-11-23, the gate's stale-cache order returns after the guard chain
+
+Owner's words: where order 402 goes once the coordinator corrected its premise (the gate rebuilt 278's core and failed on 278's real error; the stale build came from the coordinator's own run) -> "Back after the guard chain (Recommended)"
+
+Lands in: order 402 is defense in depth for hand builds and the gate's default mode, dispatched after the usage guard's chain with the coordinator's Rust replacements (DEC-171); amends DEC-172
+
+Status: accepted, not done (order 402)

@@ -201,8 +201,9 @@ settles each finding in the first build's open log,
 
 `main` is protected: every change comes by pull request and is squash-merged with a message
 written by hand. A merge waits on the PASS of `tools/gate.py`. CI runs on each pull request as a
-second opinion; merges do not wait for it (ruling 80). Code here is Rust, apart from `tools/`'s
-Python checkers and the Workflow tool's JavaScript (DEC-025). Before you push, from the root:
+second opinion; merges do not wait for it (ruling 80). Here the engine is Rust, and a package may
+be written in any language; other code is Rust, apart from `tools/`'s Python checkers and the
+Workflow tool's JavaScript (DEC-025, DEC-111). Before you push, from the root:
 
 ```sh
 git fetch origin               # the gate compares with origin/main as last fetched

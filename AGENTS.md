@@ -85,11 +85,17 @@ new one. If you were asked to read or audit this repository cold, start at
 
 ## Rules
 
-- **Code is Rust**, with a `Cargo.lock`, a pinned toolchain and ignored build output: a probe or an
-  evaluation in its own directory under `experiments/`, a provider package under `packages/`, one
-  crate per provider (ruling 40), and the first build in the workspace under [engine/](engine/README.md)
-  (ruling 46). The exceptions are the Python checkers in `tools/` and the Workflow tool's
-  JavaScript ([DEC-025](docs/decisions/log.md#dec-025-2026-11-20-the-engine-is-rust-no-private-code)).
+- **Code**: the engine is Rust, and a package may be written in any language; other code is Rust
+  ([DEC-111](docs/decisions/log.md#dec-111-2026-11-23-only-the-runtime-engine-must-be-rust);
+  [DEC-132](docs/decisions/log.md#dec-132-2026-11-23-dec-111-frees-packages-only) keeps experiments
+  and tooling in Rust), the Python checkers in `tools/` and the Workflow tool's JavaScript apart
+  (DEC-025). A package in another language still carries its manifest (`conduit.yaml`) and its
+  contracts (`contracts.yaml`), meets the conformance cases of what it provides, and, if it is a
+  client, keeps [the client contract](docs/clients.md). Rust code keeps a `Cargo.lock` and a pinned
+  toolchain (`rust-toolchain.toml`); code in another language keeps its own lockfile and pins its
+  toolchain's version. All of it ignores its build output. Where code goes: a probe in
+  `experiments/`, a package in `packages/` (a provider, one per provider, an Agent or an Interface
+  such as the web UI; ruling 40), [engine/](engine/README.md) (ruling 46).
 - **The owner makes the rulings.** When a choice changes behavior, present the options with a
   recommendation and wait; do not record your recommendation as accepted. Who else decides what is
   in [the tracker](docs/AUDIT.md#who-decides-what).

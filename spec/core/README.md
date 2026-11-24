@@ -105,9 +105,13 @@ requested of the target ACC-033 names, with the instance as an input. The engine
 both, and neither is selected in an `implementation` map (TPL-008). What a setup does is
 TPL-012: it opens the instance's declared Conduits, or for a Pool sets up the Resources of its
 entries (CON-004, POOL-013); then it asks for the instance's run (PRV-007) and connects to
-each `remote` item (IFC-041); then it dispatches the setup hook (TPL-017). What a retirement
-does is TPL-009: the retire hook (TPL-018), then the stop of the run (PRV-008). A Conduit is
-set up by `open.v1` and retired by `close.v1`.
+each `remote` item (IFC-041); then it dispatches the setup hook (TPL-017). A setup that succeeds
+names in `objects` each nested instance of its first part, each entry Resource's declared
+Conduits among them, with its lifecycle state and revision. Where the request's target holds
+a core release from before this change, its contract declares no outputs and the result gives
+no `objects` until that object is replaced onto a release whose contract declares them. What a
+retirement does is TPL-009: the retire hook (TPL-018), then the stop of the run (PRV-008). A
+Conduit is set up by `open.v1` and retired by `close.v1`.
 
 ### The management verbs
 

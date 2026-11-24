@@ -1,0 +1,382 @@
+id: setup-children-returned
+title: Successful setup returns the lifecycle state and revision of its children
+layers:
+- language
+- convention
+promises:
+- CON-004
+- LIF-003
+- REV-012
+- OPS-009
+profile: first-build
+initial:
+  recipe: empty
+files: {}
+steps:
+- input:
+    kind: first-start
+    evidence:
+      time: '2026-11-21T12:00:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000001
+      - 00000000-0000-4000-8000-000000000002
+      - 00000000-0000-4000-8000-000000000003
+      - 00000000-0000-4000-8000-000000000004
+      - 00000000-0000-4000-8000-000000000005
+      - 00000000-0000-4000-8000-000000000006
+      - 00000000-0000-4000-8000-000000000007
+      - 00000000-0000-4000-8000-000000000008
+      - 00000000-0000-4000-8000-000000000009
+      - 00000000-0000-4000-8000-000000000010
+      - 00000000-0000-4000-8000-000000000011
+      - 00000000-0000-4000-8000-000000000012
+      - 00000000-0000-4000-8000-000000000013
+      - 00000000-0000-4000-8000-000000000014
+      - 00000000-0000-4000-8000-000000000015
+      - 00000000-0000-4000-8000-000000000016
+      - 00000000-0000-4000-8000-000000000017
+      - 00000000-0000-4000-8000-000000000018
+      - 00000000-0000-4000-8000-000000000019
+      - 00000000-0000-4000-8000-000000000020
+      - 00000000-0000-4000-8000-000000000021
+      - 00000000-0000-4000-8000-000000000022
+      - 00000000-0000-4000-8000-000000000023
+      - 00000000-0000-4000-8000-000000000024
+      revisions:
+      - r0-0
+      - r0-1
+      - r0-2
+      - r0-3
+      - r0-4
+      - r0-5
+      - r0-6
+      - r0-7
+      suffixes:
+      - s0000
+      - s0001
+      - s0002
+    machine:
+      hostname: workstation.example
+      labels:
+        kubernetes.io/hostname: workstation.example
+        kubernetes.io/os: linux
+        kubernetes.io/arch: arm64
+      state: reachable
+    trustDomain: vectors-275.example
+  expect:
+    reply:
+      started: true
+    state:
+      started: true
+    record_facts: []
+    external_intents: []
+    required_promises:
+    - FST-001
+- input:
+    kind: invoke
+    request:
+      identity:
+        kind: instance
+        id: 00000000-0000-4000-8000-000000000005
+      tool: management.register.v1
+      arguments:
+        manifest:
+          apiVersion: github.com/shrav-k/conduit/v0
+          address: example.org/children
+        documents:
+        - apiVersion: github.com/shrav-k/conduit/v0
+          kind: Pool
+          metadata:
+            name: team-t
+          spec:
+            type: github.com/shrav-k/conduit/core#pool.v1
+        - apiVersion: github.com/shrav-k/conduit/v0
+          kind: Pool
+          metadata:
+            name: team
+          from: team-t
+        - apiVersion: github.com/shrav-k/conduit/v0
+          kind: Interface
+          metadata:
+            name: holder-t
+          spec:
+            type: github.com/shrav-k/conduit/core#interface.v1
+            conduits:
+              slot:
+                from: github.com/shrav-k/conduit/core#root-pool
+                target:
+                  kind: Pool
+                  name: team
+        - apiVersion: github.com/shrav-k/conduit/v0
+          kind: Interface
+          metadata:
+            name: holder
+          from: holder-t
+    evidence:
+      time: '2026-11-21T12:01:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000100
+      - 00000000-0000-4000-8000-000000000101
+      - 00000000-0000-4000-8000-000000000102
+      - 00000000-0000-4000-8000-000000000103
+      - 00000000-0000-4000-8000-000000000104
+      - 00000000-0000-4000-8000-000000000105
+      - 00000000-0000-4000-8000-000000000106
+      - 00000000-0000-4000-8000-000000000107
+      - 00000000-0000-4000-8000-000000000108
+      - 00000000-0000-4000-8000-000000000109
+      - 00000000-0000-4000-8000-000000000110
+      - 00000000-0000-4000-8000-000000000111
+      - 00000000-0000-4000-8000-000000000112
+      - 00000000-0000-4000-8000-000000000113
+      - 00000000-0000-4000-8000-000000000114
+      - 00000000-0000-4000-8000-000000000115
+      - 00000000-0000-4000-8000-000000000116
+      - 00000000-0000-4000-8000-000000000117
+      - 00000000-0000-4000-8000-000000000118
+      - 00000000-0000-4000-8000-000000000119
+      - 00000000-0000-4000-8000-000000000120
+      - 00000000-0000-4000-8000-000000000121
+      - 00000000-0000-4000-8000-000000000122
+      - 00000000-0000-4000-8000-000000000123
+      revisions:
+      - r1-0
+      - r1-1
+      - r1-2
+      - r1-3
+      - r1-4
+      - r1-5
+      - r1-6
+      - r1-7
+      suffixes:
+      - s1000
+      - s1001
+      - s1002
+      - s1003
+      - s1004
+      - s1005
+  expect:
+    reply:
+      _meta:
+        io.github.shrav-k.conduit/outcome: succeeded
+      structuredContent:
+        objects:
+        - kind: Interface
+          name: holder-t
+        - kind: Pool
+          name: team-t
+        - kind: Interface
+          name: holder
+        - kind: Conduit
+          nested:
+            name: slot
+        - kind: Pool
+          name: team
+        - kind: Conduit
+    external_intents: []
+  capture:
+    holderId: /reply/structuredContent/objects/2/id
+    slotId: /reply/structuredContent/objects/3/id
+    slotName: /reply/structuredContent/objects/3/name
+- input:
+    kind: invoke
+    request:
+      identity:
+        kind: instance
+        id: 00000000-0000-4000-8000-000000000005
+      tool: management.set-up.v1
+      arguments:
+        instance:
+          kind: Interface
+          name: holder
+    evidence:
+      time: '2026-11-21T12:02:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000200
+      - 00000000-0000-4000-8000-000000000201
+      - 00000000-0000-4000-8000-000000000202
+      - 00000000-0000-4000-8000-000000000203
+      - 00000000-0000-4000-8000-000000000204
+      - 00000000-0000-4000-8000-000000000205
+      - 00000000-0000-4000-8000-000000000206
+      - 00000000-0000-4000-8000-000000000207
+      - 00000000-0000-4000-8000-000000000208
+      - 00000000-0000-4000-8000-000000000209
+      - 00000000-0000-4000-8000-000000000210
+      - 00000000-0000-4000-8000-000000000211
+    key: setup-holder
+  expect:
+    reply:
+      _meta:
+        io.github.shrav-k.conduit/outcome: succeeded
+      structuredContent:
+        objects:
+        - kind: Conduit
+          id: $slotId
+          name: $slotName
+          nested:
+            instance: $holderId
+            name: slot
+          state: ready
+    external_intents: []
+  capture:
+    firstSetup: /reply/_meta/io.github.shrav-k.conduit~1invocation
+    slotRevision: /reply/structuredContent/objects/0/revision
+- input:
+    kind: invoke
+    request:
+      identity:
+        kind: instance
+        id: 00000000-0000-4000-8000-000000000005
+      tool: management.inspect.v1
+      arguments:
+        object:
+          kind: Conduit
+          name: $slotName
+    evidence:
+      time: '2026-11-21T12:03:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000300
+      - 00000000-0000-4000-8000-000000000301
+      - 00000000-0000-4000-8000-000000000302
+      - 00000000-0000-4000-8000-000000000303
+      - 00000000-0000-4000-8000-000000000304
+      - 00000000-0000-4000-8000-000000000305
+      - 00000000-0000-4000-8000-000000000306
+      - 00000000-0000-4000-8000-000000000307
+      - 00000000-0000-4000-8000-000000000308
+      - 00000000-0000-4000-8000-000000000309
+      - 00000000-0000-4000-8000-000000000310
+      - 00000000-0000-4000-8000-000000000311
+  expect:
+    reply:
+      _meta:
+        io.github.shrav-k.conduit/outcome: succeeded
+      structuredContent:
+        id: $slotId
+        status:
+          state: ready
+        revision: $slotRevision
+    external_intents: []
+- input:
+    kind: invoke
+    request:
+      identity:
+        kind: instance
+        id: 00000000-0000-4000-8000-000000000005
+      tool: management.set-up.v1
+      arguments:
+        instance:
+          kind: Interface
+          name: holder
+    evidence:
+      time: '2026-11-21T12:04:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000400
+      - 00000000-0000-4000-8000-000000000401
+      - 00000000-0000-4000-8000-000000000402
+      - 00000000-0000-4000-8000-000000000403
+      - 00000000-0000-4000-8000-000000000404
+      - 00000000-0000-4000-8000-000000000405
+      - 00000000-0000-4000-8000-000000000406
+      - 00000000-0000-4000-8000-000000000407
+      - 00000000-0000-4000-8000-000000000408
+      - 00000000-0000-4000-8000-000000000409
+      - 00000000-0000-4000-8000-000000000410
+      - 00000000-0000-4000-8000-000000000411
+    key: setup-holder
+  expect:
+    reply:
+      _meta:
+        io.github.shrav-k.conduit/outcome: succeeded
+        io.github.shrav-k.conduit/invocation: $firstSetup
+      structuredContent:
+        objects:
+        - kind: Conduit
+          id: $slotId
+          name: $slotName
+          nested:
+            instance: $holderId
+            name: slot
+          state: ready
+          revision: $slotRevision
+    external_intents: []
+    record_facts:
+    - type: access-decision
+    - type: request-ended
+    absent:
+    - /records/2
+- input:
+    kind: invoke
+    request:
+      identity:
+        kind: instance
+        id: 00000000-0000-4000-8000-000000000005
+      tool: management.set-up.v1
+      arguments:
+        instance:
+          kind: Interface
+          name: holder
+    evidence:
+      time: '2026-11-21T12:05:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000500
+      - 00000000-0000-4000-8000-000000000501
+      - 00000000-0000-4000-8000-000000000502
+      - 00000000-0000-4000-8000-000000000503
+      - 00000000-0000-4000-8000-000000000504
+      - 00000000-0000-4000-8000-000000000505
+      - 00000000-0000-4000-8000-000000000506
+      - 00000000-0000-4000-8000-000000000507
+      - 00000000-0000-4000-8000-000000000508
+      - 00000000-0000-4000-8000-000000000509
+      - 00000000-0000-4000-8000-000000000510
+      - 00000000-0000-4000-8000-000000000511
+  expect:
+    reply:
+      _meta:
+        io.github.shrav-k.conduit/outcome: succeeded
+      structuredContent:
+        objects:
+        - kind: Conduit
+          id: $slotId
+          name: $slotName
+          nested:
+            instance: $holderId
+            name: slot
+          state: ready
+          revision: $slotRevision
+    external_intents: []
+- input:
+    kind: invoke
+    request:
+      identity:
+        kind: instance
+        id: 00000000-0000-4000-8000-000000000005
+      tool: management.set-up.v1
+      arguments:
+        instance:
+          kind: Pool
+          name: team
+    evidence:
+      time: '2026-11-21T12:06:00Z'
+      ids:
+      - 00000000-0000-4000-8000-000000000600
+      - 00000000-0000-4000-8000-000000000601
+      - 00000000-0000-4000-8000-000000000602
+      - 00000000-0000-4000-8000-000000000603
+      - 00000000-0000-4000-8000-000000000604
+      - 00000000-0000-4000-8000-000000000605
+      - 00000000-0000-4000-8000-000000000606
+      - 00000000-0000-4000-8000-000000000607
+      - 00000000-0000-4000-8000-000000000608
+      - 00000000-0000-4000-8000-000000000609
+      - 00000000-0000-4000-8000-000000000610
+      - 00000000-0000-4000-8000-000000000611
+  expect:
+    reply:
+      _meta:
+        io.github.shrav-k.conduit/outcome: succeeded
+      structuredContent:
+        objects: []
+    external_intents: []

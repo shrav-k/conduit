@@ -51,6 +51,16 @@
       ]
     },
     {
+      "id": "setup-children-returned",
+      "case": "conventions/setup/children-returned/case.yaml",
+      "promises": [
+        "CON-004",
+        "LIF-003",
+        "REV-012",
+        "OPS-009"
+      ]
+    },
+    {
       "id": "setup-close",
       "case": "conventions/setup/close/case.yaml",
       "promises": [

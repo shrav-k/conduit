@@ -1532,3 +1532,131 @@ Owner's words: "rather than a one time handoff, we should use fable to plan what
 Lands in: a Fable study plans the long-term work, a durable record kept current as part of the work itself (not a bespoke handoff) that gives any new agent or coordinator full context on Conduit and each of its parts, and how several agents work in parallel once the packages and the organization split
 
 Status: accepted, not done (the study)
+
+## DEC-182, 2026-11-24, everything stays in v0; more accounts and machines come first
+
+Owner's words: the date and v0's breadth -> "Everything in v0, prioritize adding new accounts and machines to improve performance and parallelism"
+
+Lands in: every chain ruled stays in v0; adding accounts and machines for more parallel lanes is the first priority; the merge rate is reviewed each week against 2026-12-31
+
+Status: accepted, not done
+
+## DEC-183, 2026-11-24, the handoff files stay until `wo status` computes the state
+
+Owner's words: when the hand-kept handoff files stop -> "Until `wo status` computes it (Recommended)"
+
+Lands in: the coordinator keeps STATE, PLAYBOOK and SEED current until the coordinator tool prints the live state from main, the merge ledger and the store; then they retire, proven by a second cold dry run from main alone; amends DEC-171
+
+Status: accepted, not done
+
+## DEC-184, 2026-11-24, the cited studies are published redacted, and outdated documents are swept out
+
+Owner's words: the private studies the decision log cites -> "Publish each, and let's also sweep and delete all outdated docs/information"
+
+Lands in: each study the log cites moves to docs/research/ after private values are redacted and each redaction named; every outdated document and statement in the repository is swept out or archived
+
+Status: accepted, not done
+
+## DEC-185, 2026-11-24, spec releases are tags; packages prove conformance by result records
+
+Owner's words: how packages prove they match the spec once they live apart -> "Tagged spec, result records (Recommended)"
+
+Lands in: spec releases are tags assembled from the changelog fragments; an engine release names its spec release; a package proves itself by a conformance result record, replacing ruling 47's pinned copies; the first tag at v0's gate
+
+Status: accepted, not done
+
+## DEC-186, 2026-11-24, one merge queue per repository, with blocking CI there
+
+Owner's words: merge queues once packages live in their own repositories -> "One queue per repo, blocking CI there (Recommended)"
+
+Lands in: each repository has its own merge queue; a package repository's CI blocks its merges; the main repository keeps the local gate until its CI matches it; amends ruling 80 for package repositories
+
+Status: accepted, not done
+
+## DEC-187, 2026-11-24, HOW-WE-WORK and the decision log are in force now
+
+Owner's words: whether HOW-WE-WORK and the decision framework go in force -> "In force now (Recommended)"
+
+Lands in: HOW-WE-WORK and the decision log are in force; IN_FORCE.md, the audit and the old handover are archived; AGENTS.md is the one start point, an index checked for its links
+
+Status: accepted, not done
+
+## DEC-188, 2026-11-24, no freeze; each deferral is logged
+
+Owner's words: what happens to anything not built by 2026-12-31 -> "No freeze; each deferral logged (Recommended)"
+
+Lands in: no general freeze; whatever is accepted and not built by 2026-12-31 is listed in v0's review for the owner to defer or keep, one log entry each
+
+Status: accepted, not done
+
+## DEC-189, 2026-11-24, the Claude reader reads text-facing orders only
+
+Owner's words: which orders the Claude reader reads -> "Text-facing only, per DEC-071 (Recommended)"
+
+Lands in: the Claude reader reads an order that changes spec/, a diagnostic or refusal, agent- or owner-facing text, or a README; an engine-internal order merges on the Codex verifier's clean read and the gate (DEC-071 as written)
+
+Status: accepted, not done
+
+## DEC-190, 2026-11-24, expected failures are one fragment per order
+
+Owner's words: how expected failures stop conflicting -> "One fragment per order (Recommended)"
+
+Lands in: each order adds its own expected-failures fragment; the checker merges them at gate time; the one file retires, with order 400's changelog fragments
+
+Status: accepted, not done
+
+## DEC-191, 2026-11-24, one source repository, with published copies
+
+Owner's words: the split's form -> "One source repo, published copies (Recommended)"
+
+Lands in: every package stays authoritative in the one source repository and is published read-only to its own repository, authority moving one package at a time when it has a named maintainer, an outside install test and a release
+
+Status: accepted, not done
+
+## DEC-192, 2026-11-24, each Rust package builds alone
+
+Owner's words: whether the Rust-written Conduit packages share one Cargo workspace -> "Packages is vague here, do you mean conduit packages or rust packages?"; clarified -> "Each package alone"
+
+Lands in: each Rust-written Conduit package keeps its own crate and lockfile
+
+Status: accepted, not done
+
+## DEC-193, 2026-11-24, the agent kit is a core part of the engine and runtime
+
+Owner's words: how the shared agent kit reaches the Agent packages -> "It feels more and more like agent-kit should be a core part of the engine and runtime honestly as it is a core feature of conduit"
+
+Lands in: the agent kit becomes part of the engine and runtime rather than a separate library the engine never depends on; amends DEC-107; its design comes before the kit's order
+
+Status: accepted, not done
+
+## DEC-194, 2026-11-24, tracking stays in ROADMAP and the open index
+
+Owner's words: tracking work once there is an organization -> "ROADMAP + open index (Recommended)"
+
+Lands in: ROADMAP rows and the decision log's open index in the main repository; no GitHub issues except from outside reporters, each becoming an order or closed; revisited at the first outside contributor
+
+Status: accepted, not done
+
+## DEC-195, 2026-11-24, one decision log, revisited after v0
+
+Owner's words: decision logs across repositories -> "One log but revisit after v0"
+
+Lands in: one decision log in the main repository for every official repository; package repositories cite it; revisited after v0
+
+Status: accepted, not done
+
+## DEC-196, 2026-11-24, one Fleet per track
+
+Owner's words: Fleets once work splits by area -> "One Fleet per track (Recommended)"
+
+Lands in: one Fleet per track (core, packages), accounts mapped to Fleets so a usage pause idles one track; readers serve both
+
+Status: accepted, not done
+
+## DEC-197, 2026-11-24, a checked catalog entry for each part
+
+Owner's words: a map of all of Conduit's parts -> "Catalog file per part, checked (Recommended)"
+
+Lands in: each part has a catalog entry (owner, interfaces, status) and its own AGENTS.md; a check fails any part or file nobody claims and renders the parts map; kept current by every order that touches a part
+
+Status: accepted, not done

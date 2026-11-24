@@ -1348,3 +1348,67 @@ Owner's words: how a Conduit-aware HTTP service receives the call's keys and rep
 Lands in: when the HTTP binding is written, each of Conduit's keys travels as one `Conduit-` header named by one rule from the keys' Schema, its value typed under RFC 9651 and an object as base64 of its JSON; the engine checks one total bound on those headers and refuses past it with a diagnostic; the outcome comes back as one header beside an honest status code, with a diagnostic in an RFC 9457 problem body; a keyed result without the outcome header is unknown
 
 Status: accepted, not done (with the HTTP binding's orders)
+
+## DEC-159, 2026-11-23, the models' Interface registers Agents by Fleet, never a self-signing Type
+
+Owner's words: whether the models' own Interface may register Agents -> "By Fleet, no self-sign-in Types (Recommended)"
+
+Lands in: an Interface other than root may register an Agent only into a Fleet it holds a registering Conduit to, only on a login whose Pool root opened to it, and never an Agent whose Type signs in by itself; bounds gain a way to cover a Fleet's Agents; the switch-over waits for DEC-078's trim. Every guard of DEC-159 to DEC-165 keeps the rules presented with them and not struck: sign-in of the owner's logins, enrollment, admitting clients, purging records and declaring a machine lost stay the owner's; that Interface's bound never names sign-in or install; root opens its Conduits to login Pools itself, never with setup, retire or sign-in; each act opened is for the Interface itself, not its Agents; and the guards become a wall once the sandbox lands (ruling 84)
+
+Status: accepted, not done (the model-driven Interface's orders)
+
+## DEC-160, 2026-11-23, private values stay the owner's
+
+Owner's words: whether the models' Interface may add a value Resource -> "No, values stay yours (Recommended)"
+
+Lands in: only root, by the owner's hand, registers a value Resource (DEC-076); documents only name values
+
+Status: accepted, not done (the model-driven Interface's orders)
+
+## DEC-161, 2026-11-23, the models' Interface gives only named secrets, only to the owner's Resources
+
+Owner's words: whether the models' Interface may give secrets to programs -> "Named secrets, your Resources only (Recommended)"
+
+Lands in: an Interface other than root may open a get-secret Conduit only for a secret root names one by one and only to a Resource root registered, so it never chooses the program that receives it; never for a client's token, an account's credential or the engine's signing key
+
+Status: accepted, not done (the model-driven Interface's orders)
+
+## DEC-162, 2026-11-23, the models' Interface installs only releases whose digest the owner approved
+
+Owner's words: whether the models' Interface may install packages -> "Yes, digests you approve (Recommended)"
+
+Lands in: an Interface other than root may install a release only where the owner approved its exact digest; the engine checks the approval before it fetches anything, and fetches over https only; amends ruling 78 point 10 for approved digests alone
+
+Status: accepted, not done (the model-driven Interface's orders)
+
+## DEC-163, 2026-11-23, the models' Interface acknowledges a lapsed login's notice for its opened Pools
+
+Owner's words: whether the models' Interface may acknowledge a lapsed login's notice -> "Yes, for its opened Pools (Recommended)"
+
+Lands in: an Interface other than root may answer a login Resource's notice (PND-009) for a login whose Pool root opened to it; the sign-in itself stays raised for the owner
+
+Status: accepted, not done (the model-driven Interface's orders)
+
+## DEC-164, 2026-11-23, the models' Interface reads only records about what it may inspect
+
+Owner's words: whether the models' Interface may read records -> "Only what it may inspect (Recommended)"
+
+Lands in: an Interface other than root may read records about objects it may inspect, leaving out every other Interface's requests, the owner's included; each read recorded; amends DEC-156
+
+Status: accepted, not done (the model-driven Interface's orders)
+
+## DEC-165, 2026-11-23, the models' Interface replaces only templates it registered
+
+Owner's words: which templates the models' Interface may replace -> "Only its own (Recommended)"
+
+Lands in: an Interface other than root may replace only a template it registered itself; the engine keeps who registered each template
+
+Status: accepted, not done (the model-driven Interface's orders)
+
+## DEC-166, 2026-11-23, the usage guard's orders come first, on both workers
+
+Owner's words: how the idle team seats are brought into use -> "Guard chain first, both workers (Recommended)"
+
+Lands in: both workers take only the usage guard's orders, in dependency order, until it is built; other ready orders wait; the team seats stay idle until then (DEC-102)
+
+Status: accepted, not done (the guard's orders)

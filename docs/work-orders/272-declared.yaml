@@ -1,0 +1,4 @@
+# Added case for work order 272.
+- name: change-omitted-input
+  kind: added
+  cases: [change-omitted-input]

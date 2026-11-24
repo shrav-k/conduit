@@ -1187,13 +1187,17 @@ fn evaluate_path(
         .get("inputSchema")
         .cloned()
         .unwrap_or(json!({"type":"object"}));
-    let args = env.fill(
-        &scope,
-        &schema,
-        &request.arguments,
-        contract["spec"].get("changes").is_none(),
-        &context.core_package,
-    )?;
+    let args = if contract["spec"].get("changes").is_some() {
+        env.fill_control_inputs(&scope, &schema, &request.arguments, &context.core_package)?
+    } else {
+        env.fill(
+            &scope,
+            &schema,
+            &request.arguments,
+            true,
+            &context.core_package,
+        )?
+    };
     let validator = schemas::standalone_validator(&publication["tool"]["inputSchema"], &args)?;
     if !validator.is_valid(&args) {
         // SCT-001 and SUB-005 distinguish a sectioned document on the framed-only wire.

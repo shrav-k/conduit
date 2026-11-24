@@ -473,6 +473,7 @@ fn end(
         requests::record(t, a, c, "invocation-ended", data.clone())?;
     }
     requests::record(t, a, c, "request-ended", data)?;
+    requests::compact_ended_invocation(&mut t.state.invocations[i], c);
     let i = find(t, &run)?;
     if t.state.invocations[i]["state"] != "in-progress" {
         return Ok(());
@@ -730,6 +731,7 @@ pub(crate) fn restart_ended(
             decide(t, a, c, waiter)?;
         }
     }
+    requests::compact_ended_invocation(&mut t.state.invocations[i], c);
     Ok(())
 }
 

@@ -187,6 +187,70 @@ class CargoCacheTests(unittest.TestCase):
             self.assertIn('source tree assertion', failing.stdout)
 
 
+class FreshnessCargoTests(unittest.TestCase):
+    def check_rebuild(self, cached):
+        if not shutil.which('cargo') or not shutil.which('rustc'):
+            self.skipTest('Cargo and rustc are required for the freshness regression')
+        fixture = GateTests()
+        fixture.setUp()
+        self.addCleanup(fixture.doCleanups)
+        # Keep the caller's toolchain and environment for both real builds.
+        fixture.environment.stop()
+        probe = 'experiments/gate-probe'
+        fixture.write(probe + '/Cargo.toml',
+                      '[workspace]\n[package]\nname = "gate-probe"\nversion = "0.0.0"\n')
+        fixture.write(probe + '/Cargo.lock',
+                      'version = 3\n[[package]]\nname = "gate-probe"\nversion = "0.0.0"\n')
+        source = fixture.write(probe + '/src/lib.rs', '#[test] fn branch() {}\n')
+        fixture.commit()
+        fixture.git('branch', '-f', 'base', 'HEAD')
+        copy = fixture.parent / 'copy'
+        shutil.copytree(fixture.root / probe, copy)
+        cache = fixture.parent / 'cache'
+        target = cache / 'experiments-gate-probe' if cached else cache
+        with mock.patch.dict(os.environ, CARGO_TARGET_DIR=str(target)):
+            environment, _, _ = gate.scrub_environment()
+            environment.update(CARGO_NET_OFFLINE='true', CARGO_TERM_COLOR='never',
+                               RUSTUP_AUTO_INSTALL='0')
+            passing = subprocess.run(['cargo', 'test', '--release', '--offline'],
+                                     cwd=copy, env=environment, text=True, timeout=600,
+                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            self.assertEqual(passing.returncode, 0, passing.stdout)
+            source.write_text('#[test] fn branch() { panic!("freshness branch assertion"); }\n')
+            for path in (fixture.root / probe).rglob('*'):
+                if path.is_file():
+                    os.utime(path, (1_700_000_000, 1_700_000_000))
+
+            def run(args, *, cwd, env, timeout, log, redact, cancel=None, on_launch=None):
+                if args[1] == 'test' or args == ['rustc', '-vV']:
+                    if on_launch is not None:
+                        on_launch()
+                    result = subprocess.run(args, cwd=cwd, env=env, text=True, timeout=600,
+                                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                    output = redact(result.stdout)
+                    Path(log).write_text(output)
+                    return gate.CommandResult(result.returncode, output)
+                return fixture.fake(args, cwd=cwd, env=env, timeout=timeout, log=log,
+                                    redact=redact, cancel=cancel, on_launch=on_launch)
+
+            out, err = io.StringIO(), io.StringIO()
+            options = ['--base', 'base'] + (['--target-cache', str(cache)] if cached else [])
+            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+                gate.main(fixture.root, options, run=run)
+        row = fixture.row('rust ' + probe + ' test')
+        self.assertEqual(row['result'], 'FAIL')
+        self.assertIn('freshness branch assertion', (fixture.root / row['log']).read_text())
+        if not cached:
+            self.assertFalse((fixture.root / probe / 'target').exists(),
+                             'the gate must build in the shared target directory')
+
+    def test_freshness_rebuilds_over_a_newer_build_in_a_shared_target_directory(self):
+        self.check_rebuild(False)
+
+    def test_freshness_rebuilds_over_a_newer_build_in_the_target_cache(self):
+        self.check_rebuild(True)
+
+
 class EnginePathTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -1367,7 +1431,7 @@ class GateTests(unittest.TestCase):
         self.assertEqual(set(record), {'format', 'tool', 'started', 'finished', 'result', 'base',
                          'merge_base', 'head', 'branch', 'contains_base', 'behind', 'tree', 'changed_paths',
                          'platform', 'python', 'python_packages', 'environment', 'settings', 'gates',
-                         'stopped_at', 'load_average'})
+                         'stopped_at', 'load_average', 'freshness'})
         self.assertEqual(record['format'], 1)
         self.assertEqual(record['tool'], 'tools/gate.py')
         self.assertEqual(record['result'], 'PASS')
@@ -1444,6 +1508,155 @@ class GateTests(unittest.TestCase):
                    + ' '.join(not_built) + ' "\n')
         self.commit()
         self.git('branch', '-f', 'base', 'HEAD')
+
+    def test_freshness_sets_each_listed_file_once_before_the_first_build(self):
+        for mode in ('build', 'queue', 'cache', 'docs', 'plan'):
+            with self.subTest(mode=mode):
+                fixture = GateTests()
+                fixture.setUp()
+                self.addCleanup(fixture.doCleanups)
+                fixture.write('outside.txt', 'tracked outside the crate\n')
+                missing = fixture.write('missing.txt', 'deleted after commit\n')
+                fixture.crates('packages/probe')
+                missing.unlink()
+                fixture.write('untracked.txt', 'untracked\n')
+                fixture.write('docs/note.md' if mode == 'docs' else 'packages/probe/src/lib.rs',
+                              'changed\n')
+                ignored = fixture.write('target/ignored', 'ignored\n')
+                outside = fixture.parent / 'outside'
+                outside.write_text('outside the tree\n')
+                link = fixture.root / 'link'
+                link.symlink_to(outside)
+                listed = [fixture.root / name for name in fixture.git(
+                    'ls-files', '--cached', '--others', '--exclude-standard', '-z').split('\0')
+                          if name]
+                regular = {path for path in listed if path.is_file() and not path.is_symlink()}
+                for path in [*regular, ignored, outside, link]:
+                    os.utime(path, ns=(1_700_000_000_000_000_000,) * 2, follow_symlinks=False)
+                untouched = {path: path.lstat() for path in (ignored, outside, link)}
+                before = {path: path.stat().st_mtime_ns for path in regular}
+                observed = []
+
+                def inspect(call):
+                    if call['args'][1] in ('clippy', 'test'):
+                        observed.append({path: path.stat().st_mtime_ns for path in regular})
+                        self.assertEqual(len(set(observed[-1].values())), 1)
+                        record = fixture.record()
+                        instant = gate.datetime.fromisoformat(record['freshness']['time'])
+                        self.assertGreaterEqual(instant, gate.datetime.fromisoformat(record['started']))
+                        self.assertAlmostEqual(next(iter(observed[-1].values())) / 1e9,
+                                               instant.timestamp(), places=5)
+                        if mode == 'cache':
+                            lock = json.loads((fixture.parent / 'cache/gate.lock').read_text())
+                            self.assertGreater(instant, gate.datetime.fromisoformat(lock['started']))
+
+                fixture.fake.inspect = inspect
+                options = {'queue': ['--merge-queue'], 'cache': ['--target-cache',
+                           str(fixture.parent / 'cache')], 'plan': ['--plan']}.get(mode, [])
+                with mock.patch.object(gate.os, 'utime', wraps=os.utime) as setting:
+                    code, output, _ = fixture.invoke(*options)
+                self.assertEqual(code, 0)
+                after = {path: path.stat().st_mtime_ns for path in regular}
+                if mode in ('docs', 'plan'):
+                    self.assertEqual(after, before)
+                    self.assertFalse(observed)
+                    self.assertEqual(setting.call_count, 0)
+                    self.assertNotIn('Freshness: ', output)
+                    if mode == 'docs':
+                        self.assertIsNone(fixture.record()['freshness'])
+                else:
+                    self.assertTrue(observed)
+                    self.assertTrue(all(snapshot == after for snapshot in observed))
+                    freshness = fixture.record()['freshness']
+                    self.assertEqual(freshness['mechanism'],
+                                     'file times set to one instant before the first build')
+                    self.assertEqual(freshness['files'], len(regular))
+                    self.assertEqual(setting.call_count, len(regular))
+                    self.assertEqual(sum(line.startswith('Freshness: ')
+                                         for line in output.splitlines()), 1)
+                for path, original in untouched.items():
+                    self.assertEqual(path.lstat().st_mtime_ns, original.st_mtime_ns)
+                    self.assertEqual(path.lstat().st_atime_ns, original.st_atime_ns)
+
+    def test_freshness_fails_closed_on_a_file_it_cannot_set(self):
+        self.crates('packages/probe')
+        denied = self.write('packages/probe/src/lib.rs', 'changed\n')
+        original, original_git = os.utime, gate.git
+
+        for failure in ('file', 'list'):
+            for queue in (False, True):
+                with self.subTest(failure=failure, queue=queue):
+                    self.fake.calls.clear()
+
+                    def setting(path, *args, **kwargs):
+                        if failure == 'file' and Path(path).name == denied.name:
+                            raise PermissionError(errno.EACCES, 'Permission denied')
+                        return original(path, *args, **kwargs)
+
+                    def listing(root, env, *args):
+                        if failure == 'list' and args == (
+                                'ls-files', '--cached', '--others', '--exclude-standard', '-z'):
+                            return SimpleNamespace(returncode=17, stdout=b'')
+                        return original_git(root, env, *args)
+
+                    with mock.patch.object(gate.os, 'utime', side_effect=setting), \
+                            mock.patch.object(gate, 'git', side_effect=listing):
+                        code, output, _ = self.invoke(*(['--merge-queue'] if queue else []))
+                    self.assertEqual(code, 1)
+                    why = ('cannot set file times: packages/probe/src/lib.rs: Permission denied'
+                           if failure == 'file' else
+                           "cannot list the tree's files: git ls-files exit 17")
+                    remedy = ("make the file's times settable (or remove it)"
+                              if failure == 'file' else "make Git able to list the tree's files")
+                    explanation = (why + '; no clippy or test command ran in this run: '
+                                   + remedy + ' and run the gate again')
+                    self.assertEqual([line for line in output.splitlines()
+                                      if line.startswith('Freshness: ')],
+                                     ['Freshness: ' + explanation])
+                    builds = [row for row in self.record()['gates']
+                              if row['name'].endswith((' clippy', ' test'))]
+                    self.assertTrue(builds)
+                    for index, row in enumerate(builds):
+                        if queue and index:
+                            self.assertEqual(row['result'], 'NOT RUN')
+                            self.assertIn(explanation, row['why'])
+                        else:
+                            self.assertEqual((row['result'], row['why']), ('FAIL', explanation))
+                    self.assertFalse(any(call['args'][1] in ('clippy', 'test')
+                                         for call in self.fake.calls))
+                    self.assertTrue(any(call['args'][1] == 'fmt' for call in self.fake.calls))
+                    self.assertEqual(self.record()['freshness']['error'], why)
+                    self.assertTrue(output.splitlines()[-1].startswith('Gate: FAIL'))
+
+    def test_freshness_error_count_and_root_path(self):
+        first = self.write('a.txt', 'first\n')
+        second = self.write('b.txt', 'second\n')
+        original_open, original_utime = os.open, os.utime
+        for failure in ('list', 'file', 'root'):
+            with self.subTest(failure=failure):
+                listing = SimpleNamespace(returncode=17 if failure == 'list' else 0,
+                                          stdout=b'a.txt\0b.txt\0')
+
+                def opening(path, *args, **kwargs):
+                    if failure == 'root' and path == self.root:
+                        raise PermissionError(errno.EACCES, 'Permission denied')
+                    return original_open(path, *args, **kwargs)
+
+                def setting(path, *args, **kwargs):
+                    if failure == 'file' and path == second.name:
+                        raise PermissionError(errno.EACCES, 'Permission denied')
+                    return original_utime(path, *args, **kwargs)
+
+                os.utime(first, ns=(1_700_000_000_000_000_000,) * 2)
+                with mock.patch.object(gate, 'git', return_value=listing), \
+                        mock.patch.object(gate.os, 'open', side_effect=opening), \
+                        mock.patch.object(gate.os, 'utime', side_effect=setting):
+                    result = gate.prepare_freshness(self.root, {})
+                if failure == 'root':
+                    self.assertEqual(result['error'], 'cannot set file times: .: Permission denied')
+                if failure == 'file':
+                    self.assertGreater(first.stat().st_mtime_ns, 1_700_000_000_000_000_000)
+                self.assertIsNone(result['files'])
 
     def test_rust_directories_are_found_as_ci_finds_them(self):
         self.crates('packages/p', 'packages/w', 'packages/w/m', 'packages/p/target',

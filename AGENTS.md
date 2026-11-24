@@ -188,7 +188,18 @@ What each check needs:
   committer is neither `Conduit work order <work-orders@conduit.invalid>` nor a contributor that
   `CONTRIBUTORS` lists at the merge base.
   `--target-cache DIR` uses one target directory per Rust directory, rebuilds the tree's own
-  crates, and holds `DIR/gate.lock` for the run. `--merge-queue` runs the cheap rows first,
+  crates, and holds `DIR/gate.lock` for the run. Before its first build, with or without that
+  option, it sets the time of every file Git lists in the tree, tracked or untracked and not
+  ignored, to one instant, so that cargo rebuilds each crate built from the tree over any build
+  a target directory held before that instant, whatever times the files carried; the record's
+  `freshness` names it (order 402). If listing or setting file times fails, no clippy or test
+  command runs: those rows FAIL, or are not run after the merge queue's first failure.
+  Without `--target-cache` no gate lock holds, so a build made by another tree's gate, an editor
+  or a manual command in a shared target directory after that instant can still be reused.
+  Hand builds in DIR's folders bypass the gate's lock and preparation; a clock set back can
+  also defeat time comparisons. Cite a `--target-cache` record: its lock and fingerprint
+  removal narrow these gaps, but cannot guard against hand builds that bypass the gate.
+  `--merge-queue` runs the cheap rows first,
   stops at the first required failure and runs test rows side by side; every record holds the
   load average (DEC-062). The tool tests run with `--all` or when a change
   touches `tools/`, `.github/workflows/`, or a Rust source, `Cargo.toml` or `Cargo.lock` under

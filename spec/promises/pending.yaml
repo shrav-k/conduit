@@ -298,7 +298,10 @@
     answers after that end completes nothing either (PND-010);
     reconciliation never clears it. Hooks run only as parts of sign-in.v1 or setup, for that
     invocation's caller and filters, through no Conduit, never on an implementation
-    notification. Setup checks the account after its run and connections and before its setup
+    notification. `admission-hook.v1` is the one exception (CTR-013, CTR-015): the
+    engine invokes it as its own invocation of the login Resource, with no filter, never
+    as a part and never on an implementation notification (IFC-054). Setup checks the
+    account after its run and connections and before its setup
     hook, in TPL-012's order; no account or a different account raises the action under PND-005,
     and a different account is undone by a sign-out-hook.v1 part before setup proceeds. A setup
     check that failed or ended unknown raises the action under PND-005 as no account does,

@@ -1,0 +1,27 @@
+# Example. Valid: the admission shape of a login-bound Agent Type (CTR-015).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: shared-agent.v1
+spec:
+  family: Agent
+  schema:
+    type: object
+    properties:
+      login:
+        $ref: github.com/shrav-k/conduit/core#resource-reference.v1
+    required:
+    - login
+  loginResource:
+    place: /login
+  offers:
+  - example.org/admission#turns.v1
+  implementation:
+    example.org/admission#turn.v1: example.org/admission#plain-agent
+    example.org/admission#status.v1: example.org/admission#plain-agent
+  admission:
+    loginTypes:
+    - example.org/admission#login-holder.v1

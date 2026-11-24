@@ -41,11 +41,11 @@ Each number counts promises. The last row counts those whose Engine source is no
 
 | Promises | language | convention | interface | all |
 | --- | ---: | ---: | ---: | ---: |
-| case passes | 154 | 163 | 30 | 347 |
-| expected failure | 0 | 3 | 0 | 3 |
+| case passes | 155 | 163 | 30 | 348 |
+| expected failure | 0 | 3 | 1 | 4 |
 | reason, no case | 50 | 17 | 1 | 68 |
 | no case, no reason | 22 | 63 | 19 | 104 |
-| all | 226 | 246 | 50 | 522 |
+| all | 227 | 246 | 51 | 524 |
 | named in engine source | 162 | 175 | 33 | 370 |
 
 ## The promises
@@ -122,6 +122,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | CTR-012 | language | must | 0 | 0 | reason | core | reason, no case |
 | CTR-013 | language | must | 7 | 0 | outside | core, shell | case passes |
 | CTR-014 | language | must | 6 | 0 | outside | core, shell | case passes |
+| CTR-015 | language | must | 2 | 1 | outside | none | case passes |
 | ENR-001 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | ENR-002 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | ENR-003 | interface | must not | 0 | 0 | outside | none | no case, no reason |
@@ -194,6 +195,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | IFC-051 | interface | must | 2 | 1 | outside | core, shell | case passes |
 | IFC-052 | interface | must | 2 | 0 | outside | core | case passes |
 | IFC-053 | interface | must | 2 | 0 | outside | core | case passes |
+| IFC-054 | interface | must | 1 | 1 | outside | none | expected failure |
 | IMP-001 | convention | must | 0 | 0 | reason | none | reason, no case |
 | IMP-002 | convention | must not | 5 | 0 | cases | core | case passes |
 | IMP-003 | language | must | 0 | 0 | reason | none | reason, no case |

@@ -119,7 +119,9 @@
     `fleet.v1`, which offers `fleet-management.v1` (FLEET-001); a Type of that family outside
     the core package is rejected.
     A Type may also state `signIn`, its account pointer, logins and three required hooks
-    under CTR-013, and `toolsDirectory`, the own tools declaration of CTR-014. Records follow
+    under CTR-013, `toolsDirectory`, the own tools declaration of CTR-014, and
+    `admission`, a login's levers and control or an Agent's login Types, under CTR-015.
+    Records follow
     REC-002.
 
 - id: CTR-005
@@ -300,26 +302,32 @@
     Resource.
   observable: >-
     A string at the account place is the expected account. Null disables both sign-in
-    actions and the account check, as for API-key configuration. A Type states signIn only
-    where account-hook.v1 reports an account attested by the service: returned at login,
-    such as in an ID token or profile, or reported when asked, such as by userinfo or the
-    service's own call. An account supplied by configuration or a person does not count. A
-    Type unable to learn it states no signIn and gets no sign-in or relayed URL (IFC-016).
-    The engine reads only what account-hook reports, never the instance's state directory.
-    Hooks are selected under requires and TPL-004, invoked only as parts of sign-in.v1 or
-    setup for their caller and filters (PND-011), and exposed through no consumer tool.
-    The engine starts no login and holds no token it yields (PRV-029 and the limits in
-    spec/README.md). A Resource needing browser login is implemented by a package that
-    completes it and keeps its token in its own state directory (PRV-029). An Agent whose
-    Type states loginResource keeps its own state directory and context, and is an Agent
-    of its login Resource: the Pool-owned Resource its login place refers to, whose state
-    directory holds one account's login on one machine (PRV-029). What an Agent's client
-    writes in that Resource's directory is shared with every Agent of that login, as
-    DEC-042 accepted. The account check, sign-in.v1 and the sign-in action are that
-    Resource's, never the Agent's (PND-005, PND-010). A login Resource serves whatever
-    subscription plan its vendor's own sign-in serves; no Type states a plan. The engine
-    carries no return for carried: false (PND-013). The engine compares the client IDs of
-    a Type's logins with every Type it holds at another address: every installed package's
+    actions and the account check, as for API-key configuration. A Type states signIn
+    only where account-hook.v1 reports an account attested by the service: returned at
+    login, such as in an ID token or profile, or reported when asked, such as by
+    userinfo or the service's own call. An account supplied by configuration or a person
+    does not count. A Type unable to learn it states no signIn and gets no sign-in or
+    relayed URL (IFC-016). The engine reads only what account-hook reports, never the
+    instance's state directory. Hooks are selected under requires and TPL-004, invoked
+    only as parts of sign-in.v1 or setup for their caller and filters (PND-011), and
+    exposed through no consumer tool. `admission-hook.v1`, which CTR-015 requires of a
+    Type stating `signIn` and `admission`, is the one sign-in Type's hook invoked
+    otherwise: the engine invokes it as its own invocation of the login Resource,
+    through no Conduit and with no filter, never as a part (IFC-054), and it too is
+    exposed through no consumer tool. The engine starts no login and holds no token it
+    yields (PRV-029 and the limits in spec/README.md). A Resource needing browser login
+    is implemented by a package that completes it and keeps its token in its own state
+    directory (PRV-029). An Agent whose Type states loginResource keeps its own state
+    directory and context, and is an Agent of its login Resource: the Pool-owned
+    Resource its login place refers to, whose state directory holds one account's login
+    on one machine (PRV-029). What an Agent's client writes in that Resource's directory
+    is
+    shared with every Agent of that login, as DEC-042 accepted.
+    The account check, sign-in.v1 and the sign-in action are that Resource's, never the
+    Agent's (PND-005, PND-010). A login Resource serves whatever
+    subscription plan its vendor's own sign-in serves; no Type states a plan.
+    The engine carries no return for carried: false (PND-013). The engine compares the client IDs
+    of a Type's logins with every Type it holds at another address: every installed package's
     Types and every submission's Types held by a template or instance (SUB-008, PKG-029).
     Types at one address share freely, including sibling Types, package versions and
     submissions at one address. Installing a package whose Type shares such a client ID
@@ -371,3 +379,54 @@
     description of every tool whose target is the Agent. This wording is the package's duty;
     the engine does not check it. A Type that states no `toolsDirectory` declares nothing
     about such reach, and inspection says so under LIF-013.
+
+- id: CTR-015
+  layer: language
+  level: must
+  when: >-
+    A Type contract states `admission`.
+  then: >-
+    On a Resource Type stating `signIn`, it holds exactly `levers`, a pointer into
+    configuration, the levers place, and `control`, a selection of a control the Type
+    lists under `controls`, and the Type requires the core operation
+    `admission-hook.v1`. The levers place and every member on its path are required by
+    the Type's `schema`, no `default` stands at or under the place, and its schema is an
+    object that requires `billing`, `paidUsage` and `whenUnknown`, each confined by
+    `enum` to some of its words: `included` and `paid-from-first-token`; `allow`,
+    `refuse` and `refuse-if-possible`; `refuse`, `one-trial` and `admit`. The control's
+    `changes` is exactly `{levers: <the levers pointer>}`, and no other control the Type
+    lists has a pointer in its `changes` equal to it, inside it or over it, compared as
+    CTR-006 compares pointers. On an Agent Type stating `loginResource`, it holds
+    exactly `loginTypes`, a non-empty list of selections of Types that each state
+    `signIn` and `admission`. No other Type states it. A contract breaking these rules
+    is rejected at install or submission, with a diagnostic naming CTR-015, the Type and
+    the cause. Registering or replacing an Agent whose login place refers to a Resource
+    whose Type states `admission` reports invalid where the Agent's Type does not list
+    that Type under `admission.loginTypes`, and so does replacing such a Resource with
+    one whose Type a current Agent of it does not list, each with a diagnostic naming
+    CTR-015, the Agent's Type and the login's Type. A levers value holding `whenUnknown`
+    `admit` beside `paidUsage` `refuse` or `refuse-if-possible` reports invalid at
+    registration and at replacement, and a control that would store one is not
+    dispatched and reports invalid, each with a diagnostic naming CTR-015 and both
+    pointers.
+  observable: >-
+    In this version, a login's levers are declared and its reports kept, but no call is
+    yet held or refused on them. The following lever meanings describe the login's
+    report; acting on that report before model work is not yet specified (IFC-054).
+    `billing` declares whether model work is included or paid from the first token. A
+    login declaring `paid-from-first-token` whose `paidUsage` is `refuse` or
+    `refuse-if-possible` admits nothing. `paidUsage` `allow` allows paid usage, `refuse`
+    refuses usage being billed beyond included usage, and `refuse-if-possible` refuses
+    whenever such billing is possible. `whenUnknown` chooses what happens where the
+    login cannot tell: `refuse` refuses, `one-trial` admits one call by a single-use
+    report, and `admit` admits. A package may add its own levers beside these three. No
+    lever is an amount of money or credits, a balance or a currency; percentages and
+    minutes are not such amounts. A Type or README defining such a lever does not
+    conform. The package's schema states the rule against `whenUnknown` `admit` beside
+    `paidUsage` `refuse` or `refuse-if-possible` as `if` and `then`, so REV-015 rejects
+    that value first. Listing a Type under `loginTypes` says that the Agent Type's
+    results of calls that start model work carry the limits members (IFC-052) that the
+    listed Type's package documents as its hook's input. The engine checks the listing,
+    never the members. The levers are the login's configuration, which reaches only the
+    login's own calls (IFC-006) and its `admission-hook.v1` as the input `levers`.
+    Nothing of `admission` reaches an Agent's implementation.

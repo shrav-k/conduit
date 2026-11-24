@@ -17,9 +17,11 @@
 #   condition.v1   LIF-011, OBS-002, OBS-003, PRV-009
 #   record.v1      REC-002, LIF-013, SEC-015, SEC-018, PRV-024 (no record holds what the
 #                  `secrets` or the `identity` of `run.v1` hold)
+#                  IFC-054 (the end record of a login's admission hook holds its report)
 #   usage.v1       IFC-051 (what one call's model work used, by client and model)
 #   limit-report.v1 IFC-052 (the usage limits one call's client reported)
 #   limit-status.v1 IFC-053 (the newest usage limits an instance shows)
+#   admission-report.v1 IFC-054 (a login's answer to whether model work may start on it now)
 # Standing: draft specification; see spec/README.md for status and coverage.
 #
 # This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
@@ -166,6 +168,8 @@ metadata:
     an Agent names in `fleet` the Agent's owning Fleet and, where the Agent's Type states
     `loginResource`, in `loginResource` the login Resource its login place referred to when
     the call was made (REC-002).
+    The end record of a login's `admission-hook.v1` call that succeeded holds its report
+    in `admission` (IFC-054).
 spec:
   type: object
   properties:
@@ -204,6 +208,7 @@ spec:
         usageDropped: {$ref: github.com/shrav-k/conduit/core#diagnostic.v1}
         limits: {$ref: github.com/shrav-k/conduit/core#limit-report.v1}
         limitsDropped: {$ref: github.com/shrav-k/conduit/core#diagnostic.v1}
+        admission: {$ref: github.com/shrav-k/conduit/core#admission-report.v1}
   required: [specversion, id, source, type, time, data]
 ---
 apiVersion: github.com/shrav-k/conduit/v0
@@ -443,6 +448,138 @@ spec:
       anyOf:
       - required: [newest]
       - required: [signals]
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: admission-report.v1
+  description: >-
+    A login's answer to whether model work may start on it now, which its
+    `admission-hook.v1` gives and the engine keeps (IFC-054). `admit` gives the answer
+    and `reason` why. The reasons mean: `within-levers`, admitted within all applicable
+    levers; `warning`, admitted with a window near a package lever's percentage
+    threshold; `cannot-tell`, the observation cannot decide, so `whenUnknown` decides;
+    `included-spent`, included usage is not allowed and `paidUsage` refuses;
+    `paid-in-use`, paid usage is in use and `paidUsage` is `refuse`; `paid-possible`,
+    paid usage is possible and `paidUsage` is `refuse-if-possible`;
+    `paid-from-first-token`, `billing` declares that kind of login and `paidUsage`
+    refuses; `threshold`, refused at a package lever's window-percentage threshold.
+    Here `paidUsage` refuses means `refuse` or `refuse-if-possible`. `lever` names
+    `paidUsage` for `included-spent`, `paid-in-use` and `paid-possible`, `billing` for
+    `paid-from-first-token`, and `whenUnknown` for `cannot-tell`. For `warning` and
+    `threshold`, `window` and `lever` name the window and the package's own lever.
+    The `cannotTell` words mean: `never-observed`, `limits` is `unknown`;
+    `not-reported`, the client gave no signal needed to decide; `stale`, the needed
+    observation is no longer current; `read-failed`, the client's read failed;
+    `read-timed-out`, the client's read timed out.
+    `lever` names the lever that decided, by its pointer at or under
+    the Type's levers place and its value, and is null for `within-levers`; `window` the
+    window that decided, by its package's fixed ID, used percentage and reset;
+    `paidUsage` the paid usage read, each value null where no field gave it;
+    `cannotTell` why it cannot tell, for `cannot-tell` alone. `lifts` says how a refusal
+    ends: `at-time`, when its validity ends; `newer-report`, once a newer observation
+    says otherwise; `lever-change`, only once the levers change. `observedAt` and
+    `source` give the observation decided on and the client's call or event read.
+    `validForSeconds` says how long the engine trusts it from the time it keeps it, and
+    `singleUse` that it admits one call alone. It holds no amount.
+spec:
+  $defs:
+    when: {type: [string, 'null'], format: date-time}
+  type: object
+  properties:
+    admit: {type: boolean}
+    reason: {enum: [within-levers, warning, cannot-tell, included-spent, paid-in-use,
+                    paid-possible, paid-from-first-token, threshold]}
+    lever:
+      type: [object, 'null']
+      properties:
+        pointer: {$ref: github.com/shrav-k/conduit/core#pointer.v1}
+        value: {type: [string, number, boolean]}
+      required: [pointer, value]
+      additionalProperties: false
+    window:
+      type: [object, 'null']
+      properties:
+        id: {type: string, pattern: '^[a-z]{1,64}/[a-z0-9][a-z0-9-]{0,63}(/[a-z0-9][a-z0-9-]{0,63})?$'}
+        usedPercent: {type: [number, 'null'], minimum: 0}
+        resetsAt: {$ref: '#/$defs/when'}
+      required: [id, usedPercent, resetsAt]
+      additionalProperties: false
+    paidUsage:
+      type: object
+      properties:
+        possible: {type: [boolean, 'null']}
+        inUse: {type: [boolean, 'null']}
+        resetsAt: {type: [string, 'null'], format: date-time}
+      required: [possible, inUse, resetsAt]
+      additionalProperties: false
+    cannotTell: {enum: [never-observed, not-reported, stale, read-failed, read-timed-out, null]}
+    lifts: {enum: [at-time, newer-report, lever-change, null]}
+    observedAt: {$ref: '#/$defs/when'}
+    source:
+      type: object
+      properties:
+        client:
+          type: [object, 'null']
+          properties:
+            name: {type: string, minLength: 1, maxLength: 256}
+            version: {type: string, minLength: 1, maxLength: 256}
+          required: [name, version]
+          additionalProperties: false
+        method: {type: string, minLength: 1, maxLength: 128}
+      required: [client, method]
+      additionalProperties: false
+    validForSeconds: {type: integer, minimum: 0, maximum: 604800}
+    singleUse: {type: boolean}
+  required: [admit, reason, lever, window, paidUsage, cannotTell, lifts, observedAt, source,
+             validForSeconds, singleUse]
+  additionalProperties: false
+  allOf:
+  - if:
+      properties:
+        admit: {const: true}
+    then:
+      properties:
+        reason: {enum: [within-levers, warning, cannot-tell]}
+        lifts: {type: 'null'}
+    else:
+      properties:
+        reason: {not: {enum: [within-levers, warning]}}
+        lifts: {type: string}
+  - if:
+      properties:
+        reason: {const: within-levers}
+    then:
+      properties:
+        lever: {type: 'null'}
+    else:
+      properties:
+        lever: {type: object}
+  - if:
+      properties:
+        reason: {enum: [threshold, warning]}
+    then:
+      properties:
+        window: {type: object}
+  - if:
+      properties:
+        reason: {const: cannot-tell}
+    then:
+      properties:
+        cannotTell: {type: string}
+    else:
+      properties:
+        cannotTell: {type: 'null'}
+  - if:
+      properties:
+        singleUse: {const: true}
+    then:
+      properties:
+        admit: {const: true}
+        validForSeconds: {const: 0}
+    else:
+      properties:
+        validForSeconds: {minimum: 1}
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

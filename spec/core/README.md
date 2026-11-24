@@ -18,12 +18,12 @@ everything the promises say it exports, and everything first start needs.
 | File | Holds |
 | --- | --- |
 | [conduit.yaml](conduit.yaml) | The package's manifest: its address, its version, its exports and its one implementation, the engine itself |
-| [operations.yaml](operations.yaml) | The 40 Operation contracts: every management verb, the setup, retire and sign-in hooks, the operations that the engine invokes by provider calls, and the one operation of a secret Resource |
+| [operations.yaml](operations.yaml) | The 41 Operation contracts: every management verb, the setup, retire and sign-in hooks and the admission hook, the operations that the engine invokes by provider calls, and the one operation of a secret Resource |
 | [capabilities.yaml](capabilities.yaml) | The 8 Capability contracts: what `management`, `access`, Pools and Fleets offer, and the four provider capabilities: a runtime provider, the machine provider, a package-source provider and a secret Resource |
 | [types.yaml](types.yaml) | The 7 Type contracts: the basic Interface, Pool and Fleet types, and the types of a node, of a value, of `management` and of `access` |
 | [requirements.yaml](requirements.yaml) | The 2 Requirement contracts: the bound of a right to open, and the shared-host requirement |
 | [references.yaml](references.yaml) | The 13 reference schemas: the Schema contracts that make a value a reference (OBJ-021), a secret reference among them (SEC-001). Each also accepts the resolved form `{kind, id}`, which only the engine writes |
-| [results.yaml](results.yaml) | 14 Schema contracts: an object as a result names it, a diagnostic, a condition, a record, a call's usage, a call's limits, an instance's limits, an inventory, a tombstone, opening provenance and a trust domain |
+| [results.yaml](results.yaml) | 15 Schema contracts: an object as a result names it, a diagnostic, a condition, a record, a call's usage, a call's limits, an instance's limits, a login's admission report, an inventory, a tombstone, opening provenance and a trust domain |
 | [templates.yaml](templates.yaml) | The 20 templates: first-start objects and Conduits, file Pools, defaults, scoped administration, explicit cascades and a value Resource |
 
 The package also exports the 52 Schema contracts under [spec/schemas](../schemas/README.md),
@@ -151,6 +151,7 @@ Conduit is set up by `open.v1` and retired by `close.v1`.
 | `sign-in-hook.v1` | No capability: required by a signIn Type | The engine, as a part of sign-in or setup | CTR-013, PND-011 |
 | `account-hook.v1` | No capability: required by a signIn Type | The engine, as a part of sign-in or setup | CTR-013, PND-011 |
 | `sign-out-hook.v1` | No capability: required by a signIn Type | The engine, as a part of sign-in or setup | CTR-013, PND-011 |
+| `admission-hook.v1` | No capability: required by a Type stating `signIn` and `admission` | The engine alone, as its own invocation of a login Resource, through no Conduit | CTR-015, IFC-054 |
 | `run.v1` | `runtime-provider.v1` | The engine, by a provider call | PRV-007, PRV-011, PRV-012, PRV-022, PRV-025, PRV-028 |
 | `run.v2` | No capability: required by a runtime provider's type | The engine, by a provider call | PRV-001, PRV-007, PRV-019 |
 | `stop.v1` | `runtime-provider.v1` | The engine, by a provider call | PRV-008, PRV-021, PRV-027, LIF-036 |
@@ -622,6 +623,7 @@ its binding and labels are fixed when made (PLC-008, ENR-010).
 | `sign-in-hook.v1` | Operation | CTR-013: begin login, as a part only |
 | `account-hook.v1` | Operation | CTR-013, PND-011: report the client account, as a part only |
 | `sign-out-hook.v1` | Operation | CTR-013, PND-011: undo the client sign-in, as a part only |
+| `admission-hook.v1` | Operation | CTR-015, IFC-054: answer whether model work may start on a login |
 | `pending-action.v1` | Schema | PND-001 to PND-004: action, evidence, expiry and answer |
 | `evidence-item.v1` | Schema | PND-004, ENR-005: kind, value, where and proves; fingerprint has 6 to 8 characters |
 | `refusal.v1` | Schema | ACC-056: the two disclosure tiers |
@@ -631,6 +633,7 @@ its binding and labels are fixed when made (PLC-008, ENR-010).
 | `usage.v1` | Schema | IFC-051: what one call's model work used, by client and model |
 | `limit-report.v1` | Schema | IFC-052: the usage limits one call's client reported |
 | `limit-status.v1` | Schema | IFC-053: the newest usage limits an Agent or login Resource shows |
+| `admission-report.v1` | Schema | IFC-054: a login's answer to whether model work may start on it now |
 | `name.v1` | Schema of a document's part | OBJ-001, OBJ-022 |
 | `export-name.v1` | Schema of a document's part | NAM-004 |
 | `contract-name.v1` | Schema of a document's part | CTR-001 |
@@ -663,7 +666,7 @@ its binding and labels are fixed when made (PLC-008, ENR-010).
 | `pool-entry.v1` | Schema of a document's part | OBJ-014, POOL-009 |
 | `value-entries.v1` | Schema of a document's part | INS-003, OBJ-009 |
 | `contract.v1` | Schema of a document | CTR-001 |
-| `type-spec.v1` | Schema of a document's part | CTR-004; `signIn`, its logins and its three hooks, CTR-013; Agent `toolsDirectory`, CTR-014; Agent `loginResource` with exactly one required `place` pointer, never beside `signIn`, CTR-013 |
+| `type-spec.v1` | Schema of a document's part | CTR-004; `signIn`, its logins and its three hooks, CTR-013; Agent `toolsDirectory`, CTR-014; Agent `loginResource` with exactly one required `place` pointer, never beside `signIn`, CTR-013; `admission`, a login's levers and control or an Agent's login Types, CTR-015 |
 | `sign-in-login.v1` | Schema of one literal login a Type states | CTR-013 |
 | `capability-spec.v1` | Schema of a document's part | CTR-003 |
 | `operation-spec.v1` | Schema of a document's part | CTR-002, CTR-006, CTR-009, CTR-012 |

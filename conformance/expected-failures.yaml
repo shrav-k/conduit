@@ -21,6 +21,14 @@
       "reason": "Work order 302 (DEC-114): list.v1 omits instance owner, placement, revision and Running; the following engine order implementing DEC-114 fills them from inspection state and removes this entry."
     },
     {
+      "id": "registration-admission-checks",
+      "reason": "CTR-015, order 314: the first build makes none of CTR-015's checks; the guard's engine order for keeping makes it pass"
+    },
+    {
+      "id": "requests-admission-report-kept",
+      "reason": "IFC-054, order 314: the first build never calls admission-hook.v1 and keeps no admission report; the guard's engine orders for keeping and the ask make it pass"
+    },
+    {
       "id": "requests-attributed-a-hook",
       "reason": "PKG-020: the first build does not read `attributed`; DEC-067's engine order makes it pass and removes this entry"
     },

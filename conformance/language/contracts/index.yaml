@@ -1,6 +1,13 @@
 {
   "cases": [
     {
+      "id": "contracts-admission-shape",
+      "case": "language/contracts/admission-shape/case.yaml",
+      "promises": [
+        "CTR-015"
+      ]
+    },
+    {
       "id": "contracts-client-ids-shared",
       "case": "language/contracts/client-ids-shared/case.yaml",
       "promises": [

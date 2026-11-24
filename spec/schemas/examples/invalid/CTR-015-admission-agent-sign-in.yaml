@@ -1,0 +1,36 @@
+# Example. Invalid: admission with signIn on an Agent (CTR-015).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: other-agent.v1
+spec:
+  signIn:
+    account: /account
+    logins:
+    - name: browser
+      return: redirect
+      authorization: https://example.org/authorize
+      clientId: placeholder-signed-agent
+      redirect:
+        host: 127.0.0.1
+        ports:
+        - 8400
+        - 8401
+        path: /callback
+      carried: true
+    - name: device
+      return: device
+      authorization: https://example.org/device
+      clientId: placeholder-signed-agent
+  requires:
+  - github.com/shrav-k/conduit/core#account-hook.v1
+  - github.com/shrav-k/conduit/core#sign-in-hook.v1
+  - github.com/shrav-k/conduit/core#sign-out-hook.v1
+  - github.com/shrav-k/conduit/core#admission-hook.v1
+  admission:
+    levers: /admission
+    control: '#set-admission.v1'
+  family: Agent

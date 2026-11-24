@@ -1,0 +1,10 @@
+{
+  "snapshots": [],
+  "project": {
+    "directory": null,
+    "files": {
+      "conduit.json": "missing-agent-admission-manifest",
+      "documents.json": "missing-agent-admission-documents"
+    }
+  }
+}

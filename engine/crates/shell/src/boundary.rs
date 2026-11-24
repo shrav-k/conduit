@@ -210,4 +210,4 @@ pub fn install_package(shell: &crate::Shell, _repository: &Path, argument: &str)
 }
 
 #[path = "archive_metadata.rs"]
-mod archive_metadata;
+pub(crate) mod archive_metadata;

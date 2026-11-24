@@ -1,4 +1,4 @@
-//! Metadata discovery only, before install-archive admission.
+//! Virtual archive reading for shell metadata and dependency ordering before admission.
 //! The virtual unpack/link helpers below are copied from core/archives.rs because
 //! that API requires address/version and does not expose metadata discovery.
 //! Keep their semantics aligned; admission still runs in the core.
@@ -121,13 +121,13 @@ fn resolved_path(
         }
     }
 }
-fn resolve<'a>(
+pub(crate) fn resolve<'a>(
     files: &'a BTreeMap<String, Member>,
     path: &str,
 ) -> ArchiveResult<Option<&'a Member>> {
     Ok(files.get(&resolved_path(files, path, true)?))
 }
-fn unpack(bytes: &[u8]) -> ArchiveResult<BTreeMap<String, Member>> {
+pub(crate) fn unpack(bytes: &[u8]) -> ArchiveResult<BTreeMap<String, Member>> {
     let mut tar_bytes = vec![];
     MultiGzDecoder::new(bytes)
         .read_to_end(&mut tar_bytes)

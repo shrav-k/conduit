@@ -20,6 +20,24 @@ reading of work order 023's optional model input.
 Agent setup initializes the wrapper and starts no model work. Inputs and outputs are
 excluded from Conduit records by the Types.
 
+**Compatibility only.** Under
+[DEC-078](../../docs/decisions/log.md#dec-078-2026-11-22-only-login-resources-sign-in-trimmed-after-the-sitting),
+only a login Resource signs in, and an Agent's login place refers to one. `codex.v1` and
+`codex.v2` break that rule and are kept for compatibility only. `codex.v1` has no login place:
+its client uses the subscription login in the engine user's default home, and Conduit neither
+signs that login in nor checks it. `codex.v2` states `signIn` on the Agent, and each of its
+Agents signs in to its own home. For a new Agent, write `codex.v3` or `codex.v4`: its `login`
+refers to a [`codex-login.v1` Resource](#the-login-resource), which root signs in for all its
+Agents. [Moving to 0.2.3](#moving-to-023) says how to move a `.v2` Agent to `.v3`. A `.v1` Agent has
+no login of its own to log out: replace it with a `.v3` or later Agent whose `login` names a
+signed-in `codex-login.v1` Resource. The first
+release of this package after the second-account sitting
+([DEC-068](../../docs/decisions/log.md#dec-068-2026-11-22-the-second-account-sitting-runs-by-hand-tonight))
+removes `codex.v1`, `codex.v2` and their items `wrapper`, `wrapper-v2` and `wrapper-v2-path`.
+Until then, both Types work as this README describes. An Agent already registered with either
+keeps the release it resolved and goes on working after that release; it moves only when it is
+replaced, as above.
+
 Run these commands in this directory:
 
 ```sh
@@ -129,6 +147,8 @@ still not found; the [log](../../docs/implementation/first-build/log-increment-4
 trial and settlement.
 
 ## The .v2 Agent
+
+`codex.v2` is kept for compatibility only, as [the top of this README](#agent-codex) says.
 
 The package also exports codex.v2, implemented by the separate `wrapper-v2` item.
 A template may select `wrapper-v2-path` instead, as [its section](#the-wrapper-v2-path-item) says.

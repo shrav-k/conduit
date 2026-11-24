@@ -1340,3 +1340,11 @@ Owner's words: whether a consumer may reach a target with the engine out of the 
 Lands in: nothing promised in v0; `protocol` and `binding` leave room; when a scenario needs it, a per-call check by which the engine still decides and records each call is designed first, and Agents stay excluded until a sandbox exists
 
 Status: accepted, not done (nothing to build in v0)
+
+## DEC-158, 2026-11-23, an HTTP call carries Conduit's keys one header each
+
+Owner's words: how a Conduit-aware HTTP service receives the call's keys and reports its outcome -> "Research canonical approaches"; after the research -> "One header per key (Recommended)"
+
+Lands in: when the HTTP binding is written, each of Conduit's keys travels as one `Conduit-` header named by one rule from the keys' Schema, its value typed under RFC 9651 and an object as base64 of its JSON; the engine checks one total bound on those headers and refuses past it with a diagnostic; the outcome comes back as one header beside an honest status code, with a diagnostic in an RFC 9457 problem body; a keyed result without the outcome header is unknown
+
+Status: accepted, not done (with the HTTP binding's orders)

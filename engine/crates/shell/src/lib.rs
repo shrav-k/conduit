@@ -1098,6 +1098,54 @@ impl Shell {
         self.drive_committed(intents, notifications, from_record_fault, executor)
     }
 
+    fn complete_run_archive(&self, intent: &mut Value) -> Result<Option<Execution>> {
+        let writer = self.writer.lock().map_err(|_| "writer lock poisoned")?;
+        let state = writer.store.snapshot()?;
+        let Some(invocation) = state.invocations.iter().find(|invocation| {
+            invocation["id"] == intent["invocation"]
+                && invocation["state"] == "in-progress"
+                && invocation["cancelled"] != true
+                && invocation["provider_call"]["operation"] == intent["operation"]
+                && invocation["provider_call"]["made"] != true
+        }) else {
+            return Ok(Some(Execution::Deferred));
+        };
+        let digest = intent["inputs"]["archive"]["digest"]
+            .as_str()
+            .ok_or("run.v2 archive has no digest")?;
+        match writer.store.archive_descriptor(digest) {
+            Ok(archive) => {
+                intent["inputs"]["archive"] = archive;
+                Ok(None)
+            }
+            Err(error) => {
+                let package = state
+                    .installed_packages
+                    .iter()
+                    .find(|entry| entry.package.digest == digest)
+                    .ok_or("run.v2 package is not installed")?;
+                let item = invocation["setup"]["item"]["selection"]
+                    .as_str()
+                    .and_then(|selection| selection.rsplit_once('#'))
+                    .map(|(_, name)| name)
+                    .ok_or("run.v2 item missing")?;
+                let provider = state
+                    .objects
+                    .iter()
+                    .find(|object| object["id"] == intent["provider"])
+                    .and_then(|object| object["name"].as_str())
+                    .ok_or("run.v2 provider missing")?;
+                let message = format!(
+                    "{item} on provider {provider}: run.v2: package {} {}: {error}",
+                    package.package.address, package.package.version
+                );
+                Ok(Some(Execution::SetupReport(
+                    json!({"kind":"provider-run-refused","operation":intent["operation"],"message":message}),
+                )))
+            }
+        }
+    }
+
     fn drive_committed(
         &self,
         intents: Vec<Intent>,
@@ -1111,14 +1159,24 @@ impl Shell {
         }
         let mut queue = VecDeque::from(intents);
         while let Some(Intent {
-            descriptor: intent,
+            descriptor: mut intent,
             secrets,
             from_record_fault,
         }) = queue.pop_front()
         {
+            let preflight = if intent["kind"] == "provider-call"
+                && intent["operation"] == format!("{}#run.v2", self.context.core_package)
+            {
+                self.complete_run_archive(&mut intent)?
+            } else {
+                None
+            };
             let kind = intent["kind"].as_str().ok_or("intent has no kind")?;
-            let run = matches!(kind, "builtin-runner" | "provider-call")
-                && intent["operation"] == format!("{}#run.v1", self.context.core_package);
+            let run = preflight.is_none()
+                && matches!(kind, "builtin-runner" | "provider-call")
+                && intent["operation"]
+                    .as_str()
+                    .is_some_and(|op| self.context.is_run_operation(op));
             let identity = if run && kind == "provider-call" {
                 self.materialize_provider_identity(&intent["inputs"]["identity"])?
             } else if run {
@@ -1126,10 +1184,11 @@ impl Shell {
             } else {
                 None
             };
-            let execution = match kind {
-                "dispatch" => executor.dispatch(&intent)?,
-                "refresh-tools-and-call" => executor.refresh_tools_and_call(&intent)?,
-                "builtin-runner" => {
+            let execution = match (preflight, kind) {
+                (Some(execution), _) => execution,
+                (None, "dispatch") => executor.dispatch(&intent)?,
+                (None, "refresh-tools-and-call") => executor.refresh_tools_and_call(&intent)?,
+                (None, "builtin-runner") => {
                     if let Some(secrets) = secrets {
                         let mut run = intent.clone();
                         run["inputs"]["secrets"] = secrets;
@@ -1138,9 +1197,9 @@ impl Shell {
                         executor.builtin_runner(&intent, identity.as_ref())?
                     }
                 }
-                "provider-call" => executor.provider_call(&intent, identity.as_ref())?,
-                "connect" => executor.connect(&intent)?,
-                "cancel" | "cancel-setup-parts" => {
+                (None, "provider-call") => executor.provider_call(&intent, identity.as_ref())?,
+                (None, "connect") => executor.connect(&intent)?,
+                (None, "cancel" | "cancel-setup-parts") => {
                     let result = if kind == "cancel" {
                         executor.cancel(&intent)
                     } else {
@@ -1224,9 +1283,13 @@ fn missing(intent: &Value, context: &Context) -> Result<Execution> {
             Execution::SetupReport(json!({"kind":"inspect-run","state":"unknown"}))
         }
         Some("builtin-runner" | "provider-call")
-            if intent["operation"] == format!("{}#run.v1", context.core_package) =>
+            if intent["operation"]
+                .as_str()
+                .is_some_and(|op| context.is_run_operation(op)) =>
         {
-            Execution::SetupReport(json!({"kind":"run","outcome":"failed"}))
+            Execution::SetupReport(
+                json!({"kind":"run","operation":intent["operation"],"outcome":"failed"}),
+            )
         }
         Some("builtin-runner" | "provider-call")
             if intent["operation"] == format!("{}#stop.v1", context.core_package) =>

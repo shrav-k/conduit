@@ -69,7 +69,9 @@ pub(super) fn transition(
         if r["source"] != context.record_source {
             return Err("DL8: undocumented record source".into());
         }
-        if data["operation"] == format!("{}#run.v1", context.core_package)
+        if data["operation"]
+            .as_str()
+            .is_some_and(|op| context.is_run_operation(op))
             && (data["inputs"].get("identity").is_some() || data["inputs"].get("secrets").is_some())
         {
             return Err("PRV-024 / REC-002: run record contains identity or secrets".into());
@@ -86,7 +88,7 @@ pub(super) fn transition(
                     return Err(format!("REC-002: provider call lacks {f}"));
                 }
             }
-            if ["run.v1", "stop.v1", "inspect-run.v1"]
+            if ["run.v1", "run.v2", "stop.v1", "inspect-run.v1"]
                 .iter()
                 .any(|n| data["operation"] == format!("{}#{n}", context.core_package))
                 && !r["subject"].is_string()

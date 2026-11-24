@@ -32,7 +32,7 @@ fn history_contract(name: &Value) -> bool {
 fn write_fixture(path: &Path, bytes: &[u8], check: bool) {
     if check {
         assert_eq!(fs::read(path).unwrap(), bytes, "{}", path.display());
-    } else {
+    } else if !fs::read(path).is_ok_and(|existing| existing == bytes) {
         fs::create_dir_all(path.parent().unwrap()).unwrap();
         fs::write(path, bytes).unwrap();
     }
@@ -640,14 +640,34 @@ fn main() {
         tar.extend([0; 1024]);
         generated.insert(name.into(), gzip(&tar));
     }
+    let resource_manifest = format!(
+        "{api}\naddress: example.org/conformance/platform-resource\nversion: 1.0.0\nexports: [service.v1, probe-capability.v1, probe.v1]\nimplementations:\n  server:\n    implements: ['#probe.v1']\n    command: [bin/server]\n    platforms: [darwin/arm64, linux/arm64]\n"
+    );
+    let resource_contracts = format!(
+        "{api}\nkind: Type\nmetadata: {{name: service.v1}}\nspec:\n  family: Resource\n  offers: ['#probe-capability.v1']\n  implementation: {{'#probe.v1': '#server'}}\n---\n{api}\nkind: Capability\nmetadata: {{name: probe-capability.v1}}\nspec: {{operations: ['#probe.v1']}}\n---\n{api}\nkind: Operation\nmetadata: {{name: probe.v1}}\nspec: {{}}\n"
+    );
+    let mut resource_tar = member("conduit.yaml", resource_manifest.as_bytes(), b'0', "");
+    resource_tar.extend(member(
+        "contracts.yaml",
+        resource_contracts.as_bytes(),
+        b'0',
+        "",
+    ));
+    for pair in ["darwin/arm64", "linux/arm64"] {
+        resource_tar.extend(member_with_mode(
+            &format!("platforms/{pair}/bin/server"),
+            b"resource fixture",
+            b'0',
+            "",
+            0o755,
+        ));
+    }
+    resource_tar.extend([0; 1024]);
+    generated.insert("platforms-resource".into(), gzip(&resource_tar));
     release_fixtures(&root, check, &mut generated);
     for (name, bytes) in &generated {
         let path = out.join(format!("{name}.tar.gz"));
-        if check {
-            assert_eq!(fs::read(&path).unwrap(), *bytes, "{}", path.display());
-        } else {
-            fs::write(path, bytes).unwrap();
-        }
+        write_fixture(&path, bytes, check);
         println!("{name}: {}", conduit_core::packages::bytes_digest(bytes));
     }
     let digests: BTreeMap<_, _> = generated
@@ -662,11 +682,7 @@ fn main() {
     let mut digest_bytes = serde_json::to_vec_pretty(&digests).unwrap();
     digest_bytes.push(b'\n');
     let digest_path = out.join("digests.json");
-    if check {
-        assert_eq!(fs::read(digest_path).unwrap(), digest_bytes);
-    } else {
-        fs::write(digest_path, digest_bytes).unwrap();
-    }
+    write_fixture(&digest_path, &digest_bytes, check);
     println!(
         "{} reproducible archive fixtures {}",
         generated.len(),

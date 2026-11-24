@@ -417,6 +417,16 @@
       ]
     },
     {
+      "id": "setup-run-v2",
+      "case": "conventions/setup/run-v2/case.yaml",
+      "promises": [
+        "PRV-007",
+        "PLC-007",
+        "PRV-005",
+        "REC-002"
+      ]
+    },
+    {
       "id": "setup-sender",
       "case": "conventions/setup/sender/case.yaml",
       "promises": [

@@ -17,7 +17,21 @@ pub(crate) fn prepare_run(
     if let Some(diagnostic) = directory_rejection(&t.state, object, v) {
         return refuse_directory_run(t, a, c, i, diagnostic);
     }
-    let (_, bindings) = lifecycle::run_inputs(object, v, c)?;
+    let (mut inputs, bindings) = lifecycle::run_inputs(object, v, c)?;
+    let operation = match run_selection(&t.state, object, &v["setup"]["item"], c)? {
+        RunSelection::V1 => "run.v1",
+        RunSelection::V2 {
+            item,
+            program,
+            digest,
+        } => {
+            inputs["item"] = item.clone();
+            inputs["program"] = json!(program);
+            inputs["archive"] = json!({"digest":digest});
+            "run.v2"
+        }
+        RunSelection::Refused(message) => return lifecycle::run_failed(t, a, c, i, message),
+    };
     let resources: BTreeSet<_> = bindings
         .as_object()
         .unwrap()
@@ -28,7 +42,7 @@ pub(crate) fn prepare_run(
         return unavailable(t, a, c, i);
     }
     if resources.is_empty() {
-        return emit_run(t, a, c, i);
+        return emit_run(t, a, c, i, operation, (inputs, bindings));
     }
     let v = &mut t.state.invocations[i];
     if v.get("retirement").is_some() {
@@ -38,6 +52,82 @@ pub(crate) fn prepare_run(
     }
     t.state.invocations[i]["secret_reads"] = json!({"targets":resources,"reads":{}});
     advance(t, a, c, i)
+}
+
+enum RunSelection<'a> {
+    V1,
+    V2 {
+        item: &'a Value,
+        program: String,
+        digest: &'a str,
+    },
+    Refused(String),
+}
+
+fn run_selection<'a>(
+    state: &'a crate::State,
+    object: &Value,
+    selected: &Value,
+    c: &Context,
+) -> Result<RunSelection<'a>> {
+    let Some(runtime) = object.get("runtime") else {
+        return Ok(RunSelection::V1);
+    };
+    let packaged = state
+        .selected_package_item(object, selected)
+        .filter(|(_, item)| item.get("platforms").is_some());
+    if packaged.is_none() && !crate::selected_relative_program(object, selected) {
+        return Ok(RunSelection::V1);
+    }
+    let provider = access::object(state, runtime).ok_or("run provider missing")?;
+    let item_name = selected["selection"]
+        .as_str()
+        .and_then(|q| q.rsplit_once('#'))
+        .map_or("implementation", |(_, name)| name);
+    let provider_name = provider["name"]
+        .as_str()
+        .ok_or("run provider has no name")?;
+    let reject = |message: &str| {
+        Ok(RunSelection::Refused(format!(
+            "{item_name} on provider {provider_name}: {message}"
+        )))
+    };
+    let Some((package, item)) = packaged else {
+        return reject(
+            "only the engine's own runner runs a relative program that is not a package's item stating platforms",
+        );
+    };
+    if !crate::registration::requires_operation(provider, &c.qualified("run.v2"), c)? {
+        return reject(
+            "the provider does not implement run.v2; its type does not list it under requires",
+        );
+    }
+    let node = access::object(state, &object["placement"]).ok_or("run node missing")?;
+    let platforms = item["platforms"]
+        .as_array()
+        .map(Vec::as_slice)
+        .unwrap_or_default();
+    let pair = crate::platform_pair(&node["status"]["labels"]);
+    let Some(listed_pair) = pair
+        .as_ref()
+        .filter(|pair| platforms.iter().any(|platform| platform == *pair))
+    else {
+        let node_name = node["name"].as_str().unwrap_or("unknown");
+        return reject(&crate::platform_mismatch_message(
+            item_name,
+            node_name,
+            pair.as_deref(),
+            platforms,
+        ));
+    };
+    let program = item["command"][0]
+        .as_str()
+        .ok_or("platform item has no program")?;
+    Ok(RunSelection::V2 {
+        item,
+        program: format!("platforms/{listed_pair}/{program}"),
+        digest: &package.package.digest,
+    })
 }
 
 pub(crate) fn is_own_runner_provider(object: &Value, c: &Context) -> bool {
@@ -56,13 +146,19 @@ pub(crate) fn is_own_runner_provider(object: &Value, c: &Context) -> bool {
         })
 }
 
-fn emit_run(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) -> Result<()> {
+fn emit_run(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    operation: &str,
+    (inputs, mut bindings): (Value, Value),
+) -> Result<()> {
     let v = t.state.invocations[i].clone();
     let object = access::object(&t.state, &v["object"]).ok_or("run subject missing")?;
     if let Some(diagnostic) = directory_rejection(&t.state, object, &v) {
         return refuse_directory_run(t, a, c, i, diagnostic);
     }
-    let (inputs, mut bindings) = lifecycle::run_inputs(object, &v, c)?;
     let provider = is_own_runner_provider(object, c);
     for map in bindings.as_object_mut().unwrap().values_mut() {
         for target in map.as_object_mut().unwrap().values_mut() {
@@ -83,7 +179,7 @@ fn emit_run(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) -
             stored["secret_provider_run"] = json!("asked");
         }
     }
-    lifecycle::emit(t, a, c, i, "run.v1", inputs, secret_bindings)
+    lifecycle::emit(t, a, c, i, operation, inputs, secret_bindings)
 }
 
 fn directory_rejection(state: &crate::State, object: &Value, invocation: &Value) -> Option<Value> {
@@ -152,7 +248,9 @@ fn advance(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) ->
                 .is_none()
         })
     else {
-        return emit_run(t, a, c, i);
+        let run = lifecycle::run_inputs(owner.unwrap(), &v, c)?;
+        // Only the own runner reaches the deferred secret-read path.
+        return emit_run(t, a, c, i, "run.v1", run);
     };
     let id = a.next(&mut t.state)?;
     let serving = v["provider_restart"].get("setup").unwrap_or(&v["id"]);

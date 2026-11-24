@@ -47,3 +47,4 @@ The platform fixtures declare `darwin/arm64` and `linux/arm64` for one relative 
 `platforms-missing` omits the Linux program, `platforms-not-executable` gives it mode 0644,
 and `platforms-complete` gives both platform programs mode 0755. The fixtures contain only
 inert program bytes.
+`platforms-resource` also exports a Resource Type that selects the platform command.

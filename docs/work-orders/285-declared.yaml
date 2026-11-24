@@ -1,0 +1,7 @@
+# Added cases for work order 285.
+- name: registration-placement-platforms
+  kind: added
+  cases: [registration-placement-platforms]
+- name: setup-run-v2
+  kind: added
+  cases: [setup-run-v2]

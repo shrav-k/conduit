@@ -502,6 +502,14 @@
       ]
     },
     {
+      "id": "registration-placement-platforms",
+      "case": "language/registration/placement-platforms/case.yaml",
+      "promises": [
+        "PLC-007",
+        "PKG-019"
+      ]
+    },
+    {
       "id": "registration-placement-retired",
       "case": "language/registration/placement-retired/case.yaml",
       "promises": [

@@ -322,7 +322,19 @@ manual builds default to each package's own `target/` and honor `CARGO_TARGET_DI
 The S4 test uses its package-local target in those runs even when `CARGO_TARGET_DIR` is set.
 The gate shows the cache path only in the `Target cache` line and `settings.target_cache`,
 applying private-name redaction in both places. Commands and logs use `<target-cache>`.
-The gate holds `DIR/gate.lock` for the run.
+The gate holds `DIR/gate.lock` for the run. Before its first build, with or without the option,
+the gate sets the time of every file Git lists in the tree, tracked or untracked and not ignored,
+to one instant, so that cargo rebuilds each crate built from the tree over any build a target
+directory held before that instant, whatever times the files carried (order 402). A build by
+hand in one of DIR's folders gets neither this nor the gate's rebuild of the tree's own crates,
+and can reuse a crate another tree built there.
+Without `--target-cache` no gate lock holds, so a build made by another tree's gate, an editor
+or a manual command in a shared target directory after that instant can still be reused. A clock
+set back can also defeat time comparisons. Cite a `--target-cache` record: its lock and fingerprint
+removal narrow these gaps, but cannot guard against hand builds that bypass the gate.
+If listing or setting file times fails, no clippy or test command runs: those rows FAIL, or
+are not run after the merge queue's first failure. On error, `freshness.files` is null and
+`freshness.time` names the attempted instant, not a successful preparation.
 The gate prints one line for each gate, PASS, FAIL or NOT RUN with its command
 and why, and a last line that says PASS only when every required gate passed, and writes
 its record to `target/gate/<HEAD>.json`. `--plan` runs `rust discovery` alone and lists

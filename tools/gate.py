@@ -2,6 +2,7 @@
 """Run the local merge gates for what the branch changes, without fetching anything."""
 
 import argparse
+import errno
 from contextlib import ExitStack, nullcontext
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -504,6 +505,65 @@ def invalidate_path_fingerprints(target, names):
                 for fingerprint in fingerprints.iterdir():
                     if fingerprint.name.rpartition('-')[0] in names and fingerprint.is_dir():
                         shutil.rmtree(fingerprint)
+
+
+def prepare_freshness(root, environment):
+    instant = datetime.now(timezone.utc)
+    stamp = (int(instant.timestamp()) * 1_000_000 + instant.microsecond) * 1000
+    result = dict(mechanism='file times set to one instant before the first build',
+                  time=instant.isoformat(), files=0)
+    listed = git(root, environment, 'ls-files', '--cached', '--others',
+                 '--exclude-standard', '-z')
+    if listed.returncode:
+        result['error'] = f"cannot list the tree's files: git ls-files exit {listed.returncode}"
+        result['files'] = None
+        return result
+    for name in sorted(set(filter(None, listed.stdout.split(b'\0')))):
+        relative = Path(os.fsdecode(name))
+        failed_path = '.'
+        try:
+            # Anchor every parent to an open directory: a replaced parent must not
+            # redirect the operation through a link outside the tree either.
+            with ExitStack() as opened:
+                descriptor = os.open(root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+                opened.callback(os.close, descriptor)
+                failed_path = relative.as_posix()
+                for parent in relative.parts[:-1]:
+                    try:
+                        descriptor = os.open(parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW,
+                                             dir_fd=descriptor)
+                    except OSError as fault:
+                        if fault.errno in (errno.ENOTDIR, errno.ELOOP):
+                            # This parent no longer names a directory in the tree.
+                            break
+                        raise
+                    opened.callback(os.close, descriptor)
+                else:
+                    info = os.stat(relative.name, dir_fd=descriptor, follow_symlinks=False)
+                    if not stat.S_ISREG(info.st_mode):
+                        continue
+                    os.utime(relative.name, ns=(stamp, stamp), dir_fd=descriptor,
+                             follow_symlinks=False)
+                    result['files'] += 1
+                    continue
+        except OSError as fault:
+            if fault.errno == errno.ENOENT:
+                continue
+            result['error'] = f'cannot set file times: {failed_path}: {fault.strerror or fault}'
+            result['files'] = None
+            break
+    return result
+
+
+def freshness_failure_message(error):
+    if error.startswith("cannot list the tree's files:"):
+        remedy = "make Git able to list the tree's files"
+    elif error.startswith('cannot set file times: .:'):
+        remedy = 'make the tree root accessible'
+    else:
+        remedy = "make the file's times settable (or remove it)"
+    return (error + '; no clippy or test command ran in this run: '
+            + remedy + ' and run the gate again')
 
 
 def positive_integer(text):
@@ -1175,13 +1235,14 @@ def run_gate(root, argv, run, machine, cleanup):
                   tree=dict(clean=not dirty, uncommitted_paths=dirty), changed_paths=len(changed),
                   platform=platform.system() + ' ' + platform.machine(), python=platform.python_version(),
                   python_packages=not missing,
-                  settings=settings,
+                  settings=settings, freshness=None,
                   environment=dict(set=environment_set, removed=removed, removed_credentials=credentials,
                                    private_names_configured=False,
                                    private_names=dict(file=names_file, derived=derived_record)), gates=[])
     record_path = root / OUTPUT / (head + '.json')
     log_directory = root / OUTPUT / 'logs' / head
     output_lock = threading.Lock()
+    freshness_failure = None
     stopped_rows = set()
     interrupted_rows = []
     tests = []
@@ -1227,6 +1288,8 @@ def run_gate(root, argv, run, machine, cleanup):
         else:
             row['why'] = (f"ended after {row['seconds']:.1f} s with its process group: "
                           + reason + '; its log is partial')
+        if freshness_failure is not None and row['name'].endswith((' clippy', ' test')):
+            row['why'] += '; ' + freshness_failure
 
     def log_for(row, position):
         name = redact_output(row['name'], private_names).replace(' ', '-').replace('/', '-')
@@ -1670,6 +1733,22 @@ def run_gate(root, argv, run, machine, cleanup):
             finish(gate_row('rust and engine', None, required=False, why=RUST_WHY))
         else:
             prepared = set()
+            if (not options.plan and record['stopped_at'] is None
+                    and (engine_reason or any(entry.build and entry.path in selected
+                                             for entry in directories))):
+                freshness = prepare_freshness(root, environment)
+                if 'error' in freshness:
+                    freshness_failure = redact_output(
+                        freshness_failure_message(freshness['error']), private_names)
+                    freshness['error'] = redact_output(freshness['error'], private_names)
+                    message = freshness_failure
+                else:
+                    message = (f"{freshness['files']} files at {freshness['time']}; cargo therefore "
+                               'rebuilds each crate from the tree over any build a target folder '
+                               'held before that instant.')
+                record['freshness'] = freshness
+                write_record(record_path, record)
+                print('Freshness: ' + message)
 
             def prepare_cache(row, directory, log, clock, cancel, *, existing_only=False):
                 if directory in prepared:
@@ -1769,6 +1848,11 @@ def run_gate(root, argv, run, machine, cleanup):
                 def check(position, cancel, on_launch=None):
                     log = log_for(row, position)
                     clock = time.monotonic()
+                    if arguments[0] in ('clippy', 'test') and record['freshness'].get('error'):
+                        row.update(result='FAIL',
+                                   why=freshness_failure,
+                                   seconds=0.0)
+                        return ''
                     if target is not None:
                         failure = prepare_cache(row, directory, log, clock, cancel)
                         if failure is not None:

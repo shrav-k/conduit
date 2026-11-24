@@ -90,3 +90,28 @@ then they are under `docs/proposals/`.
 - Added: IFC-054, `admission-hook.v1` and `admission-report.v1`, a login's admission report kept from its hook's end record until its validity, its single use, a newer limits member or a lever change ends it (DEC-094, DEC-096, DEC-123).
 - Changed: CTR-004, CTR-013, PND-011, REC-002, IFC-052, IFC-053, `type-spec.v1` and `record.v1`, for the admission hook and its report (DEC-094, DEC-123).
 - Changed: `login Resource` in the definitions, a model account is its login Resources, one per account per machine, and neither a Fleet nor a Pool is one (DEC-116).
+- Added: PND-016, each call that starts model work on an Agent of a login whose Type states
+  `admission` is decided on a current admission report or waits, bounded by DL21, for the
+  login's one ask; its records name the triggering request in `causedBy`. A report ended by a
+  lever change makes waiting requests share a fresh bounded ask. A waiting request is checked at
+  dispatch against the current Conduits, without a second access-decision record, and a failed
+  dispatch check holds it unavailable. A refusal, an ask that gives no report, and a single-use
+  report given to another call hold it unavailable, never queued, and no ask starts for 60
+  seconds after one that gave no report. The diagnostic states that the call was not dispatched,
+  started no model work and is not queued; a spent single-use report does not require waiting
+  for its admitted call to end before retrying (DEC-095, DEC-099, DEC-120, DEC-123).
+- Added: `admission-hold.v1`, the structured field of a PND-016 hold, and `admission-status.v1`,
+  a login's admission state in its status and its Agents', or that calls on it are not checked;
+  the hold schema's `dispatched` true form is reserved and no result in this version carries it
+  (DEC-099, DEC-124).
+- Added: DL21, how long a call waits for its login's ask under PND-016 (DEC-123).
+- Changed: IFC-054 and CTR-015, the engine acts on the login's report under PND-016, a status
+  shows the login's admission state with each status word explained, and a report from a call in
+  progress when a control stored the levers is kept already ended (DEC-123, DEC-124).
+- Changed: PND-005, PND-011, DL3, `inspect.v1`, `diagnostic.v1`, `record.v1` (the ask's optional
+  `causedBy`) and the definitions' `login Resource` and `caller`, for PND-016 and the ask's
+  caller. ACC-019, IFC-028, OPS-027 and the definitions' `serving` and reason descriptions
+  preserve refusal for a new request while a previously permitted request waiting
+  under PND-016 reports unavailable if its dispatch check fails, with no second access-decision
+  record. Only PND-016 holds on a report or for want of one carry `properties.admission`;
+  dispatch-check holds and cancellation while waiting omit it (DEC-095, DEC-123).

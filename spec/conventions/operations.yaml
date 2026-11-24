@@ -605,7 +605,7 @@
     it cannot cancel. Parts that have ended are not undone. The outcome of a setup or a
     retirement is then OPS-022's, and that of `retire-with-resources.v1` LIF-021's. A cancelled
     part's invocation ends when the cancellation is sent, with the outcome that this promise
-    gives it, so an onward request that names it is refused from then on, under ACC-019. How
+    gives it, so a new onward request that names it is refused from then on, under ACC-019. How
     long the engine waits for a result is DL3 and DL10 of the implementation-defined list.
 
 

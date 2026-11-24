@@ -410,11 +410,10 @@
     dispatched and reports invalid, each with a diagnostic naming CTR-015 and both
     pointers.
   observable: >-
-    In this version, a login's levers are declared and its reports kept, but no call is
-    yet held or refused on them. The following lever meanings describe the login's
-    report; acting on that report before model work is not yet specified (IFC-054).
-    `billing` declares whether model work is included or paid from the first token. A
-    login declaring `paid-from-first-token` whose `paidUsage` is `refuse` or
+    The engine decides each call that starts model work on an Agent of the login on the
+    login's report, under PND-016; the following lever meanings describe that report
+    (IFC-054). `billing` declares whether model work is included or paid from the first
+    token. A login declaring `paid-from-first-token` whose `paidUsage` is `refuse` or
     `refuse-if-possible` admits nothing. `paidUsage` `allow` allows paid usage, `refuse`
     refuses usage being billed beyond included usage, and `refuse-if-possible` refuses
     whenever such billing is possible. `whenUnknown` chooses what happens where the

@@ -352,10 +352,13 @@
     the setup that last asked for that run.
   observable: >-
     In this version no operation arranges, through the engine, work that outlasts its
-    invocation. Once an invocation has ended, a request that names it in
+    invocation. Once an invocation has ended, a new request that names it in
     `io.github.shrav-k.conduit/serving` is not dispatched and reports refused, as IFC-028
-    states, whatever Conduits are open then. The engine itself dispatches no request for the
-    invocation or for its caller afterwards: no Operation contract carries a mark for work that
+    states, whatever Conduits are open then. A previously permitted request still waiting under
+    PND-016 when the invocation it serves ends instead reports unavailable at its dispatch
+    check, with no second access-decision record; it is not dispatched. The engine itself
+    dispatches no request for the invocation or for its caller afterwards: no Operation contract
+    carries a mark for work that
     is to start or to run later, under CTR-002, and the engine presents no tool with which an
     implementation could ask for such a start, under IFC-012. Work that is to happen later is
     asked for later, by an actor, through a Conduit that is open then. That request is decided

@@ -903,24 +903,40 @@
   level: must
   when: >-
     The engine's call of `admission-hook.v1` on a login Resource whose Type states
-    `admission` (CTR-015) ends.
+    `admission` (CTR-015) ends; or a Resource whose Type states `signIn` (CTR-013), or
+    an Agent whose login place refers to one, is inspected.
   then: >-
-    Where it succeeded, the record of its end holds its output `admission`, unchanged,
-    in `admission`, whatever the Type's `records` states, and the engine keeps that
-    report as the login's newest, with that record's `time` as its keep time. A call
-    that failed or ended unknown, one whose output fails `admission-report.v1` among
-    them (OPS-007), gives no report, and its record holds no `admission`. A kept report
-    is current from its keep time until the first of these ends it for good: for a
-    report that is not single use, `validForSeconds` seconds pass on the engine's own
+    Where the call succeeded, the record of its end holds its output `admission`,
+    unchanged, in `admission`, whatever the Type's `records` states, and the engine
+    keeps that report as the login's newest, with that record's `time` as its keep time.
+    A call that failed or ended unknown, one whose output fails `admission-report.v1`
+    among them (OPS-007), gives no report, and its record holds no `admission`. A kept
+    report is current from its keep time until the first of these ends it for good: for
+    a report that is not single use, `validForSeconds` seconds pass on the engine's own
     clock; a single-use report admits its one call; the engine keeps a limits member
     (IFC-052) in the end record of a call to the login, or to an Agent whose login place
     refers to it, other than the hook's call that gave the report; or a control stores a
-    value at or under the Type's levers place (REV-007).
+    value at or under the Type's levers place (REV-007). A report given by a call that
+    was in progress when such a value was stored is kept already ended, and decides no
+    call (PND-016). Requests still waiting on that call keep waiting for a fresh ask
+    under the stored levers, as PND-016 specifies. The status of a Resource whose Type
+    states `signIn`, and of an Agent whose login place refers to one, holds `admission`,
+    in the form of the core schema `admission-status.v1`, the Agent's being its login's.
+    Where the login's Type states `admission`, it gives `checked` true; the newest
+    report the engine kept, with the call that gave it, its keep time and the end of its
+    validity; its `state`, `current` when the report may decide a call, `ended` when it
+    may no longer decide one, or `none` when no report was kept; and `ended`, null
+    unless the state is `ended`, then `valid-for-ended` when its `validForSeconds`
+    passed, `single-use` when it admitted its one call, `newer-limits` when a newer
+    limits member was kept (IFC-052), or `levers-changed` when a control stored a value
+    at or under the Type's levers place. It also gives `asking`, the ask in progress
+    (PND-016), or null where none is in progress; and `noReport`, null unless PND-016
+    holds every call after an ask that gave no report, then that ask, null where it was
+    not dispatched, why it gave none and when that hold ends. Its `cause` is `failed`
+    when the ask failed, `unknown` when it ended with no known outcome, `deadline` when
+    it passed DL21, or `not-dispatched` when it could not be dispatched. Where the Type
+    states no `admission`, it gives `checked` false alone.
   observable: >-
-    This version keeps the report and decides nothing from it: whether the engine asks
-    for one before a call that starts model work, and holds or refuses that call, is
-    not yet specified. A login's levers are declared and its reports kept, but no call
-    is yet held or refused on them (CTR-015).
     Validity counts from the keep time, never from `observedAt`, with no minimum or
     bound beyond `admission-report.v1`'s schema. The engine checks only the output's
     shape and keeps the report as received; the implementation answers for what it says.
@@ -934,8 +950,13 @@
     `newer-report` once a newer observation says otherwise, and `lever-change` only once
     the levers change. `previous` is the newest report the hook gave, single use or
     ended included, or null. A member IFC-052 drops ends no report. The engine calls the
-    hook only to decide a call that starts model work on an Agent of the login, and no
-    inspection calls it (OBS-006).
+    hook only to decide a call that starts model work on an Agent of the login, under
+    PND-016, and no inspection calls it (OBS-006). The status gives the engine's own
+    state, not an observation (OBS-002); inspection starts no call to fill it and
+    changes none of it (OBS-006). In an Agent's status, each invocation of its login is
+    null where the inspecting actor may not inspect the login. A login whose Type states
+    no `admission`, including an earlier version of a Type whose later version states
+    it, keeps working unchecked, and its status says so.
 
 - id: IFC-028
   layer: interface
@@ -944,13 +965,16 @@
     A request names, in `io.github.shrav-k.conduit/serving`, an invocation that was not
     dispatched to the instance that sends the request, or one that is no longer in progress.
   then: >-
-    The request is not dispatched, and reports refused.
+    The request is not dispatched, and reports refused, except that a previously permitted
+    request still waiting under PND-016 when the invocation it serves ends reports unavailable
+    at its dispatch check, with no second access-decision record.
   observable: >-
     Only the instance an invocation was dispatched to can name it, and only while it is in
     progress. This holds for an Interface and an Agent as for any other instance: a request from
-    one of them that names such an invocation reports refused, and is not taken as made on its
-    own behalf. A setup hook or a retire hook is an invocation dispatched to the instance, and
-    its onward requests name it.
+    one of them that initially names such an invocation reports refused, and is not taken as
+    made on its own behalf. The exception for a previously permitted waiting request grants
+    no permission to a new request. A setup hook or a retire hook is an invocation dispatched
+    to the instance, and its onward requests name it.
 
 # --- The names a version assigns.
 

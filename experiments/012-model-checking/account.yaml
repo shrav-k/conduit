@@ -556,6 +556,9 @@
   class: safety
   standing: left to MC9
   note: Pending actions await MC9 after batch 2; not checked by MC7b.
+- id: PND-016
+  class: uncatalogued
+
 - id: PND-010
   class: safety
   standing: left to MC9
@@ -1291,7 +1294,8 @@
   note: 'MC7a: “Static: a static decision, to be shown by vectors”.'
 - id: OPS-027
   class: safety
-  standing: holds, not graded
+  standing: text changed, not rerun
+  was: holds, not graded
   model: controls::K
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: 09ff1a760aeac4b01ee3dd26558defbb488fa618c1c23b53fa04d7528fbb2ab9

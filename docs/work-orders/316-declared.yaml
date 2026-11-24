@@ -1,0 +1,33 @@
+# Added cases and scoped changes for work order 316.
+- name: requests-admission-hold
+  kind: added
+  cases: [requests-admission-hold]
+- name: requests-admission-no-report
+  kind: added
+  cases: [requests-admission-no-report]
+- name: requests-admission-not-checked
+  kind: added
+  cases: [requests-admission-not-checked]
+- name: requests-admission-single-use
+  kind: added
+  cases: [requests-admission-single-use]
+- name: requests-admission-wait-ends
+  kind: added
+  cases: [requests-admission-wait-ends]
+- name: report case covers the admission wait
+  kind: metadata
+  cases: [requests-admission-report-kept]
+  paths: ['/promises/*']
+- name: report asks carry the waiting request caller
+  kind: expectation
+  cases: [requests-admission-report-kept]
+  paths:
+  - '/steps/16/expect/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1caller'
+  - '/steps/22/expect/external_intents/0/call/params/_meta/io.github.shrav-k.conduit~1caller'
+- name: report ask records its cause without a second access decision
+  kind: expectation
+  cases: [requests-admission-report-kept]
+  paths:
+  - /steps/17/expect/record_facts/0/data/causedBy
+  - /steps/17/expect/absent/0/text
+  - /steps/17/expect/absent/0/under/0

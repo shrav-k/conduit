@@ -14,14 +14,20 @@
 #                  diagnostic whose `ruleId` is the ID of the promise that decided it), OBJ-008,
 #                  OBJ-023, PKG-006, LIF-020, SEC-003 (a diagnostic names the place by its JSON
 #                  Pointer and holds no part of a secret)
+#                  PND-016 (a hold on a report or for want of one carries
+#                  `properties.admission`)
 #   condition.v1   LIF-011, OBS-002, OBS-003, PRV-009
 #   record.v1      REC-002, LIF-013, SEC-015, SEC-018, PRV-024 (no record holds what the
 #                  `secrets` or the `identity` of `run.v1` hold)
 #                  IFC-054 (the end record of a login's admission hook holds its report)
+#                  PND-016 (an admission ask names its triggering request in `causedBy`)
 #   usage.v1       IFC-051 (what one call's model work used, by client and model)
 #   limit-report.v1 IFC-052 (the usage limits one call's client reported)
 #   limit-status.v1 IFC-053 (the newest usage limits an instance shows)
 #   admission-report.v1 IFC-054 (a login's answer to whether model work may start on it now)
+#   admission-hold.v1 PND-016 (why a call that starts model work on a guarded login was held)
+#   admission-status.v1 IFC-054 (a login's admission state in a status, or that its calls
+#                  are not checked)
 # Standing: draft specification; see spec/README.md for status and coverage.
 #
 # This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
@@ -79,6 +85,9 @@ metadata:
     `keywordLocation`, and `absoluteKeywordLocation` where known, as JSON Schema 2020-12's
     output format names them (SUB-005). A refusal carries properties.refusal in the form
     refusal.v1 (ACC-056); every reason names its deciding rule (IFC-050).
+    A hold under PND-016 on a report or for want of one carries `properties.admission` in the
+    form `admission-hold.v1`. A request held by its dispatch check or cancelled while waiting
+    under PND-016 carries no `properties.admission`.
     For a translated document, `properties.translation` identifies the SCT rule and generated
     document name; SCT-014 maps its location into the authored text.
 spec:
@@ -148,28 +157,29 @@ metadata:
     and of the target; the operation, by its qualified reference; the engine's ID for the
     invocation; the engine's ID for the invocation it serves, where it serves one, such as the
     setup or the retirement that a hook, a read of a secret or a part belongs to, or the
-    invocation that an onward request names; the idempotency key, where the caller
-    supplied one or the engine gave one to a hook; and how the request ended, by its outcome
-    or its reason. A record with no ID of its own, such as that of a provider call or of a
-    change that no request asked for itself, holds in `invocation` the invocation within which
-    it happened, and no `serving`. A record of `run.v1`, `stop.v1` or `inspect-run.v1` names in
-    `subject` the instance whose run it is. The time of the record is the CloudEvent's `time`.
-    Each field is present where it applies, and the inputs and outputs of the operation are
-    present where the type's `records` keeps them, apart from what the `secrets` and the
-    `identity` of `run.v1` hold, which no record holds. An engine names the event's `source`
-    and `type`, and may add members. A reason records ruleId; a refusal records refusalTier
-    without its tier-2 list (ACC-056). pendingAction holds action IDs, and answer holds the
-    recorded action and its full evidence (PND-012). Wire reads withhold code and fingerprint
-    values even from answer records (PND-004). An invocation's end record holds in usage its
-    result's member, and in usageDropped the warning that dropped one (IFC-051).
-    It also holds its result's limits member in `limits`, or the warning that dropped it
-    in `limitsDropped` (IFC-052).
-    The end record of a call of an operation marked `startsModelWork: true` whose target is
-    an Agent names in `fleet` the Agent's owning Fleet and, where the Agent's Type states
-    `loginResource`, in `loginResource` the login Resource its login place referred to when
-    the call was made (REC-002).
-    The end record of a login's `admission-hook.v1` call that succeeded holds its report
-    in `admission` (IFC-054).
+    invocation that an onward request names; the idempotency key, where the caller supplied one
+    or the engine gave one to a hook; and how the request ended, by its outcome or its reason.
+    A record with no ID of its own, such as that of a provider call or of a change that no
+    request asked for itself, holds in `invocation` the invocation within which it happened,
+    and no `serving`. A record of `run.v1`, `stop.v1` or `inspect-run.v1` names in `subject`
+    the instance whose run it is. The time of the record is the CloudEvent's `time`. Each field
+    is present where it applies, and the inputs and outputs of the operation are present where
+    the type's `records` keeps them, apart from what the `secrets` and the `identity` of
+    `run.v1` hold, which no record holds. An engine names the event's `source` and `type`, and
+    may add members. A reason records ruleId; a refusal records refusalTier without its tier-2
+    list (ACC-056). pendingAction holds action IDs, and answer holds the recorded action and
+    its full evidence (PND-012). Wire reads withhold code and fingerprint values even from
+    answer records (PND-004). An invocation's end record holds in usage its result's member,
+    and in usageDropped the warning that dropped one (IFC-051). It also holds its result's
+    limits member in `limits`, or the warning that dropped it in `limitsDropped` (IFC-052). The
+    end record of a call of an operation marked `startsModelWork: true` whose target is an
+    Agent names in `fleet` the Agent's owning Fleet and, where the Agent's Type states
+    `loginResource`, in `loginResource` the login Resource its login place referred to when the
+    call was made (REC-002). The end record of a login's `admission-hook.v1` call that
+    succeeded holds its report in `admission` (IFC-054). Each record of an admission ask also
+    names in `causedBy` the engine's ID for the request whose wait started it (PND-016). This
+    optional member applies to the ask's records even if that request is cancelled before
+    dispatch; it is distinct from `serving`.
 spec:
   type: object
   properties:
@@ -184,6 +194,7 @@ spec:
       type: object
       properties:
         caller: {$ref: github.com/shrav-k/conduit/core#id.v1}
+        causedBy: {$ref: github.com/shrav-k/conduit/core#id.v1}
         consumer: {$ref: github.com/shrav-k/conduit/core#id.v1}
         conduit: {$ref: github.com/shrav-k/conduit/core#id.v1}
         target: {$ref: github.com/shrav-k/conduit/core#id.v1}
@@ -580,6 +591,249 @@ spec:
     else:
       properties:
         validForSeconds: {minimum: 1}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: admission-hold.v1
+  description: >-
+    Why a call that starts model work on an Agent of a guarded login was held (PND-016).
+    With `dispatched` true, which no result in this version carries, it describes the
+    report that admitted such a call with `warning` or `cannot-tell`. `login` names the
+    login. `report` is the report that decided, null where no report of the ask decided
+    and where a single-use report admitted another call. `reportInvocation` is the ask
+    that gave the report, or that gave none, null where the caller may not inspect the
+    login or no ask was dispatched. `noReport` says why no report of the ask decided: it
+    `failed`, ended `unknown`, passed DL21 (`deadline`) or was `not-dispatched`.
+    `singleUse` is the call a single-use report admitted, null where the caller may not
+    inspect its Agent. `lifts` describes the hold's cause and how to try again: as the
+    report's, `at-time` where no report of the ask decided, or `after-call` where
+    another call took a single-use report and spent it at once; it is null where the
+    call was dispatched. For `after-call`, a request sent again need not wait for the
+    admitted call to end: PND-016 decides it afresh, and where no report is current and
+    no other hold applies, it waits for the login's ask. The next ask receives the spent
+    report as `previous`, unless the engine has kept a newer report (IFC-054). For other
+    holds, `retryAt` is when the hold's cause lapses of itself: as the report's validity
+    ends, or as 60 seconds pass after an ask that gave no report. For `after-call`,
+    `retryAt` is the ask's end plus 60 seconds: a retry time, not an earliest permitted
+    retry or a guarantee that the admitted call has ended. It is null for `lever-change`
+    and where the call was dispatched. `levers` gives the login's Type, its levers place
+    and its control (CTR-015). It holds no amount.
+spec:
+  type: object
+  properties:
+    login:
+      $ref: github.com/shrav-k/conduit/core#object.v1
+      properties:
+        kind: {const: Resource}
+    dispatched: {type: boolean}
+    report:
+      anyOf:
+      - {$ref: github.com/shrav-k/conduit/core#admission-report.v1}
+      - {type: 'null'}
+    reportInvocation:
+      anyOf:
+      - {$ref: github.com/shrav-k/conduit/core#id.v1}
+      - {type: 'null'}
+    noReport: {enum: [failed, unknown, deadline, not-dispatched, null]}
+    singleUse:
+      anyOf:
+      - {$ref: github.com/shrav-k/conduit/core#id.v1}
+      - {type: 'null'}
+    lifts: {enum: [at-time, newer-report, lever-change, after-call, null]}
+    retryAt: {type: [string, 'null'], format: date-time}
+    levers:
+      type: object
+      properties:
+        type: {$ref: github.com/shrav-k/conduit/core#qualified-reference.v1}
+        control: {$ref: github.com/shrav-k/conduit/core#qualified-reference.v1}
+        pointer: {$ref: github.com/shrav-k/conduit/core#pointer.v1}
+      required:
+      - type
+      - control
+      - pointer
+      additionalProperties: false
+  required:
+  - login
+  - dispatched
+  - report
+  - reportInvocation
+  - noReport
+  - singleUse
+  - lifts
+  - retryAt
+  - levers
+  additionalProperties: false
+  allOf:
+  - if:
+      properties:
+        dispatched: {const: true}
+    then:
+      properties:
+        report:
+          type: object
+          properties:
+            admit: {const: true}
+        noReport: {type: 'null'}
+        singleUse: {type: 'null'}
+        lifts: {type: 'null'}
+        retryAt: {type: 'null'}
+    else:
+      properties:
+        lifts: {type: string}
+  - if:
+      properties:
+        noReport: {type: string}
+    then:
+      properties:
+        report: {type: 'null'}
+        singleUse: {type: 'null'}
+        lifts: {const: at-time}
+  - if:
+      properties:
+        lifts: {const: after-call}
+    then:
+      properties:
+        report: {type: 'null'}
+        noReport: {type: 'null'}
+  - if:
+      properties:
+        singleUse: {type: string}
+    then:
+      properties:
+        lifts: {const: after-call}
+  - if:
+      properties:
+        lifts: {const: lever-change}
+    then:
+      properties:
+        retryAt: {type: 'null'}
+    else:
+      if:
+        properties:
+          lifts: {enum: [at-time, newer-report, after-call]}
+      then:
+        properties:
+          retryAt: {type: string}
+  - if:
+      properties:
+        dispatched: {const: false}
+        noReport: {type: 'null'}
+        lifts:
+          not: {const: after-call}
+    then:
+      properties:
+        report:
+          type: object
+          properties:
+            admit: {const: false}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: admission-status.v1
+  description: >-
+    A login's admission state, as the status of a Resource whose Type states `signIn`
+    shows it, and as that of an Agent whose login place refers to one shows its login's
+    (IFC-054). `checked` false says that the login's Type states no `admission`, so
+    calls on it are not checked, and nothing else is given. `checked` true says that the
+    Type states `admission`, so PND-016 checks its calls. Then `report` is the newest
+    report the engine kept, spent or ended ones included, or null where it kept none;
+    `invocation` the call that gave it; `keptAt` its keep time; `validUntil` the end of
+    its validity, null for a single-use report; `state` is `current` when the report may
+    decide a call, `ended` when it may no longer decide one, or `none` when no report
+    was kept. `ended` is null unless `state` is `ended`; otherwise it names the end:
+    `valid-for-ended`, its `validForSeconds` passed; `single-use`, it admitted its one
+    call; `newer-limits`, a newer limits member was kept (IFC-052); or `levers-changed`,
+    a control stored a value at or under the Type's levers place. `asking` is the ask in
+    progress (PND-016), or null where none is in progress. `noReport` is null unless
+    PND-016 holds every call after an ask that gave no report; otherwise it gives that
+    ask's `invocation`, null where it was not dispatched, its `cause`, and `until`, when
+    that hold ends. The `cause` is `failed` when the ask failed, `unknown` when it ended
+    with no known outcome, `deadline` when it passed DL21, or `not-dispatched` when it
+    could not be dispatched. In an Agent's status each invocation is null where the
+    inspecting actor may not inspect the login. It holds no amount.
+spec:
+  type: object
+  properties:
+    checked: {type: boolean}
+    report:
+      anyOf:
+      - {$ref: github.com/shrav-k/conduit/core#admission-report.v1}
+      - {type: 'null'}
+    invocation:
+      anyOf:
+      - {$ref: github.com/shrav-k/conduit/core#id.v1}
+      - {type: 'null'}
+    keptAt: {type: [string, 'null'], format: date-time}
+    validUntil: {type: [string, 'null'], format: date-time}
+    state: {enum: [current, ended, none]}
+    ended: {enum: [valid-for-ended, single-use, newer-limits, levers-changed, null]}
+    asking:
+      anyOf:
+      - {$ref: github.com/shrav-k/conduit/core#id.v1}
+      - {type: 'null'}
+    noReport:
+      type:
+      - object
+      - 'null'
+      properties:
+        invocation:
+          anyOf:
+          - {$ref: github.com/shrav-k/conduit/core#id.v1}
+          - {type: 'null'}
+        cause: {enum: [failed, unknown, deadline, not-dispatched]}
+        until: {type: string, format: date-time}
+      required:
+      - invocation
+      - cause
+      - until
+      additionalProperties: false
+  required:
+  - checked
+  additionalProperties: false
+  if:
+    properties:
+      checked: {const: true}
+  then:
+    required:
+    - report
+    - invocation
+    - keptAt
+    - validUntil
+    - state
+    - ended
+    - asking
+    - noReport
+    allOf:
+    - if:
+        properties:
+          state: {const: none}
+      then:
+        properties:
+          report: {type: 'null'}
+          invocation: {type: 'null'}
+          keptAt: {type: 'null'}
+          validUntil: {type: 'null'}
+          ended: {type: 'null'}
+    - if:
+        properties:
+          state: {enum: [current, ended]}
+      then:
+        properties:
+          report: {type: object}
+          keptAt: {type: string}
+    - if:
+        properties:
+          state: {const: ended}
+      then:
+        properties:
+          ended: {type: string}
+      else:
+        properties:
+          ended: {type: 'null'}
+  else:
+    maxProperties: 1
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

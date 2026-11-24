@@ -332,7 +332,11 @@ metadata:
     the newest observation for each window that an Agent's or a login Resource's calls have
     reported, including its Agents' calls for a login Resource, or `unknown` with no windows
     where there is no report, in `limit-status.v1` form (IFC-053). In `limits`, `signals` holds
-    the newest value other than null of each usage signal those calls reported. `records` holds
+    the newest value other than null of each usage signal those calls reported.
+    `admission` holds, for a Resource whose Type states `signIn` and for an Agent whose
+    login place refers to one, its login's admission state in `admission-status.v1`
+    form, or `checked` false where that login's Type states no `admission` (IFC-054).
+    `records` holds
     the records that name the object, each as a CloudEvent. Where `expectedId` is given and the
     object named has another ID, the request reports conflict.
 
@@ -513,6 +517,8 @@ spec:
               additionalProperties: false
           limits:
             $ref: github.com/shrav-k/conduit/core#limit-status.v1
+          admission:
+            $ref: github.com/shrav-k/conduit/core#admission-status.v1
           pending:
             type: array
             items:

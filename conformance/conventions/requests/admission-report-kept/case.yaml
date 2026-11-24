@@ -6,7 +6,8 @@
     "interface"
   ],
   "promises": [
-    "IFC-054"
+    "IFC-054",
+    "PND-016"
   ],
   "profile": "first-build",
   "initial": {
@@ -2292,7 +2293,8 @@
                 "_meta": {
                   "io.github.shrav-k.conduit/operation": "@core#admission-hook.v1",
                   "io.github.shrav-k.conduit/instance": "$login",
-                  "io.github.shrav-k.conduit/filters": []
+                  "io.github.shrav-k.conduit/filters": [],
+                  "io.github.shrav-k.conduit/caller": "00000000-0000-4000-8000-000000000005"
                 }
               }
             },
@@ -2435,7 +2437,8 @@
                 },
                 "validForSeconds": 3600,
                 "singleUse": false
-              }
+              },
+              "causedBy": "$callA"
             }
           }
         ],
@@ -2452,6 +2455,14 @@
               }
             },
             "invocation": "$callA"
+          }
+        ],
+        "absent": [
+          {
+            "text": "access-decision",
+            "under": [
+              "/records"
+            ]
           }
         ]
       }
@@ -3062,7 +3073,8 @@
                 "_meta": {
                   "io.github.shrav-k.conduit/operation": "@core#admission-hook.v1",
                   "io.github.shrav-k.conduit/instance": "$login",
-                  "io.github.shrav-k.conduit/filters": []
+                  "io.github.shrav-k.conduit/filters": [],
+                  "io.github.shrav-k.conduit/caller": "00000000-0000-4000-8000-000000000005"
                 }
               }
             },

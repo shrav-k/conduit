@@ -73,13 +73,13 @@ spec:
   - github.com/shrav-k/conduit/core#sign-out-hook.v1
   - github.com/shrav-k/conduit/core#admission-hook.v1
   implementation:
-    github.com/shrav-k/conduit/core#account-hook.v1: example.org/admission#resource
-    github.com/shrav-k/conduit/core#sign-in-hook.v1: example.org/admission#resource
-    github.com/shrav-k/conduit/core#sign-out-hook.v1: example.org/admission#resource
-    github.com/shrav-k/conduit/core#admission-hook.v1: example.org/admission#resource
-    example.org/admission#set-admission.v1: example.org/admission#resource
+    github.com/shrav-k/conduit/core#account-hook.v1: example.org/acme/admission#resource
+    github.com/shrav-k/conduit/core#sign-in-hook.v1: example.org/acme/admission#resource
+    github.com/shrav-k/conduit/core#sign-out-hook.v1: example.org/acme/admission#resource
+    github.com/shrav-k/conduit/core#admission-hook.v1: example.org/acme/admission#resource
+    example.org/acme/admission#set-admission.v1: example.org/acme/admission#resource
   admission:
     levers: /admission
-    control: example.org/admission#set-admission.v1
+    control: example.org/acme/admission#set-admission.v1
   controls:
-  - example.org/admission#set-admission.v1
+  - example.org/acme/admission#set-admission.v1

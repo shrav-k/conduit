@@ -18,10 +18,10 @@ spec:
   loginResource:
     place: /login
   offers:
-  - example.org/admission#turns.v1
+  - example.org/acme/admission#turns.v1
   implementation:
-    example.org/admission#turn.v1: example.org/admission#plain-agent
-    example.org/admission#status.v1: example.org/admission#plain-agent
+    example.org/acme/admission#turn.v1: example.org/acme/admission#plain-agent
+    example.org/acme/admission#status.v1: example.org/acme/admission#plain-agent
   admission:
     loginTypes:
-    - example.org/admission#login-holder.v1
+    - example.org/acme/admission#login-holder.v1

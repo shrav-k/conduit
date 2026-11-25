@@ -16,16 +16,20 @@
 #                  Pointer and holds no part of a secret)
 #                  PND-016 (a hold on a report or for want of one carries
 #                  `properties.admission`)
+#                  IFC-054 (the warning of a warned call carries `properties.admission`)
 #   condition.v1   LIF-011, OBS-002, OBS-003, PRV-009
 #   record.v1      REC-002, LIF-013, SEC-015, SEC-018, PRV-024 (no record holds what the
 #                  `secrets` or the `identity` of `run.v1` hold)
 #                  IFC-054 (the end record of a login's admission hook holds its report)
 #                  PND-016 (an admission ask names its triggering request in `causedBy`)
+#                  IFC-054 (the dispatch record of a warned call holds its warning in
+#                  `admissionWarning`)
 #   usage.v1       IFC-051 (what one call's model work used, by client and model)
 #   limit-report.v1 IFC-052 (the usage limits one call's client reported)
 #   limit-status.v1 IFC-053 (the newest usage limits an instance shows)
 #   admission-report.v1 IFC-054 (a login's answer to whether model work may start on it now)
-#   admission-hold.v1 PND-016 (why a call that starts model work on a guarded login was held)
+#   admission-hold.v1 PND-016, IFC-054 (why a call that starts model work on a guarded
+#                  login was held, or what warned it)
 #   admission-status.v1 IFC-054 (a login's admission state in a status, or that its calls
 #                  are not checked)
 # Standing: draft specification; see spec/README.md for status and coverage.
@@ -86,7 +90,9 @@ metadata:
     output format names them (SUB-005). A refusal carries properties.refusal in the form
     refusal.v1 (ACC-056); every reason names its deciding rule (IFC-050).
     A hold under PND-016 on a report or for want of one carries `properties.admission` in the
-    form `admission-hold.v1`. A request held by its dispatch check or cancelled while waiting
+    form `admission-hold.v1`. So does the warning of IFC-054, of an attempt dispatched on a
+    report that warns, whose `level` is `warning` and whose `properties.admission` has
+    `dispatched` true. A request held by its dispatch check or cancelled while waiting
     under PND-016 carries no `properties.admission`.
     For a translated document, `properties.translation` identifies the SCT rule and generated
     document name; SCT-014 maps its location into the authored text.
@@ -179,7 +185,8 @@ metadata:
     succeeded holds its report in `admission` (IFC-054). Each record of an admission ask also
     names in `causedBy` the engine's ID for the request whose wait started it (PND-016). This
     optional member applies to the ask's records even if that request is cancelled before
-    dispatch; it is distinct from `serving`.
+    dispatch; it is distinct from `serving`. The record of each dispatch that PND-016 decided
+    on a report that warns holds its warning in `admissionWarning` (IFC-054).
 spec:
   type: object
   properties:
@@ -220,6 +227,7 @@ spec:
         limits: {$ref: github.com/shrav-k/conduit/core#limit-report.v1}
         limitsDropped: {$ref: github.com/shrav-k/conduit/core#diagnostic.v1}
         admission: {$ref: github.com/shrav-k/conduit/core#admission-report.v1}
+        admissionWarning: {$ref: github.com/shrav-k/conduit/core#diagnostic.v1}
   required: [specversion, id, source, type, time, data]
 ---
 apiVersion: github.com/shrav-k/conduit/v0
@@ -597,8 +605,9 @@ kind: Schema
 metadata:
   name: admission-hold.v1
   description: >-
-    Why a call that starts model work on an Agent of a guarded login was held (PND-016).
-    With `dispatched` true, which no result in this version carries, it describes the
+    Why a call that starts model work on an Agent of a guarded login was held (PND-016),
+    or what warned a call that was dispatched (IFC-054).
+    With `dispatched` true, as the warning of IFC-054 carries it, it describes the
     report that admitted such a call with `warning` or `cannot-tell`. `login` names the
     login. `report` is the report that decided, null where no report of the ask decided
     and where a single-use report admitted another call. `reportInvocation` is the ask
@@ -674,6 +683,7 @@ spec:
           type: object
           properties:
             admit: {const: true}
+            reason: {enum: [warning, cannot-tell]}
         noReport: {type: 'null'}
         singleUse: {type: 'null'}
         lifts: {type: 'null'}

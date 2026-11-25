@@ -1,0 +1,13 @@
+# Added cases for work order 318.
+- name: access-admission-control-open
+  kind: added
+  paths: ['']
+  cases: [access-admission-control-open]
+- name: access-ask-admission-refused
+  kind: added
+  paths: ['']
+  cases: [access-ask-admission-refused]
+- name: requests-admission-warning
+  kind: added
+  paths: ['']
+  cases: [requests-admission-warning]

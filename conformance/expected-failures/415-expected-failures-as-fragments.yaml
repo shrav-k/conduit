@@ -1,6 +1,14 @@
 {
   "cases": [
     {
+      "id": "access-admission-control-open",
+      "reason": "CTR-015, order 318: the first build opens a Conduit whose consumer is an Agent and that lists a login's admission control; the guard's engine order for the warnings and the open makes it pass"
+    },
+    {
+      "id": "access-ask-admission-refused",
+      "reason": "ACC-058, order 318: the first build does not offer request-access.v1; DEC-064's engine orders and the guard's engine order for the warnings and the open make it pass"
+    },
+    {
       "id": "access-ask-offered",
       "reason": "ACC-058: the first build does not offer request-access.v1; DEC-064's engine orders make it pass"
     },
@@ -35,6 +43,10 @@
     {
       "id": "requests-admission-wait-ends",
       "reason": "PND-016, order 316: the first build asks for a login's report and waits, but holds no call on a report or for want of one; the guard's engine order for the hold makes it pass"
+    },
+    {
+      "id": "requests-admission-warning",
+      "reason": "IFC-054, order 318: the first build dispatches a call on a guarded login with no ask and carries no warning; the guard's engine orders for the ask, the hold and the warnings make it pass"
     },
     {
       "id": "requests-attributed-a-hook",

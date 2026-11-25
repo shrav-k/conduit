@@ -903,39 +903,55 @@
   level: must
   when: >-
     The engine's call of `admission-hook.v1` on a login Resource whose Type states
-    `admission` (CTR-015) ends; or a Resource whose Type states `signIn` (CTR-013), or
+    `admission` (CTR-015) ends; or the engine dispatches a request, or a new attempt
+    of one, under PND-016 on a report whose `reason` is `warning` or `cannot-tell`, or
+    that attempt ends; or a Resource whose Type states `signIn` (CTR-013), or
     an Agent whose login place refers to one, is inspected.
   then: >-
     Where the call succeeded, the record of its end holds its output `admission`,
     unchanged, in `admission`, whatever the Type's `records` states, and the engine
-    keeps that report as the login's newest, with that record's `time` as its keep time.
-    A call that failed or ended unknown, one whose output fails `admission-report.v1`
-    among them (OPS-007), gives no report, and its record holds no `admission`. A kept
-    report is current from its keep time until the first of these ends it for good: for
-    a report that is not single use, `validForSeconds` seconds pass on the engine's own
-    clock; a single-use report admits its one call; the engine keeps a limits member
-    (IFC-052) in the end record of a call to the login, or to an Agent whose login place
-    refers to it, other than the hook's call that gave the report; or a control stores a
-    value at or under the Type's levers place (REV-007). A report given by a call that
-    was in progress when such a value was stored is kept already ended, and decides no
-    call (PND-016). Requests still waiting on that call keep waiting for a fresh ask
-    under the stored levers, as PND-016 specifies. The status of a Resource whose Type
-    states `signIn`, and of an Agent whose login place refers to one, holds `admission`,
-    in the form of the core schema `admission-status.v1`, the Agent's being its login's.
-    Where the login's Type states `admission`, it gives `checked` true; the newest
-    report the engine kept, with the call that gave it, its keep time and the end of its
-    validity; its `state`, `current` when the report may decide a call, `ended` when it
-    may no longer decide one, or `none` when no report was kept; and `ended`, null
-    unless the state is `ended`, then `valid-for-ended` when its `validForSeconds`
-    passed, `single-use` when it admitted its one call, `newer-limits` when a newer
-    limits member was kept (IFC-052), or `levers-changed` when a control stored a value
-    at or under the Type's levers place. It also gives `asking`, the ask in progress
-    (PND-016), or null where none is in progress; and `noReport`, null unless PND-016
-    holds every call after an ask that gave no report, then that ask, null where it was
-    not dispatched, why it gave none and when that hold ends. Its `cause` is `failed`
-    when the ask failed, `unknown` when it ended with no known outcome, `deadline` when
-    it passed DL21, or `not-dispatched` when it could not be dispatched. Where the Type
-    states no `admission`, it gives `checked` false alone.
+    keeps that report as the login's newest, with that record's `time` as its keep
+    time. A call that failed or ended unknown, one whose output fails
+    `admission-report.v1` among them (OPS-007), gives no report, and its record
+    holds no `admission`. A kept report is current from its keep time until the
+    first of these ends it for good: for a report that is not single use,
+    `validForSeconds` seconds pass on the engine's own clock; a single-use report
+    admits its one call; the engine keeps a limits member (IFC-052) in the end
+    record of a call to the login, or to an Agent whose login place refers to it,
+    other than the hook's call that gave the report; or a control stores a value at
+    or under the Type's levers place (REV-007). A report given by a call that was
+    in progress when such a value was stored is kept already ended, and decides no
+    call (PND-016). Requests still waiting on that call keep waiting for a fresh
+    ask under the stored levers, as PND-016 specifies. Each dispatch of a request,
+    or of a new attempt of one (OPS-012, OPS-024), that PND-016 decides on a report
+    whose `reason` is `warning` or `cannot-tell` is warned: the record of that
+    dispatch holds in `admissionWarning`, and the result that ends that attempt,
+    whatever its outcome or reason, holds in its `_meta` under
+    `io.github.shrav-k.conduit/admission`, one diagnostic whose `level` is
+    `warning`, whose `ruleId` is PND-016 and whose `properties.admission` has the
+    form of the core schema `admission-hold.v1`, with `dispatched` true and that
+    report as its `report`. A repeat that OPS-009 answers with a warned attempt's
+    result carries that warning too. A dispatch decided on a report whose `reason`
+    is `within-levers`, or one to an Agent of a login whose Type states no
+    `admission`, is not warned: its record and the result that ends its attempt
+    carry no warning, whatever an earlier attempt carried. The status of a Resource
+    whose Type states `signIn`, and of an Agent whose login place refers to one,
+    holds `admission`, in the form of the core schema `admission-status.v1`, the
+    Agent's being its login's. Where the login's Type states `admission`, it gives
+    `checked` true; the newest report the engine kept, with the call that gave it,
+    its keep time and the end of its validity; its `state`, `current` when the
+    report may decide a call, `ended` when it may no longer decide one, or `none`
+    when no report was kept; and `ended`, null unless the state is `ended`, then
+    `valid-for-ended` when its `validForSeconds` passed, `single-use` when it
+    admitted its one call, `newer-limits` when a newer limits member was kept
+    (IFC-052), or `levers-changed` when a control stored a value at or under the
+    Type's levers place. It also gives `asking`, the ask in progress (PND-016), or
+    null where none is in progress; and `noReport`, null unless PND-016 holds every
+    call after an ask that gave no report, then that ask, null where it was not
+    dispatched, why it gave none and when that hold ends. Its `cause` is `failed`
+    when the ask failed, `unknown` when it ended with no known outcome, `deadline`
+    when it passed DL21, or `not-dispatched` when it could not be dispatched. Where
+    the Type states no `admission`, it gives `checked` false alone.
   observable: >-
     Validity counts from the keep time, never from `observedAt`, with no minimum or
     bound beyond `admission-report.v1`'s schema. The engine checks only the output's
@@ -957,6 +973,25 @@
     null where the inspecting actor may not inspect the login. A login whose Type states
     no `admission`, including an earlier version of a Type whose later version states
     it, keeps working unchecked, and its status says so.
+    The warning reaches the caller alone, once the attempt has ended; it reaches a
+    calling Agent's implementation in the result's `_meta` alone. The request is sent
+    to the called Agent's implementation exactly as on a report whose `reason` is
+    `within-levers` (PND-016). The key changes no other part of the result, its
+    `isError`, `content` and `structuredContent` among them, so a plain result's content
+    stays unchanged (IFC-025). The warning decides nothing: the call is dispatched and
+    runs as it would with no warning, no later call is held for it, and the record keeps
+    it whatever the Type's `records` states. Each attempt is warned, or not, on the
+    report that decided its own dispatch. The warning's text names the login by kind,
+    name and ID, and says that the call was dispatched and started model work on a
+    report that warns. For `warning`, it names the lever and its value and the window
+    with its used percentage and reset. For `cannot-tell`, it says why the login cannot
+    tell, in `cannotTell`'s word, and names the `whenUnknown` lever and its value. For a
+    single-use report, it says that the report admitted this call alone and is spent, so
+    that the login's next such call waits for a new ask. It gives the paid usage read,
+    each value "not reported" where null, and says that a later call on the login may be
+    held. It names the ask only where the caller may inspect the login, as
+    `reportInvocation` is null otherwise. Neither the text nor `admission-hold.v1` names
+    an amount, a balance or a currency.
 
 - id: IFC-028
   layer: interface

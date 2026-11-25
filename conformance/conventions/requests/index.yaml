@@ -49,6 +49,14 @@
       ]
     },
     {
+      "id": "requests-admission-warning",
+      "case": "conventions/requests/admission-warning/case.yaml",
+      "promises": [
+        "IFC-054",
+        "PND-016"
+      ]
+    },
+    {
       "id": "requests-attributed-a-hook",
       "case": "conventions/requests/attributed-a-hook/case.yaml",
       "promises": [

@@ -1,6 +1,6 @@
 apiVersion: github.com/shrav-k/conduit/v0
 address: example.org/conduit/git
-version: 0.1.0
+version: 0.2.0
 exports: [working-copy.v1, copy.v1, file.read.v1, directory.list.v1, file.write.v1, changes.v1, read, read-write]
 implementations:
   server:

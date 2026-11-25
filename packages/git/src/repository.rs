@@ -195,6 +195,7 @@ impl State {
                 .map_err(|_| "repository is unreadable")?;
             git.validate_base(&config.commit)?;
             git.checkout(&config.commit, &stage, &index)?;
+            git.write_view(&config.commit, &stage, &index)?;
             // TempDir starts private; the checkout inherits the mode of a supplied empty root.
             if let Some((_, _, mode)) = prior {
                 fs::set_permissions(&stage, fs::Permissions::from_mode(mode & 0o777))
@@ -430,6 +431,59 @@ impl<'a> Git<'a> {
             return Err("the base commit contains a Git link; submodules are unsupported".into());
         }
         Ok(())
+    }
+
+    fn write_view(&self, commit: &str, stage: &Path, index: &Path) -> Result<()> {
+        let write = || -> std::io::Result<()> {
+            let view = stage.join(".git");
+            for directory in [
+                "info",
+                "objects/info",
+                "objects/pack",
+                "refs/heads",
+                "refs/tags",
+            ] {
+                fs::create_dir_all(view.join(directory))?;
+            }
+            fs::write(view.join("HEAD"), format!("{commit}\n"))?;
+            fs::copy(index, view.join("index"))?;
+            fs::copy(
+                self.git_dir.join("info/attributes"),
+                view.join("info/attributes"),
+            )?;
+            let mut alternate = self
+                .git_dir
+                .join("objects")
+                .into_os_string()
+                .as_encoded_bytes()
+                .to_vec();
+            alternate.push(b'\n');
+            fs::write(view.join("objects/info/alternates"), alternate)?;
+            fs::write(
+                view.join("config"),
+                "[core]\n\
+                 repositoryformatversion = 0\n\
+                 bare = false\n\
+                 logAllRefUpdates = false\n\
+                 hooksPath = /dev/null\n\
+                 fsmonitor = false\n\
+                 autocrlf = false\n\
+                 filemode = true\n\
+                 symlinks = true\n\
+                 ignorecase = false\n\
+                 precomposeunicode = false\n\
+                 attributesFile = /dev/null\n\
+                 excludesFile = /dev/null\n\
+                 [credential]\n\
+                 helper =\n\
+                 [protocol]\n\
+                 allow = never\n\
+                 [user]\n\
+                 name =\n\
+                 email =\n",
+            )
+        };
+        write().map_err(|_| "cannot write working-copy Git view".into())
     }
 
     fn checkout(&self, commit: &str, stage: &Path, index: &Path) -> Result<()> {

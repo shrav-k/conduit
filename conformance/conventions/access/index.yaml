@@ -1,6 +1,22 @@
 {
   "cases": [
     {
+      "id": "access-admission-control-open",
+      "case": "conventions/access/admission-control-open/case.yaml",
+      "promises": [
+        "CTR-015",
+        "ACC-056"
+      ]
+    },
+    {
+      "id": "access-ask-admission-refused",
+      "case": "conventions/access/ask-admission-refused/case.yaml",
+      "promises": [
+        "ACC-058",
+        "ACC-056"
+      ]
+    },
+    {
       "id": "access-ask-offered",
       "case": "conventions/access/ask-offered/case.yaml",
       "promises": [

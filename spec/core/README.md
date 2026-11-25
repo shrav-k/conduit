@@ -634,7 +634,7 @@ its binding and labels are fixed when made (PLC-008, ENR-010).
 | `limit-report.v1` | Schema | IFC-052: the usage limits one call's client reported |
 | `limit-status.v1` | Schema | IFC-053: the newest usage limits an Agent or login Resource shows |
 | `admission-report.v1` | Schema | IFC-054: a login's answer to whether model work may start on it now |
-| `admission-hold.v1` | Schema | PND-016: why a call that starts model work on a guarded login was held |
+| `admission-hold.v1` | Schema | PND-016, IFC-054: why a call that starts model work on a guarded login was held, or what warned it |
 | `admission-status.v1` | Schema | IFC-054: a login's admission state in a status, or that its calls are not checked |
 | `name.v1` | Schema of a document's part | OBJ-001, OBJ-022 |
 | `export-name.v1` | Schema of a document's part | NAM-004 |

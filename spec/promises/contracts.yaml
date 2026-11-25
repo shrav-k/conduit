@@ -409,6 +409,10 @@
     registration and at replacement, and a control that would store one is not
     dispatched and reports invalid, each with a diagnostic naming CTR-015 and both
     pointers.
+    A Conduit whose consumer is an Agent and that lists an operation that its target's
+    Type names as `admission.control`, compared as qualified references, is not opened:
+    a request to open it, whoever sends it, root among them, whether on its own or as a
+    part of a setup (CON-004), is not dispatched and reports refused under this promise.
   observable: >-
     The engine decides each call that starts model work on an Agent of the login on the
     login's report, under PND-016; the following lever meanings describe that report
@@ -428,4 +432,21 @@
     listed Type's package documents as its hook's input. The engine checks the listing,
     never the members. The levers are the login's configuration, which reaches only the
     login's own calls (IFC-006) and its `admission-hook.v1` as the input `levers`.
-    Nothing of `admission` reaches an Agent's implementation.
+    Nothing of `admission` reaches a call dispatched to an Agent's implementation
+    (IFC-006); a calling Agent learns a hold or a warning only from its own request's
+    result (PND-016, IFC-054). No Agent tunes a login's levers: the control reaches a
+    login only through a Conduit to it whose consumer is not an Agent, an Interface's
+    among them, and is authorized there as any control is (ACC-033). A Conduit whose
+    consumer is an Agent may still list the login's other operations. The refused open's
+    diagnostic names the Conduit as the request named it and the operation by its
+    qualified reference. It says that the operation is the admission control of the
+    target's Type, named by its qualified reference, and changes the login's usage
+    levers; that no Conduit whose consumer is an Agent may be opened listing it, whoever
+    sends the open; that nothing was opened, not even the Conduit's other operations,
+    and the Conduit stays as it was; that a Conduit whose consumer is an Agent may still
+    list the login's other operations, so the Conduit can be replaced or registered
+    again without the admission control and then opened; and that an Interface's client
+    tunes the levers through a Conduit of its own to the login. All of this is in tier 1,
+    as the bound of the caller's Conduit to `access` covers the target (ACC-056). The
+    Agent's calls that start model work on the login are decided on its report as before
+    (PND-016), whatever Conduits it holds.

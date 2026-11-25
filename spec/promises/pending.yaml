@@ -306,6 +306,9 @@
     this promise, whatever a later report says; it is sent exactly as with no
     `admission` stated, so nothing of this promise reaches the Agent's implementation;
     the requests one report admits run in parallel, as PND-005 lets calls on one login.
+    Each dispatch, of a request or of a new attempt of one, on a report whose `reason`
+    is `warning` or `cannot-tell` is warned under IFC-054: its caller learns it from the
+    result that ends that attempt, and the record of that dispatch holds it.
     A login whose Type states no `admission` is not checked: its Agents' requests are
     dispatched as without this promise, and its status says so (IFC-054).
 

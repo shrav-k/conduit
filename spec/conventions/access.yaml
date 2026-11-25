@@ -100,14 +100,15 @@
   when: >-
     An actor asks to open a Conduit.
   then: >-
-    The request is an operation of the `access` Resource. It is dispatched only if the actor is
-    the consumer of an open Conduit to `access` that lists the operation and whose bound covers
-    the new Conduit's target, as ACC-029 states, and names every operation the new Conduit
-    lists. Being the consumer of an open Conduit to the target does not permit it. Where the new
-    Conduit is itself one to `access`, ACC-030 states the condition in place of this one. Where
-    the new Conduit lists `get-secret.v1`, SEC-008 states a further condition. A request to
-    open a Conduit that is already open is decided like any other, changes nothing and has the
-    outcome succeeded.
+    The request is an operation of the `access` Resource. It is dispatched only if the actor
+    is the consumer of an open Conduit to `access` that lists the operation and whose bound
+    covers the new Conduit's target, as ACC-029 states, and names every operation the new
+    Conduit lists. Being the consumer of an open Conduit to the target does not permit it.
+    Where the new Conduit is itself one to `access`, ACC-030 states the condition in place
+    of this one. Where the new Conduit lists `get-secret.v1`, SEC-008 states a further
+    condition. Where its consumer is an Agent and it lists its target's admission control,
+    CTR-015 refuses it. A request to open a Conduit that is already open is decided like any
+    other, changes nothing and has the outcome succeeded.
   observable: >-
     An actor with an open Conduit to the target but none to `access` reports refused. A request
     whose target the bound does not cover, or one of whose operations it does not name, reports
@@ -898,45 +899,51 @@
     under IFC-026.
   then: >-
     Its result carries one error diagnostic, whose ruleId is the refusing promise and whose
-    properties.refusal has the form refusal.v1. Where more than one rule would refuse the request,
-    the refusing promise is the first that refuses in this order: (1) who is asking: IFC-032 and
-    IFC-022, where the request establishes no instance, then the sender and the invocations it
-    serves, under IFC-021, IFC-028, IFC-016, ACC-019, ACC-034, ACC-039 and IMP-008; (2) ACC-001,
-    then SEC-010 where the engine's read of a secret finds more than one open Conduit from the
-    instance to the secret Resource that lists `get-secret.v1`; (3) the rules on the caller and the
-    operation it asks for alone: ACC-032 on an operation reserved to root, ACC-057, ACC-058, CTR-013
-    and SEC-007, and PND-009 and PND-010 on who may answer or sign in; (4) ACC-033; (5) the bound:
-    ACC-029, ACC-030, ACC-053 and ACC-055; (6) the rules that read the object the request names:
-    ACC-054, SEC-008, ACC-024 and LIF-034, and ACC-032, ACC-058, PND-009 and PND-010 on a Conduit to
-    be opened that lists an operation they restrict; (7) last, the filter: ACC-008. A promise that
-    this order does not name restates a refusal and is never the refusing promise. Tier 1 is given
-    to every caller, an Agent's model among them: the qualified operation, the tool and local
-    Conduit name and object references as the request named them, and a cause: a non-empty sentence,
-    in the engine's own words, that conveys the refusing rule's row below. The no-open-Conduit
-    statement belongs to ACC-001. Nothing in tier 1 depends on a fact outside both what the caller
-    may inspect and what the bound of its Conduit to `access` covers, where the request is made
-    through one; one with no bound covers every target (ACC-029), but an asking Conduit's missing
-    bound covers none (ACC-058). Within them, tier 1 may depend on the named Conduit and on the
-    chain of invocations the caller serves. Tier 2 is always given to root. Another caller gets it
-    only where it may inspect the authorizing target under ACC-033 and every object the request
-    names, through open Conduits with no filter. For an operation that ACC-033 does not route, the
-    authorizing target is the request's target; for a request that a Pool or a Fleet authorizes, no
-    caller but root and a holder of `inspect.v1` on `management` meets that condition. Tier 2 adds
-    the resolved target and the caller's Conduits to it, each with its name, local name, state and
-    operations, or states that the named object does not exist.
+    properties.refusal has the form refusal.v1. Where more than one rule would refuse the
+    request, the refusing promise is the first that refuses in this order: (1) who is
+    asking: IFC-032 and IFC-022, where the request establishes no instance, then the sender
+    and the invocations it serves, under IFC-021, IFC-028, IFC-016, ACC-019, ACC-034,
+    ACC-039 and IMP-008; (2) ACC-001, then SEC-010 where the engine's read of a secret finds
+    more than one open Conduit from the instance to the secret Resource that lists
+    `get-secret.v1`; (3) the rules on the caller and the operation it asks for alone:
+    ACC-032 on an operation reserved to root, ACC-057, ACC-058, CTR-013 and SEC-007, and
+    PND-009 and PND-010 on who may answer or sign in; (4) ACC-033; (5) the bound: ACC-029,
+    ACC-030, ACC-053 and ACC-055; (6) the rules that read the object the request names:
+    ACC-054, SEC-008, ACC-024 and LIF-034, and ACC-032, ACC-058, CTR-015, PND-009 and
+    PND-010 on a Conduit to be opened that lists an operation they restrict; (7) last, the
+    filter: ACC-008. A promise that this order does not name restates a refusal and is never
+    the refusing promise. Tier 1 is given to every caller, an Agent's model among them: the
+    qualified operation, the tool and local Conduit name and object references as the
+    request named them, and a cause: a non-empty sentence, in the engine's own words, that
+    conveys the refusing rule's row below. The no-open-Conduit statement belongs to ACC-001.
+    Nothing in tier 1 depends on a fact outside both what the caller may inspect and what
+    the bound of its Conduit to `access` covers, where the request is made through one; one
+    with no bound covers every target (ACC-029), but an asking Conduit's missing bound
+    covers none (ACC-058). The one exception is ACC-058's row for a login's admission
+    control, which also depends on whether a Type of an installed package or of a submitted
+    project names the asked operation as its `admission.control` (CTR-015). Within them,
+    tier 1 may depend on the named Conduit and on the chain of invocations the caller
+    serves. Tier 2 is always given to root. Another caller gets it only where it may inspect
+    the authorizing target under ACC-033 and every object the request names, through open
+    Conduits with no filter. For an operation that ACC-033 does not route, the authorizing
+    target is the request's target; for a request that a Pool or a Fleet authorizes, no
+    caller but root and a holder of `inspect.v1` on `management` meets that condition. Tier
+    2 adds the resolved target and the caller's Conduits to it, each with its name, local
+    name, state and operations, or states that the named object does not exist.
   observable: |-
     The Conduits in tier 2 include open ones, registered ones not yet open and closed ones
     whose tombstones remain (LIF-040). An inventory supplies its own disclosure under
     LIF-013. Without that inspection authority the diagnostic is identical whether a name
-    exists or not, apart from the references the caller wrote, except where the `then` lets tier
-    1 depend on a named object within the caller's bound. A target inferred from an
+    exists or not, apart from the references the caller wrote, except where the `then` lets
+    tier 1 depend on a named object within the caller's bound or, for ACC-058's row for a
+    login's admission control, on the Types the engine holds. A target inferred from an
     owner is described by its ACC-033 row in tier 1, never by a newly resolved name. The
     first text block of IFC-025 and the message of IFC-012's error repeat the diagnostic's
-    explanation. The record states the refusing rule and tier, never the tier-2 list.
-    The rows below give the causes. They describe requirements, not hidden facts about
-    a named object's state at tier 1. Promises that restate a refusal reuse the deciding
-    access rule's cause; the ruleId remains the deciding rule. A cause never discloses an
-    inferred owner, retirement state or chain beyond what the caller may learn.
+    explanation. The record states the refusing rule and tier, never the tier-2 list. The
+    rows below give the causes. They describe requirements, not hidden facts about a named
+    object's state at tier 1. Promises that restate a refusal reuse the deciding access
+    rule's cause; the ruleId remains the deciding rule. A cause never discloses an inferred
+    owner, retirement state or chain beyond what the caller may learn.
 
     | Rule | Cause |
     | --- | --- |
@@ -969,6 +976,7 @@
     | CON-008 | Requests need an open Conduit; retirement closes target Conduits (ACC-001, ACC-011). |
     | CON-031 | Explicit open still needs ordinary authority (ACC-006); it is not implied by registration. |
     | CTR-013 | Only root may confirm a shared client ID in install.v1's confirmClientIds. |
+    | CTR-015 | No Conduit whose consumer is an Agent may be opened listing a login's admission control; an Interface's client tunes the levers. |
     | FLEET-004 | Fleet ownership gives no permission (ACC-001, ACC-033). |
     | IFC-012 | No tool of that spelling is presented; no open Conduit permits this call. |
     | IFC-013 | No open Conduit permits this call, as IFC-012 states. |
@@ -1013,35 +1021,41 @@
     An actor asks for `request-access.v1` or `withdraw-access-request.v1`, or to open a Conduit
     listing either operation.
   then: >-
-    Either operation is dispatched only for an Agent on its own behalf, through its own asking
-    Conduit: one to `access` listing no other of its operations. No other Conduit listing either is
-    opened; it is refused under this promise. An ask for an operation in the table below, or with
-    `target` `management` or `access`, whether named by `target` or taken from `conduit`, is refused
-    under this promise and raises nothing. An ask for an operation of the table is refused with its
-    row's message, whatever its `target`; only an ask for another operation gets the `target`
-    message. This is decided on the operation's qualified reference in the core package alone, as
-    PRV-004 matches, and on the `target` as named. An ask with both or neither of `target` and
-    `conduit`, or a `conduit` that is not the caller's, reports invalid under this promise. Where
-    the asking Conduit applies `bound.v1`, an ask outside it, as ACC-029 states for an open, is
-    refused under ACC-029. Otherwise the ask succeeds and raises one pending action of kind
-    access-request, which permits nothing (PND-001). Its subject is the asking Agent, in resolved
-    form under PND-001. The named target, whether resolved or not, is kept in the action's evidence
-    under PND-004. The action is raised at root under PND-002. No action is raised if the caller is
-    the consumer of an open Conduit to the `target` listing the operation (held), or an action for
-    the same ask (Agent, operation and `target` as named) is unanswered (unanswered). Apart from the
-    bound, a result depends only on those names and the caller's own Conduits and asks, so a
-    missing, a hidden and a replaced `target` give the same result. Its one info diagnostic, ruleId
-    ACC-058, says what happened and what to do. `operation` is the operation's qualified reference,
-    `address#name`, as `bound.v1` names it; a tool name is invalid under this promise. `action` is
-    the pending action's ID for `raised` and `unanswered`; `expiry` is when that action expires.
-    Both are present for those states. For `held`, `tools` lists the caller's tools that already
-    call the operation on that target. Those tools remain subject to their Conduits' restrictions.
-    `withdraw-access-request.v1` answers its action withdrawn only for the Agent that raised it;
-    another ID is refused under this promise before invalid. An asking Conduit is no right to open,
-    close or lift, whatever its bound (ACC-006, ACC-012, ACC-053); only an actor whose own Conduit
-    to `access` has no bound opens one with none. ACC-001's cause, for an Agent holding the ask's
-    tool, adds "You may ask root for access with TOOL, naming the operation by its qualified
-    reference and its target."
+    Either operation is dispatched only for an Agent on its own behalf, through its own
+    asking Conduit: one to `access` listing no other of its operations. No other Conduit
+    listing either is opened; it is refused under this promise. An ask for an operation in
+    the table below, or with `target` `management` or `access`, whether named by `target` or
+    taken from `conduit`, is refused under this promise and raises nothing. An ask for an
+    operation of the table is refused with its row's message, whatever its `target`; only an
+    ask for another operation gets the `target` message. This is decided on the operation's
+    qualified reference in the core package alone, as PRV-004 matches, and on the `target`
+    as named. A login's admission control, the table's last row, is matched instead on the
+    operation alone: an operation that a Type of an installed package or of a submitted
+    project names as its `admission.control` (CTR-015) is one, whatever `target` the ask
+    names. An ask with both or neither of `target` and `conduit`, or a `conduit` that is not
+    the caller's, reports invalid under this promise. Where the asking Conduit applies
+    `bound.v1`, an ask outside it, as ACC-029 states for an open, is refused under ACC-029.
+    Otherwise the ask succeeds and raises one pending action of kind access-request, which
+    permits nothing (PND-001). Its subject is the asking Agent, in resolved form under
+    PND-001. The named target, whether resolved or not, is kept in the action's evidence
+    under PND-004. The action is raised at root under PND-002. No action is raised if the
+    caller is the consumer of an open Conduit to the `target` listing the operation (held),
+    or an action for the same ask (Agent, operation and `target` as named) is unanswered
+    (unanswered). Apart from the bound and, for the last row, the Types the engine holds, a
+    result depends only on those names and the caller's own Conduits and asks, so a missing,
+    a hidden and a replaced `target` give the same result. Its one info diagnostic, ruleId
+    ACC-058, says what happened and what to do. `operation` is the operation's qualified
+    reference, `address#name`, as `bound.v1` names it; a tool name is invalid under this
+    promise. `action` is the pending action's ID for `raised` and `unanswered`; `expiry` is
+    when that action expires. Both are present for those states. For `held`, `tools` lists
+    the caller's tools that already call the operation on that target. Those tools remain
+    subject to their Conduits' restrictions. `withdraw-access-request.v1` answers its action
+    withdrawn only for the Agent that raised it; another ID is refused under this promise
+    before invalid. An asking Conduit is no right to open, close or lift, whatever its bound
+    (ACC-006, ACC-012, ACC-053); only an actor whose own Conduit to `access` has no bound
+    opens one with none. ACC-001's cause, for an Agent holding the ask's tool, adds "You may
+    ask root for access with TOOL, naming the operation by its qualified reference and its
+    target."
   observable: |-
     The refusal's message is exact, under IFC-050's exception for a promise that fixes a message:
     "OPERATION cannot be asked for (ACC-058): WHY Nothing was raised. TODO", with OPERATION as sent
@@ -1051,6 +1065,8 @@
     Nothing was raised. If your task needs it, say so in your reply.", with TARGET as named; its
     first text block is likewise "refused: " and the message. Names in the table are the core
     package's qualified references, .v1 unless versioned explicitly.
+    The last row names no core operation but any login's admission control, matched as the `then`
+    says.
 
     | Operations | WHY | TODO |
     | --- | --- | --- |
@@ -1063,6 +1079,8 @@
     | fetch-package | the engine alone calls it, by a provider call, while it decides an installation (PRV-005). No Conduit whose consumer is an Agent may list it (PRV-004). | If your task needs a package, say so in your reply. |
     | setup-hook, retire-hook | the engine alone dispatches it, as a part of a setup or a retirement, through no Conduit (TPL-017, TPL-018). | If your task needs that, ask for set-up.v1 or retire.v1 with the instance's owning Pool or Fleet as the target. |
     | sign-in-hook, account-hook, sign-out-hook | the engine alone dispatches it, as a part of a sign-in or a setup, through no Conduit (PND-011). | If a login has lapsed, say so in your reply; root signs in. |
+    | admission-hook | the engine alone calls it, through no Conduit, to decide a call that starts model work on an Agent of a login (PND-016). | There is nothing to ask for: the engine asks the login itself before each such call. |
     | enroll, accept-machine, remove-machine | the engine alone calls it, by a provider call within root's enrollment (PRV-005). | Only root enrolls machines. If your task needs it, say so in your reply. |
     | get-secret | no instance's request for it is ever dispatched (SEC-007); the engine alone reads a secret, into a run, through a Conduit only root opens (SEC-008). | If your task needs a secret, say so in your reply. |
     | install | root gives it only in its own documents. | If your task needs a package, say so in your reply. |
+    | a login's admission control | it changes a login's usage levers, which only an Interface's client tunes. No Conduit whose consumer is an Agent may list it (CTR-015). | If a login's levers hold your work, say so in your reply; an Interface tunes them. |

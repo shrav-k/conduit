@@ -1,0 +1,213 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Operation",
+    "metadata": {
+      "name": "commit.v1"
+    },
+    "spec": {
+      "reservedToRoot": true,
+      "effect": "Publishes the current revision.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Operation",
+    "metadata": {
+      "name": "status.v1"
+    },
+    "spec": {
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Capability",
+    "metadata": {
+      "name": "repo-access.v1"
+    },
+    "spec": {
+      "operations": [
+        "#commit.v1",
+        "#status.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "repo.v1"
+    },
+    "spec": {
+      "family": "Resource",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "offers": [
+        "#repo-access.v1"
+      ],
+      "requires": [],
+      "implementation": {
+        "#commit.v1": "#scripted-repo",
+        "#status.v1": "#scripted-repo"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "repo-template"
+    },
+    "spec": {
+      "type": "#repo.v1",
+      "config": {}
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Pool",
+    "metadata": {
+      "name": "repos"
+    },
+    "from": "github.com/shrav-k/conduit/core#pool"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "repo"
+    },
+    "from": "repo-template",
+    "owner": "repos"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Interface",
+    "metadata": {
+      "name": "actor-template"
+    },
+    "spec": {
+      "type": "github.com/shrav-k/conduit/core#interface.v1",
+      "config": {}
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Interface",
+    "metadata": {
+      "name": "actor"
+    },
+    "from": "actor-template"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "repo-both"
+    },
+    "spec": {
+      "capability": "#repo-access.v1",
+      "operations": [
+        "#commit.v1",
+        "#status.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "repo-commit"
+    },
+    "spec": {
+      "capability": "#repo-access.v1",
+      "operations": [
+        "#commit.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "repo-status"
+    },
+    "spec": {
+      "capability": "#repo-access.v1",
+      "operations": [
+        "#status.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "root-repo"
+    },
+    "from": "repo-both",
+    "consumer": {
+      "kind": "Interface",
+      "name": "root"
+    },
+    "target": {
+      "kind": "Resource",
+      "name": "repo"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "actor-status"
+    },
+    "from": "repo-status",
+    "consumer": {
+      "kind": "Interface",
+      "name": "actor"
+    },
+    "target": {
+      "kind": "Resource",
+      "name": "repo"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "open-access"
+    },
+    "spec": {
+      "capability": "github.com/shrav-k/conduit/core#access-control.v1",
+      "operations": [
+        "github.com/shrav-k/conduit/core#open.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "actor-access"
+    },
+    "from": "open-access",
+    "consumer": {
+      "kind": "Interface",
+      "name": "actor"
+    },
+    "target": {
+      "kind": "Resource",
+      "name": "access"
+    }
+  }
+]

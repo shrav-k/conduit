@@ -1118,6 +1118,28 @@ fn evaluate_path(
             return Ok(Verdict::reason("refused", "ACC-054"));
         }
     }
+    let root_own = instance["id"] == root["id"] && request.serving.is_none();
+    let restriction = if registration {
+        crate::registration::reserved_submission(
+            state,
+            request.arguments["documents"]
+                .as_array()
+                .map_or(&[][..], Vec::as_slice),
+            request.arguments.get("manifest"),
+            crate::packages::catalog_entries(state, state.preinstalled_snapshots.clone()),
+            context,
+            root_own,
+        )
+    } else if op == context.qualified("register-replacement.v1") {
+        crate::registration::reserved_replacement(state, &request.arguments, context, root_own)
+    } else {
+        None
+    };
+    if let Some(restriction) = restriction {
+        let mut verdict = Verdict::reason("refused", restriction.rule);
+        verdict.registration_location = Some(restriction.location());
+        return Ok(verdict);
+    }
     // LIF-034 also protects the container named implicitly by a cascade.
     if crate::cascade::handles(op, context) && target["first_start"] == true {
         return Ok(Verdict::reason("refused", "LIF-034"));
@@ -1166,20 +1188,20 @@ fn evaluate_path(
                 {
                     return Ok(Verdict::reason("refused", "SEC-008"));
                 }
-                if context
-                    .core_environment
-                    .scopes
-                    .values()
-                    .flat_map(|s| s.contracts.values())
-                    .any(|d| {
-                        d["spec"]["reservedToRoot"] == true
-                            && operation
-                                == context.qualified(d["metadata"]["name"].as_str().unwrap_or(""))
-                    })
-                    && id(&conduit["consumer"]) != &root["id"]
-                {
-                    return Ok(Verdict::reason("refused", "ACC-032"));
-                }
+            }
+            // ACC-056: SEC-008 precedes ACC-032 regardless of operation-list order.
+            if id(&conduit["consumer"]) != &root["id"]
+                && view.object(&conduit["target"])?.is_some_and(|target| {
+                    values(conduit, "operations")
+                        .filter_map(Value::as_str)
+                        .any(|operation| {
+                            schemas::operation(target, operation, &context.core_package).is_ok_and(
+                                |(_, _, contract)| contract["spec"]["reservedToRoot"] == true,
+                            )
+                        })
+                })
+            {
+                return Ok(Verdict::reason("refused", "ACC-032"));
             }
             if view
                 .object(&conduit["consumer"])?

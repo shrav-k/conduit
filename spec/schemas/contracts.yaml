@@ -35,11 +35,9 @@
 #   applied-requirement.v1  NAM-019, CON-018 (`requirement` is required)
 #
 # `reservedToRoot: true` on an Operation contract is the mark of an operation reserved to the
-# root Interface (ACC-032). Only an Operation contract of the core package carries it: any
-# other package that holds one is rejected when it is installed, and a project that holds
-# one is rejected when it is submitted (CTR-009). A schema sees one document and not the
-# package it belongs to, so `operation-spec.v1` accepts the key and the engine checks where
-# it is written.
+# root Interface (ACC-032), in any package or project (CTR-009). Only a capability of the
+# operation's own package or project may list it (CTR-003). A schema sees one document and
+# not the package it belongs to, so the engine checks that relationship.
 #
 # Open, as OBJ-019 exempts: the `arguments` of an applied requirement, and the value of the
 # `default` of a Requirement's input, which is a literal value. Inside `inputSchema` and
@@ -49,8 +47,7 @@
 #
 # Not expressed here, and checked by the engine: that every reference resolves to a contract of
 # the right kind; that a capability lists no two operations with one export name (CTR-007) and,
-# outside the core package, none that is reserved (CTR-003); that no Operation contract outside
-# the core package is marked `reservedToRoot` (CTR-009); that each key of a control's `changes`
+# none reserved by another package or project (CTR-003); that each key of a control's `changes`
 # is an input the control declares and each pointer a place its type's schema describes, that
 # no two of its pointers are equal or lie one inside the other, that its `inputSchema` requires
 # `revision` and that it declares no output `settings` (CTR-006); default implementations
@@ -318,8 +315,8 @@ metadata:
     `properties`, `required` and `additionalProperties` beside `type`, and nothing else. A
     property of `inputSchema` may state a `default`, which the engine fills in where the input
     is not supplied. No property of `outputSchema` states a default. An operation reserved to the root
-    Interface is marked `reservedToRoot: true`, which only an Operation contract of the core
-    package may be. An Operation contract states no default implementation: a template's
+    Interface is marked `reservedToRoot: true` on its Operation contract, in any package
+    or project (CTR-009). An Operation contract states no default implementation: a template's
     selection or its type's default chooses what runs, and the engine implements the
     operations that the core package's implementation `engine` lists.
 spec:
@@ -344,8 +341,8 @@ spec:
       type: boolean
       description: >-
         The reserved mark. True for an operation reserved to the root Interface, which is
-        dispatched only when the actor is the root Interface. Absent means false. Only an
-        Operation contract of the core package is marked.
+        dispatched only when the actor is the root Interface acting on its own behalf. Absent
+        means false. An Operation contract of any package or project may be marked (CTR-009).
     changes:
       type: object
       description: >-

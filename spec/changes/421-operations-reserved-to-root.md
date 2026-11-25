@@ -1,0 +1,2 @@
+- Changed: CTR-009, CTR-003 and ACC-032, any package may reserve its own operation to root, and no Conduit listing a reserved operation is registered or opened for another consumer (DEC-018).
+- Changed: ACC-033, ACC-056, ACC-058 and PRV-004, a package's reserved operation is authorized through its own target, and an ask for one is refused as the core's are (DEC-018).

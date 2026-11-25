@@ -5,7 +5,7 @@
 # Promises encoded:
 #   object-management.v1  ACC-033 (what is authorized against `management`, reconciling an
 #                         invocation of an operation of an Agent, an Interface or a Pool
-#                         among it), OPS-019, ACC-032 and CTR-003 (it lists the two
+#                         among it), OPS-019, ACC-032 and CTR-003 (it lists the core package's
 #                         operations reserved to the root Interface, which only a capability
 #                         of the core package may)
 #   access-control.v1     ACC-006, ACC-012 (the operations of `access`), ACC-033 and OPS-014;
@@ -69,8 +69,8 @@ metadata:
     what is not a Resource, or is a Resource whose Pool is retired; setting up and retiring what is
     not a Resource; reconciling an invocation that it authorized, an invocation of an operation of
     an Agent, an Interface or a Pool, an invocation of a Resource whose Pool is retired, or an invocation
-    whose instance no longer exists; installing packages; and the operations reserved to the root
-    Interface.
+    whose instance no longer exists; installing packages; and the core package's operations
+    reserved to the root Interface.
 
     Authority follows ACC-033: live Agents use their Fleet for inspection, setup, retirement and reconciliation;
     retired owners fall back to management for inspection and reconciliation only. list.v1 lists inspectable

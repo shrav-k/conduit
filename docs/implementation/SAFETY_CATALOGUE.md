@@ -12,6 +12,7 @@ and PND-013, whose quoted text it changed.
 Work order 254 added the row of REC-007, which it wrote.
 Work order 286 added the row of SCT-017, which it wrote.
 Work order 410 added the row of OPS-037, which it wrote.
+Work order 421 requoted the row of CTR-003, whose quoted text it changed.
 
 Promises read: 523; safety: 415; for the coordinator: 0; others: 108. Safety by kind: access 201,
 secret 45, effect 126, result 43. Safety by layer: language 136, convention 234, interface 45.
@@ -112,7 +113,7 @@ Read: 12 promises. Source: [spec/promises/contracts.yaml](../../spec/promises/co
 | ID | layer | level | kind | why a breach is unsafe | S1 traces |
 | --- | --- | --- | --- | --- | --- |
 | CTR-002 | language | must | effect | `then`: “applies the effect at most once for it” — an implementation that disregards its deduplication declaration can repeat an effect after a lost response. | — |
-| CTR-003 | language | must | access | `then`: “A capability that is not a contract of the core package and that lists an operation reserved to the root Interface is rejected” — admitting the capability can expose root-only operations through another grantable surface. | — |
+| CTR-003 | language | must | access | `then`: “A capability that lists an operation of another package or project that is reserved to the root Interface is rejected” — admitting the capability can expose root-only operations through another grantable surface. | — |
 | CTR-004 | language | must | access | `observable`: “One that states no `offers` offers no capability” — inventing a capability for such a type makes otherwise unoffered operations reachable. | — |
 | CTR-005 | language | must | access | `then`: “apply it to each call that they receive for a request through the Conduit” — omitting an applied filter lets a call exceed its Conduit’s restriction. | — |
 | CTR-006 | language | must | result | `then`: “No two pointers of its `changes` are equal, and none lies inside another” — admitting overlapping changes can make the stored settings disagree with the change reported for a dispatched control. | — |

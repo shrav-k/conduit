@@ -1,0 +1,14 @@
+# Example. One document, valid against the schemas, that must be rejected:
+# a capability may list a reserved operation only of its own package or project. This
+# project's capability lists a reserved operation of the core package (CTR-003).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Capability
+metadata:
+  name: directory-maintenance.v1
+  description: Maintain directory records.
+spec:
+  operations:
+    - github.com/shrav-k/conduit/core#purge.v1

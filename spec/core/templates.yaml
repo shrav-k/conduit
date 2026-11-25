@@ -20,7 +20,8 @@
 #   access           FST-001, FST-005
 #   root             FST-001, FST-002 (one Conduit each to `management`, `access` and `system`),
 #                    FST-005, CON-002 (they are its declared Conduits)
-#   root-management  FST-002, ACC-032 (it lists the operations reserved to the root Interface)
+#   root-management  FST-002, ACC-032 (it lists the core package's operations reserved
+#                    to the root Interface)
 #   root-access      FST-002, ACC-022 (it applies no bound)
 #   access-request   ACC-058 (an Agent asks and withdraws; no bound and no right to open)
 #   pool             SCT-017 (a documents file’s `pool` key instantiates it)

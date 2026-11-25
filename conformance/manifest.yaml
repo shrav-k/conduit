@@ -506,7 +506,7 @@
     {
       "promise": "CTR-003",
       "vectors": [],
-      "reason": "Capability-member resolution is exercised by S1, but non-core capabilities listing reserved operations have no specifically attributed portable rejection; add it in the coverage follow-up."
+      "reason": "Capability-member resolution is exercised by S1, but no case rejects a capability listing another package's reserved operation; add it in the coverage follow-up."
     },
     {
       "promise": "CTR-004",
@@ -526,8 +526,9 @@
     },
     {
       "promise": "CTR-009",
-      "vectors": [],
-      "reason": "No dedicated portable variant defines a non-core reserved-to-root Operation. Add that admission rejection in the coverage follow-up."
+      "vectors": [
+        "access-reserved-package-operation"
+      ]
     },
     {
       "promise": "CTR-012",
@@ -2028,6 +2029,7 @@
     {
       "promise": "ACC-032",
       "vectors": [
+        "access-reserved-package-operation",
         "access-routing",
         "access-root-local-lost",
         "records-purge-nonroot"

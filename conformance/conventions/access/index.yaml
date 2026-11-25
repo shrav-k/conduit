@@ -177,6 +177,15 @@
       "safety_rows": []
     },
     {
+      "id": "access-reserved-package-operation",
+      "case": "conventions/access/reserved-package-operation/case.yaml",
+      "promises": [
+        "ACC-032",
+        "ACC-033",
+        "CTR-009"
+      ]
+    },
+    {
       "id": "access-root-local-lost",
       "case": "conventions/access/root-local-lost/case.yaml",
       "promises": [

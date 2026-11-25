@@ -42,9 +42,9 @@ Each number counts promises. The last row counts those whose Engine source is no
 
 | Promises | language | convention | interface | all |
 | --- | ---: | ---: | ---: | ---: |
-| case passes | 155 | 164 | 31 | 350 |
+| case passes | 156 | 164 | 31 | 351 |
 | expected failure | 0 | 4 | 0 | 4 |
-| reason, no case | 50 | 17 | 1 | 68 |
+| reason, no case | 49 | 17 | 1 | 67 |
 | no case, no reason | 22 | 63 | 19 | 104 |
 | all | 227 | 248 | 51 | 526 |
 | named in engine source | 163 | 178 | 34 | 375 |
@@ -75,8 +75,8 @@ Each number counts promises. The last row counts those whose Engine source is no
 | ACC-028 | convention | must not | 0 | 0 | outside | none | no case, no reason |
 | ACC-029 | convention | must | 9 | 1 | cases | core | case passes |
 | ACC-030 | convention | must | 10 | 1 | cases | core | case passes |
-| ACC-032 | convention | must | 3 | 0 | cases | core | case passes |
-| ACC-033 | convention | must | 45 | 1 | cases | core, shell | case passes |
+| ACC-032 | convention | must | 4 | 0 | cases | core | case passes |
+| ACC-033 | convention | must | 46 | 1 | cases | core, shell | case passes |
 | ACC-034 | convention | must | 2 | 0 | cases | core | case passes |
 | ACC-036 | convention | must | 4 | 0 | cases | core | case passes |
 | ACC-037 | convention | must | 2 | 0 | cases | core | case passes |
@@ -119,7 +119,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | CTR-006 | language | must | 1 | 0 | outside | core | case passes |
 | CTR-007 | language | must | 0 | 0 | reason | none | reason, no case |
 | CTR-008 | language | must | 0 | 0 | reason | none | reason, no case |
-| CTR-009 | language | must | 0 | 0 | reason | none | reason, no case |
+| CTR-009 | language | must | 1 | 0 | cases | none | case passes |
 | CTR-012 | language | must | 0 | 0 | reason | core | reason, no case |
 | CTR-013 | language | must | 7 | 0 | outside | core, shell | case passes |
 | CTR-014 | language | must | 6 | 0 | outside | core, shell | case passes |

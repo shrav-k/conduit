@@ -37,6 +37,8 @@ pub use record_fault::RecordFault;
 pub mod records;
 pub mod registration;
 pub mod requests;
+#[cfg(test)]
+mod reserved_tests;
 mod retirement;
 mod revisions;
 pub mod schemas;

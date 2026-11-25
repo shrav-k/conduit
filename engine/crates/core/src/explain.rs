@@ -41,7 +41,10 @@ pub const REFUSAL_CAUSES: &[(&str, &str)] = &[
         "ACC-030",
         "Passing on access may not exceed the sender's bound; restriction names it.",
     ),
-    ("ACC-032", "Reserved to root acting on its own behalf."),
+    (
+        "ACC-032",
+        "Reserved to root acting on its own behalf: only root's own request is dispatched, and no Conduit whose consumer is not root that lists it is registered or opened. If your task needs it, say so in your reply.",
+    ),
     (
         "ACC-033",
         "The request needs the target described by its first fitting row. Tier 1 names it only if the request itself did, otherwise it describes that row without resolving an owner name.",

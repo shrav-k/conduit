@@ -77,14 +77,16 @@
     A Capability contract is read.
   then: >-
     Its `spec` holds `operations`, a list of selections of the operations it includes. A
-    capability that is not a contract of the core package and that lists an operation reserved
-    to the root Interface is rejected when its package is installed or its project is submitted.
+    capability that lists an operation of another package or project that is reserved to
+    the root Interface is rejected when its package is installed or its project is
+    submitted.
   observable: >-
-    Installation or resolving returns a diagnostic naming the capability and the operation. An
-    operation is reserved to the root Interface where its contract is marked `reservedToRoot:
-    true`, and only an Operation contract of the core package carries the mark, under CTR-009:
-    `object-management.v1` lists the two that do. What a capability may not list twice is
-    CTR-007.
+    Installation or resolving returns a diagnostic naming the capability and the
+    operation. An operation is reserved to the root Interface where its contract is marked
+    `reservedToRoot: true` (ACC-032, CTR-009). `object-management.v1` lists two of the
+    core package's; a package's capability may list its own reserved operations, and no
+    capability lists another package's, the core's among them. What a capability may not
+    list twice is CTR-007.
 
 - id: CTR-004
   layer: language
@@ -219,16 +221,20 @@
   layer: language
   level: must
   when: >-
-    An Operation contract that does not belong to the core package is marked
-    `reservedToRoot: true`.
+    An Operation contract is marked `reservedToRoot: true`.
   then: >-
-    The contract is rejected: a package that holds it is rejected when it is installed, and a
-    project that holds it is rejected when it is submitted.
+    The operation is reserved to the root Interface, under ACC-032, whichever package or
+    project holds the contract. A package that holds such a contract is installed, and a
+    project that holds one is submitted, as one that holds none would be.
   observable: >-
-    Installation or resolving returns a diagnostic naming the contract. Only an Operation
-    contract of the core package carries the mark: declare-lost.v1, purge.v1,
-    enroll-machine.v1, admit-machine.v1 and refuse-machine.v1. ACC-032 says what it means.
-
+    The core package marks five: declare-lost.v1, purge.v1, enroll-machine.v1,
+    admit-machine.v1 and refuse-machine.v1 (ENR-001, ENR-006, ENR-008). Another package
+    marks an operation of its own whose effect only the root Interface is to cause, such
+    as one that publishes to a shared place: a project's `directory.erase.v1` marked
+    `reservedToRoot: true` is accepted, and only the root Interface's own Conduits list it
+    (ACC-032). The mark is the contract's, so the operation is reserved wherever a
+    capability lists it, and no Type, capability, template or Conduit marks or unmarks it.
+    A capability lists a reserved operation only of its own package or project (CTR-003).
 
 
 - id: CTR-012

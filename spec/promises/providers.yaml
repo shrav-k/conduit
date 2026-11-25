@@ -115,17 +115,19 @@
     A template is rejected when it is registered, and a Conduit is not instantiated: no Conduit
     permits an operation of those capabilities.
   observable: >-
-    Resolving returns a diagnostic naming the template or the Conduit, and the capability or the
-    operation. A template whose `operations` an input fills, under CON-016, is checked for its
-    capability when it is registered, and each Conduit made from it is checked for its
-    operations when it is instantiated, as CON-028 checks at both times. The rule is about the
-    operation, whatever capability lists it, matched by its qualified reference in the core
-    package, so an operation of another package that is also named `run.v1` is not one of them:
-    otherwise a Conduit to a runtime provider, whose type PRV-001 lets offer other capabilities,
-    could run or stop another instance's run. SEC-008, SEC-009 and ACC-032 are keyed on the
-    operation in the same way. The engine alone invokes those operations, by provider calls
-    under PRV-005, so no instance can run, stop or inspect a run, list or place machines, or
-    fetch a package through a Conduit, and no consumer is presented a tool for one. A Conduit
+    Resolving returns a diagnostic naming the template or the Conduit, and the capability
+    or the operation. A template whose `operations` an input fills, under CON-016, is
+    checked for its capability when it is registered, and each Conduit made from it is
+    checked for its operations when it is instantiated, as CON-028 checks at both times.
+    The rule is about the operation, whatever capability lists it, matched by its
+    qualified reference in the core package, so an operation of another package that is
+    also named `run.v1` is not one of them: otherwise a Conduit to a runtime provider,
+    whose type PRV-001 lets offer other capabilities, could run or stop another instance's
+    run. SEC-008 and SEC-009 are keyed on the operation in the same way; ACC-032 is keyed
+    on the mark of the operation's own contract, which another package may write
+    (CTR-009). The engine alone invokes those operations, by provider calls under PRV-005,
+    so no instance can run, stop or inspect a run, list or place machines, or fetch a
+    package through a Conduit, and no consumer is presented a tool for one. A Conduit
     whose capability is `secret-provider.v1` is SEC-008 and SEC-009.
 
 - id: PRV-005

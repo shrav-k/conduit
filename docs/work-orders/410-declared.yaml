@@ -1,0 +1,7 @@
+# Added cases for work order 410.
+- name: requests-stop-grace-period-ends
+  kind: added
+  cases: [requests-stop-grace-period-ends]
+- name: requests-stop-takes-no-new-request
+  kind: added
+  cases: [requests-stop-takes-no-new-request]

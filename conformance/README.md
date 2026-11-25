@@ -301,7 +301,7 @@ running any case and enforces these rules before running portable steps.
 
 Allowed inputs are `first-start`, `install-archive`, `resolve-project`, `register-project`,
 `registration-orders`, `submit-files`, `invoke`, `complete`, `setup-report`, `cancel`,
-`restore-state`, `list-tools`, `export-records`, `load` and `read`. Excluded inputs are
+`restore-state`, `stop`, `list-tools`, `export-records`, `load` and `read`. Excluded inputs are
 `access-fixture`, `request-fixture`, `lifecycle-fixture`, `request`, `expire-outputs`,
 `schema-case`, `schema-admission`, `schema-evaluation` and `validate-values`. A future input
 kind stays excluded until an order adds it to the allowed list.

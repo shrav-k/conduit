@@ -1068,6 +1068,26 @@
       "safety_rows": []
     },
     {
+      "id": "requests-stop-grace-period-ends",
+      "case": "conventions/requests/stop-grace-period-ends/case.yaml",
+      "promises": [
+        "OPS-037",
+        "OPS-012",
+        "IMP-007"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "requests-stop-takes-no-new-request",
+      "case": "conventions/requests/stop-takes-no-new-request/case.yaml",
+      "promises": [
+        "OPS-037",
+        "OPS-023",
+        "REC-001"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "requests-turn-names-fleet-and-login",
       "case": "conventions/requests/turn-names-fleet-and-login/case.yaml",
       "promises": [

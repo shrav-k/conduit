@@ -438,6 +438,8 @@
     "requests-repeat-failed-earlier-unanswered",
     "requests-restart-interrupted",
     "requests-sign-in-return-kept-nowhere",
+    "requests-stop-grace-period-ends",
+    "requests-stop-takes-no-new-request",
     "requests-unknown-write",
     "requests-unsafe-write-headers",
     "requests-write-capability-error",

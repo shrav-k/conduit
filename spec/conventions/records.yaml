@@ -18,7 +18,7 @@
     invocation is dispatched; an invocation ends; a provider call is made, or ends; an
     instance's lifecycle state changes; an object is registered, unregistered or removed; an
     object's revision changes; an enrollment opens, closes or expires (ENR-001, ENR-007 to
-    ENR-009, PRV-013).
+    ENR-009, PRV-013); the engine is asked to stop, or stops (OPS-037).
   then: >-
     A record of it is kept.
   observable: >-
@@ -228,7 +228,8 @@
     as IMP-007 has an invocation in progress across a restart end.
     The records of each, of its access decision and of how it ended among them, are kept when a
     record can next be kept: REC-001 is met late, and not excepted while the engine runs.
-    Records held to be kept late are lost if the engine stops before a record can be kept;
+    Records held to be kept late are kept before the engine stops under OPS-037, where a
+    record can then be kept, and are lost if it stops before a record can be kept;
     recovery then ends what the store holds as IMP-007 does, so an invocation whose dispatch
     was kept and whose end was not ends unknown, and a request of which no record was kept was
     never dispatched. A request that only reads, such as `inspect.v1`, and a read of a secret,

@@ -1,0 +1,5 @@
+- Added: OPS-037, an engine asked to stop takes no new request, which reports unavailable, lets each invocation in progress end within a grace period, cuts those still in progress at its end, and records the stop (DEC-176).
+- Added: OPS-037, an engine asked to stop takes no new request, which reports unavailable, lets each invocation in progress end within a grace period, cuts those still in progress at its end, preserves OPS-027’s setup and retirement outcomes, warns callers of possible effects and safe recovery steps for unknown outcomes, and records the stop (DEC-176).
+- Added: DL20, the means of asking the engine to stop and the grace period of OPS-037 (DEC-176).
+- Added: `grace period` in spec/definitions.md (DEC-176).
+- Changed: OPS-023, OPS-012, IMP-007, REC-001, REC-007, PRV-026, DL3, DL16 and DL17 for OPS-037's stop, and in spec/definitions.md "How a request ends" and the rows `access decision` and `unavailable` (DEC-176).

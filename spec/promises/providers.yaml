@@ -935,7 +935,10 @@
     engine or that part stopped. These further attempts apply only while recovery of the run
     that ended with the engine or its part has not succeeded. Doing so starts no model work,
     under IMP-002. An Agent's run on that runner is not run again so: a further setup asks for
-    it, under PRV-007. The attempt is made through the engine's own runner without a provider
+    it, under PRV-007. A stop under OPS-037 ends the runs on that runner only once no
+    invocation is in progress or its grace period has passed, and each Resource's run it ends
+    is run again so once the engine has started again. The attempt is made through the
+    engine's own runner without a provider
     call, under PRV-003. Each read that it needs is recorded with how it ended, under REC-001
     and SEC-015. Where the attempt does not succeed, or a read it needs does not, the Resource
     keeps its lifecycle state; its condition `Running` reports `False` or `Unknown` under

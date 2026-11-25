@@ -286,8 +286,9 @@
     result, an error or a JSON-RPC error. Creating a task under IFC-016 is not that answer,
     which is what the task ended with under IFC-010; an `input_required` result is none; and an
     error after which the call is sent once more under IFC-046 is none until the call sent again
-    is answered. A cancellation that the engine sends, under OPS-027 or when a call passes the
-    time that DL10 allows it, is no answer. Whether an answer that reaches the engine after it
+    is answered. A cancellation that the engine sends, under OPS-027, when a call passes the
+    time that DL10 allows it or when the grace period of a stop ends under OPS-037, is no
+    answer. Whether an answer that reaches the engine after it
     stopped waiting is kept is DL2: one that is not kept with what it stated is none here, and a
     late answer changes no outcome, under OPS-013. An earlier attempt with no answer may still
     reach the implementation and apply the effect after a new attempt was answered failed, which
@@ -460,10 +461,12 @@
     A request is not dispatched, and more than one of the four reasons applies to it.
   then: >-
     It reports one reason, chosen in this order: invalid if the request cannot be read;
-    otherwise unavailable where the access decision cannot be made under ACC-037, else
+    otherwise unavailable where the engine is stopping and does not take the request under
+    OPS-037, else unavailable where the access decision cannot be made under ACC-037, else
     unavailable where it cannot be recorded under REC-007, else refused; then invalid; then
-    conflict; then unavailable for any other cause. Where the access decision cannot be made,
-    nothing else about the request is examined or reported; where it cannot be recorded, nothing
+    conflict; then unavailable for any other cause. Where the engine does not take the
+    request, or its access decision cannot be made, nothing else about it is examined or
+    reported; where it cannot be recorded, nothing
     else is reported.
   observable: >-
     A request that is not permitted reports refused whatever else is wrong with it, and its
@@ -477,7 +480,10 @@
     conflict with a diagnostic that names the object. A permitted request that fails a
     schema and also names a revision that is not current reports invalid. Unavailable for
     any other cause, such as a restriction that cannot be evaluated under ACC-014 or a
-    target that is not ready under CON-024, is reported only where no other reason applies.
+    target that is not ready under CON-024, is reported only where no other reason applies. A
+    request that a stopping engine does not take reports unavailable under OPS-037 whatever
+    else is wrong with it, provided it can be read, and its result carries no diagnostic but
+    OPS-037's.
 
 - id: OPS-024
   layer: convention
@@ -822,3 +828,60 @@
     that may inspect it through that Fleet. A retired owner's Conduits are closed; its remaining
     members are listed through `management` according to inspection authority there. Nothing is
     disclosed or counted about omitted items.
+
+- id: OPS-037
+  layer: convention
+  level: must
+  when: >-
+    The engine is asked to stop, by a means that DL20 of the implementation-defined list
+    names, such as the signal SIGTERM.
+  then: >-
+    From then on it takes no new request: each request that arrives is not dispatched and
+    reports unavailable, save a repeat answered without a dispatch and a request that is part
+    of the work in progress, as the observable says. Each invocation in progress goes on. Once
+    none is in progress, or once the grace period that DL20 states has passed since the stop
+    was asked for, whichever is first, the engine stops. An invocation still in progress at
+    the end of the grace period is cancelled, as OPS-027 cancels one, and ends then with the
+    outcome unknown, or, for a setup or a retirement, with the outcome that OPS-027 gives it:
+    OPS-022's, or LIF-021's for `retire-with-resources.v1`. The engine keeps a record when it
+    is asked to stop and another when it stops.
+  observable: >-
+    A stopping engine takes, and decides as any other, each request that is part of the work
+    in progress: an onward request that names an invocation in progress in
+    `io.github.shrav-k.conduit/serving`, under IFC-020; any other request from an instance
+    while an invocation dispatched to it is in progress, since a model's own calls may name
+    none; an `answer.v1` for a pending action that an invocation in progress waits for; and a
+    retry carrying the requestState of an invocation in progress, under IFC-049. The parts of
+    an invocation in progress, such as a hook, a read of a secret or a provider call, are
+    dispatched as before. A repeat that OPS-009, OPS-012, OPS-032 or OPS-034 answers without a
+    dispatch is answered as before; one that OPS-012 or OPS-024 would dispatch as a new
+    attempt is new work. Every other request is turned away, `inspect.v1` among them: no
+    access decision is made for it, OPS-023 puts this reason first for a request that can be
+    read, its result carries an error diagnostic naming this promise and saying that the
+    request may be made again once the engine has started again, under IFC-050, and REC-001
+    records it as ended without being dispatched, with this promise's ID. A request decided
+    before the stop, not yet dispatched and not part of the work in progress, such as one held
+    waiting, ends unavailable under this promise at once, as REC-007 has one found so at a
+    restart end. `initialize`, `tools/list` and the protocol's other messages are answered as
+    before. At the end of the grace period the engine sends each cancellation, and each stop
+    that TPL-009 still asks for of a retirement so cancelled, and waits for no answer: the
+    attempt has none, under OPS-012, and one that arrives later changes no outcome, under
+    OPS-013. Each caller still waiting is answered with the outcome and an error diagnostic
+    naming this promise, whose ID the end record holds in `ruleId`, so that a reader tells it
+    from an end at a restart under IMP-007. Under IFC-050, the diagnostic says that the engine
+    stopped before the call ended. Where the outcome is unknown, it says that the effect may
+    have occurred and directs the caller, once the engine has started again, to repeat with
+    the same idempotency key if one was supplied, under OPS-012, or to reconcile under OPS-014
+    after checking that the effect occurred, rather than make a new request. A repeat may
+    still report unknown, as OPS-012 states. A cut invocation is not dispatched again without
+    a repeat, under IMP-007; once the engine has started again a repeat is answered under
+    OPS-012, and a new attempt answered failed leaves it unknown, as OPS-012 and OPS-024 have
+    it, until a reconciliation under OPS-014. Only once it stops does the engine end the runs
+    of its own runner, as DL16 states, so the runs that the work in progress needs, an Agent's
+    among them, go on through the grace period; PRV-026 runs again at the next start each
+    Resource whose run so ended. A run that another runtime provider holds does not end with
+    the engine. Before it stops, the engine keeps each record that REC-007 holds to be kept
+    late, where a record can then be kept. Both records of the stop name `system`, so
+    inspecting it lists them under LIF-013, and hold no caller: the first states the means of
+    the stop, the second whether an invocation was cut. An engine that stops otherwise, as
+    when killed during the grace period, restarts as IMP-007 and REC-007 have it.

@@ -6,6 +6,8 @@ mod fixtures;
 mod held_copy_tests;
 #[path = "limits_tests.rs"]
 mod limits_tests;
+#[path = "package_store_tests.rs"]
+pub(crate) mod package_store_tests;
 #[path = "usage_tests.rs"]
 mod usage_tests;
 use super::*;

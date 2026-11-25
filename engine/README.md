@@ -294,8 +294,10 @@ installs dependencies without scripts, and keeps a hash-keyed cache under the st
 pins the artifact, not its dependency graph. Each run has a private empty working directory,
 a process group, a lifetime guard and one MCP session with no Roots capability. Dropping the
 shell or runner, or killing the engine, ends the group and its descendants. Commands at
-relative paths use retained installed-package files; absolute commands run as given and bare
-program names use the permitted PATH.
+relative paths run from one read-only copy of the package's files per digest, checked before
+each run; absolute commands run as given and bare program names use the permitted PATH.
+The one-way move of earlier stores at open is described in the row "DL7: storage and
+submission" of [CONFORMANCE.md](CONFORMANCE.md#implemented-choices).
 
 Default tests stay offline. Run the real pinned filesystem server tests, including CLI
 registration, a hash mismatch before extraction, and the S1 HTTP subprocess test, with:

@@ -8,6 +8,59 @@ use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
+fn archive_places(directory: Result<PathBuf>) -> (Vec<PathBuf>, Vec<String>) {
+    // Match Sources::read's config shape, but bad migration sources never prevent open.
+    #[derive(serde::Deserialize)]
+    #[serde(deny_unknown_fields)]
+    struct Mirrors {
+        mirrors: Vec<PathBuf>,
+    }
+    let directory = match directory {
+        Ok(directory) => directory,
+        Err(error) => {
+            return (
+                Vec::new(),
+                vec![user_config::escape_line_breaks(&format!(
+                    "cannot locate the per-user package cache or config.json: {error}; these archive places were not tried; state.json is unchanged by archive-source discovery; set CONDUIT_CONFIG_DIR or HOME to an absolute directory and open the store again"
+                ))],
+            );
+        }
+    };
+    let mut places = vec![directory.join("packages")];
+    let mut messages = Vec::new();
+    let path = directory.join("config.json");
+    let decoded = std::fs::read(&path)
+        .map_err(|error| format!("not read: {error}"))
+        .and_then(|bytes| {
+            serde_json::from_slice::<Mirrors>(&bytes)
+                .ok()
+                .filter(|_| bytes.iter().find(|byte| !byte.is_ascii_whitespace()) == Some(&b'{'))
+                .filter(|config| config.mirrors.iter().all(|mirror| mirror.is_absolute()))
+                .ok_or_else(|| {
+                    "not parsed: expected only mirrors, a list of absolute directories".into()
+                })
+        });
+    match decoded {
+        Ok(config) => {
+            for mirror in config.mirrors {
+                if mirror.is_dir() {
+                    places.push(mirror);
+                } else {
+                    messages.push(format!("archive mirror {} was not tried: not a directory; state.json is unchanged by archive-source discovery; fix {} in {} and open the store again", mirror.display(), mirror.display(), path.display()));
+                }
+            }
+        }
+        Err(error) => messages.push(format!("per-user config.json at {} {error}; its mirrors were not tried; state.json is unchanged by archive-source discovery; fix {} and open the store again", path.display(), path.display())),
+    }
+    (
+        places,
+        messages
+            .iter()
+            .map(|line| user_config::escape_line_breaks(line))
+            .collect(),
+    )
+}
+
 fn run() -> Result<()> {
     let raw: Vec<_> = std::env::args().skip(1).collect();
     if raw.is_empty() || raw[0] == "--help" {
@@ -396,6 +449,8 @@ fn run() -> Result<()> {
         );
         return conduit_shell::author::ensure_success(&result, &asked);
     }
+    let (places, archive_source_messages) = archive_places(user_config::directory());
+    config.archive_places = places;
     let shell = match Shell::open(&store, boundary::context(&repository)?, config) {
         Ok(shell) => Arc::new(shell),
         Err(error) if command == "inspect" && error == "store already has an active shell" => {
@@ -418,7 +473,17 @@ fn run() -> Result<()> {
         }
         Err(error) => return Err(error),
     };
+    // Source warnings matter when a package remains inline; an absent optional
+    // config on a store with no migration work does not need a startup warning.
+    if !shell.package_store_messages().is_empty() {
+        for message in archive_source_messages {
+            eprintln!("conduit {command}: {message}");
+        }
+    }
     if command == "serve" {
+        for message in shell.package_store_messages() {
+            eprintln!("conduit serve: {message}");
+        }
         conduit_shell::server::preflight(&shell)?;
         let directory = store
             .canonicalize()
@@ -792,6 +857,59 @@ fn object_id(state: &conduit_core::State, name: &str) -> Result<String> {
         .map(str::to_owned)
         .ok_or_else(|| format!("missing first-start object {name}"))
 }
+#[test]
+fn archive_source_diagnostics_name_omitted_places_and_recovery() {
+    let temp = tempfile::tempdir().unwrap();
+    let directory = temp.path().to_path_buf();
+    let path = directory.join("config.json");
+    let (places, messages) = archive_places(Ok(directory.clone()));
+    assert_eq!(places, [directory.join("packages")]);
+    assert!(messages[0].contains(&format!("config.json at {} not read:", path.display())));
+    for bytes in [
+        b"not json".as_slice(),
+        b"{\"mirrors\":[\"relative\"]}".as_slice(),
+    ] {
+        std::fs::write(&path, bytes).unwrap();
+        let (places, messages) = archive_places(Ok(directory.clone()));
+        assert_eq!(places, [directory.join("packages")]);
+        assert_eq!(messages.len(), 1);
+        assert!(messages[0].contains(&format!("config.json at {} not parsed:", path.display())));
+        assert!(messages[0].contains(
+            "its mirrors were not tried; state.json is unchanged by archive-source discovery"
+        ));
+        assert!(messages[0].ends_with(&format!("fix {} and open the store again", path.display())));
+    }
+    let mirror = directory.join("mirror");
+    let missing = directory.join("missing");
+    std::fs::create_dir(&mirror).unwrap();
+    std::fs::write(
+        &path,
+        serde_json::to_vec(&json!({"mirrors":[mirror,missing]})).unwrap(),
+    )
+    .unwrap();
+    let (places, messages) = archive_places(Ok(directory.clone()));
+    assert_eq!(places, [directory.join("packages"), mirror.clone()]);
+    assert!(messages[0].contains(&format!(
+        "archive mirror {} was not tried: not a directory",
+        missing.display()
+    )));
+    std::fs::write(
+        &path,
+        serde_json::to_vec(&json!({"mirrors":[mirror]})).unwrap(),
+    )
+    .unwrap();
+    assert!(archive_places(Ok(directory)).1.is_empty());
+    let (places, messages) = archive_places(Err("no configured directory".into()));
+    assert!(places.is_empty());
+    assert!(messages[0].contains(
+        "cannot locate the per-user package cache or config.json: no configured directory"
+    ));
+    assert!(messages[0].contains("state.json is unchanged by archive-source discovery"));
+    assert!(messages[0].ends_with(
+        "set CONDUIT_CONFIG_DIR or HOME to an absolute directory and open the store again"
+    ));
+}
+
 fn main() {
     conduit_shell::install_crypto_provider();
     if std::env::args_os()

@@ -10,9 +10,11 @@ use rmcp::{
 };
 use serde_json::{Value, json};
 use std::{
+    collections::BTreeMap,
     fs,
     os::unix::fs::{MetadataExt, PermissionsExt, symlink},
     path::{Path, PathBuf},
+    process::{Command, Output, Stdio},
     time::Duration,
 };
 use support::Scratch;
@@ -138,6 +140,265 @@ fn failed(reply: &Value, cause: &str) {
     );
 }
 
+fn view_command(f: &Fixture) -> Command {
+    assert!(f.root.canonicalize().unwrap().starts_with(&f.scratch.path));
+    let mut command = Command::new("git");
+    command
+        .current_dir(&f.root)
+        .env_clear()
+        .env("PATH", std::env::var_os("PATH").unwrap())
+        .env("HOME", f.scratch.path.join("home"))
+        .env("GIT_CONFIG_NOSYSTEM", "1")
+        .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .env("GIT_CEILING_DIRECTORIES", &f.scratch.path)
+        .env("GIT_AUTHOR_NAME", "Conduit test")
+        .env("GIT_AUTHOR_EMAIL", "test@conduit.invalid")
+        .env("GIT_COMMITTER_NAME", "Conduit test")
+        .env("GIT_COMMITTER_EMAIL", "test@conduit.invalid")
+        .stdin(Stdio::null());
+    command
+}
+
+fn view_git(f: &Fixture, args: &[&str]) -> String {
+    let output = view_command(f).args(args).output().unwrap();
+    assert!(
+        output.status.success(),
+        "git {args:?}: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    String::from_utf8(output.stdout).unwrap()
+}
+
+fn file_bytes(root: &Path) -> BTreeMap<PathBuf, Vec<u8>> {
+    fn visit(root: &Path, dir: &Path, files: &mut BTreeMap<PathBuf, Vec<u8>>) {
+        for entry in fs::read_dir(dir).unwrap() {
+            let entry = entry.unwrap();
+            if entry.file_type().unwrap().is_dir() {
+                visit(root, &entry.path(), files);
+            } else {
+                assert!(entry.file_type().unwrap().is_file());
+                files.insert(
+                    entry.path().strip_prefix(root).unwrap().to_owned(),
+                    fs::read(entry.path()).unwrap(),
+                );
+            }
+        }
+    }
+    let mut files = BTreeMap::new();
+    visit(root, root, &mut files);
+    files
+}
+
+#[tokio::test]
+async fn git_view_is_written_at_setup() {
+    let f = Fixture::new();
+    let first = f.base();
+    fs::write(f.repository.join("tracked.txt"), "second\n").unwrap();
+    let base = f.scratch.commit(&f.repository);
+    let config = f.config(&base);
+    let client = Client::open(&f.state).await;
+    succeeded(&client.call(&config, "setup-hook.v1", json!({})).await);
+    let view = f.root.join(".git");
+    let files = file_bytes(&view);
+    assert_eq!(
+        files
+            .keys()
+            .map(|p| p.to_str().unwrap())
+            .collect::<Vec<_>>(),
+        [
+            "HEAD",
+            "config",
+            "index",
+            "info/attributes",
+            "objects/info/alternates"
+        ]
+    );
+    assert_eq!(files[Path::new("HEAD")], format!("{base}\n").as_bytes());
+    assert_eq!(
+        files[Path::new("objects/info/alternates")],
+        format!("{}\n", f.state.join("repository.git/objects").display()).as_bytes()
+    );
+    assert_eq!(
+        files[Path::new("index")],
+        fs::read(f.state.join("repository.git/index")).unwrap()
+    );
+    assert_eq!(files[Path::new("info/attributes")], b"* !filter !diff\n");
+    for directory in ["refs/heads", "refs/tags", "objects/pack"] {
+        assert_eq!(fs::read_dir(view.join(directory)).unwrap().count(), 0);
+    }
+    assert_eq!(
+        view_git(&f, &["rev-parse", "--show-toplevel"]).trim(),
+        f.root.to_str().unwrap()
+    );
+    assert_eq!(view_git(&f, &["rev-parse", "HEAD"]), format!("{base}\n"));
+    assert_eq!(view_git(&f, &["status", "--porcelain=v1", "-uall"]), "");
+    assert_eq!(
+        view_git(&f, &["log", "--format=%H"]),
+        format!("{base}\n{first}\n")
+    );
+    view_git(&f, &["merge-base", "--is-ancestor", &first, "HEAD"]);
+    assert_eq!(view_git(&f, &["remote"]), "");
+    assert_eq!(view_git(&f, &["for-each-ref"]), "");
+    assert_eq!(view_git(&f, &["show", "HEAD:tracked.txt"]), "second\n");
+    assert_eq!(view_git(&f, &["cat-file", "-t", "HEAD"]), "commit\n");
+    assert!(
+        view_git(&f, &["ls-files"])
+            .lines()
+            .any(|p| p == "tracked.txt")
+    );
+    let before_repeat = file_bytes(&view);
+    succeeded(&client.call(&config, "setup-hook.v1", json!({})).await);
+    assert_eq!(file_bytes(&view), before_repeat);
+    fs::remove_dir_all(&view).unwrap();
+    succeeded(&client.call(&config, "setup-hook.v1", json!({})).await);
+    assert!(!view.exists());
+}
+
+#[tokio::test]
+async fn git_view_status_lists_what_changes_returns() {
+    let f = Fixture::new();
+    let (client, _, config) = f.setup().await;
+    fs::write(f.root.join("tracked.txt"), "edited \n").unwrap();
+    fs::remove_file(f.root.join("delete.txt")).unwrap();
+    fs::set_permissions(f.root.join("mode.sh"), fs::Permissions::from_mode(0o644)).unwrap();
+    fs::write(f.root.join("new.txt"), "new\n").unwrap();
+    fs::create_dir(f.root.join("ignored")).unwrap();
+    fs::write(f.root.join("ignored/extra"), "excluded\n").unwrap();
+    let reply = client.call(&config, "changes.v1", json!({})).await;
+    let changes = succeeded(&reply);
+    let expected: BTreeMap<_, _> = changes["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|file| {
+            let code = match file["change"].as_str().unwrap() {
+                "added" => "??",
+                "deleted" => " D",
+                "modified" => " M",
+                other => panic!("unexpected change {other}"),
+            };
+            (file["path"].as_str().unwrap().to_owned(), code.to_owned())
+        })
+        .collect();
+    assert_eq!(expected.len(), 4);
+    assert!(!expected.contains_key("ignored/extra"));
+    let args = ["status", "--porcelain=v1", "-z", "-uall", "--no-renames"];
+    let before = view_git(&f, &args);
+    let listed: BTreeMap<_, _> = before
+        .split('\0')
+        .filter(|s| !s.is_empty())
+        .map(|s| (s[3..].to_owned(), s[..2].to_owned()))
+        .collect();
+    assert_eq!(listed, expected);
+    let check = view_command(&f).args(["diff", "--check"]).output().unwrap();
+    assert!(!check.status.success());
+    assert!(String::from_utf8_lossy(&check.stdout).contains("tracked.txt"));
+    view_git(&f, &["add", "-N", "new.txt"]);
+    assert_eq!(
+        view_git(&f, &["diff", "--name-only", "HEAD"]),
+        "delete.txt\nmode.sh\nnew.txt\ntracked.txt\n"
+    );
+    view_git(&f, &["reset", "-q", "--", "new.txt"]);
+    assert_eq!(view_git(&f, &args), before);
+    let after = client.call(&config, "changes.v1", json!({})).await;
+    assert_eq!(succeeded(&after), changes);
+}
+
+#[tokio::test]
+async fn git_view_refuses_commit_and_transport() {
+    let f = Fixture::new();
+    let (_client, base, _) = f.setup().await;
+    let global = f.scratch.path.join("global-config");
+    fs::write(
+        &global,
+        "[user]\n name = Conduit test\n email = test@conduit.invalid\n",
+    )
+    .unwrap();
+    let agent = |args: &[&str]| -> Output {
+        view_command(&f)
+            .env("GIT_CONFIG_GLOBAL", &global)
+            .env_remove("GIT_AUTHOR_NAME")
+            .env_remove("GIT_AUTHOR_EMAIL")
+            .env_remove("GIT_COMMITTER_NAME")
+            .env_remove("GIT_COMMITTER_EMAIL")
+            .args(args)
+            .output()
+            .unwrap()
+    };
+    fs::write(f.root.join("tracked.txt"), "edited\n").unwrap();
+    let commit = agent(&["commit", "-am", "refused"]);
+    assert!(!commit.status.success());
+    assert!(String::from_utf8_lossy(&commit.stderr).contains("empty ident name"));
+    assert_eq!(view_git(&f, &["rev-parse", "HEAD"]), format!("{base}\n"));
+    let bare = f.scratch.path.join("bare.git");
+    f.scratch.git(
+        &f.scratch.path,
+        &[
+            "init",
+            "--bare",
+            "--quiet",
+            "--template=",
+            bare.to_str().unwrap(),
+        ],
+        None,
+    );
+    for args in [
+        vec!["push", bare.to_str().unwrap(), "HEAD:refs/heads/x"],
+        vec!["fetch", f.repository.to_str().unwrap()],
+    ] {
+        let output = agent(&args);
+        assert!(!output.status.success());
+        assert!(String::from_utf8_lossy(&output.stderr).contains("transport 'file' not allowed"));
+    }
+    assert_eq!(f.scratch.git(&bare, &["for-each-ref"], None), "");
+}
+
+#[tokio::test]
+async fn git_view_writes_reach_no_result() {
+    let f = Fixture::new();
+    let (client, base, config) = f.setup().await;
+    let private = file_bytes(&f.state.join("repository.git"));
+    fs::write(f.root.join("tracked.txt"), "edited\n").unwrap();
+    view_git(&f, &["commit", "-am", "view only"]);
+    view_git(&f, &["branch", "view-branch"]);
+    view_git(&f, &["tag", "view-tag"]);
+    let marker = f.scratch.path.join("unexpected");
+    let script = f.scratch.path.join("monitor");
+    fs::write(
+        &script,
+        format!("#!/bin/sh\ntouch '{}'\n", marker.display()),
+    )
+    .unwrap();
+    fs::set_permissions(&script, fs::Permissions::from_mode(0o755)).unwrap();
+    view_git(&f, &["config", "core.fsmonitor", script.to_str().unwrap()]);
+    let reply = client.call(&config, "changes.v1", json!({})).await;
+    let changes = succeeded(&reply);
+    assert_eq!(changes["base"], base);
+    assert_eq!(
+        changes["files"],
+        json!([{"path":"tracked.txt","change":"modified"}])
+    );
+    let applied = f.scratch.clone_at(&f.repository, &base);
+    f.scratch
+        .git(&applied, &["apply", "--index"], changes["patch"].as_str());
+    for path in [
+        "tracked.txt",
+        "delete.txt",
+        "mode.sh",
+        "opaque.txt",
+        ".gitignore",
+    ] {
+        assert_eq!(
+            fs::read(applied.join(path)).unwrap(),
+            fs::read(f.root.join(path)).unwrap()
+        );
+    }
+    assert_eq!(file_bytes(&f.state.join("repository.git")), private);
+    succeeded(&client.call(&config, "retire-hook.v1", json!({})).await);
+    assert!(!f.root.exists());
+    assert!(!marker.exists());
+}
+
 #[tokio::test]
 async fn setup_makes_the_copy_at_the_commit() {
     let f = Fixture::new();
@@ -201,7 +462,10 @@ async fn setup_makes_the_copy_at_the_commit() {
         fs::metadata(f.root.join("mode.sh")).unwrap().mode() & 0o111,
         0
     );
-    assert!(!f.root.join(".git").exists());
+    assert_eq!(
+        fs::read_to_string(f.root.join(".git/HEAD")).unwrap(),
+        format!("{base}\n")
+    );
     assert_eq!(
         fs::read_to_string(f.state.join("repository.git/HEAD"))
             .unwrap()
@@ -350,6 +614,7 @@ async fn changes_rebuild_the_copy_from_its_base() {
     fs::write(f.root.join(".gitignore"), "ignored/\n*.drop\n").unwrap();
     fs::write(f.root.join("other.drop"), "excluded").unwrap();
 
+    let view_before = file_bytes(&f.root.join(".git"));
     let reply = client.call(&config, "changes.v1", json!({})).await;
     let changes = succeeded(&reply);
     assert_eq!(changes["base"], base);
@@ -395,7 +660,7 @@ async fn changes_rebuild_the_copy_from_its_base() {
     assert!(!applied.join("delete.txt").exists());
     assert!(!applied.join("ignored").exists());
     assert!(!applied.join("other.drop").exists());
-    assert!(!f.root.join(".git").exists());
+    assert_eq!(file_bytes(&f.root.join(".git")), view_before);
 }
 
 #[tokio::test]

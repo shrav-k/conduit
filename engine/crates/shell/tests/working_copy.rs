@@ -145,7 +145,7 @@ fn write_project(
     let api = &spec.names().api_version;
     let core = &spec.names().core_package;
     fs::create_dir(project).unwrap();
-    let manifest = json!({"apiVersion":api,"address":"example.org/test/working-copy","packages":{PACKAGE:{"version":"0.1.0","digest":digest}}});
+    let manifest = json!({"apiVersion":api,"address":"example.org/test/working-copy","packages":{PACKAGE:{"version":"0.2.0","digest":digest}}});
     let mut documents = vec![
         json!({"apiVersion":api,"kind":"Pool","metadata":{"name":"workspace-pool"},"spec":{"type":format!("{core}#pool.v1")}}),
         json!({"apiVersion":api,"kind":"Pool","metadata":{"name":"workspace"},"from":"workspace-pool"}),
@@ -206,7 +206,10 @@ fn working_copy_through_the_engine() {
     );
     cli.succeeded("submit", &[project.to_str().unwrap()]);
     assert_eq!(fs::read(root.join("hello.txt")).unwrap(), b"base\n");
-    assert!(!root.join(".git").exists());
+    assert_eq!(
+        fs::read_to_string(root.join(".git/HEAD")).unwrap(),
+        format!("{base}\n")
+    );
     let state: Value =
         serde_json::from_slice(&fs::read(store.join("state.json")).unwrap()).unwrap();
     let instance = state["state"]["objects"]

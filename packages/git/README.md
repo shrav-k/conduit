@@ -1,6 +1,6 @@
 # Git working copy
 
-`example.org/conduit/git` 0.1.0 is a Unix package for the engine's own runner. One
+`example.org/conduit/git` 0.2.0 is a Unix package for the engine's own runner. One
 `working-copy.v1` Resource serves a copy of a local SHA-1 Git repository at a
 detached commit. Install `dist/git.tar.gz` with its SHA-256 digest and pin the
 version and digest in the project manifest. Build the archive with
@@ -34,11 +34,12 @@ checkout of the same base. The patch includes tracked changes and untracked
 files that Git's ignore rules include. Review the ignore files before relying
 on the patch to transfer a newly created file. Changes to the ignore files
 themselves can appear in the patch. A visible nested `.git` entry fails the
-operation. Root's own `.git` is skipped. The package captures files and links
-through the opened copy, stages the private snapshot, and applies the candidate
-patch to a clean private checkout. A patch that does not reproduce the captured
-bytes, Git executable modes, and symlinks fails. For example, an LF edit to a
-file that the base requires Git to check out with CRLF can be inexpressible.
+operation. Root's own `.git`, the Git view below, is skipped. The package
+captures files and links through the opened copy, stages the private snapshot,
+and applies the candidate patch to a clean private checkout. A patch that does
+not reproduce the captured bytes, Git executable modes, and symlinks fails.
+For example, an LF edit to a file that the base requires Git to check out with
+CRLF can be inexpressible.
 The patch limit is 8 MiB. Retirement removes the owned copy and its private
 Git directory through opened directory descriptors.
 
@@ -54,11 +55,36 @@ owner's OS user. A read Conduit limits requests made through Conduit. The Agent'
 the access of that OS user.
 [DEC-018](../../docs/decisions/log.md#dec-018-2026-11-20-what-an-agent-reaches-enforcement-in-v0-after-s2)
 
+## The Git view
+
+Setup also writes root's `.git`, a Git view, so that an Agent's own Git works in the copy:
+status, diff, log, `rev-parse`, `merge-base`, and `add -N PATH` and `reset -- PATH` on the view's
+own index. Its `HEAD` is the base, detached, and its index is the checkout's. It holds no ref,
+remote, hook or object of its own: it borrows the objects of the private Git directory through
+`objects/info/alternates`, which names the absolute path of `repository.git/objects` in the
+instance's state directory (PRV-029). The Agent's Git reads objects there, which it can because
+in v0 it runs as the owner's OS user (DEC-018); a confined Agent would need that path readable.
+Its configuration holds the values the package's own Git runs with, so `git status` lists the
+paths that `changes.v1` returns, and an empty identity and `protocol.allow = never`, so Git
+refuses a commit, a fetch and a push there unless the Agent's environment or configuration names
+an author or committer identity, or allows a transport.
+
+An Agent changes no ref, `HEAD` or configuration in the view, and commits or pushes nothing there;
+commits and pushes will go through Conduit in a later release. The refusals stop a habit, not a
+will: a ref change or a checkout is not refused. A checkout or a reset of `HEAD` rewrites root's
+files, and `changes.v1` returns those files' change from the base.
+
+The package never reads the view: nothing written there reaches a result,
+and `changes.v1` takes the change from root's files against the private base.
+No trusted process runs Git in the view, fetches from it or pushes to it:
+Git would read its configuration and run its hooks. A copy that 0.1.0 made
+has no view; retire it and set it up again.
+
 ## D15 inventory
 
 | Item | Implementation and evidence |
 | --- | --- |
 | D15(a) Package-owned behavior | `src/lib.rs` negotiates IFC-037 and validates keyed requests and configuration. `src/objects.rs` imports local Git objects. `src/repository.rs` owns checkout state and retirement. `src/patch.rs` captures and verifies changes. `src/files.rs` handles bounded reads, directory listing and atomic writes. The stdio tests exercise successful and refused operations. |
 | D15(b) Delegated behavior | Host Git checks out the private commit, evaluates ignore rules against a snapshot, produces the binary-capable diff, and applies each candidate for verification. Unix descriptors and an advisory lock come from rustix. rmcp supplies MCP over stdio. tar, flate2 and sha2 build and digest the archive. |
-| D15(c) Persistent state | The runner supplies `CONDUIT_STATE_DIR` under PRV-029. The package keeps the Git directory, owner record, lock and private Git home there. A pending checkout can be cleaned and retried. Retirement removes the served copy and Git directory. |
+| D15(c) Persistent state | The runner supplies `CONDUIT_STATE_DIR` under PRV-029. The package keeps the Git directory, owner record, lock and private Git home there. Setup writes the Git view at root's `.git` once; the package never reads it, and retirement removes it with root. A pending checkout can be cleaned and retried. Retirement removes the served copy and Git directory. |
 | D15(d) Operator work and recovery | Supply host Git, a readable local repository, a pinned commit and a suitable destination. Repair the reported path or permissions and retry setup. The engine integration test installs the archive, sets up a Pool-owned copy, checks both Conduits, applies a patch and retires the Resource. |

@@ -1772,3 +1772,11 @@ Owner's words: when the Pi's setup sitting happens -> "I thought we already boot
 Lands in: the Pi was wiped, imaged and booted on 2026-11-18 and 2026-11-19 and is a reachable, idle linux/arm64 machine with its first-boot files retired; DEC-207's sitting rested on a study that missed those records and is withdrawn (amends DEC-207); what remains is one full update and restart by the owner, and enrollment as a plain node when the engine's enrollment lands (DEC-205)
 
 Status: accepted, not done
+
+## DEC-212, 2026-11-24, the write token holds Contents and Pull requests write on this repository
+
+Owner's words: what the second GitHub token holds, once order 412 found that merging a pull request needs Contents write -> "Contents + PR write, this repo (Recommended)"
+
+Lands in: the second fine-grained token holds Contents write and Pull requests write on this repository alone, held as a secret Resource that only root's write Conduit reaches; it is narrower than the owner's own login the merge queue uses today, which leaves the queue once it publishes through Conduit (order 414); amends DEC-173's "pull-request write"
+
+Status: accepted, not done (order 412)

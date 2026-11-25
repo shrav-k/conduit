@@ -25,7 +25,7 @@ pub enum Completion {
 fn mark(c: &Context, key: &str) -> String {
     format!("{}{key}", c.meta_prefix)
 }
-fn read_only(spec: &Value) -> bool {
+pub(crate) fn read_only(spec: &Value) -> bool {
     spec.get("effect").is_none()
         && !crate::revisions::is_control(spec)
         && spec["startsModelWork"] != true
@@ -624,6 +624,12 @@ pub(crate) fn record(
     event: &str,
     mut data: Value,
 ) -> Result<()> {
+    if crate::stop::cutting(&t.state)
+        && matches!(event, "invocation-ended" | "request-ended")
+        && data.get("invocation").is_some()
+    {
+        data["ruleId"] = json!("OPS-037");
+    }
     // PRV-005 / REC-002: the enclosing invocation supplies correlation only.
     // A provider call has its own target and inputs, and no request route.
     if event == "provider-call" {
@@ -752,6 +758,7 @@ fn reject_diagnostics(
         .or_else(|| route["operation"].as_str())
         .ok_or("rejection lacks subject")?;
     let specific = match rule {
+        "OPS-037" => Some(format!("{subject} reports unavailable under OPS-037 because the engine is stopping. The request may be made again once the engine has started again.")),
         "PKG-023" => Some("install fetch requires an absolute local file URL; https fetching and package-source providers are unfinished".into()),
         "LIF-037" => {
             let args = &route["arguments"];
@@ -1208,7 +1215,7 @@ fn invoke_inner(
     parent: Option<&Value>,
     archive: Option<crate::archives::ArchiveInput>,
 ) -> Result<()> {
-    if key.as_ref().is_some_and(String::is_empty) {
+    if !request.readable && key.as_ref().is_some_and(String::is_empty) {
         return Err("empty idempotency key at boundary".into());
     }
     if !request.readable && access::established(&t.state, &request.identity).is_err() {
@@ -1222,6 +1229,13 @@ fn invoke_inner(
             vec![],
         ));
         return Ok(());
+    }
+    if parent.is_none() && !crate::stop::takes(&t.state, request, key.as_deref(), c) {
+        let route = crate::stop::request_route(&t.state, request, key.as_deref());
+        return crate::stop::reject(t, a, c, route);
+    }
+    if key.as_ref().is_some_and(String::is_empty) {
+        return Err("empty idempotency key at boundary".into());
     }
     let v = access::evaluate(
         &t.state,
@@ -2296,6 +2310,15 @@ pub(crate) fn finish(
     content: Value,
     cause: Option<Vec<Value>>,
 ) -> Result<()> {
+    let cause = if crate::stop::cutting(&t.state) {
+        Some(vec![explain::outcome_cause(
+            &t.state.invocations[i],
+            outcome,
+            "OPS-037",
+        )?])
+    } else {
+        cause
+    };
     let v = &mut t.state.invocations[i];
     v["state"] = json!(outcome);
     let cause = cause.filter(|_| outcome != "succeeded");
@@ -2786,6 +2809,7 @@ pub(crate) enum UnsentDispatch {
     Proposed,
     DecisionKept,
     ReadBack,
+    Stopping,
 }
 
 fn reject_unsent(
@@ -2827,12 +2851,27 @@ fn reject_unsent(
             Some(json!([diagnostic])),
         )?;
     } else {
-        reject(t, a, c, &route, "unavailable", "REC-007", None, None)?;
+        let rule = if matches!(stage, UnsentDispatch::Stopping) {
+            "OPS-037"
+        } else {
+            "REC-007"
+        };
+        reject(t, a, c, &route, "unavailable", rule, None, None)?;
     }
     if let Some(i) = restored {
         compact_ended_invocation(&mut t.state.invocations[i], c);
     }
     Ok(v)
+}
+
+pub(crate) fn stop_unsent(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+) -> Result<()> {
+    let v = reject_unsent(t, a, c, i, UnsentDispatch::Stopping)?;
+    fault_reply(t, &v)
 }
 
 pub(crate) fn record_fault_unavailable(
@@ -3149,14 +3188,33 @@ pub(crate) fn cancel(
         .iter()
         .position(|v| v["id"] == id && v["state"] == "in-progress")
         .ok_or("cancellation names no running invocation")?;
-    let mut a = Allocation {
-        evidence,
-        cursor: 0,
-    };
+    cancel_with_allocation(
+        t,
+        &mut Allocation {
+            evidence,
+            cursor: 0,
+        },
+        i,
+        confirmation,
+        c,
+    )
+}
+
+pub(crate) fn cancel_with_allocation(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    i: usize,
+    confirmation: Option<Value>,
+    c: &Context,
+) -> Result<()> {
+    let id = t.state.invocations[i]["id"]
+        .as_str()
+        .ok_or("invocation lacks ID")?
+        .to_owned();
     if t.state.invocations[i].get("admission_wait").is_some() {
         reject_waiting(
             t,
-            &mut a,
+            a,
             c,
             i,
             "The call was cancelled while it waited for its login's admission report, so it was not dispatched and started no model work.",
@@ -3180,12 +3238,15 @@ pub(crate) fn cancel(
         return Ok(());
     }
     if t.state.invocations[i].get("cascade").is_some() {
-        return crate::cascade::cancel(t, &mut a, c, i);
+        return crate::cascade::cancel(t, a, c, i);
     }
     if t.state.invocations[i].get("setup").is_some()
         || t.state.invocations[i].get("retirement").is_some()
     {
-        return crate::lifecycle::cancel(t, &mut a, c, i);
+        let waiting_stop = crate::stop::take_waiting_stop(t, i, c);
+        crate::lifecycle::cancel(t, a, c, i)?;
+        crate::stop::send_waiting_stop(t, waiting_stop);
+        return Ok(());
     }
     t.external_intents
         .push(json!({"kind":"cancel","invocation":id,"attempt":t.state.invocations[i]["attempt"]}));
@@ -3221,11 +3282,11 @@ pub(crate) fn cancel(
     };
     let sign_in = t.state.invocations[i]["operation"] == c.qualified("sign-in.v1");
     if sign_in {
-        sign_in::cancel_parts(t, &mut a, c, i)?;
+        sign_in::cancel_parts(t, a, c, i)?;
     }
     finish(
         t,
-        &mut a,
+        a,
         c,
         i,
         if failed { "failed" } else { "unknown" },
@@ -3239,7 +3300,7 @@ pub(crate) fn cancel(
             let instance = invocation["object"].clone();
             let id = invocation["id"].clone();
             let hook = invocation["sign_in"]["undo"]["hook"].clone();
-            sign_in::undo_ended(t, &instance, &id, &hook, "unknown", &evidence.time)?;
+            sign_in::undo_ended(t, &instance, &id, &hook, "unknown", &a.evidence.time)?;
             t.state.invocations[i]["sign_in"]
                 .as_object_mut()
                 .unwrap()
@@ -3257,10 +3318,15 @@ pub(crate) fn cancel(
         })
     {
         let reply = std::mem::take(&mut t.reply);
-        crate::lifecycle::child_ended(t, &mut a, c, i)?;
+        crate::lifecycle::child_ended(t, a, c, i)?;
         t.reply = reply;
     }
-    crate::admission_ask::settle(t, evidence, c)
+    if crate::stop::cutting(&t.state) {
+        // OPS-037's cut ends every invocation in progress with its one allocator and
+        // dispatches nothing; the recovery at the next start settles the asks it ends.
+        return Ok(());
+    }
+    crate::admission_ask::settle(t, a.evidence, c)
 }
 pub(crate) fn expire(t: &mut Transition, id: &str) -> Result<()> {
     let v = t
@@ -3291,6 +3357,7 @@ pub(crate) fn expire(t: &mut Transition, id: &str) -> Result<()> {
 /// Recover interrupted requests without reissuing them. Discovery-pending
 /// requests have not been sent. The outcome of a recorded dispatch is unknown.
 pub(crate) fn recover(t: &mut Transition, evidence: &Evidence, c: &Context) -> Result<()> {
+    t.state.stop = None;
     let mut a = Allocation {
         evidence,
         cursor: 0,

@@ -25,7 +25,7 @@ Running `conduit plan` first is optional.
 ## Engine context
 
 ```text
-conduit serve --store DIR [--https-url URL] [--https-listen ADDRESS] [--https-roots FILE]
+conduit serve --store DIR [--https-url URL] [--https-listen ADDRESS] [--https-roots FILE] [--grace-period-seconds N]
 ```
 
 `conduit serve` attempts to record the current engine in `context.json` before printing its
@@ -34,6 +34,22 @@ The file contains the canonical store path, its loopback URL and the `conduit --
 with the crate version and build commit. The record remains after the engine stops. The file
 lives in the absolute directory named by `CONDUIT_CONFIG_DIR`, or in `$HOME/.config/conduit`
 when that variable is unset or empty.
+
+SIGTERM or SIGINT asks `conduit serve` to stop (OPS-037). From then on it takes no new
+request: each reports unavailable, naming OPS-037, and may be made again once serve has
+started again. Calls in progress, and the calls they make, may finish within the grace
+period, `--grace-period-seconds N` (30 by default). Serve stops as soon as none is in
+progress, and at the latest when the grace period ends. At that bound each remaining
+call is cancelled and its caller answered, a setup or a retirement as a cancellation
+ends it, any other call with the outcome unknown. A second signal ends the grace period
+at once. Serve reports the stop and how many calls were cut on stderr; inspecting
+`system` lists the two records of the stop.
+
+After the engine stops, serve allows up to three seconds for responses to drain and
+up to three seconds for required provider stops to be sent. It then ends its runs and
+exits, with DL16’s TERM-to-KILL grace (10 seconds by default) and three-second check
+that the runs have ended. An external supervisor must allow more than the grace period
+plus 19 seconds with these defaults.
 
 Serving commands verify that the store is initialized, that its fixed URL matches the file and
 that the engine at that URL answers as root. They name the context file, store and URL on stderr.

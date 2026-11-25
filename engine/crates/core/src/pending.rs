@@ -887,6 +887,17 @@ fn fact(value: Value, place: &str, proves: &str) -> Value {
     json!({"kind":"fact", "value":value, "where":place, "proves":proves})
 }
 
+// OPS-037: admission only. answer.v1 still performs PND-004's ordinary checks.
+pub(crate) fn waited_for(state: &State, action: &Value) -> bool {
+    action.is_string()
+        && state.invocations.iter().any(|v| {
+            v["state"] == "in-progress"
+                && (v["setup"]["raised"] == *action
+                    || v["sign_in"]["raised"] == *action
+                    || v["pendingAction"] == *action)
+        })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

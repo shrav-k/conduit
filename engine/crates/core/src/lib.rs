@@ -36,6 +36,10 @@ mod record_fault;
 pub use record_fault::RecordFault;
 pub mod records;
 pub mod registration;
+mod stop;
+#[cfg(test)]
+mod stop_tests;
+pub use stop::StopState;
 pub mod requests;
 #[cfg(test)]
 mod reserved_tests;
@@ -93,6 +97,8 @@ pub struct Context {
 #[derive(Clone, Debug, Default, PartialEq, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct State {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stop: Option<StopState>,
     pub started: bool,
     pub objects: Vec<Value>,
     pub records: Vec<Value>,
@@ -157,6 +163,7 @@ impl State {
     ) -> impl Serialize + 'a {
         // Keep this exhaustive so a new State field cannot silently be lost on disk.
         let State {
+            stop,
             started,
             objects,
             records,
@@ -176,6 +183,8 @@ impl State {
         } = self;
         #[derive(Serialize)]
         struct StateRef<'a, P> {
+            #[serde(skip_serializing_if = "Option::is_none")]
+            stop: &'a Option<StopState>,
             started: bool,
             objects: &'a [Value],
             records: &'a [Value],
@@ -206,6 +215,7 @@ impl State {
             preinstalled_snapshots: &'a [packages::Snapshot],
         }
         StateRef {
+            stop,
             started: *started,
             objects,
             records,
@@ -334,6 +344,13 @@ pub enum Input {
         evidence: Evidence,
         invocation: String,
         report: lifecycle::Report,
+    },
+    Stop {
+        evidence: Evidence,
+        #[serde(default)]
+        means: Option<String>,
+        #[serde(default, rename = "graceEnded")]
+        grace_ended: bool,
     },
     Recover {
         evidence: Evidence,
@@ -668,6 +685,7 @@ fn reply_context(input: &Input) -> Option<(String, Option<String>)> {
         | Input::Respond { evidence, .. }
         | Input::Cancel { evidence, .. }
         | Input::SetupReport { evidence, .. }
+        | Input::Stop { evidence, .. }
         | Input::Recover { evidence }
         | Input::SignInWaitEnded { evidence, .. }
         | Input::AdmissionAskDeadline { evidence, .. }
@@ -717,6 +735,7 @@ fn mark_unanswered(
 }
 
 fn step_body(state: State, input: Input, context: &Context) -> Result<Transition> {
+    let stop_evidence = state.stop.and_then(|_| stop::evidence(&input).cloned());
     // DL2: vectors and the shell execute this same transition body.
     let mut transition = Transition {
         state,
@@ -728,6 +747,9 @@ fn step_body(state: State, input: Input, context: &Context) -> Result<Transition
         input_required: vec![],
         validated_reason: None,
     };
+    if stop::reject_input(&mut transition, &input, context)? {
+        return Ok(transition);
+    }
     match input {
         Input::ExportRecords { unreadable } => records::export(&mut transition, &unreadable)?,
         Input::Invoke {
@@ -812,6 +834,11 @@ fn step_body(state: State, input: Input, context: &Context) -> Result<Transition
         } => {
             lifecycle::report(&mut transition, &evidence, &invocation, report, context)?;
         }
+        Input::Stop {
+            evidence,
+            means,
+            grace_ended,
+        } => stop::ask(&mut transition, &evidence, means, grace_ended, context)?,
         Input::Recover { evidence } => requests::recover(&mut transition, &evidence, context)?,
         Input::BuiltinRunStopped {
             evidence,
@@ -1157,6 +1184,9 @@ fn step_body(state: State, input: Input, context: &Context) -> Result<Transition
                 explain::diagnostic(&transition.state, &route, context, "refused", "LIF-034")?;
             transition.reply = json!({"reason":"refused","diagnostics":[diagnostic]});
         }
+    }
+    if let Some(evidence) = stop_evidence {
+        stop::after(&mut transition, &evidence, context)?;
     }
     Ok(transition)
 }

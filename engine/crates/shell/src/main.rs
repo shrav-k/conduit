@@ -214,6 +214,20 @@ fn run() -> Result<()> {
                         .map_err(|_| "invalid initialize timeout")?,
                 )
             }
+            "--grace-period-seconds" if command == "serve" => {
+                config.grace_period = std::time::Duration::from_secs(
+                    args.next()
+                        .ok_or("--grace-period-seconds needs N")?
+                        .parse()
+                        .map_err(|_| "invalid grace period")?,
+                );
+                if std::time::Instant::now()
+                    .checked_add(config.grace_period)
+                    .is_none()
+                {
+                    return Err("grace period is too large".into());
+                }
+            }
             "--call-timeout-seconds" => {
                 config.call_timeout = std::time::Duration::from_secs(
                     args.next()
@@ -425,16 +439,33 @@ fn run() -> Result<()> {
         runner.set_completion_executor(Arc::downgrade(&completion_executor));
         let runtime = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
         let shutdown = tokio_util::sync::CancellationToken::new();
-        // Install signal handling before potentially slow setup begins.
-        let signal = shutdown.clone();
-        let mut terminate = {
+        // Register both signals before startup can dispatch a setup.
+        let (mut terminate, mut interrupt) = {
             let _entered = runtime.enter();
-            tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
-                .map_err(|e| e.to_string())?
+            use tokio::signal::unix::{SignalKind, signal};
+            (
+                signal(SignalKind::terminate()).map_err(|e| e.to_string())?,
+                signal(SignalKind::interrupt()).map_err(|e| e.to_string())?,
+            )
         };
-        runtime.spawn(async move {
-            tokio::select! { _ = tokio::signal::ctrl_c() => {}, _ = terminate.recv() => {} }
+        let force = tokio_util::sync::CancellationToken::new();
+        let second = force.clone();
+        let signal = shutdown.clone();
+        let (means_tx, means_rx) = tokio::sync::oneshot::channel();
+        let signals = runtime.spawn(async move {
+            let means = tokio::select! {
+                _ = terminate.recv() => "SIGTERM", _ = interrupt.recv() => "SIGINT"
+            };
             signal.cancel();
+            let _ = means_tx.send(means);
+            tokio::select! { _ = terminate.recv() => {}, _ = interrupt.recv() => {} }
+            second.cancel();
+        });
+        let stop_shell = shell.clone();
+        let stop_executor = executor.clone();
+        let mut stopping = runtime.spawn(async move {
+            let means = means_rx.await.map_err(|_| "signal task ended")?;
+            conduit_shell::server::stop(stop_shell, stop_executor, means, force).await
         });
         let setup_shell = shell.clone();
         let setup_executor = executor.clone();
@@ -451,7 +482,7 @@ fn run() -> Result<()> {
             .await
             .map_err(|_| "startup setup failed")??;
             if !shutdown.is_cancelled() {
-                conduit_shell::server::serve_with_ready(shell.clone(), executor.clone(), shutdown, || {
+                conduit_shell::server::serve_with_ready(shell.clone(), executor.clone(), tokio_util::sync::CancellationToken::new(), || {
                     if let Err(error) = current.record() {
                         eprintln!("conduit serve: {error}");
                     }
@@ -461,12 +492,22 @@ fn run() -> Result<()> {
                     }
                 }).await?;
             }
+            if shutdown.is_cancelled() {
+                (&mut stopping).await.map_err(|_| "stop task failed")??;
+                if !setup_succeeded {
+                    eprintln!("conduit serve: one or more startup setups failed; see setup diagnostics (the engine continued serving for repair)");
+                }
+                return Ok(());
+            }
             if setup_succeeded { Ok(()) } else { Err("serve: one or more startup setups failed; see setup diagnostics (the engine continued serving for repair)".into()) }
         });
-        // Release startup tickets if a signal interrupted setup before listening.
+        signals.abort();
+        stopping.abort();
+        // Normal shutdown has already ended every invocation under OPS-037.
         shell.submit(json!({"kind":"recover"}), executor.as_ref())?;
         // Runner owns a runtime: drop it on this synchronous thread.
         drop(completion_executor);
+        runner.shutdown();
         for diagnostic in runner.diagnostics() {
             eprintln!("runner: {diagnostic}");
         }
@@ -708,19 +749,10 @@ fn set_up_instances(
                 "management.set-up.v1".into()
             };
             let ticket = shell.begin(json!({"kind":"invoke","request":{"identity":{"kind":"instance","id":root},"tool":tool,"arguments":{"instance":{"kind":kind,"name":object["name"]}}}}), executor)?;
-            let reply = if let Some(shutdown) = shutdown {
+            let reply = if shutdown.is_some() {
                 loop {
                     if let Some(reply) = ticket.try_reply()? {
                         break reply;
-                    }
-                    if shutdown.is_cancelled() {
-                        if let Some(invocation) = ticket.invocation() {
-                            shell.submit(
-                                json!({"kind":"cancel","invocation":invocation}),
-                                executor,
-                            )?;
-                        }
-                        return Ok(success);
                     }
                     std::thread::sleep(std::time::Duration::from_millis(10));
                 }

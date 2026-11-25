@@ -934,6 +934,21 @@ pub const OUTCOME_CAUSES: &[(&str, &str)] = &[
 ];
 
 pub(crate) fn outcome_cause(invocation: &Value, outcome: &str, rule: &str) -> Result<Value> {
+    if rule == "OPS-037" {
+        let mut cause = "The engine stopped before the call ended.".to_owned();
+        if outcome == "unknown" {
+            cause.push_str(" The effect may have occurred. Once the engine has started again, ");
+            if invocation.get("key").is_some_and(Value::is_string) {
+                cause.push_str(
+                    "repeat with the same idempotency key; a repeat may still report unknown.",
+                );
+            } else {
+                cause.push_str("reconcile under OPS-014 after checking whether the effect occurred, rather than make a new request.");
+            }
+        }
+        return outcome_diagnostic(invocation, outcome, rule, &cause);
+    }
+
     let cause = OUTCOME_CAUSES
         .iter()
         .find_map(|(id, cause)| (*id == rule).then_some(*cause))

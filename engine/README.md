@@ -719,7 +719,8 @@ cargo run --release -p conduit-shell -- call --store /tmp/conduit-http managemen
 ```
 
 `tools --as INSTANCE` uses that materialized instance's private helper token. Commands never
-print token files or recover the running store. SIGINT or SIGTERM stops the server.
+print token files or recover the running store. SIGINT or SIGTERM stops the server
+gracefully, as [the command guide](CLI.md#engine-context) describes (OPS-037).
 The adapter verifies Bearer tokens on every HTTP request, enforces its own Origin, presents
 exactly the core's private tools and forwards current-authority invokes. Pending calls wait
 for committed completion; cancellation reaches the core. Management operations still missing

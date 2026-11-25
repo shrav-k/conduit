@@ -83,6 +83,16 @@ impl Report {
                 }
                 let windows = self.value["windows"].as_array().expect("validated windows");
                 for id in std::iter::once(id).chain(self.login.as_deref()) {
+                    // IFC-054: a kept member ends a login's report, except its own hook's.
+                    if let Some(time) = ended["time"].as_str() {
+                        crate::admission::end(
+                            &mut t.state.admission_reports,
+                            id,
+                            time,
+                            crate::admission::End::NewerLimits,
+                            Some(invocation),
+                        );
+                    }
                     let observations = t.state.limit_observations.entry(id.to_owned()).or_default();
                     keep_latest(&mut observations.newest, newest.clone());
                     // IFC-053 / OBS-002: signals advance independently, only on non-null values.
@@ -183,7 +193,7 @@ fn eligible(instance: &Value, c: &Context) -> bool {
         }
 }
 
-fn instant(value: &str) -> Option<(DateTime<FixedOffset>, &str)> {
+pub(crate) fn instant(value: &str) -> Option<(DateTime<FixedOffset>, &str)> {
     let normalized = DateTime::parse_from_rfc3339(value).ok()?;
     let fraction = value
         .split_once('.')

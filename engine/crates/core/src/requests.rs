@@ -1292,6 +1292,26 @@ fn invoke_inner(
     {
         return reject_preflight(t, a, c, &route, rejection);
     }
+    // CTR-015 / OPS-023: a forbidden lever pair is invalid before a keyed conflict.
+    if let Some(text) = crate::registration::admission_control_pair(
+        &target,
+        &contract,
+        &request.arguments,
+        &route["arguments"],
+        c,
+    )? {
+        return reject_diagnostics(
+            t,
+            a,
+            c,
+            &route,
+            "invalid",
+            "CTR-015",
+            None,
+            None,
+            Some(json!([{"ruleId":"CTR-015","level":"error","message":{"text":text}}])),
+        );
+    }
     // OPS-023: an unsupported answer is invalid even if the key conflicts.
     // Defer PND-003 conflict so a matching repeat can return its retained outcome.
     let answer = op == c.qualified("answer.v1");
@@ -2159,6 +2179,7 @@ pub(crate) fn finish(
         v.as_object_mut().unwrap().remove("retained");
     }
     let v = v.clone();
+    crate::admission::control_succeeded(&mut t.state, &v, &a.evidence.time, c);
     t.reply = envelope(
         c,
         Some(outcome),
@@ -2251,17 +2272,21 @@ pub(crate) fn complete(
         return Ok(());
     }
     let first_record = t.records.len();
-    let (usage, limits) = if v["discovery"] == "pending" {
-        (None, None)
+    let (usage, limits, admission) = if v["discovery"] == "pending" {
+        (None, None, None)
     } else {
         (
             crate::usage::take(&mut completion, c),
             crate::limits::Report::take(&mut completion, &v["held_target"], c),
+            crate::admission::Report::take(&completion, &v, c),
         )
     };
     complete_call(t, evidence, c, i, v, completion)?;
     if let Some(usage) = usage {
         crate::usage::record_end(t, c, first_record, id, usage);
+    }
+    if let Some(admission) = admission {
+        admission.record_end(t, first_record, id);
     }
     if let Some(limits) = limits {
         limits.record_end(t, c, first_record, id);

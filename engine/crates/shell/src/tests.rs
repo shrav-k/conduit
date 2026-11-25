@@ -1,3 +1,5 @@
+#[path = "admission_tests.rs"]
+mod admission_tests;
 #[path = "fixtures.rs"]
 mod fixtures;
 #[path = "held_copy_tests.rs"]

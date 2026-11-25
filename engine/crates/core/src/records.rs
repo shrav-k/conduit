@@ -511,6 +511,11 @@ pub(crate) fn execute(
         if let Some(limits) = crate::limits::status(&t.state, &o, &a.evidence.time, c) {
             status["limits"] = limits;
         }
+        if let Some(admission) =
+            crate::admission::status(&t.state, &o, &v["caller"], &a.evidence.time, c)
+        {
+            status["admission"] = admission;
+        }
         if let Some(state) = o.get("state") {
             status["state"] = state.clone();
         }

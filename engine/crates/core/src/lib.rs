@@ -12,6 +12,9 @@
 )]
 
 pub mod access;
+mod admission;
+#[cfg(test)]
+mod admission_tests;
 pub mod archives;
 mod cascade;
 mod client_ids;
@@ -100,6 +103,9 @@ pub struct State {
     /// IFC-053: observations are engine state and survive a purge of their end records.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub limit_observations: BTreeMap<String, limits::Observations>,
+    /// IFC-054 / DL2: absent in old stores; reports outlast their records.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub admission_reports: BTreeMap<String, admission::Kept>,
     /// ACC-029 / ACC-053 / ACC-055: immutable kind and owner facts for IDs named by bounds.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub bound_targets: BTreeMap<String, Value>,
@@ -150,6 +156,7 @@ impl State {
             pending_actions,
             sign_in_holds,
             limit_observations,
+            admission_reports,
             bound_targets,
             record_gaps,
             invocations,
@@ -171,6 +178,8 @@ impl State {
             #[serde(skip_serializing_if = "BTreeMap::is_empty")]
             limit_observations: &'a BTreeMap<String, limits::Observations>,
             #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+            admission_reports: &'a BTreeMap<String, admission::Kept>,
+            #[serde(skip_serializing_if = "BTreeMap::is_empty")]
             bound_targets: &'a BTreeMap<String, Value>,
             #[serde(skip_serializing_if = "<[Value]>::is_empty")]
             record_gaps: &'a [Value],
@@ -190,6 +199,7 @@ impl State {
             pending_actions,
             sign_in_holds,
             limit_observations,
+            admission_reports,
             bound_targets,
             record_gaps,
             invocations,

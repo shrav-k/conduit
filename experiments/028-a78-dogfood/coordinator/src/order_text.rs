@@ -31,10 +31,11 @@ pub fn record_section(text: &str) -> Option<String> {
     Some(body.join("\n").trim().to_string())
 }
 
-/// Checks the Record rule for `branch` at `revision`.
-pub fn check_record(git: &Git, branch: &str, revision: &str) -> Result<String, String> {
+/// The path of `branch`'s order text at `revision`: `None` for a branch that has none, and an
+/// error for a `wo/ID-...` branch without exactly one.
+pub fn find(git: &Git, branch: &str, revision: &str) -> Result<Option<String>, String> {
     let Some(id) = order_id(branch) else {
-        return Ok(format!("{branch} has no order text"));
+        return Ok(None);
     };
     let listing = git.text(&["ls-tree", "-z", revision, "--", ORDERS])?;
     let prefix = format!("{ORDERS}{id}-");
@@ -61,6 +62,14 @@ pub fn check_record(git: &Git, branch: &str, revision: &str) -> Result<String, S
                 many.join(", ")
             ));
         }
+    };
+    Ok(Some(path))
+}
+
+/// Checks the Record rule for `branch` at `revision`.
+pub fn check_record(git: &Git, branch: &str, revision: &str) -> Result<String, String> {
+    let Some(path) = find(git, branch, revision)? else {
+        return Ok(format!("{branch} has no order text"));
     };
     let text = git.text(&["cat-file", "blob", &format!("{revision}:{path}")])?;
     match record_section(&text) {

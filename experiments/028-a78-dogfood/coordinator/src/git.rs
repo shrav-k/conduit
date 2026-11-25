@@ -89,6 +89,23 @@ impl<'a> Git<'a> {
         self.text(&["rev-parse", "--verify", &format!("{revision}^{{tree}}")])
     }
 
+    /// The blob `path` at `revision`, byte for byte as text, or `None` when there is none.
+    pub fn blob(&self, revision: &str, path: &str) -> Result<Option<String>, String> {
+        let object = format!("{revision}:{path}");
+        if !self.run(&["cat-file", "-e", &object])?.success() {
+            return Ok(None);
+        }
+        let finished = self.run(&["cat-file", "blob", &object])?;
+        if !finished.success() {
+            return Err(format!(
+                "git cat-file blob {object} ended {}: {}",
+                finished.status(),
+                crate::cut(&finished.last_line(), 200)
+            ));
+        }
+        Ok(Some(finished.stdout))
+    }
+
     /// Whether `ancestor` is an ancestor of `descendant`; `None` when git cannot say.
     pub fn is_ancestor(&self, ancestor: &str, descendant: &str) -> Option<bool> {
         match self.run(&["merge-base", "--is-ancestor", ancestor, descendant]) {

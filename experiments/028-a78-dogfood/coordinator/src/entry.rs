@@ -1,7 +1,9 @@
 //! One attempt at one entry, step by step, to the first failure (decision 5).
 
+use crate::changelog;
 use crate::config::Config;
 use crate::git::Git;
+use crate::merge::{CHANGES, FRAGMENTS, FRAGMENTS_README};
 use crate::message::Message;
 use crate::order_text;
 use crate::process::Runner;
@@ -24,6 +26,7 @@ pub const STEPS: &[&str] = &[
     "backup",
     "rebase",
     "standing",
+    "fragment",
     "decisions",
     "identity",
     "record",
@@ -240,6 +243,7 @@ impl<'a> Attempt<'a> {
             "backup" => self.backup(),
             "rebase" => self.rebase(),
             "standing" => self.standing(),
+            "fragment" => self.fragment(),
             "decisions" => self.decisions(),
             "identity" => self.identity(),
             "record" => self.record(),
@@ -425,11 +429,26 @@ impl<'a> Attempt<'a> {
                     "the rebase stopped {stops} times for {count} commits"
                 )]));
             }
-            match rebase::settle(&git, self.runner, &self.config.python) {
-                Ok(done) => settled.push(done),
-                Err(problems) => return Err(self.abort(problems)),
-            }
-            finished = match git.run(&["-c", "merge.conflictstyle=diff3", "rebase", "--continue"]) {
+            let own = match rebase::own_fragment_commit(&git) {
+                Ok(own) => own,
+                Err(error) => return Err(self.abort(vec![error])),
+            };
+            let next = match own {
+                Some(commit) => {
+                    settled.push(format!(
+                        "skipped the queue's own fragment commit {commit} of an earlier attempt, which the fragment step makes again"
+                    ));
+                    "--skip"
+                }
+                None => match rebase::settle(&git, self.runner, &self.config.python) {
+                    Ok(done) => {
+                        settled.push(done);
+                        "--continue"
+                    }
+                    Err(problems) => return Err(self.abort(problems)),
+                },
+            };
+            finished = match git.run(&["-c", "merge.conflictstyle=diff3", "rebase", next]) {
                 Ok(finished) => finished,
                 Err(error) => return Err(self.abort(vec![error])),
             };
@@ -529,6 +548,71 @@ impl<'a> Attempt<'a> {
         let head = self.refresh_head()?;
         Ok(format!(
             "{STANDING} regenerated and committed alone as {head}"
+        ))
+    }
+
+    /// Moves the branch's new `Unreleased` items to its fragment (order 401b, decision 2), only
+    /// where PINNED holds `spec/changes/README.md`.
+    fn fragment(&mut self) -> Step {
+        let pinned = self.pinned().to_string();
+        let git = self.git();
+        if git.blob(&pinned, FRAGMENTS_README)?.is_none() {
+            return Ok(format!(
+                "PINNED holds no {FRAGMENTS_README}, so no item moves"
+            ));
+        }
+        let before = git.blob(&pinned, CHANGES)?.unwrap_or_default();
+        let after = git.blob("HEAD", CHANGES)?.unwrap_or_default();
+        let Some(moved) = changelog::split(&before, &after) else {
+            return Ok(format!(
+                "{CHANGES} holds no Unreleased item that PINNED's lacks"
+            ));
+        };
+        let order_text = order_text::find(&git, &self.entry.branch, "HEAD")?;
+        let name = changelog::fragment_name(&self.entry.branch, order_text.as_deref())?;
+        let fragment = format!("{FRAGMENTS}{name}");
+        let dirty = git.status_lines()?;
+        if !dirty.is_empty() {
+            return Err(Failure::with(
+                "the worktree is not clean before the fragment step",
+                dirty
+                    .iter()
+                    .take(20)
+                    .map(|line| crate::cut(line, 200))
+                    .collect(),
+            ));
+        }
+        let target = self.dir().join(&fragment);
+        let mut text = match fs::symlink_metadata(&target) {
+            Ok(meta) if meta.is_file() => fs::read_to_string(&target)
+                .map_err(|error| format!("{fragment} cannot be read: {error}"))?,
+            Ok(_) => {
+                return Err(Failure::new(format!(
+                    "{fragment} exists and is not a regular file"
+                )));
+            }
+            Err(error) if error.kind() == ErrorKind::NotFound => String::new(),
+            Err(error) => return Err(Failure::new(format!("{fragment}: {error}"))),
+        };
+        if !text.is_empty() && !text.ends_with('\n') {
+            text.push('\n');
+        }
+        text.push_str(&moved.fragment);
+        if let Some(parent) = target.parent() {
+            fs::create_dir_all(parent)
+                .map_err(|error| format!("{} cannot be made: {error}", parent.display()))?;
+        }
+        fs::write(&target, text)
+            .map_err(|error| format!("{fragment} cannot be written: {error}"))?;
+        fs::write(self.dir().join(CHANGES), &moved.changes)
+            .map_err(|error| format!("{CHANGES} cannot be written: {error}"))?;
+        git.text(&["add", "--", CHANGES, &fragment])?;
+        git.text(&["commit", "--quiet", "-m", changelog::SUBJECT])?;
+        let head = self.refresh_head()?;
+        let items = if moved.count == 1 { "item" } else { "items" };
+        Ok(format!(
+            "moved {} {items} from {CHANGES} to {fragment}, committed alone as {head}",
+            moved.count
         ))
     }
 

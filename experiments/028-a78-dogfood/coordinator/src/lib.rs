@@ -2,14 +2,17 @@
 //!
 //! The queue merges each work order's branch in turn: it rebases the branch on the commit
 //! `REMOTE/BASE` names when the entry starts, settles only the conflicts it is allowed to,
-//! squashes, runs the local gate, pushes, merges the pull request and checks what landed.
+//! moves the branch's new changelog items to its fragment, squashes, runs the local gate,
+//! pushes, merges the pull request and checks what landed.
 //! Its state lives in two JSON-lines files under the configured `state` directory.
 
+pub mod changelog;
 pub mod cli;
 pub mod config;
 pub mod entry;
 pub mod git;
 pub mod lock;
+pub mod merge;
 pub mod message;
 pub mod order_text;
 pub mod process;

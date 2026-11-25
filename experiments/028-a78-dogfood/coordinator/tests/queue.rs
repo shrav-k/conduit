@@ -24,6 +24,7 @@ const STEPS: &[&str] = &[
     "backup",
     "rebase",
     "standing",
+    "fragment",
     "decisions",
     "identity",
     "record",
@@ -846,6 +847,441 @@ fn queue_other_conflict_stops() {
         );
     }
     assert_eq!(world.main_head(), main, "nothing merged");
+}
+
+/// The blob `revision:path` in `origin`, byte for byte, or `None` when it names none.
+fn origin_blob(world: &World, revision: &str, path: &str) -> Option<String> {
+    let output = world.try_git(
+        &world.root,
+        &[
+            "--git-dir",
+            world.origin.to_str().unwrap(),
+            "cat-file",
+            "blob",
+            &format!("{revision}:{path}"),
+        ],
+    );
+    output
+        .status
+        .success()
+        .then(|| String::from_utf8_lossy(&output.stdout).into_owned())
+}
+
+/// The `why` of an entry's step line.
+fn step_why(world: &World, name: &str, step: &str) -> String {
+    world
+        .lines_of(name)
+        .into_iter()
+        .find(|line| line["step"] == step)
+        .unwrap_or_else(|| panic!("no {step} line for {name}"))["why"]
+        .as_str()
+        .unwrap()
+        .to_string()
+}
+
+/// The fixture's STANDING agrees with `origin`'s `main`.
+#[track_caller]
+fn assert_standing_current(world: &World) {
+    let clone = &world.clone;
+    world.git(clone, &["fetch", "--quiet", "origin"]);
+    world.git(
+        clone,
+        &["reset", "--quiet", "--hard", "refs/remotes/origin/main"],
+    );
+    world.standing(clone);
+    assert_eq!(
+        world.git(clone, &["status", "--porcelain"]),
+        "",
+        "the merged STANDING is the fixture's"
+    );
+}
+
+const PROSE_YAML: &str = "- id: PRO-001\n  description: >-\n    The quick brown fox jumps over the lazy dog, and then\n    it runs far away into the woods to find its den.\n";
+const PROSE_LIST: &str =
+    "# A list\n\n- the first item\n- the second item\n\nA closing paragraph.\n";
+
+#[test]
+fn queue_resolves_prose() {
+    let world = World::new();
+    world.advance_main(
+        &[
+            ("spec/prose.yaml", Some(PROSE_YAML)),
+            ("spec/list.md", Some(PROSE_LIST)),
+        ],
+        true,
+        "the prose's base",
+    );
+    let dir = world.branch("prose", "prose-branch");
+    let branch_item = "- the branch's item, which wraps\n  onto a second line\n";
+    world.write(
+        &dir,
+        "spec/prose.yaml",
+        &PROSE_YAML.replace("woods", "trees"),
+    );
+    world.write(
+        &dir,
+        "spec/list.md",
+        &PROSE_LIST.replace(
+            "- the second item\n",
+            &format!("- the second item\n{branch_item}"),
+        ),
+    );
+    world.standing(&dir);
+    world.commit(&dir, "the branch's prose");
+    world.message("prose", "prose lands");
+    world.advance_main(
+        &[
+            (
+                "spec/prose.yaml",
+                Some(&PROSE_YAML.replace("quick", "swift")),
+            ),
+            (
+                "spec/list.md",
+                Some(
+                    &PROSE_LIST
+                        .replace("- the second item\n", "- the second item\n- main's item\n"),
+                ),
+            ),
+            ("spec/main-only.md", Some("main\n")),
+        ],
+        true,
+        "main's prose",
+    );
+    exits(&world.add("prose", &[]), 0);
+    let shown = exits(&world.run(), 0);
+    assert!(shown.contains("MERGED prose as"), "{shown}");
+    let why = step_why(&world, "prose", "rebase");
+    assert!(why.contains("settled 1 stops"), "{why}");
+    assert!(
+        why.contains("spec/prose.yaml: 1 hunk merged by words"),
+        "{why}"
+    );
+    assert!(
+        why.contains("spec/list.md: 1 hunk kept both sides' added lines"),
+        "{why}"
+    );
+    assert_eq!(
+        origin_blob(&world, "refs/heads/main", "spec/prose.yaml").unwrap(),
+        PROSE_YAML
+            .replace("quick", "swift")
+            .replace("woods", "trees"),
+        "both words' edits apply, wrapped as before"
+    );
+    assert_eq!(
+        origin_blob(&world, "refs/heads/main", "spec/list.md").unwrap(),
+        PROSE_LIST.replace(
+            "- the second item\n",
+            &format!("- the second item\n- main's item\n{branch_item}"),
+        ),
+        "both items, each whole: main's, then the branch's"
+    );
+    assert_standing_current(&world);
+}
+
+#[test]
+fn queue_prose_overlap_stops() {
+    let world = World::new();
+    let same =
+        "- id: SAM-001\n  description: >-\n    One two three four five six seven eight nine ten.\n";
+    let adjacent = "# Adjacent\n\nAlpha beta gamma delta epsilon zeta.\n";
+    world.advance_main(
+        &[
+            ("spec/same.yaml", Some(same)),
+            ("spec/adjacent.md", Some(adjacent)),
+        ],
+        true,
+        "the prose's base",
+    );
+    let same_dir = world.branch("same", "overlap-same");
+    world.change(
+        &same_dir,
+        &[("spec/same.yaml", &same.replace("four", "4"))],
+        "the branch changes a word",
+    );
+    let adjacent_dir = world.branch("adjacent", "overlap-adjacent");
+    world.change(
+        &adjacent_dir,
+        &[("spec/adjacent.md", &adjacent.replace("delta", "DELTA"))],
+        "the branch changes the next word",
+    );
+    for name in ["same", "adjacent"] {
+        world.message(name, &format!("{name} lands"));
+    }
+    world.advance_main(
+        &[
+            ("spec/same.yaml", Some(&same.replace("four", "FOUR"))),
+            (
+                "spec/adjacent.md",
+                Some(&adjacent.replace("gamma", "GAMMA")),
+            ),
+        ],
+        true,
+        "main changes the same and the adjacent words",
+    );
+    let main = world.main_head();
+    for name in ["same", "adjacent"] {
+        exits(&world.add(name, &[]), 0);
+    }
+    let shown = exits(&world.run(), 1);
+    for (name, why) in [
+        (
+            "same",
+            "spec/same.yaml: its hunk at line 3 stops: the two sides' edits have no unchanged base word between them: they meet at \"four\", after \"One two three\", before \"five six seven eight nine\"; the hunk's first line:     One two three FOUR five six seven eight nine ten.",
+        ),
+        (
+            "adjacent",
+            "spec/adjacent.md: its hunk at line 3 stops: the two sides' edits have no unchanged base word between them: they meet at \"gamma delta\", after \"Alpha beta\", before \"epsilon zeta.\"; the hunk's first line: Alpha beta GAMMA delta epsilon zeta.",
+        ),
+    ] {
+        assert!(
+            shown.contains(&format!("FAILED {name} at rebase: the rebase stopped")),
+            "{shown}"
+        );
+        assert!(shown.contains(&format!("  {why}")), "{why}: {shown}");
+        let dir = world.worktrees.join(name);
+        let gitdir = world.git(&dir, &["rev-parse", "--absolute-git-dir"]);
+        for state in ["rebase-merge", "rebase-apply"] {
+            assert!(
+                !Path::new(&gitdir).join(state).exists(),
+                "no rebase is in progress"
+            );
+        }
+        assert_eq!(
+            world.git(&dir, &["rev-parse", "HEAD"]),
+            world.backup(name, 1)
+        );
+        assert_eq!(
+            world.git(&dir, &["status", "--porcelain", "--untracked-files=all"]),
+            ""
+        );
+    }
+    assert_eq!(world.main_head(), main, "nothing merged");
+}
+
+const CHANGES: &str = "# Changes to the specification\n\nEach change adds its lines to a fragment of its own under `spec/changes/`, and none here (DEC-177).\n\n## [Unreleased]\n\n- Added: the oldest item (DEC-001).\n\n## [0.1.0] - 2026-01-01\n\n- Added: the first release (DEC-001).\n";
+const OLDEST: &str = "- Added: the oldest item (DEC-001).\n";
+
+/// `CHANGES` with `items` after the oldest Unreleased item.
+fn changes_with(items: &str) -> String {
+    CHANGES.replace(OLDEST, &format!("{OLDEST}{items}"))
+}
+
+#[test]
+fn queue_changelog_moves_to_fragment() {
+    let world = World::new();
+    world.advance_main(
+        &[
+            ("spec/CHANGES.md", Some(CHANGES)),
+            (
+                "spec/changes/README.md",
+                Some("# Changelog fragments\n\nEach change writes a fragment of its own here.\n"),
+            ),
+            (
+                "docs/work-orders/602-held-text.md",
+                Some(&order_text("Not yet run.")),
+            ),
+        ],
+        true,
+        "fragments' base",
+    );
+    let first_item = "- Added: `spec/first.md`, the first entry's item, which wraps\n  onto a second line (DEC-177).\n";
+    let held_item = "- Changed: `spec/held.md`, the held entry's item (DEC-177).\n";
+    let other_item = "- Fixed: `spec/other.md`, the other entry's item (DEC-177).\n";
+    let first = world.branch("first", "wo/601-first");
+    world.change(
+        &first,
+        &[
+            ("spec/first.md", "first\n"),
+            ("spec/CHANGES.md", &changes_with(first_item)),
+            (
+                "docs/work-orders/601-first.md",
+                &order_text("Run by the queue's tests."),
+            ),
+        ],
+        "the first entry's change",
+    );
+    let held = world.branch("held", "wo/602-branch-side");
+    world.change(
+        &held,
+        &[
+            ("spec/held.md", "held\n"),
+            ("spec/CHANGES.md", &changes_with(held_item)),
+            (
+                "docs/work-orders/602-held-text.md",
+                &order_text("Run by the queue's tests."),
+            ),
+        ],
+        "the held entry's change",
+    );
+    let other = world.branch("other", "frag/other");
+    world.change(
+        &other,
+        &[
+            ("spec/other.md", "other\n"),
+            ("spec/CHANGES.md", &changes_with(other_item)),
+        ],
+        "the other entry's change",
+    );
+    let quiet = world.branch("quiet", "quiet-branch");
+    world.change(&quiet, &[("spec/quiet.md", "quiet\n")], "no changelog item");
+    for name in ["first", "held", "other", "quiet"] {
+        world.message(name, &format!("{name} lands"));
+    }
+    let newer = "- Changed: main's newer item (DEC-002).\n";
+    world.advance_main(
+        &[("spec/CHANGES.md", Some(&changes_with(newer)))],
+        true,
+        "main adds a newer item",
+    );
+    for name in ["first", "held", "other", "quiet"] {
+        exits(&world.add(name, &[]), 0);
+    }
+    let shown = exits(&world.run(), 0);
+    assert!(
+        shown.contains("queue done: merged [first, held, other, quiet] failed [] skipped []"),
+        "{shown}"
+    );
+    let history = world.origin(&["rev-list", "--first-parent", "refs/heads/main"]);
+    let merged: Vec<&str> = history.lines().take(4).collect();
+    for commit in &merged {
+        assert_eq!(
+            origin_blob(&world, commit, "spec/CHANGES.md").unwrap(),
+            changes_with(newer),
+            "the merge keeps PINNED's spec/CHANGES.md"
+        );
+    }
+    let main = "refs/heads/main";
+    for (path, item) in [
+        ("spec/changes/601-first.md", first_item),
+        ("spec/changes/602-held-text.md", held_item),
+        ("spec/changes/frag-other.md", other_item),
+    ] {
+        assert_eq!(
+            origin_blob(&world, main, path).as_deref(),
+            Some(item),
+            "{path} holds the branch's item word for word"
+        );
+    }
+    assert!(
+        origin_blob(&world, main, "spec/changes/wo-602-branch-side.md").is_none(),
+        "a held order text names the fragment, not the branch"
+    );
+    let listed = world.origin(&["ls-tree", "--name-only", main, "spec/changes/"]);
+    assert_eq!(
+        listed.lines().collect::<Vec<_>>(),
+        [
+            "spec/changes/601-first.md",
+            "spec/changes/602-held-text.md",
+            "spec/changes/README.md",
+            "spec/changes/frag-other.md",
+        ]
+    );
+    let quiet_changed = world.origin(&[
+        "diff-tree",
+        "--no-commit-id",
+        "--name-only",
+        "-r",
+        &format!("{}^", merged[0]),
+        merged[0],
+    ]);
+    assert_eq!(
+        quiet_changed.lines().collect::<Vec<_>>(),
+        ["engine/STANDING.md", "spec/quiet.md"],
+        "a branch with no new item writes no fragment"
+    );
+    assert!(
+        step_why(&world, "first", "rebase").contains("spec/CHANGES.md: 1 hunk kept both sides"),
+        "the changelog kept both sides"
+    );
+    assert!(
+        step_why(&world, "first", "fragment")
+            .contains("moved 1 item from spec/CHANGES.md to spec/changes/601-first.md"),
+        "{}",
+        step_why(&world, "first", "fragment")
+    );
+    assert_eq!(
+        step_why(&world, "quiet", "fragment"),
+        "spec/CHANGES.md holds no Unreleased item that PINNED's lacks"
+    );
+}
+
+#[test]
+fn queue_retry_skips_its_own_fragment_commit() {
+    let world = World::new();
+    world.advance_main(
+        &[
+            ("spec/CHANGES.md", Some(CHANGES)),
+            (
+                "spec/changes/README.md",
+                Some("# Changelog fragments\n\nEach change writes a fragment of its own here.\n"),
+            ),
+        ],
+        true,
+        "fragments' base",
+    );
+    let item = "- Added: `spec/again.md`, the retried entry's item (DEC-177).\n";
+    let dir = world.branch("again", "frag/again");
+    world.change(
+        &dir,
+        &[
+            ("spec/again.md", "again\n"),
+            ("spec/CHANGES.md", &changes_with(item)),
+            ("decisions-fail", "x\n"),
+        ],
+        "the retried entry's change",
+    );
+    world.message("again", "again lands");
+    let first = "- Changed: main's first item (DEC-002).\n";
+    world.advance_main(
+        &[("spec/CHANGES.md", Some(&changes_with(first)))],
+        true,
+        "main adds an item",
+    );
+    exits(&world.add("again", &[]), 0);
+    let shown = exits(&world.run(), 1);
+    assert!(shown.contains("FAILED again at decisions"), "{shown}");
+    assert!(
+        step_why(&world, "again", "fragment").contains("moved 1 item"),
+        "the first attempt committed its fragment"
+    );
+    fs::remove_file(dir.join("decisions-fail")).unwrap();
+    world.commit(&dir, "the decisions are fixed");
+    let second = "- Changed: main's second item (DEC-003).\n";
+    world.advance_main(
+        &[(
+            "spec/CHANGES.md",
+            Some(&changes_with(&format!("{first}{second}"))),
+        )],
+        true,
+        "main adds another item",
+    );
+    exits(&world.wo(&["retry", "again"]), 0);
+    let shown = exits(&world.run(), 0);
+    assert!(shown.contains("MERGED again as"), "{shown}");
+    let main = "refs/heads/main";
+    assert_eq!(
+        origin_blob(&world, main, "spec/CHANGES.md").unwrap(),
+        changes_with(&format!("{first}{second}")),
+        "the merge keeps PINNED's spec/CHANGES.md"
+    );
+    assert_eq!(
+        origin_blob(&world, main, "spec/changes/frag-again.md").as_deref(),
+        Some(item),
+        "the fragment holds the item once"
+    );
+    let rebase = world
+        .lines_of("again")
+        .into_iter()
+        .filter(|line| line["step"] == "rebase")
+        .nth(1)
+        .unwrap();
+    assert!(
+        rebase["why"]
+            .as_str()
+            .unwrap()
+            .contains("skipped the queue's own fragment commit"),
+        "{rebase}"
+    );
 }
 
 #[test]

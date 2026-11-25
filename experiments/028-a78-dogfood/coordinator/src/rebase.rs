@@ -1,18 +1,22 @@
-//! A stopped rebase (decision 6).
+//! A stopped rebase (order 401's decision 6, order 401b's decision 1).
 //!
 //! Ours is the side rebased onto; theirs is the replayed commit (`--theirs` in a rebase). A
 //! conflicted path without all three stages stops, naming the path and the kind.
+//! `spec/CHANGES.md` and the prose paths are settled hunk by hunk, as [`crate::merge`] says.
 //! `engine/STANDING.md` takes theirs and, once every other path is settled, the repository's
 //! `promise_standing.py --write` regenerates it and it is added. Every other conflicted path
 //! stops, naming it and its first hunk's first line. No hunk keeps one side over a changed other.
+//! A stop while replaying the queue's own fragment commit of an earlier attempt skips that
+//! commit, since the fragment step makes it again.
 
 use crate::git::Git;
+use crate::merge::{self, Settled};
 use crate::process::Runner;
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::Path;
 
-/// The one path the queue settles.
+/// The path the queue regenerates.
 pub const STANDING: &str = "engine/STANDING.md";
 
 /// The lines that mark a conflict; a path holding one is never added.
@@ -94,6 +98,43 @@ pub fn first_hunk(path: &Path) -> String {
     )
 }
 
+/// The commit a stopped rebase replays when it is the queue's own fragment commit of an earlier
+/// attempt: its subject is [`crate::changelog::SUBJECT`] and it changes only `spec/CHANGES.md`
+/// and fragments. The fragment step makes it again, so the rebase skips it.
+pub fn own_fragment_commit(git: &Git) -> Result<Option<String>, String> {
+    let commit = git.commit("REBASE_HEAD")?;
+    let subject = git.text(&["log", "-1", "--format=%s", &commit])?;
+    if subject != crate::changelog::SUBJECT {
+        return Ok(None);
+    }
+    let paths = git.text(&[
+        "diff-tree",
+        "--no-commit-id",
+        "--name-only",
+        "-r",
+        "-z",
+        &commit,
+    ])?;
+    let own = paths
+        .split('\0')
+        .filter(|path| !path.is_empty())
+        .all(|path| {
+            path == merge::CHANGES
+                || (path.starts_with(merge::FRAGMENTS) && path != merge::FRAGMENTS_README)
+        });
+    Ok(own.then_some(commit))
+}
+
+/// Reads a conflicted file of the worktree as text.
+fn read_text(path: &Path) -> Result<String, String> {
+    let meta = fs::symlink_metadata(path).map_err(|error| format!("cannot be read: {error}"))?;
+    if !meta.is_file() {
+        return Err("is not a regular file".into());
+    }
+    let bytes = fs::read(path).map_err(|error| format!("cannot be read: {error}"))?;
+    String::from_utf8(bytes).map_err(|_| "is not UTF-8 text".to_string())
+}
+
 /// Settles one stop of a rebase, or names each path it cannot settle and why.
 pub fn settle(git: &Git, runner: &Runner, python: &[String]) -> Result<String, Vec<String>> {
     let conflicts = unmerged(git).map_err(|error| vec![error])?;
@@ -102,11 +143,23 @@ pub fn settle(git: &Git, runner: &Runner, python: &[String]) -> Result<String, V
     }
     let mut problems = Vec::new();
     let mut standing = false;
+    let mut merged: Vec<(&str, Settled)> = Vec::new();
     for (path, stages) in &conflicts {
         if stages.len() != 3 || !stages.contains(&1) {
             problems.push(format!("{path}: {}", kind(stages)));
         } else if path == STANDING {
             standing = true;
+        } else if let Some(how) = merge::kind_of(path) {
+            let settled = read_text(&git.dir().join(path))
+                .map_err(|why| format!("{path}: {why}"))
+                .and_then(|text| merge::settle_text(path, how, &text));
+            match settled {
+                Ok(settled) if has_marker(&settled.text) => {
+                    problems.push(format!("{path}: still holds a conflict marker once merged"))
+                }
+                Ok(settled) => merged.push((path.as_str(), settled)),
+                Err(why) => problems.push(why),
+            }
         } else {
             problems.push(format!(
                 "{path}: a conflict, {}",
@@ -117,8 +170,16 @@ pub fn settle(git: &Git, runner: &Runner, python: &[String]) -> Result<String, V
     if !problems.is_empty() {
         return Err(problems);
     }
+    let mut notes = Vec::new();
+    for (path, settled) in &merged {
+        fs::write(git.dir().join(path), &settled.text)
+            .map_err(|error| vec![format!("{path} cannot be written: {error}")])?;
+        git.text(&["add", "--", path])
+            .map_err(|error| vec![format!("{path}: {error}")])?;
+        notes.push(settled.note(path));
+    }
     if !standing {
-        return Err(vec!["the rebase stopped with no path it can settle".into()]);
+        return Ok(notes.join("; "));
     }
     git.text(&["checkout", "--theirs", "--", STANDING])
         .map_err(|error| vec![format!("{STANDING}: {error}")])?;
@@ -160,7 +221,8 @@ pub fn settle(git: &Git, runner: &Runner, python: &[String]) -> Result<String, V
     }
     git.text(&["add", "--", STANDING])
         .map_err(|error| vec![format!("{STANDING}: {error}")])?;
-    Ok(format!("{STANDING} took theirs and was regenerated"))
+    notes.push(format!("{STANDING} took theirs and was regenerated"));
+    Ok(notes.join("; "))
 }
 
 #[cfg(test)]

@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "const": "stop"
+    },
+    "evidence": {
+      "type": "object"
+    },
+    "means": {
+      "type": "string",
+      "minLength": 1
+    },
+    "graceEnded": {
+      "const": true
+    }
+  },
+  "required": [
+    "kind",
+    "evidence"
+  ]
+}

@@ -451,7 +451,8 @@
   digest: 2cd2717570df781fd1a43a572629edc4c39e8c56966ab3ad723e85e453256588
   note: 'Source row: “F: provider run and fresh read precede post-restart calls”. Graded from
     holds by FR-460. Searched for a Conduit open or closed; no filter. Order 303 (DEC-115): PRV-026
-    runs again at a restart every Resource on the engine''s own runner; text changed, not rerun.'
+    runs again at a restart every Resource on the engine''s own runner; text changed, not rerun.
+    Order 410 (DEC-176) cites the stop of OPS-037; text changed, not rerun.'
 - id: PRV-027
   class: safety
   standing: holds, not graded
@@ -1206,7 +1207,8 @@
     order 160''s Deduplicating and DiscardLate variants hold O and W while DedupFailedSettles
     reads the text before it, and ruling 80''s clause for an earlier attempt answered succeeded,
     which needs two reorders and so lies outside MC2''s bounds; the row waits for a rerun that
-    reads this text.'
+    reads this text.
+    Order 410 (DEC-176) cites the stop of OPS-037; text changed, not rerun.'
 - id: OPS-013
   class: safety
   standing: searched
@@ -1347,6 +1349,10 @@
   class: safety
   standing: static
   note: 'MC7a: “Static: a static decision, to be shown by vectors”.'
+- id: OPS-037
+  class: safety
+  standing: not modelled
+  note: Written by work order 410; not yet modelled.
 - id: REV-001
   class: safety
   standing: static
@@ -1460,7 +1466,8 @@
     115’s final checks: a cached repeat keeps its request-end record without a dispatch; occurrence coverage includes
     the admin correction to R1. Graded from holds by FR-458. Work order 254 changed its observable: a record that
     cannot be kept when it occurs is kept late, under REC-007. R1 checks recording at creation and was not rerun
-    against late recording.'
+    against late recording.
+    Order 410 (DEC-176) adds the two records of the stop to its when; R1 was not rerun.'
 - id: REC-002
   class: safety
   standing: static
@@ -1524,7 +1531,9 @@
   digest: 88666f1962c653f3505e4eefca2324c5a8ff69c465f123132bac14877656e13f
   note: 'Bounded source slice; no individual finding. Rerun by work order 160 on 2026-11-15 under ruling 78
     point 6: U holds, graded searched. Work order 172a changed its observable: only a call that changes nothing is sent once more under
-    IFC-046 (F46). Work order 254 added REC-007''s undispatched request.'
+    IFC-046 (F46). Work order 254 added REC-007''s undispatched request.
+    Order 410 (DEC-176) cites the stop of OPS-037; text changed, not rerun.
+    The fix turn preserves setup and retirement outcomes under OPS-027.'
 - id: IMP-008
   class: safety
   standing: holds, not graded

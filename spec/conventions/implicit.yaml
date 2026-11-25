@@ -70,7 +70,11 @@
     model work, is part of the same dispatch, not a second.
     For a setup hook or a retire hook, the further setup or retirement that dispatches a new
     attempt under OPS-021 is the repeat, and its caller is the attempt's caller, under OPS-028.
-    An invocation that was in progress across a restart has the outcome unknown.
+    An invocation that was in progress across a restart has the outcome unknown. One that the
+    end of the grace period of a stop cut ended then with the outcome OPS-037 gives it:
+    unknown, or, for a setup or a retirement, the outcome that OPS-027 gives it, under OPS-022
+    or LIF-021. It is likewise not dispatched again without a repeat; a request that a
+    stopping engine did not take ends unavailable under OPS-037, not unknown.
     A request found at a restart decided and not dispatched ends unavailable under REC-007,
     not unknown.
 

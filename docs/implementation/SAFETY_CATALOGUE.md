@@ -11,11 +11,12 @@ Work order 171b added the row of PND-014, which it wrote, and requoted the rows 
 and PND-013, whose quoted text it changed.
 Work order 254 added the row of REC-007, which it wrote.
 Work order 286 added the row of SCT-017, which it wrote.
+Work order 410 added the row of OPS-037, which it wrote.
 
-Promises read: 522; safety: 414; for the coordinator: 0; others: 108. Safety by kind: access 201,
-secret 45, effect 125, result 43. Safety by layer: language 136, convention 233, interface 45.
-Safety in the seven convention files: 129 (G5’s list as ruling 39 worded it); safety of the
-convention layer anywhere: 233 (the wider reading, for the owner).
+Promises read: 523; safety: 415; for the coordinator: 0; others: 108. Safety by kind: access 201,
+secret 45, effect 126, result 43. Safety by layer: language 136, convention 234, interface 45.
+Safety in the seven convention files: 130 (G5’s list as ruling 39 worded it); safety of the
+convention layer anywhere: 234 (the wider reading, for the owner).
 
 Recount the classification rows from the repository root:
 
@@ -496,7 +497,7 @@ Read: 35 promises. Source: [spec/conventions/access.yaml](../../spec/conventions
 
 ### spec/conventions/operations.yaml
 
-Read: 32 promises. Source: [spec/conventions/operations.yaml](../../spec/conventions/operations.yaml).
+Read: 33 promises. Source: [spec/conventions/operations.yaml](../../spec/conventions/operations.yaml).
 
 | ID | layer | level | kind | why a breach is unsafe | S1 traces |
 | --- | --- | --- | --- | --- | --- |
@@ -530,6 +531,7 @@ Read: 32 promises. Source: [spec/conventions/operations.yaml](../../spec/convent
 | OPS-033 | convention | must | secret | `observable`: “the result holds no part of it” — echoing an invalid literal secret input discloses the value in the request’s result. | S1-reason-order |
 | OPS-034 | convention | must | access | `observable`: “Where a filter applies to the repeat, the outputs are not given” — returning stored outputs can disclose content the current filter would forbid. | — |
 | OPS-036 | convention | must | access | `then`: “only items that the actor may inspect” — listing hidden objects or counts discloses data outside the actor’s inspection authority. | — |
+| OPS-037 | convention | must | effect | `then`: “ends then with the outcome unknown” — ending a call cut at the end of the grace period as failed lets a repeat apply a partly applied effect again. | — |
 
 ### spec/conventions/revisions.yaml
 

@@ -26,7 +26,8 @@
   subject: An invocation that does not end until an actor replies
   document: >-
     How long the engine waits for the reply, and what happens to a reply given twice or given
-    while the engine cannot receive it. No promise limits how long an invocation is in progress, PND-016's ask apart, which DL21 bounds:
+    while the engine cannot receive it. No promise limits how long an invocation is in
+    progress, apart from PND-016's ask, which DL21 bounds, and OPS-037 at a stop of the engine:
     until it ends, a repeat of its request reports conflict under OPS-032, and one for which the
     engine stops waiting has the outcome OPS-007 gives where no result arrives.
 - id: DL4
@@ -184,10 +185,13 @@
     them under PRV-012; it runs one only where its `transport` is of the `type` `stdio`, and
     ends the run of any other failed, under PRV-003; the runner's restart policy, under PRV-010;
     the unit by which it stops a run, and which processes of a run can leave that unit, under
-    PRV-030; and what becomes of the processes it started when the engine stops and when it
-    starts again,
-    apart from the processes of the Resources that it runs, which PRV-026 has the engine run
-    again once it has restarted. A process that runs as the engine's own operating-system user
+    PRV-030; and what becomes of the processes it started when the engine stops, which under
+    OPS-037 is only once no invocation is in progress or its grace period has passed, and when
+    it starts again, apart from the processes of the Resources that it runs, which PRV-026 has
+    the engine run again once it has restarted. It also states how long, after the engine
+    stops, the runner gives its processes to end before ending them by force. That interval is
+    separate from DL20's grace period and starts only once the engine stops under OPS-037. A
+    process that runs as the engine's own operating-system user
     can read the engine's keys and what every run under that user presents, so it is inside the
     domain of
     trust and can get past every gate, under IFC-022. The engine's own runner is the runtime
@@ -212,7 +216,10 @@
     committed against the state that it read, as an etcd transaction compares a key's revision
     before it writes, so that two parts that read the same state do not both commit. An
     invocation in progress on a part that stops ends unknown, as under IMP-007, although the
-    engine as a whole goes on. A part that stops so counts as a restart for the runs of
+    engine as a whole goes on. A stop under OPS-037 is the whole engine's: from the time it is
+    asked for no part takes a new request, and the grace period of DL20 is one for all its
+    parts; whether a part that stops alone first lets the invocations in progress on it end is
+    stated here. A part that stops so counts as a restart for the runs of
     Resources that it held on the engine's own runner: they end with it, and PRV-026 runs each
     again. A part that pauses after it has acted and sends later may still land an effect late,
     as a request on a connection that was
@@ -260,6 +267,17 @@
     The duration of each pending-action kind, and how its expiry is computed and shown. Every
     action has an expiry (PND-003); on expiry it reads expired with no actor and dispatches
     nothing. Vectors supply clock input rather than relying on elapsed wall time.
+
+- id: DL20
+  subject: The stop of the engine
+  document: >-
+    The means by which the engine is asked to stop under OPS-037, such as the signals SIGTERM
+    and SIGINT, or a command; the grace period, which is finite, and how it is set, as
+    Kubernetes' `terminationGracePeriodSeconds` and systemd's `TimeoutStopSec` are; what a
+    further ask does while a stop is under way, such as ending the grace period at once; and
+    what the engine does of its own accord meanwhile, such as asking the machine provider for
+    its report under PRV-014. What becomes of the processes of its own runner once it stops is
+    DL16.
 
 - id: DL21
   subject: A login's ask for an admission report

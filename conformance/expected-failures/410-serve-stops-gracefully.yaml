@@ -1,0 +1,12 @@
+{
+  "cases": [
+    {
+      "id": "requests-stop-grace-period-ends",
+      "reason": "OPS-037, order 410 (DEC-176): the first build takes no stop input and stops serve at once; order 411 makes it pass and removes this entry"
+    },
+    {
+      "id": "requests-stop-takes-no-new-request",
+      "reason": "OPS-037, order 410 (DEC-176): the first build takes no stop input and stops serve at once; order 411 makes it pass and removes this entry"
+    }
+  ]
+}

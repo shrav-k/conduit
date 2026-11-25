@@ -773,7 +773,10 @@ pub(crate) fn evaluate(
     let mut filters = vec![];
     if let Some(serving) = &request.serving {
         let Some(invocation) = state.invocations.iter().find(|v| {
-            v["id"] == *serving && v["target"] == instance["id"] && v["state"] == "in-progress"
+            v["id"] == *serving
+                && v["target"] == instance["id"]
+                && v["state"] == "in-progress"
+                && v.get("admission_wait").is_none()
         }) else {
             return Ok(Verdict::reason("refused", "IFC-028"));
         };

@@ -358,6 +358,10 @@ fn fixed_case_shell(path: &Path, case: &Path, through: usize) -> Shell {
 }
 
 fn fixed_endpoint_shell(path: &Path) -> Shell {
+    fixed_endpoint_shell_with_config(path, Config::default())
+}
+
+fn fixed_endpoint_shell_with_config(path: &Path, config: Config) -> Shell {
     install_crypto_provider();
     let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
     let port = listener.local_addr().unwrap().port();
@@ -366,7 +370,7 @@ fn fixed_endpoint_shell(path: &Path) -> Shell {
     // endpoint before opening the server; production cannot rewrite its endpoint.
     let config = Config {
         engine_url: format!("http://127.0.0.1:{port}/mcp"),
-        ..Config::default()
+        ..config
     };
     store::atomic_write(
         path,
@@ -2958,4 +2962,199 @@ async fn forged_retry_state_is_refused_and_recorded() {
         .unwrap()
         .unwrap()
         .unwrap();
+}
+
+#[test]
+fn admission_asks_kept_across_a_reopen() {
+    let temp = temporary();
+    let shell = established(temp.path());
+    let read = |path: &Path| -> Value {
+        serde_json::from_slice(&fs::read(path.join("state.json")).unwrap()).unwrap()
+    };
+    assert!(read(temp.path())["state"].get("admission_asks").is_none());
+    shell.submit(json!({"kind":"invoke","request":{
+        "identity":{"kind":"instance","id":actor(&shell,"root")},
+        "tool":"management.inspect.v1","arguments":{"object":{"kind":"Interface","name":"root"}}
+    }}), &MissingExecutor).unwrap();
+    assert!(read(temp.path())["state"].get("admission_asks").is_none());
+    assert_memory_equals_disk(&shell);
+    drop(shell);
+
+    let temp = temporary();
+    let case = repository().join("conformance/conventions/requests/admission-report-kept");
+    let shell = established_case(temp.path(), &case, 15);
+    let ticket = shell
+        .begin(
+            json!({"kind":"invoke","request":{
+                "identity":{"kind":"instance","id":actor(&shell,"root")},
+                "tool":"call-a.turn.v1","arguments":{}
+            }}),
+            &Deferred,
+        )
+        .unwrap();
+    assert!(ticket.try_reply().unwrap().is_none());
+    let disk = read(temp.path());
+    assert_eq!(disk["version"], 1);
+    let login = shell
+        .state()
+        .unwrap()
+        .objects
+        .iter()
+        .find(|o| o["kind"] == "Resource" && o["name"] == "login")
+        .unwrap()["id"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    assert!(
+        disk["state"]["admission_asks"][&login].is_object(),
+        "store must keep the login's admission ask"
+    );
+    let ask = disk["state"]["admission_asks"][&login]["invocation"].clone();
+    assert!(ask.is_string());
+    assert!(
+        disk["state"]["invocations"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|v| v["id"] == ask && v["state"] == "in-progress")
+    );
+    assert_memory_equals_disk(&shell);
+    drop(ticket);
+    drop(shell);
+    let shell = open(temp.path());
+    let first = read(temp.path())["state"]["admission_asks"].clone();
+    assert!(
+        first
+            .as_object()
+            .is_none_or(|asks| asks.values().all(|v| v["invocation"].is_null()))
+    );
+    assert!(
+        shell
+            .state()
+            .unwrap()
+            .invocations
+            .iter()
+            .all(|v| v["id"] != ask || v["state"] != "in-progress")
+    );
+    assert_memory_equals_disk(&shell);
+    drop(shell);
+    let shell = open(temp.path());
+    assert_eq!(read(temp.path())["state"]["admission_asks"], first);
+    assert_memory_equals_disk(&shell);
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn admission_ask_ends_at_its_deadline() {
+    assert_eq!(
+        Config::default().admission_ask_timeout,
+        Duration::from_secs(30)
+    );
+    let temp = temporary();
+    let case = repository().join("conformance/conventions/requests/admission-report-kept");
+    drop(established_case(temp.path(), &case, 15));
+    let shell = Arc::new(fixed_endpoint_shell_with_config(
+        temp.path(),
+        Config {
+            admission_ask_timeout: Duration::from_secs(1),
+            ..Config::default()
+        },
+    ));
+    let token = sign_in_root_token(&shell, temp.path());
+    let executor = Arc::new(ServingExecutor::new(Arc::new(Deferred)));
+    let stop = CancellationToken::new();
+    let task = tokio::spawn(server::serve(shell.clone(), executor, stop.clone()));
+    ready(&shell.config.engine_url).await;
+    let client = modern(&shell.config.engine_url, &token).await;
+    *shell.trace.lock().unwrap() = Some(Vec::new());
+    let peer = client.peer().clone();
+    let call_task =
+        tokio::spawn(async move { peer.call_tool(call("call-a.turn.v1", json!({}))).await });
+    let ask = tokio::time::timeout(Duration::from_secs(10), async {
+        loop {
+            let ended = shell
+                .trace
+                .lock()
+                .unwrap()
+                .as_ref()
+                .unwrap()
+                .iter()
+                .flat_map(|t| &t.decisions)
+                .find(|d| d.action == "admission-ask-deadline" && d.facts["ended"] == true)
+                .map(|d| d.facts["invocation"].clone());
+            if let Some(id) = ended {
+                break id;
+            }
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    })
+    .await
+    .expect("the serving timer must end the admission ask");
+    assert!(
+        shell
+            .state()
+            .unwrap()
+            .invocations
+            .iter()
+            .any(|v| v["id"] == ask && v["state"] == "unknown")
+    );
+    let inspected = client
+        .call_tool(call(
+            "logins.inspect.v1",
+            json!({"object":{"kind":"Resource","name":"login"}}),
+        ))
+        .await
+        .unwrap();
+    let inspected = serde_json::to_value(inspected).unwrap();
+    assert_eq!(
+        inspected["structuredContent"]["status"]["admission"]["noReport"]["cause"],
+        "deadline"
+    );
+    call_task.abort();
+    let _ = call_task.await;
+    client.cancel().await.unwrap();
+    stop.cancel();
+    task.await.unwrap().unwrap();
+
+    struct ObservedAsks(Mutex<Vec<Value>>);
+    impl Executor for ObservedAsks {
+        fn dispatch(&self, _: &Value) -> Result<Execution> {
+            Ok(Execution::Deferred)
+        }
+        fn refresh_tools_and_call(&self, _: &Value) -> Result<Execution> {
+            Ok(Execution::Deferred)
+        }
+        fn admission_asks_started(&self, asks: &[Value]) -> Result<()> {
+            self.0.lock().unwrap().extend_from_slice(asks);
+            Ok(())
+        }
+    }
+    let temp = temporary();
+    let case = repository().join("conformance/conventions/requests/admission-single-use");
+    let shell = established_case(temp.path(), &case, 32);
+    let state = shell.state().unwrap();
+    let login = state.objects.iter().find(|v| v["name"] == "login").unwrap()["id"]
+        .as_str()
+        .unwrap();
+    let ask = state.admission_asks[login].invocation.clone();
+    let vector = boundary::value(&case.join("case.yaml")).unwrap();
+    let executor = ObservedAsks(Mutex::new(Vec::new()));
+    shell
+        .complete(
+            &ask,
+            1,
+            vector["steps"][32]["input"]["completion"].clone(),
+            &executor,
+        )
+        .unwrap();
+    let observed = executor.0.lock().unwrap();
+    assert_eq!(observed.len(), 1);
+    assert_eq!(
+        observed[0]["invocation"],
+        shell.state().unwrap().admission_asks[login].invocation
+    );
+    assert_eq!(observed[0]["attempt"], 1);
+    assert_eq!(
+        observed[0]["startedAt"],
+        shell.state().unwrap().admission_asks[login].started_at
+    );
 }

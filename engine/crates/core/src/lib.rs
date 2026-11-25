@@ -13,6 +13,7 @@
 
 pub mod access;
 mod admission;
+mod admission_ask;
 #[cfg(test)]
 mod admission_tests;
 pub mod archives;
@@ -106,6 +107,12 @@ pub struct State {
     /// IFC-054 / DL2: absent in old stores; reports outlast their records.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub admission_reports: BTreeMap<String, admission::Kept>,
+    /// PND-016 / DL2: only active asks, absent in earlier stores.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub admission_asks: BTreeMap<String, admission_ask::Ask>,
+    /// PND-016 / DL2: fixed no-report periods, independent of active asks.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub admission_no_reports: BTreeMap<String, admission_ask::NoReport>,
     /// ACC-029 / ACC-053 / ACC-055: immutable kind and owner facts for IDs named by bounds.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub bound_targets: BTreeMap<String, Value>,
@@ -157,6 +164,8 @@ impl State {
             sign_in_holds,
             limit_observations,
             admission_reports,
+            admission_asks,
+            admission_no_reports,
             bound_targets,
             record_gaps,
             invocations,
@@ -180,6 +189,10 @@ impl State {
             #[serde(skip_serializing_if = "BTreeMap::is_empty")]
             admission_reports: &'a BTreeMap<String, admission::Kept>,
             #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+            admission_asks: &'a BTreeMap<String, admission_ask::Ask>,
+            #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+            admission_no_reports: &'a BTreeMap<String, admission_ask::NoReport>,
+            #[serde(skip_serializing_if = "BTreeMap::is_empty")]
             bound_targets: &'a BTreeMap<String, Value>,
             #[serde(skip_serializing_if = "<[Value]>::is_empty")]
             record_gaps: &'a [Value],
@@ -200,6 +213,8 @@ impl State {
             sign_in_holds,
             limit_observations,
             admission_reports,
+            admission_asks,
+            admission_no_reports,
             bound_targets,
             record_gaps,
             invocations,
@@ -296,6 +311,11 @@ pub enum Input {
         responses: Value,
         #[serde(default)]
         meta: Value,
+    },
+    AdmissionAskDeadline {
+        evidence: Evidence,
+        invocation: String,
+        attempt: u64,
     },
     SignInWaitEnded {
         evidence: Evidence,
@@ -648,6 +668,7 @@ fn reply_context(input: &Input) -> Option<(String, Option<String>)> {
         | Input::SetupReport { evidence, .. }
         | Input::Recover { evidence }
         | Input::SignInWaitEnded { evidence, .. }
+        | Input::AdmissionAskDeadline { evidence, .. }
         | Input::BuiltinRunStopped { evidence, .. }
         | Input::BuiltinSecretProviderExited { evidence, .. }
         | Input::FirstStart { evidence, .. } => (evidence, None),
@@ -755,6 +776,11 @@ fn step_body(state: State, input: Input, context: &Context) -> Result<Transition
             &responses,
             context,
         )?,
+        Input::AdmissionAskDeadline {
+            evidence,
+            invocation,
+            attempt,
+        } => admission_ask::deadline(&mut transition, &evidence, &invocation, attempt, context)?,
         Input::SignInWaitEnded {
             evidence,
             invocation,

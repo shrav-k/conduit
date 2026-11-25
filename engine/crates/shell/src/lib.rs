@@ -48,6 +48,7 @@ pub struct Config {
     pub pass_environment: Vec<String>,
     pub initialize_timeout: Duration,
     pub call_timeout: Duration,
+    pub admission_ask_timeout: Duration,
     pub stop_grace: Duration,
 }
 impl Default for Config {
@@ -63,6 +64,7 @@ impl Default for Config {
             pass_environment: Vec::new(),
             initialize_timeout: Duration::from_secs(30),
             call_timeout: Duration::from_secs(120),
+            admission_ask_timeout: Duration::from_secs(30),
             stop_grace: Duration::from_secs(10),
         }
     }
@@ -134,6 +136,9 @@ pub trait Executor: Send + Sync {
     }
     fn cancel_setup_parts(&self, _intent: &Value) -> Result<Execution> {
         Ok(Execution::Done)
+    }
+    fn admission_asks_started(&self, _asks: &[Value]) -> Result<()> {
+        Ok(())
     }
     fn tools_changed(&self, _notifications: &[Value]) -> Result<()> {
         Ok(())
@@ -211,6 +216,7 @@ struct Committed {
     intents: Vec<Intent>,
     notifications: Vec<Value>,
     fault_endings: Option<BTreeSet<String>>,
+    admission_asks: Vec<Value>,
 }
 
 struct Intent {
@@ -374,6 +380,7 @@ impl Shell {
         self.drive_committed(
             committed.intents,
             committed.notifications,
+            committed.admission_asks,
             committed.fault_endings.is_some(),
             executor,
         )?;
@@ -572,6 +579,7 @@ impl Shell {
                 | "complete"
                 | "respond"
                 | "sign-in-wait-ended"
+                | "admission-ask-deadline"
                 | "cancel"
                 | "setup-report"
                 | "recover"
@@ -797,6 +805,12 @@ impl Shell {
         let mut measures = CommitMeasures::default();
         // DL2: taking memory leaves the cache empty on every failed step/write.
         let mut stored = writer.store.take()?;
+        let previous_asks: BTreeSet<_> = stored
+            .state
+            .admission_asks
+            .values()
+            .map(|ask| ask.invocation.clone())
+            .collect();
         let discovery = !fail_closed
             && kind == "complete"
             && stored.state.invocations.iter().any(|v| {
@@ -1040,6 +1054,13 @@ impl Shell {
                 notifications.push(json!({"consumer":o["id"],"method":"consumer-ended"}));
             }
         }
+        // Only committed state starts timers, including asks born in completions.
+        let admission_asks = stored.state.admission_asks.values()
+            .filter(|ask| !previous_asks.contains(&ask.invocation))
+            .filter_map(|ask| {
+                let invocation = stored.state.invocations.iter().find(|v| v["id"] == ask.invocation && v["state"] == "in-progress")?;
+                Some(json!({"invocation":ask.invocation,"attempt":invocation["attempt"],"startedAt":ask.started_at}))
+            }).collect();
         let invocations = stored.state.invocations.len();
         let fault_endings = failed.map(|_| {
             t.records
@@ -1085,6 +1106,7 @@ impl Shell {
             intents,
             notifications,
             fault_endings,
+            admission_asks,
         })
     }
 
@@ -1095,7 +1117,10 @@ impl Shell {
         executor: &dyn Executor,
     ) -> Result<()> {
         let from_record_fault = intents.iter().any(|intent| intent.from_record_fault);
-        self.drive_committed(intents, notifications, from_record_fault, executor)
+        // A discovery commit never starts an admission ask, so this path hands off
+        // no asks. A future discovery change that starts asks must carry them here
+        // so admission_asks_started installs their DL21 timers.
+        self.drive_committed(intents, notifications, vec![], from_record_fault, executor)
     }
 
     fn complete_run_archive(&self, intent: &mut Value) -> Result<Option<Execution>> {
@@ -1150,12 +1175,15 @@ impl Shell {
         &self,
         intents: Vec<Intent>,
         notifications: Vec<Value>,
+        admission_asks: Vec<Value>,
         from_record_fault: bool,
         executor: &dyn Executor,
     ) -> Result<()> {
         let notices = executor.tools_changed(&notifications);
+        let timers = executor.admission_asks_started(&admission_asks);
         if !from_record_fault {
             notices?;
+            timers?;
         }
         let mut queue = VecDeque::from(intents);
         while let Some(Intent {
@@ -1236,6 +1264,7 @@ impl Shell {
             };
             let next = self.commit_input(input, true)?;
             let notices = executor.tools_changed(&next.notifications);
+            let timers = executor.admission_asks_started(&next.admission_asks);
             if let Some(ended) = &next.fault_endings {
                 queue.retain(|queued| {
                     matches!(
@@ -1247,6 +1276,7 @@ impl Shell {
                 });
             } else {
                 notices?;
+                timers?;
             }
             queue.extend(next.intents);
         }

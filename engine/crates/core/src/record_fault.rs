@@ -54,6 +54,7 @@ impl RecordFault {
                 | "setup-report"
                 | "respond"
                 | "sign-in-wait-ended"
+                | "admission-ask-deadline"
                 | "cancel"
         )
     }
@@ -130,6 +131,11 @@ impl RecordFault {
                 invocation,
                 attempt,
                 ..
+            }
+            | Input::AdmissionAskDeadline {
+                evidence,
+                invocation,
+                attempt,
             }
             | Input::SignInWaitEnded {
                 evidence,
@@ -296,6 +302,7 @@ impl RecordFault {
         // Child endings can advance a parent; refuse any work the new step proposes.
         let primary = t.reply.clone();
         drain_proposed_dispatches(&mut t, &mut a, c)?;
+        crate::admission_ask::settle_record_fault(&mut t, &mut a, c)?;
         if primary["pending"] == true {
             if !t
                 .request_replies
@@ -306,6 +313,7 @@ impl RecordFault {
             {
                 lifecycle::record_fault_end(&mut t, &mut a, c, i)?;
                 drain_proposed_dispatches(&mut t, &mut a, c)?;
+                crate::admission_ask::settle_record_fault(&mut t, &mut a, c)?;
             }
             t.reply = t
                 .request_replies

@@ -493,6 +493,7 @@ fn init_writes_the_flow_skeleton_unless_a_manifest_is_there() {
         ("--output-age-seconds", "2"),
         ("--initialize-timeout-seconds", "2"),
         ("--call-timeout-seconds", "2"),
+        ("--admission-ask-timeout-seconds", "2"),
         ("--pass-environment", "FIXTURE_SETTING"),
     ] {
         let output = lab

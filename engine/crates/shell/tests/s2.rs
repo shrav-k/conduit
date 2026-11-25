@@ -866,7 +866,7 @@ impl S2 {
         assert_eq!(
             status.success(),
             startup_succeeded,
-            "serve shutdown status {status}"
+            "graceful SIGTERM stop exits successfully under OPS-037: {status}"
         );
         for (stdout, stderr) in &self.serve_logs {
             self.audit.bytes(&fs::read(stdout).unwrap(), "serve stdout");
@@ -1624,8 +1624,7 @@ async fn s2_secret_read_fails_closed() {
     drop(a);
     // Startup attempts the Pool entry through the Pool and then attempts the
     // still-registered Resource itself. Both attempts see the unsafe mode.
-    h.finish("s2_secret_read_fails_closed", 4, 1, 1, false)
-        .await;
+    h.finish("s2_secret_read_fails_closed", 4, 1, 1, true).await;
 }
 
 #[tokio::test]

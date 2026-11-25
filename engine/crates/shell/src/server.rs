@@ -28,7 +28,7 @@ use std::{
     path::Path,
     sync::{
         Arc, Mutex, Weak,
-        atomic::{AtomicU8, Ordering},
+        atomic::{AtomicU8, AtomicUsize, Ordering},
     },
 };
 use tokio::{
@@ -185,6 +185,9 @@ pub struct ServingExecutor {
     inner: Arc<dyn Executor>,
     changes: broadcast::Sender<String>,
     admission_timers: Mutex<Option<AdmissionTimers>>,
+    stop_lock: tokio::sync::Mutex<()>,
+    stop_started: CancellationToken,
+    stop_finished: watch::Sender<Option<Result<()>>>,
     #[cfg(test)]
     pub(crate) sign_in_wait_limit: Option<chrono::TimeDelta>,
 }
@@ -194,6 +197,9 @@ impl ServingExecutor {
             inner,
             changes: broadcast::channel(1024).0,
             admission_timers: Mutex::new(None),
+            stop_lock: tokio::sync::Mutex::new(()),
+            stop_started: CancellationToken::new(),
+            stop_finished: watch::channel(None).0,
             #[cfg(test)]
             sign_in_wait_limit: None,
         }
@@ -281,6 +287,14 @@ struct Authenticated(String);
 struct Audit(Arc<AtomicU8>);
 #[derive(Clone)]
 struct ResponseLifetime(CancellationToken);
+// Hold shutdown until each tools/call response reaches its HTTP body, or its
+// caller disconnects. GET notification streams are not calls waiting for replies.
+struct CallResponse(Arc<AtomicUsize>);
+impl Drop for CallResponse {
+    fn drop(&mut self) {
+        self.0.fetch_sub(1, Ordering::SeqCst);
+    }
+}
 #[derive(Clone)]
 struct SessionBinding(watch::Receiver<Option<SessionId>>);
 #[derive(Clone)]
@@ -288,6 +302,7 @@ struct Handler {
     shell: Arc<Shell>,
     executor: Arc<ServingExecutor>,
     shutdown: CancellationToken,
+    responses: Arc<AtomicUsize>,
     sessions: Arc<Mutex<BTreeMap<String, String>>>,
     session_manager: Arc<LocalSessionManager>,
     relay: Arc<Mutex<relay::States>>,
@@ -511,15 +526,20 @@ impl ServerHandler for Handler {
             .ok_or_else(|| internal("missing response lifetime"))?
             .0
             .clone();
-        let shell = self.shell.clone();
-        let consumer = identity.clone();
-        let inventory = tokio::task::spawn_blocking(move || unfinished(&shell, &consumer))
-            .await
-            .map_err(|_| internal("tool inventory task failed"))?
-            .map_err(internal)?;
-        if let Some(op) = inventory.get(request.name.as_ref()) {
-            self.handled(&context);
-            return Err(internal(format!("operation {op} is unfinished")));
+        // OPS-037 admission comes before the unfinished-operation check while
+        // stopping. A stop can also arrive while the inventory task is running.
+        if stop_state(&self.shell).await.map_err(internal)?.is_none() {
+            let shell = self.shell.clone();
+            let consumer = identity.clone();
+            let inventory = tokio::task::spawn_blocking(move || unfinished(&shell, &consumer))
+                .await
+                .map_err(|_| internal("tool inventory task failed"))?;
+            if stop_state(&self.shell).await.map_err(internal)?.is_none()
+                && let Some(op) = inventory.map_err(internal)?.get(request.name.as_ref())
+            {
+                self.handled(&context);
+                return Err(internal(format!("operation {op} is unfinished")));
+            }
         }
         let meta = serde_json::to_value(&context.meta).map_err(|_| internal("invalid metadata"))?;
         let prefix = &self.shell.context.meta_prefix;
@@ -679,7 +699,7 @@ impl ServerHandler for Handler {
                     .map_err(|_| internal("invalid core MCP result"));
             }
             tokio::select! {
-                _=async { tokio::select! { _=context.ct.cancelled()=>{}, _=response_lifetime.cancelled()=>{}, _=self.shutdown.cancelled()=>{} } }=> {
+                _=async { tokio::select! { _=context.ct.cancelled()=>{}, _=response_lifetime.cancelled()=>{} } }=> {
                     if let Some(invocation)=pending.ticket.invocation() {
                         let shell=self.shell.clone(); let executor=self.executor.clone();let invocation=invocation.to_owned();
                         tokio::task::spawn_blocking(move ||shell.begin(json!({"kind":"cancel","invocation":invocation}),executor.as_ref())).await.map_err(|_|internal("cancel task failed"))?.map_err(internal)?;
@@ -887,6 +907,10 @@ async fn authenticate(State(handler): State<Handler>, request: Request, next: Ne
             return unauthorized();
         }
     }
+    let call_response = (value["method"] == "tools/call").then(|| {
+        handler.responses.fetch_add(1, Ordering::SeqCst);
+        CallResponse(handler.responses.clone())
+    });
     let audit = Audit::default();
     let response_lifetime = CancellationToken::new();
     let response_guard = response_lifetime.clone().drop_guard();
@@ -953,8 +977,16 @@ async fn authenticate(State(handler): State<Handler>, request: Request, next: Ne
     let stream = body.into_data_stream();
     // rmcp emits each JSON reply or SSE event as a frame (as in experiment 008).
     let output = futures_util::stream::unfold(
-        (stream, handler, identity, audit, value, response_guard),
-        |(mut stream, handler, identity, audit, request, response_guard)| async move {
+        (
+            stream,
+            handler,
+            identity,
+            audit,
+            value,
+            response_guard,
+            call_response,
+        ),
+        |(mut stream, handler, identity, audit, request, response_guard, mut call_response)| async move {
             let chunk = stream.next().await?;
             let chunk = match chunk {
                 Ok(bytes) => {
@@ -965,6 +997,11 @@ async fn authenticate(State(handler): State<Handler>, request: Request, next: Ne
                         .map(str::trim)
                         .unwrap_or(text.as_ref());
                     let mut value: Value = serde_json::from_str(data).unwrap_or(Value::Null);
+                    if value.get("id") == request.get("id")
+                        && (value.get("result").is_some() || value.get("error").is_some())
+                    {
+                        drop(call_response.take());
+                    }
                     if value.get("error").is_some()
                         && value["error"]["code"] != json!(ErrorCode::UNSUPPORTED_PROTOCOL_VERSION)
                         && audit.0.load(Ordering::SeqCst) != 1
@@ -1013,7 +1050,15 @@ async fn authenticate(State(handler): State<Handler>, request: Request, next: Ne
             };
             Some((
                 chunk,
-                (stream, handler, identity, audit, request, response_guard),
+                (
+                    stream,
+                    handler,
+                    identity,
+                    audit,
+                    request,
+                    response_guard,
+                    call_response,
+                ),
             ))
         },
     );
@@ -1036,6 +1081,7 @@ fn listener_router(
     shell: Arc<Shell>,
     executor: Arc<ServingExecutor>,
     shutdown: CancellationToken,
+    responses: Arc<AtomicUsize>,
     https: bool,
 ) -> Router {
     // 074: a session outlives the calls it carries (call_timeout plus 60 seconds).
@@ -1044,6 +1090,7 @@ fn listener_router(
         shell: shell.clone(),
         executor,
         shutdown: shutdown.clone(),
+        responses,
         sessions: Arc::default(),
         session_manager,
         relay: Arc::default(),
@@ -1077,6 +1124,119 @@ fn listener_router(
     }
 }
 
+/// OPS-037 / DL20: shared by startup signals and the library's serving token.
+/// `force` is a second signal; the deadline starts with the first ask.
+pub async fn stop(
+    shell: Arc<Shell>,
+    executor: Arc<ServingExecutor>,
+    means: &str,
+    force: CancellationToken,
+) -> Result<()> {
+    let _stop = executor.stop_lock.lock().await;
+    executor.stop_started.cancel();
+    let result = stop_inner(shell, executor.clone(), means, force).await;
+    executor.stop_finished.send_replace(Some(result.clone()));
+    result
+}
+async fn stop_inner(
+    shell: Arc<Shell>,
+    executor: Arc<ServingExecutor>,
+    means: &str,
+    force: CancellationToken,
+) -> Result<()> {
+    let report = matches!(means, "SIGTERM" | "SIGINT");
+    if report {
+        eprintln!(
+            "conduit serve: stopping (OPS-037); waiting up to {} seconds for calls in progress; send SIGTERM or Ctrl-C again to cut them now.",
+            shell.config.grace_period.as_secs()
+        );
+    }
+    let deadline = tokio::time::Instant::now()
+        .checked_add(shell.config.grace_period)
+        .ok_or("grace period is too large")?;
+    stop_input(
+        shell.clone(),
+        executor.clone(),
+        json!({"kind":"stop","means":means}),
+    )
+    .await?;
+    loop {
+        // serve's final recovery can already have cleared the completed stop.
+        // Never ask for a second stop after that recovery.
+        if stop_state(&shell).await? != Some(conduit_core::StopState::Asked) {
+            if report {
+                eprintln!("conduit serve: stopped (OPS-037); cut 0 call(s).");
+            }
+            return Ok(());
+        }
+        tokio::select! {
+            biased;
+            _ = force.cancelled() => break,
+            _ = tokio::time::sleep_until(deadline) => break,
+            _ = tokio::time::sleep(std::time::Duration::from_millis(10)) => {}
+        }
+    }
+    if report {
+        eprintln!("conduit serve: grace period ended (OPS-037); cutting remaining calls.");
+    }
+    let reply = stop_input_reply(
+        shell,
+        executor.clone(),
+        json!({"kind":"stop","graceEnded":true}),
+    )
+    .await?;
+    if report {
+        eprintln!(
+            "conduit serve: stopped (OPS-037); cut {} call(s).",
+            reply["cut"].as_array().map_or(0, Vec::len)
+        );
+    }
+    Ok(())
+}
+async fn stop_input_reply(
+    shell: Arc<Shell>,
+    executor: Arc<ServingExecutor>,
+    input: Value,
+) -> Result<Value> {
+    tokio::task::spawn_blocking(move || shell.submit(input, executor.as_ref()))
+        .await
+        .map_err(|_| "engine stop task failed")?
+}
+async fn stop_input(shell: Arc<Shell>, executor: Arc<ServingExecutor>, input: Value) -> Result<()> {
+    stop_input_reply(shell, executor, input).await.map(|_| ())
+}
+async fn stop_result(executor: &ServingExecutor) -> Result<()> {
+    let mut result = executor.stop_finished.subscribe();
+    loop {
+        if let Some(result) = result.borrow().clone() {
+            return result;
+        }
+        result.changed().await.map_err(|_| "stop driver ended")?;
+    }
+}
+
+pub(crate) async fn drain_responses(responses: &AtomicUsize) {
+    // DL20: a stalled response must not keep shutdown open indefinitely.
+    let _ = tokio::time::timeout(std::time::Duration::from_secs(3), async {
+        while responses.load(Ordering::SeqCst) != 0 {
+            tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+        }
+    })
+    .await;
+}
+async fn stop_state(shell: &Arc<Shell>) -> Result<Option<conduit_core::StopState>> {
+    let shell = shell.clone();
+    tokio::task::spawn_blocking(move || shell.state().map(|state| state.stop))
+        .await
+        .map_err(|_| "stop observation task failed")?
+}
+async fn wait_for_stop(shell: &Arc<Shell>) -> Result<()> {
+    while stop_state(shell).await? != Some(conduit_core::StopState::Stopped) {
+        tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+    }
+    Ok(())
+}
+
 /// Binds only loopback endpoints. The caller owns executor lifetime/setup.
 pub async fn serve(
     shell: Arc<Shell>,
@@ -1093,6 +1253,25 @@ pub async fn serve_with_ready(
     shutdown: CancellationToken,
     ready: impl FnOnce(),
 ) -> Result<()> {
+    if executor.stop_started.is_cancelled() {
+        stop_result(&executor).await?;
+        return stop_input(shell, executor, json!({"kind":"recover"})).await;
+    }
+    if shutdown.is_cancelled() || stop_state(&shell).await?.is_some() {
+        if stop_state(&shell).await?.is_none() {
+            stop(
+                shell.clone(),
+                executor.clone(),
+                "token",
+                CancellationToken::new(),
+            )
+            .await?;
+        } else {
+            wait_for_stop(&shell).await?;
+            drop(executor.stop_lock.lock().await);
+        }
+        return stop_input(shell, executor, json!({"kind":"recover"})).await;
+    }
     preflight(&shell)?;
     shell.config.validate_serve()?;
     let url = url::Url::parse(&shell.config.engine_url).map_err(|_| "invalid engine address")?;
@@ -1124,6 +1303,10 @@ pub async fn serve_with_ready(
     } else {
         None
     };
+    let ended = CancellationToken::new();
+    let responses = Arc::new(AtomicUsize::new(0));
+    // DL21 bounds asks of the work in progress, which goes on through OPS-037's
+    // grace period: the deadlines end only when serving has ended.
     *executor
         .admission_timers
         .lock()
@@ -1131,14 +1314,21 @@ pub async fn serve_with_ready(
         shell: Arc::downgrade(&shell),
         executor: Arc::downgrade(&executor),
         runtime: tokio::runtime::Handle::current(),
-        shutdown: shutdown.clone(),
+        shutdown: ended.clone(),
     });
     let run = |listener, https| {
-        let router = listener_router(shell.clone(), executor.clone(), shutdown.clone(), https);
+        let router = listener_router(
+            shell.clone(),
+            executor.clone(),
+            ended.clone(),
+            responses.clone(),
+            https,
+        );
+        let ended = ended.clone();
         let shutdown = shutdown.clone();
         async move {
             let result = axum::serve(listener, router)
-                .with_graceful_shutdown(shutdown.clone().cancelled_owned())
+                .with_graceful_shutdown(ended.cancelled_owned())
                 .await;
             if result.is_err() {
                 shutdown.cancel();
@@ -1146,16 +1336,40 @@ pub async fn serve_with_ready(
             result.map_err(|e| e.to_string())
         }
     };
-    if !shutdown.is_cancelled() {
+    if !shutdown.is_cancelled() && stop_state(&shell).await?.is_none() {
         ready();
     }
-    let (first, second) = tokio::join!(run(listener, false), async {
-        if let Some(listener) = second {
-            run(listener, true).await
-        } else {
-            Ok(())
+    let stopping = async {
+        let result = async {
+            tokio::select! {
+                biased;
+                _ = executor.stop_started.cancelled() => stop_result(&executor).await?,
+                _ = shutdown.cancelled() => stop(
+                    shell.clone(), executor.clone(), "token", CancellationToken::new(),
+                ).await?,
+            }
+            // The signal driver must finish delivering the cut's intents before
+            // recovery can clear the stop and before main shuts down the runner.
+            drop(executor.stop_lock.lock().await);
+            drain_responses(&responses).await;
+            Ok::<(), String>(())
         }
-    });
+        .await;
+        ended.cancel();
+        result
+    };
+    let (first, second, stopped) = tokio::join!(
+        run(listener, false),
+        async {
+            if let Some(listener) = second {
+                run(listener, true).await
+            } else {
+                Ok(())
+            }
+        },
+        stopping
+    );
+    stopped?;
     first?;
     second?;
     tokio::task::spawn_blocking(move || shell.submit(json!({"kind":"recover"}), executor.as_ref()))

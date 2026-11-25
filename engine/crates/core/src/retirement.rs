@@ -384,7 +384,11 @@ fn settle(
     let v = t.state.invocations[i].clone();
     let parts = v["retirement"]["parts"].as_array().unwrap();
     let lost = access::object(&t.state, &o["placement"]).is_some_and(|n| n["state"] == "retired");
-    let outcome = if v["retirement"]["unregister"] == true
+    // Removal is not retirement: OPS-037's retirement settlement exception does
+    // not make an interrupted unregister succeed or remove its object.
+    let outcome = if crate::stop::cutting(&t.state) && v["retirement"]["unregister"] == true {
+        "unknown"
+    } else if v["retirement"]["unregister"] == true
         || parts.iter().all(|p| p["outcome"] == "succeeded")
     {
         "succeeded"
@@ -614,23 +618,60 @@ pub(crate) fn cancel(
         )?;
     }
     if v["retirement"]["phase"] == "stop" {
+        if crate::stop::cutting(&t.state) {
+            return cut_stop(t, a, c, i);
+        }
         t.reply = json!({"pending":true,"invocation":v["id"]});
         return Ok(());
     }
     let o = access::object(&t.state, &v["object"])
         .ok_or("retirement object disappeared")?
         .clone();
-    stop(t, a, c, i, &o)
+    stop(t, a, c, i, &o)?;
+    if crate::stop::cutting(&t.state) && t.state.invocations[i]["state"] == "in-progress" {
+        cut_stop(t, a, c, i)?;
+    }
+    Ok(())
+}
+
+// OPS-037 waits for no stop report. Keep its unknown effect and use OPS-022's
+// ordinary settlement; cascade::child_ended also settles the container here.
+fn cut_stop(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) -> Result<()> {
+    let o = access::object(&t.state, &t.state.invocations[i]["object"])
+        .ok_or("retirement object disappeared")?
+        .clone();
+    let waiting_stop = crate::stop::take_waiting_stop(t, i, c);
+    crate::stop::send_waiting_stop(t, waiting_stop);
+    // PRV-005 / REC-001: the required stop is dispatched with this cut, even
+    // though its enclosing retirement is settled before the executor sends it.
+    // Keep its unknown end here: OPS-013 ignores both readiness and later results.
+    let mut facts = t.state.invocations[i]["provider_call"].clone();
+    if facts["operation"] == c.qualified("stop.v1") {
+        let made = facts.as_object_mut().unwrap().remove("made") == Some(json!(true));
+        if !made {
+            facts["phase"] = json!("made");
+            requests::record(t, a, c, "provider-call", facts.clone())?;
+        }
+        t.state.invocations[i]["provider_call"]["made"] = json!(true);
+        facts.as_object_mut().unwrap().remove("inputs");
+        facts["phase"] = json!("ended");
+        facts["outcome"] = json!("unknown");
+        facts["outputs"] = json!({});
+        facts["ruleId"] = json!("OPS-037");
+        requests::record(t, a, c, "provider-call", facts)?;
+    }
+    add(t, i, "stop", "unknown");
+    settle(t, a, c, i, &o)
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
     use crate::explain::tests::assert_cause;
     use crate::{Evidence, schemas::Environment};
     use std::collections::BTreeMap;
 
-    fn fixture(lost: bool, prior_hook: Option<&str>) -> (Transition, Context, Evidence) {
+    pub(crate) fn fixture(lost: bool, prior_hook: Option<&str>) -> (Transition, Context, Evidence) {
         let c = Context {
             builtin: None,
             core_package: "test.core".into(),

@@ -1312,6 +1312,22 @@ fn complete_records(store: &Path) -> Vec<u8> {
     output.stdout
 }
 
+// OPS-037 adds its two records; every pre-stop export byte and gap stays intact.
+fn assert_stop_records_appended(before: &[u8], after: &[u8]) {
+    assert!(after.starts_with(before), "pre-stop export changed");
+    let appended = record_lines(&after[before.len()..]);
+    assert_eq!(appended.len(), 2);
+    for record in &appended {
+        assert_eq!(record["type"], "engine-stop");
+        assert!(record["data"].get("caller").is_none());
+    }
+    assert_eq!(appended[0]["data"]["phase"], "asked");
+    assert_eq!(appended[0]["data"]["means"], "SIGTERM");
+    assert_eq!(appended[1]["data"]["phase"], "stopped");
+    assert_eq!(appended[1]["data"]["cut"], false);
+    assert_eq!(appended[0]["data"]["target"], appended[1]["data"]["target"]);
+}
+
 #[test]
 fn records_while_serving_match_records_after_stop() {
     let temp = tempfile::tempdir().unwrap();
@@ -1356,7 +1372,7 @@ fn records_while_serving_match_records_after_stop() {
     assert!(!a.is_empty());
     assert_eq!(a.last(), Some(&b'\n'));
     assert!(b.starts_with(&a) && b.len() > a.len());
-    assert!(b == c, "exports before and after shutdown differ");
+    assert_stop_records_appended(&b, &c);
     assert!(record_lines(&b[a.len()..]).iter().any(|record| {
         record["type"] == "invocation-dispatched"
             && record["data"]["operation"] == format!("{core}#inspect.v1")
@@ -1389,7 +1405,7 @@ fn records_while_serving_report_a_gap_as_after_stop() {
     terminate_server(&mut server);
     let stopped = cli_output(&store, "records", &[]);
     assert_eq!(live.status.code(), stopped.status.code());
-    assert!(live.stdout == stopped.stdout, "exports with gaps differ");
+    assert_stop_records_appended(&live.stdout, &stopped.stdout);
     assert!(live.stderr == stopped.stderr, "gap diagnostics differ");
 }
 

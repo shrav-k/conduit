@@ -69,6 +69,9 @@ fn outcome(shell: &Shell, result: &Value) -> String {
         .into()
 }
 fn register(shell: &Shell, parent: &Path, real: bool, mode: &str) {
+    register_with_history(shell, parent, real, mode, false);
+}
+fn register_with_history(shell: &Shell, parent: &Path, real: bool, mode: &str, root_history: bool) {
     shell.submit(json!({"kind":"first-start","machine":conduit_shell::local_machine(BTreeMap::new()).unwrap()}), &MissingExecutor).unwrap();
     let repo = repository();
     let spec = conduit_loader::Specification::read(&repo.join("spec")).unwrap();
@@ -84,6 +87,9 @@ fn register(shell: &Shell, parent: &Path, real: bool, mode: &str) {
             doc["arguments"]["root"] =
                 json!(parent.join(doc["metadata"]["name"].as_str().unwrap()));
         }
+    }
+    if root_history {
+        project.documents.push(json!({"apiVersion":spec.names().api_version,"kind":"Conduit","metadata":{"name":"root-history"},"from":"history-post-read","consumer":{"kind":"Interface","name":"root"},"target":{"kind":"Resource","name":"history"}}));
     }
     let mut snapshots = common::snapshots(&repo).unwrap();
     if !real {
@@ -146,6 +152,16 @@ fn register(shell: &Shell, parent: &Path, real: bool, mode: &str) {
         json!({"conduit":"root-workspace"}),
     );
     assert_eq!(outcome(shell, &reply), "succeeded", "{reply}");
+    if root_history {
+        let reply = invoke(
+            shell,
+            &MissingExecutor,
+            "root",
+            "access.open.v1",
+            json!({"conduit":"root-history"}),
+        );
+        assert_eq!(outcome(shell, &reply), "succeeded");
+    }
 }
 fn setup(shell: &Shell, runner: &Runner, name: &str) -> Value {
     let kind = if name == "workspace" {
@@ -281,7 +297,7 @@ fn scripted_server() {
             "initialize" => {
                 json!({"protocolVersion":value["params"]["protocolVersion"],"serverInfo":{"name":"test","version":"1"},"capabilities":{"tools":{}}})
             }
-            "server/discover" if mode == "discovery-v0" => {
+            "server/discover" if mode == "discovery-v0" || mode == "cut-provider" => {
                 json!({"capabilities":{"extensions":{
                     "io.github.shrav-k.conduit/implementation-interface":{"revision":"v0"}
                 }}})
@@ -304,7 +320,10 @@ fn scripted_server() {
                 if mode == "exit" {
                     std::process::exit(0);
                 }
-                if mode == "hang" || mode == "cancel" {
+                if mode == "release" {
+                    until_for(Duration::from_secs(60), || root.join("release").exists());
+                }
+                if mode == "hang" || mode == "cancel" || mode == "cut-provider" {
                     held_id = value["id"].clone();
                     continue;
                 }
@@ -1872,4 +1891,425 @@ fn dropping_runner_during_initialize_ends_group_with_shell_still_open() {
     drop(runner);
     until(|| unsafe { libc::kill(pid, 0) } != 0);
     assert!(shell.state().unwrap().started);
+}
+
+struct StopTestChild(std::process::Child);
+impl Drop for StopTestChild {
+    fn drop(&mut self) {
+        let _ = self.0.kill();
+        let _ = self.0.wait();
+    }
+}
+fn stop_test_command(parent: &Path) -> Command {
+    let mut command = Command::new(env!("CARGO_BIN_EXE_conduit"));
+    command
+        .env("CONDUIT_CONFIG_DIR", parent.join("config"))
+        .stdin(Stdio::null());
+    command
+}
+fn stop_test_output(command: &mut Command, parent: &Path) -> (std::process::ExitStatus, Value) {
+    let output = tempfile::NamedTempFile::new_in(parent).unwrap();
+    let mut child = StopTestChild(
+        command
+            .stdout(output.as_file().try_clone().unwrap())
+            .stderr(Stdio::null())
+            .spawn()
+            .unwrap(),
+    );
+    let mut status = None;
+    until_for(Duration::from_secs(60), || {
+        status = child.0.try_wait().unwrap();
+        status.is_some()
+    });
+    (
+        status.unwrap(),
+        serde_json::from_slice(&fs::read(output.path()).unwrap()).unwrap_or(Value::Null),
+    )
+}
+fn check_signal_stop(mode: &str, seconds: &str, second: bool) {
+    let parent = tempfile::tempdir().unwrap();
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let config = Config {
+        engine_url: format!(
+            "http://127.0.0.1:{}/mcp",
+            listener.local_addr().unwrap().port()
+        ),
+        ..Config::default()
+    };
+    drop(listener);
+    let shell = open(parent.path(), config);
+    register_with_history(&shell, parent.path(), false, mode, true);
+    drop(shell);
+    let ready_path = parent.path().join("ready.jsonl");
+    let stop_log = parent.path().join("stop.log");
+    let mut serve = StopTestChild(
+        stop_test_command(parent.path())
+            .args(["serve", "--store"])
+            .arg(parent.path().join("store"))
+            .args(["--grace-period-seconds", seconds])
+            .stdout(fs::File::create(&ready_path).unwrap())
+            .stderr(fs::File::create(&stop_log).unwrap())
+            .spawn()
+            .unwrap(),
+    );
+    until_for(Duration::from_secs(60), || {
+        assert!(
+            serve.0.try_wait().unwrap().is_none(),
+            "serve exited before readiness"
+        );
+        lines(&ready_path).iter().any(|v| v.get("ready").is_some())
+    });
+    let path = parent.path().to_owned();
+    let (tx, rx) = std::sync::mpsc::channel();
+    let call = std::thread::spawn(move || {
+        let result = stop_test_output(
+            stop_test_command(&path)
+                .args(["call", "--store"])
+                .arg(path.join("store"))
+                .args(["root-history.file.read.v1", "{\"path\":\"hello.txt\"}"]),
+            &path,
+        );
+        tx.send(result).unwrap();
+    });
+    until_for(Duration::from_secs(60), || {
+        assert!(rx.try_recv().is_err(), "call ended before dispatch");
+        lines(&parent.path().join("history/wire.jsonl"))
+            .iter()
+            .any(|v| v["method"] == "tools/call")
+    });
+    assert_eq!(unsafe { libc::kill(serve.0.id() as i32, libc::SIGTERM) }, 0);
+    if mode == "release" {
+        // Poll a new request until the signal's stop transition has committed.
+        until_for(Duration::from_secs(60), || {
+            let (_, reply) = stop_test_output(
+                stop_test_command(parent.path())
+                    .args(["call", "--store"])
+                    .arg(parent.path().join("store"))
+                    .args([
+                        "management.inspect.v1",
+                        "{\"object\":{\"kind\":\"Pool\",\"name\":\"system\"}}",
+                    ]),
+                parent.path(),
+            );
+            reply["_meta"]["io.github.shrav-k.conduit/reason"] == "unavailable"
+                && reply["structuredContent"]["diagnostics"][0]["ruleId"] == "OPS-037"
+        });
+        fs::write(parent.path().join("history/release"), b"release").unwrap();
+    } else if second {
+        // Establish that the first signal has committed its ask before the second signal.
+        until_for(Duration::from_secs(60), || {
+            let (_, reply) = stop_test_output(
+                stop_test_command(parent.path())
+                    .args(["call", "--store"])
+                    .arg(parent.path().join("store"))
+                    .args([
+                        "management.inspect.v1",
+                        "{\"object\":{\"kind\":\"Pool\",\"name\":\"system\"}}",
+                    ]),
+                parent.path(),
+            );
+            reply["_meta"]["io.github.shrav-k.conduit/reason"] == "unavailable"
+        });
+        assert_eq!(unsafe { libc::kill(serve.0.id() as i32, libc::SIGINT) }, 0);
+    }
+    let (status, reply) = rx.recv_timeout(Duration::from_secs(60)).unwrap();
+    call.join().unwrap();
+    assert_eq!(
+        reply["_meta"]["io.github.shrav-k.conduit/outcome"],
+        if mode == "release" {
+            "succeeded"
+        } else {
+            "unknown"
+        }
+    );
+    if mode == "release" {
+        assert!(status.success());
+    } else {
+        assert_eq!(
+            reply["structuredContent"]["diagnostics"][0]["ruleId"],
+            "OPS-037"
+        );
+        assert!(
+            reply["structuredContent"]["diagnostics"][0]["message"]["text"]
+                .as_str()
+                .unwrap()
+                .contains("engine stopped before the call ended")
+        );
+    }
+    let mut status = None;
+    until_for(Duration::from_secs(60), || {
+        status = serve.0.try_wait().unwrap();
+        status.is_some()
+    });
+    assert!(status.unwrap().success());
+    let messages = fs::read_to_string(stop_log).unwrap();
+    assert_eq!(messages.matches("stopping (OPS-037)").count(), 1);
+    assert!(messages.contains("send SIGTERM or Ctrl-C again"));
+    assert_eq!(messages.matches("stopped (OPS-037)").count(), 1);
+    assert!(messages.contains(if mode == "release" {
+        "cut 0 call(s)"
+    } else {
+        "cut 1 call(s)"
+    }));
+    assert_eq!(
+        messages.contains("grace period ended (OPS-037)"),
+        mode != "release"
+    );
+
+    for name in ["shared", "history"] {
+        let pid: i32 = fs::read_to_string(parent.path().join(name).join("pid"))
+            .unwrap()
+            .parse()
+            .unwrap();
+        assert_ne!(
+            unsafe { libc::kill(-pid, 0) },
+            0,
+            "test run group survived shutdown"
+        );
+    }
+    let shell = open(
+        parent.path(),
+        Config::for_store(&parent.path().join("store")).unwrap(),
+    );
+    let state = shell.state().unwrap();
+    let records: Vec<_> = state
+        .records
+        .iter()
+        .filter(|r| r["type"] == "engine-stop")
+        .collect();
+    assert_eq!(records.len(), 2);
+    assert_eq!(records[0]["data"]["means"], "SIGTERM");
+    assert_eq!(records[1]["data"]["phase"], "stopped");
+    assert_eq!(records[1]["data"]["cut"], mode != "release");
+    let invocation = &reply["_meta"]["io.github.shrav-k.conduit/invocation"];
+    assert!(state.invocations.iter().any(|v| v["id"] == *invocation
+        && v["state"] == reply["_meta"]["io.github.shrav-k.conduit/outcome"]));
+    let inspect = invoke(
+        &shell,
+        &MissingExecutor,
+        "root",
+        "management.inspect.v1",
+        json!({"object":{"kind":"Pool","name":"system"}}),
+    );
+    assert_eq!(outcome(&shell, &inspect), "succeeded");
+    let inspect = inspect.to_string();
+    for record in records {
+        assert!(inspect.contains(record["id"].as_str().unwrap()));
+    }
+}
+#[test]
+fn serve_sigterm_lets_the_call_in_progress_end() {
+    check_signal_stop("release", "600", false);
+}
+#[test]
+fn serve_grace_end_cuts_the_hanging_call_by_timer_or_second_signal() {
+    check_signal_stop("hang", "2", false);
+    check_signal_stop("hang", "600", true);
+    for (command, value) in [("serve", "x"), ("init", "1")] {
+        let parent = tempfile::tempdir().unwrap();
+        let store = parent.path().join("unopened");
+        let (status, _) = stop_test_output(
+            stop_test_command(parent.path())
+                .arg(command)
+                .arg("--store")
+                .arg(&store)
+                .args(["--grace-period-seconds", value]),
+            parent.path(),
+        );
+        assert!(!status.success());
+        assert!(!store.exists());
+    }
+}
+
+#[test]
+fn graceful_stop_delivers_cut_retirement_to_runtime_provider() {
+    struct HoldHook<'a>(&'a Runner, std::sync::atomic::AtomicBool);
+    impl Executor for HoldHook<'_> {
+        fn builtin_runner(
+            &self,
+            intent: &Value,
+            identity: Option<&conduit_shell::RunIdentity>,
+        ) -> conduit_shell::Result<Execution> {
+            self.0.builtin_runner(intent, identity)
+        }
+        fn provider_call(
+            &self,
+            intent: &Value,
+            identity: Option<&conduit_shell::RunIdentity>,
+        ) -> conduit_shell::Result<Execution> {
+            if ["run.v1", "run.v2"].iter().any(|name| {
+                intent["operation"]
+                    .as_str()
+                    .unwrap()
+                    .ends_with(&format!("#{name}"))
+            }) {
+                self.1.store(true, std::sync::atomic::Ordering::SeqCst);
+                Ok(Execution::SetupReport(
+                    json!({"kind":"run","outcome":"succeeded","url":"https://agent.example.test/mcp"}),
+                ))
+            } else if intent["operation"]
+                .as_str()
+                .unwrap()
+                .ends_with("#inspect-run.v1")
+            {
+                Ok(Execution::SetupReport(
+                    json!({"kind":"inspect-run","state":if self.1.load(std::sync::atomic::Ordering::SeqCst) { "running" } else { "stopped" }}),
+                ))
+            } else {
+                self.0.provider_call(intent, identity)
+            }
+        }
+        fn connect(&self, _: &Value) -> conduit_shell::Result<Execution> {
+            Ok(Execution::Deferred)
+        }
+        fn dispatch(&self, _: &Value) -> conduit_shell::Result<Execution> {
+            Ok(Execution::Deferred)
+        }
+        fn cancel_setup_parts(&self, intent: &Value) -> conduit_shell::Result<Execution> {
+            self.0.cancel_setup_parts(intent)
+        }
+        fn cancel(&self, intent: &Value) -> conduit_shell::Result<Execution> {
+            self.0.cancel(intent)
+        }
+    }
+    let temp = tempfile::tempdir().unwrap();
+    fs::write(temp.path().join("mode"), "cut-provider").unwrap();
+    let shell = open(
+        temp.path(),
+        Config {
+            engine_https_url: Some("https://engine.example.test/mcp".into()),
+            pass_environment: vec!["CARGO_MANIFEST_DIR".into()],
+            ..Config::default()
+        },
+    );
+    shell.submit(json!({"kind":"first-start","machine":conduit_shell::local_machine(BTreeMap::new()).unwrap()}), &MissingExecutor).unwrap();
+    let base = repository().join("conformance/conventions/setup/review-relative-provider");
+    let mut documents: Value =
+        serde_json::from_slice(&fs::read(base.join("documents.json")).unwrap()).unwrap();
+    let hook = format!("{}#retire-hook.v1", shell.context.core_package);
+    for doc in documents.as_array_mut().unwrap() {
+        match doc["metadata"]["name"].as_str().unwrap() {
+            "provider.v1" => {
+                doc["spec"]["schema"] = json!({"type":"object","properties":{"root":{"type":"string"}},"required":["root"]})
+            }
+            "provider-template" => doc["spec"]["config"] = json!({"root":temp.path()}),
+            "test.v1" => {
+                doc["spec"]["requires"] = json!([hook]);
+                doc["spec"]["implementation"][&hook] = json!("#relative");
+            }
+            _ => {}
+        }
+    }
+    let mut manifest = boundary::value(&base.join("manifest.json")).unwrap();
+    manifest["implementations"]["relative"]["implements"]
+        .as_array_mut()
+        .unwrap()
+        .push(json!(hook));
+    manifest["implementations"]["relative"]["command"] = json!([std::env::current_exe().unwrap()]);
+    manifest["implementations"]["provider-server"]["command"] = json!([
+        std::env::current_exe().unwrap(),
+        "--exact",
+        "scripted_server",
+        "--ignored",
+        "--nocapture"
+    ]);
+    manifest["implementations"]["provider-server"]["environment"] = json!({"TEST_ROOT":"/root"});
+    let root = id(&shell, "root");
+    let state = shell.state().unwrap();
+    let route = state
+        .objects
+        .iter()
+        .find(|o| o["local_name"] == "management" && o["consumer"] == root)
+        .unwrap();
+    let reply = shell.submit(json!({"kind":"register-project","snapshots":[],"builtin":shell.context.builtin,"project":{"manifest":manifest,"documents":documents,"directory":null},"request":{"sender":root,"caller":root,"conduit":route["id"],"target":route["target"],"operation":format!("{}#register.v1",shell.context.core_package)}}), &MissingExecutor).unwrap();
+    assert_eq!(reply["accepted"], true, "{reply}");
+    let runner = new_runner(&shell);
+    let executor = HoldHook(&runner, std::sync::atomic::AtomicBool::new(false));
+    for (tool, kind, name) in [
+        ("system.set-up.v1", "Resource", "provider"),
+        ("management.set-up.v1", "Fleet", "s1"),
+        ("s1.set-up.v1", "Agent", "a"),
+    ] {
+        let ticket = shell
+            .begin(
+                input(
+                    &shell,
+                    "root",
+                    tool,
+                    json!({"instance":{"kind":kind,"name":name}}),
+                ),
+                &executor,
+            )
+            .unwrap();
+        until_for(Duration::from_secs(60), || {
+            ticket.try_reply().unwrap().is_some()
+        });
+        assert_eq!(
+            outcome(&shell, &ticket.try_reply().unwrap().unwrap()),
+            "succeeded",
+            "setup {name}: {}",
+            ticket.try_reply().unwrap().unwrap()["structuredContent"]["diagnostics"]
+        );
+    }
+    let retirement = shell
+        .begin(
+            input(
+                &shell,
+                "root",
+                "s1.retire.v1",
+                json!({"instance":{"kind":"Agent","name":"a"}}),
+            ),
+            &executor,
+        )
+        .unwrap();
+    assert!(retirement.try_reply().unwrap().is_none());
+    shell
+        .submit(json!({"kind":"stop","means":"token"}), &executor)
+        .unwrap();
+    let cut = shell
+        .submit(json!({"kind":"stop","graceEnded":true}), &executor)
+        .unwrap();
+    assert_eq!(cut["stopped"], true);
+    assert_eq!(
+        outcome(&shell, &retirement.try_reply().unwrap().unwrap()),
+        "unknown"
+    );
+    until_for(Duration::from_secs(10), || {
+        lines(&temp.path().join("wire.jsonl"))
+            .iter()
+            .any(|v| v["method"] == "tools/call" && v["params"]["name"] == "stop.v1")
+    });
+    let settled = shell.state().unwrap();
+    let stop_records: Vec<_> = settled
+        .records
+        .iter()
+        .filter(|record| {
+            record["type"] == "provider-call"
+                && record["data"]["invocation"] == retirement.invocation().unwrap()
+                && record["data"]["operation"] == format!("{}#stop.v1", shell.context.core_package)
+        })
+        .collect();
+    assert_eq!(stop_records.len(), 2, "cut provider stop must be recorded");
+    assert_eq!(stop_records[0]["data"]["phase"], "made");
+    assert_eq!(stop_records[1]["data"]["phase"], "ended");
+    assert_eq!(stop_records[1]["data"]["outcome"], "unknown");
+    shell
+        .setup_report(
+            retirement.invocation().unwrap(),
+            json!({"kind":"stop","outcome":"succeeded"}),
+            &executor,
+        )
+        .unwrap();
+    assert_eq!(
+        serde_json::to_value(shell.state().unwrap()).unwrap(),
+        serde_json::to_value(settled).unwrap()
+    );
+    runner.shutdown();
+    assert_eq!(
+        lines(&temp.path().join("wire.jsonl"))
+            .iter()
+            .filter(|v| v["method"] == "tools/call" && v["params"]["name"] == "stop.v1")
+            .count(),
+        1
+    );
 }

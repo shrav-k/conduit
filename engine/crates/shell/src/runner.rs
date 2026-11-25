@@ -39,6 +39,7 @@ use uuid::Uuid;
 
 type Attempt = (String, u64);
 type Responses = Arc<Mutex<HashMap<RequestId, Value>>>;
+type ProviderDispatch = (Value, std::sync::mpsc::Receiver<()>);
 
 const DEADLINE_CANCEL_TIMEOUT: Duration = Duration::from_secs(5);
 
@@ -287,6 +288,7 @@ struct Inner {
     discovered_dispatches: Mutex<BTreeMap<Attempt, Arc<Run>>>,
     pending_groups: Mutex<BTreeMap<String, Vec<Arc<ProcessGroup>>>>,
     cancelled_setups: Mutex<BTreeSet<String>>,
+    provider_stops: Mutex<Vec<ProviderDispatch>>,
     requests: Mutex<BTreeMap<Attempt, (Peer<RoleClient>, RequestId)>>,
     cancelled_attempts: Mutex<BTreeSet<Attempt>>,
     cache_lock: AsyncMutex<()>,
@@ -328,6 +330,7 @@ impl Runner {
                 discovered_dispatches: Mutex::new(BTreeMap::new()),
                 pending_groups: Mutex::new(BTreeMap::new()),
                 cancelled_setups: Mutex::new(BTreeSet::new()),
+                provider_stops: Mutex::new(Vec::new()),
                 requests: Mutex::new(BTreeMap::new()),
                 cancelled_attempts: Mutex::new(BTreeSet::new()),
                 cache_lock: AsyncMutex::new(()),
@@ -367,6 +370,24 @@ impl Runner {
     /// Ask every owned run to end, then record only process groups seen absent.
     /// All runs share one grace period and one three-second confirmation period.
     pub fn shutdown(&self) {
+        // OPS-037/TPL-009: a cut retirement still sends its provider stop. Wait only
+        // for deferred dispatch, never for the provider's result, before ending runs.
+        let pending = std::mem::take(&mut *self.inner.provider_stops.lock().unwrap());
+        if self.inner.shell.upgrade().is_some() {
+            // DL16: all deferred stops share this short dispatch allowance.
+            let deadline = Instant::now() + Duration::from_secs(3);
+            for (intent, sent) in pending {
+                if self.inner.cut_retirement_stop(&intent)
+                    && sent
+                        .recv_timeout(deadline.saturating_duration_since(Instant::now()))
+                        .is_err()
+                {
+                    self.shutdown_diagnostics.lock().unwrap().push(
+                            "provider stop dispatch did not finish within the three-second shutdown allowance".into(),
+                        );
+                }
+            }
+        }
         // Serialize shutdown with the spawn-and-register section, so a deferred start
         // cannot register a fresh group just after shutdown's group scan.
         let mut runs = {
@@ -1665,6 +1686,15 @@ impl Inner {
         Ok(Execution::Deferred)
     }
     async fn call(&self, run: &Run, key: &Attempt, call: Value) -> Result<Value> {
+        self.call_notifying_dispatch(run, key, call, None).await
+    }
+    async fn call_notifying_dispatch(
+        &self,
+        run: &Run,
+        key: &Attempt,
+        call: Value,
+        sent: Option<std::sync::mpsc::Sender<()>>,
+    ) -> Result<Value> {
         if run.group.stopped.load(Ordering::SeqCst) || run.transport_closed() {
             self.note_provider_end(run, ProviderEndCause::TransportFailure);
             return Err("run stopped".into());
@@ -1683,6 +1713,9 @@ impl Inner {
                 self.cleanup_transport_failure(run, &error);
                 "run missing"
             })?;
+        if let Some(sent) = sent {
+            let _ = sent.send(());
+        }
         let id = handle.id.clone();
         self.requests
             .lock()
@@ -1860,7 +1893,34 @@ mod provider {
                 .unwrap()
                 .push(format!("{operation}: {message}"));
         }
-        async fn provider_operation(&self, intent: &Value, inputs: Value) -> ProviderReply {
+        pub(super) fn cut_retirement_stop(&self, intent: &Value) -> bool {
+            let Some(shell) = self.shell.upgrade() else {
+                return false;
+            };
+            if intent["operation"] != format!("{}#stop.v1", shell.context.core_package) {
+                return false;
+            }
+            shell.state().is_ok_and(|state| {
+                state.invocations.iter().any(|v| {
+                    v["id"] == intent["invocation"]
+                        && v["object"] == intent["subject"]
+                        && v["retirement"]["phase"] == "ended"
+                        && v["cancelled"] == true
+                        && v["state"] != "in-progress"
+                        && v["provider_call"]["target"] == intent["provider"]
+                        && v["provider_call"]["operation"] == intent["operation"]
+                        && v["cause"].as_array().is_some_and(|causes| {
+                            causes.iter().any(|cause| cause["ruleId"] == "OPS-037")
+                        })
+                })
+            })
+        }
+        async fn provider_operation(
+            &self,
+            intent: &Value,
+            inputs: Value,
+            sent: Option<std::sync::mpsc::Sender<()>>,
+        ) -> ProviderReply {
             let operation = intent["operation"].as_str().unwrap_or("");
             let run = self
                 .runs
@@ -1920,8 +1980,9 @@ mod provider {
             let completion = tokio::time::timeout(timeout, async {
                 loop {
                     let discovery = self.read_discovery(&run, &key, &discover).await;
-                    if self.cancelled_setups.lock().unwrap().contains(invocation.unwrap_or(""))
-                        || self.stopping.load(Ordering::SeqCst)
+                    let cut_stop = self.cut_retirement_stop(intent);
+                    if !cut_stop && (self.cancelled_setups.lock().unwrap().contains(invocation.unwrap_or(""))
+                        || self.stopping.load(Ordering::SeqCst))
                     {
                         return Ok(ProviderReply::NotSent);
                     }
@@ -1935,11 +1996,15 @@ mod provider {
                                 self.provider_diagnostic(operation, "provider discovery lacks Conduit's implementation-interface extension at v0");
                                 return Ok(ProviderReply::DiscoveryUnavailable);
                             }
-                            if let Some(invocation) = invocation {
+                            // OPS-013 leaves a cut retirement settled. Its required stop
+                            // is the sole call that needs no new readiness transition.
+                            if let Some(invocation) = invocation.filter(|_| !cut_stop) {
                                 let reply = shell.setup_report(invocation,
                                     json!({"kind":"provider-call-ready","operation":operation}),
                                     &crate::MissingExecutor)?.try_reply()?;
-                                if !reply.is_some_and(|r| r["accepted"] == true) {
+                                if !reply.is_some_and(|r| r["accepted"] == true)
+                                    && !self.cut_retirement_stop(intent)
+                                {
                                     return Ok(ProviderReply::NotSent);
                                 }
                             }
@@ -1959,7 +2024,7 @@ mod provider {
                     }
                 }
                 called.store(true, Ordering::SeqCst);
-                self.call(&run, &key, json!({"method":"tools/call","params":{"name":operation.rsplit('#').next().unwrap_or(""),"arguments":inputs,"_meta":meta}}))
+                self.call_notifying_dispatch(&run, &key, json!({"method":"tools/call","params":{"name":operation.rsplit('#').next().unwrap_or(""),"arguments":inputs,"_meta":meta}}), sent)
                     .await.map(|v| provider_result(v, &prefix, &schema, || {
                         self.provider_diagnostic(operation, "IFC-026 reason without outcome is invalid for a PRV-005 provider call");
                     }))
@@ -2003,18 +2068,32 @@ mod provider {
                 inputs["identity"] =
                     json!({"environment":identity.environment,"files":identity.files});
             }
+            let sent = if operation.ends_with("#stop.v1") {
+                let (sent, received) = std::sync::mpsc::channel();
+                let mut pending = self.provider_stops.lock().unwrap();
+                pending.retain(|(_, receipt)| {
+                    matches!(
+                        receipt.try_recv(),
+                        Err(std::sync::mpsc::TryRecvError::Empty)
+                    )
+                });
+                pending.push((intent.clone(), received));
+                Some(sent)
+            } else {
+                None
+            };
             let this = self.clone();
             let intent = intent.clone();
             self.handle.spawn(async move {
             let operation = intent["operation"].as_str().unwrap();
             let subject = intent["subject"].as_str().unwrap();
             let setup = intent["invocation"].as_str().unwrap();
-            if this.cancelled_setups.lock().unwrap().contains(setup) { return; }
+            if this.cancelled_setups.lock().unwrap().contains(setup) && !this.cut_retirement_stop(&intent) { return; }
             if operation.ends_with("#stop.v1") && let Some(run) = this.runs.lock().unwrap().remove(subject) { run.group.stop(); }
             let reply = if missing_identity {
                 this.provider_diagnostic(operation, "provider run has no https engine address");
                 ProviderReply::Failed
-            } else { this.provider_operation(&intent, inputs).await };
+            } else { this.provider_operation(&intent, inputs, sent).await };
             let report = if reply == ProviderReply::DiscoveryUnavailable {
                 json!({"kind":"provider-discovery-unavailable","operation":operation})
             } else if reply == ProviderReply::NotSent {
@@ -2544,7 +2623,10 @@ mod provider {
             let call = json!({"provider":subject,"operation":format!("{}#list-machines.v1",shell.context.core_package),"config":{"own":true},"revision":7,"inputs":{}});
             runner._runtime.block_on(async {
                 assert_eq!(
-                    runner.inner.provider_operation(&call, json!({})).await,
+                    runner
+                        .inner
+                        .provider_operation(&call, json!({}), None)
+                        .await,
                     ProviderReply::NotSent
                 );
                 for _ in 0..2 {
@@ -2555,7 +2637,10 @@ mod provider {
                         .unwrap();
                     for _ in 0..2 {
                         assert_eq!(
-                            runner.inner.provider_operation(&call, json!({})).await,
+                            runner
+                                .inner
+                                .provider_operation(&call, json!({}), None)
+                                .await,
                             ProviderReply::Succeeded(json!({"machines":[]}))
                         );
                     }

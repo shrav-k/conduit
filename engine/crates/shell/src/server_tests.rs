@@ -222,6 +222,14 @@ fn fixed_shell(path: &Path) -> Shell {
 }
 
 fn established_case(path: &Path, case: &Path, through: usize) -> Shell {
+    established_case_with(path, case, through, |_| {})
+}
+fn established_case_with(
+    path: &Path,
+    case: &Path,
+    through: usize,
+    edit: impl Fn(&mut conduit_core::packages::Project),
+) -> Shell {
     use conduit_core::packages::{Project, Snapshot, SnapshotSource};
 
     #[derive(serde::Deserialize)]
@@ -326,6 +334,7 @@ fn established_case(path: &Path, case: &Path, through: usize) -> Shell {
                     assert_eq!(item["package"]["fileSha256"], artifact.sha256);
                 }
                 let mut project = load(fixture.project);
+                edit(&mut project);
                 if reverse {
                     project.documents.reverse();
                 }
@@ -3157,4 +3166,276 @@ async fn admission_ask_ends_at_its_deadline() {
         observed[0]["startedAt"],
         shell.state().unwrap().admission_asks[login].started_at
     );
+}
+
+// OPS-037: all transports and stores in these tests belong to this temporary fixture.
+async fn stop_progress(mut condition: impl FnMut() -> bool) {
+    tokio::time::timeout(Duration::from_secs(60), async {
+        while !condition() {
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    })
+    .await
+    .unwrap();
+}
+async fn check_serving_stop(agent_work: bool, cut: bool) {
+    let temp = temporary();
+    let shell = if agent_work {
+        let case = repository().join("conformance/conventions/requests/limits-latest");
+        drop(established_case_with(temp.path(), &case, 10, |project| {
+            let api = project.manifest.as_ref().unwrap()["apiVersion"].clone();
+            project.documents.push(json!({"apiVersion":api,"kind":"Conduit","metadata":{"name":"agent-read"},"from":"turns","consumer":{"kind":"Agent","name":"a"},"target":{"kind":"Agent","name":"b"}}));
+        }));
+        let shell = fixed_endpoint_shell(temp.path());
+        let root = actor(&shell, "root");
+        shell.submit(json!({"kind":"invoke","request":{"identity":instance_value(&root),"tool":"access.open.v1","arguments":{"conduit":"agent-read"}}}), &MissingExecutor).unwrap();
+        shell
+    } else {
+        fixed_shell(temp.path())
+    };
+    let mut shell = shell;
+    shell.config.grace_period = Duration::from_secs(if cut { 1 } else { 600 });
+    let shell = Arc::new(shell);
+    let memory = Arc::new(Memory {
+        content: Mutex::default(),
+        shell: Arc::downgrade(&shell),
+        dispatches: AtomicUsize::new(0),
+        deferred: AtomicBool::new(true),
+        cancellations: Mutex::default(),
+    });
+    let executor = Arc::new(ServingExecutor::new(memory.clone()));
+    let shutdown = CancellationToken::new();
+    let (ready_tx, ready_rx) = tokio::sync::oneshot::channel();
+    let task = tokio::spawn(server::serve_with_ready(
+        shell.clone(),
+        executor.clone(),
+        shutdown.clone(),
+        move || {
+            let _ = ready_tx.send(());
+        },
+    ));
+    tokio::time::timeout(Duration::from_secs(60), ready_rx)
+        .await
+        .unwrap()
+        .unwrap();
+    let root = connect(
+        &shell.config.engine_url,
+        &token(&shell, "root"),
+        Arc::default(),
+    )
+    .await;
+    let caller = connect(
+        &shell.config.engine_url,
+        &token(&shell, if agent_work { "root" } else { "agent-b" }),
+        Arc::default(),
+    )
+    .await;
+    let tools = root.list_tools(None).await.unwrap().tools;
+    let peer = caller.peer().clone();
+    let request = tokio::spawn(async move {
+        peer.call_tool(call(
+            if agent_work {
+                "call-a.turn.v1"
+            } else {
+                "project.file.read.v1"
+            },
+            if agent_work {
+                json!({})
+            } else {
+                json!({"path":"hello.txt"})
+            },
+        ))
+        .await
+    });
+    stop_progress(|| memory.dispatches.load(Ordering::SeqCst) == 1).await;
+    let invocation = shell
+        .state()
+        .unwrap()
+        .invocations
+        .iter()
+        .find(|v| v["state"] == "in-progress")
+        .unwrap()["id"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    shutdown.cancel();
+    if !cut {
+        stop_progress(|| shell.state().unwrap().stop.is_some() || task.is_finished()).await;
+        assert!(!task.is_finished(), "serve ended before the active call");
+        assert!(
+            shell.state().unwrap().stop.is_some(),
+            "stop was not asked in the core"
+        );
+        let denied = root
+            .call_tool(call(
+                "management.inspect.v1",
+                json!({"object":{"kind":"Pool","name":"system"}}),
+            ))
+            .await
+            .unwrap();
+        let denied = serde_json::to_value(denied).unwrap();
+        assert_eq!(
+            denied["_meta"][format!("{}reason", shell.context.meta_prefix)],
+            "unavailable"
+        );
+        assert_eq!(
+            denied["structuredContent"]["diagnostics"][0]["ruleId"],
+            "OPS-037"
+        );
+        if let Some(tool) = server::unfinished(&shell, &actor(&shell, "root"))
+            .unwrap()
+            .into_keys()
+            .next()
+        {
+            let denied =
+                serde_json::to_value(root.call_tool(call(&tool, json!({}))).await.unwrap())
+                    .unwrap();
+            assert_eq!(
+                denied["_meta"][format!("{}reason", shell.context.meta_prefix)],
+                "unavailable"
+            );
+            assert_eq!(
+                denied["structuredContent"]["diagnostics"][0]["ruleId"],
+                "OPS-037"
+            );
+        }
+        assert_eq!(root.list_tools(None).await.unwrap().tools, tools);
+        if agent_work {
+            let a = connect(
+                &shell.config.engine_url,
+                &token(&shell, "a"),
+                Arc::default(),
+            )
+            .await;
+            let b = connect(
+                &shell.config.engine_url,
+                &token(&shell, "b"),
+                Arc::default(),
+            )
+            .await;
+            let denied = serde_json::to_value(
+                b.call_tool(call("absent.status.v1", json!({})))
+                    .await
+                    .unwrap(),
+            )
+            .unwrap();
+            assert_eq!(
+                denied["_meta"][format!("{}reason", shell.context.meta_prefix)],
+                "unavailable"
+            );
+            let peer = a.peer().clone();
+            let onward = tokio::spawn(async move {
+                peer.call_tool(call("agent-read.status.v1", json!({})))
+                    .await
+            });
+            stop_progress(|| memory.dispatches.load(Ordering::SeqCst) == 2).await;
+            let id = shell
+                .state()
+                .unwrap()
+                .invocations
+                .iter()
+                .find(|v| v["state"] == "in-progress" && v["id"] != invocation)
+                .unwrap()["id"]
+                .as_str()
+                .unwrap()
+                .to_owned();
+            shell
+                .complete(
+                    &id,
+                    1,
+                    json!({"kind":"result","result":{"isError":false,"structuredContent":{}}}),
+                    executor.as_ref(),
+                )
+                .unwrap();
+            assert_ne!(
+                tokio::time::timeout(Duration::from_secs(10), onward)
+                    .await
+                    .unwrap()
+                    .unwrap()
+                    .unwrap()
+                    .is_error,
+                Some(true)
+            );
+            a.cancel().await.unwrap();
+            b.cancel().await.unwrap();
+        }
+        shell.complete(&invocation,1,json!({"kind":"result","result":{"isError":false,"content":[{"type":"text","text":"finished"}],"structuredContent":{}}}),executor.as_ref()).unwrap();
+    }
+    let result = serde_json::to_value(
+        tokio::time::timeout(Duration::from_secs(10), request)
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        result["_meta"][format!("{}outcome", shell.context.meta_prefix)],
+        if cut { "unknown" } else { "succeeded" }
+    );
+    if cut {
+        let diagnostic = &result["structuredContent"]["diagnostics"][0];
+        assert_eq!(diagnostic["ruleId"], "OPS-037");
+        let text = diagnostic["message"]["text"].as_str().unwrap();
+        assert!(
+            text.contains("engine stopped before the call ended")
+                && text.contains("effect may have occurred")
+        );
+    }
+    tokio::time::timeout(Duration::from_secs(10), task)
+        .await
+        .unwrap()
+        .unwrap()
+        .unwrap();
+    if cut {
+        assert_eq!(memory.cancellations.lock().unwrap().len(), 1);
+    }
+    let state = shell.state().unwrap();
+    let records: Vec<_> = state
+        .records
+        .iter()
+        .filter(|r| r["type"] == "engine-stop")
+        .collect();
+    assert_eq!(records.len(), 2);
+    assert_eq!(records[0]["data"]["phase"], "asked");
+    assert_eq!(records[0]["data"]["means"], "token");
+    assert_eq!(records[1]["data"]["phase"], "stopped");
+    assert_eq!(records[1]["data"]["cut"], cut);
+    assert_eq!(
+        state
+            .invocations
+            .iter()
+            .find(|v| v["id"] == invocation)
+            .unwrap()["state"],
+        if cut { "unknown" } else { "succeeded" }
+    );
+    let _ = root.cancel().await;
+    let _ = caller.cancel().await;
+}
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn serve_stop_answers_new_calls_unavailable_and_the_call_in_progress() {
+    tokio::time::timeout(Duration::from_secs(60), check_serving_stop(false, false))
+        .await
+        .unwrap();
+}
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn serve_stop_takes_an_agents_own_calls() {
+    tokio::time::timeout(Duration::from_secs(60), check_serving_stop(true, false))
+        .await
+        .unwrap();
+}
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn serve_grace_period_end_answers_the_cut_call_unknown() {
+    tokio::time::timeout(Duration::from_secs(60), check_serving_stop(false, true))
+        .await
+        .unwrap();
+}
+
+#[tokio::test]
+async fn stalled_response_drain_is_bounded() {
+    let pending = std::sync::atomic::AtomicUsize::new(1);
+    tokio::time::timeout(Duration::from_secs(10), server::drain_responses(&pending))
+        .await
+        .expect("a stalled response must not hold shutdown open");
+    assert_eq!(pending.load(std::sync::atomic::Ordering::SeqCst), 1);
 }

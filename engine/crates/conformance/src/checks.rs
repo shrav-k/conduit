@@ -162,6 +162,7 @@ impl Checks {
                     "provider-call",
                     "object-change",
                     "pending-action-answered",
+                    "engine-stop",
                 ]
                 .iter()
                 .any(|e| r["type"] == *e)

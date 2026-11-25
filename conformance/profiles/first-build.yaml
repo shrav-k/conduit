@@ -56,7 +56,8 @@
     "invocation-ended",
     "provider-call",
     "object-change",
-    "pending-action-answered"
+    "pending-action-answered",
+    "engine-stop"
   ],
   "implemented_here": [
     "DL6",

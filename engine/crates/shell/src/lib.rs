@@ -50,6 +50,7 @@ pub struct Config {
     pub call_timeout: Duration,
     pub admission_ask_timeout: Duration,
     pub stop_grace: Duration,
+    pub grace_period: Duration,
 }
 impl Default for Config {
     fn default() -> Self {
@@ -66,6 +67,7 @@ impl Default for Config {
             call_timeout: Duration::from_secs(120),
             admission_ask_timeout: Duration::from_secs(30),
             stop_grace: Duration::from_secs(10),
+            grace_period: Duration::from_secs(30),
         }
     }
 }
@@ -582,6 +584,7 @@ impl Shell {
                 | "admission-ask-deadline"
                 | "cancel"
                 | "setup-report"
+                | "stop"
                 | "recover"
                 | "builtin-run-stopped"
                 | "builtin-secret-provider-exited"

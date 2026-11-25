@@ -119,6 +119,12 @@ describes. If you were started with an order from `docs/work-orders/`:
 - An order that changes `spec/` writes its changelog lines in its own fragment under
   `spec/changes/`, whatever its scope lists, and adds no count to a README
   ([HOW-WE-WORK section 8](HOW-WE-WORK.md#8-records-where-each-fact-lives)).
+- An order that lists a case the build does not pass yet writes the entry in its own fragment
+  under `conformance/expected-failures/`, named for its order file, whatever its scope lists;
+  an order that makes a listed case pass removes the entry from the fragment that holds it,
+  whatever its scope lists, and deletes a fragment that this empties. The order's scope may name
+  that fragment
+  ([HOW-WE-WORK section 8](HOW-WE-WORK.md#8-records-where-each-fact-lives)).
 - Do not commit, push, open a pull request or switch branches: the admin session does.
 - Do not edit `~/.claude`, `~/.claude.json`, `~/.codex/config.toml` or any other configuration of
   the owner's, and never read, print or copy a credential.

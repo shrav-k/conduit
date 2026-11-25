@@ -208,11 +208,13 @@ class Permalinks:
 
 # These protocol methods resemble paths, and check_decisions.py refuses the retired
 # directory's return. Concrete descendants of that directory still need to exist.
+# The runner and promise_standing.py refuse the retired expected-failures file's return.
 PATH_EXCEPTIONS = {
     "tools/call": "JSON-RPC method",
     "tools/list": "JSON-RPC method",
     "docs/proposals": "retired path",
     "docs/proposals/": "retired path",
+    "conformance/expected-failures.yaml": "retired path",
 }
 PATH_MENTION = re.compile(
     r"(?<![\w/.:{\-])(?:(?:docs|spec|conformance|engine|packages|experiments|tools)/"

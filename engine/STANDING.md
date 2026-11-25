@@ -19,7 +19,8 @@ still keep one. The first build states its choices and limits in
 
 - **ID**, **Layer** and **Level**: the promise's own. The rows are in byte order of ID.
 - **Cases**: how many entries of the coverage index list the promise among their `promises`.
-- **Expected failures**: how many of those cases `conformance/expected-failures.yaml` lists.
+- **Expected failures**: how many of those cases a fragment under
+  `conformance/expected-failures/` lists.
 - **S1**: `cases` where the promise's row in the S1 inventory (`s1_coverage` in
   `conformance/manifest.yaml`) names cases, `reason` where it gives a reason instead, and
   `outside` where the promise has no row there.

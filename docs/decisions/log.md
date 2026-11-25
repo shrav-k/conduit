@@ -1764,3 +1764,11 @@ Owner's words: spot instances -> "Short turns only, after cordon (Recommended)"
 Lands in: no spot machine until the cordon exists; then spot only for short-turn Agents (verifiers, readers) under a tier label the owner names; workers run on demand
 
 Status: accepted, not done
+
+## DEC-211, 2026-11-24, the Pi was set up on 2026-11-19; no setup sitting is owed
+
+Owner's words: when the Pi's setup sitting happens -> "I thought we already booted the pi with the new image and did Xfinity cleanup?"; then, whether the Pi gets a full update and one restart -> "Yes, update and restart (Recommended)"
+
+Lands in: the Pi was wiped, imaged and booted on 2026-11-18 and 2026-11-19 and is a reachable, idle linux/arm64 machine with its first-boot files retired; DEC-207's sitting rested on a study that missed those records and is withdrawn (amends DEC-207); what remains is one full update and restart by the owner, and enrollment as a plain node when the engine's enrollment lands (DEC-205)
+
+Status: accepted, not done

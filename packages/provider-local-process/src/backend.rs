@@ -241,6 +241,17 @@ impl RuntimeBackend for LocalBackend {
         cancel: &CancellationToken,
     ) -> Result<Staged> {
         self.local(context)?;
+        let nice = context
+            .config
+            .get("nice")
+            .map(|value| {
+                value
+                    .as_f64()
+                    .filter(|n| (0.0..=19.0).contains(n) && n.fract() == 0.0)
+                    .map(|n| n as i32)
+                    .ok_or_else(|| Unavailable::because("nice must be an integer from 0 to 19"))
+            })
+            .transpose()?;
         if cancel.is_cancelled() || self.observed(&input.instance)? != RunState::Stopped {
             return Err(Unavailable);
         }
@@ -297,6 +308,7 @@ impl RuntimeBackend for LocalBackend {
             command,
             environment,
             lifetime_ms: 0,
+            nice,
         });
         if cancel.is_cancelled() {
             return Err(Unavailable);
@@ -376,18 +388,22 @@ impl RuntimeBackend for LocalBackend {
         let mut launch = staged.launch.take().ok_or(Unavailable)?;
         launch.lifetime_ms = u64::try_from(lifetime.as_millis()).map_err(|_| Unavailable)?;
         let bytes = serde_json::to_vec(&launch).map_err(|_| Unavailable)?;
-        let ready = provider
-            .write_all(&(bytes.len() as u64).to_be_bytes())
-            .and_then(|_| provider.write_all(&bytes))
-            .and_then(|_| {
-                let mut byte = [0];
-                provider.read_exact(&mut byte)?;
-                if byte == *b"R" {
-                    Ok(())
-                } else {
-                    Err(std::io::Error::other("guard not ready"))
-                }
-            });
+        let ready = (|| {
+            provider
+                .write_all(&(bytes.len() as u64).to_be_bytes())
+                .and_then(|_| provider.write_all(&bytes))
+                .map_err(|_| Unavailable)?;
+            let mut byte = [0];
+            provider.read_exact(&mut byte).map_err(|_| Unavailable)?;
+            match byte[0] {
+                b'R' => Ok(()),
+                b'B' => Err(Unavailable::because(
+                    "nice is below the provider's own nice value",
+                )),
+                b'N' => Err(Unavailable::because("nice could not be set")),
+                _ => Err(Unavailable),
+            }
+        })();
         if ready.is_err() || cancel.is_cancelled() {
             drop(provider);
             // This is the unreaped child just spawned, never a saved/recovered PID.
@@ -398,7 +414,7 @@ impl RuntimeBackend for LocalBackend {
                 }
             }
             let _ = child.wait().await;
-            return Err(Unavailable);
+            return Err(ready.err().unwrap_or(Unavailable));
         }
         self.pipes
             .lock()

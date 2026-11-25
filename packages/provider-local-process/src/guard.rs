@@ -17,6 +17,7 @@ pub(crate) struct Launch {
     pub command: Vec<String>,
     pub environment: BTreeMap<String, String>,
     pub lifetime_ms: u64,
+    pub nice: Option<i32>,
 }
 
 /// A saved group ID is only evidence of absence, never authority to send a signal.
@@ -57,6 +58,22 @@ pub fn guard_main() -> std::io::Result<()> {
     pipe.read_exact(&mut bytes)?;
     let launch: Launch =
         serde_json::from_slice(&bytes).map_err(|_| std::io::Error::other("invalid launch"))?;
+    if let Some(nice) = launch.nice {
+        // SAFETY: PRIO_PROCESS with ID zero addresses this guard, which inherited the
+        // provider's priority. Refuse a raise even if this user could perform one.
+        let inherited = unsafe { libc::getpriority(libc::PRIO_PROCESS, 0) };
+        if nice < inherited {
+            pipe.write_all(b"B")?;
+            return Err(std::io::Error::other(
+                "nice is below the provider's own nice value",
+            ));
+        }
+        // Set only this guard, before recording a group or starting any program.
+        if unsafe { libc::setpriority(libc::PRIO_PROCESS, 0, nice) } != 0 {
+            pipe.write_all(b"N")?;
+            return Err(std::io::Error::other("nice could not be set"));
+        }
+    }
     let program = launch
         .command
         .first()

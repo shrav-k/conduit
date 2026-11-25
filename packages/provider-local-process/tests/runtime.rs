@@ -215,6 +215,10 @@ impl Provider {
     }
 
     async fn start_in(root: &Path, durable: &Path) -> Self {
+        Self::start_with_nice(root, durable, None).await
+    }
+
+    async fn start_with_nice(root: &Path, durable: &Path, nice: Option<i32>) -> Self {
         let log = root.join("provider.log");
         let stderr = fs::OpenOptions::new()
             .create(true)
@@ -223,7 +227,8 @@ impl Provider {
             .mode(0o600)
             .open(&log)
             .unwrap();
-        let mut child = Command::new(env!("CARGO_BIN_EXE_provider-local-process"))
+        let mut command = Command::new(env!("CARGO_BIN_EXE_provider-local-process"));
+        command
             .env_clear()
             .envs(synthetic())
             .env(names::STATE_DIR_VARIABLE, root)
@@ -232,9 +237,19 @@ impl Provider {
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(stderr)
-            .kill_on_drop(true)
-            .spawn()
-            .unwrap();
+            .kill_on_drop(true);
+        if let Some(nice) = nice {
+            // SAFETY: setpriority is called only in the child before exec.
+            unsafe {
+                command.pre_exec(move || {
+                    if libc::setpriority(libc::PRIO_PROCESS, 0, nice) != 0 {
+                        return Err(std::io::Error::last_os_error());
+                    }
+                    Ok(())
+                });
+            }
+        }
+        let mut child = command.spawn().unwrap();
         let transport = (child.stdout.take().unwrap(), child.stdin.take().unwrap());
         let client = timeout(WAIT, ().serve(transport))
             .await
@@ -1215,4 +1230,117 @@ async fn cancelled_staging_and_failed_spawn_leave_no_private_identity() {
     backend.stop(&context(), ID).await.unwrap();
     assert!(!private.exists());
     assert!(backend.state(&context(), ID).await.unwrap() == RunState::Stopped);
+}
+
+fn priority(pid: i32) -> i32 {
+    // SAFETY: the PID is our own or a live process spawned by this fixture.
+    unsafe { libc::getpriority(libc::PRIO_PROCESS, pid as _) }
+}
+
+async fn invoke_with_config(client: &Client, arguments: Value, config: Value) -> CallToolResult {
+    let mut request = serde_json::to_value(call("run.v1", arguments)).unwrap();
+    request["_meta"][names::key("config")] = config;
+    timeout(
+        WAIT,
+        client.call_tool(serde_json::from_value(request).unwrap()),
+    )
+    .await
+    .expect("provider call timed out")
+    .expect("provider call failed")
+}
+
+#[tokio::test]
+async fn nice_from_the_call_reaches_every_process_of_the_run() {
+    let base = priority(std::process::id() as i32);
+    assert!(base < 19, "this test needs its own nice below 19");
+    let n = (base + 5).min(19);
+    let root = temporary_state();
+    let provider = Provider::start(&root).await;
+    let fixture = Fixture::new(INSTANCE);
+    // A JSON number with a zero fractional part is an integer in the Type schema.
+    let run = invoke_with_config(
+        &provider.client,
+        inputs(ID, &fixture),
+        json!({"nice": n as f64}),
+    )
+    .await;
+    outcome(&run, "succeeded");
+    let pids = ready(root.path(), ID).await;
+    assert_eq!(pids.len(), 2);
+    let guard = unsafe { libc::getpgid(pids[0]) };
+    assert!(guard > 1);
+    let priorities: Vec<_> = pids.iter().copied().chain([guard]).map(priority).collect();
+    let server_priority = priority(provider.child.id().unwrap() as i32);
+    outcome(
+        &invoke(&provider.client, "stop.v1", args(ID)).await,
+        "succeeded",
+    );
+    gone(&pids).await;
+    fs::remove_file(state(root.path(), ID).join("pids.json")).unwrap();
+    outcome(
+        &invoke(&provider.client, "run.v1", inputs(ID, &fixture)).await,
+        "succeeded",
+    );
+    let pids = ready(root.path(), ID).await;
+    let inherited: Vec<_> = pids.iter().copied().map(priority).collect();
+    outcome(
+        &invoke(&provider.client, "stop.v1", args(ID)).await,
+        "succeeded",
+    );
+    gone(&pids).await;
+    provider.close().await;
+    assert_eq!(
+        priorities,
+        vec![n; 3],
+        "guard, program and child must take call nice"
+    );
+    assert_eq!(server_priority, base);
+    assert_eq!(inherited, vec![base; 2]);
+}
+
+#[tokio::test]
+async fn nice_that_cannot_be_given_runs_nothing_and_names_nice() {
+    let base = priority(std::process::id() as i32);
+    assert!(base <= 15, "this test needs its own nice at most 15");
+    let root = temporary_state();
+    let provider = Provider::start_with_nice(root.path(), root.durable(), Some(base + 2)).await;
+    assert_eq!(priority(provider.child.id().unwrap() as i32), base + 2);
+    let fixture = Fixture::new(INSTANCE);
+    for (nice, reason) in [
+        (
+            json!(base + 1),
+            "nice is below the provider's own nice value",
+        ),
+        (json!(20), "nice must be an integer from 0 to 19"),
+        (json!("10"), "nice must be an integer from 0 to 19"),
+    ] {
+        let result =
+            invoke_with_config(&provider.client, inputs(ID, &fixture), json!({"nice":nice})).await;
+        // Clean up even on the old implementation, which incorrectly starts a program.
+        if result
+            .structured_content
+            .as_ref()
+            .is_some_and(|v| v.get("url").is_some())
+        {
+            outcome(
+                &invoke(&provider.client, "stop.v1", args(ID)).await,
+                "succeeded",
+            );
+        }
+        outcome(&result, "failed");
+        assert!(
+            serde_json::to_value(&result).unwrap()["content"]
+                .to_string()
+                .contains(reason),
+            "refusal must name the nice setting"
+        );
+        assert!(!state(root.path(), ID).join("starts").exists());
+        let inspect = invoke(&provider.client, "inspect-run.v1", args(ID)).await;
+        outcome(&inspect, "succeeded");
+        assert_eq!(
+            inspect.structured_content.as_ref().unwrap()["state"],
+            "stopped"
+        );
+    }
+    provider.close().await;
 }

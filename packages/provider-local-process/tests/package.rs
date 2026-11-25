@@ -233,3 +233,28 @@ print('template semantic validation passed')
         String::from_utf8_lossy(&result.stderr)
     );
 }
+
+#[test]
+fn nice_is_an_optional_unbound_property_without_a_default() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let contract = &documents(&root.join("contracts.yaml"))[0];
+    let schema = &contract["spec"]["schema"];
+    assert_eq!(
+        schema["properties"]["nice"],
+        json!({"type":"integer","minimum":0,"maximum":19})
+    );
+    assert!(
+        !schema["required"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("nice"))
+    );
+    assert!(schema["properties"]["nice"].get("default").is_none());
+    let manifest = &documents(&root.join("conduit.yaml"))[0];
+    for item in manifest["implementations"].as_object().unwrap().values() {
+        if let Some(bindings) = item["environment"].as_object() {
+            assert!(bindings.values().all(|pointer| pointer != "/nice"));
+        }
+    }
+    assert_eq!(manifest["version"], "0.2.0");
+}

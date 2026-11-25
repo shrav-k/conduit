@@ -32,9 +32,14 @@ metadata:
     and the entry. Recovery can finish a stop with no marker entry when the retained run
     state proves the instance never launched. For a refused stop, end any survivors first,
     then restore the matching marker or remove the owed-stop record from ledger.json.
-    Configuration changes take effect
-    at the provider's next start. Runs never restart automatically; provider loss and
-    maxLifetime end their process groups. Descendants calling setsid escape this reach.
+    Configuration changes take effect at the provider's next start. Optional nice (0 to
+    19, no default) is read from each run.v1 call instead: the run's guard takes it
+    before launching the program, so the program and every descendant start at that nice
+    value; the provider's own server keeps its priority. A nice below the provider's own
+    runs nothing and fails the run, naming nice. If the operating system cannot set
+    nice, no program starts and the run fails with the reason "nice could not be set".
+    Runs never restart automatically; provider loss and maxLifetime end their process
+    groups. Descendants calling setsid escape this reach.
     Marker locks inventory runs; the guard durably records its group before launch. A free
     lock confirms stopped only before launch or once that group is absent. Recorded IDs
     are used only to prove absence, never to signal. Guard death with surviving members
@@ -72,4 +77,5 @@ spec:
       keepaliveCount: {type: integer, minimum: 1, maximum: 2147483647, default: 3}
       maxLifetime: {type: integer, minimum: 1, maximum: 2147483647, default: 3600}
       durableDir: {type: string, pattern: '^/'}
+      nice: {type: integer, minimum: 0, maximum: 19}
     additionalProperties: false

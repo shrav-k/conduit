@@ -1,0 +1,1 @@
+- Changed: PRV-019 and the `runtime provider` term: a runtime provider whose configuration sets its runs' scheduling priority gives it where each run starts, never one above its own, and never changes it afterwards, or runs nothing and ends the run failed, naming the setting; the engine's own runner sets none (DEC-046, DEC-182).

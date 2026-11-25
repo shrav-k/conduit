@@ -32,7 +32,7 @@ Record-specific prefixes are in the ledger's [historical appendix](https://githu
 
 - An action item has one row here, in the roadmap, or in the [history](archive/plan-audit-history.md). Its done-when is kept until met. Statuses are open, in progress, ruled, done, answered, dropped or superseded, with a note where needed; ruled means written as promises, with vectors still to come.
 - Whoever starts an item records in progress, with the branch or pull request carrying it. Experiments keep fixtures and dated results under [experiments/](../experiments/README.md); consult the [roadmap's register](../ROADMAP.md#experiments-and-probes) before proposing one.
-- Give the coordinator a dated report outside the tree. Findings go to `spec/` with `spec/CHANGES.md` entries, the decision log, ROADMAP.md or work orders. A behavior missing from `spec/` is a gap there.
+- Give the coordinator a dated report outside the tree. Findings go to `spec/` with fragments under `spec/changes/`, the decision log, ROADMAP.md or work orders. A behavior missing from `spec/` is a gap there.
 - The ledger's status column changes when a later ruling changes a decision. Its historical appendices preserve the old wording. Promise counts in old records are as first written; current contents are in [spec/README.md](../spec/README.md#contents).
 
 **How the readiness gate reads (ruling 38, point 4).** The gate of two consecutive clean rounds
@@ -117,7 +117,7 @@ repository and the progress so far, at [the full review's instructions](guides/f
 Use the convergence rule above and the known-open list below. Give the coordinator a
 [dated report](guides/full-review.md#what-to-produce) with IDs, severity, promises, exact quotes, a
 concrete situation and the least fix. The report stays outside the tree, and its findings go to
-`spec/` with `spec/CHANGES.md` entries, the decision log, ROADMAP.md or work orders.
+`spec/` with fragments under `spec/changes/`, the decision log, ROADMAP.md or work orders.
 A reader changes no promise. Read the head of `main`, not
 round 6's old commit.
 

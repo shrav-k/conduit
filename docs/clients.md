@@ -159,8 +159,9 @@ Everything here is a draft until v0, and nothing promises compatibility yet.
   (IFC-038). They change together when the project moves to its own organization. Keep them in
   one place in your code.
 - **`spec/CHANGES.md`** has one line per change to `spec/`, naming the promise IDs and the
-  decision. **`docs/decisions/log.md`** holds the owner's decisions, `DEC-NNN`, append-only,
-  each with a Status line.
+  decision. A change not yet released is a fragment under `spec/changes/`.
+  **`docs/decisions/log.md`** holds the owner's decisions, `DEC-NNN`, append-only, each with a
+  Status line.
 - **`engine/CONFORMANCE.md`** holds the first build's choices, such as the address and the token.
 - **At run time**, `server/discover` lists Conduit's extension at revision `v0`, and the server
   notifies a change to the tool list (IFC-038). `conduit --version` prints the version and build
@@ -181,7 +182,7 @@ for now (DEC-031). In its description give:
 4. two or three options, one marked as recommended, and what a client sees under each.
 
 Do not record a recommendation as accepted. The owner's answer becomes a log entry in the
-owner's words, and the change to `spec/` follows with its `spec/CHANGES.md` line.
+owner's words, and the change to `spec/` follows with its fragment under `spec/changes/`.
 
 ## 6. Reporting a bug in the engine
 

@@ -17,6 +17,8 @@ from vector_delta import DeltaError, Snapshot, git
 
 WORK = "HOW-WE-WORK.md"
 CHANGES = "spec/CHANGES.md"
+FRAGMENTS = "spec/changes/"
+FRAGMENT_NAME = re.compile(r"[a-z0-9][a-z0-9.-]*\.md")
 DECISIONS = "docs/decisions/README.md"
 LOG = "docs/decisions/log.md"
 STANDING = "engine/STANDING.md"
@@ -43,6 +45,16 @@ class Tree(Snapshot):
     def __init__(self, root, revision, blobs):
         super().__init__(root, revision, blobs, pathspec=".", what="decision framework files")
         self.paths = set(self.paths)
+        if revision != "WORKTREE":
+            # Snapshot reads blobs; retain gitlinks here so the fragment rule can refuse them.
+            for entry in git(root, "ls-tree", "-rz", revision, "--", FRAGMENTS).split(b"\0"):
+                if entry:
+                    header, path = entry.split(b"\t", 1)
+                    mode, kind, oid = header.decode().split()
+                    if kind != "blob":
+                        path = path.decode("utf-8")
+                        self.entries[path] = (mode, oid)
+                        self.paths.add(path)
 
     def read(self, path):
         try:
@@ -168,6 +180,8 @@ class ListItem:
     line: int
     section: str
     text: str
+    path: str = CHANGES
+    raw: str = ""
 
 
 def list_items(text):
@@ -175,19 +189,46 @@ def list_items(text):
     result = []
     section = ""
     active = []
-    for line_number, (line, depth, marker) in enumerate(markdown_rows(text), 1):
+    for line_number, (raw, (line, depth, marker)) in enumerate(
+            zip(text.splitlines(keepends=True), markdown_rows(text)), 1):
         if not line.strip():
+            if active and raw.startswith("  "):
+                active[-1].raw += raw
             continue
         del active[depth:]
         if marker:
-            current = ListItem(line_number, section, line.strip())
+            current = ListItem(line_number, section, line.strip(), raw=raw)
             result.append(current)
             active.append(current)
         elif active:
             active[-1].text += " " + line.strip()
+            active[-1].raw += raw
         elif re.match(r"^ {0,3}#{1,2} ", line):
             section = line.strip()
     return result
+
+
+def fragment_paths(tree):
+    return sorted((path for path in tree.paths
+                   if path.startswith(FRAGMENTS) and path != FRAGMENTS + "README.md"),
+                  key=lambda path: path.encode("utf-8"))
+
+
+def valid_fragment_path(tree, path):
+    return (FRAGMENT_NAME.fullmatch(path[len(FRAGMENTS):]) is not None
+            and tree.regular_file(path))
+
+
+def change_items(tree):
+    items = list_items(tree.text(CHANGES))
+    unreleased = [item for item in items if item.section == UNRELEASED]
+    released = [item for item in items if item.section != UNRELEASED]
+    for path in fragment_paths(tree):
+        if valid_fragment_path(tree, path):
+            for item in list_items(tree.text(path)):
+                item.path, item.section = path, UNRELEASED
+                unreleased.append(item)
+    return unreleased + released
 
 
 def added_items(before, after):
@@ -422,7 +463,7 @@ class Check:
         for item in added_items(old, new):
             kind = CHANGE.fullmatch(item.text)
             if not kind or not valid_citation(citation(item.text[:-1]), decisions):
-                self.finding("CHANGES lines", CHANGES, "expected '- Kind: … (decisions).'", item.line)
+                self.finding("CHANGES lines", item.path, "expected '- Kind: … (decisions).'", item.line)
                 continue
             ids = promise_ids(item.text, families)
             if kind[1] == "Removed":
@@ -433,11 +474,45 @@ class Check:
             else:
                 bad = ids - head_promises.keys()
             if bad:
-                self.finding("CHANGES lines", CHANGES,
+                self.finding("CHANGES lines", item.path,
                              "unexpected promise standing for " + ", ".join(sorted(bad)), item.line)
             if not ids and not change_subject(item.text, self.after):
-                self.finding("CHANGES lines", CHANGES,
+                self.finding("CHANGES lines", item.path,
                              "expected a spec anchor or a backticked definitions term", item.line)
+
+    def fragments(self):
+        old = list_items(self.before.text(CHANGES))
+        new = (item for item in list_items(self.after.text(CHANGES))
+               if item.section == UNRELEASED)
+        for item in added_items(old, new):
+            self.finding("fragments", CHANGES,
+                         "add it to a fragment under spec/changes/ (DEC-177)", item.line)
+        for path in fragment_paths(self.after):
+            if not valid_fragment_path(self.after, path):
+                self.finding("fragments", path,
+                             "expected a regular file directly under spec/changes/ with a "
+                             "lowercase letter or digit, then lowercase letters, digits, . or -, then .md")
+                continue
+            text = self.after.text(path)
+            lines = text.splitlines()
+            item_lines = {item.line for item in list_items(text)}
+            active = False
+            for number, line in enumerate(lines, 1):
+                if re.fullmatch(r"- \S.*", line):
+                    if number not in item_lines:
+                        self.finding("fragments", path,
+                                     "each bullet must contain a changelog item after comments "
+                                     "are stripped", number)
+                        break
+                    active = True
+                elif not (active and re.fullmatch(r"  \S.*", line)
+                          and not ITEM.match(line)):
+                    self.finding("fragments", path,
+                                 "expected only list items with two-space continuations", number)
+                    break
+            else:
+                if not active:
+                    self.finding("fragments", path, "expected at least one list item")
 
     def append_only(self, base, head):
         if not self.has_base("append-only", LOG):
@@ -499,7 +574,7 @@ class Check:
         if next(added_items(old, new), None):
             return
         for path in sorted(self.before.paths | self.after.paths):
-            if not path.startswith("spec/") or path == CHANGES:
+            if not path.startswith("spec/") or path == CHANGES or path.startswith(FRAGMENTS):
                 continue
             both = path in self.before.paths and path in self.after.paths
             if both and self.before.mode(path) == self.after.mode(path):
@@ -510,7 +585,9 @@ class Check:
                     == link_targets_ignored(self.after.text(path))
                 ):
                     continue
-            self.finding("coupling", path, "spec change needs a new Unreleased item", fail=not self.draft)
+            self.finding("coupling", path,
+                         "spec change needs a new item in a fragment under spec/changes/ (DEC-177)",
+                         fail=not self.draft)
 
     def work_form(self, decisions):
         rules = [item for item in list_items(self.after.text(WORK)) if re.match(r"^## [0-9]+\. ", item.section)]
@@ -583,7 +660,7 @@ class Check:
         counts = []
         for prefixes in (("spec/", "engine/"), ("docs/work-orders/", "docs/proposals/")):
             paths = [p for p in sorted(tracked) if p.startswith(prefixes)]
-            paths = [p for p in paths if self.after.mode(p) != "120000"]
+            paths = [p for p in paths if self.after.regular_file(p)]
             self.after.prefetch(paths)
             counts.append(sum(lines(self.after.read(p)) for p in paths))
         engine, orders = counts
@@ -592,8 +669,9 @@ class Check:
 
     def run(self):
         self.framework()
-        old = list_items(self.before.text(CHANGES))
-        new = list_items(self.after.text(CHANGES))
+        self.fragments()
+        old = change_items(self.before)
+        new = change_items(self.after)
         base_entries = entries(self.before.text(LOG), lambda *_: None)
         head_entries = entries(self.after.text(LOG),
                                lambda line, msg: self.finding("numbering", LOG, msg, line))
@@ -617,12 +695,19 @@ class Arguments(argparse.ArgumentParser):
 
 def main(argv=None):
     parser = Arguments(description=__doc__)
-    parser.add_argument("before", metavar="BEFORE", help="base commit")
-    parser.add_argument("after", metavar="AFTER", help="head commit or WORKTREE")
+    parser.add_argument("before", metavar="BEFORE", nargs="?", help="base commit")
+    parser.add_argument("after", metavar="AFTER", nargs="?", help="head commit or WORKTREE")
+    parser.add_argument("--draft", metavar="REV",
+                        help="print assembled Unreleased items from a commit or WORKTREE; runs no "
+                             "rule, exits 0 (2 with BEFORE/AFTER or an unresolved REV)")
     parser.add_argument("--today", metavar="YYYY-MM-DD", help="age comparison date (defaults to today in UTC)")
     check = None
     try:
         args = parser.parse_args(argv)
+        if args.draft is not None and (args.before is not None or args.after is not None):
+            raise ValueError("--draft cannot be used with BEFORE or AFTER")
+        if args.draft is None and (args.before is None or args.after is None):
+            raise ValueError("BEFORE and AFTER are required without --draft")
         if args.today is not None and not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", args.today):
             raise ValueError("--today must be YYYY-MM-DD")
         today = date.fromisoformat(args.today) if args.today else datetime.now(timezone.utc).date()
@@ -630,6 +715,17 @@ def main(argv=None):
             raise ValueError("BEFORE must be a commit")
         root = Path(git(Path.cwd(), "rev-parse", "--show-toplevel").decode().strip())
         blobs = {}
+        if args.draft is not None:
+            try:
+                snapshot = Tree(root, args.draft, blobs)
+            except DeltaError as exc:
+                raise ValueError("REV does not resolve to a readable snapshot") from exc
+            items = change_items(snapshot)
+            print(UNRELEASED + "\n")
+            for item in items:
+                if item.section == UNRELEASED:
+                    print(item.raw, end="" if item.raw.endswith("\n") else "\n")
+            return 0
         for name, revision in (("BEFORE", args.before), ("AFTER", args.after)):
             try:
                 snapshot = Tree(root, revision, blobs)

@@ -5,8 +5,8 @@ this directory, the rulings and [IN_FORCE.md](../../IN_FORCE.md) hold as before,
 binds. The owner adopted this framework on 2026-11-20
 ([DEC-001](log.md#dec-001-2026-11-20-the-decision-framework)). Its homes are:
 
-- [`spec/`](../../spec/README.md) binds alone, and [spec/CHANGES.md](../../spec/CHANGES.md) has one
-  line per change to it;
+- [`spec/`](../../spec/README.md) binds alone, and [spec/CHANGES.md](../../spec/CHANGES.md) and its
+  fragments under `spec/changes/` have one line per change to it;
 - [HOW-WE-WORK.md](../../HOW-WE-WORK.md), at the root, holds the rules of the work, one per line;
 - [the log](log.md) holds the owner's decisions;
 - [ROADMAP.md](../../ROADMAP.md) holds the work still to do;

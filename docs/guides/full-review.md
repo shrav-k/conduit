@@ -210,7 +210,8 @@ Verify each, then fix it or fold it into your findings.
 Hand the owner a short message that numbers the questions. Record the answers in the
 [decision log](../decisions/log.md) with the affected IN_FORCE.md lines and any action item.
 An answer that confirms or corrects a decision is a new entry citing it. Findings from the
-report go to `spec/` with `spec/CHANGES.md` entries, the decision log, ROADMAP.md or work orders.
+report go to `spec/` with fragments under `spec/changes/`, the decision log, ROADMAP.md or work
+orders.
 
 ## Traps found this session
 

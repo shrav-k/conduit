@@ -4,12 +4,17 @@ Status: draft, not yet in force; [the decisions' README](../docs/decisions/READM
 holds until it is. This file adds no behavior: [`spec/`](README.md) binds alone.
 
 The form follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Each change to `spec/`
-adds one line under `Unreleased`, of the form `- Kind: the promise IDs it changes (decision).`
+adds its lines to a fragment of its own under `spec/changes/`, such as
+`spec/changes/400-changelog-fragments-and-computed-counts.md`, and none here (DEC-177).
+The [fragment instructions](changes/README.md) give the name and form for changes with or
+without an order. A line has the form `- Kind: the promise IDs it changes (decision).`
 A prose change names a `spec/README.md#anchor` or a definitions term instead of IDs. Kind is
 Added, Changed, Deprecated, Removed, Fixed or Security, and the decision is `DEC-NNN` in
 [the log](../docs/decisions/log.md) or "ruling N" for an archived ruling. For example:
-`- Removed: IFC-011, handle.v1 (ruling 78 pt 16).` A release moves the `Unreleased` lines under
-its own heading.
+`- Removed: IFC-011, handle.v1 (ruling 78 pt 16).` A release moves the lines under
+`Unreleased`, then each fragment's in the byte order of their names, under its own heading, and
+removes the fragments, as `scriv collect` does; `python3 tools/check_decisions.py --draft WORKTREE`
+prints them so assembled.
 
 Decisions before this file are rulings 1 to 92 and the log's DEC-001 to DEC-032. The rulings leave
 the tree at their freeze and are then cited by links pinned to their last commit (DEC-031); until

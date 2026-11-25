@@ -68,12 +68,10 @@ What it checks, and reports under these numbers:
   7. Promises under spec/promises/, spec/conventions/ and spec/interface/ have exactly the
      six fields of spec/README.md, allowed layers and levels, unique IDs, and no ID named
      as retired in a head comment or the README's removed-file register is reused.
-  8. The totals that spec/README.md states under Contents are those the promise files of
-     step 7 hold: the number of promises in all and of each layer, in the sentence "N in all:
-     N of the layer `language`, N of the layer `convention` and N of the layer `interface`",
-     and the number of promises in the row of each promise file, one row for each. The
-     coverage by vectors and the other figures of that table are not compared. Step 8 runs
-     only when step 7 found no error.
+  8. Count promises in all and by layer; spec/README.md's Contents has one row per
+     promise file and none for another YAML path under promises/, conventions/ or interface/.
+     The READMEs of spec/, spec/core/ and spec/schemas/ state no count. Step 8 runs only
+     when step 7 found no error.
 
 What it does not check: anything that needs an engine. It does not resolve references to
 packages that are not in this repository, instantiate a template, or evaluate any of the
@@ -2354,34 +2352,17 @@ def check_promise_totals(counts):
         return target[1] or target[2]
 
     if counts is None:
-        print("8. NOT RUN: step 7 found errors in the promise files, so the promise totals "
-              "that spec/README.md states were not compared.")
+        print("8. NOT RUN: step 7 found errors in the promise files, so promise totals, "
+              "Contents rows and stored README counts were not checked.")
         return
     file_counts, layer_counts = counts
     total, before = sum(file_counts.values()), len(errors)
     readme = (ROOT / "spec/README.md").read_text(encoding="utf-8")
     section = re.search(r"^## Contents(?:\n|\Z)(.*?)(?=^## |\Z)", readme, re.M | re.S)
     if not section:
-        fail('spec/README.md: has no line "## Contents", so the promise totals it states '
-             'were not compared')
+        fail('spec/README.md: has no line "## Contents", so its promise-file rows '
+             'were not checked')
     else:
-        sentence = (r"([0-9]+) in all: ([0-9]+) of the layer `language`, "
-                    r"([0-9]+) of the layer `convention` and ([0-9]+) of the layer `interface`")
-        stated = re.findall(sentence, " ".join(section[1].split()))
-        if len(stated) != 1:
-            fail('spec/README.md: under Contents, the sentence of the promise totals '
-                 '("N in all: N of the layer `language`, N of the layer `convention` and '
-                 f'N of the layer `interface`") appears {len(stated)} times; '
-                 'it must appear once')
-        else:
-            all_stated, *layers_stated = map(int, stated[0])
-            if all_stated != total:
-                fail(f"spec/README.md: states {all_stated} promises in all, and the promise "
-                     f"files hold {total}")
-            for layer, number in zip(("language", "convention", "interface"), layers_stated):
-                if number != layer_counts[layer]:
-                    fail(f"spec/README.md: states {number} promises of the layer `{layer}`, "
-                         f"and the promise files hold {layer_counts[layer]}")
         rows = dict.fromkeys(file_counts, 0)
         for line in section[1].splitlines():
             row = line.strip()
@@ -2401,22 +2382,31 @@ def check_promise_totals(counts):
                      "a promise file under spec/promises/, spec/conventions/ or spec/interface/")
                 continue
             rows[path] += 1
-            numbers = [part.strip().split(" ")[0] for part in cells[-1].split(";")
-                       if re.fullmatch(r"[0-9]+ promises?", part.strip())]
-            if len(numbers) != 1:
-                fail(f"spec/README.md: the Contents row for {path} states its number of "
-                     f'promises {len(numbers)} times; it must state it once, as "N promises"')
-            elif int(numbers[0]) != file_counts[path]:
-                fail(f"spec/README.md: the Contents table gives {path} {int(numbers[0])} "
-                     f"promises, and the file holds {file_counts[path]}")
         for path, count in rows.items():
             if count != 1:
                 fail(f"spec/README.md: the Contents table has {count} rows for {path}; it must "
-                     "have one, stating the file's number of promises")
-    print("8. Compared the promise totals that spec/README.md states with the promise files: "
-          f"{total} promises in {len(file_counts)} files, {layer_counts['language']} of the "
-          f"layer `language`, {layer_counts['convention']} of the layer `convention` and "
-          f"{layer_counts['interface']} of the layer `interface`; {len(errors) - before} errors.")
+                     "have one")
+    patterns = (
+        r"(?<![A-Za-z0-9.-])[1-9][0-9]* (?:[A-Z][a-z]+ )?"
+        r"(?:promises?|contracts?|templates|documents|files|items|reference schemas)(?![a-z])",
+        r"(?<![A-Za-z0-9.-])[1-9][0-9]* (?:in all|of the layer)\b",
+    )
+    for path in ("spec/README.md", "spec/core/README.md", "spec/schemas/README.md"):
+        file = ROOT / path
+        if not file.exists():
+            continue
+        text = file.read_text(encoding="utf-8")
+        for pattern in patterns:
+            for match in re.finditer(pattern, text):
+                line = text.count("\n", 0, match.start()) + 1
+                fail(f'{path}:{line}: states the count "{match[0]}"; '
+                     'the checkers give counts instead (DEC-177)')
+    print(f"8. Counted {total} promises in {len(file_counts)} files: "
+          f"{layer_counts['language']} of the layer `language`, "
+          f"{layer_counts['convention']} of the layer `convention` and "
+          f"{layer_counts['interface']} of the layer `interface`; spec/README.md's Contents "
+          "has a row for each, and the three READMEs state no count; "
+          f"{len(errors) - before} errors.")
 
 
 def main():

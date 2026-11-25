@@ -1,0 +1,44 @@
+# The coordinator's ruled correction to admission-single-use step 33 alone.
+- name: step 33 permits exactly the ask's two ending records
+  kind: expectation
+  cases: [requests-admission-single-use]
+  paths: [/steps/32/expect/absent/0]
+  operation: replace
+  before: {text: request-ended, under: [/records]}
+  after: /records/2
+- name: step 33 records the ask's request ending
+  kind: expectation
+  cases: [requests-admission-single-use]
+  paths: [/steps/32/expect/record_facts/1/type]
+  operation: add
+  after: request-ended
+- name: step 33 names the ask's invocation
+  kind: expectation
+  cases: [requests-admission-single-use]
+  paths: [/steps/32/expect/record_facts/1/data/invocation]
+  operation: add
+  after: $admission3
+- name: step 33 names the ask's target
+  kind: expectation
+  cases: [requests-admission-single-use]
+  paths: [/steps/32/expect/record_facts/1/data/target]
+  operation: add
+  after: $login
+- name: step 33 names the ask's operation
+  kind: expectation
+  cases: [requests-admission-single-use]
+  paths: [/steps/32/expect/record_facts/1/data/operation]
+  operation: add
+  after: '@core#admission-hook.v1'
+- name: step 33 records the ask's outcome
+  kind: expectation
+  cases: [requests-admission-single-use]
+  paths: [/steps/32/expect/record_facts/1/data/outcome]
+  operation: add
+  after: succeeded
+- name: step 33 names the request that caused the ask
+  kind: expectation
+  cases: [requests-admission-single-use]
+  paths: [/steps/32/expect/record_facts/1/data/causedBy]
+  operation: add
+  after: $callRefresh

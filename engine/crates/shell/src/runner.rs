@@ -292,6 +292,7 @@ struct Inner {
     requests: Mutex<BTreeMap<Attempt, (Peer<RoleClient>, RequestId)>>,
     cancelled_attempts: Mutex<BTreeSet<Attempt>>,
     cache_lock: AsyncMutex<()>,
+    program_lock: Mutex<()>,
     errors: Arc<Mutex<Vec<String>>>,
     completion_executor: Mutex<Option<Weak<dyn Executor>>>,
 }
@@ -312,6 +313,9 @@ impl Runner {
         for name in ["npm", "npm-downloads", "work", "programs", "run-groups"] {
             private_directory(&directory.join(name))?;
         }
+        // No run in this runner is live yet. Keep published digest copies and leave
+        // older UUID copies to order 313; only our unpublished/quarantined trees go.
+        cleanup_program_copies(&directory.join("programs"))?;
         crate::store::atomic_write(&directory, "npm-userconfig", b"")?;
         let runtime = tokio::runtime::Builder::new_multi_thread()
             .worker_threads(2)
@@ -334,6 +338,7 @@ impl Runner {
                 requests: Mutex::new(BTreeMap::new()),
                 cancelled_attempts: Mutex::new(BTreeSet::new()),
                 cache_lock: AsyncMutex::new(()),
+                program_lock: Mutex::new(()),
                 errors: Arc::new(Mutex::new(Vec::new())),
                 completion_executor: Mutex::new(None),
             }),
@@ -788,7 +793,7 @@ impl Inner {
                 vec![bin.to_str().ok_or("non-UTF8 bin")?.to_owned()],
             )
         } else {
-            self.command_owned(&item, &subject, &state, &entries)?
+            self.command(&item, &subject, &state)?
         };
         args.extend(bound_args);
         let (mut child, group, private_launch_failed) =
@@ -939,25 +944,11 @@ impl Inner {
             self.errors.lock().unwrap().push(error);
         }
     }
-    #[cfg(test)]
     fn command(
         &self,
         item: &Value,
         subject: &str,
         state: &conduit_core::State,
-    ) -> Result<(PathBuf, Vec<String>)> {
-        let entries = RunEntries::new(self.errors.clone(), self.cleanup.clone());
-        let result = self.command_owned(item, subject, state, &entries);
-        entries.spawned.store(true, Ordering::SeqCst);
-        result
-    }
-
-    fn command_owned(
-        &self,
-        item: &Value,
-        subject: &str,
-        state: &conduit_core::State,
-        entries: &RunEntries,
     ) -> Result<(PathBuf, Vec<String>)> {
         let command = item["command"]
             .as_array()
@@ -1015,7 +1006,7 @@ impl Inner {
             } else {
                 command.into()
             };
-            let root = self.materialize_package(package, entries)?;
+            let root = self.materialize_package(package)?;
             program_path(&root, &path)?
         } else if was_relative {
             return Err("relative program has no installed package files".into());
@@ -1034,45 +1025,51 @@ impl Inner {
             .collect::<Result<_>>()?;
         Ok((program, args))
     }
-    fn materialize_package(
-        &self,
-        package: &InstalledPackage,
-        entries: &RunEntries,
-    ) -> Result<PathBuf> {
-        let root = self
-            .directory
-            .join("programs")
-            .join(Uuid::new_v4().to_string());
-        let created = private_directory(&root);
-        entries.add(root.clone());
-        created?;
-        for (name, member) in &package.files {
-            let path = safe_join(&root, name)?;
-            if let Some(parent) = path.parent() {
-                fs::create_dir_all(parent).map_err(|_| "program directory failed")?;
-            }
-            match member {
-                Member::Directory => {
-                    fs::create_dir_all(&path).map_err(|_| "program directory failed")?
-                }
-                Member::File { bytes, mode } => {
-                    fs::write(&path, bytes).map_err(|_| "program write failed")?;
-                    fs::set_permissions(&path, fs::Permissions::from_mode(*mode & 0o777))
-                        .map_err(|_| "program mode failed")?;
-                }
-                Member::Link { target } => {
-                    // Archive admission validated containment, including link expansion.
-                    // Targets are package-root-relative and retain `..`: normalizing it
-                    // here would change traversal when a preceding component is a link.
-                    if Path::new(target).is_absolute() {
-                        return Err("absolute package link target".into());
+    fn materialize_package(&self, package: &InstalledPackage) -> Result<PathBuf> {
+        let materialize = || -> Result<PathBuf> {
+            let _lock = self
+                .program_lock
+                .lock()
+                .map_err(|_| "program lock poisoned")?;
+            let hex = package
+                .package
+                .digest
+                .strip_prefix("sha256:")
+                .filter(|hex| {
+                    hex.len() == 64
+                        && hex
+                            .bytes()
+                            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+                })
+                .ok_or("invalid program-copy digest")?;
+            let programs = self.directory.join("programs");
+            let root = programs.join(hex);
+            let members = program_members(&package.files)?;
+            match fs::symlink_metadata(&root) {
+                Ok(_) => {
+                    if check_program_copy(&root, &members).is_ok() {
+                        return Ok(root);
                     }
-                    std::os::unix::fs::symlink(root.join(target), &path)
-                        .map_err(|_| "program link failed")?;
+                    // A live process may still hold this tree. Never remove it here.
+                    fs::rename(&root, programs.join(format!(".stale-{}", Uuid::new_v4())))
+                        .map_err(|e| format!("cannot set aside program copy: {e}"))?;
                 }
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+                Err(e) => return Err(format!("cannot inspect program copy: {e}")),
             }
-        }
-        Ok(root)
+            let temporary = programs.join(format!(".building-{}", Uuid::new_v4()));
+            private_directory(&temporary)?;
+            build_program_copy(&temporary, &members)?;
+            fs::rename(&temporary, &root)
+                .map_err(|e| format!("cannot publish program copy: {e}"))?;
+            Ok(root)
+        };
+        materialize().map_err(|error| {
+            format!(
+                "package {} {} ({}): {error}",
+                package.package.address, package.package.version, package.package.digest
+            )
+        })
     }
     async fn helper(
         &self,
@@ -1212,6 +1209,174 @@ fn attempt(intent: &Value) -> Result<Attempt> {
         intent["attempt"].as_u64().ok_or("runner needs attempt")?,
     ))
 }
+// None denotes the root or an implicit parent directory, as materialization has
+// always supplied for installed snapshots. Admitted archives include their parents.
+type ProgramMembers<'a> = BTreeMap<PathBuf, Option<&'a Member>>;
+
+fn program_members(files: &BTreeMap<String, Member>) -> Result<ProgramMembers<'_>> {
+    let mut members = BTreeMap::from([(PathBuf::new(), None)]);
+    for (name, member) in files {
+        let path = safe_join(Path::new(""), name)?;
+        if path.as_os_str().is_empty() {
+            return Err("empty program member path".into());
+        }
+        members.insert(path.clone(), Some(member));
+        for parent in path.ancestors().skip(1) {
+            members.entry(parent.into()).or_insert(None);
+        }
+    }
+    for path in members.keys() {
+        for parent in path.ancestors().skip(1) {
+            if !matches!(members.get(parent), Some(None | Some(Member::Directory))) {
+                return Err("program member parent is not a directory".into());
+            }
+        }
+    }
+    Ok(members)
+}
+
+fn program_link_target(name: &Path, target: &str) -> Result<PathBuf> {
+    if Path::new(target).is_absolute() {
+        return Err("absolute package link target".into());
+    }
+    let mut relative = PathBuf::new();
+    for _ in name.parent().unwrap_or(Path::new("")).components() {
+        relative.push("..");
+    }
+    // Preserve traversal through links before `..`, exactly as the archive reader
+    // does. Relative links work in the temporary, published and quarantined trees.
+    relative.push(target);
+    Ok(relative)
+}
+
+fn build_program_copy(root: &Path, members: &ProgramMembers<'_>) -> Result<()> {
+    for (name, member) in members {
+        let path = root.join(name);
+        match member {
+            None | Some(Member::Directory) => {
+                fs::create_dir_all(&path).map_err(|e| format!("program directory: {e}"))?;
+            }
+            Some(Member::File { bytes, mode }) => {
+                fs::write(&path, bytes).map_err(|e| format!("program write: {e}"))?;
+                fs::set_permissions(&path, fs::Permissions::from_mode(mode & 0o555))
+                    .map_err(|e| format!("program mode: {e}"))?;
+            }
+            Some(Member::Link { target }) => {
+                std::os::unix::fs::symlink(program_link_target(name, target)?, &path)
+                    .map_err(|e| format!("program link: {e}"))?;
+            }
+        }
+    }
+    // Children precede parents when sealing the tree, including its root.
+    for (name, member) in members.iter().rev() {
+        if matches!(member, None | Some(Member::Directory)) {
+            fs::set_permissions(root.join(name), fs::Permissions::from_mode(0o555))
+                .map_err(|e| format!("program directory mode: {e}"))?;
+        }
+    }
+    Ok(())
+}
+
+fn check_program_copy(root: &Path, members: &ProgramMembers<'_>) -> Result<()> {
+    fn visit(
+        root: &Path,
+        name: &Path,
+        members: &ProgramMembers<'_>,
+        seen: &mut usize,
+    ) -> Result<()> {
+        let expected = members.get(name).ok_or("extra program member")?;
+        let path = root.join(name);
+        let metadata = fs::symlink_metadata(&path).map_err(|e| e.to_string())?;
+        let mode = metadata.permissions().mode() & 0o7777;
+        match expected {
+            None | Some(Member::Directory) => {
+                if !metadata.is_dir() || mode != 0o555 {
+                    return Err("program directory differs".into());
+                }
+                for entry in fs::read_dir(&path).map_err(|e| e.to_string())? {
+                    let entry = entry.map_err(|e| e.to_string())?;
+                    visit(root, &name.join(entry.file_name()), members, seen)?;
+                }
+            }
+            Some(Member::File {
+                bytes,
+                mode: expected_mode,
+            }) => {
+                if !metadata.is_file() || mode != expected_mode & 0o555 {
+                    return Err("program file kind or mode differs".into());
+                }
+                use std::os::unix::fs::OpenOptionsExt;
+                let mut file = fs::OpenOptions::new()
+                    .read(true)
+                    .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+                    .open(&path)
+                    .map_err(|e| e.to_string())?;
+                let mut actual = Vec::new();
+                file.read_to_end(&mut actual).map_err(|e| e.to_string())?;
+                if actual.as_slice() != bytes.as_slice() {
+                    return Err("program file bytes differ".into());
+                }
+            }
+            Some(Member::Link { target }) => {
+                if !metadata.is_symlink()
+                    || fs::read_link(&path).map_err(|e| e.to_string())?.as_os_str()
+                        != program_link_target(name, target)?.as_os_str()
+                {
+                    return Err("program link differs".into());
+                }
+            }
+        }
+        *seen += 1;
+        Ok(())
+    }
+    let mut seen = 0;
+    visit(root, Path::new(""), members, &mut seen)?;
+    if seen != members.len() {
+        return Err("program member missing".into());
+    }
+    Ok(())
+}
+
+pub(crate) fn cleanup_program_copies(programs: &Path) -> Result<()> {
+    let diagnostic = |path: &Path, error: &str| {
+        crate::user_config::escape_line_breaks(&format!(
+            "cannot remove the leftover program copy {}: {error}; state.json is unchanged by program cleanup; make {} writable or remove it, and start again",
+            path.display(),
+            path.display()
+        ))
+    };
+    let entries = fs::read_dir(programs).map_err(|e| diagnostic(programs, &e.to_string()))?;
+    for entry in entries {
+        let entry = entry.map_err(|e| diagnostic(programs, &e.to_string()))?;
+        if entry
+            .file_name()
+            .to_str()
+            .is_some_and(|name| name.starts_with(".stale-") || name.starts_with(".building-"))
+        {
+            remove_program_copy(&entry.path()).map_err(|e| diagnostic(&entry.path(), &e))?;
+        }
+    }
+    Ok(())
+}
+
+fn remove_program_copy(path: &Path) -> Result<()> {
+    let at_path = |error: std::io::Error| format!("{}: {error}", path.display());
+    let metadata = fs::symlink_metadata(path).map_err(at_path)?;
+    if metadata.is_dir() {
+        fs::set_permissions(path, fs::Permissions::from_mode(0o700)).map_err(at_path)?;
+        for entry in fs::read_dir(path).map_err(at_path)? {
+            remove_program_copy(&entry.map_err(at_path)?.path())?;
+        }
+        fs::remove_dir(path).map_err(at_path)
+    } else {
+        if metadata.is_file() {
+            fs::set_permissions(path, fs::Permissions::from_mode(0o600)).map_err(at_path)?;
+        }
+        // In particular, remove links themselves without inspecting their targets.
+        fs::remove_file(path).map_err(at_path)
+    }
+}
+
 fn safe_join(root: &Path, name: &str) -> Result<PathBuf> {
     let path = Path::new(name);
     if path.is_absolute()
@@ -2688,7 +2853,7 @@ mod provider {
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
 
     #[test]
@@ -2706,16 +2871,15 @@ mod tests {
         );
     }
 
-    fn test_runner(parent: &Path) -> (Arc<Shell>, Runner) {
+    pub(crate) fn test_runner(parent: &Path) -> (Arc<Shell>, Runner) {
         let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
-        let shell = Arc::new(
+        let shell = Arc::new(crate::tests::package_store_tests::fixture_open(|| {
             Shell::open(
                 &parent.join("store"),
                 crate::boundary::context(&repo).unwrap(),
                 crate::Config::default(),
             )
-            .unwrap(),
-        );
+        }));
         let executable = std::env::current_exe()
             .unwrap()
             .parent()
@@ -2727,7 +2891,7 @@ mod tests {
         (shell, runner)
     }
 
-    fn exec_output(
+    pub(crate) fn exec_output(
         runner: &Runner,
         program: &Path,
         args: &[String],
@@ -2755,7 +2919,7 @@ mod tests {
         })
     }
 
-    fn installed_command_state(
+    pub(crate) fn installed_command_state(
         item: &Value,
         original: &str,
         files: BTreeMap<String, Member>,
@@ -2763,13 +2927,14 @@ mod tests {
         use conduit_core::packages::{Project, Snapshot, SnapshotSource};
         let mut state = conduit_core::State::default();
         let relative = original.contains('/') && !Path::new(original).is_absolute();
-        state.objects.push(json!({"id":"subject","resolved_implementations":{"op":{"item":item,"selection":"example.test/provider#worker","scope":"snapshot-0"}},"held":{"contexts":{"snapshot-0":{"relative_programs":if relative {vec!["worker"]} else {vec![]},"version":"1.0.0","digest":"sha256:test"}}}}));
+        let digest = conduit_core::packages::bytes_digest(b"installed command test");
+        state.objects.push(json!({"id":"subject","resolved_implementations":{"op":{"item":item,"selection":"example.test/provider#worker","scope":"snapshot-0"}},"held":{"contexts":{"snapshot-0":{"relative_programs":if relative {vec!["worker"]} else {vec![]},"version":"1.0.0","digest":digest}}}}));
         state.installed_packages.push(InstalledPackage {
             package: Snapshot {
                 source: SnapshotSource::PreinstalledSnapshot,
                 address: "example.test/provider".into(),
                 version: "1.0.0".into(),
-                digest: "sha256:test".into(),
+                digest: digest.clone(),
                 project: Project {
                     manifest: Some(json!({"implementations":{"worker":{"command":[original]}}})),
                     documents: vec![],
@@ -2779,6 +2944,37 @@ mod tests {
             files,
         });
         state
+    }
+
+    pub(crate) fn installed_program(
+        runner: &Runner,
+        item: &Value,
+        state: &conduit_core::State,
+    ) -> Result<(PathBuf, Vec<String>)> {
+        runner.inner.command(item, "subject", state)
+    }
+
+    // Restore permissions even when an assertion unwinds, before TempDir removes the tree.
+    pub(crate) struct WritablePrograms(pub PathBuf);
+    impl Drop for WritablePrograms {
+        fn drop(&mut self) {
+            fn writable(path: &Path) {
+                let Ok(metadata) = fs::symlink_metadata(path) else {
+                    return;
+                };
+                if metadata.is_dir() {
+                    let _ = fs::set_permissions(path, fs::Permissions::from_mode(0o700));
+                    if let Ok(entries) = fs::read_dir(path) {
+                        for entry in entries.flatten() {
+                            writable(&entry.path());
+                        }
+                    }
+                } else if metadata.is_file() {
+                    let _ = fs::set_permissions(path, fs::Permissions::from_mode(0o600));
+                }
+            }
+            writable(&self.0);
+        }
     }
 
     #[test]
@@ -2823,6 +3019,7 @@ mod tests {
     #[test]
     fn installed_relative_command_executes_through_parent_symlink_target() {
         let parent = tempfile::tempdir().unwrap();
+        let _writable = WritablePrograms(parent.path().join("store/programs"));
         let (_shell, runner) = test_runner(parent.path());
         let item = json!({"command":["/old-install/bin/worker"]});
         let mut state = installed_command_state(
@@ -3207,18 +3404,31 @@ mod tests {
     fn a_failed_start_leaves_none_of_its_entries() {
         let parent = tempfile::tempdir().unwrap();
         let directory = parent.path().join("store");
+        let _writable = WritablePrograms(directory.join("programs"));
         let item = json!({"command":["./bin/worker"]});
+        // Kept by digest, as order 312's tests keep one: its archive in the store.
+        let archive = {
+            let gzip = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::fast());
+            let mut tar = tar::Builder::new(gzip);
+            let script = b"#!/bin/sh\nexit 0\n";
+            let mut header = tar::Header::new_ustar();
+            header.set_mode(0o755);
+            header.set_uid(0);
+            header.set_gid(0);
+            header.set_mtime(0);
+            header.set_size(script.len() as u64);
+            tar.append_data(&mut header, "bin/worker", script.as_slice())
+                .unwrap();
+            tar.into_inner().unwrap().finish().unwrap()
+        };
+        let digest = conduit_core::packages::bytes_digest(&archive);
         let mut state = installed_command_state(
             &item,
             "./bin/worker",
-            BTreeMap::from([(
-                "bin/worker".into(),
-                Member::File {
-                    bytes: b"#!/bin/sh\nexit 0\n".to_vec(),
-                    mode: 0o755,
-                },
-            )]),
+            crate::boundary::archive_metadata::unpack(&archive).unwrap(),
         );
+        state.installed_packages[0].package.digest = digest.clone();
+        state.objects[0]["held"]["contexts"]["snapshot-0"]["digest"] = json!(digest);
         let subject = Uuid::new_v4().to_string();
         state.objects[0]["id"] = json!(subject);
         {
@@ -3231,6 +3441,13 @@ mod tests {
                 })
                 .unwrap();
         }
+        let kept = directory
+            .join("packages")
+            .join(digest.strip_prefix("sha256:").unwrap());
+        fs::create_dir_all(kept.parent().unwrap()).unwrap();
+        fs::set_permissions(kept.parent().unwrap(), fs::Permissions::from_mode(0o700)).unwrap();
+        fs::write(&kept, &archive).unwrap();
+        fs::set_permissions(&kept, fs::Permissions::from_mode(0o600)).unwrap();
         let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
         let shell = Arc::new(
             Shell::open(
@@ -3239,6 +3456,10 @@ mod tests {
                 crate::Config::default(),
             )
             .unwrap(),
+        );
+        assert!(
+            shell.package_store_messages().is_empty(),
+            "package not kept"
         );
         let runner = Runner::new(&shell, parent.path().join("missing-guard")).unwrap();
         let result = runner.inner.handle.block_on(runner.inner.start(
@@ -3251,10 +3472,18 @@ mod tests {
             0,
             "failed start left work"
         );
-        assert_eq!(
-            fs::read_dir(directory.join("programs")).unwrap().count(),
-            0,
+        // Order 312: the digest's shared copy is no run's entry and stays.
+        assert!(
+            !fs::read_dir(directory.join("programs"))
+                .unwrap()
+                .map(|entry| entry.unwrap().file_name().into_string().unwrap())
+                .any(|name| Uuid::parse_str(&name).is_ok_and(|id| id.to_string() == name)),
             "failed start left programs"
+        );
+        assert_eq!(
+            fs::read(&kept).unwrap(),
+            archive,
+            "the kept archive must stay"
         );
     }
 
@@ -3262,6 +3491,7 @@ mod tests {
     fn relative_command_uses_installed_bytes_and_keeps_their_mode() {
         use conduit_core::packages::{Project, Snapshot, SnapshotSource};
         let parent = tempfile::tempdir().unwrap();
+        let _writable = WritablePrograms(parent.path().join("store/programs"));
         let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
         let shell = Arc::new(
             Shell::open(
@@ -3274,15 +3504,16 @@ mod tests {
         let runner = Runner::new(&shell, PathBuf::from("unused-no-process-started")).unwrap();
         let item =
             json!({"command":["/must-not-execute-from-the-old-install/bin/worker","literal"]});
+        let digest = conduit_core::packages::bytes_digest(b"installed command test");
         let mut state = conduit_core::State::default();
-        state.objects.push(json!({"id":"subject","resolved_implementations":{"op":{"item":item,"selection":"example.test/provider#worker","scope":"snapshot-0"}},"held":{"contexts":{"snapshot-0":{"relative_programs":["worker"],"version":"1.0.0","digest":"sha256:test"}}}}));
+        state.objects.push(json!({"id":"subject","resolved_implementations":{"op":{"item":item,"selection":"example.test/provider#worker","scope":"snapshot-0"}},"held":{"contexts":{"snapshot-0":{"relative_programs":["worker"],"version":"1.0.0","digest":digest}}}}));
         state.installed_packages.push(InstalledPackage {
-            package: Snapshot { source:SnapshotSource::PreinstalledSnapshot,address:"example.test/provider".into(),version:"1.0.0".into(),digest:"sha256:test".into(),project:Project { manifest:Some(json!({"implementations":{"worker":{"command":["./bin/worker","literal"]}}})),documents:vec![],directory:None } },
+            package: Snapshot { source:SnapshotSource::PreinstalledSnapshot,address:"example.test/provider".into(),version:"1.0.0".into(),digest:digest.clone(),project:Project { manifest:Some(json!({"implementations":{"worker":{"command":["./bin/worker","literal"]}}})),documents:vec![],directory:None } },
             files:BTreeMap::from([("bin".into(),Member::Directory),("bin/worker".into(),Member::File {bytes:b"installed test bytes".to_vec(),mode:0o755})]),
         });
         let mut other_release = state.installed_packages[0].clone();
         other_release.package.version = "2.0.0".into();
-        other_release.package.digest = "sha256:other".into();
+        other_release.package.digest = conduit_core::packages::bytes_digest(b"other release");
         other_release.files.insert(
             "bin/worker".into(),
             Member::File {
@@ -3296,7 +3527,7 @@ mod tests {
         assert_eq!(fs::read(&program).unwrap(), b"installed test bytes");
         assert_eq!(
             fs::metadata(&program).unwrap().permissions().mode() & 0o777,
-            0o755
+            0o555
         );
         assert_eq!(args, vec!["literal"]);
         let root = program.parent().unwrap().parent().unwrap();

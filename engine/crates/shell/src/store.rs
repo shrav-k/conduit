@@ -121,6 +121,31 @@ fn read_archive(directory: &Path, package: &Snapshot) -> Result<BTreeMap<String,
     unpack(&bytes).map_err(|(rule, message)| error(&format!("{rule}: {message}")))
 }
 
+fn members_difference<'a>(
+    actual: &'a BTreeMap<String, Member>,
+    expected: &'a BTreeMap<String, Member>,
+) -> Option<&'a str> {
+    actual
+        .keys()
+        .chain(expected.keys())
+        .filter(|path| actual.get(*path) != expected.get(*path))
+        .min()
+        .map(String::as_str)
+}
+
+// DL2/DL7: omission is by digest, so every entry must agree before any is omitted.
+fn digest_difference<'a>(
+    state: &'a State,
+    digest: &str,
+    files: &'a BTreeMap<String, Member>,
+) -> Option<&'a str> {
+    state
+        .installed_packages
+        .iter()
+        .filter(|entry| entry.package.digest == digest)
+        .find_map(|entry| members_difference(&entry.files, files))
+}
+
 fn read_disk(directory: &Path) -> Result<(Stored, BTreeSet<String>)> {
     let path = directory.join("state.json");
     if !path.try_exists().map_err(|e| e.to_string())? {
@@ -140,7 +165,7 @@ fn read_disk(directory: &Path) -> Result<(Stored, BTreeSet<String>)> {
         return Err("unsupported store format version".into());
     }
     // Version 1 kept inline files even when empty. Omission denotes a kept copy;
-    // an unreferenced copy left by a failed commit does not migrate an old package.
+    // unreferenced copies are considered by the separate move under the lease.
     let mut external = Vec::new();
     if let Some(packages) = header
         .pointer_mut("/state/installed_packages")
@@ -163,6 +188,16 @@ fn read_disk(directory: &Path) -> Result<(Stored, BTreeSet<String>)> {
         entry.files = read_archive(directory, &entry.package)?;
         kept.insert(entry.package.digest.clone());
     }
+    kept.retain(|digest| {
+        let files = &stored
+            .state
+            .installed_packages
+            .iter()
+            .find(|entry| &entry.package.digest == digest)
+            .unwrap()
+            .files;
+        digest_difference(&stored.state, digest, files).is_none()
+    });
     Ok((stored, kept))
 }
 
@@ -695,15 +730,133 @@ impl Store {
         Ok(stored)
     }
 
-    pub fn keep_archive(&self, digest: &str, bytes: &[u8]) -> Result<()> {
+    pub fn keep_archive(&self, state: &State, digest: &str, bytes: &[u8]) -> Result<()> {
+        if bytes_digest(bytes) != digest {
+            return Err("kept archive digest differs".into());
+        }
+        let files = unpack(bytes).map_err(|(rule, message)| format!("{rule}: {message}"))?;
         let archives = self.directory.join("packages");
         let hex = archive_hex(digest)?;
         if !is_archive_directory(&create_store_directory(&archives)?) {
             return Err("packages must be a real directory with mode 0700".into());
         }
         atomic_write(&archives, hex, bytes)?;
-        self.kept_archives.borrow_mut().insert(digest.into());
+        if digest_difference(state, digest, &files).is_none() {
+            self.kept_archives.borrow_mut().insert(digest.into());
+        } else {
+            self.kept_archives.borrow_mut().remove(digest);
+        }
         Ok(())
+    }
+
+    /// DL2/IMP-007: rewrite storage only, before authority initialization or recovery.
+    pub fn move_package_members(&self, places: &[PathBuf]) -> Result<Vec<String>> {
+        let state = self.snapshot()?;
+        let mut messages = Vec::new();
+        let mut moved = Vec::new();
+        for entry in &state.installed_packages {
+            let digest = &entry.package.digest;
+            if self.kept_archives.borrow().contains(digest) {
+                continue;
+            }
+            let hex = archive_hex(digest)?;
+            let mut tried = Vec::new();
+            let mut impossible = false;
+            let mut found = false;
+            for directory in
+                std::iter::once(self.directory.join("packages")).chain(places.iter().cloned())
+            {
+                let path = directory.join(hex);
+                let candidate = (|| -> std::result::Result<Vec<u8>, String> {
+                    let metadata = fs::symlink_metadata(&path).map_err(|error| {
+                        if error.kind() == std::io::ErrorKind::NotFound {
+                            "absent".into()
+                        } else {
+                            format!("unreadable: {error}")
+                        }
+                    })?;
+                    if metadata.is_symlink() {
+                        return Err("a symbolic link".into());
+                    }
+                    if !metadata.is_file() {
+                        return Err("not a regular file".into());
+                    }
+                    let bytes = fs::read(&path).map_err(|error| format!("unreadable: {error}"))?;
+                    let actual = bytes_digest(&bytes);
+                    if actual != *digest {
+                        return Err(format!("digest found {actual}"));
+                    }
+                    let files = unpack(&bytes).map_err(|(rule, message)| {
+                        impossible = true;
+                        format!("cannot be unpacked: {rule}: {message}")
+                    })?;
+                    if let Some(path) = members_difference(&entry.files, &files) {
+                        impossible = true;
+                        return Err(format!("members differ at {path}"));
+                    }
+                    if let Some(path) = digest_difference(&state, digest, &files) {
+                        impossible = true;
+                        return Err(format!(
+                            "held back: another entry of this digest differs at {path}"
+                        ));
+                    }
+                    Ok(bytes)
+                })();
+                match candidate {
+                    Ok(bytes) => {
+                        let package = format!(
+                            "{} {} ({digest})",
+                            entry.package.address, entry.package.version
+                        );
+                        let destination = self.directory.join("packages").join(hex);
+                        self.keep_archive(&state, digest, &bytes).map_err(|error| {
+                            crate::user_config::escape_line_breaks(&format!(
+                                "moving package {package} out of state.json: cannot keep {}: {error}; state.json is unchanged; fix {} and open the store again",
+                                destination.display(), destination.display()
+                            ))
+                        })?;
+                        moved.push(package);
+                        found = true;
+                        break;
+                    }
+                    Err(outcome) => tried.push(format!("{}: {outcome}", path.display())),
+                }
+            }
+            if !found {
+                let advice = if impossible {
+                    "no archive can move it; keep the store as it is and report it"
+                } else {
+                    "put the archive, named by its SHA-256 hex, in the package cache or a mirror, and open the store again"
+                };
+                messages.push(crate::user_config::escape_line_breaks(&format!(
+                    "package {} {} ({digest}) keeps its members in state.json: {}; {advice}",
+                    entry.package.address,
+                    entry.package.version,
+                    tried.join("; ")
+                )));
+            }
+        }
+        if !moved.is_empty() {
+            let output_times = self.cached.borrow().as_ref().unwrap().output_times.clone();
+            self.write_state(&state, &output_times)
+                .map_err(|error| {
+                    let path = self.directory.join("state.json");
+                    let status = if error.renamed {
+                        "state.json was already rewritten; the next open reads the rewrite and finishes the move"
+                    } else {
+                        "state.json is unchanged"
+                    };
+                    crate::user_config::escape_line_breaks(&format!(
+                        "moving packages {} out of state.json: cannot rewrite state.json at {}: {}; {status}; fix {} and open the store again",
+                        moved.join(", "), path.display(), error.message, path.display()
+                    ))
+                })?;
+            self.remember(Memory {
+                state,
+                output_times,
+            });
+        }
+        Ok(messages)
     }
 
     pub(crate) fn archive_descriptor(&self, digest: &str) -> Result<Value> {

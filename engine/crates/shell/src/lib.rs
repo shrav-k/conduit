@@ -46,6 +46,8 @@ pub struct Config {
     pub https_listen: Option<std::net::SocketAddr>,
     pub https_roots: Option<String>,
     pub pass_environment: Vec<String>,
+    /// Additional directories of digest-named archives for moving earlier stores.
+    pub archive_places: Vec<std::path::PathBuf>,
     pub initialize_timeout: Duration,
     pub call_timeout: Duration,
     pub admission_ask_timeout: Duration,
@@ -63,6 +65,7 @@ impl Default for Config {
             https_listen: None,
             https_roots: None,
             pass_environment: Vec::new(),
+            archive_places: Vec::new(),
             initialize_timeout: Duration::from_secs(30),
             call_timeout: Duration::from_secs(120),
             admission_ask_timeout: Duration::from_secs(30),
@@ -256,6 +259,7 @@ impl From<PersistenceError> for String {
 
 pub struct Shell {
     directory: std::path::PathBuf,
+    package_store_messages: Vec<String>,
     pub(crate) run_groups: Mutex<Vec<Arc<runner::ProcessGroup>>>,
     writer: Mutex<Writer>,
     authority: identity::Authority,
@@ -295,6 +299,7 @@ impl Shell {
         // DL2/DL13: Store hands its one parsed committed snapshot to identity and recovery.
         local_engine_url(&config.engine_url)?;
         let store = Store::open(directory)?;
+        let package_store_messages = store.move_package_members(&config.archive_places)?;
         let address = store.directory.join("engine-url.json");
         let address_exists = address.try_exists().map_err(|e| e.to_string())?;
         if address_exists {
@@ -316,6 +321,7 @@ impl Shell {
         let authority = identity::Authority::open(&store, config.trust_domain.as_deref())?;
         let mut shell = Self {
             directory: store.directory.clone(),
+            package_store_messages,
             run_groups: Mutex::new(Vec::new()),
             writer: Mutex::new(Writer {
                 store,
@@ -345,6 +351,11 @@ impl Shell {
             return Err("recovery unexpectedly requested external work".into());
         }
         Ok(shell)
+    }
+
+    /// Packages whose members could not move out of state.json at this open.
+    pub fn package_store_messages(&self) -> &[String] {
+        &self.package_store_messages
     }
 
     pub fn state(&self) -> Result<Arc<State>> {
@@ -871,7 +882,7 @@ impl Shell {
                             .map_err(|e| format!("installed archive evidence: {e}"))?;
                     writer
                         .store
-                        .keep_archive(digest, &bytes)
+                        .keep_archive(&t.state, digest, &bytes)
                         .map_err(|message| {
                             PersistenceError::Write(StateWriteError {
                                 renamed: false,

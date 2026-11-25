@@ -75,6 +75,10 @@ pub const REFUSAL_CAUSES: &[(&str, &str)] = &[
         "Only root may confirm a shared client ID in install.v1's confirmClientIds.",
     ),
     (
+        "CTR-015",
+        "No Conduit whose consumer is an Agent may be opened listing a login's admission control; an Interface's client tunes the levers.",
+    ),
+    (
         "IFC-021",
         "A Resource makes requests only for an invocation it serves.",
     ),
@@ -781,7 +785,20 @@ pub(crate) fn diagnostic(
             json!({"ruleId":rule,"level":"error","message":{"text":format!("{} reports {reason} under {rule}: {cause}", route["tool"].as_str().unwrap_or(operation))}}),
         );
     }
-    let cause = if rule == "PND-009" && route["rootLoginNotice"] == true {
+    let cause = if rule == "CTR-015" && route["admissionControl"].is_object() {
+        let reference = &route["arguments"]["conduit"];
+        let named = reference
+            .as_str()
+            .or_else(|| reference["name"].as_str())
+            .or_else(|| reference["id"].as_str())
+            .unwrap_or_default();
+        let control = &route["admissionControl"];
+        format!(
+            "{cause} The Conduit `{named}` lists `{}`, the admission control of `{}`, its target's Type, which changes that login's usage levers; no Conduit whose consumer is an Agent may be opened listing it, whoever sends the open. Nothing was opened, not even the Conduit's other operations, and the Conduit stays as it was. A Conduit whose consumer is an Agent may still list the login's other operations: replace or register this one again without the admission control, then open it. An Interface's client tunes the levers through a Conduit of its own to the login.",
+            control["control"].as_str().unwrap_or_default(),
+            control["type"].as_str().unwrap_or_default()
+        )
+    } else if rule == "PND-009" && route["rootLoginNotice"] == true {
         "Only root answers a login Resource's notice.".into()
     } else if rule == "ACC-033" && route.get("loginPool").is_some() {
         "Registering the Agent also needs an open Conduit listing the operation to its login Resource's owning Pool.".into()
@@ -1009,17 +1026,64 @@ pub fn first_text(reply: &mut Value, c: &Context) {
     }
 }
 
+fn admission_read(value: &Value) -> String {
+    if value.is_null() {
+        "not reported".into()
+    } else if let Some(text) = value.as_str() {
+        text.into()
+    } else {
+        value.to_string()
+    }
+}
+
+fn admission_cannot_tell(report: &Value) -> &'static str {
+    match report["cannotTell"].as_str().unwrap_or_default() {
+        "never-observed" => "`limits` is `unknown`",
+        "not-reported" => "the client gave no signal needed to decide",
+        "stale" => "the needed observation is no longer current",
+        "read-failed" => "the client's read failed",
+        "read-timed-out" => "the client's read timed out",
+        _ => "not reported",
+    }
+}
+
+/// IFC-054: words for the caller alone, from the disclosure-checked form.
+pub(crate) fn admission_warning(tool: &str, form: &Value) -> String {
+    let login = crate::login_resource::label(&form["login"]);
+    let report = &form["report"];
+    let mut text = format!(
+        "{tool} was dispatched under PND-016 on a report that warns: the login {login} supplied the report. The call started model work and runs to its end. "
+    );
+    if report["reason"] == "cannot-tell" {
+        text.push_str(&format!(
+            "It cannot tell: {} ({}); lever `{}` has value `{}`. ",
+            admission_read(&report["cannotTell"]),
+            admission_cannot_tell(report),
+            admission_read(&report["lever"]["pointer"]),
+            admission_read(&report["lever"]["value"])
+        ));
+    } else {
+        text.push_str(&format!(
+            "Lever `{}` has value `{}`. Window {}, used percentage {} against this warning threshold, window resets at {}. ",
+            admission_read(&report["lever"]["pointer"]),
+            admission_read(&report["lever"]["value"]),
+            admission_read(&report["window"]["id"]),
+            admission_read(&report["window"]["usedPercent"]),
+            admission_read(&report["window"]["resetsAt"])
+        ));
+    }
+    if report["singleUse"] == true {
+        text.push_str("The report admitted this call alone and is spent, so the login's next such call waits for a new ask. ");
+    }
+    text.push_str(&format!("Paid usage: possible {}, inUse {}, paid usage resets at {}. A later call on the login may be held. The report came from {}.",
+        admission_read(&report["paidUsage"]["possible"]), admission_read(&report["paidUsage"]["inUse"]),
+        admission_read(&report["paidUsage"]["resetsAt"]),
+        form["reportInvocation"].as_str().map(|id| format!("ask {id}")).unwrap_or_else(|| "the login's ask".into())));
+    text
+}
+
 /// PND-016's caller diagnostic uses only the already disclosure-checked form.
 pub(crate) fn admission_hold(tool: &str, form: &Value) -> String {
-    fn read(value: &Value) -> String {
-        if value.is_null() {
-            "not reported".into()
-        } else if let Some(text) = value.as_str() {
-            text.into()
-        } else {
-            value.to_string()
-        }
-    }
     let login = crate::login_resource::label(&form["login"]);
     let report = &form["report"];
     let ask = form["reportInvocation"]
@@ -1034,7 +1098,7 @@ pub(crate) fn admission_hold(tool: &str, form: &Value) -> String {
     let retry = if form["retryAt"].is_null() {
         "after the lift".into()
     } else {
-        format!("at {}", read(&form["retryAt"]))
+        format!("at {}", admission_read(&form["retryAt"]))
     };
     let mut text = format!(
         "{tool} reports unavailable under PND-016: {login}: {refusal}. The call was not dispatched and started no model work; nothing of it is queued. A call sent again {retry} is decided afresh. Once dispatched, a call runs to its end; the guard never stops it. "
@@ -1052,16 +1116,9 @@ pub(crate) fn admission_hold(tool: &str, form: &Value) -> String {
             _ => "the report refuses model work",
         };
         text.push_str(&format!("The report from {ask} says {}: {reason}; lever `{}` has value `{}`. Window {}, used percentage {}, observedAt {}, window resets at {}. Paid usage: possible {}, inUse {}, paid usage resets at {}. ",
-            read(&report["reason"]), read(&report["lever"]["pointer"]),read(&report["lever"]["value"]),read(&report["window"]["id"]),read(&report["window"]["usedPercent"]),read(&report["observedAt"]),read(&report["window"]["resetsAt"]),read(&report["paidUsage"]["possible"]),read(&report["paidUsage"]["inUse"]),read(&report["paidUsage"]["resetsAt"])));
+            admission_read(&report["reason"]), admission_read(&report["lever"]["pointer"]),admission_read(&report["lever"]["value"]),admission_read(&report["window"]["id"]),admission_read(&report["window"]["usedPercent"]),admission_read(&report["observedAt"]),admission_read(&report["window"]["resetsAt"]),admission_read(&report["paidUsage"]["possible"]),admission_read(&report["paidUsage"]["inUse"]),admission_read(&report["paidUsage"]["resetsAt"])));
         if report["reason"] == "cannot-tell" {
-            let why = match report["cannotTell"].as_str().unwrap_or_default() {
-                "never-observed" => "`limits` is `unknown`",
-                "not-reported" => "the client gave no signal needed to decide",
-                "stale" => "the needed observation is no longer current",
-                "read-failed" => "the client's read failed",
-                "read-timed-out" => "the client's read timed out",
-                _ => "not reported",
-            };
+            let why = admission_cannot_tell(report);
             text.push_str(&format!("It cannot tell: {why}. "));
         }
     } else if let Some(cause) = form["noReport"].as_str() {
@@ -1080,8 +1137,8 @@ pub(crate) fn admission_hold(tool: &str, form: &Value) -> String {
             .unwrap_or_else(|| "a call of an Agent of the login".into());
         text.push_str(&format!("The single-use report from {ask} admitted {admitted} and was spent at once. The caller need not wait for that call to end before sending again. "));
     }
-    let pointer = read(&form["levers"]["pointer"]);
-    let control = read(&form["levers"]["control"]);
+    let pointer = admission_read(&form["levers"]["pointer"]);
+    let control = admission_read(&form["levers"]["control"]);
     if form["lifts"] == "lever-change" {
         text.push_str(&format!("Waiting alone does not lift this; a change of `{pointer}` by the control `{control}` on `{login}`, sent by an Interface, does."));
     } else {
@@ -1098,11 +1155,11 @@ pub(crate) fn admission_hold(tool: &str, form: &Value) -> String {
         };
         text.push_str(&format!(
             "The hold lifts {}: {lift}; retryAt {}.",
-            read(&form["lifts"]),
-            read(&form["retryAt"])
+            admission_read(&form["lifts"]),
+            admission_read(&form["retryAt"])
         ));
         if form["lifts"] == "newer-report" {
-            text.push_str(&format!(" For this report, retryAt {} is when its validity ends. Unless the report ends sooner, calls on the login are held at once until then and no ask is made; the first call at or after retryAt asks the login afresh.",read(&form["retryAt"])));
+            text.push_str(&format!(" For this report, retryAt {} is when its validity ends. Unless the report ends sooner, calls on the login are held at once until then and no ask is made; the first call at or after retryAt asks the login afresh.",admission_read(&form["retryAt"])));
         }
         if !report.is_null() {
             text.push_str(&format!(" A change of the levers at `{pointer}` by the control `{control}` on `{login}`, sent by an Interface, also ends the report."));

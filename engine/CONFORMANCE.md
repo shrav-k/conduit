@@ -912,11 +912,10 @@ stating `signIn` and `admission`. Registration and `register-replacement.v1` che
 Agent's Type lists its login's Type and that no levers value holds `whenUnknown` `admit`
 beside a refusing `paidUsage`, which they report under CTR-015 in INS-014's place, and a
 control that would store one is not dispatched, under CTR-015 as this build makes no
-REV-015 check (CTR-015, `registration-admission-checks`). The engine warns of no call yet:
-the warnings are a later order's (DEC-099), and orders 319 and 320 write the ask and the
-hold (below). As control dispatch stores no settings (above), a control sent a value at
-the levers place ends the login's report when it succeeds, and the stored levers stay as
-registered.
+REV-015 check (CTR-015, `registration-admission-checks`). Orders 319, 320 and 321 write the
+ask, the hold and the warnings (below). As control dispatch stores no settings (above), a
+control sent a value at the levers place ends the login's report when it succeeds, and the
+stored levers stay as registered.
 
 ## A login's admission ask (order 319)
 
@@ -970,5 +969,26 @@ end unavailable under REC-007 before the PND-005 and PND-011 holds, lever-change
 and dispatch conditions: the failed transition cannot retain the records those decisions
 require, so REC-007 takes precedence. The engine never stops or cancels a dispatched call
 under PND-016, whatever a later report says, and sends it as with no `admission` stated
-(DEC-120). A call admitted on a report whose `reason` is `warning` or `cannot-tell` is
-dispatched with no warning yet: the warnings are a later order's (DEC-099).
+(DEC-120). From order 321, a call admitted on a report whose `reason` is `warning` or
+`cannot-tell` is dispatched warned (below).
+
+## A login's admission warning and its control (order 321)
+
+From order 321, a call that PND-016 dispatches on a report whose `reason` is `warning`
+or `cannot-tell` is warned: the record of its dispatch holds in `admissionWarning`,
+and the result that ends that attempt, whatever its outcome, and a repeat that OPS-009
+answers with it, hold in `_meta` under `io.github.shrav-k.conduit/admission`, one
+warning diagnostic citing PND-016 whose `properties.admission` is `admission-hold.v1`
+with `dispatched` true (IFC-054, DEC-099). Its text names the login, the lever and the
+window, or why the login cannot tell, and the paid usage read, says that a later call
+may be held, and names the ask only where the caller may inspect the login, with no
+amount. The call is sent exactly as on a report within the levers, and nothing else of
+its result changes (DEC-120). A dispatch on a report within the levers is not warned,
+and each new attempt is warned, or not, on its own report.
+
+From order 321, an open of a Conduit whose consumer is an Agent and that lists its
+target's Type's `admission.control` reports refused under CTR-015, whoever sends it,
+root and a setup's part among them, and the Conduit stays as it was; one whose
+consumer is an Interface or a Resource opens as before (DEC-119). ACC-058's rows for
+the admission hook and a login's admission control wait for DEC-064's engine orders,
+which build `request-access.v1`.

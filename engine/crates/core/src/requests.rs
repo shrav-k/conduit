@@ -110,7 +110,7 @@ pub(crate) fn ended_reply(c: &Context, old: &Value, contract: &Value, outcome: &
         "failed" | "unknown" => old["cause"].as_array().map(Vec::as_slice),
         _ => None,
     };
-    envelope(
+    let mut reply = envelope(
         c,
         Some(outcome),
         None,
@@ -121,7 +121,37 @@ pub(crate) fn ended_reply(c: &Context, old: &Value, contract: &Value, outcome: &
             .map(|_| old["retained"].get("outputs").cloned().unwrap_or(json!({}))),
         old["retained"].get("content").cloned().unwrap_or(json!([])),
         None,
-    )
+    );
+    admission_reply(c, old, &mut reply);
+    reply
+}
+
+// IFC-054: only the dispatch record makes the prepared warning caller-visible.
+// Both members are absent from every un-warned entry (DL2).
+fn admission_reply(c: &Context, v: &Value, reply: &mut Value) {
+    if v["admission_warning_dispatched"] == true
+        && let Some(warning) = v.get("admission_warning")
+    {
+        reply["_meta"][mark(c, "admission")] = warning.clone();
+    }
+}
+
+fn record_dispatch(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    mut data: Value,
+) -> Result<()> {
+    let warning = t.state.invocations[i].get("admission_warning").cloned();
+    if let Some(warning) = &warning {
+        data["admissionWarning"] = warning.clone();
+    }
+    record(t, a, c, "invocation-dispatched", data)?;
+    if warning.is_some() {
+        t.state.invocations[i]["admission_warning_dispatched"] = json!(true);
+    }
+    Ok(())
 }
 
 // Record content follows the held Type, rather than the retention of the repeat
@@ -616,6 +646,9 @@ pub(crate) fn record(
         record_content(t, c, &mut data)?;
     }
     if let Some(fields) = data.as_object_mut() {
+        // These route facts explain refusals; they are not record members.
+        fields.remove("admissionControl");
+        fields.remove("rootLoginNotice");
         fields.retain(|_, v| !v.is_null());
     }
     t.records.push(a.record(&mut t.state, c, event, data)?);
@@ -1956,7 +1989,7 @@ fn invoke_inner(
     }
     if !discover {
         order_control_dispatch(&mut t.state, i)?;
-        record(t, a, c, "invocation-dispatched", data)?;
+        record_dispatch(t, a, c, i, data)?;
     }
     if let Some(action) = retried {
         pending::record_answer(t, a, c, &action)?;
@@ -2132,7 +2165,7 @@ pub(crate) fn dispatch_waiting(
     let v = v.clone();
     if v["plain"] == true {
         order_control_dispatch(&mut t.state, i)?;
-        record(t, a, c, "invocation-dispatched", recorded_route(&v))?;
+        record_dispatch(t, a, c, i, recorded_route(&v))?;
         t.external_intents.push(intent(&v, &t.state, c)?);
     } else {
         t.external_intents.push(discovery_intent(&v, c));
@@ -2330,6 +2363,7 @@ pub(crate) fn finish(
         content,
         None,
     );
+    admission_reply(c, &v, &mut t.reply);
     let raised_sign_in = v["setup"]
         .get("raised")
         .or_else(|| v["sign_in"].get("raised"));
@@ -2595,6 +2629,7 @@ fn complete_call(
                     if let Some(i) = restored {
                         compact_ended_invocation(&mut t.state.invocations[i], c);
                     }
+                    admission_reply(c, &v, &mut t.reply);
                     t.request_replies.push(crate::RequestReply {
                         invocation: id.into(),
                         attempt,
@@ -2724,6 +2759,7 @@ pub(crate) fn record_fault_reason(
     if let Some(i) = restored {
         compact_ended_invocation(&mut t.state.invocations[i], c);
     }
+    admission_reply(c, &v, &mut t.reply);
     fault_reply(t, &v)?;
     crate::lifecycle::child_answered(t, a, c, &v, reason)
 }
@@ -2858,6 +2894,13 @@ fn restore_or_remove_invocation(state: &mut State, i: usize, v: &Value) -> Optio
                 }
             }
         }
+        for name in ["admission_warning", "admission_warning_dispatched"] {
+            if let Some(value) = previous.get(name) {
+                fields.insert(name.into(), value.clone());
+            } else {
+                fields.remove(name);
+            }
+        }
         fields.remove("previous");
         Some(i)
     } else {
@@ -2910,11 +2953,11 @@ fn complete_discovery(
             record_hook_dispatch(t, a, c, v)?;
         } else {
             order_control_dispatch(&mut t.state, i)?;
-            record(
+            record_dispatch(
                 t,
                 a,
                 c,
-                "invocation-dispatched",
+                i,
                 json!({"invocation":v["id"],"attempt":v["attempt"]}),
             )?;
         }

@@ -3,10 +3,6 @@
     {
       "id": "requests-admission-single-use",
       "reason": "PND-016, order 316: the first build stores no control's levers (REV-007), so the fresh ask after a lever change sends the levers as registered; REV-007's storing at the levers place makes it pass"
-    },
-    {
-      "id": "requests-admission-warning",
-      "reason": "IFC-054, order 318: the first build asks for a login's report, waits and holds, but carries no warning; the guard's engine order for the warnings makes it pass"
     }
   ]
 }

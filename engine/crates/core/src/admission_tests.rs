@@ -2649,3 +2649,645 @@ fn admission_hold_explains_cannot_tell_in_schema_words() {
         );
     }
 }
+
+// Order 321a: a warning belongs to the dispatched attempt, never its wire request.
+const ADMISSION_KEY: &str = "io.github.shrav-k.conduit/admission";
+
+fn warning_report() -> Value {
+    let case: Value = serde_json::from_str(include_str!(
+        "../../../../conformance/conventions/requests/admission-warning/case.yaml"
+    ))
+    .unwrap();
+    case["steps"][21]["input"]["completion"]["result"]["structuredContent"]["admission"].clone()
+}
+
+fn discovered_guarded() -> packages::Project {
+    let mut p = guarded();
+    document_mut(&mut p, "shared-agent.v1")["spec"]["implementation"] =
+        json!({"#turn.v1":"#agent","#status.v1":"#agent"});
+    p
+}
+
+fn observer_guarded() -> packages::Project {
+    let mut p = guarded();
+    let mut path = document_mut(&mut p, "call-b").clone();
+    path["metadata"]["name"] = json!("observer-turn");
+    path["consumer"]["name"] = json!("observer");
+    p.documents.push(path);
+    p
+}
+
+#[track_caller]
+fn dispatch_warning<'a>(t: &'a Transition, id: &str) -> &'a Value {
+    &t.records
+        .iter()
+        .find(|r| r["type"] == "invocation-dispatched" && r["data"]["invocation"] == id)
+        .expect("dispatch record")["data"]["admissionWarning"]
+}
+
+#[track_caller]
+fn assert_warning(s: &GuardScenario, warning: &Value, report: &Value, ask: Value) {
+    assert_eq!(warning["level"], "warning");
+    assert_eq!(warning["ruleId"], "PND-016");
+    let form = json!({"login":inventory::object(subject(&s.state,"Resource","login")),
+        "dispatched":true,"report":report,"reportInvocation":ask,
+        "noReport":null,"singleUse":null,"lifts":null,"retryAt":null,
+        "levers":{"type":"example.org/conformance/shared-login#login-holder.v1",
+        "pointer":"/admission","control":"example.org/conformance/shared-login#set-admission.v1"}});
+    assert_eq!(warning["properties"]["admission"], form);
+    for (schema, value) in [("admission-hold.v1", &form), ("diagnostic.v1", warning)] {
+        assert_eq!(
+            s.c.core_environment
+                .first_core_failure(&s.c.core_package, schema, value)
+                .unwrap(),
+            None
+        );
+    }
+    let text = warning["message"]["text"].as_str().unwrap();
+    assert!(text.contains(" was dispatched under PND-016 on a report that warns: the login "));
+    assert_eq!(text.matches("was dispatched").count(), 1);
+    assert!(text.contains("paid usage resets at "));
+    if report["reason"] == "warning" {
+        assert!(text.contains("used percentage 85 against this warning threshold"));
+    }
+    assert!(text.contains(&login_resource::label(&form["login"])));
+    assert!(text.contains("The call started model work") && text.contains("runs to its end"));
+    for word in ["amount", "balance", "credit", "currency", "unavailable"] {
+        assert!(!text.contains(word));
+    }
+}
+
+fn normalize_invocation(value: &Value, id: &str) -> Value {
+    serde_json::from_str(&value.to_string().replace(id, "INVOCATION")).unwrap()
+}
+
+#[track_caller]
+fn assert_warning_end(t: &Transition, id: &str, warning: &Value) {
+    assert_eq!(&hold_reply(t, id)["_meta"][ADMISSION_KEY], warning);
+    assert!(
+        t.records
+            .iter()
+            .all(|r| r["data"].get("admissionWarning").is_none())
+    );
+}
+
+#[test]
+fn admission_warning_on_a_report_that_warns() {
+    let mut s = GuardScenario::new(guarded());
+    let r4 = warning_report();
+    let (k, _) = s.keep("2026-11-21T13:02:00Z", &r4, None);
+    let t = s.admission_call("2026-11-21T13:02:10Z", "call-a.turn.v1");
+    let id = t.reply["invocation"].as_str().unwrap().to_owned();
+    let w = dispatch_warning(&t, &id).clone();
+    assert_warning(&s, &w, &r4, json!(k));
+    assert!(
+        !json!(t.external_intents)
+            .to_string()
+            .contains(ADMISSION_KEY)
+    );
+    assert!(t.reply["_meta"].get(ADMISSION_KEY).is_none());
+    let text = w["message"]["text"].as_str().unwrap();
+    for word in [
+        "call-a.turn.v1",
+        "/admission/warnAt",
+        "80",
+        "example/all/300m",
+        "85",
+        "2026-11-21T14:00:00Z",
+        "not reported",
+        &k,
+        "may be held",
+    ] {
+        assert!(text.contains(word), "missing {word}");
+    }
+    let output = json!({"isError":false,"content":[{"type":"text","text":"plain answer"}]});
+    let t = s.finish(&id, "2026-11-21T13:03:00Z", output.clone());
+    assert_warning_end(&t, &id, &w);
+    assert_eq!(t.reply, *hold_reply(&t, &id));
+    let mut warned = t.reply.clone();
+    warned["_meta"]
+        .as_object_mut()
+        .unwrap()
+        .remove(ADMISSION_KEY);
+    let mut un = GuardScenario::new(guarded());
+    un.keep("2026-11-21T13:02:00Z", &report_one(), None);
+    let un_id = un.dispatch("2026-11-21T13:02:10Z", "call-a.turn.v1", json!({}));
+    let plain = un.finish(&un_id, "2026-11-21T13:03:00Z", output);
+    assert_eq!(
+        normalize_invocation(&warned, &id),
+        normalize_invocation(&plain.reply, &un_id)
+    );
+    // OPS-007: a plain error cannot confirm that model work did not happen.
+    let id2 = s.dispatch("2026-11-21T13:03:10Z", "call-a.turn.v1", json!({}));
+    let t = s.finish(
+        &id2,
+        "2026-11-21T13:03:30Z",
+        json!({"isError":true,"content":[{"type":"text","text":"plain error"}]}),
+    );
+    assert_eq!(t.reply["isError"], true);
+    assert_warning_end(&t, &id2, &w);
+    let mut un = GuardScenario::new(guarded());
+    un.keep("2026-11-21T13:02:00Z", &report_one(), None);
+    let un_id = un.dispatch("2026-11-21T13:03:10Z", "call-a.turn.v1", json!({}));
+    let plain = un.finish(
+        &un_id,
+        "2026-11-21T13:03:30Z",
+        json!({"isError":true,"content":[{"type":"text","text":"plain error"}]}),
+    );
+    assert_eq!(t.reply["content"], plain.reply["content"]);
+    let mut s = GuardScenario::new(discovered_guarded());
+    s.keep("2026-11-21T13:02:00Z", &r4, None);
+    let id = s.dispatch("2026-11-21T13:03:10Z", "call-a.turn.v1", json!({}));
+    let t = s.finish(&id, "2026-11-21T13:03:30Z", result("failed", json!({})));
+    assert_eq!(
+        t.reply["_meta"]["io.github.shrav-k.conduit/outcome"],
+        "failed"
+    );
+    assert_eq!(t.reply["_meta"][ADMISSION_KEY]["level"], "warning");
+}
+
+#[test]
+fn admission_warning_on_a_single_use_report() {
+    for discover in [false, true] {
+        let mut s = GuardScenario::new(if discover {
+            discovered_guarded()
+        } else {
+            guarded()
+        });
+        let time = "2026-11-21T13:01:00Z";
+        let (a, k) = waiting(&s.admission_call(time, "call-a.turn.v1"));
+        let (b, _) = waiting(&s.admission_call(time, "call-b.turn.v1"));
+        s.discover_ask(&k, time);
+        let r3 = single_use_report();
+        let t = s.finish(&k, time, result("succeeded", json!({"admission":r3})));
+        assert_eq!(
+            hold_reply(&t, &b)["structuredContent"]["diagnostics"][0]["properties"]["admission"]["lifts"],
+            "after-call"
+        );
+        assert!(hold_reply(&t, &b)["_meta"].get(ADMISSION_KEY).is_none());
+        assert!(
+            t.records
+                .iter()
+                .filter(|r| r["data"]["invocation"] == k)
+                .all(|r| r["data"].get("admissionWarning").is_none())
+        );
+        let t = if discover {
+            assert!(
+                !t.records
+                    .iter()
+                    .any(|r| r["type"] == "invocation-dispatched" && r["data"]["invocation"] == a)
+            );
+            s.discover_ask(&a, "2026-11-21T13:01:10Z")
+        } else {
+            t
+        };
+        let w = dispatch_warning(&t, &a).clone();
+        assert_warning(&s, &w, &r3, json!(k));
+        let text = w["message"]["text"].as_str().unwrap();
+        for word in [
+            "never-observed",
+            "`limits` is `unknown`",
+            "/admission/whenUnknown",
+            "one-trial",
+            "admitted this call alone",
+            "is spent",
+            "new ask",
+        ] {
+            assert!(text.contains(word), "missing {word}");
+        }
+        let t = s.finish(&a, "2026-11-21T13:01:20Z", result("succeeded", json!({})));
+        assert_warning_end(&t, &a, &w);
+    }
+}
+
+fn warning_reason_end(
+    s: &mut GuardScenario,
+    id: &str,
+    attempt: u64,
+    expected: &Value,
+    previous: &Value,
+) {
+    let restriction = json!({"requirement":"example.org/filter#limit.v1","arguments":{}});
+    s.state
+        .invocations
+        .iter_mut()
+        .find(|v| v["id"] == id)
+        .unwrap()["filters"] = json!([restriction]);
+    let input = Input::Complete {
+        evidence: s.evidence("2026-11-21T13:03:15Z"),
+        invocation: id.into(),
+        attempt,
+        completion: requests::Completion::Result {
+            result: json!({"isError":true,
+            "_meta":{"io.github.shrav-k.conduit/reason":"unavailable",
+            "io.github.shrav-k.conduit/restriction":restriction}}),
+        },
+    };
+    let t = step(&s.state, input.clone(), &s.c).unwrap();
+    let fault = crate::record_fault::RecordFault::from_trial(input, &t, false)
+        .unwrap()
+        .step(s.state.clone(), &s.c)
+        .unwrap();
+    for ended in [&t, &fault] {
+        assert_eq!(
+            ended.reply["_meta"]["io.github.shrav-k.conduit/reason"],
+            "unavailable"
+        );
+        assert_eq!(&ended.reply["_meta"][ADMISSION_KEY], expected);
+        assert_warning_end(ended, id, expected);
+        let restored = ended
+            .state
+            .invocations
+            .iter()
+            .find(|v| v["id"] == id)
+            .unwrap();
+        let reply = requests::ended_reply(&s.c, restored, &restored["contract"], "failed");
+        assert_eq!(&reply["_meta"][ADMISSION_KEY], previous);
+    }
+}
+
+#[test]
+fn admission_warning_on_every_end_and_repeat() {
+    let mut s = GuardScenario::new(guarded());
+    s.keep("2026-11-21T13:02:00Z", &warning_report(), None);
+    let t = s.keyed_admission_call("2026-11-21T13:02:10Z");
+    let a = t.reply["invocation"].as_str().unwrap().to_owned();
+    let w = dispatch_warning(&t, &a).clone();
+    assert_eq!(w["level"], "warning");
+    let t = s.finish(&a, "2026-11-21T13:02:20Z", result("succeeded", json!({})));
+    assert_warning_end(&t, &a, &w);
+    let t = s.keyed_admission_call("2026-11-21T13:02:30Z");
+    assert!(t.external_intents.is_empty());
+    assert_eq!(t.reply["_meta"][ADMISSION_KEY], w);
+    let t = s.admission_call("2026-11-21T13:03:00Z", "call-b.turn.v1");
+    let b = t.reply["invocation"].as_str().unwrap().to_owned();
+    let b_warning = dispatch_warning(&t, &b).clone();
+    let t = s.admission_input(
+        "2026-11-21T13:03:10Z",
+        json!({"kind":"cancel","invocation":b}),
+    );
+    assert_warning_end(&t, &b, &b_warning);
+    let t = s.admission_call("2026-11-21T13:04:00Z", "call-a.turn.v1");
+    let a2 = t.reply["invocation"].as_str().unwrap().to_owned();
+    let a2_warning = dispatch_warning(&t, &a2).clone();
+    let t = s.admission_input("2026-11-21T13:04:10Z", json!({"kind":"recover"}));
+    assert_warning_end(&t, &a2, &a2_warning);
+
+    let mut s = GuardScenario::new(discovered_guarded());
+    s.keep("2026-11-21T13:02:00Z", &warning_report(), None);
+    let t = s.keyed_admission_call("2026-11-21T13:02:10Z");
+    let a = t.reply["invocation"].as_str().unwrap().to_owned();
+    let t = s.discover_ask(&a, "2026-11-21T13:02:11Z");
+    let w = dispatch_warning(&t, &a).clone();
+    let t = s.finish(&a, "2026-11-21T13:02:20Z", result("failed", json!({})));
+    assert_warning_end(&t, &a, &w);
+    s.keep("2026-11-21T13:03:00Z", &report_one(), None);
+    s.keyed_admission_call("2026-11-21T13:03:10Z");
+    let t = s.admission_input("2026-11-21T13:03:11Z", json!({"kind":"complete","invocation":a,"attempt":2,"completion":{"kind":"result","result":{"capabilities":{"extensions":{"io.github.shrav-k.conduit/implementation-interface":{"revision":"v0"}}}}}}));
+    assert!(dispatch_warning(&t, &a).is_null());
+    warning_reason_end(&mut s, &a, 2, &Value::Null, &w);
+    let t = s.admission_input("2026-11-21T13:03:20Z", json!({"kind":"complete","invocation":a,"attempt":2,"completion":{"kind":"result","result":result("succeeded",json!({}))}}));
+    assert!(t.reply["_meta"].get(ADMISSION_KEY).is_none());
+
+    // Restore an earlier un-warned failure after a warned IFC-026 end too.
+    let mut s = GuardScenario::new(discovered_guarded());
+    s.keep("2026-11-21T13:02:00Z", &report_one(), None);
+    let t = s.keyed_admission_call("2026-11-21T13:02:10Z");
+    let a = t.reply["invocation"].as_str().unwrap().to_owned();
+    s.discover_ask(&a, "2026-11-21T13:02:11Z");
+    s.finish(&a, "2026-11-21T13:02:20Z", result("failed", json!({})));
+    s.keep("2026-11-21T13:03:00Z", &warning_report(), None);
+    s.keyed_admission_call("2026-11-21T13:03:10Z");
+    let requests::Completion::Result { result: discovered } = requests::advertised_extension(&s.c)
+    else {
+        unreachable!()
+    };
+    let t = s.admission_input("2026-11-21T13:03:11Z", json!({"kind":"complete","invocation":a,"attempt":2,"completion":{"kind":"result","result":discovered}}));
+    let w = dispatch_warning(&t, &a).clone();
+    assert_eq!(w["level"], "warning");
+    warning_reason_end(&mut s, &a, 2, &w, &Value::Null);
+
+    for cancel in [true, false] {
+        let mut s = GuardScenario::new(discovered_guarded());
+        s.keep("2026-11-21T13:02:00Z", &warning_report(), None);
+        let t = s.admission_call("2026-11-21T13:02:10Z", "call-a.turn.v1");
+        let a = t.reply["invocation"].as_str().unwrap().to_owned();
+        let t = if cancel {
+            s.admission_input(
+                "2026-11-21T13:02:20Z",
+                json!({"kind":"cancel","invocation":a}),
+            )
+        } else {
+            s.finish(&a, "2026-11-21T13:02:20Z", json!({"capabilities":{}}))
+        };
+        assert!(t.reply["_meta"].get(ADMISSION_KEY).is_none());
+        assert!(hold_reply(&t, &a)["_meta"].get(ADMISSION_KEY).is_none());
+        assert!(
+            !t.state
+                .records
+                .iter()
+                .any(|r| r["type"] == "invocation-dispatched" && r["data"]["invocation"] == a)
+        );
+    }
+}
+
+#[test]
+fn admission_warning_names_the_ask_only_to_who_may_inspect_it() {
+    let mut s = GuardScenario::new(observer_guarded());
+    s.call(
+        "2026-11-21T13:01:00Z",
+        "access.open.v1",
+        json!({"conduit":"observer-turn"}),
+    );
+    let r4 = warning_report();
+    let (k, _) = s.keep("2026-11-21T13:02:00Z", &r4, None);
+    let observer = subject(&s.state, "Interface", "observer")["id"].clone();
+    let t = s.admission_input("2026-11-21T13:02:10Z",json!({"kind":"invoke","request":{"identity":{"kind":"instance","id":observer},"tool":"observer-turn.turn.v1","arguments":{}}}));
+    let b = t.reply["invocation"].as_str().unwrap();
+    let w = dispatch_warning(&t, b);
+    assert_warning(&s, w, &r4, Value::Null);
+    let text = w["message"]["text"].as_str().unwrap();
+    assert!(text.contains("the login's ask") && !text.contains(&k));
+    let t = s.admission_call("2026-11-21T13:02:11Z", "call-a.turn.v1");
+    assert_warning(
+        &s,
+        dispatch_warning(&t, t.reply["invocation"].as_str().unwrap()),
+        &r4,
+        json!(k),
+    );
+}
+
+#[test]
+fn admission_warned_call_is_sent_as_without_the_guard() {
+    for discover in [false, true] {
+        let mut expected = None;
+        for report in [
+            Some(warning_report()),
+            Some(single_use_report()),
+            Some(report_one()),
+            None,
+        ] {
+            let mut p = if discover {
+                discovered_guarded()
+            } else {
+                guarded()
+            };
+            if report.is_none() {
+                for name in ["shared-agent.v1", "login-holder.v1"] {
+                    document_mut(&mut p, name)["spec"]
+                        .as_object_mut()
+                        .unwrap()
+                        .remove("admission");
+                }
+            }
+            let mut s = GuardScenario::new(p);
+            if let Some(report) = report {
+                s.keep("2026-11-21T13:02:00Z", &report, None);
+            }
+            let t = s.admission_call("2026-11-21T13:02:10Z", "call-a.turn.v1");
+            let a = t.reply["invocation"].as_str().unwrap().to_owned();
+            let mut intents = t.external_intents;
+            if discover {
+                intents.extend(s.discover_ask(&a, "2026-11-21T13:02:11Z").external_intents);
+            }
+            let actual = normalize_invocation(&json!(intents), &a);
+            for word in [
+                ADMISSION_KEY,
+                "warnAt",
+                "whenUnknown",
+                "paidUsage",
+                "admissionWarning",
+            ] {
+                assert!(!actual.to_string().contains(word));
+            }
+            if let Some(expected) = &expected {
+                assert_eq!(&actual, expected);
+            } else {
+                expected = Some(actual);
+            }
+        }
+    }
+}
+
+fn admission_open_project() -> packages::Project {
+    let mut p = control_project();
+    p.manifest.as_mut().unwrap()["implementations"]["resource"]["implements"]
+        .as_array_mut()
+        .unwrap()
+        .push(json!("#read-admission.v1"));
+    let api = p.manifest.as_ref().unwrap()["apiVersion"].clone();
+    document_mut(&mut p, "tuning.v1")["spec"]["operations"] =
+        json!(["#set-admission.v1", "#read-admission.v1"]);
+    document_mut(&mut p, "login-holder.v1")["spec"]["implementation"]["#read-admission.v1"] =
+        json!("#resource");
+    let mut resource = document_mut(&mut p, "login").clone();
+    resource["metadata"]["name"] = json!("tuner");
+    p.documents.extend([
+        resource,
+        json!({"apiVersion":api,"kind":"Operation","metadata":{"name":"read-admission.v1"},"spec":{"inputSchema":{"type":"object"}}}),
+        json!({"apiVersion":api,"kind":"Conduit","metadata":{"name":"other-login-operation"},"spec":{"capability":"#tuning.v1","operations":["#read-admission.v1"]}}),
+        json!({"apiVersion":api,"kind":"Conduit","metadata":{"name":"agent-tune"},"from":"#tuning","consumer":{"kind":"Agent","name":"a"},"target":{"kind":"Resource","name":"login"}}),
+        json!({"apiVersion":api,"kind":"Conduit","metadata":{"name":"resource-tune"},"from":"#tuning","consumer":{"kind":"Resource","name":"tuner"},"target":{"kind":"Resource","name":"login"}}),
+        json!({"apiVersion":api,"kind":"Conduit","metadata":{"name":"agent-other"},"from":"#other-login-operation","consumer":{"kind":"Agent","name":"a"},"target":{"kind":"Resource","name":"login"}}),
+        json!({"apiVersion":api,"kind":"Conduit","metadata":{"name":"agent-b"},"from":"#turns","consumer":{"kind":"Agent","name":"a"},"target":{"kind":"Agent","name":"b"}}),
+    ]);
+    p
+}
+
+#[test]
+fn admission_control_open_refused_for_an_agent_consumer() {
+    let time = "2026-11-21T13:01:00Z";
+    let mut s = GuardScenario::new(admission_open_project());
+    assert_eq!(
+        subject(&s.state, "Conduit", "agent-tune")["state"],
+        "registered"
+    );
+    let t = s.call(time, "access.open.v1", json!({"conduit":"agent-tune"}));
+    assert_eq!(t.reply["isError"], true);
+    assert_eq!(
+        t.reply["_meta"]["io.github.shrav-k.conduit/reason"],
+        "refused"
+    );
+    let diagnostics = t.reply["structuredContent"]["diagnostics"]
+        .as_array()
+        .unwrap();
+    assert_eq!(diagnostics.len(), 1);
+    let d = &diagnostics[0];
+    assert_eq!(d["ruleId"], "CTR-015");
+    assert_eq!(d["properties"]["refusal"]["tier"], 2);
+    let text = d["message"]["text"].as_str().unwrap();
+    for word in [
+        "agent-tune",
+        "example.org/conformance/shared-login#set-admission.v1",
+        "example.org/conformance/shared-login#login-holder.v1",
+        "Nothing was opened",
+        "Interface",
+    ] {
+        assert!(text.contains(word), "missing {word}");
+    }
+    assert!(t.external_intents.is_empty());
+    for kind in ["access-decision", "request-ended"] {
+        let record = t.records.iter().find(|r| r["type"] == kind).unwrap();
+        assert_eq!(record["data"]["dispatched"], false);
+        assert_eq!(record["data"]["reason"], "refused");
+        assert_eq!(record["data"]["ruleId"], "CTR-015");
+    }
+    let inspected = s.call(
+        time,
+        "management.inspect.v1",
+        json!({"object":{"kind":"Conduit","name":"agent-tune"}}),
+    );
+    assert_eq!(
+        inspected.reply["structuredContent"]["status"]["state"],
+        "registered"
+    );
+    for name in ["tune-login", "resource-tune", "agent-other", "agent-b"] {
+        let t = s.call(time, "access.open.v1", json!({"conduit":name}));
+        assert_eq!(t.reply["isError"], false, "{name}: {}", t.reply);
+    }
+    let mut unguarded = admission_open_project();
+    for name in ["shared-agent.v1", "login-holder.v1"] {
+        document_mut(&mut unguarded, name)["spec"]
+            .as_object_mut()
+            .unwrap()
+            .remove("admission");
+    }
+    let mut unguarded = GuardScenario::new(unguarded);
+    assert_eq!(
+        unguarded
+            .call(time, "access.open.v1", json!({"conduit":"agent-tune"}))
+            .reply["isError"],
+        false
+    );
+
+    let mut p = admission_open_project();
+    document_mut(&mut p, "worker")["spec"]["conduits"] = json!({"tune":{
+        "from":"#tuning","target":{"kind":"Resource","name":"login"},"optional":false}});
+    let (state, c, _) = run_case(REPORT, p, 2);
+    let mut s = GuardScenario {
+        state,
+        c,
+        serial: 100,
+    };
+    let t = s.call(
+        time,
+        "workers.set-up.v1",
+        json!({"instance":{"kind":"Agent","name":"a"}}),
+    );
+    assert_ne!(
+        t.reply["_meta"]["io.github.shrav-k.conduit/outcome"],
+        "succeeded"
+    );
+    assert!(t.records.iter().any(|r| r["type"] == "request-ended"
+        && r["data"]["operation"] == s.c.qualified("open.v1")
+        && r["data"]["reason"] == "refused"
+        && r["data"]["ruleId"] == "CTR-015"));
+    assert!(
+        t.external_intents.is_empty(),
+        "a refused required Conduit starts no run"
+    );
+    let agent = subject(&s.state, "Agent", "a");
+    let child = access::object_by_id(&s.state, &agent["slots"]["conduits"]["tune"]["id"]).unwrap();
+    assert_eq!(child["state"], "registered");
+    assert_eq!(child["open"], false);
+}
+
+#[test]
+fn admission_control_decision_retains_refusal_facts() {
+    let mut s = GuardScenario::new(admission_open_project());
+    let t = s.admission_input(
+        "2026-11-21T13:01:00Z",
+        json!({"kind":"access","request":{
+        "identity":{"kind":"instance","id":subject(&s.state,"Interface","root")["id"]},
+        "tool":"access.open.v1","arguments":{"conduit":"agent-tune"}}}),
+    );
+    assert_eq!(t.reply["reason"], "refused");
+    let d = &t.reply["diagnostics"][0];
+    assert_eq!(d["ruleId"], "CTR-015");
+    assert_eq!(d["properties"]["refusal"]["tier"], 2);
+    let text = d["message"]["text"].as_str().unwrap();
+    for fact in [
+        "agent-tune",
+        "example.org/conformance/shared-login#set-admission.v1",
+        "example.org/conformance/shared-login#login-holder.v1",
+        "Nothing was opened",
+    ] {
+        assert!(text.contains(fact), "missing {fact}");
+    }
+    assert!(t.external_intents.is_empty());
+    assert_eq!(
+        subject(&s.state, "Conduit", "agent-tune")["state"],
+        "registered"
+    );
+}
+
+#[test]
+fn admission_control_records_omit_explanation_fields() {
+    for kind in ["invoke", "access"] {
+        let mut s = GuardScenario::new(admission_open_project());
+        let t = s.admission_input(
+            "2026-11-21T13:01:00Z",
+            json!({"kind":kind,"request":{
+            "identity":{"kind":"instance","id":subject(&s.state,"Interface","root")["id"]},
+            "tool":"access.open.v1","arguments":{"conduit":"agent-tune"}}}),
+        );
+        assert!(t.records.iter().any(|r| r["type"] == "access-decision"));
+        for record in &t.records {
+            for field in ["admissionControl", "rootLoginNotice"] {
+                assert!(
+                    record["data"].get(field).is_none(),
+                    "{kind} {} contains {field}",
+                    record["type"]
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn admission_refusal_fixes_preserve_root_login_notice_facts() {
+    let source = include_str!(
+        "../../../../conformance/conventions/requests/login-resource-one-at-a-time/case.yaml"
+    );
+    let p = project(
+        include_str!(
+            "../../../../conformance/conventions/requests/login-resource-one-at-a-time/conduit.json"
+        ),
+        include_str!(
+            "../../../../conformance/conventions/requests/login-resource-one-at-a-time/documents.json"
+        ),
+    );
+    let (state, c, captures) = run_case(source, p, 20);
+    for kind in ["invoke", "access"] {
+        let mut s = GuardScenario {
+            state: state.clone(),
+            c: c.clone(),
+            serial: 100,
+        };
+        let t = s.admission_input("2026-12-01T13:00:00Z", json!({"kind":kind,"request":{
+            "identity":{"kind":"instance","id":captures["observer"]},
+            "tool":"observer-scope.answer.v1","arguments":{"action":captures["newNotice"],"answer":"acknowledged"}}}));
+        let d = if kind == "invoke" {
+            &t.reply["structuredContent"]["diagnostics"][0]
+        } else {
+            &t.reply["diagnostics"][0]
+        };
+        assert_eq!(d["ruleId"], "PND-009");
+        assert!(
+            d["message"]["text"]
+                .as_str()
+                .unwrap()
+                .contains("Only root answers a login Resource's notice.")
+        );
+        assert!(t.external_intents.is_empty());
+        for record in &t.records {
+            for field in ["admissionControl", "rootLoginNotice"] {
+                assert!(
+                    record["data"].get(field).is_none(),
+                    "{kind} {} contains {field}",
+                    record["type"]
+                );
+            }
+        }
+    }
+}

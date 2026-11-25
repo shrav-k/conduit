@@ -15,6 +15,7 @@ DRAFT = decision.DRAFT + ".\n"
 UNRELEASED = "## [Unreleased]\n"
 STATUS = "Status: accepted, not done (work remains)\n"
 ORDER = "**Preservation tests**: none.\n\n**Should this exist**: yes.\n"
+FRAGMENT = "spec/changes/001-order.md"
 SAFE = "- Changed: engine text in spec/README.md#overview (DEC-001).\n"
 
 
@@ -58,7 +59,8 @@ class DecisionTests(unittest.TestCase):
         file.write_text(contents, encoding="utf-8")
 
     def append(self, path, contents):
-        self.write(path, (self.root / path).read_text(encoding="utf-8") + contents)
+        file = self.root / path
+        self.write(path, (file.read_text(encoding="utf-8") if file.exists() else "") + contents)
 
     def remove(self, *paths):
         for path in paths:
@@ -109,7 +111,7 @@ class DecisionTests(unittest.TestCase):
         self.assertIn("report: spec/sample.yaml: coupling:", self.run_main())
         self.undraft()
         self.assertIn("error: spec/sample.yaml: coupling:", self.run_main(1))
-        self.append(decision.CHANGES, SAFE)
+        self.append(FRAGMENT, SAFE)
         self.assertNotIn(": coupling:", self.run_main())
 
     def test_coupling_ignores_commented_unreleased_item_in_draft_and_live(self):
@@ -166,34 +168,34 @@ class DecisionTests(unittest.TestCase):
         self.remove("spec/definitions.md")
         self.append(decision.CHANGES, "\n## [0.1.0]\n" + SAFE)
         self.assertIn("error: spec/definitions.md: coupling:", self.run_main(1))
-        self.write(decision.CHANGES, UNRELEASED + "- Fixed: ACC-001\n  (DEC-001, ruling 92 pt 1).\n")
+        self.write(FRAGMENT, "- Fixed: ACC-001\n  (DEC-001, ruling 92 pt 1).\n")
         self.assertNotIn(": coupling:", self.run_main())
 
     def test_coupling_commit_after_ignores_worktree(self):
         self.undraft()
         self.base = self.commit()
-        self.append(decision.CHANGES, SAFE)
+        self.append(FRAGMENT, SAFE)
         head = self.commit()
         self.write("spec/README.md", "# Different heading\n")
         self.assertNotIn(": coupling:", self.run_main(after=head))
-        self.assertIn("error: spec/CHANGES.md:", self.run_main(1))
+        self.assertIn("error: spec/changes/001-order.md:1:", self.run_main(1))
 
     def test_changes_line_keeps_promises_anchor_and_terms(self):
-        self.append(decision.CHANGES, "- Added: ACC-001 (DEC-001).\n"
+        self.append(FRAGMENT, "- Added: ACC-001 (DEC-001).\n"
                     "- Fixed: `<!--` in the `document` and `object, document` terms (ruling 1).\n" + SAFE)
         self.assertNotIn(": CHANGES lines:", self.run_main())
 
     def test_changes_line_does_not_accept_indented_code_as_definitions(self):
         self.append(decision.DEFINITIONS, "\n    | Term | Explanation |\n"
                     "    | --- | --- |\n    | simulated | An example. |\n")
-        self.append(decision.CHANGES, "- Fixed: the `simulated` term (DEC-001).\n")
+        self.append(FRAGMENT, "- Fixed: the `simulated` term (DEC-001).\n")
         self.assertIn("expected a spec anchor or a backticked definitions term", self.run_main(1))
 
     def test_changes_line_validates_a_nested_bullet_separately(self):
-        self.append(decision.CHANGES, "- Added: ACC-001 (DEC-001).\n"
+        self.append(FRAGMENT, "- Added: ACC-001 (DEC-001).\n"
                     "    - Updated: ACC-001 (DEC-001).\n")
         output = self.run_main(1)
-        self.assertIn("error: spec/CHANGES.md:5: CHANGES lines:", output)
+        self.assertIn("error: spec/changes/001-order.md:2: CHANGES lines:", output)
         self.assertEqual(output.count(": CHANGES lines:"), 1)
 
     def test_changes_line_rejects_wrong_kind_citations_and_subjects(self):
@@ -206,11 +208,11 @@ class DecisionTests(unittest.TestCase):
                  "- Changed: spec/README.md#absent (DEC-001).\n",
                  "- Changed: `Term` (DEC-001).\n",
                  "+ Changed: ACC-001 (DEC-001).\n"]
-        self.append(decision.CHANGES, "".join(items))
+        self.append(FRAGMENT, "".join(items))
         self.assertEqual(self.run_main(1).count(": CHANGES lines:"), len(items))
 
     def test_changes_line_removed_must_have_left_the_standing(self):
-        self.append(decision.CHANGES, "- Removed: OPS-002 (ruling 78 pt 17).\n")
+        self.append(FRAGMENT, "- Removed: OPS-002 (ruling 78 pt 17).\n")
         self.assertIn("unexpected promise standing for OPS-002", self.run_main(1))
         self.standing(no_case=0, keep_b=False)
         self.assertNotIn(": CHANGES lines:", self.run_main())
@@ -224,8 +226,7 @@ class DecisionTests(unittest.TestCase):
         )
         for subject, finding in cases:
             with self.subTest(subject=subject):
-                self.write(decision.CHANGES, DRAFT + UNRELEASED
-                           + f"- Changed: {subject} (DEC-001).\n")
+                self.write(FRAGMENT, f"- Changed: {subject} (DEC-001).\n")
                 output = self.run_main(int(finding is not None))
                 if finding is None:
                     self.assertNotIn(": CHANGES lines:", output)
@@ -245,7 +246,7 @@ class DecisionTests(unittest.TestCase):
             ("Added", "ZZZ-002", False),
         ):
             with self.subTest(kind=kind, ref=ref):
-                self.write(decision.CHANGES, DRAFT + UNRELEASED + f"- {kind}: {ref} (DEC-001).\n")
+                self.write(FRAGMENT, f"- {kind}: {ref} (DEC-001).\n")
                 output = self.run_main(int(not valid))
                 if valid:
                     self.assertNotIn(": CHANGES lines:", output)
@@ -253,8 +254,9 @@ class DecisionTests(unittest.TestCase):
                     self.assertIn(f"unexpected promise standing for {ref}", output)
 
     def test_changes_line_checks_additions_but_not_released_movement(self):
-        self.append(decision.CHANGES, "- Older wording.\n")
+        self.append(FRAGMENT, "- Older wording.\n")
         self.base = self.commit()
+        self.remove(FRAGMENT)
         self.write(decision.CHANGES, DRAFT + UNRELEASED + "\n## [0.1.0]\n- Older wording.\n")
         self.assertNotIn(": CHANGES lines:", self.run_main())
 
@@ -443,7 +445,7 @@ class DecisionTests(unittest.TestCase):
     def test_not_done_boundary_and_dormancy(self):
         self.append(decision.LOG, self.entry(2, "2026-11-21"))
         self.base = self.commit()
-        self.append(decision.CHANGES, "- Changed: OPS-002 (DEC-001).\n- Added: OPS-002 (DEC-002).\n")
+        self.append(FRAGMENT, "- Changed: OPS-002 (DEC-001).\n- Added: OPS-002 (DEC-002).\n")
         output = self.run_main(1)
         self.assertIn("Not-done ratchet: base 0, head 1, entries dated before 2026-11-21.", output)
         self.assertIn("dormant decision: DEC-001 is not done", output)
@@ -452,7 +454,7 @@ class DecisionTests(unittest.TestCase):
         self.assertIn("Not-done ratchet: base 1, head 1", self.run_main())
 
     def test_not_done_reads_ids_only_in_standing_families(self):
-        self.append(decision.CHANGES,
+        self.append(FRAGMENT,
                     "- Changed: SHA-256 in spec/README.md#overview (DEC-001).\n")
         output = self.run_main()
         self.assertIn("Not-done ratchet: base 0, head 0", output)
@@ -466,7 +468,7 @@ class DecisionTests(unittest.TestCase):
 
     def test_not_done_removal_prose_and_passing_case_count_as_done(self):
         self.append(decision.LOG, self.entry(2) + self.entry(3, status="") + self.entry(4))
-        self.append(decision.CHANGES, SAFE + "- Removed: OPS-002 (DEC-002).\n")
+        self.append(FRAGMENT, SAFE + "- Removed: OPS-002 (DEC-002).\n")
         self.standing(no_case=0, keep_b=False)
         output = self.run_main()
         self.assertIn("Not-done ratchet: base 0, head 0", output)
@@ -475,11 +477,99 @@ class DecisionTests(unittest.TestCase):
         self.assertNotIn("dormant decision: DEC-002", output)
 
     def test_not_done_can_fall_and_notes_only_final_citations(self):
-        self.append(decision.CHANGES, "- Added: OPS-002 (DEC-001).\n")
+        self.append(FRAGMENT, "- Added: OPS-002 (DEC-001).\n")
         self.base = self.commit()
-        self.write(decision.CHANGES, DRAFT + UNRELEASED
-                   + "- Changed: ACC-001, discussed above in DEC-102 (DEC-001).\n")
+        self.write(FRAGMENT, "- Changed: ACC-001, discussed above in DEC-102 (DEC-001).\n")
         self.assertIn("Not-done ratchet: base 1, head 0", self.run_main())
+
+
+    def test_fragment_item_satisfies_coupling(self):
+        self.undraft()
+        self.write(FRAGMENT, SAFE)
+        self.assertNotIn(": coupling:", self.run_main())
+        self.write("spec/sample.yaml", "changed: true\n")
+        self.assertNotIn(": coupling:", self.run_main())
+
+    def test_fragment_item_form_is_checked(self):
+        self.write(FRAGMENT, "- Older wording.\n")
+        self.assertIn("error: spec/changes/001-order.md:1: CHANGES lines:", self.run_main(1))
+
+    def test_fragment_unreleased_line_in_changes_refused(self):
+        self.append(decision.CHANGES, SAFE)
+        for live in (False, True):
+            with self.subTest(live=live):
+                if live:
+                    self.undraft()
+                output = self.run_main(1)
+                self.assertEqual(output.count(": fragments:"), 1)
+                self.assertIn("add it to a fragment under spec/changes/ (DEC-177)", output)
+
+    def test_fragment_release_moves_lines(self):
+        self.write(FRAGMENT, SAFE)
+        self.base = self.commit()
+        self.remove(FRAGMENT)
+        self.append(decision.CHANGES, "\n## [0.1.0]\n" + SAFE)
+        self.assertNotIn("error:", self.run_main())
+
+    def test_fragment_files_are_named_lists(self):
+        for path, contents in (("spec/changes/Order.md", SAFE),
+                               ("spec/changes/sub/001.md", SAFE),
+                               (FRAGMENT, "# Heading\n" + SAFE),
+                               (FRAGMENT, ""),
+                               (FRAGMENT, "- <!-- hidden -->\n"),
+                               (FRAGMENT, SAFE + "    bad indentation\n"),
+                               (FRAGMENT, SAFE + "prose\n")):
+            with self.subTest(path=path, contents=contents):
+                self.write(path, contents)
+                self.assertEqual(self.run_main(1).count(": fragments:"), 1)
+                self.remove(path)
+        self.write("spec/changes/README.md", "Prose.\n")
+        self.assertNotIn(": fragments:", self.run_main())
+        # Both working-tree and committed symlinks must be refused without following them.
+        (self.root / FRAGMENT).symlink_to("README.md")
+        self.assertEqual(self.run_main(1).count(": fragments:"), 1)
+        head = self.commit()
+        self.assertEqual(self.run_main(1, after=head).count(": fragments:"), 1)
+        self.remove(FRAGMENT)
+        self.git("update-index", "--add", "--cacheinfo", "160000," + self.base + "," + FRAGMENT)
+        self.git("-c", "user.name=Conduit work order", "-c", "user.email=work-orders@conduit.invalid",
+                 "-c", "commit.gpgsign=false", "commit", "-qm", "gitlink fixture")
+        self.assertEqual(self.run_main(1, after="HEAD").count(": fragments:"), 1)
+
+    def test_fragment_items_feed_the_ratchet(self):
+        self.write(FRAGMENT, "- Added: OPS-002 (DEC-001).\n")
+        self.assertIn("Not-done ratchet: base 0, head 1", self.run_main(1))
+
+    def test_fragment_comment_only_bullet_refused_beside_valid_item(self):
+        for live in (False, True):
+            if live:
+                self.undraft()
+            for bullet in ("- <!-- hidden -->\n", "- <!-- one --> <!-- two -->\n",
+                           "- <!-- hidden\n  still hidden -->\n"):
+                with self.subTest(bullet=bullet, live=live):
+                    self.write(FRAGMENT, SAFE + bullet + SAFE)
+                    output = self.run_main(1)
+                    self.assertIn("error: spec/changes/001-order.md:2: fragments:", output)
+                    self.assertEqual(output.count(": fragments:"), 1)
+
+    def test_fragment_draft_prints_unreleased(self):
+        self.append(decision.CHANGES, SAFE)
+        second = "- Added: ACC-001\n  <!-- explanation -->\n  (DEC-001).\n"
+        first = "- Fixed: ACC-001 (DEC-001).\n"
+        self.write("spec/changes/002-b.md", second)
+        self.write("spec/changes/001-a.md", first)
+        head = self.commit()
+        for revision in ("WORKTREE", head):
+            with self.subTest(revision=revision), \
+                    mock.patch.object(Path, "cwd", return_value=self.root), \
+                    contextlib.redirect_stdout(io.StringIO()) as output:
+                self.assertEqual(decision.main(["--draft", revision]), 0)
+                self.assertEqual(output.getvalue(), UNRELEASED + "\n" + SAFE + first + second)
+        for args in (["--draft", "WORKTREE", self.base, "WORKTREE"],
+                     ["--draft", "WORKTREE", self.base], ["--draft", "no-such-revision"]):
+            with self.subTest(args=args), mock.patch.object(Path, "cwd", return_value=self.root), \
+                    contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(decision.main(args), 2)
 
 
 if __name__ == "__main__":

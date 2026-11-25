@@ -50,8 +50,8 @@ if a line of IN_FORCE.md differs from them ([ruling 67](https://github.com/shrav
   that needs it. The owner makes the rulings. Do not record a recommendation as accepted.
 - **A defect in the language** is fixed in the language, not around it. Give the coordinator a
   dated report for findings against `spec/`. The report stays outside the tree, and its findings
-  go to `spec/` with `spec/CHANGES.md` entries, the decision log, ROADMAP.md or work orders. The
-  [defect register](docs/LANGUAGE_DEFECTS.md) holds the first sweep, which read the protocol topics that ruling 39 removed.
+  go to `spec/` with fragments under `spec/changes/`, the decision log, ROADMAP.md or work orders.
+  The [defect register](docs/LANGUAGE_DEFECTS.md) holds the first sweep, which read the protocol topics that ruling 39 removed.
 - **The state of the work** is tracked in the [plan audit](docs/AUDIT.md), and its order and its
   experiments and probes in the [roadmap](ROADMAP.md).
 - **The first build** follows [its increments](docs/implementation/FIRST_BUILD.md) and logs

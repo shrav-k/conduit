@@ -18,19 +18,19 @@ everything the promises say it exports, and everything first start needs.
 | File | Holds |
 | --- | --- |
 | [conduit.yaml](conduit.yaml) | The package's manifest: its address, its version, its exports and its one implementation, the engine itself |
-| [operations.yaml](operations.yaml) | The 41 Operation contracts: every management verb, the setup, retire and sign-in hooks and the admission hook, the operations that the engine invokes by provider calls, and the one operation of a secret Resource |
-| [capabilities.yaml](capabilities.yaml) | The 8 Capability contracts: what `management`, `access`, Pools and Fleets offer, and the four provider capabilities: a runtime provider, the machine provider, a package-source provider and a secret Resource |
-| [types.yaml](types.yaml) | The 7 Type contracts: the basic Interface, Pool and Fleet types, and the types of a node, of a value, of `management` and of `access` |
-| [requirements.yaml](requirements.yaml) | The 2 Requirement contracts: the bound of a right to open, and the shared-host requirement |
-| [references.yaml](references.yaml) | The 13 reference schemas: the Schema contracts that make a value a reference (OBJ-021), a secret reference among them (SEC-001). Each also accepts the resolved form `{kind, id}`, which only the engine writes |
-| [results.yaml](results.yaml) | 17 Schema contracts: an object as a result names it, a diagnostic, a condition, a record, a call's usage, a call's limits, an instance's limits, a login's admission report, why a call on a login was held, a login's admission state, an inventory, a tombstone, opening provenance and a trust domain |
-| [templates.yaml](templates.yaml) | The 20 templates: first-start objects and Conduits, file Pools, defaults, scoped administration, explicit cascades and a value Resource |
+| [operations.yaml](operations.yaml) | The Operation contracts: every management verb, the setup, retire and sign-in hooks and the admission hook, the operations that the engine invokes by provider calls, and the one operation of a secret Resource |
+| [capabilities.yaml](capabilities.yaml) | The Capability contracts: what `management`, `access`, Pools and Fleets offer, and the four provider capabilities: a runtime provider, the machine provider, a package-source provider and a secret Resource |
+| [types.yaml](types.yaml) | The Type contracts: the basic Interface, Pool and Fleet types, and the types of a node, of a value, of `management` and of `access` |
+| [requirements.yaml](requirements.yaml) | The Requirement contracts: the bound of a right to open, and the shared-host requirement |
+| [references.yaml](references.yaml) | The reference schemas: the Schema contracts that make a value a reference (OBJ-021), a secret reference among them (SEC-001). Each also accepts the resolved form `{kind, id}`, which only the engine writes |
+| [results.yaml](results.yaml) | Schema contracts: an object as a result names it, a diagnostic, a condition, a record, a call's usage, a call's limits, an instance's limits, a login's admission report, why a call on a login was held, a login's admission state, an inventory, a tombstone, opening provenance and a trust domain |
+| [templates.yaml](templates.yaml) | The templates: first-start objects and Conduits, file Pools, defaults, scoped administration, explicit cascades and a value Resource |
 
-The package also exports the 52 Schema contracts under [spec/schemas](../schemas/README.md),
+The package also exports the Schema contracts under [spec/schemas](../schemas/README.md),
 which are the schemas of documents themselves. They are part of this package because a `$ref`
 from one schema to another names a Schema contract (SCH-015), and because `register.v1` states
-its inputs with them. In all the package exports 160 documents, 82 of them Schema contracts,
-and has one implementation, which is also an export (PKG-019).
+its inputs with them. The package has one implementation, which is also an export (PKG-019);
+step 5 of `python3 tools/check_schemas.py` gives how many documents it exports.
 
 A document of the core package refers to another by its full address, as
 `github.com/shrav-k/conduit/core#name`. That is the one exception to the rule that a document

@@ -186,7 +186,7 @@ not check. For each finding give:
 
 Report unclear entry text as well as defects in promises. Separate observed results from
 reasoning and proposed tests. Keep recommendations pending: the owner rules, or the
-coordinator decides under ruling 37. Findings go to `spec/` with `spec/CHANGES.md` entries,
+coordinator decides under ruling 37. Findings go to `spec/` with fragments under `spec/changes/`,
 the decision log, ROADMAP.md or work orders. Round 6's
 [decisions](https://github.com/shrav-k/conduit/blob/077fa47ecd4d2172d4f9204c6fcbf0f43a4e2b9d/docs/proposals/reaudit/round-6/DECISIONS.md) show that separate step.
 

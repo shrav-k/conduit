@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression checks for the promise totals stated in spec/README.md."""
+"""Regression checks for computed promise totals and README counts."""
 
 import contextlib
 import io
@@ -33,18 +33,14 @@ class PromiseTotalsChecks(unittest.TestCase):
             ]), encoding="utf-8")
         self.rows = (
             "| [promises/a.yaml](promises/a.yaml) | A | "
-            "Draft; 2 promises; vectors test slices of 1 promises |\n",
+            "Draft |\n",
             "| [conventions/b.yaml](conventions/b.yaml) | B | "
-            "Draft; 1 promise; no vectors yet |\n",
-            "| [interface/c.yaml](interface/c.yaml) | C | Draft; 1 promise |\n",
-        )
-        self.sentence = (
-            "Every area has been written as promises, 4 in all: 1 of the layer `language`,\n"
-            "2 of the layer `convention` and 1 of the layer `interface`.\n"
+            "Draft |\n",
+            "| [interface/c.yaml](interface/c.yaml) | C | Draft |\n",
         )
         self.readme = (
             "## Contents\n\n| Path | Part | State |\n| --- | --- | --- |\n"
-            + "".join(self.rows) + "\n" + self.sentence
+            + "".join(self.rows)
             + "\n### Promise files that rulings removed\n\n"
             "| File | IDs it held | Removed by |\n| --- | --- | --- |\n"
             "\n## The form of a promise\n"
@@ -60,7 +56,7 @@ class PromiseTotalsChecks(unittest.TestCase):
             schemas.check_promise_totals(counts)
         return counts, errors, output.getvalue()
 
-    def test_totals_that_agree_pass(self):
+    def test_stored_count_absent_prints_totals(self):
         counts, errors, output = self.run_checks()
         self.assertEqual(errors, [])
         self.assertEqual(counts, (
@@ -68,76 +64,60 @@ class PromiseTotalsChecks(unittest.TestCase):
             {"language": 1, "convention": 2, "interface": 1},
         ))
         self.assertIn(
-            "8. Compared the promise totals that spec/README.md states with the promise files: "
-            "4 promises in 3 files, 1 of the layer `language`, 2 of the layer `convention` and "
-            "1 of the layer `interface`; 0 errors.", output.splitlines())
+            "8. Counted 4 promises in 3 files: 1 of the layer `language`, "
+            "2 of the layer `convention` and 1 of the layer `interface`; "
+            "spec/README.md's Contents has a row for each, and the three READMEs "
+            "state no count; 0 errors.", output.splitlines())
 
-    def test_each_number_wrong_by_one_fails(self):
-        changes = [
-            ("4 in all:", "5 in all:",
-             "spec/README.md: states 5 promises in all, and the promise files hold 4"),
-        ]
-        for layer, count in (("language", 1), ("convention", 2), ("interface", 1)):
-            changes.append((
-                f"{count} of the layer `{layer}`", f"{count + 1} of the layer `{layer}`",
-                f"spec/README.md: states {count + 1} promises of the layer `{layer}`, "
-                f"and the promise files hold {count}",
-            ))
-        for row, path, count in zip(self.rows, (
-                "promises/a.yaml", "conventions/b.yaml", "interface/c.yaml"), (2, 1, 1)):
-            changes.append((
-                row, row.replace(f"Draft; {count} promise", f"Draft; {count + 1} promise"),
-                f"spec/README.md: the Contents table gives {path} {count + 1} promises, "
-                f"and the file holds {count}",
-            ))
-        for old, new, error in changes:
-            with self.subTest(stated=new):
-                _, errors, _ = self.run_checks(self.readme.replace(old, new))
-                self.assertEqual(errors, [error])
+    def test_stored_count_fails(self):
+        for path, text, match in (
+            ("spec/README.md", self.readme.replace("Draft", "Draft; 2 promises", 1), "2 promises"),
+            ("spec/README.md", self.readme + "4 in all:\n", "4 in all"),
+            ("spec/README.md", self.readme + "1 of the layer\n", "1 of the layer"),
+            ("spec/core/README.md", "# Core\nThe 40 Operation contracts:\n", "40 Operation contracts"),
+            ("spec/schemas/README.md", "# Examples\n| 77 files, each\n", "77 files"),
+        ):
+            with self.subTest(path=path, match=match):
+                file = self.root / path
+                if path != "spec/README.md":
+                    file.parent.mkdir(parents=True, exist_ok=True)
+                    file.write_text(text, encoding="utf-8")
+                _, errors, _ = self.run_checks(text if path == "spec/README.md" else None)
+                line = text.count("\n", 0, text.index(match)) + 1
+                self.assertEqual(errors, [
+                    f'{path}:{line}: states the count "{match}"; '
+                    'the checkers give counts instead (DEC-177)',
+                ])
+                if path != "spec/README.md":
+                    file.unlink()
 
-    def test_rows_and_sentence_must_be_there(self):
-        sentence_error = (
-            'spec/README.md: under Contents, the sentence of the promise totals '
-            '("N in all: N of the layer `language`, N of the layer `convention` and '
-            'N of the layer `interface`") appears 0 times; it must appear once'
-        )
+    def test_stored_count_ignores_modes_and_names(self):
+        _, errors, _ = self.run_checks(self.readme + "\n" + "\n".join((
+            "mode-0600 files", "0700 directory with 0600 files", "each S1 promise's",
+            "DEC-177 promises", "the 0.2.1 contracts",
+        )))
+        self.assertEqual(errors, [])
+
+    def test_rows_must_be_there(self):
         changes = (
             (self.rows[1], "",
              "spec/README.md: the Contents table has 0 rows for conventions/b.yaml; "
-             "it must have one, stating the file's number of promises"),
+             "it must have one"),
             (self.rows[0], self.rows[0]
-             + "| [promises/gone.yaml](promises/gone.yaml) | Gone | Draft; 3 promises |\n",
+             + "| [promises/gone.yaml](promises/gone.yaml) | Gone | Draft |\n",
              "spec/README.md: the Contents table has a row for promises/gone.yaml, which is "
              "not a promise file under spec/promises/, spec/conventions/ or spec/interface/"),
             (self.rows[0], self.rows[0] * 2,
              "spec/README.md: the Contents table has 2 rows for promises/a.yaml; "
-             "it must have one, stating the file's number of promises"),
-            (self.rows[0], self.rows[0].replace("Draft; 2 promises;", "Draft;"),
-             "spec/README.md: the Contents row for promises/a.yaml states its number of "
-             'promises 0 times; it must state it once, as "N promises"'),
-            (self.sentence, "", sentence_error),
+             "it must have one"),
             ("## Contents\n", "",
-             'spec/README.md: has no line "## Contents", so the promise totals it states '
-             'were not compared'),
+             'spec/README.md: has no line "## Contents", so its promise-file rows '
+             'were not checked'),
         )
         for old, new, error in changes:
             with self.subTest(error=error):
                 _, errors, _ = self.run_checks(self.readme.replace(old, new))
                 self.assertEqual(errors, [error])
-
-    def test_empty_final_state_cell_has_no_promise_count(self):
-        for row in (
-            "|[promises/a.yaml](promises/a.yaml)|2 promises||\n",
-            "[promises/a.yaml](promises/a.yaml)|2 promises||\n",
-            "| [promises/a.yaml](promises/a.yaml) | 2 promises | |\n",
-            "[promises/a.yaml](promises/a.yaml)|2 promises| |\n",
-        ):
-            with self.subTest(row=row):
-                _, errors, _ = self.run_checks(self.readme.replace(self.rows[0], row))
-                self.assertEqual(errors, [
-                    "spec/README.md: the Contents row for promises/a.yaml states its number "
-                    'of promises 0 times; it must state it once, as "N promises"',
-                ])
 
     def test_balanced_brackets_in_link_label(self):
         for label in ("promises/[a].yaml", "promises/[[a]].yaml"):
@@ -149,7 +129,7 @@ class PromiseTotalsChecks(unittest.TestCase):
     def test_balanced_parentheses_in_unknown_link_target(self):
         for path in ("promises/gone(copy).yaml", "promises/gone(copy(2)).yaml"):
             with self.subTest(path=path):
-                row = f"| [gone]({path}) | Gone | Draft; 3 promises |\n"
+                row = f"| [gone]({path}) | Gone | Draft |\n"
                 _, errors, _ = self.run_checks(
                     self.readme.replace(self.rows[0], self.rows[0] + row))
                 self.assertEqual(errors, [
@@ -166,7 +146,7 @@ class PromiseTotalsChecks(unittest.TestCase):
                 _, errors, _ = self.run_checks(self.readme.replace(self.rows[0], row))
                 self.assertEqual(errors, [])
                 row += ("| [gone](" + form.format("promises/gone.yaml")
-                        + ") | Gone | Draft; 3 promises |\n")
+                        + ") | Gone | Draft |\n")
                 _, errors, _ = self.run_checks(self.readme.replace(self.rows[0], row))
                 self.assertEqual(errors, [
                     "spec/README.md: the Contents table has a row for promises/gone.yaml, which "
@@ -175,7 +155,7 @@ class PromiseTotalsChecks(unittest.TestCase):
                 ])
         path = "promises/gone(.yaml"
         with self.subTest(form="<{}>", path=path):
-            row = self.rows[0] + f"| [gone](<{path}>) | Gone | Draft; 3 promises |\n"
+            row = self.rows[0] + f"| [gone](<{path}>) | Gone | Draft |\n"
             _, errors, _ = self.run_checks(self.readme.replace(self.rows[0], row))
             self.assertEqual(errors, [
                 f"spec/README.md: the Contents table has a row for {path}, which is not "
@@ -186,7 +166,7 @@ class PromiseTotalsChecks(unittest.TestCase):
         row = self.rows[0].replace("[promises/a.yaml]", "[promises/a.yaml\\|A]")
         _, errors, _ = self.run_checks(self.readme.replace(self.rows[0], row))
         self.assertEqual(errors, [])
-        row += "| [Gone\\|old](promises/gone.yaml) | Gone | Draft; 3 promises |\n"
+        row += "| [Gone\\|old](promises/gone.yaml) | Gone | Draft |\n"
         _, errors, _ = self.run_checks(self.readme.replace(self.rows[0], row))
         self.assertEqual(errors, [
             "spec/README.md: the Contents table has a row for promises/gone.yaml, which is not "
@@ -203,8 +183,8 @@ class PromiseTotalsChecks(unittest.TestCase):
             "spec/conventions/b.yaml promise 1 (B-001): invalid layer 'wrong'",
         ])
         self.assertIn(
-            "8. NOT RUN: step 7 found errors in the promise files, so the promise totals "
-            "that spec/README.md states were not compared.", output.splitlines())
+            "8. NOT RUN: step 7 found errors in the promise files, so promise totals, "
+            "Contents rows and stored README counts were not checked.", output.splitlines())
 
 
 if __name__ == "__main__":

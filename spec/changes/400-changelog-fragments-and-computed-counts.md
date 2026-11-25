@@ -1,0 +1,1 @@
+- Changed: `spec/README.md#contents`, `spec/core/README.md` and `spec/schemas/README.md` state no count of promises, documents, contracts, templates, files or items, and `tools/check_schemas.py` gives the promise totals in its step 8 (DEC-177).

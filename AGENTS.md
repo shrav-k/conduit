@@ -116,6 +116,9 @@ describes. If you were started with an order from `docs/work-orders/`:
 - Apply the decisions the order states. Do not reopen them. Where one cannot be applied as written,
   apply the nearest sound reading and say so in your report.
 - Change only the files in the order's scope. Report anything else that needs changing.
+- An order that changes `spec/` writes its changelog lines in its own fragment under
+  `spec/changes/`, whatever its scope lists, and adds no count to a README
+  ([HOW-WE-WORK section 8](HOW-WE-WORK.md#8-records-where-each-fact-lives)).
 - Do not commit, push, open a pull request or switch branches: the admin session does.
 - Do not edit `~/.claude`, `~/.claude.json`, `~/.codex/config.toml` or any other configuration of
   the owner's, and never read, print or copy a credential.

@@ -68,6 +68,8 @@ From [DEC-004](docs/decisions/log.md#dec-004-2026-11-20-the-scope-guard-and-v0s-
 1. **Git is the archive.** A retired file leaves the tree, and a link to it points at its last commit. (DEC-031) `checked: tools/check_docs.py`
 2. **The archive's index** ([docs/archive/README.md](docs/archive/README.md)) keeps one line per retired item. (DEC-031) `by review`
 3. **Tracking stays in the repository**, as rows of [ROADMAP.md](ROADMAP.md), with no GitHub issues for now; the scheme for tracking is discussed when the repository becomes a GitHub organization. (DEC-031) `by review`
+4. **Changelog fragments.** A change to `spec/` writes its lines in its own fragment under `spec/changes/`, in the form [spec/CHANGES.md](spec/CHANGES.md) states; a release moves them into that file. (DEC-177) `checked: tools/check_decisions.py`
+5. **No stored counts.** The READMEs of `spec/`, `spec/core/` and `spec/schemas/` state no count; the checkers print the totals. (DEC-177) `checked: tools/check_schemas.py`
 
 ## 9. Publication and organization
 

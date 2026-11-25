@@ -13,6 +13,7 @@ use std::{
 struct StandIn {
     home: PathBuf,
     token: String,
+    write: bool,
 }
 
 impl StandIn {
@@ -41,6 +42,51 @@ impl ServerHandler for StandIn {
         _: RequestContext<RoleServer>,
     ) -> Result<ListToolsResult, ErrorData> {
         let mode = self.mode();
+        if self.write {
+            let rows = [
+                (
+                    "list_pull_requests",
+                    vec!["owner", "repo", "state", "head", "base"],
+                ),
+                (
+                    "create_pull_request",
+                    vec!["owner", "repo", "title", "head", "base", "body"],
+                ),
+                (
+                    "pull_request_read",
+                    vec!["method", "owner", "repo", "pullNumber"],
+                ),
+                (
+                    "merge_pull_request",
+                    vec![
+                        "owner",
+                        "repo",
+                        "pullNumber",
+                        "merge_method",
+                        "commit_title",
+                        "commit_message",
+                        "expectedHeadSha",
+                    ],
+                ),
+            ];
+            let tools = rows
+                .into_iter()
+                .filter(|(name, _)| mode != "missing-write-tool" || *name != "merge_pull_request")
+                .map(|(name, fields)| {
+                    let properties: serde_json::Map<String, Value> = fields
+                        .into_iter()
+                        .filter(|field| {
+                            mode != "missing-expected-head" || *field != "expectedHeadSha"
+                        })
+                        .map(|field| (field.into(), json!({})))
+                        .collect();
+                    serde_json::from_value(json!({"name":name,
+                        "inputSchema":{"type":"object","properties":properties}}))
+                    .unwrap()
+                })
+                .collect();
+            return Ok(ListToolsResult::with_all_items(tools));
+        }
         let tools = OPERATIONS
             .into_iter()
             .filter(|op| mode != "missing-tool" || op.tool != "pull_request_read")
@@ -69,6 +115,9 @@ impl ServerHandler for StandIn {
         let mode = self.mode();
         let arguments = Value::Object(request.arguments.unwrap_or_default());
         self.record(json!({"tool":request.name,"arguments":arguments}));
+        if self.write {
+            return Ok(self.write_call(&request.name, &arguments).await);
+        }
         let number = ["issue_number", "pullNumber", "perPage"]
             .iter()
             .find_map(|key| arguments.get(key))
@@ -96,6 +145,7 @@ async fn main() {
     let fixture = StandIn {
         home: PathBuf::from(env::var_os("HOME").unwrap()),
         token: env::var(TOKEN_VARIABLE).unwrap(),
+        write: !env::args().any(|arg| arg == "--read-only"),
     };
     // Collect names only. The token itself is used in the synthetic wire
     // response tests and never included in a fixture record.
@@ -121,5 +171,126 @@ async fn main() {
         .await;
     if stay_alive {
         std::future::pending::<()>().await;
+    }
+}
+
+impl StandIn {
+    async fn write_call(&self, tool: &str, args: &Value) -> CallToolResponse {
+        let mode = self.mode();
+        let path = self.home.join("pulls.json");
+        let mut pulls: Vec<Value> =
+            serde_json::from_str(&fs::read_to_string(&path).unwrap_or_else(|_| "[]".into()))
+                .unwrap();
+        let is_write = matches!(tool, "create_pull_request" | "merge_pull_request");
+        let response = |value: Value, error: bool| {
+            serde_json::from_value::<CallToolResult>(json!({
+                "content":[{"type":"text","text":value.to_string()}],"isError":error
+            }))
+            .unwrap()
+            .into()
+        };
+        if is_write {
+            match mode.as_str() {
+                "write-exit" => std::process::exit(0),
+                "write-hold" => std::future::pending::<()>().await,
+                "error-no-effect" => {
+                    return response(json!(format!("synthetic refusal {}", self.token)), true);
+                }
+                "write-too-big" => return response(json!({"x":"x".repeat(MAX_TEXT)}), false),
+                "write-not-json" => {
+                    return serde_json::from_value::<CallToolResult>(json!({
+                        "content":[{"type":"text","text":"not JSON"}],"isError":false
+                    }))
+                    .unwrap()
+                    .into();
+                }
+                _ => {}
+            }
+        }
+        let result = match tool {
+            "list_pull_requests" => json!(
+                pulls
+                    .iter()
+                    .filter(|pr| {
+                        pr["state"] == "open"
+                            && pr["base"]["ref"] == args["base"]
+                            && format!(
+                                "{}:{}",
+                                args["owner"].as_str().unwrap(),
+                                pr["head"]["ref"].as_str().unwrap()
+                            ) == args["head"].as_str().unwrap()
+                    })
+                    .collect::<Vec<_>>()
+            ),
+            "create_pull_request" => {
+                if pulls.iter().any(|pr| {
+                    pr["state"] == "open"
+                        && pr["base"]["ref"] == args["base"]
+                        && pr["head"]["ref"] == args["head"]
+                }) {
+                    return response(json!("already open"), true);
+                }
+                let number = pulls
+                    .iter()
+                    .filter_map(|pr| pr["number"].as_u64())
+                    .max()
+                    .unwrap_or(0)
+                    + 1;
+                pulls.push(json!({"number":number,"head":{"ref":args["head"],
+                    "sha":"1111111111111111111111111111111111111111"},
+                    "base":{"ref":args["base"]},"state":"open","merged":false}));
+                let repo = if mode == "wrong-url" {
+                    "other"
+                } else {
+                    args["repo"].as_str().unwrap()
+                };
+                json!({"id":9000 + number,"url":format!("https://github.com/{}/{repo}/pull/{number}",args["owner"].as_str().unwrap())})
+            }
+            "pull_request_read" => {
+                let Some(pr) = pulls
+                    .iter_mut()
+                    .find(|pr| pr["number"] == args["pullNumber"])
+                else {
+                    return response(json!("not found"), true);
+                };
+                if pr["merged"] == true {
+                    if mode == "error-after-effect-unreadable" {
+                        return response(json!("synthetic readback failure"), true);
+                    }
+                    if mode == "error-after-effect-malformed" {
+                        return response(json!({"merged":true}), false);
+                    }
+                }
+                let result = pr.clone();
+                if mode == "move-head" {
+                    pr["head"]["sha"] = json!("2222222222222222222222222222222222222222");
+                }
+                result
+            }
+            "merge_pull_request" => {
+                let Some(pr) = pulls
+                    .iter_mut()
+                    .find(|pr| pr["number"] == args["pullNumber"])
+                else {
+                    return response(json!("not found"), true);
+                };
+                if pr["head"]["sha"] != args["expectedHeadSha"] {
+                    return response(json!("head changed"), true);
+                }
+                if pr["state"] != "open" || pr["merged"] != false {
+                    return response(json!("not open"), true);
+                }
+                assert_eq!(args["merge_method"], "squash");
+                pr["state"] = json!("closed");
+                pr["merged"] = json!(true);
+                json!({"sha":"3333333333333333333333333333333333333333","merged":true,"message":"merged"})
+            }
+            _ => return response(json!("unknown tool"), true),
+        };
+        fs::write(path, serde_json::to_vec(&pulls).unwrap()).unwrap();
+        if is_write && mode.starts_with("error-after-effect") {
+            return response(json!("synthetic error after effect"), true);
+        }
+        response(result, false)
     }
 }

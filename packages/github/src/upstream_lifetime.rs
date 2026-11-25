@@ -21,7 +21,7 @@ const START_FAILED: u8 = 2;
 #[doc(hidden)]
 pub const SUPERVISE_UPSTREAM: &str = "--supervise-upstream";
 
-pub(crate) fn spawn() -> Result<(Child, UnixStream), &'static str> {
+pub(crate) fn spawn(write: bool) -> Result<(Child, UnixStream), &'static str> {
     let path = std::env::var_os("PATH")
         .filter(|path| !path.is_empty())
         .ok_or("github-mcp-server was not found on PATH")?;
@@ -31,6 +31,7 @@ pub(crate) fn spawn() -> Result<(Child, UnixStream), &'static str> {
     let front = nonblocking(front).map_err(|_| failed)?;
     let child = Command::new(std::env::current_exe().map_err(|_| failed)?)
         .arg(SUPERVISE_UPSTREAM)
+        .args(write.then_some("--write"))
         .env_clear()
         .env("PATH", path)
         .env("HOME", home)
@@ -63,7 +64,7 @@ pub(crate) async fn start(control: &mut UnixStream, token: &str) -> Result<(), &
 }
 
 #[doc(hidden)]
-pub async fn supervise_upstream() -> io::Result<()> {
+pub async fn supervise_upstream(write: bool) -> io::Result<()> {
     let descriptor = std::io::stderr().as_fd().try_clone_to_owned()?;
     let mut control = nonblocking(StdUnixStream::from(descriptor))?;
     let length = u64::from(control.read_u32().await?);
@@ -75,8 +76,17 @@ pub async fn supervise_upstream() -> io::Result<()> {
 
     // Keep the credential off the supervisor's command line and environment.
     // Only the server's exec receives it as an environment variable.
-    let start = Command::new(SERVER)
-        .args(["stdio", "--read-only", "--toolsets", "issues,pull_requests"])
+    let mut command = Command::new(SERVER);
+    if write {
+        command.args([
+            "stdio",
+            "--tools",
+            "list_pull_requests,create_pull_request,pull_request_read,merge_pull_request",
+        ]);
+    } else {
+        command.args(["stdio", "--read-only", "--toolsets", "issues,pull_requests"]);
+    }
+    let start = command
         .env(TOKEN_VARIABLE, OsStr::from_bytes(&token))
         .stdin(Stdio::inherit())
         .stdout(Stdio::inherit())

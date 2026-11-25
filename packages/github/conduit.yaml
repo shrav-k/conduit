@@ -1,10 +1,27 @@
 apiVersion: github.com/shrav-k/conduit/v0
 address: example.org/conduit/github
-version: 0.1.0
-exports: [repository.v1, repository-reading.v1, issue.read.v1, issue.list.v1, pull-request.read.v1, pull-request.list.v1, read]
+version: 0.2.0
+exports:
+  - repository.v1
+  - repository-reading.v1
+  - issue.read.v1
+  - issue.list.v1
+  - pull-request.read.v1
+  - pull-request.list.v1
+  - read
+  - pull-requests.v1
+  - pull-request-writing.v1
+  - pull-request.create.v1
+  - pull-request.merge.v1
+  - write
 implementations:
   front:
     implements: ['#issue.read.v1', '#issue.list.v1', '#pull-request.read.v1', '#pull-request.list.v1']
     command: [bin/conduit-github]
+    environment:
+      GITHUB_PERSONAL_ACCESS_TOKEN: /token
+  writer:
+    implements: ['#pull-request.create.v1', '#pull-request.merge.v1']
+    command: [bin/conduit-github, --write]
     environment:
       GITHUB_PERSONAL_ACCESS_TOKEN: /token

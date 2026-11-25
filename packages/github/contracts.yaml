@@ -129,3 +129,130 @@ metadata:
 spec:
   capability: '#repository-reading.v1'
   operations: ['#issue.read.v1', '#issue.list.v1', '#pull-request.read.v1', '#pull-request.list.v1']
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: pull-requests.v1
+spec:
+  family: Resource
+  offers: ['#pull-request-writing.v1']
+  requires: []
+  records: {inputs: true, outputs: true}
+  implementation:
+    '#pull-request.create.v1': '#writer'
+    '#pull-request.merge.v1': '#writer'
+  schema:
+    type: object
+    additionalProperties: false
+    required: [repository, base, token]
+    properties:
+      repository:
+        type: string
+        pattern: '^[A-Za-z0-9-]{1,39}/[A-Za-z0-9._-]{1,100}$'
+        not: {pattern: '/[.]{1,2}$'}
+      base:
+        type: string
+        minLength: 1
+        maxLength: 255
+        pattern: '^[A-Za-z0-9._/-]+$'
+        not:
+          anyOf:
+            - {pattern: '^[-/.]'}
+            - {pattern: '[/.]$'}
+            - {pattern: '[.]lock$'}
+            - {pattern: '[.][.]|//|/[.]|[.]lock/'}
+      token: {$ref: github.com/shrav-k/conduit/core#secret-reference.v1}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Capability
+metadata:
+  name: pull-request-writing.v1
+spec:
+  operations: ['#pull-request.create.v1', '#pull-request.merge.v1']
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: pull-request.create.v1
+  description: >-
+    Open one pull request from head in the Resource's repository into its base alone.
+spec:
+  effect: >-
+    Opens one pull request in the Resource's repository from the branch head into the
+    Resource's base, with the given title and body.
+  idempotentHint: false
+  destructiveHint: false
+  openWorldHint: true
+  inputSchema:
+    type: object
+    additionalProperties: false
+    required: [head, title, body]
+    properties:
+      head:
+        type: string
+        minLength: 1
+        maxLength: 255
+        pattern: '^[A-Za-z0-9._/-]+$'
+        not:
+          anyOf:
+            - {pattern: '^[-/.]'}
+            - {pattern: '[/.]$'}
+            - {pattern: '[.]lock$'}
+            - {pattern: '[.][.]|//|/[.]|[.]lock/'}
+      title:
+        type: string
+        minLength: 1
+        maxLength: 256
+        not: {pattern: "[\r\n\u000b\u000c\u0085\u2028\u2029]"}
+      body: {type: string, maxLength: 65536}
+  outputSchema:
+    type: object
+    additionalProperties: false
+    required: [number, url]
+    properties:
+      number: {type: integer, minimum: 1}
+      url: {type: string, pattern: '^https://github[.]com/'}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: pull-request.merge.v1
+  description: >-
+    Squash-merge one pull request in the Resource's repository into its base alone,
+    only at expectedHead.
+spec:
+  effect: >-
+    Merges one open pull request of the Resource's repository into the Resource's base by
+    squash, as one commit with the given title and message, only where the pull request's head
+    is expectedHead.
+  idempotentHint: true
+  destructiveHint: false
+  openWorldHint: true
+  inputSchema:
+    type: object
+    additionalProperties: false
+    required: [number, expectedHead, title, message]
+    properties:
+      number: {type: integer, minimum: 1}
+      expectedHead: {type: string, pattern: '^[0-9a-f]{40}$'}
+      title:
+        type: string
+        minLength: 1
+        maxLength: 1024
+        not: {pattern: "[\r\n\u000b\u000c\u0085\u2028\u2029]"}
+      message: {type: string, maxLength: 65536}
+  outputSchema:
+    type: object
+    additionalProperties: false
+    required: [sha]
+    properties:
+      sha: {type: string, pattern: '^[0-9a-f]{40}$'}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: write
+spec:
+  capability: '#pull-request-writing.v1'
+  operations: ['#pull-request.create.v1', '#pull-request.merge.v1']

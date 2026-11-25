@@ -228,7 +228,7 @@ fn project(directory: &Path, marker_file: &Path, file: &str, github: &str) {
     fs::create_dir(directory).unwrap();
     fs::write(directory.join("conduit.yaml"),json!({
         "apiVersion":API,"address":"example.org/tests/github",
-        "packages":{FILE:{"version":"0.1.0","digest":file},GITHUB:{"version":"0.1.0","digest":github}}
+        "packages":{FILE:{"version":"0.1.0","digest":file},GITHUB:{"version":"0.2.0","digest":github}}
     }).to_string()).unwrap();
     let reader = |name, template, target: Value| {
         doc(
@@ -493,4 +493,193 @@ async fn github_through_the_engine() {
         no_marker(&fs::read(fixture.home.join(path)).unwrap(), &marker);
     }
     println!("stand-in call: {}", seen[1]);
+}
+
+#[tokio::test]
+async fn pull_requests_through_roots_write_conduit() {
+    let repo = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../..")
+        .canonicalize()
+        .unwrap();
+    let (file, file_digest) = archive(&repo, "provider-file").await;
+    let (github, github_digest) = archive(&repo, "github").await;
+    let temp = tempfile::tempdir().unwrap();
+    let root = temp.path().canonicalize().unwrap();
+    let markers = [
+        format!("synthetic-{}", Uuid::new_v4()),
+        format!("synthetic-{}", Uuid::new_v4()),
+    ];
+    let files = [root.join("read-marker"), root.join("write-marker")];
+    for (path, marker) in files.iter().zip(&markers) {
+        fs::OpenOptions::new()
+            .create_new(true)
+            .write(true)
+            .mode(0o600)
+            .open(path)
+            .unwrap()
+            .write_all(marker.as_bytes())
+            .unwrap();
+    }
+    let fixture = Fixture {
+        repo: &repo,
+        store: root.join("store"),
+        home: root.join("home"),
+        path: root.join("bin"),
+        marker: &markers[0],
+    };
+    fs::create_dir(&fixture.home).unwrap();
+    fs::create_dir(&fixture.path).unwrap();
+    fs::write(fixture.home.join("pulls.json"), "[]").unwrap();
+    copy_stand_in(&repo, &fixture.path).await;
+    let listener = TcpListener::bind(("127.0.0.1", 0)).unwrap();
+    let port = listener.local_addr().unwrap().port();
+    drop(listener);
+    fixture
+        .success("init", &["--url", &format!("http://127.0.0.1:{port}/mcp")])
+        .await;
+    let mut serve = fixture.serve(port).await;
+    fixture.success("install", &[&file]).await;
+    fixture.success("install", &[&github]).await;
+    let directory = root.join("project");
+    project(&directory, &files[0], &file_digest, &github_digest);
+    let objects = directory.join("objects.yaml");
+    let mut docs: Vec<Value> = fs::read_to_string(&objects)
+        .unwrap()
+        .split("\n---\n")
+        .map(|s| serde_json::from_str(s).unwrap())
+        .collect();
+    let pool = docs
+        .iter_mut()
+        .find(|d| d["metadata"]["name"] == "pool")
+        .unwrap();
+    pool["spec"]["entries"]["write-token"] = json!({"from":"write-file-token"});
+    pool["spec"]["entries"]["writer"] =
+        json!({"from":"writer","arguments":{"token":{"entry":"write-token"}}});
+    docs.extend([
+        doc("Resource","write-file-token",json!({"spec":{
+            "type":format!("{FILE}#file-secret.v1"),"config":{"path":files[1]}
+        }})),
+        doc("Resource","writer",json!({"spec":{
+            "type":format!("{GITHUB}#pull-requests.v1"),"config":{"repository":"octo/allowed","base":"main"},
+            "inputs":{"token":{"schema":{"$ref":format!("{CORE}#secret-reference.v1")},
+                "to":["/config/token","/conduits/token/target"]}},
+            "conduits":{"token":{"from":"use-token"}}
+        }})),
+        doc("Conduit","allowed-write",json!({"from":format!("{GITHUB}#write"),
+            "consumer":{"kind":"Interface","name":"root"},
+            "target":{"kind":"Pool","name":"github-pool","entry":"writer"}
+        })),
+    ]);
+    fs::write(
+        objects,
+        docs.iter()
+            .map(Value::to_string)
+            .collect::<Vec<_>>()
+            .join("\n---\n"),
+    )
+    .unwrap();
+    let submitted = fixture
+        .success("submit", &[directory.to_str().unwrap()])
+        .await;
+    for marker in &markers {
+        no_marker(&submitted.stdout, marker);
+        no_marker(&submitted.stderr, marker);
+    }
+    assert!(
+        String::from_utf8(submitted.stdout)
+            .unwrap()
+            .lines()
+            .map(|s| serde_json::from_str::<Value>(s).unwrap())
+            .any(|s| s["step"] == "setup Pool/github-pool" && s["outcome"] == "succeeded")
+    );
+    let outputs = [
+        json!({"number":1,"url":"https://github.com/octo/allowed/pull/1"}),
+        json!({"sha":"3333333333333333333333333333333333333333"}),
+    ];
+    for ((name,args),expected) in [
+        ("pull-request.create.v1",json!({"head":"topic/change","title":"Change title","body":"Change body"})),
+        ("pull-request.merge.v1",json!({"number":1,"expectedHead":"1111111111111111111111111111111111111111","title":"Squash title","message":"Squash message"})),
+    ].into_iter().zip(&outputs) {
+        let output = fixture.success("call",&[&format!("allowed-write.{name}"),&args.to_string()]).await;
+        for marker in &markers { no_marker(&output.stdout,marker); no_marker(&output.stderr,marker); }
+        let result = reply(&output);
+        assert_eq!(result["_meta"][OUTCOME],"succeeded");
+        assert_eq!(&result["structuredContent"],expected);
+    }
+    let seen = fixture.seen();
+    assert_eq!(seen.len(), 5);
+    assert!(
+        seen[0]["digest"] == format!("{:x}", Sha256::digest(markers[1].as_bytes())),
+        "wrong write credential"
+    );
+    assert_eq!(
+        seen[0]["arguments"],
+        json!([
+            "stdio",
+            "--tools",
+            "list_pull_requests,create_pull_request,pull_request_read,merge_pull_request"
+        ])
+    );
+    assert_eq!(
+        seen[0]["environment"],
+        json!(["GITHUB_PERSONAL_ACCESS_TOKEN", "HOME", "PATH"])
+    );
+    let tools_output = fixture.success("tools", &[]).await;
+    for marker in &markers {
+        no_marker(&tools_output.stdout, marker);
+        no_marker(&tools_output.stderr, marker);
+    }
+    let tools = reply(&tools_output);
+    assert!(tools["tools"].as_array().unwrap().iter().all(|tool| {
+        let name = tool["name"].as_str().unwrap();
+        !name.starts_with("allowed-read.")
+            || !(name.ends_with("create.v1") || name.ends_with("merge.v1"))
+    }));
+    let records = fixture.success("records", &[]).await;
+    for marker in &markers {
+        no_marker(&records.stdout, marker);
+        no_marker(&records.stderr, marker);
+    }
+    let records: Vec<Value> = String::from_utf8(records.stdout)
+        .unwrap()
+        .lines()
+        .map(|s| serde_json::from_str(s).unwrap())
+        .collect();
+    for (name, expected) in ["pull-request.create.v1", "pull-request.merge.v1"]
+        .into_iter()
+        .zip(&outputs)
+    {
+        assert!(records.iter().any(|r| r["type"] == "request-ended"
+            && r["data"]["operation"] == format!("{GITHUB}#{name}")
+            && r["data"]["outcome"] == "succeeded"
+            && r["data"]["outputs"] == *expected));
+    }
+    assert_eq!(
+        unsafe { libc::kill(serve.id().unwrap() as i32, libc::SIGTERM) },
+        0
+    );
+    assert!(
+        timeout(Duration::from_secs(20), serve.wait())
+            .await
+            .expect("serve did not stop")
+            .unwrap()
+            .success()
+    );
+    timeout(WAIT, async {
+        for pid in seen.iter().filter_map(|r| r["process"].as_i64()) {
+            while unsafe { libc::kill(pid as i32, 0) } == 0 {
+                sleep(Duration::from_millis(15)).await;
+            }
+        }
+    })
+    .await
+    .expect("stand-in survived serve");
+    for marker in &markers {
+        scan(&fixture.store, marker);
+        for name in ["seen", "serve.stdout", "serve.stderr"] {
+            no_marker(&fs::read(fixture.home.join(name)).unwrap(), marker);
+        }
+    }
+    println!("stand-in create: {}", seen[2]);
+    println!("stand-in merge: {}", seen[4]);
 }

@@ -602,6 +602,12 @@
     given and the one found, for the check that failed. Where both checks pass, it unpacks the
     archive into a directory of that run's own and runs `program` from it, in place of the
     first string of the item's `command`, the other strings being its arguments.
+    Where its contract states that its configuration sets the scheduling priority of its
+    runs, and the configuration sets one, it gives the run that priority where it starts
+    the run, before the item's program runs, so that every process of the run has it from
+    the program's start, and it changes no process's priority afterwards. Where that
+    priority is above its own, or it cannot give it, it runs nothing and the run ends
+    failed, its diagnostic naming the setting.
   observable: >-
     An instance runs on the machine of its placement, so an absolute path in its configuration
     is a path on that machine, under PLC-020, and two instances whose nodes report one
@@ -616,6 +622,16 @@
     represents. How the archive's bytes reach that machine, and where the provider keeps them,
     is its contract; a check before each unpacking, and not only on arrival, finds bytes
     altered since.
+    A scheduling priority is set where a process is started, and not from outside once it
+    runs: POSIX's `setpriority` sets a process's nice value, which every process it starts
+    inherits, systemd sets a unit's with `Nice=` and `CPUWeight=`, and Kubernetes a
+    container's share of the processor from its CPU request. It weighs the run's processes
+    against those the system weighs them with while they compete for the processor and,
+    once they run, reserves and limits nothing. A configuration that sets none leaves each
+    run at the provider's own priority. The engine's own runner states none, so what it
+    runs, each provider's own server among it under PRV-002, keeps the engine's priority,
+    and an instance runs at a lower one only by naming such a provider in `runtime`, under
+    PRV-006; an Agent of a login Resource that does so fails its setup under PRV-029.
 
 - id: PRV-020
   layer: convention

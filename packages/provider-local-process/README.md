@@ -3,7 +3,7 @@
 A63-RP1 is a Unix provider package exporting `local-process.v1`, a Resource Type offering
 only the core's `runtime-provider.v1`. It implements `run.v1`, `stop.v1` and `inspect-run.v1`
 over stdio through the [runtime-provider kit](../runtime-provider-kit/README.md). Its package
-address is `example.org/conduit/provider-local-process`, version 0.1.0. The engine's own
+address is `example.org/conduit/provider-local-process`, version 0.2.0. The engine's own
 runner remains S10's first implementation.
 
 It runs `command` items whose programs are absolute paths on this machine, identified by
@@ -23,11 +23,13 @@ For a direct start of `target/release/provider-local-process`, supply that varia
 operator creates `durableDir` outside the engine store, owned by the provider's OS user
 at mode 0700, and configures its absolute path.
 
-The manifest binds these configuration fields to startup variables. Values are read once;
-a configuration change takes effect at the provider's next start. Calls still carry their
-current configuration and revision for the kit's durable recovery context. All seven fields
-are required by the Type schema under MAN-017. The six fields with defaults still supply
-omitted configuration values.
+The manifest binds these seven configuration fields to startup variables. Bound values
+are read once; a change to a bound value takes effect at the provider's next start. The
+optional `nice` field binds no startup variable and is read from each `run.v1` call; see
+[Scheduling priority](#scheduling-priority). Calls still carry their current
+configuration and revision for the kit's durable recovery context. All seven bound
+fields are required by the Type schema under MAN-017. The six fields with defaults still
+supply omitted configuration values.
 
 | Field | Startup variable | Default |
 | --- | --- | --- |
@@ -59,6 +61,26 @@ The silent-cut bound is idle time plus interval times count: 45 seconds by defau
 also sets `TCP_USER_TIMEOUT`. macOS lacks it; outstanding unacknowledged data can exceed
 that bound there, while the keepalive bound applies when probes can run. Privileged silent
 packet-drop testing has not been performed. See the kit's README for its session/bridge limits.
+
+## Scheduling priority
+
+`nice`, a field of the `local-process.v1` provider Resource's configuration
+(`spec.config.nice` in its template), is optional, with no default. It is a run's nice
+value, a whole number from 0 (the usual) to 19 (the lowest), absolute as systemd's
+`Nice=` is. The provider reads it from each `run.v1` call, binding no startup variable,
+so a change reaches the next run. The run's guard sets it on itself before it launches
+the program, so every process of the run has it from its start; nothing changes it
+afterwards. The provider's own server keeps its priority, as does a run without `nice`.
+A value below the provider's own fails the run, whatever the user's privilege, naming
+`nice`, and no program starts. On Linux under autogroup, a nice value weighs a run only
+against the other processes of its session.
+
+The run's answer reads `start did not complete: nice is below the provider's own nice
+value; tree stopped` or `start did not complete: nice could not be set; tree stopped`.
+No program started in either case. For the first refusal, give a `nice` at least the
+provider server's own, which `ps -o nice -p <provider pid>` shows, or start the provider
+at a lower nice value. For the second, check the host's scheduling permissions and
+restrictions.
 
 ## Processes, credentials and retained state
 
@@ -169,6 +191,13 @@ repository's semantic registration rules; removing any bound field from `require
 MAN-017. This semantic test uses the repository checker's Python dependencies and interpreter
 fallback. No keys or certificates are committed. Tests inspect
 credential presence with boolean assertions so failures never print their values.
+
+The scheduling-priority tests compare nice values across the test process, provider and
+run. An outside renice between readings invalidates those comparisons. While the
+coordinator's temporary renice sweep is in use, exclude every working copy running these
+tests, including workers, verifiers, readers and the gate, until the hand renice ends. A
+failure during such a sweep is not evidence of a provider fault; first establish that no
+outside process changed the tested priorities.
 
 ## D15 inventory
 

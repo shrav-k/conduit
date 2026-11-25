@@ -14,7 +14,7 @@ pub const STOP_GRACE: Duration = Duration::from_millis(200);
 pub const DRAIN_INTERVAL: Duration = Duration::from_secs(1);
 pub const BINARY: &str = "provider-local-process";
 
-/// Configuration is captured at provider startup, never refreshed from a call.
+/// Bound configuration is captured at provider startup, never refreshed from a call.
 pub fn configuration() -> Result<(GateConfig, Options), Unavailable> {
     fn value(name: &str, default: &str) -> Result<String, Unavailable> {
         match std::env::var(name) {

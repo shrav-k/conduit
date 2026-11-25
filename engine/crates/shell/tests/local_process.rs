@@ -226,7 +226,7 @@ struct Fixture {
     temp: tempfile::TempDir,
 }
 impl Fixture {
-    fn new(builtin: bool) -> Self {
+    fn new(builtin: bool, nice: Option<i32>) -> Self {
         let (argument, digest) = archive();
         let temporary_root = std::env::temp_dir().canonicalize().unwrap();
         let temp = tempfile::tempdir_in(temporary_root).unwrap();
@@ -253,6 +253,9 @@ impl Fixture {
                     fs::create_dir(&durable).unwrap();
                     fs::set_permissions(&durable, fs::Permissions::from_mode(0o700)).unwrap();
                     doc["spec"]["config"]["durableDir"] = json!(durable);
+                    if let Some(nice) = nice {
+                        doc["spec"]["config"]["nice"] = json!(nice);
+                    }
                 }
                 _ => {}
             }
@@ -283,7 +286,7 @@ impl Fixture {
             );
         }
         let mut manifest = boundary::value(&base.join("manifest.json")).unwrap();
-        manifest["packages"] = json!({PACKAGE:{"version":"0.1.0","digest":digest}});
+        manifest["packages"] = json!({PACKAGE:{"version":"0.2.0","digest":digest}});
         manifest["implementations"]
             .as_object_mut()
             .unwrap()
@@ -452,7 +455,7 @@ fn main() {
 
 #[test]
 fn local_process_runs_an_agent_turn() {
-    let fixture = Fixture::new(false);
+    let fixture = Fixture::new(false, None);
     let engine = fixture.engine();
     let setup = engine.setup("a");
     assert_eq!(
@@ -604,7 +607,7 @@ async fn refused_initialize(
 
 #[test]
 fn local_process_gate_admits_only_the_engine() {
-    let fixture = Fixture::new(false);
+    let fixture = Fixture::new(false, None);
     let engine = fixture.engine();
     engine.succeeds(&engine.setup("a"));
     let methods = fixture.events("a");
@@ -674,7 +677,7 @@ fn absent(pid: i32) -> bool {
 
 #[test]
 fn local_process_new_bridge_initializes_the_run_once() {
-    let fixture = Fixture::new(false);
+    let fixture = Fixture::new(false, None);
     let engine = fixture.engine();
     let groups = || {
         fs::read_dir(fixture.temp.path().join("store/run-groups"))
@@ -715,7 +718,7 @@ fn local_process_new_bridge_initializes_the_run_once() {
 
 #[test]
 fn local_process_run_state_follows_the_provider() {
-    let fixture = Fixture::new(false);
+    let fixture = Fixture::new(false, None);
     let engine = fixture.engine();
     engine.succeeds(&engine.setup("a"));
     let condition = engine.running("a");
@@ -761,7 +764,7 @@ fn local_process_run_state_follows_the_provider() {
 
 #[test]
 fn local_process_provider_runs_again_after_restart() {
-    let mut fixture = Fixture::new(false);
+    let mut fixture = Fixture::new(false, None);
     let engine = fixture.engine();
     engine.succeeds(&engine.setup("a"));
     engine.turn("a");
@@ -787,7 +790,7 @@ fn local_process_provider_runs_again_after_restart() {
 
 #[test]
 fn local_process_upgrade_with_ambiguous_history_requires_explicit_provider_setup() {
-    let mut fixture = Fixture::new(false);
+    let mut fixture = Fixture::new(false, None);
     let engine = fixture.engine();
     let provider = engine.id("provider");
     engine.succeeds(&engine.setup("a"));
@@ -846,7 +849,7 @@ fn local_process_upgrade_with_ambiguous_history_requires_explicit_provider_setup
 
 #[test]
 fn builtin_and_local_process_runs_side_by_side() {
-    let fixture = Fixture::new(true);
+    let fixture = Fixture::new(true, None);
     let engine = fixture.engine();
     for name in ["a", "builtin"] {
         engine.succeeds(&engine.setup(name));
@@ -872,4 +875,25 @@ fn builtin_and_local_process_runs_side_by_side() {
     assert_eq!(builtin["identity"]["tls.crt"], false);
     assert_eq!(builtin["identity"]["tls.key"], false);
     assert!(engine.calls("builtin", "run.v1", "made").is_empty());
+}
+
+#[test]
+fn local_process_runs_an_agent_at_its_providers_nice() {
+    // SAFETY: read only this test's process and the PID written by its scripted server.
+    let base = unsafe { libc::getpriority(libc::PRIO_PROCESS, std::process::id()) };
+    assert!(base < 19, "this test needs its own nice below 19");
+    let n = (base + 3).min(19);
+    let fixture = Fixture::new(false, Some(n));
+    let engine = fixture.engine();
+    engine.succeeds(&engine.setup("a"));
+    engine.turn("a");
+    let pid = pid(&fixture.observation("a"));
+    assert_eq!(
+        unsafe { libc::getpriority(libc::PRIO_PROCESS, pid as _) },
+        n
+    );
+    assert_eq!(
+        unsafe { libc::getpriority(libc::PRIO_PROCESS, std::process::id()) },
+        base
+    );
 }

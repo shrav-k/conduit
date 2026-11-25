@@ -123,7 +123,7 @@ cargo test --release
 
 The executable accepts an optional repository-root path. It reports each case's pass and promise
 IDs, and fails with the case, step and mismatched expectation. A case listed in
-[expected-failures.yaml](#expected-failures) is reported apart, with its reason and error, and
+[the expected failures](#expected-failures) is reported apart, with its reason and error, and
 never as a pass. Every discovered case runs; there is no layer filter that could silently skip
 conventions. The workspace test runs the same suite. Broken fixtures and unsupported inputs fail
 as harness errors, never invented Conduit reasons. An undecidable language case is stopped and
@@ -226,32 +226,41 @@ retires one deletes its piece. Never merge an entry, a piece or a schema branch 
 
 ## Expected failures
 
-[expected-failures.yaml](expected-failures.yaml) lets a new promise enter the specification
-with a case that can fail before the first build passes it, as
-[Writing promises, rule 8](../CONTRIBUTING.md#writing-promises) requires. A changed case that
-the build does not pass yet is listed the same way. The change that makes the build pass a
-listed case removes its entry.
+The expected failures, the fragments under
+[expected-failures/](expected-failures/README.md), let a new promise enter the
+specification with a case that can fail before the first build passes it, as [Writing
+promises, rule 8](../CONTRIBUTING.md#writing-promises) requires. A changed case that the
+build does not pass yet is listed the same way. The change that makes the build pass a
+listed case removes its entry from the fragment that holds it, and deletes the fragment if
+that empties it.
 
-The file always exists. It is JSON written with `serde_json`'s pretty printer and a final
-newline, as the coverage-index pieces are written. Its empty form is:
+Each order that lists a case writes the entry in a fragment of its own, named as its file
+under `docs/work-orders/` with `.yaml` for `.md`; a change with no order names it for its
+branch, with `-` for `/` (DEC-190). A name is a lowercase letter or digit, then lowercase
+letters, digits, `.` and `-`, then `.yaml`, and is neither `index.yaml` nor `case.yaml`.
+An order edits another order's fragment only to change or remove an entry whose case it
+changes or makes pass, and it deletes a fragment it empties. The directory always exists
+and holds [README.md](expected-failures/README.md), which is no fragment; nothing whose
+name begins with a dot is read. Any other path in it fails the run, and so does the
+retired `expected-failures.yaml`.
 
-```json
-{
-  "cases": []
-}
-```
+A fragment is JSON written with `serde_json`'s pretty printer and a final newline, as the
+coverage-index pieces are written. Its root object has only `cases`, a list of at least
+one entry. Each entry has exactly two members, in this order: `id`, the ID of a case in
+the tree, and `reason`, what the build lacks and which order is to make the case pass.
+Both are nonempty strings. A fragment's entries are sorted by `id` in byte order. The
+runner reads the fragments in byte order of their names as one list, in which no ID is
+listed twice.
 
-The root object has only `cases`, a list. Each entry has exactly two members, in this order:
-`id`, the ID of a case in the tree, and `reason`, what the build lacks and which order is to
-make the case pass. Both are nonempty strings. Entries are sorted by `id` in byte order, with
-no duplicate IDs.
-
-Before any case runs, even with a requested ID prefix, the runner reads and checks the whole
-list against every case ID. A missing or unreadable file, the wrong root or list form, a
-malformed entry, a duplicate ID, IDs out of byte order or an ID naming no case fails the run.
-Each diagnostic begins `conformance/expected-failures.yaml: `, names the entry by its ID, or by
-its position (`entry 2`) where it has no ID, says what is wrong, and then says what would fix
-it. For an ID naming no case, remove the entry or restore the case.
+Before any case runs, even with a requested ID prefix, the runner reads and checks every
+fragment against every case ID. A missing directory, a path in it that is no fragment, the
+retired file, an unreadable or empty fragment, the wrong root or list form, a malformed
+entry, an ID listed twice, IDs out of byte order in a fragment or an ID naming no case
+fails the run. Each diagnostic begins with the path it concerns,
+`conformance/expected-failures/<name>: ` for a fragment, names the entry by its ID, or by
+its position in its fragment (`entry 2`) where it has no ID, says what is wrong, and then
+says what would fix it. An ID listed again names the fragment and entry that listed it
+first. For an ID naming no case, remove the entry or restore the case.
 
 The runner distinguishes four outcomes:
 
@@ -276,7 +285,7 @@ run exits 1. A failed run's summary is `<n> cases passed; <k> failed`, or
 followed by the failure lines. A listed case that passes gives this failure line:
 
 ```text
-<id> [<promises>]: passes, but conformance/expected-failures.yaml lists it as an expected failure (<reason>); remove its entry
+<id> [<promises>]: passes, but conformance/expected-failures/<name> lists it as an expected failure (<reason>); remove its entry
 ```
 
 A listed case keeps its coverage-index entry. Its tags say what the case tests, not that the

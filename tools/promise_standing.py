@@ -17,7 +17,7 @@ except ImportError:
 
 SPEC_DIRS = ("spec/promises", "spec/conventions", "spec/interface")
 CONFORMANCE = "conformance"
-EXPECTED_FAILURES = "conformance/expected-failures.yaml"
+EXPECTED_FAILURES = "conformance/expected-failures"
 MANIFEST = "conformance/manifest.yaml"
 SOURCE_DIRS = ("engine/crates/loader/src", "engine/crates/core/src", "engine/crates/shell/src")
 TABLE = "engine/STANDING.md"
@@ -48,7 +48,8 @@ still keep one. The first build states its choices and limits in
 
 - **ID**, **Layer** and **Level**: the promise's own. The rows are in byte order of ID.
 - **Cases**: how many entries of the coverage index list the promise among their `promises`.
-- **Expected failures**: how many of those cases `conformance/expected-failures.yaml` lists.
+- **Expected failures**: how many of those cases a fragment under
+  `conformance/expected-failures/` lists.
 - **S1**: `cases` where the promise's row in the S1 inventory (`s1_coverage` in
   `conformance/manifest.yaml`) names cases, `reason` where it gives a reason instead, and
   `outside` where the promise has no row there.
@@ -184,8 +185,13 @@ def main(root, argv):
         error("spec", "no promise file holds a promise, so there is nothing to tabulate")
 
     cases = []
-    index_paths = sorted(path.relative_to(root) for path in (root / CONFORMANCE).rglob("index.yaml")
-                         if path.is_file())
+    index_paths = []
+    for directory, children, files in os.walk(root / CONFORMANCE):
+        if Path(directory) == root / CONFORMANCE:
+            children[:] = [name for name in children if name != "expected-failures"]
+        if "index.yaml" in files:
+            index_paths.append((Path(directory) / "index.yaml").relative_to(root))
+    index_paths.sort()
     for path in index_paths:
         for position, item in enumerate(entries(path, load(path), "cases", "a list of case entries"), 1):
             location = f"case {position}"
@@ -202,15 +208,47 @@ def main(root, argv):
     if not cases:
         error(CONFORMANCE, "no index.yaml with cases found, so no case was counted")
 
-    expected_data = entries(EXPECTED_FAILURES, load(EXPECTED_FAILURES,
-                            "not found; the conformance runner requires it (work order 163)"),
-                            "cases", "a list of entries, each a mapping with a case's id")
-    expected = set()
-    for position, item in enumerate(expected_data, 1):
-        location = f"case {position}"
-        if (kind(EXPECTED_FAILURES, item, dict, location, "make each entry a mapping with a case's id")
-                and field(EXPECTED_FAILURES, item, "id", str, location, "a string naming the case")):
-            expected.add(item["id"])
+    retired = "conformance/expected-failures.yaml"
+    if os.path.lexists(root / retired):
+        error(retired, "retired; move its entries to a fragment under "
+              "conformance/expected-failures/ named for the order (DEC-190)")
+    expected, expected_origins = set(), {}
+    expected_count, fragment_count = 0, 0
+    try:
+        fragments = sorted((root / EXPECTED_FAILURES).iterdir(), key=lambda path: os.fsencode(path.name))
+    except FileNotFoundError:
+        error(EXPECTED_FAILURES + "/", "not found; the conformance runner requires it (DEC-190)")
+        fragments = []
+    except OSError:
+        error(EXPECTED_FAILURES + "/",
+              "could not read directory; restore a readable directory with its README.md")
+        fragments = []
+    for fragment in fragments:
+        name = fragment.name
+        if name == "README.md" or name.startswith("."):
+            continue
+        path = fragment.relative_to(root).as_posix()
+        if (not re.fullmatch(r"[a-z0-9][a-z0-9.-]*\.yaml", name)
+                or name in ("index.yaml", "case.yaml") or fragment.is_symlink() or not fragment.is_file()):
+            error(path, "not a fragment; a fragment is a regular file directly in "
+                  "conformance/expected-failures/, named as its order's file with .yaml for .md (DEC-190)")
+            continue
+        fragment_count += 1
+        expected_data = entries(path, load(path), "cases",
+                                "a list of entries, each a mapping with a case's id")
+        expected_count += len(expected_data)
+        for position, item in enumerate(expected_data, 1):
+            location = f"case {position}"
+            if (kind(path, item, dict, location, "make each entry a mapping with a case's id")
+                    and field(path, item, "id", str, location, "a string naming the case")):
+                identifier = item["id"]
+                if identifier in expected_origins:
+                    first_path, first_position = expected_origins[identifier]
+                    error(path, f"{location} ({identifier}) is listed again, after case "
+                          f"{first_position} of {first_path}; keep only one entry for this ID")
+                else:
+                    expected_origins[identifier] = (path, position)
+                    expected.add(identifier)
 
     s1_data = entries(MANIFEST, load(MANIFEST, "not found, so no S1 row was read"), "s1_coverage",
                       "a list of S1 rows")
@@ -267,8 +305,9 @@ def main(root, argv):
                          s1=inventory, source=source, standing=standing))
     standings = Counter(row["standing"] for row in rows)
     print(f"Read {len(rows)} promises in {len(promise_paths)} files under spec/, {len(cases)} cases in "
-          f"{len(index_paths)} index.yaml files under conformance/, {len(expected_data)} entries of "
-          f"{EXPECTED_FAILURES}, {len(s1_data)} S1 rows of {MANIFEST} and {source_count} source files "
+          f"{len(index_paths)} index.yaml files under conformance/, {expected_count} entries in "
+          f"{fragment_count} fragments under {EXPECTED_FAILURES}/, {len(s1_data)} S1 rows of {MANIFEST} "
+          f"and {source_count} source files "
           "of the crates loader, core and shell.")
     print("Standings: " + "; ".join(f"{name} {standings[name]}" for name in STANDINGS) + ".")
     print(f"Named in the engine's source: {sum(row['source'] != 'none' for row in rows)} of {len(rows)}.")

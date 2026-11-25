@@ -1,14 +1,124 @@
-use crate::Result;
+use crate::{Result, read_value};
 use serde_json::{Map, Value};
 use std::collections::{BTreeMap, BTreeSet};
+use std::path::Path;
 
 const ROOT_FIX: &str = "supply an object with only cases, a list";
 const ENTRY_FIX: &str = "give each entry exactly id and reason as nonempty strings";
 
-fn repair(label: &str, problem: &str) -> String {
-    format!(
-        "conformance/expected-failures.yaml: {label}{problem}. See conformance/README.md, \"Expected failures\"."
-    )
+fn repair(path: &str, label: &str, problem: &str) -> String {
+    format!("{path}: {label}{problem}. See conformance/README.md, \"Expected failures\".")
+}
+
+pub(super) struct Listed {
+    pub reason: String,
+    pub path: String,
+}
+
+fn fragment_name(name: &str) -> bool {
+    let Some(stem) = name.strip_suffix(".yaml") else {
+        return false;
+    };
+    let alphanumeric = |b: u8| b.is_ascii_lowercase() || b.is_ascii_digit();
+    stem.bytes().next().is_some_and(alphanumeric)
+        && stem
+            .bytes()
+            .all(|b| alphanumeric(b) || b == b'.' || b == b'-')
+        && name != "index.yaml"
+        && name != "case.yaml"
+}
+
+pub(super) fn read(directory: &Path, ids: &BTreeSet<String>) -> Result<BTreeMap<String, Listed>> {
+    let retired = directory.join("expected-failures.yaml");
+    match std::fs::symlink_metadata(&retired) {
+        Ok(_) => {
+            return Err(repair(
+                "conformance/expected-failures.yaml",
+                "",
+                "retired; move its entries to a fragment under conformance/expected-failures/ named for the order (DEC-190)",
+            ));
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+        Err(error) => {
+            return Err(repair(
+                "conformance/expected-failures.yaml",
+                "",
+                &error.to_string(),
+            ));
+        }
+    }
+    let fragments = std::fs::read_dir(directory.join("expected-failures")).map_err(|error| {
+        repair(
+            "conformance/expected-failures/",
+            "",
+            if error.kind() == std::io::ErrorKind::NotFound {
+                "not found; restore the directory with its README.md"
+            } else {
+                "could not read directory; restore a readable directory with its README.md"
+            },
+        )
+    })?;
+    let mut fragments = fragments
+        .collect::<std::io::Result<Vec<_>>>()
+        .map_err(|error| repair("conformance/expected-failures/", "", &error.to_string()))?;
+    fragments.sort_by_key(|entry| entry.file_name());
+    let mut expected = BTreeMap::new();
+    let mut origins = BTreeMap::new();
+    for entry in fragments {
+        let name = entry.file_name();
+        let name = name.to_string_lossy();
+        if name == "README.md" || name.starts_with('.') {
+            continue;
+        }
+        let path = format!("conformance/expected-failures/{name}");
+        let regular = entry
+            .file_type()
+            .map_err(|error| repair(&path, "", &error.to_string()))?
+            .is_file();
+        if !regular || !fragment_name(&name) {
+            return Err(repair(
+                &path,
+                "",
+                "not a fragment; a fragment is a regular file directly in conformance/expected-failures/, named as its order's file with .yaml for .md (DEC-190)",
+            ));
+        }
+        let value = read_value(&entry.path()).map_err(|error| {
+            repair(
+                &path,
+                "",
+                &format!("{error}; restore a readable file with one valid control document"),
+            )
+        })?;
+        let entries = validate(&path, &value, ids)?;
+        if entries.is_empty() {
+            return Err(repair(
+                &path,
+                "",
+                "the root's cases is empty; delete the fragment",
+            ));
+        }
+        for (index, (id, reason)) in entries.into_iter().enumerate() {
+            let position = index + 1;
+            if let Some((first_path, first_position)) = origins.get(&id) {
+                return Err(repair(
+                    &path,
+                    &format!("{id}: "),
+                    &format!(
+                        "is listed again as entry {position}, after entry {first_position} of {first_path}; keep only one entry for this ID"
+                    ),
+                ));
+            }
+            origins.insert(id.clone(), (path.clone(), position));
+            expected.insert(
+                id,
+                Listed {
+                    reason,
+                    path: path.clone(),
+                },
+            );
+        }
+    }
+    Ok(expected)
 }
 
 /// Names a value's JSON type for a diagnostic.
@@ -50,18 +160,24 @@ fn member_fault(object: &Map<String, Value>, allowed: &[&str]) -> Option<String>
     (!faults.is_empty()).then(|| faults.join(" and "))
 }
 
-pub(super) fn validate(value: &Value, ids: &BTreeSet<String>) -> Result<BTreeMap<String, String>> {
+pub(super) fn validate(
+    path: &str,
+    value: &Value,
+    ids: &BTreeSet<String>,
+) -> Result<BTreeMap<String, String>> {
     let root = value.as_object().ok_or_else(|| {
         repair(
+            path,
             "",
             &format!("the root is {}, not an object; {ROOT_FIX}", kind(value)),
         )
     })?;
     if let Some(fault) = member_fault(root, &["cases"]) {
-        return Err(repair("", &format!("the root {fault}; {ROOT_FIX}")));
+        return Err(repair(path, "", &format!("the root {fault}; {ROOT_FIX}")));
     }
     let cases = root["cases"].as_array().ok_or_else(|| {
         repair(
+            path,
             "",
             &format!(
                 "the root's cases is {}, not a list; {ROOT_FIX}",
@@ -78,7 +194,7 @@ pub(super) fn validate(value: &Value, ids: &BTreeSet<String>) -> Result<BTreeMap
             Some(id) if !id.is_empty() => format!("{id}: "),
             _ => format!("entry {position}: "),
         };
-        let fail = |problem: String| repair(&label, &problem);
+        let fail = |problem: String| repair(path, &label, &problem);
         let object = entry
             .as_object()
             .ok_or_else(|| fail(format!("is {}, not an object; {ENTRY_FIX}", kind(entry))))?;
@@ -122,19 +238,27 @@ mod tests {
     use super::*;
     use serde_json::json;
 
+    fn path() -> String {
+        format!("conformance/expected-failures/{}", "001-a.yaml")
+    }
+
     fn ids() -> BTreeSet<String> {
         BTreeSet::from(["a".into(), "b".into()])
     }
 
     fn message(problem: &str) -> String {
         format!(
-            "conformance/expected-failures.yaml: {problem}. See conformance/README.md, \"Expected failures\"."
+            "{}: {problem}. See conformance/README.md, \"Expected failures\".",
+            path()
         )
     }
 
     #[test]
     fn an_empty_list_gives_an_empty_map() {
-        assert_eq!(validate(&json!({"cases": []}), &ids()), Ok(BTreeMap::new()));
+        assert_eq!(
+            validate(&path(), &json!({"cases": []}), &ids()),
+            Ok(BTreeMap::new())
+        );
     }
 
     #[test]
@@ -144,7 +268,7 @@ mod tests {
             {"id": "b", "reason": "missing b; order 2"}
         ]});
         assert_eq!(
-            validate(&value, &ids()),
+            validate(&path(), &value, &ids()),
             Ok(BTreeMap::from([
                 ("a".into(), "missing a; order 1".into()),
                 ("b".into(), "missing b; order 2".into())
@@ -177,7 +301,7 @@ mod tests {
             ),
         ] {
             assert_eq!(
-                validate(&value, &ids()),
+                validate(&path(), &value, &ids()),
                 Err(message(&format!("{fault}; {ROOT_FIX}"))),
                 "{value}"
             );
@@ -247,7 +371,7 @@ mod tests {
             ),
         ] {
             assert_eq!(
-                validate(&json!({ "cases": cases }), &ids()),
+                validate(&path(), &json!({ "cases": cases }), &ids()),
                 Err(message(&format!("{fault}; {fix}"))),
                 "{cases}"
             );
@@ -293,7 +417,7 @@ mod tests {
             ),
         ] {
             assert_eq!(
-                validate(&json!({ "cases": cases }), &ids()),
+                validate(&path(), &json!({ "cases": cases }), &ids()),
                 Err(message(problem)),
                 "{cases}"
             );

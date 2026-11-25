@@ -2,6 +2,7 @@
 
 from contextlib import redirect_stderr, redirect_stdout
 import io
+import shutil
 from pathlib import Path
 import sys
 import tempfile
@@ -26,7 +27,7 @@ class PromiseStandingChecks(unittest.TestCase):
         self.write_promises(1)
         self.write_cases([("a", ["TST-001"])])
         self.write_yaml(standing.MANIFEST, {"s1_coverage": []})
-        self.write_yaml(standing.EXPECTED_FAILURES, {"cases": []})
+        self.write(Path(standing.EXPECTED_FAILURES) / "README.md", "Expected failures\n")
         for directory in standing.SOURCE_DIRS:
             (self.root / directory).mkdir(parents=True)
 
@@ -34,6 +35,9 @@ class PromiseStandingChecks(unittest.TestCase):
         target = self.root / path
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(text, encoding="utf-8")
+
+    def fragment_path(self, name="001-a.yaml"):
+        return str(Path(standing.EXPECTED_FAILURES) / name)
 
     def write_yaml(self, path, data):
         self.write(path, yaml.safe_dump(data, sort_keys=False))
@@ -62,7 +66,7 @@ class PromiseStandingChecks(unittest.TestCase):
         # first S1 row is its row.
         self.write_cases([("a", ["TST-001"]), ("b", ["TST-002", "TST-003", "TST-003"]),
                           ("c", ["TST-003", "TST-003"])])
-        self.write_yaml(standing.EXPECTED_FAILURES, {"cases": [{"id": "b"}]})
+        self.write_yaml(self.fragment_path(), {"cases": [{"id": "b"}]})
         self.write_yaml(standing.MANIFEST, {"s1_coverage": [
             {"promise": "TST-001", "vectors": ["a"]},
             {"promise": "TST-004", "vectors": [], "reason": " No case yet. "},
@@ -126,7 +130,7 @@ class PromiseStandingChecks(unittest.TestCase):
         status, output = self.run_tool("--check")
         self.assertEqual(status, 0, output)
         self.assertEqual(output.splitlines()[-2:], ["engine/STANDING.md is current; promise rows: 30.", "Errors: 0"])
-        self.write_yaml(standing.EXPECTED_FAILURES, {"cases": [{"id": "a"}]})
+        self.write_yaml(self.fragment_path(), {"cases": [{"id": "a"}]})
         status, output = self.run_tool("--check")
         self.assertEqual(status, 1, output)
         lines = output.splitlines()
@@ -143,7 +147,7 @@ class PromiseStandingChecks(unittest.TestCase):
         self.assertTrue(all(line.startswith(("---", "+++", "@@", "-", "+")) for line in lines[start + 1:end]), output)
         self.assertEqual(lines[end + 1:], ["Errors: 1"])
         self.assertEqual((self.root / standing.TABLE).read_bytes(), before)
-        self.write_yaml(standing.EXPECTED_FAILURES, {"cases": []})
+        (self.root / self.fragment_path()).unlink()
         line_ends = "engine/STANDING.md: every line matches the generated table; the bytes differ only in line ends or the final newline (the table is written with LF line ends and exactly one final newline)"
         for changed in (before.replace(b"\n", b"\r\n"), before[:-1]):
             with self.subTest(changed=changed[-2:]):
@@ -164,7 +168,7 @@ class PromiseStandingChecks(unittest.TestCase):
         no_s1_evidence = "S1 row 1 (TST-001) has neither cases nor a reason; provide nonempty vectors or a reason"
         faults = [(self.index_path, "cases: 3\n",
                    "document's cases is a number, not a list; make cases a list of case entries"),
-                  (standing.EXPECTED_FAILURES, "[]\n",
+                  (self.fragment_path(), "[]\n",
                    "document is a list, not a mapping; make it a mapping whose cases is a list of "
                    "entries, each a mapping with a case's id"),
                   (self.promise_path, "[unclosed\n", None),
@@ -187,29 +191,38 @@ class PromiseStandingChecks(unittest.TestCase):
                        (self.promise_path, "- {id: TST-001, layer: convention, level: must}\n" * 2,
                         f"promise ID TST-001 also occurs in {Path(self.promise_path)}; give each promise a unique ID"),
                        (standing.EXPECTED_FAILURES, None,
-                        "not found; the conformance runner requires it (work order 163)"),
+                        "not found; the conformance runner requires it (DEC-190)"),
                        (standing.MANIFEST, None, "not found, so no S1 row was read")])
         for path, replacement, message in faults:
             with self.subTest(path=path, replacement=replacement):
                 target = self.root / path
                 original = target.read_bytes() if target.is_file() else None
+                diagnostic_path = path + ("/" if path == standing.EXPECTED_FAILURES else "")
                 try:
                     if replacement is None:
+                        if path == standing.EXPECTED_FAILURES:
+                            (target / "README.md").unlink()
                         target.rmdir() if target.is_dir() else target.unlink()
                     else:
                         self.write(path, replacement)
                     for mode, action in (("--write", "written"), ("--check", "compared")):
                         status, output = self.run_tool(mode)
                         self.assertEqual(status, 1, output)
-                        self.assertTrue(any(line.startswith(path + ": ") for line in output.splitlines()), output)
+                        self.assertTrue(any(line.startswith(diagnostic_path + ": ")
+                                            for line in output.splitlines()), output)
                         if message is not None:
-                            self.assertIn(f"{path}: {message}", output.splitlines())
+                            self.assertIn(f"{diagnostic_path}: {message}", output.splitlines())
                         self.assertIn(f"engine/STANDING.md was not {action}.", output.splitlines())
                         self.assertRegex(output.splitlines()[-1], r"^Errors: [1-9][0-9]*$")
                         self.assertEqual((self.root / standing.TABLE).read_bytes(), before)
                 finally:
                     if original is None:
-                        target.mkdir(parents=True, exist_ok=True)
+                        if replacement is not None:
+                            target.unlink()
+                        else:
+                            target.mkdir(parents=True, exist_ok=True)
+                            if path == standing.EXPECTED_FAILURES:
+                                self.write(target / "README.md", "Expected failures\n")
                     else:
                         target.write_bytes(original)
         self.write(self.promise_path, "- id: TST-001\n  layer: [unclosed\n")
@@ -224,6 +237,81 @@ class PromiseStandingChecks(unittest.TestCase):
         self.assertEqual(status, 1, output)
         self.assertIn(source.relative_to(self.root).as_posix() + ": ", output)
         self.assertEqual((self.root / standing.TABLE).read_bytes(), before)
+
+    def test_expected_fragments_are_one_list(self):
+        self.write_promises(2)
+        self.write_cases([("a", ["TST-001"]), ("b", ["TST-002"])])
+        self.write_yaml(self.fragment_path(), {"cases": [{"id": "a"}, {"id": "b"}]})
+        self.assertEqual(self.run_tool("--write")[0], 0)
+        before = self.table()
+        self.write_yaml(self.fragment_path("002-b.yaml"), {"cases": [{"id": "a"}]})
+        self.write_yaml(self.fragment_path(), {"cases": [{"id": "b"}]})
+        status, output = self.run_tool("--write")
+        self.assertEqual(status, 0, output)
+        self.assertEqual(self.table(), before)
+        self.assertIn("2 entries in 2 fragments under conformance/expected-failures/, ", output)
+
+    def test_expected_fragment_listed_twice_is_refused(self):
+        self.write_yaml(self.fragment_path(), {"cases": [{"id": "b"}]})
+        self.write_yaml(self.fragment_path("002-b.yaml"), {"cases": [{"id": "b"}]})
+        status, output = self.run_tool("--write")
+        self.assertEqual(status, 1, output)
+        self.assertIn(f"{self.fragment_path('002-b.yaml')}: case 1 (b) is listed again, "
+                      f"after case 1 of {self.fragment_path()}; keep only one entry for this ID",
+                      output.splitlines())
+        self.assertEqual(output.splitlines()[-1], "Errors: 1")
+        self.assertFalse((self.root / standing.TABLE).exists())
+        # The same rule applies within one fragment and retains its first position.
+        (self.root / self.fragment_path("002-b.yaml")).unlink()
+        self.write_yaml(self.fragment_path(), {"cases": [{"id": "b"}, {"id": "b"}]})
+        status, output = self.run_tool("--check")
+        self.assertEqual(status, 1, output)
+        self.assertIn(f"{self.fragment_path()}: case 2 (b) is listed again, "
+                      f"after case 1 of {self.fragment_path()}; keep only one entry for this ID",
+                      output.splitlines())
+        self.assertEqual(output.splitlines()[-1], "Errors: 1")
+
+    def test_expected_fragment_paths_are_checked(self):
+        self.assertEqual(self.run_tool("--write")[0], 0)
+        before = self.table()
+        refused = ("not a fragment; a fragment is a regular file directly in "
+                   "conformance/expected-failures/, named as its order's file with .yaml for .md (DEC-190)")
+        retired = "conformance/expected-failures.yaml"
+        paths = [(retired, "retired; move its entries to a fragment under "
+                  "conformance/expected-failures/ named for the order (DEC-190)")]
+        paths += [(self.fragment_path(name), refused)
+                  for name in ("Order.yaml", "001.json", "index.yaml", "case.yaml", "sub")]
+        for path, message in paths:
+            with self.subTest(path=path):
+                target = self.root / path
+                if target.name == "sub":
+                    self.write(target / "001.yaml", "not JSON")
+                    self.write(target / "index.yaml", "not YAML: [")
+                else:
+                    self.write(path, "not JSON")
+                for mode, action in (("--write", "written"), ("--check", "compared")):
+                    status, output = self.run_tool(mode)
+                    self.assertEqual(status, 1, output)
+                    self.assertIn(f"{path}: {message}", output.splitlines())
+                    self.assertIn(f"engine/STANDING.md was not {action}.", output.splitlines())
+                    self.assertEqual(output.splitlines()[-1], "Errors: 1")
+                    self.assertEqual(self.table(), before)
+                shutil.rmtree(target) if target.is_dir() else target.unlink()
+        self.write(Path(standing.EXPECTED_FAILURES) / "README.md", "prose")
+        self.write(self.fragment_path(".hidden.yaml"), "not YAML: [")
+        status, output = self.run_tool("--check")
+        self.assertEqual(status, 0, output)
+        self.assertEqual(output.splitlines()[-1], "Errors: 0")
+        self.assertEqual(self.table(), before)
+
+    def test_nested_expected_failures_directory_is_discovered(self):
+        nested = Path("conformance/language") / "expected-failures" / "index.yaml"
+        self.write_yaml(nested, {"cases": [{"id": "b", "promises": ["TST-001"]}]})
+        status, output = self.run_tool("--write")
+        self.assertEqual(status, 0, output)
+        self.assertIn("2 cases in 2 index.yaml files under conformance/", output)
+        self.assertIn("| TST-001 | convention | must | 2 | 0 | outside | none | case passes |",
+                      self.table().splitlines())
 
     def test_one_mode_is_required(self):
         for argv in ([], ["--write", "--check"]):

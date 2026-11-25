@@ -70,6 +70,7 @@ From [DEC-004](docs/decisions/log.md#dec-004-2026-11-20-the-scope-guard-and-v0s-
 3. **Tracking stays in the repository**, as rows of [ROADMAP.md](ROADMAP.md), with no GitHub issues for now; the scheme for tracking is discussed when the repository becomes a GitHub organization. (DEC-031) `by review`
 4. **Changelog fragments.** A change to `spec/` writes its lines in its own fragment under `spec/changes/`, in the form [spec/CHANGES.md](spec/CHANGES.md) states; a release moves them into that file. (DEC-177) `checked: tools/check_decisions.py`
 5. **No stored counts.** The READMEs of `spec/`, `spec/core/` and `spec/schemas/` state no count; the checkers print the totals. (DEC-177) `checked: tools/check_schemas.py`
+6. **Expected-failure fragments.** A change that lists a case the build does not pass yet writes the entry in its own fragment under `conformance/expected-failures/`, in the form [conformance/README.md](conformance/README.md#expected-failures) states, and the change that makes the case pass removes the entry from the fragment that holds it, deleting a fragment it empties; the runner and `tools/promise_standing.py` read every fragment as one list and refuse a case listed twice. (DEC-190) `checked: tools/gate.py`
 
 ## 9. Publication and organization
 

@@ -73,11 +73,14 @@ fn read_value(path: &Path) -> Result<Value> {
     Ok(documents[0].root.to_json())
 }
 
-fn paths(directory: &Path, found: &mut Vec<PathBuf>) -> Result<()> {
+fn paths(directory: &Path, expected_failures: &Path, found: &mut Vec<PathBuf>) -> Result<()> {
     for entry in std::fs::read_dir(directory).map_err(|e| e.to_string())? {
         let path = entry.map_err(|e| e.to_string())?.path();
+        if path == expected_failures {
+            continue;
+        }
         if path.is_dir() {
-            paths(&path, found)?;
+            paths(&path, expected_failures, found)?;
         } else if path
             .file_name()
             .is_some_and(|s| s == "case.yaml" || s == "index.yaml")
@@ -86,6 +89,36 @@ fn paths(directory: &Path, found: &mut Vec<PathBuf>) -> Result<()> {
         }
     }
     Ok(())
+}
+
+#[test]
+fn case_discovery_skips_only_top_level_expected_failures() {
+    let directory =
+        std::env::temp_dir().join(format!("conduit-case-discovery-{}", std::process::id()));
+    let fragments = directory.join("expected-failures");
+    let nested = directory.join("language").join("expected-failures");
+    std::fs::create_dir_all(&fragments).unwrap();
+    std::fs::create_dir_all(nested.join("sample")).unwrap();
+    for path in [
+        fragments.join("index.yaml"),
+        fragments.join("case.yaml"),
+        nested.join("index.yaml"),
+        nested.join("sample").join("case.yaml"),
+    ] {
+        std::fs::write(path, "not read during discovery").unwrap();
+    }
+    let mut found = vec![];
+    let result = paths(&directory, &fragments, &mut found);
+    std::fs::remove_dir_all(&directory).unwrap();
+    result.unwrap();
+    found.sort();
+    assert_eq!(
+        found,
+        vec![
+            nested.join("index.yaml"),
+            nested.join("sample").join("case.yaml")
+        ]
+    );
 }
 
 /// Run every discovered case. Unsupported inputs and invalid assertions fail, never skip.
@@ -126,7 +159,7 @@ pub fn run_matching_with_threads(
     }
     let directory = repository.join("conformance");
     let mut found = vec![];
-    paths(&directory, &mut found)?;
+    paths(&directory, &directory.join("expected-failures"), &mut found)?;
     found.sort();
     let mut metadata = pieces::Files::new();
     for name in ["manifest.yaml", "case.schema.json"] {
@@ -230,12 +263,7 @@ pub fn run_matching_with_threads(
             ));
         }
     }
-    let expected_value = read_value(&directory.join("expected-failures.yaml")).map_err(|e| {
-        format!(
-            "conformance/expected-failures.yaml: {e}; restore a readable file with one valid control document. See conformance/README.md, \"Expected failures\"."
-        )
-    })?;
-    let expected = expected::validate(&expected_value, &ids)?;
+    let expected = expected::read(&directory, &ids)?;
     let portable_value = read_value(&directory.join("internal-cases.yaml")).map_err(|e|
         format!("conformance/internal-cases.yaml: {e}; restore a readable control document. See conformance/README.md, \"Portable cases\"."))?;
     let case_map = prepared
@@ -300,16 +328,18 @@ pub fn run_matching_with_threads(
                 steps: case.steps.len(),
                 storage,
             }),
-            (Err(error), Some(reason)) => expected_failures.push(ExpectedFailure {
+            (Err(error), Some(listed)) => expected_failures.push(ExpectedFailure {
                 id: case.id.clone(),
                 promises: case.promises.clone(),
-                reason: reason.clone(),
+                reason: listed.reason.clone(),
                 error,
             }),
-            (Ok(_), Some(reason)) => failures.push(format!(
-                "{} [{}]: passes, but conformance/expected-failures.yaml lists it as an expected failure ({reason}); remove its entry",
+            (Ok(_), Some(listed)) => failures.push(format!(
+                "{} [{}]: passes, but {} lists it as an expected failure ({}); remove its entry",
                 case.id,
-                case.promises.join(", ")
+                case.promises.join(", "),
+                listed.path,
+                listed.reason
             )),
             (Err(error), None) => failures.push(format!(
                 "{} [{}]: {error}",

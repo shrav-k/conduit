@@ -146,18 +146,19 @@ the native probes run beside it, as the row "In parallel" does.
    named in its place.
 8. A new promise enters `spec/` in the same change as a case under `conformance/` that cites
    it and can fail: a step of the case asserts what the promise says, so that an engine that
-   broke the promise would fail the case. Where the first build does not pass the case yet, the
-   change lists the case's ID, with its reason, in
-   [conformance/expected-failures.yaml](conformance/README.md#expected-failures). The
-   runner reports a listed case apart and never as a pass, and fails the run when a listed case
-   passes, so the change that makes the build pass it removes the entry. A case that a change to
-   `spec/` rewrites, and that the build does not pass yet, is listed the same way. A
-   convention-layer safety promise also gets a named property in a model of experiment 012,
-   beside the case and never in its place, unless its row in that experiment's model-checking
-   account says why no model checks it (ruling 78, point 3.2). No order writes promises alone.
-   The rule holds for the coordinator's own additions and for every fix that adds a promise ID.
-   A change that adds no promise ID is exempt. The rule makes each promise cost a case, and it
-   limits nothing in number.
+   broke the promise would fail the case. Where the first build does not pass the case yet,
+   the change lists the case's ID, with its reason, in its own fragment of [the expected
+   failures](conformance/README.md#expected-failures), under
+   `conformance/expected-failures/`. The runner reports a listed case apart and never as a
+   pass, and fails the run when a listed case passes, so the change that makes the build
+   pass it removes the entry from the fragment that holds it, deleting a fragment it
+   empties. A case that a change to `spec/` rewrites, and that the build does not pass yet,
+   is listed the same way. A convention-layer safety promise also gets a named property in a
+   model of experiment 012, beside the case and never in its place, unless its row in that
+   experiment's model-checking account says why no model checks it (ruling 78, point 3.2).
+   No order writes promises alone. The rule holds for the coordinator's own additions and
+   for every fix that adds a promise ID. A change that adds no promise ID is exempt. The
+   rule makes each promise cost a case, and it limits nothing in number.
 
 A specification head comment holds what the file holds, its standing, reading notes, the
 standards it follows, open issues and its register of removed IDs. It carries no change narrative

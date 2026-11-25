@@ -1,4 +1,4 @@
-//! A real installed working-copy Resource, reached over its two exported Conduits.
+//! A real installed working-copy Resource, reached over its three exported Conduits.
 #![cfg(unix)]
 
 #[path = "../../../../packages/git/tests/support/mod.rs"]
@@ -145,14 +145,18 @@ fn write_project(
     let api = &spec.names().api_version;
     let core = &spec.names().core_package;
     fs::create_dir(project).unwrap();
-    let manifest = json!({"apiVersion":api,"address":"example.org/test/working-copy","packages":{PACKAGE:{"version":"0.2.0","digest":digest}}});
+    let manifest = json!({"apiVersion":api,"address":"example.org/test/working-copy","packages":{PACKAGE:{"version":"0.3.0","digest":digest}}});
     let mut documents = vec![
         json!({"apiVersion":api,"kind":"Pool","metadata":{"name":"workspace-pool"},"spec":{"type":format!("{core}#pool.v1")}}),
         json!({"apiVersion":api,"kind":"Pool","metadata":{"name":"workspace"},"from":"workspace-pool"}),
         json!({"apiVersion":api,"kind":"Resource","metadata":{"name":"copy-template"},"spec":{"type":format!("{PACKAGE}#working-copy.v1"),"config":{"repository":source,"commit":base,"root":root}}}),
         json!({"apiVersion":api,"kind":"Resource","metadata":{"name":"copy"},"from":"copy-template","owner":"workspace"}),
     ];
-    for (name, template) in [("copy-read", "read"), ("copy-write", "read-write")] {
+    for (name, template) in [
+        ("copy-read", "read"),
+        ("copy-write", "read-write"),
+        ("copy-manage", "manage"),
+    ] {
         documents.push(
             json!({"apiVersion":api,"kind":"Conduit","metadata":{"name":name},
             "from":format!("{PACKAGE}#{template}"),"consumer":{"kind":"Interface","name":"root"},
@@ -284,6 +288,24 @@ fn working_copy_through_the_engine() {
         fs::read(root.join("hello.txt")).unwrap()
     );
 
+    use sha2::{Digest, Sha256};
+    fs::write(source.join("hello.txt"), b"next base\n").unwrap();
+    let next = temp.commit(&source);
+    let args = json!({"commit":next,"expectedBase":changes["base"],
+        "expectedPatchSha256":format!("{:x}", Sha256::digest(patch.as_bytes()))});
+    let moved = cli.succeeded("call", &["copy-manage.move.v1", &args.to_string()]);
+    assert_eq!(moved["_meta"][OUTCOME], "succeeded");
+    assert_eq!(moved["structuredContent"]["base"], next);
+    assert_eq!(fs::read(root.join("hello.txt")).unwrap(), b"next base\n");
+    assert_eq!(
+        fs::read_to_string(root.join(".git/HEAD")).unwrap(),
+        format!("{next}\n")
+    );
+    assert!(
+        !tools
+            .iter()
+            .any(|tool| tool["name"] == "copy-write.move.v1")
+    );
     cli.succeeded("retire", &["Resource/copy"]);
     assert!(!root.exists());
     drop(server);

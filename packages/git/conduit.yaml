@@ -1,7 +1,7 @@
 apiVersion: github.com/shrav-k/conduit/v0
 address: example.org/conduit/git
-version: 0.2.0
-exports: [working-copy.v1, copy.v1, file.read.v1, directory.list.v1, file.write.v1, changes.v1, read, read-write]
+version: 0.3.0
+exports: [working-copy.v1, copy.v1, file.read.v1, directory.list.v1, file.write.v1, changes.v1, move.v1, read, read-write, manage]
 implementations:
   server:
     implements:
@@ -11,4 +11,5 @@ implementations:
     - '#directory.list.v1'
     - '#file.write.v1'
     - '#changes.v1'
+    - '#move.v1'
     command: [bin/conduit-git]

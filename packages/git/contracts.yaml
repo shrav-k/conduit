@@ -14,6 +14,7 @@ spec:
     '#directory.list.v1': '#server'
     '#file.write.v1': '#server'
     '#changes.v1': '#server'
+    '#move.v1': '#server'
   records: {inputs: true, outputs: false}
   schema:
     type: object
@@ -30,7 +31,7 @@ metadata:
   name: copy.v1
   description: Read, list, write, and take a patch from a local Git working copy.
 spec:
-  operations: ['#file.read.v1', '#directory.list.v1', '#file.write.v1', '#changes.v1']
+  operations: ['#file.read.v1', '#directory.list.v1', '#file.write.v1', '#changes.v1', '#move.v1']
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
@@ -133,6 +134,40 @@ spec:
     additionalProperties: false
 ---
 apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: move.v1
+  description: >-
+    Move the copy in place to another commit: drop its change, keep its ignored files
+    and apply an optional patch uncommitted.
+spec:
+  inputSchema:
+    type: object
+    properties:
+      commit: {type: string, pattern: '^[0-9a-f]{40}$'}
+      expectedBase: {type: string, pattern: '^[0-9a-f]{40}$'}
+      expectedPatchSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+      patch: {type: string}
+    required: [commit, expectedBase, expectedPatchSha256]
+    additionalProperties: false
+  outputSchema:
+    type: object
+    properties:
+      base: {type: string, pattern: '^[0-9a-f]{40}$'}
+      files:
+        type: array
+        items:
+          type: object
+          properties:
+            path: {type: string}
+            change: {enum: [added, modified, deleted]}
+          required: [path, change]
+          additionalProperties: false
+    required: [base, files]
+    additionalProperties: false
+  effect: Replaces the copy's files with the commit's and keeps its ignored files.
+---
+apiVersion: github.com/shrav-k/conduit/v0
 kind: Conduit
 metadata:
   name: read
@@ -147,3 +182,11 @@ metadata:
 spec:
   capability: '#copy.v1'
   operations: ['#file.read.v1', '#directory.list.v1', '#changes.v1', '#file.write.v1']
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: manage
+spec:
+  capability: '#copy.v1'
+  operations: ['#file.read.v1', '#directory.list.v1', '#changes.v1', '#file.write.v1', '#move.v1']

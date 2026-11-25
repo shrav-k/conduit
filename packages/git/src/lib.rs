@@ -28,16 +28,18 @@ enum Operation {
     List,
     Write,
     Changes,
+    Move,
 }
 
 impl Operation {
-    const ALL: [Self; 6] = [
+    const ALL: [Self; 7] = [
         Self::Setup,
         Self::Retire,
         Self::Read,
         Self::List,
         Self::Write,
         Self::Changes,
+        Self::Move,
     ];
 
     fn name(self) -> &'static str {
@@ -48,6 +50,7 @@ impl Operation {
             Self::List => "directory.list.v1",
             Self::Write => "file.write.v1",
             Self::Changes => "changes.v1",
+            Self::Move => "move.v1",
         }
     }
 
@@ -71,6 +74,15 @@ impl Operation {
             Self::Changes => Some(
                 json!({"type":"object","properties":{"base":{"type":"string","pattern":"^[0-9a-f]{40}$"},"files":{"type":"array","items":{"type":"object","properties":{"path":{"type":"string"},"change":{"enum":["added","modified","deleted"]}},"required":["path","change"],"additionalProperties":false}},"patch":{"type":"string"}},"required":["base","files","patch"],"additionalProperties":false}),
             ),
+            Self::Move => {
+                let mut output = Self::Changes.output().unwrap();
+                output["properties"]
+                    .as_object_mut()
+                    .unwrap()
+                    .remove("patch");
+                output["required"] = json!(["base", "files"]);
+                Some(output)
+            }
             _ => None,
         }
     }
@@ -82,6 +94,13 @@ impl Operation {
         ]});
         let (properties, required) = match self {
             Self::Read | Self::List => (json!({"path":path}), json!(["path"])),
+            Self::Move => (
+                json!({"commit":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+                    "expectedBase":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+                    "expectedPatchSha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+                    "patch":{"type":"string"}}),
+                json!(["commit", "expectedBase", "expectedPatchSha256"]),
+            ),
             Self::Write => (
                 json!({"path":path,"content":{"type":"string"}}),
                 json!(["path", "content"]),
@@ -169,6 +188,7 @@ fn invoke(
                 .ok_or("path must be a string")?;
             Some(files::relative(path)?)
         }
+        Operation::Move => None,
         _ if !args.is_empty() => return Err("operation takes no arguments".into()),
         _ => None,
     };
@@ -176,6 +196,7 @@ fn invoke(
     match operation {
         Operation::Setup => copy.setup(&config).map(|()| None),
         Operation::Retire => copy.retire(&config).map(|()| None),
+        Operation::Move => copy.move_copy(&config, &args).map(Some),
         _ => {
             let root = copy.root(&config)?;
             match operation {

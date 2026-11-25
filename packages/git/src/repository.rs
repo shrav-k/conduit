@@ -20,12 +20,19 @@ use std::{
 #[path = "patch.rs"]
 mod patch;
 
+#[path = "moving.rs"]
+mod moving;
+
 type Result<T> = std::result::Result<T, String>;
 
 #[derive(Serialize, Deserialize)]
 struct Copy {
     root: PathBuf,
     base: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    setup_commit: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pending: Option<moving::Pending>,
     staging: PathBuf,
     device: u64,
     inode: u64,
@@ -112,10 +119,13 @@ impl State {
             temp.persist(self.copy_path())?;
             Ok(())
         };
-        save().map_err(|_| "cannot save working-copy state record".into())
+        save().map_err(|cause| {
+            format!("cannot save working-copy state record \"copy.json\": {cause}")
+        })
     }
 
-    fn remove_attempt(&self, copy: &Copy) -> Result<()> {
+    fn remove_attempt(&self, copy: &mut Copy) -> Result<()> {
+        self.clean_workspace()?;
         match OpenedDirectory::open(&copy.staging) {
             Ok(dir) if copy.owns(&dir.dir)? => dir.remove()?,
             Ok(_) | Err(Errno::NOTDIR | Errno::LOOP) => {
@@ -134,11 +144,13 @@ impl State {
         if root.starts_with(&self.directory) || self.directory.starts_with(&root) {
             return Err("working-copy root overlaps its state directory".into());
         }
-        if let Some(copy) = self.copy()? {
+        if let Some(mut copy) = self.copy()? {
             if let Ok(dir) = files::absolute(&copy.root)
                 && copy.owns(&dir)?
             {
-                return if root == copy.root && config.commit == copy.base {
+                return if root == copy.root
+                    && config.commit == copy.setup_commit.as_deref().unwrap_or(&copy.base)
+                {
                     Ok(())
                 } else {
                     Err(
@@ -147,7 +159,7 @@ impl State {
                     )
                 };
             }
-            self.remove_attempt(&copy)?;
+            self.remove_attempt(&mut copy)?;
         }
         let prior = empty_root(&root)?;
         let source = config
@@ -178,9 +190,11 @@ impl State {
             .map_err(|_| "cannot stage checkout beside working-copy root")?;
         let metadata =
             fs::metadata(stage.path()).map_err(|_| "cannot inspect setup staging directory")?;
-        let copy = Copy {
+        let mut copy = Copy {
             root: root.clone(),
             base: config.commit.clone(),
+            setup_commit: Some(config.commit.clone()),
+            pending: None,
             staging: stage.path().to_owned(),
             device: metadata.dev(),
             inode: metadata.ino(),
@@ -215,7 +229,7 @@ impl State {
             .map_err(|_| "cannot publish checkout at working-copy root".into())
         })();
         if result.is_err() {
-            self.remove_attempt(&copy)?;
+            self.remove_attempt(&mut copy)?;
         }
         result
     }
@@ -234,7 +248,7 @@ impl State {
     }
 
     pub fn retire(&self, config: &Config) -> Result<()> {
-        let Some(copy) = self.copy()? else {
+        let Some(mut copy) = self.copy()? else {
             return Ok(());
         };
         if normalize_root(&config.root)? != copy.root {
@@ -248,11 +262,14 @@ impl State {
             Err(Errno::NOENT) => {}
             Err(_) => return Err("cannot inspect working-copy root for retirement".into()),
         }
-        self.remove_attempt(&copy)
+        self.remove_attempt(&mut copy)
     }
 
     pub fn changes(&self, root: &OwnedFd) -> Result<Value> {
         let copy = self.copy()?.ok_or("instance has not made a working copy")?;
+        if let Some(pending) = copy.pending {
+            return Err(pending.refusal());
+        }
         patch::take(&self.directory, &copy.base, root)
     }
 }
@@ -434,7 +451,13 @@ impl<'a> Git<'a> {
     }
 
     fn write_view(&self, commit: &str, stage: &Path, index: &Path) -> Result<()> {
-        let write = || -> std::io::Result<()> {
+        let at = |name: &str, cause: std::io::Error| {
+            format!(
+                "cannot write working-copy Git view {:?}: {cause}",
+                Path::new(".git").join(name)
+            )
+        };
+        let write = || -> Result<()> {
             let view = stage.join(".git");
             for directory in [
                 "info",
@@ -443,14 +466,16 @@ impl<'a> Git<'a> {
                 "refs/heads",
                 "refs/tags",
             ] {
-                fs::create_dir_all(view.join(directory))?;
+                fs::create_dir_all(view.join(directory)).map_err(|cause| at(directory, cause))?;
             }
-            fs::write(view.join("HEAD"), format!("{commit}\n"))?;
-            fs::copy(index, view.join("index"))?;
+            fs::write(view.join("HEAD"), format!("{commit}\n"))
+                .map_err(|cause| at("HEAD", cause))?;
+            fs::copy(index, view.join("index")).map_err(|cause| at("index", cause))?;
             fs::copy(
                 self.git_dir.join("info/attributes"),
                 view.join("info/attributes"),
-            )?;
+            )
+            .map_err(|cause| at("info/attributes", cause))?;
             let mut alternate = self
                 .git_dir
                 .join("objects")
@@ -458,7 +483,8 @@ impl<'a> Git<'a> {
                 .as_encoded_bytes()
                 .to_vec();
             alternate.push(b'\n');
-            fs::write(view.join("objects/info/alternates"), alternate)?;
+            fs::write(view.join("objects/info/alternates"), alternate)
+                .map_err(|cause| at("objects/info/alternates", cause))?;
             fs::write(
                 view.join("config"),
                 "[core]\n\
@@ -482,8 +508,9 @@ impl<'a> Git<'a> {
                  name =\n\
                  email =\n",
             )
+            .map_err(|cause| at("config", cause))
         };
-        write().map_err(|_| "cannot write working-copy Git view".into())
+        write()
     }
 
     fn checkout(&self, commit: &str, stage: &Path, index: &Path) -> Result<()> {

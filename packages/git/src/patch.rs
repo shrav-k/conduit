@@ -26,7 +26,7 @@ fn nul_paths<'a>(paths: impl IntoIterator<Item = &'a Path>) -> Vec<u8> {
         .collect()
 }
 
-fn split_paths(bytes: &[u8]) -> BTreeSet<PathBuf> {
+pub(super) fn split_paths(bytes: &[u8]) -> BTreeSet<PathBuf> {
     bytes
         .split(|b| *b == 0)
         .filter(|b| !b.is_empty())
@@ -92,8 +92,18 @@ fn read_patch(command: &mut Command) -> Result<String> {
 }
 
 pub(super) fn take(state: &Path, base: &str, root: &OwnedFd) -> Result<Value> {
+    take_in(state, base, root, state).map(|(read, _)| read)
+}
+
+pub(super) fn take_in(
+    state: &Path,
+    base: &str,
+    root: &OwnedFd,
+    workspace: &Path,
+) -> Result<(Value, Vec<PathBuf>)> {
     let home = state.join("home");
-    let scratch = tempfile::tempdir_in(state).map_err(|_| "cannot make private patch workspace")?;
+    let scratch =
+        tempfile::tempdir_in(workspace).map_err(|_| "cannot make private patch workspace")?;
     let private_git = scratch.path().join("repository.git");
     let git = Git::new(&home, &private_git)?;
     let baseline = scratch.path().join("base");
@@ -104,10 +114,14 @@ pub(super) fn take(state: &Path, base: &str, root: &OwnedFd) -> Result<Value> {
         fs::create_dir(dir).map_err(|_| "cannot make private patch worktree")?;
     }
     git.init(&baseline, &baseline_index)?;
-    // Relative to the temporary repository's object directory. Both are package-owned.
+    // Both paths are package-owned; move snapshots may be nested inside move staging.
     fs::write(
         private_git.join("objects/info/alternates"),
-        "../../../repository.git/objects\n",
+        [
+            state.join("repository.git/objects").as_os_str().as_bytes(),
+            b"\n",
+        ]
+        .concat(),
     )
     .map_err(|_| "cannot share the private base objects")?;
     git.checkout(base, &baseline, &baseline_index)?;
@@ -116,7 +130,16 @@ pub(super) fn take(state: &Path, base: &str, root: &OwnedFd) -> Result<Value> {
     let base_tree = git_output(cmd.args(["ls-tree", "-r", "--name-only", "-z", base]), None)?;
     require(&base_tree, "cannot list base tree")?;
     let tracked = split_paths(&base_tree.stdout);
-    let paths = capture_paths(&git, &ignore, &snapshot, &baseline_index, root, &tracked)?;
+    let mut ignored = Vec::new();
+    let paths = capture_paths(
+        &git,
+        &ignore,
+        &snapshot,
+        &baseline_index,
+        root,
+        &tracked,
+        &mut ignored,
+    )?;
     let mut edited = Vec::new();
     for path in &paths {
         if !tracked.contains(path) || !same_entry(&snapshot, &baseline, path)? {
@@ -134,7 +157,7 @@ pub(super) fn take(state: &Path, base: &str, root: &OwnedFd) -> Result<Value> {
         edited: &edited,
         removed: &removed,
     };
-    match candidates.verified(scratch.path(), false) {
+    let read = match candidates.verified(scratch.path(), false) {
         Ok(value) => Ok(value),
         Err(first) => candidates.verified(scratch.path(), true).map_err(|second| {
             if first == second {
@@ -143,7 +166,8 @@ pub(super) fn take(state: &Path, base: &str, root: &OwnedFd) -> Result<Value> {
                 format!("{first}. A raw-byte patch could not be verified either: {second}")
             }
         }),
-    }
+    }?;
+    Ok((read, ignored))
 }
 
 struct Candidate<'a> {
@@ -376,6 +400,7 @@ fn capture_paths(
     index: &Path,
     root: &OwnedFd,
     tracked: &BTreeSet<PathBuf>,
+    omitted: &mut Vec<PathBuf>,
 ) -> Result<BTreeSet<PathBuf>> {
     let parents: BTreeSet<_> = tracked
         .iter()
@@ -434,6 +459,9 @@ fn capture_paths(
         };
         for (path, name, kind) in candidates {
             let excluded = parent_ignored || ignored.contains(&path);
+            if excluded && !tracked.contains(&path) && !parents.contains(path.as_path()) {
+                omitted.push(path.clone());
+            }
             if kind == FileType::Directory {
                 if !excluded || parents.contains(path.as_path()) {
                     utf8_path(&path)?;

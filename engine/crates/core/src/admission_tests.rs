@@ -1128,6 +1128,274 @@ fn dispatched_ids(t: &Transition) -> Vec<Value> {
         .collect()
 }
 
+fn plain_guarded(keyed_sign_in: bool) -> packages::Project {
+    let mut p = guarded();
+    let item = &mut p.manifest.as_mut().unwrap()["implementations"]["resource"];
+    item["plain"] = json!(true);
+    item["tools"] = json!({
+        "github.com/shrav-k/conduit/core#account-hook.v1":"account",
+        "github.com/shrav-k/conduit/core#sign-in-hook.v1":"sign-in",
+        "github.com/shrav-k/conduit/core#sign-out-hook.v1":"sign-out",
+        "github.com/shrav-k/conduit/core#admission-hook.v1":"admission",
+        "#set-admission.v1":"set-admission"
+    });
+    if keyed_sign_in {
+        item["keyed"] = json!(["github.com/shrav-k/conduit/core#sign-in-hook.v1"]);
+    }
+    p
+}
+
+fn plain_report_state(keyed_sign_in: bool) -> GuardScenario {
+    let (state, c, captures) = run_case(REPORT, plain_guarded(keyed_sign_in), 13);
+    let account = captures["accountcheck"].as_str().unwrap();
+    let check = state
+        .invocations
+        .iter()
+        .find(|v| v["id"] == account)
+        .unwrap();
+    assert_eq!(check["plain"], true);
+    assert!(check.get("discovery").is_none());
+    let mut s = GuardScenario {
+        state,
+        c,
+        serial: 100,
+    };
+    let t = s.finish(
+        account,
+        "2026-11-21T13:00:00Z",
+        json!({
+            "isError":false,"content":[{"type":"text","text":"example-account"}],
+            "structuredContent":{"account":"example-account"}
+        }),
+    );
+    assert_eq!(ask_end(&t, account)["outcome"], "succeeded");
+    assert!(t.external_intents.is_empty());
+    s
+}
+
+fn plain_admission_result() -> Value {
+    json!({"isError":false,"content":[{"type":"text","text":"admitted"}],
+        "structuredContent":{"admission":report_one()},
+        "_meta":{"io.github.shrav-k.conduit/limits":limits_member()}})
+}
+
+fn ask_end<'a>(t: &'a Transition, ask: &str) -> &'a Value {
+    let ends: Vec<_> = t
+        .records
+        .iter()
+        .filter(|r| r["type"] == "invocation-ended" && r["data"]["invocation"] == ask)
+        .collect();
+    assert_eq!(ends.len(), 1);
+    &ends[0]["data"]
+}
+
+fn no_plain_ask_discovery(t: &Transition, ask: &str) {
+    // IFC-037 still requires discovery for the admitted Agent's keyed turn.
+    assert!(
+        t.external_intents
+            .iter()
+            .all(|intent| intent["call"]["method"] != "server/discover"
+                || intent["invocation"] != ask)
+    );
+}
+
+#[test]
+fn admission_ask_sent_plain_to_a_plain_item() {
+    let time = "2026-11-21T13:01:00Z";
+    for keyed_sign_in in [false, true] {
+        let mut s = plain_report_state(keyed_sign_in);
+        let t = s.admission_call(time, "call-a.turn.v1");
+        let (a, k) = waiting(&t);
+        assert_eq!(t.external_intents.len(), 1);
+        let intent = &t.external_intents[0];
+        assert_eq!(intent["kind"], "dispatch");
+        assert_eq!(intent["invocation"], k);
+        assert_eq!(
+            intent["target"],
+            subject(&s.state, "Resource", "login")["id"]
+        );
+        assert_eq!(intent["call"]["method"], "tools/call");
+        let params = &intent["call"]["params"];
+        assert_eq!(params["name"], "admission");
+        assert_eq!(
+            params["arguments"],
+            json!({
+                "levers":{"billing":"included","paidUsage":"refuse","whenUnknown":"refuse"},
+                "limits":{"state":"unknown","windows":[]},"previous":null
+            })
+        );
+        let meta = &params["_meta"];
+        assert!(
+            meta.as_object()
+                .into_iter()
+                .flatten()
+                .all(|(key, _)| !key.starts_with(&s.c.meta_prefix))
+        );
+        assert!(
+            meta["io.modelcontextprotocol/clientCapabilities"]["extensions"]
+                .get(format!("{}implementation-interface", s.c.meta_prefix))
+                .is_none()
+        );
+        let ask = s.state.invocations.iter().find(|v| v["id"] == k).unwrap();
+        assert_eq!(ask["plain"], true);
+        assert!(ask.get("discovery").is_none());
+        let records: Vec<_> = t
+            .records
+            .iter()
+            .filter(|r| r["type"] == "invocation-dispatched" && r["data"]["invocation"] == k)
+            .collect();
+        assert_eq!(records.len(), 1);
+        assert_eq!(
+            records[0]["data"]["caller"],
+            subject(&s.state, "Interface", "root")["id"]
+        );
+        assert_eq!(records[0]["data"]["causedBy"], a);
+        assert!(records[0]["data"].get("serving").is_none());
+        let starts: Vec<_> = t
+            .decisions
+            .iter()
+            .filter(|d| d.action == "start-admission-ask")
+            .collect();
+        assert_eq!(starts.len(), 1);
+        assert_eq!(starts[0].facts["invocation"], k);
+        assert_eq!(starts[0].facts["causedBy"], a);
+        assert!(
+            t.decisions
+                .iter()
+                .all(|d| d.action != "read-implementation-discovery")
+        );
+        no_plain_ask_discovery(&t, &k);
+        let t = s.admission_call(time, "call-b.turn.v1");
+        let (b, shared) = waiting(&t);
+        assert_eq!(shared, k);
+        assert!(t.external_intents.is_empty());
+        let t = s.finish(&k, time, plain_admission_result());
+        let ended = ask_end(&t, &k);
+        assert_eq!(ended["outcome"], "succeeded");
+        assert_eq!(ended["admission"], report_one());
+        assert_eq!(ended["limits"], limits_member());
+        assert_eq!(ended["causedBy"], a);
+        assert_eq!(dispatched_ids(&t), vec![json!(a), json!(b)]);
+        no_plain_ask_discovery(&t, &k);
+        let status = s.login_status(time);
+        assert_eq!(status["state"], "current");
+        assert_eq!(status["report"], report_one());
+    }
+}
+
+#[test]
+fn admission_plain_ask_answers_read_as_plain() {
+    let time = "2026-11-21T13:01:00Z";
+    let mut invalid = report_one();
+    invalid.as_object_mut().unwrap().remove("singleUse");
+    for (completion, outcome) in [
+        (
+            json!({"kind":"result","result":{"isError":true,"content":[{"type":"text","text":"read failed"}]}}),
+            "failed",
+        ),
+        (
+            json!({"kind":"protocol-error","code":-32603,"data":{}}),
+            "failed",
+        ),
+        (
+            json!({"kind":"protocol-error","code":-32020,"data":{}}),
+            "repair",
+        ),
+        (
+            json!({"kind":"result","result":{"isError":false,"structuredContent":{"admission":invalid}}}),
+            "unknown",
+        ),
+        (
+            json!({"kind":"result","result":{"resultType":"unrecognized"}}),
+            "unknown",
+        ),
+        (
+            json!({"kind":"result","result":{"resultType":"input_required"}}),
+            "unknown",
+        ),
+        (json!({"kind":"missing"}), "unknown"),
+        (Value::Null, "deadline"),
+    ] {
+        let mut s = plain_report_state(false);
+        let started = s.admission_call(time, "call-a.turn.v1");
+        let (a, k) = waiting(&started);
+        let (end_time, input) = if outcome == "deadline" {
+            (
+                "2026-11-21T13:01:30Z",
+                json!({"kind":"admission-ask-deadline","invocation":k,"attempt":1}),
+            )
+        } else {
+            (
+                time,
+                json!({"kind":"complete","invocation":k,"attempt":1,"completion":completion}),
+            )
+        };
+        let t = s.admission_input(end_time, input);
+        if outcome == "repair" {
+            let ask = s.state.invocations.iter().find(|v| v["id"] == k).unwrap();
+            assert_eq!(ask["state"], "in-progress");
+            let waiter = s.state.invocations.iter().find(|v| v["id"] == a).unwrap();
+            assert_eq!(waiter["admission_wait"], k);
+            assert!(
+                t.records
+                    .iter()
+                    .all(|r| r["type"] != "invocation-ended" || r["data"]["invocation"] != k)
+            );
+            assert_eq!(dispatched_ids(&t), vec![json!(k)]);
+            assert_eq!(t.external_intents[0]["kind"], "refresh-tools-and-call");
+            assert_eq!(
+                t.external_intents[0]["call"],
+                started.external_intents[0]["call"]
+            );
+            assert_eq!(
+                t.decisions
+                    .iter()
+                    .filter(|d| d.action == "repair-parameter-headers-once")
+                    .count(),
+                1
+            );
+            no_plain_ask_discovery(&t, &k);
+            let t = s.finish(&k, time, plain_admission_result());
+            assert_eq!(ask_end(&t, &k)["outcome"], "succeeded");
+            assert_eq!(dispatched_ids(&t), vec![json!(a)]);
+            no_plain_ask_discovery(&t, &k);
+        } else {
+            let ended = ask_end(&t, &k);
+            assert_eq!(
+                ended["outcome"],
+                if outcome == "deadline" {
+                    "unknown"
+                } else {
+                    outcome
+                }
+            );
+            assert!(ended.get("admission").is_none());
+            assert_admission_hold(
+                &s,
+                &t,
+                hold_reply(&t, &a),
+                no_report_fields(
+                    json!(k),
+                    outcome,
+                    if outcome == "deadline" {
+                        "2026-11-21T13:02:30Z"
+                    } else {
+                        "2026-11-21T13:02:00Z"
+                    },
+                ),
+            );
+            if outcome == "deadline" {
+                assert_eq!(dispatched_ids(&t), vec![json!(k)]);
+                assert_eq!(t.external_intents[0]["kind"], "cancel");
+            } else {
+                assert!(t.external_intents.is_empty());
+            }
+            no_plain_ask_discovery(&t, &k);
+        }
+        no_plain_ask_discovery(&started, &k);
+    }
+}
+
 #[test]
 fn admission_ask_started_once_for_waiting_calls() {
     let time = "2026-11-21T13:01:00Z";

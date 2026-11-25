@@ -992,3 +992,24 @@ root and a setup's part among them, and the Conduit stays as it was; one whose
 consumer is an Interface or a Resource opens as before (DEC-119). ACC-058's rows for
 the admission hook and a login's admission control wait for DEC-064's engine orders,
 which build `request-access.v1`.
+
+## A login's admission ask to a plain item (order 324)
+
+From order 324, the admission ask to a login whose implementation item for
+`admission-hook.v1` is marked `plain` is a plain call, as PKG-020 makes every call to
+a plain item that its `keyed` does not list, and `keyed` lists no admission hook: it
+is recorded and sent in the transition that starts it, with no `server/discover`
+before it, as the item's tool for `admission-hook.v1`, with the same input, no key of
+Conduit's and no extension declared (IFC-007). Where the item's `attributed` lists
+`admission-hook.v1`, PKG-020 gives the ask `invocation` and `caller`; the engine
+reads `attributed` for no call yet, so this build sends the ask with no key of
+Conduit's whatever the item states, and that support is deferred to the order that
+builds `attributed`. Its records still name its caller and the call whose wait
+started it (PND-016). Its answer is read as IFC-010 reads a plain call's: a first
+-32020 has the tool list read again and the call sent once more, as one call
+(IFC-046); a complete error result, or a protocol error that ends the call after any
+such resend, fails it, since `admission-hook.v1` states no effect; a result whose
+`resultType` is `input_required` or unrecognized, no answer, and an answer whose
+`admission` fails `admission-report.v1` (OPS-007), end it unknown; a succeeded answer
+is kept, with its limits, as order 317 keeps a report (IFC-052, IFC-054). An ask to
+an item not marked `plain` is sent after discovery, with Conduit's keys, as before.

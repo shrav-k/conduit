@@ -771,7 +771,7 @@ async fn discovery_and_extension_refusal_make_nothing() {
         "v0"
     );
     let tools = client.0.list_all_tools().await.unwrap();
-    assert_eq!(tools.len(), 6);
+    assert_eq!(tools.len(), 7);
     for tool in tools {
         let (input, output) = conduit_git::schemas(&tool.name).unwrap();
         let wire = serde_json::to_value(tool).unwrap();
@@ -945,4 +945,413 @@ async fn setup_imports_alternate_objects_from_a_linked_worktree() {
             .join("repository.git/objects/info/alternates")
             .exists()
     );
+}
+
+fn move_args(commit: &str, read: &Value) -> Value {
+    use sha2::{Digest, Sha256};
+    json!({"commit":commit,"expectedBase":read["base"],
+        "expectedPatchSha256":format!("{:x}", Sha256::digest(read["patch"].as_str().unwrap().as_bytes()))})
+}
+
+async fn read_copy(client: &Client, config: &Value) -> Value {
+    succeeded(&client.call(config, "changes.v1", json!({})).await).clone()
+}
+
+fn tree_state(root: &Path) -> BTreeMap<PathBuf, (u32, Vec<u8>)> {
+    use std::os::unix::ffi::OsStrExt;
+    fn visit(root: &Path, path: &Path, out: &mut BTreeMap<PathBuf, (u32, Vec<u8>)>) {
+        let meta = fs::symlink_metadata(path).unwrap();
+        let bytes = if meta.is_symlink() {
+            fs::read_link(path).unwrap().as_os_str().as_bytes().to_vec()
+        } else if meta.is_file() {
+            fs::read(path).unwrap()
+        } else {
+            Vec::new()
+        };
+        out.insert(
+            path.strip_prefix(root).unwrap().to_owned(),
+            (meta.mode(), bytes),
+        );
+        if meta.is_dir() {
+            for entry in fs::read_dir(path).unwrap() {
+                visit(root, &entry.unwrap().path(), out);
+            }
+        }
+    }
+    let mut out = BTreeMap::new();
+    visit(root, root, &mut out);
+    out
+}
+
+fn no_move_staging(f: &Fixture) {
+    assert!(!f.state.join("repository.git/move-staging").exists());
+    assert!(fs::read_dir(&f.scratch.path).unwrap().all(|entry| {
+        !entry
+            .unwrap()
+            .file_name()
+            .to_string_lossy()
+            .starts_with(".conduit-")
+    }));
+}
+
+#[tokio::test]
+async fn move_drops_the_change_and_keeps_ignored_files() {
+    let f = Fixture::new();
+    let (client, _, config) = f.setup().await;
+    fs::write(f.repository.join("tracked.txt"), "next\n").unwrap();
+    fs::remove_file(f.repository.join("delete.txt")).unwrap();
+    fs::write(f.repository.join("next.txt"), "next file\n").unwrap();
+    fs::write(f.repository.join(".gitignore"), "/ignored/\n").unwrap();
+    fs::create_dir_all(f.repository.join("lib/ignored")).unwrap();
+    fs::write(f.repository.join("lib/ignored/file"), "new library\n").unwrap();
+    let next = f.scratch.commit(&f.repository);
+    fs::write(f.root.join("tracked.txt"), "worker\n").unwrap();
+    fs::write(f.root.join("new.txt"), "new\n").unwrap();
+    fs::write(f.root.join(".gitignore"), "ignored/\n*.tmp\n").unwrap();
+    fs::write(f.root.join("scratch.tmp"), "discard\n").unwrap();
+    let outside = f.scratch.path.join("outside");
+    fs::write(&outside, "outside\n").unwrap();
+    fs::remove_file(f.root.join("opaque.txt")).unwrap();
+    symlink(&outside, f.root.join("opaque.txt")).unwrap();
+    fs::create_dir_all(f.root.join("ignored/cache")).unwrap();
+    fs::write(f.root.join("ignored/cache/tool"), "cached\n").unwrap();
+    fs::set_permissions(
+        f.root.join("ignored/cache/tool"),
+        fs::Permissions::from_mode(0o755),
+    )
+    .unwrap();
+    fs::create_dir_all(f.root.join("lib/ignored")).unwrap();
+    fs::write(f.root.join("lib/ignored/stale"), "stale\n").unwrap();
+    view_git(&f, &["branch", "worker"]);
+    let read = read_copy(&client, &config).await;
+    let root_meta = fs::metadata(&f.root).unwrap();
+    let kept = tree_state(&f.root.join("ignored"));
+    let tool_inode = fs::metadata(f.root.join("ignored/cache/tool"))
+        .unwrap()
+        .ino();
+    let inode = fs::metadata(f.root.join("ignored")).unwrap().ino();
+    let reply = client
+        .call(&config, "move.v1", move_args(&next, &read))
+        .await;
+    assert_eq!(succeeded(&reply), &json!({"base":next,"files":[]}));
+    assert_eq!(fs::metadata(&f.root).unwrap().ino(), root_meta.ino());
+    assert_eq!(fs::metadata(&f.root).unwrap().mode(), root_meta.mode());
+    assert_eq!(fs::metadata(f.root.join("ignored")).unwrap().ino(), inode);
+    assert_eq!(tree_state(&f.root.join("ignored")), kept);
+    assert_eq!(
+        fs::metadata(f.root.join("ignored/cache/tool"))
+            .unwrap()
+            .ino(),
+        tool_inode
+    );
+    let mut names: Vec<_> = fs::read_dir(&f.root)
+        .unwrap()
+        .map(|entry| entry.unwrap().file_name())
+        .collect();
+    names.sort();
+    assert_eq!(
+        names,
+        [
+            ".git",
+            ".gitignore",
+            "ignored",
+            "lib",
+            "mode.sh",
+            "next.txt",
+            "opaque.txt",
+            "tracked.txt"
+        ]
+    );
+    assert_eq!(
+        file_bytes(&f.root.join("lib")),
+        BTreeMap::from([(PathBuf::from("ignored/file"), b"new library\n".to_vec())])
+    );
+    assert_eq!(fs::read(f.root.join("tracked.txt")).unwrap(), b"next\n");
+    assert_eq!(fs::read(&outside).unwrap(), b"outside\n");
+    assert_eq!(view_git(&f, &["rev-parse", "HEAD"]).trim(), next);
+    assert_eq!(view_git(&f, &["status", "--porcelain=v1", "-uall"]), "");
+    assert_eq!(view_git(&f, &["for-each-ref"]), "");
+    assert_eq!(
+        read_copy(&client, &config).await,
+        json!({"base":next,"files":[],"patch":""})
+    );
+    no_move_staging(&f);
+}
+
+#[tokio::test]
+async fn move_applies_a_patch_uncommitted() {
+    let first = Fixture::new();
+    let (client, base, config) = first.setup().await;
+    fs::write(first.root.join("tracked.txt"), "worker\n").unwrap();
+    fs::remove_file(first.root.join("delete.txt")).unwrap();
+    fs::write(first.root.join("new.txt"), "added\n").unwrap();
+    fs::create_dir(first.root.join("ignored")).unwrap();
+    fs::write(first.root.join("ignored/extra"), "cache\n").unwrap();
+    let patch = read_copy(&client, &config).await;
+    let state = first.scratch.path.join("second-state");
+    let root = first.scratch.path.join("second-copy");
+    fs::create_dir(&state).unwrap();
+    let second = Client::open(&state).await;
+    let mut config2 = config.clone();
+    config2["root"] = json!(root);
+    succeeded(&second.call(&config2, "setup-hook.v1", json!({})).await);
+    let read = read_copy(&second, &config2).await;
+    let mut args = move_args(&base, &read);
+    args["patch"] = patch["patch"].clone();
+    let reply = second.call(&config2, "move.v1", args).await;
+    assert_eq!(
+        succeeded(&reply),
+        &json!({"base":base,"files":patch["files"]})
+    );
+    let visible = |root: &Path| {
+        tree_state(root)
+            .into_iter()
+            .filter(|(p, _)| !p.starts_with(".git") && !p.starts_with("ignored"))
+            .collect::<BTreeMap<_, _>>()
+    };
+    assert_eq!(visible(&root), visible(&first.root));
+    assert_eq!(read_copy(&second, &config2).await["files"], patch["files"]);
+    let mut command = view_command(&first);
+    command
+        .current_dir(&root)
+        .args(["diff", "--cached", "--name-only"]);
+    let output = command.output().unwrap();
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+    let output = view_command(&first)
+        .current_dir(&root)
+        .args(["status", "--porcelain=v1", "-uall"])
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    assert_eq!(
+        String::from_utf8(output.stdout).unwrap(),
+        " D delete.txt\n M tracked.txt\n?? new.txt\n"
+    );
+    fs::write(first.repository.join("tracked.txt"), "incompatible\n").unwrap();
+    let next = first.scratch.commit(&first.repository);
+    let read = read_copy(&second, &config2).await;
+    let before = tree_state(&root);
+    let mut args = move_args(&next, &read);
+    args["patch"] = patch["patch"].clone();
+    failed(
+        &second.call(&config2, "move.v1", args).await,
+        "the patch does not apply",
+    );
+    assert_eq!(tree_state(&root), before);
+    assert_eq!(read_copy(&second, &config2).await, read);
+    for (invalid_patch, cause) in [
+        (
+            patch["patch"]
+                .as_str()
+                .unwrap()
+                .replace("new.txt", "nested/.GiT/file"),
+            "the patch does not apply",
+        ),
+        ("x".repeat(MAX_BYTES + 1), "the patch is over 8 MiB"),
+    ] {
+        let mut args = move_args(&base, &read);
+        args["patch"] = json!(invalid_patch);
+        let reply = second.call(&config2, "move.v1", args).await;
+        failed(&reply, cause);
+        failed(&reply, "nothing was changed");
+        failed(&reply, "provide a patch");
+        assert_eq!(tree_state(&root), before);
+        assert_eq!(read_copy(&second, &config2).await, read);
+    }
+}
+
+#[tokio::test]
+async fn move_is_refused_unless_the_copy_is_as_read() {
+    let f = Fixture::new();
+    let (client, base, config) = f.setup().await;
+    let old = read_copy(&client, &config).await;
+    fs::write(f.root.join("tracked.txt"), "turn\n").unwrap();
+    let read = read_copy(&client, &config).await;
+    let before = tree_state(&f.root);
+    let mut wrong_base = move_args(&base, &read);
+    wrong_base["expectedBase"] = json!("0".repeat(40));
+    for (args, cause) in [
+        (move_args(&base, &old), "read changes.v1 again"),
+        (wrong_base, "not at expectedBase; read changes.v1 again"),
+        (
+            move_args(&"0".repeat(40), &read),
+            "commit is not in the repository",
+        ),
+    ] {
+        let reply = client.call(&config, "move.v1", args).await;
+        failed(&reply, cause);
+        failed(&reply, "nothing was changed");
+        assert_eq!(tree_state(&f.root), before);
+        assert_eq!(read_copy(&client, &config).await, read);
+    }
+    // A failure to save the pending record is still an unchanged refusal.
+    fs::set_permissions(&f.state, fs::Permissions::from_mode(0o500)).unwrap();
+    let reply = client
+        .call(&config, "move.v1", move_args(&base, &read))
+        .await;
+    fs::set_permissions(&f.state, fs::Permissions::from_mode(0o700)).unwrap();
+    for cause in [
+        "cannot save working-copy state record",
+        "retry the move",
+        "nothing was changed",
+    ] {
+        failed(&reply, cause);
+    }
+    assert_eq!(tree_state(&f.root), before);
+    assert_eq!(read_copy(&client, &config).await, read);
+    succeeded(
+        &client
+            .call(&config, "move.v1", move_args(&base, &read))
+            .await,
+    );
+}
+
+#[tokio::test]
+async fn move_keeps_its_commit_across_setup_and_retirement() {
+    let f = Fixture::new();
+    let (client, _, config) = f.setup().await;
+    fs::write(f.repository.join("tracked.txt"), "next\n").unwrap();
+    let next = f.scratch.commit(&f.repository);
+    let read = read_copy(&client, &config).await;
+    succeeded(
+        &client
+            .call(&config, "move.v1", move_args(&next, &read))
+            .await,
+    );
+    let before = tree_state(&f.root);
+    succeeded(&client.call(&config, "setup-hook.v1", json!({})).await);
+    assert_eq!(tree_state(&f.root), before);
+    assert_eq!(
+        fs::read_to_string(f.root.join(".git/HEAD")).unwrap(),
+        format!("{next}\n")
+    );
+    failed(
+        &client
+            .call(&f.config(&next), "setup-hook.v1", json!({}))
+            .await,
+        "another root or commit",
+    );
+    succeeded(&client.call(&config, "retire-hook.v1", json!({})).await);
+    assert!(!f.root.exists());
+    assert!(!f.state.join("repository.git").exists());
+    no_move_staging(&f);
+}
+
+#[tokio::test]
+async fn move_that_ends_part_way_is_finished() {
+    let f = Fixture::new();
+    let (client, base, config) = f.setup().await;
+    fs::write(f.repository.join("tracked.txt"), "next\n").unwrap();
+    let next = f.scratch.commit(&f.repository);
+    fs::create_dir_all(f.root.join("ignored/cache")).unwrap();
+    fs::write(f.root.join("ignored/cache/tool"), "cache\n").unwrap();
+    fs::create_dir_all(f.root.join("holder/ignored")).unwrap();
+    fs::write(f.root.join("holder/ignored/cache"), "nested cache\n").unwrap();
+    let nested_inode = fs::metadata(f.root.join("holder/ignored")).unwrap().ino();
+    fs::create_dir(f.root.join("locked")).unwrap();
+    fs::write(f.root.join("locked/file"), "locked\n").unwrap();
+    fs::set_permissions(f.root.join("locked"), fs::Permissions::from_mode(0o500)).unwrap();
+    let read = read_copy(&client, &config).await;
+    let args = move_args(&next, &read);
+    let inode = fs::metadata(f.root.join("ignored")).unwrap().ino();
+    let reply = client.call(&config, "move.v1", args.clone()).await;
+    // Restore even when the assertion fails, so the temporary directory can be removed.
+    fs::set_permissions(f.root.join("locked"), fs::Permissions::from_mode(0o700)).unwrap();
+    for cause in [
+        "ended part way",
+        "locked",
+        "Permission denied",
+        "the copy is left as the record names",
+        "repeat the move with the same inputs",
+        "retire the Resource and set it up again",
+    ] {
+        failed(&reply, cause);
+    }
+    for reply in [
+        client.call(&config, "changes.v1", json!({})).await,
+        client
+            .call(&config, "move.v1", move_args(&base, &read))
+            .await,
+        client.call(&config, "move.v1", json!({})).await,
+    ] {
+        for cause in [
+            "ended part way",
+            "the copy is left as the record names",
+            "repeat the move with the same inputs",
+            "retire the Resource and set it up again",
+        ] {
+            failed(&reply, cause);
+        }
+    }
+    succeeded(
+        &client
+            .call(
+                &config,
+                "file.write.v1",
+                json!({"path":"meanwhile.txt","content":"temporary repair"}),
+            )
+            .await,
+    );
+    succeeded(
+        &client
+            .call(&config, "file.read.v1", json!({"path":"meanwhile.txt"}))
+            .await,
+    );
+    succeeded(
+        &client
+            .call(&config, "directory.list.v1", json!({"path":"."}))
+            .await,
+    );
+    let record: Value =
+        serde_json::from_slice(&fs::read(f.state.join("copy.json")).unwrap()).unwrap();
+    assert_eq!(record["pending"]["inputs"]["commit"], next);
+    assert_eq!(record["pending"]["inputs"]["expectedBase"], base);
+    assert_eq!(
+        record["pending"]["inputs"]["expectedPatchSha256"],
+        args["expectedPatchSha256"]
+    );
+    assert!(
+        record["pending"]["kept"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|entry| entry["inode"] == inode)
+    );
+    no_move_staging(&f);
+    // A process killed in staging leaves only this package-owned directory to clean.
+    let abandoned = f.state.join("repository.git/move-staging");
+    fs::create_dir(&abandoned).unwrap();
+    fs::write(abandoned.join("incomplete"), "staged bytes").unwrap();
+    fs::rename(f.root.join("holder"), f.root.join("holder-old")).unwrap();
+    fs::create_dir(f.root.join("holder")).unwrap();
+    fs::rename(
+        f.root.join("holder-old/ignored"),
+        f.root.join("holder/ignored"),
+    )
+    .unwrap();
+    fs::remove_dir(f.root.join("holder-old")).unwrap();
+    drop(client);
+    let client = Client::open(&f.state).await;
+    succeeded(&client.call(&config, "move.v1", args).await);
+    assert_eq!(fs::metadata(f.root.join("ignored")).unwrap().ino(), inode);
+    assert_eq!(
+        fs::read(f.root.join("ignored/cache/tool")).unwrap(),
+        b"cache\n"
+    );
+    assert!(!f.root.join("locked").exists());
+    assert!(!f.root.join("meanwhile.txt").exists());
+    assert_eq!(
+        fs::metadata(f.root.join("holder/ignored")).unwrap().ino(),
+        nested_inode
+    );
+    assert_eq!(
+        fs::read(f.root.join("holder/ignored/cache")).unwrap(),
+        b"nested cache\n"
+    );
+    assert_eq!(
+        read_copy(&client, &config).await,
+        json!({"base":next,"files":[],"patch":""})
+    );
+    no_move_staging(&f);
 }

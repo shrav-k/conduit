@@ -1,6 +1,6 @@
 # Git working copy
 
-`example.org/conduit/git` 0.2.0 is a Unix package for the engine's own runner. One
+`example.org/conduit/git` 0.3.0 is a Unix package for the engine's own runner. One
 `working-copy.v1` Resource serves a copy of a local SHA-1 Git repository at a
 detached commit. Install `dist/git.tar.gz` with its SHA-256 digest and pin the
 version and digest in the project manifest. Build the archive with
@@ -23,7 +23,8 @@ or verifier can consume a Conduit with `from: example.org/conduit/git#read` to
 `Resource/copy`. A worker can consume `#read-write` at the same package address
 and use the copy's `root` as its working directory. The `read` template exposes
 `file.read.v1`, `directory.list.v1` and `changes.v1`. The `read-write` template
-adds `file.write.v1`. File and directory paths are relative to the copy. Only
+adds `file.write.v1`. The `manage` template adds `move.v1`, below.
+File and directory paths are relative to the copy. Only
 the spelling `.` names its root. Empty segments, traversal segments and
 case-insensitive `.git` segments are refused. File reads and writes are limited
 to 8 MiB of UTF-8.
@@ -54,6 +55,31 @@ planted in the copy are never used. In v0, an Agent runs unconfined under the
 owner's OS user. A read Conduit limits requests made through Conduit. The Agent's own tools keep
 the access of that OS user.
 [DEC-018](../../docs/decisions/log.md#dec-018-2026-11-20-what-an-agent-reaches-enforcement-in-v0-after-s2)
+
+## Moving the copy
+
+`move.v1` moves the copy in place to another commit of its repository. Give it
+the `base` that `changes.v1` last returned and the SHA-256, in lowercase
+hexadecimal, of that call's `patch`: unless the copy is still as that read gave
+it, the move fails and changes nothing, so it drops no change made before it
+that its caller has not read. It drops the copy's change and keeps each
+untracked entry that the ignore rules before the move and after it (the
+commit's, with any patch applied) both ignore and the moved copy does not
+track, such as `target/`; any other ignored entry goes too. An optional
+`patch`, at most 8 MiB and in `changes.v1`'s form, is applied unstaged.
+Root stays the same directory, with a new Git view at the commit. The record
+keeps the move's inputs, the patch among them.
+
+The package cannot see an Agent's turn: move a copy only when no Agent works
+in it. A move that ends part way leaves the copy as its record names; repeat
+that move with the same inputs to finish it. Until then `changes.v1` and other
+moves are refused. File reads, directory listings and file writes still work
+on the partly moved copy. The finishing move drops anything written to the
+copy meanwhile, without checking the expectations again. If the move cannot
+finish, retire the Resource and set it up again.
+
+The Resource's `commit` stays setup's: setting it up again leaves the copy
+where its last move put it, and another commit is refused.
 
 ## The Git view
 
@@ -86,5 +112,5 @@ has no view; retire it and set it up again.
 | --- | --- |
 | D15(a) Package-owned behavior | `src/lib.rs` negotiates IFC-037 and validates keyed requests and configuration. `src/objects.rs` imports local Git objects. `src/repository.rs` owns checkout state and retirement. `src/patch.rs` captures and verifies changes. `src/files.rs` handles bounded reads, directory listing and atomic writes. The stdio tests exercise successful and refused operations. |
 | D15(b) Delegated behavior | Host Git checks out the private commit, evaluates ignore rules against a snapshot, produces the binary-capable diff, and applies each candidate for verification. Unix descriptors and an advisory lock come from rustix. rmcp supplies MCP over stdio. tar, flate2 and sha2 build and digest the archive. |
-| D15(c) Persistent state | The runner supplies `CONDUIT_STATE_DIR` under PRV-029. The package keeps the Git directory, owner record, lock and private Git home there. Setup writes the Git view at root's `.git` once; the package never reads it, and retirement removes it with root. A pending checkout can be cleaned and retried. Retirement removes the served copy and Git directory. |
-| D15(d) Operator work and recovery | Supply host Git, a readable local repository, a pinned commit and a suitable destination. Repair the reported path or permissions and retry setup. The engine integration test installs the archive, sets up a Pool-owned copy, checks both Conduits, applies a patch and retires the Resource. |
+| D15(c) Persistent state | The runner supplies `CONDUIT_STATE_DIR` under PRV-029. The package keeps the Git directory, owner record, lock and private Git home there. Setup writes the Git view at root's `.git`, and each move writes it again; the package never reads it, and retirement removes it with root. A pending checkout can be cleaned and retried. Retirement removes the served copy and Git directory. |
+| D15(d) Operator work and recovery | Supply host Git, a readable local repository, a pinned commit and a suitable destination. Repair the reported path or permissions and retry setup. The engine integration test installs the archive, sets up a Pool-owned copy, checks its three Conduits, applies a patch, moves the copy and retires the Resource. |

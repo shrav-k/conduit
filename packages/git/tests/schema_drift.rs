@@ -139,6 +139,7 @@ fn contracts_match_the_capability_and_advertised_tools() {
         "#directory.list.v1",
         "#file.write.v1",
         "#changes.v1",
+        "#move.v1",
     ];
     assert_eq!(of("copy.v1")["spec"]["operations"], json!(ops));
     assert_eq!(
@@ -152,7 +153,7 @@ fn contracts_match_the_capability_and_advertised_tools() {
         )
     );
     let mapping = kind["implementation"].as_object().unwrap();
-    assert_eq!(mapping.len(), 6);
+    assert_eq!(mapping.len(), 7);
     for name in hooks.iter().map(String::as_str).chain(ops) {
         assert_eq!(mapping[name], "#server");
     }
@@ -168,6 +169,16 @@ fn contracts_match_the_capability_and_advertised_tools() {
                 "#directory.list.v1",
                 "#changes.v1",
                 "#file.write.v1"
+            ]),
+        ),
+        (
+            "manage",
+            json!([
+                "#file.read.v1",
+                "#directory.list.v1",
+                "#changes.v1",
+                "#file.write.v1",
+                "#move.v1"
             ]),
         ),
     ] {
@@ -203,6 +214,14 @@ fn contracts_match_the_capability_and_advertised_tools() {
             ] {
                 assert!(!path.is_valid(&json!(value)), "{value:?}");
             }
+        } else if name == "move.v1" {
+            let valid = json!({"commit":"a".repeat(40),"expectedBase":"b".repeat(40),
+                "expectedPatchSha256":"c".repeat(64),"patch":""});
+            assert!(validator.is_valid(&valid));
+            assert!(!validator.is_valid(&json!({})));
+            let mut invalid = valid;
+            invalid["extra"] = json!(true);
+            assert!(!validator.is_valid(&invalid));
         } else {
             assert!(validator.is_valid(&json!({})));
             assert!(!validator.is_valid(&json!({"extra":true})));

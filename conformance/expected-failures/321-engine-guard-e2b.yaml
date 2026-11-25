@@ -1,0 +1,8 @@
+{
+  "cases": [
+    {
+      "id": "access-ask-admission-refused",
+      "reason": "ACC-058, order 318: the first build does not offer request-access.v1; DEC-064's engine orders make it pass, with ACC-058's rows for the admission hook and a login's admission control"
+    }
+  ]
+}

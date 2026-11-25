@@ -1181,6 +1181,19 @@ fn evaluate_path(
                     return Ok(Verdict::reason("refused", "ACC-032"));
                 }
             }
+            if view
+                .object(&conduit["consumer"])?
+                .is_some_and(|consumer| consumer["kind"] == "Agent")
+                && let Some(target) = view.object(&conduit["target"])?
+                && let Some(control) = crate::admission::control(target, context)?
+                && values(conduit, "operations").any(|operation| *operation == control["control"])
+            {
+                let mut verdict = Verdict::reason("refused", "CTR-015");
+                verdict.route = json!({"consumer":instance["id"],"caller":caller,
+                    "conduit":path["id"],"target":path["target"],"operation":op,
+                    "admissionControl":control,"arguments":request.arguments,"dispatched":false});
+                return Ok(verdict);
+            }
         }
     }
     if publication["reason"] == "invalid" {
@@ -1353,6 +1366,12 @@ pub(crate) fn decide(
                 // An operation that selection found is exact: keep it over the spelling's.
                 if verdict.route["operation"].is_string() {
                     route["operation"] = verdict.route["operation"].clone();
+                }
+                // Keep the verdict's explanation facts on decision-only refusals too.
+                for field in ["admissionControl", "rootLoginNotice"] {
+                    if let Some(value) = verdict.route.get(field) {
+                        route[field] = value.clone();
+                    }
                 }
                 refusal_tier = Some(crate::explain::tier(&t.state, &route, context)?);
                 route

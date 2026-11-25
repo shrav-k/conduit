@@ -189,6 +189,32 @@ fn decide_report(
     };
     if let Some(report) = &report {
         if report["admit"] == true {
+            if matches!(report["reason"].as_str(), Some("warning" | "cannot-tell")) {
+                let v = &t.state.invocations[i];
+                let login_object =
+                    access::object_by_id(&t.state, &json!(login)).ok_or("warned login absent")?;
+                let status = admission::status(&t.state, login_object, &v["caller"], time, c)
+                    .ok_or("warned login has no admission status")?;
+                let form = hold_form(
+                    &t.state,
+                    c,
+                    login_object,
+                    &v["caller"],
+                    Some(report),
+                    &status["invocation"],
+                    HoldCause::Dispatched,
+                )?;
+                let text = crate::explain::admission_warning(
+                    v["admission_tool"]
+                        .as_str()
+                        .ok_or("warned call has no tool")?,
+                    &form,
+                );
+                t.state.invocations[i]["admission_warning"] = json!({
+                    "level":"warning","ruleId":"PND-016","message":{"text":text},
+                    "properties":{"admission":form}
+                });
+            }
             if report["singleUse"] == true {
                 *spent = Some(t.state.invocations[i].clone());
                 admission::end(
@@ -251,6 +277,7 @@ fn decide_report(
 }
 
 pub(crate) enum HoldCause<'a> {
+    Dispatched,
     NoReport {
         period: &'a NoReport,
     },
@@ -263,7 +290,7 @@ pub(crate) enum HoldCause<'a> {
     },
 }
 
-/// One builder for the hold's form; the warning order adds its dispatched case here.
+/// IFC-054 / PND-016: one form for a held call or a dispatched warning.
 pub(crate) fn hold_form(
     state: &State,
     c: &Context,
@@ -273,36 +300,13 @@ pub(crate) fn hold_form(
     ask: &Value,
     cause: HoldCause<'_>,
 ) -> Result<Value> {
-    let published = registration::publication_object(login, c)?;
-    let (env, scope, ty) = schemas::operation(
-        &published,
-        login["type"].as_str().ok_or("login Type absent")?,
-        &c.core_package,
-    )?;
-    let control = ty["spec"]["admission"]["control"]
-        .as_str()
-        .ok_or("admission control absent")?;
-    let mut scoped = published;
-    scoped["contract_scope"] = json!(scope);
-    let (control_env, control_scope, control_doc) =
-        schemas::operation(&scoped, control, &c.core_package)?;
-    let control = format!(
-        "{}#{}",
-        control_env.scopes[&control_scope].address,
-        control_doc["metadata"]["name"]
-            .as_str()
-            .ok_or("control name absent")?
-    );
-    let type_name = format!(
-        "{}#{}",
-        env.scopes[&scope].address,
-        ty["metadata"]["name"].as_str().ok_or("Type name absent")?
-    );
+    let levers = admission::control(login, c)?.ok_or("admission control absent")?;
     let mut form = json!({"login":inventory::object(login),"dispatched":false,"report":report,
         "reportInvocation":if access::may_inspect(state,caller,login,c).unwrap_or(false) {ask.clone()} else {Value::Null},
         "noReport":null,"singleUse":null,"lifts":null,"retryAt":null,
-        "levers":{"type":type_name,"pointer":ty["spec"]["admission"]["levers"],"control":control}});
+        "levers":levers});
     match cause {
+        HoldCause::Dispatched => form["dispatched"] = json!(true),
         HoldCause::NoReport { period } => {
             form["report"] = Value::Null;
             form["noReport"] = json!(period.cause);

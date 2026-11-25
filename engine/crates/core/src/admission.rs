@@ -1,6 +1,7 @@
 //! IFC-054: keep a login's report and its first end, independently of records.
 use crate::{
-    Context, State, Transition, access, inventory, limits, login_resource, requests, usage,
+    Context, Result, State, Transition, access, inventory, limits, login_resource, registration,
+    requests, schemas, usage,
 };
 use chrono::{Duration, Utc};
 use serde::{Deserialize, Serialize};
@@ -87,6 +88,42 @@ pub(crate) fn current<'a>(state: &'a State, login: &str, time: &str) -> Option<&
         .get(login)
         .filter(|kept| kept.end_at(time).is_none())
         .map(|kept| &kept.report)
+}
+
+/// CTR-015: resolve a Resource Type's control from its publication, as a qualified
+/// reference. Other targets, including Agent Types with only loginTypes, have none.
+pub(crate) fn control(login: &Value, c: &Context) -> Result<Option<Value>> {
+    if login["kind"] != "Resource" || login["type"].as_str().is_none() {
+        return Ok(None);
+    }
+    let published = registration::publication_object(login, c)?;
+    let (env, scope, ty) = schemas::operation(
+        &published,
+        login["type"].as_str().ok_or("login Type absent")?,
+        &c.core_package,
+    )?;
+    let Some(control) = ty["spec"]["admission"]["control"].as_str() else {
+        return Ok(None);
+    };
+    let mut scoped = published;
+    scoped["contract_scope"] = json!(scope);
+    let (control_env, control_scope, control_doc) =
+        schemas::operation(&scoped, control, &c.core_package)?;
+    let control = format!(
+        "{}#{}",
+        control_env.scopes[&control_scope].address,
+        control_doc["metadata"]["name"]
+            .as_str()
+            .ok_or("control name absent")?
+    );
+    let type_name = format!(
+        "{}#{}",
+        env.scopes[&scope].address,
+        ty["metadata"]["name"].as_str().ok_or("Type name absent")?
+    );
+    Ok(Some(
+        json!({"type":type_name,"pointer":ty["spec"]["admission"]["levers"],"control":control}),
+    ))
 }
 
 pub(crate) struct Report {

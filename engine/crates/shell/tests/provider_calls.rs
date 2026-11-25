@@ -670,6 +670,37 @@ fn groups(fixture: &Fixture) -> Vec<i32> {
         .collect()
 }
 #[test]
+fn a_provider_runs_identity_copy_and_bridge_entry_are_removed() {
+    let fixture = Fixture::new("success");
+    let names = |directory: &str| -> std::collections::BTreeSet<_> {
+        fs::read_dir(fixture.temp.path().join("store").join(directory))
+            .unwrap()
+            .map(|entry| entry.unwrap().file_name())
+            .collect()
+    };
+    let runs = names("runs");
+    let groups = names("run-groups");
+    assert_eq!(outcome(&fixture.shell, &fixture.setup()), "succeeded");
+    assert_eq!(names("runs"), runs);
+    let with_bridge = names("run-groups");
+    assert!(groups.is_subset(&with_bridge));
+    assert_eq!(with_bridge.len(), groups.len() + 1);
+    let reply = invoke(
+        &fixture.shell,
+        &fixture.runner,
+        "s1.retire.v1",
+        json!({"instance":{"kind":"Agent","name":"a"}}),
+    );
+    assert_eq!(outcome(&fixture.shell, &reply), "succeeded");
+    let end = Instant::now() + Duration::from_secs(60);
+    while names("run-groups") != groups {
+        assert!(Instant::now() < end, "bridge cleanup deadline");
+        std::thread::sleep(Duration::from_millis(10));
+    }
+    assert_eq!(names("runs"), runs);
+}
+
+#[test]
 fn runtime_provider_retirement_stops_bridge_and_keeps_provider_stop_outcome() {
     for mode in ["success", "stop-failed"] {
         let fixture = Fixture::new("success");

@@ -51,6 +51,26 @@ pub struct RunIdentity {
     pub environment: BTreeMap<String, String>,
     pub directory: PathBuf,
     pub files: BTreeMap<String, String>,
+    ownership: RunDirectory,
+}
+
+// Until the built-in runner takes it, an identity directory belongs to its
+// materialization/call. A provider call's inputs carry the files in memory once
+// provider_call returns, and the provider makes its own copy (PRV-022).
+struct RunDirectory(std::sync::Mutex<Option<crate::store::CleanupEntry>>);
+impl Drop for RunDirectory {
+    fn drop(&mut self) {
+        if let Some(entry) = self.0.get_mut().unwrap().take()
+            && let Err(error) = entry.remove()
+        {
+            eprintln!("cleanup runs: {error}");
+        }
+    }
+}
+impl RunIdentity {
+    pub(crate) fn take_directory(&self) -> Option<crate::store::CleanupEntry> {
+        self.ownership.0.lock().unwrap().take()
+    }
 }
 
 impl Authority {
@@ -149,7 +169,7 @@ impl Authority {
     }
     pub fn materialize(
         &self,
-        store: &Path,
+        store: &Store,
         descriptor: &Value,
         address: &str,
         state: &State,
@@ -182,10 +202,19 @@ impl Authority {
             .as_array()
             .filter(|v| v.len() == 4)
             .ok_or("unsupported identity files contract")?;
-        let runs = store.join("runs");
+        let runs = store.directory.join("runs");
         private_directory(&runs)?;
         let directory = runs.join(Uuid::new_v4().to_string());
-        private_directory(&directory)?;
+        let created = private_directory(&directory);
+        let entry = match store.cleanup.entry("runs", directory.file_name().unwrap()) {
+            Ok(entry) => entry,
+            Err(error) => {
+                eprintln!("cleanup runs: {error}");
+                None
+            }
+        };
+        let ownership = RunDirectory(std::sync::Mutex::new(entry));
+        created?;
         let contents = [
             self.data.certificate.clone(),
             self.jwks()?.to_string(),
@@ -202,6 +231,7 @@ impl Authority {
             materialized.insert(name.into(), content);
         }
         Ok(RunIdentity {
+            ownership,
             files: materialized,
             environment: BTreeMap::from([
                 (

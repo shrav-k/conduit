@@ -9,8 +9,10 @@ use conduit_core::{
 use fs2::FileExt;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use std::ffi::{CStr, CString};
 use std::fs::{self, DirBuilder, File, OpenOptions};
 use std::io::Write;
+use std::os::fd::{AsRawFd, FromRawFd, IntoRawFd};
 use std::os::unix::fs::{DirBuilderExt, FileTypeExt, OpenOptionsExt, PermissionsExt};
 use std::path::{Path, PathBuf};
 use std::{
@@ -199,6 +201,320 @@ pub(crate) fn private_read(path: &Path) -> Result<Vec<u8>> {
     fs::read(path).map_err(|e| e.to_string())
 }
 
+#[derive(Clone, Copy)]
+struct EntryIdentity {
+    device: libc::dev_t,
+    inode: libc::ino_t,
+    mode: libc::mode_t,
+}
+impl EntryIdentity {
+    fn from_stat(stat: libc::stat) -> Self {
+        Self {
+            device: stat.st_dev,
+            inode: stat.st_ino,
+            mode: stat.st_mode,
+        }
+    }
+    fn same_inode(self, other: Self) -> bool {
+        self.device == other.device && self.inode == other.inode
+    }
+    fn is_directory(self) -> bool {
+        self.mode & libc::S_IFMT == libc::S_IFDIR
+    }
+    fn is_file_or_link(self) -> bool {
+        matches!(self.mode & libc::S_IFMT, libc::S_IFREG | libc::S_IFLNK)
+    }
+}
+
+fn changed_entry() -> std::io::Error {
+    std::io::Error::other("entry changed during cleanup")
+}
+
+// Descriptors pin the opened store and its directories. Parent/name identities
+// let cleanup refuse moved or replaced entries, including another run's entry.
+// Every descent uses openat(O_NOFOLLOW); every deletion uses unlinkat. No cleanup
+// pathname is resolved again, and no file contents are read.
+pub(crate) struct CleanupDirectory {
+    file: File,
+    identity: EntryIdentity,
+    parent: Option<(Arc<CleanupDirectory>, CString)>,
+}
+impl CleanupDirectory {
+    fn open(path: &Path) -> std::io::Result<Arc<Self>> {
+        let file = OpenOptions::new()
+            .read(true)
+            .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
+            .open(path)?;
+        let identity = Self::file_identity(&file)?;
+        Ok(Arc::new(Self {
+            file,
+            identity,
+            parent: None,
+        }))
+    }
+    fn file_identity(file: &File) -> std::io::Result<EntryIdentity> {
+        let mut stat = std::mem::MaybeUninit::<libc::stat>::uninit();
+        // SAFETY: fstat initializes stat on success and borrows a live descriptor.
+        if unsafe { libc::fstat(file.as_raw_fd(), stat.as_mut_ptr()) } != 0 {
+            return Err(std::io::Error::last_os_error());
+        }
+        Ok(EntryIdentity::from_stat(unsafe { stat.assume_init() }))
+    }
+    fn stat(&self, name: &CStr) -> std::io::Result<EntryIdentity> {
+        let mut stat = std::mem::MaybeUninit::<libc::stat>::uninit();
+        // SAFETY: name is one NUL-terminated directory entry, never a path.
+        if unsafe {
+            libc::fstatat(
+                self.file.as_raw_fd(),
+                name.as_ptr(),
+                stat.as_mut_ptr(),
+                libc::AT_SYMLINK_NOFOLLOW,
+            )
+        } != 0
+        {
+            return Err(std::io::Error::last_os_error());
+        }
+        Ok(EntryIdentity::from_stat(unsafe { stat.assume_init() }))
+    }
+    fn open_at(&self, name: &CStr, flags: libc::c_int) -> std::io::Result<File> {
+        // SAFETY: name is a single component, and ownership of a successful fd
+        // passes to File. O_NOFOLLOW applies even if a name changes during open.
+        let fd = unsafe {
+            libc::openat(
+                self.file.as_raw_fd(),
+                name.as_ptr(),
+                flags | libc::O_NOFOLLOW | libc::O_CLOEXEC,
+                0o600,
+            )
+        };
+        if fd < 0 {
+            return Err(std::io::Error::last_os_error());
+        }
+        Ok(unsafe { File::from_raw_fd(fd) })
+    }
+    fn verify(&self) -> std::io::Result<()> {
+        if let Some((parent, name)) = &self.parent {
+            parent.verify()?;
+            if !self.identity.same_inode(parent.stat(name)?) {
+                return Err(changed_entry());
+            }
+        }
+        Ok(())
+    }
+    fn child(self: &Arc<Self>, name: &CStr, expected: EntryIdentity) -> std::io::Result<Arc<Self>> {
+        self.verify()?;
+        let file = self.open_at(name, libc::O_RDONLY | libc::O_DIRECTORY)?;
+        let identity = Self::file_identity(&file)?;
+        if !identity.same_inode(expected) {
+            return Err(changed_entry());
+        }
+        Ok(Arc::new(Self {
+            file,
+            identity,
+            parent: Some((self.clone(), name.to_owned())),
+        }))
+    }
+    fn names(&self) -> std::io::Result<Vec<CString>> {
+        self.verify()?;
+        // Open a fresh description so concurrent enumerations do not share an offset.
+        let file = self.open_at(c".", libc::O_RDONLY | libc::O_DIRECTORY)?;
+        let fd = file.into_raw_fd();
+        // SAFETY: fdopendir takes ownership only on success.
+        let stream = unsafe { libc::fdopendir(fd) };
+        if stream.is_null() {
+            let error = std::io::Error::last_os_error();
+            unsafe {
+                libc::close(fd);
+            }
+            return Err(error);
+        }
+        struct DirectoryStream(*mut libc::DIR);
+        impl Drop for DirectoryStream {
+            fn drop(&mut self) {
+                unsafe {
+                    libc::closedir(self.0);
+                }
+            }
+        }
+        let stream = DirectoryStream(stream);
+        let mut names = Vec::new();
+        loop {
+            // readdir reports both EOF and failure with null; errno distinguishes them.
+            #[cfg(target_vendor = "apple")]
+            let errno = unsafe { libc::__error() };
+            #[cfg(not(target_vendor = "apple"))]
+            let errno = unsafe { libc::__errno_location() };
+            unsafe {
+                *errno = 0;
+            }
+            let entry = unsafe { libc::readdir(stream.0) };
+            if entry.is_null() {
+                let error = unsafe { *errno };
+                if error != 0 {
+                    return Err(std::io::Error::from_raw_os_error(error));
+                }
+                return Ok(names);
+            }
+            // SAFETY: readdir's name remains valid until the next call; copy it now.
+            let name = unsafe { CStr::from_ptr((*entry).d_name.as_ptr()) };
+            if name != c"." && name != c".." {
+                names.push(name.to_owned());
+            }
+        }
+    }
+    pub(crate) fn entry(
+        self: &Arc<Self>,
+        category: &str,
+        name: &std::ffi::OsStr,
+    ) -> std::io::Result<Option<CleanupEntry>> {
+        use std::os::unix::ffi::OsStrExt;
+        let name = CString::new(name.as_bytes()).map_err(|_| changed_entry())?;
+        if name.to_bytes().contains(&b'/') || name == c"." || name == c".." {
+            return Err(changed_entry());
+        }
+        let category = CString::new(category).map_err(|_| changed_entry())?;
+        if category.to_bytes().contains(&b'/') || category == c"." || category == c".." {
+            return Err(changed_entry());
+        }
+        let parent = self.child(&category, self.stat(&category)?)?;
+        CleanupEntry::capture(parent, &name)
+    }
+}
+
+pub(crate) struct CleanupEntry {
+    parent: Arc<CleanupDirectory>,
+    name: CString,
+    identity: EntryIdentity,
+    directory: Option<Arc<CleanupDirectory>>,
+}
+impl CleanupEntry {
+    fn capture(parent: Arc<CleanupDirectory>, name: &CStr) -> std::io::Result<Option<Self>> {
+        parent.verify()?;
+        let identity = match parent.stat(name) {
+            Ok(identity) => identity,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+            Err(error) => return Err(error),
+        };
+        let directory = if identity.is_directory() {
+            Some(parent.child(name, identity)?)
+        } else {
+            None
+        };
+        Ok(Some(Self {
+            parent,
+            name: name.to_owned(),
+            identity,
+            directory,
+        }))
+    }
+    pub(crate) fn remove(&self) -> std::io::Result<()> {
+        self.remove_after_open(|| {})
+    }
+    #[cfg(test)]
+    pub(crate) fn remove_after_check_for_test(&self, hook: impl FnOnce()) -> std::io::Result<()> {
+        self.remove_after_open(hook)
+    }
+    // The hook also lets tests deterministically replace ancestors after capture.
+    fn remove_after_open(&self, after_open: impl FnOnce()) -> std::io::Result<()> {
+        let remove = || {
+            self.parent.verify()?;
+            if !self.identity.same_inode(self.parent.stat(&self.name)?) {
+                return Err(changed_entry());
+            }
+            after_open();
+            if let Some(directory) = &self.directory {
+                directory.verify()?;
+                for name in directory.names()? {
+                    if let Some(entry) = Self::capture(directory.clone(), &name)? {
+                        entry.remove()?;
+                    }
+                }
+            }
+            self.parent.verify()?;
+            if !self.identity.same_inode(self.parent.stat(&self.name)?) {
+                return Err(changed_entry());
+            }
+            let flags = if self.directory.is_some() {
+                libc::AT_REMOVEDIR
+            } else {
+                0
+            };
+            // SAFETY: deletion is relative to the held parent, never through a path
+            // or a symlink. Recheck device/inode before unlinking the original name.
+            if unsafe { libc::unlinkat(self.parent.file.as_raw_fd(), self.name.as_ptr(), flags) }
+                != 0
+            {
+                return Err(std::io::Error::last_os_error());
+            }
+            Ok(())
+        };
+        match remove() {
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+            result => result,
+        }
+    }
+}
+
+// Once per open, under the lease, after accepting state and before recovery.
+// No run of this store lives then: the lease admits one shell, and lifetime guards
+// kill its process groups when the engine dies. Runner::new never sweeps.
+// Only canonical hyphenated lower-case UUID names in the five run directories,
+// plus .write-<uuid> files/links in the store itself, client-tokens and run-groups,
+// are eligible. "store" below denotes the held store directory itself. Descriptor
+// traversal never follows links or reads file contents.
+fn sweep_run_leftovers(directory: &Arc<CleanupDirectory>) {
+    let uuid_name = |name: &str| Uuid::parse_str(name).is_ok_and(|id| id.to_string() == name);
+    for category in [
+        "store",
+        "runs",
+        "work",
+        "run-groups",
+        "http-bridges",
+        "programs",
+        "client-tokens",
+    ] {
+        let sweep = || -> std::io::Result<()> {
+            let root = if category == "store" {
+                directory.clone()
+            } else {
+                let name = CString::new(category).unwrap();
+                directory.child(&name, directory.stat(&name)?)?
+            };
+            for name in root.names()? {
+                let Ok(filename) = name.to_str() else {
+                    continue;
+                };
+                let run = matches!(
+                    category,
+                    "runs" | "work" | "run-groups" | "http-bridges" | "programs"
+                ) && uuid_name(filename);
+                let temporary = matches!(category, "store" | "client-tokens" | "run-groups")
+                    && filename.strip_prefix(".write-").is_some_and(uuid_name);
+                if !run && !temporary {
+                    continue;
+                }
+                let result = CleanupEntry::capture(root.clone(), &name).and_then(|entry| {
+                    if let Some(entry) = entry
+                        && (run || entry.identity.is_file_or_link())
+                    {
+                        entry.remove()?;
+                    }
+                    Ok(())
+                });
+                if let Err(error) = result {
+                    eprintln!("cleanup {category}: {error}");
+                }
+            }
+            Ok(())
+        };
+        if let Err(error) = sweep()
+            && error.kind() != std::io::ErrorKind::NotFound
+        {
+            eprintln!("cleanup {category}: {error}");
+        }
+    }
+}
+
 // DL2: faults are scoped to one Store's state-file write, never credential writes.
 #[cfg(test)]
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -207,6 +523,7 @@ pub(crate) enum WriteFault {
     FileSync,
     Rename,
     DirectorySync,
+    PauseBeforeRename,
 }
 
 #[derive(Debug)]
@@ -274,6 +591,13 @@ fn atomic_write_inner(
         check(WriteFault::FileSync)?;
         file.sync_all().map_err(|e| e.to_string())?;
         #[cfg(test)]
+        if fault == Some(WriteFault::PauseBeforeRename) {
+            fs::write(directory.join("write-ready"), b"ready").unwrap();
+            loop {
+                std::thread::park();
+            }
+        }
+        #[cfg(test)]
         check(WriteFault::Rename)?;
         fs::rename(&temporary, directory.join(name)).map_err(|e| e.to_string())?;
         renamed = true;
@@ -295,6 +619,7 @@ pub(crate) struct Memory {
 }
 pub(crate) struct Store {
     pub directory: PathBuf,
+    pub(crate) cleanup: Arc<CleanupDirectory>,
     _lease: File,
     // DL2: accessed only under Shell's writer mutex while this Store holds its lease.
     cached: RefCell<Option<Memory>>,
@@ -305,6 +630,11 @@ pub(crate) struct Store {
     pub faults: RefCell<std::collections::VecDeque<WriteFault>>,
 }
 impl Store {
+    #[cfg(test)]
+    pub(crate) fn sweep_for_test(&self) {
+        sweep_run_leftovers(&self.cleanup);
+    }
+
     pub fn clean_state_directories(&self, state: &State) -> Result<()> {
         let root = self.directory.join("instances");
         private_directory(&root)?;
@@ -330,31 +660,22 @@ impl Store {
         // DL2: parse once at open, before keys/recovery, and hand that state to readers.
         let directory = std::path::absolute(directory).map_err(|e| e.to_string())?;
         private_directory(&directory)?;
-        let lease_path = directory.join("writer.lock");
-        match fs::symlink_metadata(&lease_path) {
-            Ok(_) => {
-                private_read(&lease_path)?;
-            }
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
-            Err(e) => return Err(e.to_string()),
-        }
-        let lease = OpenOptions::new()
-            .read(true)
-            .write(true)
-            .create(true)
-            .truncate(false)
-            .mode(0o600)
-            .open(&lease_path)
+        let cleanup = CleanupDirectory::open(&directory).map_err(|e| e.to_string())?;
+        let lease = cleanup
+            .open_at(c"writer.lock", libc::O_RDWR | libc::O_CREAT)
             .map_err(|e| e.to_string())?;
+        let metadata = lease.metadata().map_err(|e| e.to_string())?;
+        if !metadata.is_file() || metadata.permissions().mode() & 0o777 != 0o600 {
+            return Err("store files must be regular files with mode 0600".into());
+        }
         lease
             .try_lock_exclusive()
             .map_err(|_| "store already has an active shell".to_string())?;
         lease.sync_all().map_err(|e| e.to_string())?;
-        File::open(&directory)
-            .and_then(|f| f.sync_all())
-            .map_err(|e| e.to_string())?;
+        cleanup.file.sync_all().map_err(|e| e.to_string())?;
         let store = Self {
             directory,
+            cleanup,
             _lease: lease,
             cached: RefCell::new(None),
             kept_archives: RefCell::new(BTreeSet::new()),
@@ -365,6 +686,7 @@ impl Store {
         };
         // Reject an unknown/corrupt format before touching keys or recovering.
         store.load()?;
+        sweep_run_leftovers(&store.cleanup);
         Ok(store)
     }
     pub fn read(&self) -> Result<Stored> {

@@ -299,10 +299,8 @@ fn https_materialization_follows_runner_and_helpers_keep_loopback_audience() {
         fs::read_to_string(later.directory.join("ca.crt")).unwrap(),
         format!("{own_root}{}", ROOTS.repeat(2))
     );
-    assert_eq!(
-        fs::read_to_string(provider.directory.join("ca.crt")).unwrap(),
-        format!("{own_root}{ROOTS}")
-    );
+    // Reopening sweeps the previous engine's run directories.
+    assert!(!provider.directory.exists());
     drop(shell);
     assert_eq!(
         Config::for_store(temp.path())

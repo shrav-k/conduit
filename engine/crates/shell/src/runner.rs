@@ -179,8 +179,68 @@ struct PrivateLaunch {
     environment: BTreeMap<String, String>,
 }
 
+struct RunEntries {
+    paths: Mutex<Vec<(String, crate::store::CleanupEntry)>>,
+    root: Arc<crate::store::CleanupDirectory>,
+    errors: Arc<Mutex<Vec<String>>>,
+    spawned: AtomicBool,
+}
+impl RunEntries {
+    fn new(
+        errors: Arc<Mutex<Vec<String>>>,
+        root: Arc<crate::store::CleanupDirectory>,
+    ) -> Arc<Self> {
+        Arc::new(Self {
+            paths: Mutex::new(Vec::new()),
+            root,
+            errors,
+            spawned: AtomicBool::new(false),
+        })
+    }
+    fn add(&self, path: PathBuf) {
+        let category = path
+            .parent()
+            .and_then(Path::file_name)
+            .and_then(|name| name.to_str())
+            .unwrap();
+        match self.root.entry(category, path.file_name().unwrap()) {
+            Ok(Some(entry)) => self.keep(category, entry),
+            Ok(None) => {}
+            Err(error) => self
+                .errors
+                .lock()
+                .unwrap()
+                .push(format!("cleanup {category}: {error}")),
+        }
+    }
+    fn keep(&self, category: &str, entry: crate::store::CleanupEntry) {
+        self.paths.lock().unwrap().push((category.into(), entry));
+    }
+    fn remove(&self) {
+        for (category, entry) in std::mem::take(&mut *self.paths.lock().unwrap()) {
+            if let Err(error) = entry.remove() {
+                self.errors
+                    .lock()
+                    .unwrap()
+                    .push(format!("cleanup {category}: {error}"));
+            }
+        }
+    }
+}
+impl Drop for RunEntries {
+    fn drop(&mut self) {
+        // Before spawn, errors and cancellation can remove immediately. Once a
+        // group exists only its reaper or an absence observation may remove.
+        // Runtime cancellation leaves its entries for the next open.
+        if !self.spawned.load(Ordering::SeqCst) {
+            self.remove();
+        }
+    }
+}
+
 struct Run {
     service: RunningService<RoleClient, ()>,
+    entries: Arc<RunEntries>,
     group: Arc<ProcessGroup>,
     responses: Responses,
     discovery: OnceCell<Value>,
@@ -221,6 +281,7 @@ struct Inner {
     shell: Weak<Shell>,
     guard: PathBuf,
     directory: PathBuf,
+    cleanup: Arc<crate::store::CleanupDirectory>,
     handle: Handle,
     runs: Mutex<BTreeMap<String, Arc<Run>>>,
     discovered_dispatches: Mutex<BTreeMap<Attempt, Arc<Run>>>,
@@ -229,7 +290,7 @@ struct Inner {
     requests: Mutex<BTreeMap<Attempt, (Peer<RoleClient>, RequestId)>>,
     cancelled_attempts: Mutex<BTreeSet<Attempt>>,
     cache_lock: AsyncMutex<()>,
-    errors: Mutex<Vec<String>>,
+    errors: Arc<Mutex<Vec<String>>>,
     completion_executor: Mutex<Option<Weak<dyn Executor>>>,
 }
 
@@ -242,13 +303,10 @@ pub struct Runner {
 }
 impl Runner {
     pub fn new(shell: &Arc<Shell>, guard_program: PathBuf) -> Result<Self> {
-        let directory = shell
-            .writer
-            .lock()
-            .map_err(|_| "writer lock poisoned")?
-            .store
-            .directory
-            .clone();
+        let (directory, cleanup) = {
+            let writer = shell.writer.lock().map_err(|_| "writer lock poisoned")?;
+            (writer.store.directory.clone(), writer.store.cleanup.clone())
+        };
         for name in ["npm", "npm-downloads", "work", "programs", "run-groups"] {
             private_directory(&directory.join(name))?;
         }
@@ -264,6 +322,7 @@ impl Runner {
                 shell: Arc::downgrade(shell),
                 guard: guard_program,
                 directory,
+                cleanup,
                 handle: runtime.handle().clone(),
                 runs: Mutex::new(BTreeMap::new()),
                 discovered_dispatches: Mutex::new(BTreeMap::new()),
@@ -272,7 +331,7 @@ impl Runner {
                 requests: Mutex::new(BTreeMap::new()),
                 cancelled_attempts: Mutex::new(BTreeSet::new()),
                 cache_lock: AsyncMutex::new(()),
-                errors: Mutex::new(Vec::new()),
+                errors: Arc::new(Mutex::new(Vec::new())),
                 completion_executor: Mutex::new(None),
             }),
             shutdown_diagnostics: Mutex::new(Vec::new()),
@@ -351,6 +410,7 @@ impl Runner {
                 if !run.group.is_absent() {
                     return true;
                 }
+                run.entries.remove();
                 if run.url.is_none() && shell
                     .submit(
                         json!({"kind":"builtin-run-stopped","object":subject,
@@ -440,15 +500,17 @@ impl Executor for Arc<Inner> {
         if !operation.ends_with("#run.v1") {
             return Ok(Execution::Missing);
         }
-        let identity = identity
-            .ok_or("runner needs materialized identity")?
-            .environment
-            .clone();
+        let identity = identity.ok_or("runner needs materialized identity")?;
+        let entries = RunEntries::new(self.errors.clone(), self.cleanup.clone());
+        if let Some(directory) = identity.take_directory() {
+            entries.keep("runs", directory);
+        }
+        let identity = identity.environment.clone();
         let intent = intent.clone();
         let this = self.clone();
         self.handle.spawn(async move {
             let invocation = intent["invocation"].as_str().unwrap().to_owned();
-            let (outcome, provider_run) = match this.start(intent, identity).await {
+            let (outcome, provider_run) = match this.start_owned(intent, identity, entries).await {
                 Ok(run) => ("succeeded", run),
                 Err(error) => {
                     this.errors.lock().unwrap().push(error);
@@ -525,7 +587,7 @@ impl Inner {
         env: &BTreeMap<String, String>,
         setup: &str,
         private: bool,
-    ) -> Result<(Child, Arc<ProcessGroup>)> {
+    ) -> Result<(Child, Arc<ProcessGroup>, bool)> {
         let shell = self.shell.upgrade().ok_or("shell stopped")?;
         let cancelled = self.cancelled_setups.lock().unwrap();
         if self.stopping.load(Ordering::SeqCst) || cancelled.contains(setup) {
@@ -604,8 +666,8 @@ impl Inner {
         pending.entry(setup.into()).or_default().push(group.clone());
         drop(pending);
         drop(cancelled);
-        if let Some(writer) = launch_writer
-            && serde_json::to_writer(
+        let private_launch_failed = launch_writer.is_some_and(|writer| {
+            serde_json::to_writer(
                 writer,
                 &PrivateLaunch {
                     arguments: args.to_vec(),
@@ -613,16 +675,31 @@ impl Inner {
                 },
             )
             .is_err()
-        {
-            group.stop();
-            return Err("private run launch failed".into());
-        }
-        Ok((child, group))
+        });
+        // Only a private launch can fail after spawn. Its caller owns stopping
+        // and asynchronously reaping this child before removing any run entries.
+        Ok((child, group, private_launch_failed))
     }
+
+    #[cfg(test)]
     async fn start(
+        &self,
+        intent: Value,
+        identity: BTreeMap<String, String>,
+    ) -> Result<Option<Arc<Run>>> {
+        self.start_owned(
+            intent,
+            identity,
+            RunEntries::new(self.errors.clone(), self.cleanup.clone()),
+        )
+        .await
+    }
+
+    async fn start_owned(
         &self,
         mut intent: Value,
         identity: BTreeMap<String, String>,
+        entries: Arc<RunEntries>,
     ) -> Result<Option<Arc<Run>>> {
         let subject = string(&intent, "subject")?.to_owned();
         let setup = string(&intent, "invocation")?.to_owned();
@@ -650,7 +727,9 @@ impl Inner {
         drop(shell);
         let inputs = &intent["inputs"];
         let work = self.directory.join("work").join(Uuid::new_v4().to_string());
-        private_directory(&work)?;
+        let created = private_directory(&work);
+        entries.add(work.clone());
+        created?;
         let item = inputs["item"].clone();
         let bound_args = package_arguments(&item, inputs)?;
         let private = inputs.get("secrets").is_some();
@@ -688,22 +767,47 @@ impl Inner {
                 vec![bin.to_str().ok_or("non-UTF8 bin")?.to_owned()],
             )
         } else {
-            self.command(&item, &subject, &state)?
+            self.command_owned(&item, &subject, &state, &entries)?
         };
         args.extend(bound_args);
-        let (mut child, group) = self.spawn(&program, &args, &work, &env, &setup, private)?;
+        let (mut child, group, private_launch_failed) =
+            self.spawn(&program, &args, &work, &env, &setup, private)?;
+        entries.spawned.store(true, Ordering::SeqCst);
+        if private_launch_failed {
+            group.stop();
+            let _ = child.wait().await;
+            entries.remove();
+            return Err("private run launch failed".into());
+        }
         drop((args, env));
-        // Historical diagnostics only. Never use persisted PIDs to inspect or kill a
+        // Diagnostics only. Never use persisted PIDs to inspect or kill a
         // process after reopening: the OS may have reused them for another process.
-        crate::store::atomic_write(
+        let diagnostic = self
+            .directory
+            .join("run-groups")
+            .join(Uuid::new_v4().to_string());
+        let written = crate::store::atomic_write(
             &self.directory.join("run-groups"),
-            &Uuid::new_v4().to_string(),
+            diagnostic.file_name().unwrap().to_str().unwrap(),
             &serde_json::to_vec(&json!({"engine":std::process::id(),"group":group.pid}))
                 .map_err(|_| "process group diagnostic encoding failed")?,
-        )?;
+        );
+        entries.add(diagnostic);
+        if let Err(error) = written {
+            group.stop();
+            let _ = child.wait().await;
+            entries.remove();
+            return Err(error);
+        }
         let responses = Arc::new(Mutex::new(HashMap::new()));
+        let Some(stdout) = child.stdout.take() else {
+            group.stop();
+            let _ = child.wait().await;
+            entries.remove();
+            return Err("missing stdout".into());
+        };
         let transport = Wire {
-            reader: BufReader::new(child.stdout.take().ok_or("missing stdout")?).lines(),
+            reader: BufReader::new(stdout).lines(),
             writer: Arc::new(AsyncMutex::new(child.stdin.take())),
             responses: responses.clone(),
         };
@@ -714,37 +818,48 @@ impl Inner {
             _ => {
                 group.stop();
                 let _ = child.wait().await;
+                entries.remove();
                 return Err("MCP initialize failed or deadline passed".into());
             }
         };
         responses.lock().unwrap().clear();
-        let cancelled = self.cancelled_setups.lock().unwrap();
-        if self.stopping.load(Ordering::SeqCst) || cancelled.contains(&setup) {
+        let run = {
+            let cancelled = self.cancelled_setups.lock().unwrap();
+            if self.stopping.load(Ordering::SeqCst) || cancelled.contains(&setup) {
+                None
+            } else {
+                let run = Arc::new(Run {
+                    service,
+                    entries: entries.clone(),
+                    group: group.clone(),
+                    responses,
+                    discovery: OnceCell::new(),
+                    setup,
+                    provider: observe.then(|| ProviderLaunch {
+                        subject: subject.clone(),
+                        end: Mutex::new(None),
+                    }),
+                    url: None,
+                });
+                if let Some(previous) = self.runs.lock().unwrap().insert(subject, run.clone()) {
+                    previous.group.stop();
+                }
+                Some(run)
+            }
+        };
+        let Some(run) = run else {
             group.stop();
+            let _ = child.wait().await;
+            entries.remove();
             return Err("setup cancelled".into());
-        }
-        let run = Arc::new(Run {
-            service,
-            group,
-            responses,
-            discovery: OnceCell::new(),
-            setup,
-            provider: observe.then(|| ProviderLaunch {
-                subject: subject.clone(),
-                end: Mutex::new(None),
-            }),
-            url: None,
-        });
-        if let Some(previous) = self.runs.lock().unwrap().insert(subject, run.clone()) {
-            previous.group.stop();
-        }
-        drop(cancelled);
+        };
         // Reap the guard after lifetime termination; keep it owned while the session runs.
         let group = run.group.clone();
         let observed = observe.then_some(run);
         self.handle.spawn(async move {
             let _ = child.wait().await;
             group.stop();
+            entries.remove();
         });
         Ok(observed)
     }
@@ -803,11 +918,25 @@ impl Inner {
             self.errors.lock().unwrap().push(error);
         }
     }
+    #[cfg(test)]
     fn command(
         &self,
         item: &Value,
         subject: &str,
         state: &conduit_core::State,
+    ) -> Result<(PathBuf, Vec<String>)> {
+        let entries = RunEntries::new(self.errors.clone(), self.cleanup.clone());
+        let result = self.command_owned(item, subject, state, &entries);
+        entries.spawned.store(true, Ordering::SeqCst);
+        result
+    }
+
+    fn command_owned(
+        &self,
+        item: &Value,
+        subject: &str,
+        state: &conduit_core::State,
+        entries: &RunEntries,
     ) -> Result<(PathBuf, Vec<String>)> {
         let command = item["command"]
             .as_array()
@@ -865,7 +994,7 @@ impl Inner {
             } else {
                 command.into()
             };
-            let root = self.materialize_package(package)?;
+            let root = self.materialize_package(package, entries)?;
             program_path(&root, &path)?
         } else if was_relative {
             return Err("relative program has no installed package files".into());
@@ -884,12 +1013,18 @@ impl Inner {
             .collect::<Result<_>>()?;
         Ok((program, args))
     }
-    fn materialize_package(&self, package: &InstalledPackage) -> Result<PathBuf> {
+    fn materialize_package(
+        &self,
+        package: &InstalledPackage,
+        entries: &RunEntries,
+    ) -> Result<PathBuf> {
         let root = self
             .directory
             .join("programs")
             .join(Uuid::new_v4().to_string());
-        private_directory(&root)?;
+        let created = private_directory(&root);
+        entries.add(root.clone());
+        created?;
         for (name, member) in &package.files {
             let path = safe_join(&root, name)?;
             if let Some(parent) = path.parent() {
@@ -942,7 +1077,7 @@ impl Inner {
             "--no-fund".into(),
             "--registry=https://registry.npmjs.org".into(),
         ]);
-        let (mut child, group) = self.spawn(Path::new("npm"), &args, cwd, env, setup, false)?;
+        let (mut child, group, _) = self.spawn(Path::new("npm"), &args, cwd, env, setup, false)?;
         child.stdin.take();
         // Guard keeps running until its lifetime ends. Exit status uses the lifetime
         // socket in the opposite direction; stdout belongs only to npm.
@@ -2015,7 +2150,7 @@ mod provider {
             }
             let mut args = vec!["__http-bridge".into(), url.into()];
             args.extend(flags.iter().map(|flag| (*flag).into()));
-            let (child, group) = self.spawn(
+            let (child, group, _) = self.spawn(
                 &self.guard,
                 &args,
                 &self.directory,
@@ -2047,20 +2182,34 @@ mod provider {
                 group,
                 timeout,
             } = self.bridge_process(subject, setup, url, &[])?;
-            if crate::store::atomic_write(
+            let entries = RunEntries::new(self.errors.clone(), self.cleanup.clone());
+            entries.spawned.store(true, Ordering::SeqCst);
+            let diagnostic = self
+                .directory
+                .join("run-groups")
+                .join(Uuid::new_v4().to_string());
+            let written = crate::store::atomic_write(
                 &self.directory.join("run-groups"),
-                &Uuid::new_v4().to_string(),
+                diagnostic.file_name().unwrap().to_str().unwrap(),
                 &serde_json::to_vec(&json!({"engine":std::process::id(),"group":group.pid}))
                     .map_err(|_| "bridge group diagnostic encoding failed")?,
-            )
-            .is_err()
-            {
+            );
+            entries.add(diagnostic);
+            if written.is_err() {
                 group.stop();
+                let _ = child.wait().await;
+                entries.remove();
                 return Err("bridge group diagnostic could not be written".into());
             }
             let responses = Arc::new(Mutex::new(HashMap::new()));
+            let Some(stdout) = child.stdout.take() else {
+                group.stop();
+                let _ = child.wait().await;
+                entries.remove();
+                return Err("missing bridge stdout".into());
+            };
             let transport = Wire {
-                reader: BufReader::new(child.stdout.take().ok_or("missing bridge stdout")?).lines(),
+                reader: BufReader::new(stdout).lines(),
                 writer: Arc::new(AsyncMutex::new(child.stdin.take())),
                 responses: responses.clone(),
             };
@@ -2078,6 +2227,7 @@ mod provider {
                     .flatten();
                     group.stop();
                     let _ = child.wait().await;
+                    entries.remove();
                     let unproved = code == Some(crate::http_bridge::PROOF_REFUSED)
                         || !directory.0.join(crate::http_bridge::PROOF_MARKER).is_file();
                     self.provider_diagnostic(
@@ -2096,29 +2246,38 @@ mod provider {
                 }
             };
             responses.lock().unwrap().clear();
-            let cancelled = self.cancelled_setups.lock().unwrap();
-            if self.stopping.load(Ordering::SeqCst) || cancelled.contains(setup) {
+            let run = {
+                let cancelled = self.cancelled_setups.lock().unwrap();
+                if self.stopping.load(Ordering::SeqCst) || cancelled.contains(setup) {
+                    None
+                } else {
+                    let run = Arc::new(Run {
+                        service,
+                        entries: entries.clone(),
+                        group: group.clone(),
+                        responses,
+                        discovery: OnceCell::new(),
+                        setup: setup.into(),
+                        url: Some(url.into()),
+                        provider: None,
+                    });
+                    if let Some(old) = self
+                        .runs
+                        .lock()
+                        .unwrap()
+                        .insert(subject.into(), run.clone())
+                    {
+                        old.group.stop();
+                    }
+                    Some(run)
+                }
+            };
+            let Some(run) = run else {
                 group.stop();
+                let _ = child.wait().await;
+                entries.remove();
                 return Err("setup cancelled".into());
-            }
-            let run = Arc::new(Run {
-                service,
-                group,
-                responses,
-                discovery: OnceCell::new(),
-                setup: setup.into(),
-                url: Some(url.into()),
-                provider: None,
-            });
-            if let Some(old) = self
-                .runs
-                .lock()
-                .unwrap()
-                .insert(subject.into(), run.clone())
-            {
-                old.group.stop();
-            }
-            drop(cancelled);
+            };
             let group = run.group.clone();
             let owner = Arc::downgrade(self);
             let operation = operation.to_owned();
@@ -2131,6 +2290,7 @@ mod provider {
                 }
                 group.stop();
                 let _ = child.wait().await;
+                entries.remove();
             });
             Ok(BridgeStart::Reached)
         }
@@ -2490,7 +2650,7 @@ mod tests {
         env: &BTreeMap<String, String>,
     ) -> String {
         runner._runtime.block_on(async {
-            let (mut child, group) = runner
+            let (mut child, group, _) = runner
                 .inner
                 .spawn(program, args, cwd, env, "test-exec", false)
                 .unwrap();
@@ -2876,7 +3036,7 @@ mod tests {
             ("SYNTHETIC_BOUND".into(), "test-value".into()),
         ]);
         let output = runner._runtime.block_on(async {
-            let (mut child, group) = runner
+            let (mut child, group, _) = runner
                 .inner
                 .spawn(
                     Path::new("/usr/bin/env"),
@@ -2910,6 +3070,109 @@ mod tests {
             .collect::<BTreeMap<_, _>>();
         assert_eq!(actual, env);
     }
+    #[test]
+    fn run_cleanup_keeps_outside_entries_when_the_store_ancestor_is_replaced() {
+        let parent = tempfile::tempdir().unwrap();
+        let (shell, runner) = test_runner(parent.path());
+        let directory = runner.inner.directory.clone();
+        let name = Uuid::new_v4().to_string();
+        let own = directory.join("work").join(&name);
+        fs::create_dir(&own).unwrap();
+        fs::write(own.join("marker"), b"own").unwrap();
+        let entries = RunEntries::new(runner.inner.errors.clone(), runner.inner.cleanup.clone());
+        entries.add(own);
+        let outside = parent.path().join("outside");
+        let protected = outside.join("work").join(&name).join("marker");
+        fs::create_dir_all(protected.parent().unwrap()).unwrap();
+        fs::write(&protected, b"outside").unwrap();
+        fs::rename(&directory, parent.path().join("held-store")).unwrap();
+        std::os::unix::fs::symlink(&outside, &directory).unwrap();
+        entries.remove();
+        assert!(
+            protected.exists(),
+            "run cleanup followed the replaced store ancestor"
+        );
+        assert_eq!(fs::read(protected).unwrap(), b"outside");
+        drop((runner, shell));
+    }
+
+    #[test]
+    fn run_cleanup_keeps_another_runs_directory_at_the_old_name() {
+        let parent = tempfile::tempdir().unwrap();
+        let (_shell, runner) = test_runner(parent.path());
+        let work = runner.inner.directory.join("work");
+        let own = work.join(Uuid::new_v4().to_string());
+        let live = work.join(Uuid::new_v4().to_string());
+        fs::create_dir(&own).unwrap();
+        fs::create_dir(&live).unwrap();
+        fs::write(live.join("marker"), b"live run").unwrap();
+        let entries = RunEntries::new(runner.inner.errors.clone(), runner.inner.cleanup.clone());
+        entries.add(own.clone());
+        fs::rename(&own, work.join("ended-run")).unwrap();
+        fs::rename(&live, &own).unwrap();
+        entries.remove();
+        assert!(
+            own.join("marker").exists(),
+            "run cleanup removed another run's replacement directory"
+        );
+        assert_eq!(fs::read(own.join("marker")).unwrap(), b"live run");
+    }
+
+    #[test]
+    fn a_failed_start_leaves_none_of_its_entries() {
+        let parent = tempfile::tempdir().unwrap();
+        let directory = parent.path().join("store");
+        let item = json!({"command":["./bin/worker"]});
+        let mut state = installed_command_state(
+            &item,
+            "./bin/worker",
+            BTreeMap::from([(
+                "bin/worker".into(),
+                Member::File {
+                    bytes: b"#!/bin/sh\nexit 0\n".to_vec(),
+                    mode: 0o755,
+                },
+            )]),
+        );
+        let subject = Uuid::new_v4().to_string();
+        state.objects[0]["id"] = json!(subject);
+        {
+            let store = crate::store::Store::open(&directory).unwrap();
+            store
+                .write(&crate::store::Stored {
+                    version: crate::store::VERSION,
+                    state,
+                    output_times: BTreeMap::new(),
+                })
+                .unwrap();
+        }
+        let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let shell = Arc::new(
+            Shell::open(
+                &directory,
+                crate::boundary::context(&repo).unwrap(),
+                crate::Config::default(),
+            )
+            .unwrap(),
+        );
+        let runner = Runner::new(&shell, parent.path().join("missing-guard")).unwrap();
+        let result = runner.inner.handle.block_on(runner.inner.start(
+            json!({"subject":subject,"invocation":"failed-start","inputs":{"item":item}}),
+            BTreeMap::new(),
+        ));
+        assert!(matches!(result, Err(error) if error == "guard spawn failed"));
+        assert_eq!(
+            fs::read_dir(directory.join("work")).unwrap().count(),
+            0,
+            "failed start left work"
+        );
+        assert_eq!(
+            fs::read_dir(directory.join("programs")).unwrap().count(),
+            0,
+            "failed start left programs"
+        );
+    }
+
     #[test]
     fn relative_command_uses_installed_bytes_and_keeps_their_mode() {
         use conduit_core::packages::{Project, Snapshot, SnapshotSource};

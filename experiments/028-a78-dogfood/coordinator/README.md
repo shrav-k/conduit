@@ -2,12 +2,13 @@
 
 The coordinator's tooling lives here, inside experiment 028
 ([DEC-174](../../../docs/decisions/log.md#dec-174-2026-11-23-the-coordinators-rust-tooling-lives-in-experiment-028)),
-and is Rust (DEC-132). Work order 401 made it. The crate is `a78-coordinator`, edition 2024 and
-unpublished, with its own workspace, lockfile and the toolchain that experiment 033's probe pins.
-Its one dependency is `serde_json = "=1.0.154"`, locked as that probe locks it. The binary `wo`
-is a thin front over the library. The `queue-fixture` binary, `tests/fixtures/queue_fixture.rs`,
-is for the tests alone: it plays GitHub's CLI on a bare repository, the gate and the repository's
-Python tools.
+and is Rust (DEC-132). Work order 401 made it, and order 401b added the merges of a stopped
+rebase's prose and changelog and the fragment step. The crate is `a78-coordinator`, edition 2024
+and unpublished, with its own workspace, lockfile and the toolchain that experiment 033's probe
+pins. Its one dependency is `serde_json = "=1.0.154"`, locked as that probe locks it. The binary
+`wo` is a thin front over the library. The `queue-fixture` binary,
+`tests/fixtures/queue_fixture.rs`, is for the tests alone: it plays GitHub's CLI on a bare
+repository, the gate and the repository's Python tools.
 
 ```sh
 cargo test --offline --locked
@@ -20,12 +21,12 @@ configuration off. They run no `gh`, no gate and no Python.
 
 `wo queue` replaces the coordinator's private batch, lock and queue scripts: the kit's stopgap
 outside the tree. It merges one work order's branch at a time. Each branch is rebased on the
-commit `REMOTE/BASE` names when its entry starts, called PINNED below. Then the queue squashes
-it, gates it, pushes it and merges its pull request, and it checks what landed. A merge is
-squashed, waits on the local gate and not on CI, and carries the work-order identity (DEC-030,
-DEC-089). The queue merges only a tree the gate ran on and only commits by the identity it
-checks. A merge that lands on a `main` moved since its last fetch is reported by name and never
-undone.
+commit `REMOTE/BASE` names when its entry starts, called PINNED below. Then the queue moves the
+branch's new changelog items to their fragment, squashes it, gates it, pushes it and merges its
+pull request, and it checks what landed. A merge is squashed, waits on the local gate and not on
+CI, and carries the work-order identity (DEC-030, DEC-089). The queue merges only a tree the gate
+ran on and only commits by the identity it checks. A merge that lands on a `main` moved since its
+last fetch is reported by name and never undone.
 
 ### How the coordinator uses it
 
@@ -115,6 +116,7 @@ failed entry's worktree stays as its step left it.
 | `backup` | `refs/wo-backup/NAME/ATTEMPT` names HEAD. If that ref exists already, the step fails, and the ref is never written over. |
 | `rebase` | For an `--onto` entry, ONTO here is the newest of the entry's ONTO, the PINNED of each of its earlier attempts whose rebase passed, and PINNED, that is an ancestor of HEAD: once an attempt has rebased the branch, the entry's ONTO is no longer one, and a retry replays from the base that attempt left. With none, the step fails, since the entry's own commits cannot be told from others. A merge commit in PINNED..HEAD (ONTO..HEAD) fails the step: such a branch is never rebased. Then `git -c merge.conflictstyle=diff3 rebase PINNED`, or `--onto PINNED ONTO`. Each stop is settled as the next section says, then `git rebase --continue`. A stop it cannot settle runs `git rebase --abort`. HEAD must then equal the backup, and the step fails naming each path and why. |
 | `standing` | `PYTHON tools/promise_standing.py --write`. A changed `engine/STANDING.md` is committed alone, as "wip: STANDING regenerated on main". A change to any other path fails the step. |
+| `fragment` | Only where PINNED holds `spec/changes/README.md`; elsewhere the step does nothing. The items that HEAD's `spec/CHANGES.md` holds under `## [Unreleased]` and PINNED's lacks, by their words and anywhere in it, move word for word and in order to the end of `spec/changes/FRAGMENT`, and `spec/CHANGES.md` loses only the moved lines. An item is a line that begins `- ` and its continuation lines, indented two spaces; a `#` or `##` heading begins a section, and a deeper one, such as `### Added`, stays within its section. FRAGMENT is the file name of the entry's order text, or for an entry with none, the branch's name with `-` for `/`, then `.md`. A name that is not a fragment's, as `spec/changes/README.md` names them, fails the step, as does a worktree that is not clean. The two files are committed alone, as "wip: changelog item moved to its fragment (DEC-177)". With no item to move, the step does nothing. |
 | `decisions` | `PYTHON tools/check_decisions.py PINNED WORKTREE` must exit 0 and end `Errors: 0`. Otherwise the step fails with the tool's `error:` lines, at most 20, each cut to 200 characters. |
 | `identity` | Each commit in PINNED..HEAD has the configured identity as author and committer. So does each of the branch's own commits as each of the entry's backups holds it, in BASE..BACKUP, BASE being what the rebase replays from: the rebase runs with the identity as committer, so it rewrites a foreign committer away, on this attempt or an earlier one. |
 | `record` | The entry passes the Record rule at HEAD. |
@@ -136,22 +138,90 @@ it.
 
 ### A stopped rebase
 
-Ours is the side rebased onto; theirs is the replayed commit (`--theirs` in a rebase).
+Ours is the side rebased onto; theirs is the replayed commit (`--theirs` in a rebase). The rebase
+runs with `merge.conflictstyle=diff3`, so that each hunk shows ours, the base and theirs.
 
 - A conflicted path without all three stages in `git ls-files -u` stops the rebase, naming the
   path and the kind. One example is one side's change to a file the other side deleted, which
   shows as "deleted by ours, changed by theirs".
+- `spec/CHANGES.md` and the prose paths are settled hunk by hunk, as the next two lists say,
+  before any other path stops. A hunk that cannot be settled stops the rebase, naming the path,
+  the hunk's line and why, then the hunk's first line.
 - `engine/STANDING.md` takes theirs. Once every other path is settled,
   `PYTHON tools/promise_standing.py --write` regenerates it, and it is added.
 - Every other conflicted path stops the rebase, naming the path and its first hunk's line and
-  first line. That includes `spec/`, order texts and `conformance/expected-failures.yaml`.
+  first line. That includes `conformance/expected-failures.yaml`, the fragments under
+  `spec/changes/`, every file under `spec/` that is not `.md` or `.yaml`, and every path outside
+  `spec/`, `engine/CONFORMANCE.md` and the order texts.
+- A stop while the rebase replays the queue's own fragment commit of an earlier attempt, "wip:
+  changelog item moved to its fragment (DEC-177)" changing only `spec/CHANGES.md` and fragments,
+  is not settled: `git rebase --skip` leaves that commit out, since the `fragment` step makes it
+  again, and the step's line names it.
 - A path is added only when no line of it begins `<<<<<<< `, `||||||| ` or `>>>>>>> `. Nothing
   else is added or committed while a rebase is stopped, and no hunk keeps one side over a changed
   other.
 
-Order 401b adds the word merge, the changelog's keep-both merge and the fragment step. The kit's
-pick of the replayed order text, and its merge of the expected failures by case ID, are not
-carried over.
+In `spec/CHANGES.md`, a hunk whose ours and theirs each begin with the base's lines becomes the
+base's lines, then ours' added lines, then theirs', as the keep-both rule below says. There,
+ours having added lines, theirs' first added line that is not blank must also begin an item,
+`- `, so that it never joins ours' last item. Any other hunk there stops.
+
+Keeping both sides' added lines, in the changelog or where a prose hunk's base is empty, keeps
+once the lines that are not blank and that ours' and theirs' added lines both begin with; a
+blank line is kept on each side. It stops where a line would then belong to another block than
+on its own side:
+
+- ours' added lines open or close a code fence, so that theirs' would fall on its other side;
+- theirs' first added line that is not blank continues the block above the hunk while ours'
+  added lines end that block, or nests under ours' item. It may follow ours' lines where it
+  opens a block of its own (an ATX heading, a code fence, a block quote, a table row, or a list
+  item that is no setext underline or thematic break), or follows a blank line of theirs, no
+  more indented than any of ours' lines; or where each of ours' lines continues the block above
+  too;
+- the line after the hunk continues the block ours' last line ended, and would now continue
+  theirs' last, or be parted from it by a blank line, by the same test against theirs' lines: a
+  blank line before it counts only where ours' and theirs' added lines each end in one.
+
+Within a code fence the hunk lies in, and ours' lines do not close, both sides are kept with no
+such test.
+
+The prose paths are each `.md` and `.yaml` file under `spec/` but `spec/CHANGES.md` and the
+fragments (every file under `spec/changes/` but its `README.md`), `engine/CONFORMANCE.md`, and
+`docs/work-orders/*.md`. In them:
+
+- A hunk whose base is empty, both sides having added lines at one place, keeps ours' lines and
+  then theirs', each whole, in a `.md` file, as the keep-both rule above says. In a `.yaml`
+  file it stops.
+- Any other hunk merges by words. The base, ours and theirs are each split at whitespace, the
+  first line's indent and, in Markdown, its list marker aside. Each side's edits against the base
+  are found by a longest common subsequence of words, and both sides' edits apply. Two edits of
+  different sides must have an unchanged base word between them, but both may insert at the
+  hunk's end, ours first, except in a table row. Where two edits meet, the stop names, in quotes,
+  the base words they cover and up to five base words on each side.
+- A hunk merges by words only where each of its three sides is one run of text lines: not empty,
+  with no blank line, code fence, carriage return or tab in an indent, and no line after the
+  first that begins a list item or a table row. In Markdown no line is a heading, a setext
+  underline, a thematic break or a block quote, or ends in a hard line break. In YAML no line
+  opens a key or a list item, is a comment or holds one after ` #`. Each line after the first is
+  indented to the column where the first line's text begins. A table row on one side must be one
+  on each side. Theirs may not change the first line's indent or list marker unless ours changes
+  it alike, since the result keeps ours'. A Markdown hunk inside a code fence stops, and so does
+  a YAML hunk inside a literal block scalar (`|`), or inside a folded one (`>`) more indented
+  than the block's text or under an indentation indicator: their line breaks are their text. To
+  find the block, each line above the hunk less indented than every line below it is read, up to
+  column 0, its comment aside: a `|` ending any of them stops, and a `>` counts where it is a
+  value's, after a key's `:`, a list item's `-` or a `?`.
+- The result wraps at the widest line of ours' and theirs' sides; its first line keeps ours'
+  indent and list marker, and each later line is indented to the column where that marker's
+  text begins. A later line never begins with a word that would open a block there: in Markdown
+  a list item, a table row, a heading, a setext underline, a thematic break, a block quote, an
+  HTML tag or a code fence; in YAML a comment, a key, a list item or a document marker. Nor does
+  a line other than the last end in a backslash, a Markdown hard line break. Such a word stays
+  on the line above, past the width. A side that is one Markdown table row stays one line, its
+  words joined by single spaces.
+
+The kit's pick of the replayed order text, and its merge of the expected failures by case ID, are
+not carried over: a conflict in `conformance/expected-failures.yaml` stops.
 
 ### Output and exit status
 

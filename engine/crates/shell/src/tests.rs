@@ -1400,6 +1400,115 @@ impl Executor for CrashExecutor {
 }
 
 #[test]
+fn interrupted_write_child() {
+    let Some(path) = std::env::var_os("SHELL_TEST_INTERRUPTED_STORE") else {
+        return;
+    };
+    let shell = open(Path::new(&path));
+    *shell.writer.lock().unwrap().store.fault.borrow_mut() =
+        Some(store::WriteFault::PauseBeforeRename);
+    shell
+        .submit(
+            invoke(
+                &shell,
+                "agent-b",
+                "project.file.write.v1",
+                Some("interrupted-write"),
+            ),
+            &MissingExecutor,
+        )
+        .unwrap();
+}
+
+#[test]
+fn a_killed_engine_mid_write_leaves_no_orphan_after_open() {
+    let temp = temporary();
+    let shell = established(temp.path());
+    let instance = shell
+        .state()
+        .unwrap()
+        .objects
+        .iter()
+        .find(|object| object["name"] == "agent-b" && object.get("spec").is_none())
+        .unwrap()["id"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    let instance_dir = shell.state_directory(&instance).unwrap();
+    drop(shell);
+    let mut child = Command::new(std::env::current_exe().unwrap())
+        .args(["--exact", "tests::interrupted_write_child", "--nocapture"])
+        .env("SHELL_TEST_INTERRUPTED_STORE", temp.path())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()
+        .unwrap();
+    let end = Instant::now() + Duration::from_secs(60);
+    while !temp.path().join("write-ready").exists() {
+        assert!(child.try_wait().unwrap().is_none(), "write child exited");
+        if Instant::now() >= end {
+            child.kill().unwrap();
+            child.wait().unwrap();
+            panic!("write barrier deadline");
+        }
+        std::thread::sleep(Duration::from_millis(10));
+    }
+    let orphans = |path: &Path| {
+        fs::read_dir(path)
+            .unwrap()
+            .filter(|entry| {
+                let name = entry.as_ref().unwrap().file_name();
+                name.to_str()
+                    .and_then(|name| name.strip_prefix(".write-"))
+                    .is_some_and(|name| {
+                        uuid::Uuid::parse_str(name).is_ok_and(|id| id.to_string() == name)
+                    })
+            })
+            .count()
+    };
+    assert_eq!(orphans(temp.path()), 1);
+    child.kill().unwrap();
+    child.wait().unwrap();
+    for name in ["client-tokens", "run-groups"] {
+        fs::create_dir_all(temp.path().join(name)).unwrap();
+        fs::write(
+            temp.path()
+                .join(name)
+                .join(format!(".write-{}", uuid::Uuid::new_v4())),
+            b"orphan",
+        )
+        .unwrap();
+    }
+    fs::write(temp.path().join(".write-kept"), b"kept").unwrap();
+    let kept = instance_dir.join(format!(".write-{}", uuid::Uuid::new_v4()));
+    fs::write(&kept, b"instance").unwrap();
+    let shell = open(temp.path());
+    assert!(
+        !serde_json::to_string(shell.state().unwrap().as_ref())
+            .unwrap()
+            .contains("interrupted-write")
+    );
+    for path in [
+        temp.path().to_owned(),
+        temp.path().join("client-tokens"),
+        temp.path().join("run-groups"),
+    ] {
+        assert_eq!(orphans(&path), 0, "orphan survived open");
+    }
+    assert_eq!(fs::read(temp.path().join(".write-kept")).unwrap(), b"kept");
+    assert_eq!(fs::read(kept).unwrap(), b"instance");
+    let refused_orphan = temp.path().join(format!(".write-{}", uuid::Uuid::new_v4()));
+    fs::write(&refused_orphan, b"orphan").unwrap();
+    assert!(
+        matches!(Shell::open(temp.path(), context(), Config::default()), Err(error) if error.contains("store already has an active shell"))
+    );
+    assert!(refused_orphan.exists());
+    drop(shell);
+    let _shell = open(temp.path());
+    assert!(!refused_orphan.exists());
+}
+
+#[test]
 fn crash_child() {
     let Some(path) = std::env::var_os("SHELL_TEST_STORE") else {
         return;
@@ -2352,4 +2461,75 @@ fn a_failed_secret_discovery_record_does_not_preserve_a_null_restriction() {
 #[test]
 fn a_secret_dispatch_read_back_after_rename_ends_unavailable_under_sec_016() {
     secret_read_record_fault(SecretReadFault::DirectorySync);
+}
+
+#[test]
+fn sweep_keeps_outside_entries_when_the_store_ancestor_is_replaced() {
+    let parent = temporary();
+    let directory = parent.path().join("store");
+    let store = store::Store::open(&directory).unwrap();
+    let name = uuid::Uuid::new_v4().to_string();
+    let own = directory.join("work").join(&name);
+    fs::create_dir_all(&own).unwrap();
+    fs::write(own.join("marker"), b"own").unwrap();
+    let outside = parent.path().join("outside");
+    let protected = outside.join("work").join(&name).join("marker");
+    fs::create_dir_all(protected.parent().unwrap()).unwrap();
+    fs::write(&protected, b"outside").unwrap();
+    fs::rename(&directory, parent.path().join("held-store")).unwrap();
+    std::os::unix::fs::symlink(&outside, &directory).unwrap();
+    store.sweep_for_test();
+    assert!(
+        protected.exists(),
+        "sweep followed the replaced store ancestor"
+    );
+    assert_eq!(fs::read(protected).unwrap(), b"outside");
+}
+
+#[test]
+fn cleanup_keeps_outside_files_when_a_parent_changes_after_its_check() {
+    let parent = temporary();
+    let directory = parent.path().join("store");
+    let store = store::Store::open(&directory).unwrap();
+    let name = uuid::Uuid::new_v4().to_string();
+    let work = directory.join("work");
+    fs::create_dir_all(work.join(&name)).unwrap();
+    let entry = store
+        .cleanup
+        .entry("work", std::ffi::OsStr::new(&name))
+        .unwrap()
+        .unwrap();
+    let outside = parent.path().join("outside");
+    let protected = outside.join(&name).join("marker");
+    fs::create_dir_all(protected.parent().unwrap()).unwrap();
+    fs::write(&protected, b"outside").unwrap();
+    let result = entry.remove_after_check_for_test(|| {
+        fs::rename(&work, directory.join("parked-work")).unwrap();
+        std::os::unix::fs::symlink(&outside, &work).unwrap();
+    });
+    assert!(result.is_err());
+    assert_eq!(fs::read(protected).unwrap(), b"outside");
+}
+
+#[test]
+fn cleanup_keeps_a_replacement_empty_directory_after_its_check() {
+    let parent = temporary();
+    let store = store::Store::open(&parent.path().join("store")).unwrap();
+    let name = uuid::Uuid::new_v4().to_string();
+    let work = store.directory.join("work");
+    let own = work.join(&name);
+    fs::create_dir_all(&own).unwrap();
+    let live = work.join(uuid::Uuid::new_v4().to_string());
+    fs::create_dir(&live).unwrap();
+    let entry = store
+        .cleanup
+        .entry("work", std::ffi::OsStr::new(&name))
+        .unwrap()
+        .unwrap();
+    let result = entry.remove_after_check_for_test(|| {
+        fs::rename(&own, work.join("parked-run")).unwrap();
+        fs::rename(&live, &own).unwrap();
+    });
+    assert!(result.is_err());
+    assert!(own.is_dir(), "cleanup unlinked the replacement directory");
 }

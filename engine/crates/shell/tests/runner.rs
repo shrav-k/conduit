@@ -1554,6 +1554,200 @@ fn engine_child() {
         std::thread::park();
     }
 }
+fn entry_names(path: &Path) -> std::collections::BTreeSet<String> {
+    fs::read_dir(path)
+        .unwrap()
+        .map(|entry| entry.unwrap().file_name().into_string().unwrap())
+        .collect()
+}
+fn canonical_uuid(name: &str) -> bool {
+    uuid::Uuid::parse_str(name).is_ok_and(|id| id.to_string() == name)
+}
+
+#[test]
+fn a_killed_run_leaves_nothing_after_the_next_open() {
+    let parent = tempfile::tempdir().unwrap();
+    let mut child = Command::new(std::env::current_exe().unwrap())
+        .args(["--exact", "engine_child", "--ignored", "--nocapture"])
+        .env("WO021_ENGINE_TEST_PARENT", parent.path())
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()
+        .unwrap();
+    until_for(Duration::from_secs(60), || {
+        parent.path().join("ready").is_file()
+    });
+    let store = parent.path().join("store");
+    for name in ["runs", "work", "run-groups"] {
+        assert!(!entry_names(&store.join(name)).is_empty());
+    }
+    let pids: Vec<i32> = ["pid", "descendant-pid"]
+        .into_iter()
+        .map(|name| {
+            fs::read_to_string(parent.path().join("shared").join(name))
+                .unwrap()
+                .parse()
+                .unwrap()
+        })
+        .collect();
+    child.kill().unwrap();
+    child.wait().unwrap();
+    for pid in pids {
+        until_for(
+            Duration::from_secs(60),
+            || unsafe { libc::kill(pid, 0) } != 0,
+        );
+    }
+    let old_program = store
+        .join("programs")
+        .join(uuid::Uuid::new_v4().to_string());
+    fs::create_dir_all(old_program.join("bin")).unwrap();
+    fs::write(old_program.join("bin/worker"), b"old program").unwrap();
+    fs::create_dir_all(store.join("programs/kept")).unwrap();
+    fs::create_dir_all(
+        store
+            .join("http-bridges")
+            .join(uuid::Uuid::new_v4().to_string()),
+    )
+    .unwrap();
+    let outside = parent.path().join("outside");
+    fs::create_dir(&outside).unwrap();
+    fs::write(outside.join("kept"), b"outside").unwrap();
+    std::os::unix::fs::symlink(
+        &outside,
+        store.join("work").join(uuid::Uuid::new_v4().to_string()),
+    )
+    .unwrap();
+    let old_identity = store.join("runs").join(uuid::Uuid::new_v4().to_string());
+    fs::create_dir(&old_identity).unwrap();
+    let outside_file = parent.path().join("outside-file");
+    fs::write(&outside_file, b"file").unwrap();
+    std::os::unix::fs::symlink(&outside_file, old_identity.join("link")).unwrap();
+    let id = uuid::Uuid::parse_str("abcdefab-cdef-4abc-8def-abcdefabcdef").unwrap();
+    let other_names = [id.to_string().to_uppercase(), id.simple().to_string()];
+    for name in &other_names {
+        fs::create_dir(store.join("work").join(name)).unwrap();
+    }
+    let instances = entry_names(&store.join("instances"));
+    let _shell = open(parent.path(), Config::default());
+    for name in ["runs", "work", "run-groups", "http-bridges"] {
+        assert!(
+            !entry_names(&store.join(name))
+                .iter()
+                .any(|name| canonical_uuid(name)),
+            "leftover in {name}"
+        );
+    }
+    assert_eq!(
+        entry_names(&store.join("work")),
+        other_names.into_iter().collect()
+    );
+    assert_eq!(
+        entry_names(&store.join("programs")),
+        ["kept".to_owned()].into_iter().collect()
+    );
+    assert_eq!(fs::read(outside.join("kept")).unwrap(), b"outside");
+    assert_eq!(fs::read(outside_file).unwrap(), b"file");
+    assert_eq!(entry_names(&store.join("instances")), instances);
+}
+
+#[test]
+fn a_running_runs_directories_are_never_removed() {
+    let parent = tempfile::tempdir().unwrap();
+    let shell = open(parent.path(), Config::default());
+    register(&shell, parent.path(), false, "success");
+    let runner = new_runner(&shell);
+    establish(&shell, &runner);
+    let paths = |name: &str| {
+        let root = parent.path().join(name);
+        let cwd: Value = serde_json::from_slice(&fs::read(root.join("cwd.json")).unwrap()).unwrap();
+        let environment: Value =
+            serde_json::from_slice(&fs::read(root.join("environment.json")).unwrap()).unwrap();
+        [
+            PathBuf::from(cwd["path"].as_str().unwrap()),
+            PathBuf::from(environment["CONDUIT_IDENTITY_DIR"].as_str().unwrap()),
+        ]
+    };
+    let shared = paths("shared");
+    let history = paths("history");
+    let reply = invoke(
+        &shell,
+        &runner,
+        "root",
+        "root-workspace.inspect.v1",
+        json!({"object":{"kind":"Resource","name":"shared"}}),
+    );
+    assert_eq!(outcome(&shell, &reply), "succeeded");
+    let reply = invoke(
+        &shell,
+        &runner,
+        "agent-b",
+        "project.file.read.v1",
+        json!({"path":"hello.txt"}),
+    );
+    assert_eq!(outcome(&shell, &reply), "succeeded");
+    let second = new_runner(&shell);
+    assert!(shared.iter().chain(&history).all(|path| path.exists()));
+    drop(second);
+    let groups = parent.path().join("store/run-groups");
+    let count = entry_names(&groups).len();
+    let stop = json!({"subject":id(&shell,"history"),"operation":format!("{}#stop.v1",shell.context.core_package)});
+    runner.builtin_runner(&stop, None).unwrap();
+    until_for(Duration::from_secs(60), || {
+        history.iter().all(|path| !path.exists()) && entry_names(&groups).len() == count - 1
+    });
+    assert!(shared.iter().all(|path| path.exists()));
+    let inspect = json!({"subject":id(&shell,"shared"),"operation":format!("{}#inspect-run.v1",shell.context.core_package)});
+    assert!(
+        matches!(runner.builtin_runner(&inspect,None).unwrap(),Execution::SetupReport(v) if v["state"]=="running")
+    );
+    drop(runner);
+    for name in ["runs", "work", "run-groups"] {
+        assert!(
+            entry_names(&parent.path().join("store").join(name)).is_empty(),
+            "leftover in {name}"
+        );
+    }
+}
+
+#[test]
+fn replaced_run_entry_never_removes_a_live_runs_work() {
+    let parent = tempfile::tempdir().unwrap();
+    let shell = open(parent.path(), Config::default());
+    register(&shell, parent.path(), false, "normal");
+    let runner = new_runner(&shell);
+    for name in ["workspace", "shared", "history"] {
+        assert_eq!(outcome(&shell, &setup(&shell, &runner, name)), "succeeded");
+    }
+    let work = |name: &str| {
+        let cwd: Value =
+            serde_json::from_slice(&fs::read(parent.path().join(name).join("cwd.json")).unwrap())
+                .unwrap();
+        PathBuf::from(cwd["path"].as_str().unwrap())
+    };
+    let ended = work("shared");
+    let live = work("history");
+    fs::write(live.join("marker"), b"live run").unwrap();
+    fs::rename(&ended, ended.parent().unwrap().join("kept-ended")).unwrap();
+    fs::rename(&live, &ended).unwrap();
+    let stop = json!({"subject":id(&shell,"shared"),"operation":format!("{}#stop.v1",shell.context.core_package)});
+    runner.builtin_runner(&stop, None).unwrap();
+    until_for(Duration::from_secs(60), || {
+        entry_names(&parent.path().join("store/run-groups")).len() == 1
+    });
+    assert!(
+        ended.join("marker").exists(),
+        "stopping one run removed a live run's replacement work directory"
+    );
+    let inspect = json!({"subject":id(&shell,"history"),"operation":format!("{}#inspect-run.v1",shell.context.core_package)});
+    assert!(
+        matches!(runner.builtin_runner(&inspect,None).unwrap(),Execution::SetupReport(v) if v["state"]=="running")
+    );
+    assert_eq!(fs::read(ended.join("marker")).unwrap(), b"live run");
+    fs::rename(&ended, &live).unwrap();
+}
+
 #[test]
 fn killed_engine_ends_run_and_descendant_and_does_not_pass_token() {
     let parent = tempfile::tempdir().unwrap();

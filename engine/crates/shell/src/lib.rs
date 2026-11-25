@@ -419,7 +419,7 @@ impl Shell {
         // DL2/DL13: identity materialization checks the last committed snapshot.
         let writer = self.writer.lock().map_err(|_| "writer lock poisoned")?;
         let identity = self.authority.materialize(
-            &writer.store.directory,
+            &writer.store,
             descriptor,
             &self.config.engine_url,
             writer.store.snapshot()?.as_ref(),
@@ -467,7 +467,7 @@ impl Shell {
             return Ok(None);
         };
         let mut identity = self.authority.materialize(
-            &writer.store.directory,
+            &writer.store,
             descriptor,
             address,
             &state,
@@ -1242,6 +1242,9 @@ impl Shell {
                 }
                 _ => return Err("embedding error: unsupported intent kind".into()),
             };
+            // A built-in run takes the directory with the identity. Otherwise the
+            // call owns it only until returning, including error/missing paths.
+            drop(identity);
             let execution = if matches!(execution, Execution::Missing) {
                 missing(&intent, &self.context)?
             } else {

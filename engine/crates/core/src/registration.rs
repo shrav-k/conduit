@@ -748,7 +748,34 @@ impl Builder<'_> {
             related_locations(&mut diagnostic, ["/config/node".to_owned()]);
             return diagnostic;
         }
-        let diagnostic = diagnostic(fault.rule, name, &fault.text, "error");
+        let label = if fault.rule == "CTR-015" {
+            source.map_or(name, |source| {
+                let authored = match &fault.pointer {
+                    Some(FaultPointer::Configuration(pointer)) => {
+                        items(object, "_inputs").iter().any(|(input, spec)| {
+                            source.authored_arguments.contains(input)
+                                && list(spec, "to").iter().any(|destination| {
+                                    pointer.strip_prefix(destination).is_some_and(|suffix| {
+                                        suffix.is_empty() || suffix.starts_with('/')
+                                    })
+                                })
+                        })
+                    }
+                    _ => false,
+                };
+                if authored {
+                    source
+                        .declaration
+                        .as_ref()
+                        .map_or(name, |place| place.name.as_str())
+                } else {
+                    source.template_name.as_str()
+                }
+            })
+        } else {
+            name
+        };
+        let diagnostic = diagnostic(fault.rule, label, &fault.text, "error");
         let Some(source) = source else {
             return diagnostic;
         };
@@ -1777,12 +1804,148 @@ fn implementations(h: &Held, spec: &Value, kind: &str, core: &str) -> Checked<Va
     Ok(result)
 }
 
+/// CTR-015 checks only the forbidden pair, never the meaning of a report.
+pub(crate) fn admission_pair(ty: &Value, config: &Value) -> Option<(String, String)> {
+    let place = ty["spec"]["admission"]["levers"].as_str()?;
+    let levers = config.pointer(place)?;
+    (levers["whenUnknown"] == "admit"
+        && matches!(
+            levers["paidUsage"].as_str(),
+            Some("refuse" | "refuse-if-possible")
+        ))
+    .then(|| {
+        (
+            place.into(),
+            format!("{place}/whenUnknown admit cannot stand beside a refusing {place}/paidUsage"),
+        )
+    })
+}
+
+// A pair fault does not discard the login. Check every other schema error so its
+// Agents can resolve it without hiding an unrelated INS-014 failure.
+fn admission_other_schema_fault(
+    held: &Held,
+    schema: &Value,
+    config: &Value,
+    place: &str,
+    ty: &str,
+    core: &str,
+) -> Checked<()> {
+    let published = held
+        .environment
+        .publish_schema(&held.scope, schema, core)
+        .map_err(|e| fault("INS-014", e))?;
+    let validator = crate::schemas::standalone_validator(&published, config)
+        .map_err(|e| fault("INS-014", e))?;
+    // An independent restriction may mention these same fields and words. Keep
+    // its error if it survives any single-lever repair of the pair, including
+    // either non-admitting whenUnknown value. Compare schema locations, not words.
+    let mut surviving = BTreeSet::new();
+    for (lever, value) in [
+        ("paidUsage", "allow"),
+        ("whenUnknown", "refuse"),
+        ("whenUnknown", "one-trial"),
+    ] {
+        let mut repaired = config.clone();
+        repaired.pointer_mut(place).expect("forbidden pair exists")[lever] = json!(value);
+        surviving.extend(validator.iter_errors(&repaired).map(|error| {
+            (
+                error.instance_path().to_string(),
+                error.schema_path().to_string(),
+            )
+        }));
+    }
+    for error in validator.iter_errors(config) {
+        let at = error.instance_path().as_str();
+        let keyword = error.schema_path().as_str();
+        let pair_field = at == format!("{place}/paidUsage") || at == format!("{place}/whenUnknown");
+        if pair_field
+            && keyword.split('/').any(|part| part == "then")
+            && !surviving.contains(&(at.to_owned(), keyword.to_owned()))
+        {
+            continue;
+        }
+        return Err(fault(
+            "INS-014",
+            format!("configuration fails Type {ty}: failing schema keyword {keyword}"),
+        )
+        .at_configuration(at));
+    }
+    Ok(())
+}
+
+fn admission_login_fault(
+    agent: &Value,
+    resource: &Value,
+    context: &Context,
+) -> Checked<Option<Fault>> {
+    let core = &context.core_package;
+    let rh: Held = serde_json::from_value(resource["held"].clone())
+        .map_err(|e| fault("CTR-015", e.to_string()))?;
+    let (_, login_type, login_name) =
+        rh.select(resource["type"].as_str().unwrap_or(""), "Type", core)?;
+    if login_type["spec"].get("admission").is_none() {
+        return Ok(None);
+    }
+    let ah: Held = serde_json::from_value(agent["held"].clone())
+        .map_err(|e| fault("CTR-015", e.to_string()))?;
+    let (ah, agent_type, agent_name) =
+        ah.select(agent["type"].as_str().unwrap_or(""), "Type", core)?;
+    for selection in list(&agent_type["spec"]["admission"], "loginTypes") {
+        if ah.select(&selection, "Type", core)?.2 == login_name {
+            return Ok(None);
+        }
+    }
+    let place = agent["login_resource_place"].as_str().unwrap_or("");
+    Ok(Some(fault("CTR-015", format!(
+        "Agent Type {agent_name} does not list login Type {login_name} under admission.loginTypes"
+    )).at_configuration(place)))
+}
+
+/// Apply supplied control values to a trial configuration only (REV-006).
+pub(crate) fn admission_control_pair(
+    target: &Value,
+    contract: &Value,
+    supplied: &Value,
+    filled: &Value,
+    context: &Context,
+) -> Result<Option<String>> {
+    if target["kind"] != "Resource" || contract["spec"].get("changes").is_none() {
+        return Ok(None);
+    }
+    let ty = crate::inventory::instance_type(target, context)?;
+    if ty["spec"].get("admission").is_none() {
+        return Ok(None);
+    }
+    let mut config = target["config"].clone();
+    for (input, pointer) in items(&contract["spec"], "changes") {
+        if supplied.get(&input).is_some()
+            && let Some(pointer) = pointer.as_str()
+        {
+            if pointer.is_empty() {
+                config = filled[&input].clone();
+            } else {
+                // Missing parents belong to the general control schema check;
+                // the levers place is required by this Type's schema.
+                let _ = assign(&mut config, pointer, filled[&input].clone());
+            }
+        }
+    }
+    Ok(admission_pair(&ty, &config).map(|(_, text)| {
+        format!(
+            "Type {}: {text}",
+            target["type"].as_str().unwrap_or_default()
+        )
+    }))
+}
+
 fn resolve_instance(
     object: &Value,
     all: &[Value],
     context: &Context,
     trusted: bool,
     source: Option<&InstanceSource>,
+    admission_faults: &mut Vec<Fault>,
 ) -> Checked<Value> {
     let mut o = object.clone();
     let core = &context.core_package;
@@ -1886,6 +2049,7 @@ fn resolve_instance(
     }
     let mut config_schema = None;
     let mut type_scope = None;
+    let mut admission_place = None;
     if kind != "Conduit" {
         let (th, ty, q) = h.select(o["type"].as_str().unwrap_or(""), "Type", core)?;
         o["type"] = json!(q);
@@ -1913,10 +2077,42 @@ fn resolve_instance(
             !trusted,
             source.and_then(|source| source.value_node_written.as_ref()),
         )?;
-        if let Some(failure) = th
-            .environment
-            .failure_at(&th.scope, schema, "", &config, core)
-            .map_err(|e| fault("INS-014", e))?
+        let pair = (kind == "Resource")
+            .then(|| admission_pair(&ty, &config))
+            .flatten();
+        if let Some((place, text)) = &pair {
+            // Attribute the pair to an instance argument supplying either of its
+            // participating values, even when that input targets just one lever.
+            // Otherwise both instances of a faulty template share its one place.
+            let authored_lever = ["whenUnknown", "paidUsage"]
+                .into_iter()
+                .map(|lever| format!("{place}/{lever}"))
+                .find(|pointer| {
+                    source.is_some_and(|source| {
+                        items(object, "_inputs").iter().any(|(input, spec)| {
+                            source.authored_arguments.contains(input)
+                                && list(spec, "to").iter().any(|destination| {
+                                    format!("/config{pointer}")
+                                        .strip_prefix(destination)
+                                        .is_some_and(|suffix| {
+                                            suffix.is_empty() || suffix.starts_with('/')
+                                        })
+                                })
+                        })
+                    })
+                });
+            admission_faults.push(
+                fault("CTR-015", format!("Type {q}: {text}"))
+                    .at_configuration(authored_lever.as_deref().unwrap_or(place)),
+            );
+            admission_other_schema_fault(&th, schema, &config, place, &q, core)?;
+            admission_place = Some(place.clone());
+        }
+        if pair.is_none()
+            && let Some(failure) = th
+                .environment
+                .failure_at(&th.scope, schema, "", &config, core)
+                .map_err(|e| fault("INS-014", e))?
         {
             let pointer = format!("/config{}", failure.instance_pointer);
             if let Some(source) = installation_values::affected(destinations, &pointer) {
@@ -1938,10 +2134,11 @@ fn resolve_instance(
         {
             o["login_resource_place"] = place.clone();
         }
-        if let Some(failure) = th
-            .environment
-            .failure_at(&th.scope, schema, "", &o["config"], core)
-            .map_err(|e| fault("INS-014", e))?
+        if pair.is_none()
+            && let Some(failure) = th
+                .environment
+                .failure_at(&th.scope, schema, "", &o["config"], core)
+                .map_err(|e| fault("INS-014", e))?
         {
             return Err(fault("INS-014", "stored configuration fails Type")
                 .at_configuration(&failure.instance_pointer));
@@ -2080,14 +2277,24 @@ fn resolve_instance(
             }
         }
     }
-    if let (Some(schema), Some(th)) = (&config_schema, &type_scope)
-        && let Some(failure) = th
+    if let (Some(schema), Some(th)) = (&config_schema, &type_scope) {
+        if let Some(place) = &admission_place {
+            admission_other_schema_fault(
+                th,
+                schema,
+                &o["config"],
+                place,
+                o["type"].as_str().unwrap_or(""),
+                core,
+            )?;
+        } else if let Some(failure) = th
             .environment
             .failure_at(&th.scope, schema, "", &o["config"], core)
             .map_err(|e| fault("INS-014", e))?
-    {
-        return Err(fault("INS-014", "stored configuration fails Type")
-            .at_configuration(&failure.instance_pointer));
+        {
+            return Err(fault("INS-014", "stored configuration fails Type")
+                .at_configuration(&failure.instance_pointer));
+        }
     }
     // Resolve the retained nested declarations as well as the instantiated children.
     for (local, mut declaration) in items(&o, "conduits") {
@@ -2954,9 +3161,13 @@ pub(crate) fn prepare(
     let mut resolved = vec![];
     for object in &b.objects {
         let source = object["id"].as_str().and_then(|id| b.sources.get(id));
-        match resolve_instance(object, &all, context, false, source) {
+        let mut admission_faults = vec![];
+        match resolve_instance(object, &all, context, false, source, &mut admission_faults) {
             Ok(o) => resolved.push(o),
             Err(f) => b.diagnostics.push(b.instance_diagnostic(object, f)),
+        }
+        for failure in admission_faults {
+            b.diagnostics.push(b.instance_diagnostic(object, failure));
         }
     }
     keep_nested_inputs(&mut b, &mut resolved, &references)?;
@@ -3009,6 +3220,16 @@ pub(crate) fn prepare(
             ));
             t.reply = json!({"accepted":false,"reason":"refused","diagnostics":[diagnostic]});
             return Ok(Some(crate::explain::Rejection::new("refused", "ACC-033")));
+        }
+        if let Some(failure) =
+            admission_login_fault(object, resource, context).map_err(|failure| failure.text)?
+        {
+            let authored = b
+                .objects
+                .iter()
+                .find(|o| o["id"] == object["id"])
+                .unwrap_or(object);
+            b.diagnostics.push(b.instance_diagnostic(authored, failure));
         }
         let expected = crate::sign_in::expected_account(resource, context)?;
         if resource["state"] == "retired"
@@ -3805,7 +4026,12 @@ pub(crate) fn replacement(
     let mut resolved = vec![];
     for object in &b.objects {
         let source = object["id"].as_str().and_then(|id| b.sources.get(id));
-        match resolve_instance(object, &all, context, true, source) {
+        let mut admission_faults = vec![];
+        let result = resolve_instance(object, &all, context, true, source, &mut admission_faults);
+        for failure in admission_faults {
+            b.diagnostics.push(b.instance_diagnostic(object, failure));
+        }
+        match result {
             Ok(o) => resolved.push(o),
             Err(f) => {
                 if !matches!(f.pointer, Some(FaultPointer::Authored(..))) {
@@ -3835,6 +4061,26 @@ pub(crate) fn replacement(
     for o in resolved.iter().filter(|o| o["kind"] == "Conduit") {
         if let Some((rule, message)) = check_conduit(o, &all, context)? {
             return Ok(json!({"rule":rule,"message":message}));
+        }
+    }
+    // CTR-015 / LIF-009: current Agents retain the replaced Resource's ID.
+    if slot == "entries"
+        && let Some(resource) = resolved.first()
+    {
+        let replaced = crate::access::id(&parent["slots"][slot][name]);
+        for agent in b.state.objects.iter().filter(|o| {
+            o["kind"] == "Agent"
+                && o["state"] != "retired"
+                && crate::login_resource::id(o).is_some_and(|id| id == replaced)
+        }) {
+            if let Some(failure) =
+                admission_login_fault(agent, resource, context).map_err(|failure| failure.text)?
+            {
+                let d = b.instance_diagnostic(agent, failure);
+                return Ok(
+                    json!({"rule":d.rule,"message":d["message"]["text"],"diagnostics":[d.diagnostic]}),
+                );
+            }
         }
     }
     let mut matching_state = b.state.clone();

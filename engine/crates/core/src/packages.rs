@@ -748,6 +748,7 @@ impl Catalog {
                         })
                         .collect::<Result<Vec<_>>>()?;
                     diagnostics.extend(secret_type_faults(scope, d, &offers));
+                    diagnostics.extend(admission_type_faults(&env, &indexes, scope, d, core));
                     let package_source = offers
                         .iter()
                         .any(|(_, (scope, name))| scope == "core" && name == "package-source.v1");
@@ -764,6 +765,7 @@ impl Catalog {
                                 schema: d["spec"]["schema"].clone(),
                                 secret: false,
                                 resource: false,
+                                schema_path: String::new(),
                             }],
                             &pointer_tokens(pointer),
                             core,
@@ -784,6 +786,7 @@ impl Catalog {
                                 schema: d["spec"]["schema"].clone(),
                                 secret: false,
                                 resource: false,
+                                schema_path: String::new(),
                             }],
                             &pointer_tokens(account),
                             core,
@@ -811,6 +814,7 @@ impl Catalog {
                                 schema: d["spec"]["schema"].clone(),
                                 secret: false,
                                 resource: false,
+                                schema_path: String::new(),
                             }],
                             &pointer_tokens(place),
                             core,
@@ -1468,6 +1472,7 @@ struct BindingPart {
     schema: Value,
     secret: bool,
     resource: bool,
+    schema_path: String,
 }
 
 fn pointer_tokens(pointer: &str) -> Vec<String> {
@@ -1736,6 +1741,135 @@ fn sign_in_ports_overlap(a: &Value, b: &Value) -> bool {
             }))
 }
 
+// CTR-015: these are semantic checks; type-spec.v1 owns admission's shape.
+fn admission_type_faults(
+    env: &Environment,
+    indexes: &BTreeMap<String, BTreeMap<String, Value>>,
+    scope: &str,
+    document: &Value,
+    core: &str,
+) -> Vec<Value> {
+    let spec = &document["spec"];
+    let name = &document["metadata"]["name"];
+    let mut causes = vec![];
+    if let Some(pointer) = spec["admission"]["levers"].as_str() {
+        if let Err(cause) = binding_parts_at(
+            env,
+            vec![BindingPart {
+                scope: scope.into(),
+                root: spec["schema"].clone(),
+                schema: spec["schema"].clone(),
+                secret: false,
+                resource: false,
+                schema_path: String::new(),
+            }],
+            &pointer_tokens(pointer),
+            core,
+            BindingMode::Levers,
+            "",
+        ) {
+            causes.push(format!("levers {pointer}: {cause}"));
+        }
+        let selection = spec["admission"]["control"]
+            .as_str()
+            .expect("validated admission");
+        match resolve_name(env, indexes, scope, selection, "Operation", core) {
+            Err((_, why)) => causes.push(format!("admission control {selection}: {why}")),
+            Ok(selected) => {
+                let listed: Vec<_> = strings(spec, "controls")
+                    .filter_map(|r| resolve_name(env, indexes, scope, r, "Operation", core).ok())
+                    .collect();
+                if !listed.contains(&selected) {
+                    causes.push(format!(
+                        "admission control {selection} is not listed under controls"
+                    ));
+                } else if indexes[&selected.0][&selected.1]["spec"]["changes"]
+                    != json!({"levers":pointer})
+                {
+                    causes.push(format!("admission control {selection} changes must be exactly {{levers: {pointer}}}"));
+                }
+                for other in listed.iter().filter(|other| **other != selected) {
+                    if items(&indexes[&other.0][&other.1]["spec"], "changes").any(|(_, p)| {
+                        p.as_str().is_some_and(|p| {
+                            pointers_overlap(&pointer_tokens(p), &pointer_tokens(pointer))
+                        })
+                    }) {
+                        causes.push(format!("control {} overlaps levers {pointer}", other.1));
+                    }
+                }
+            }
+        }
+    }
+    for selection in strings(&spec["admission"], "loginTypes") {
+        match resolve_name(env, indexes, scope, selection, "Type", core) {
+            Ok((scope, name))
+                if indexes[&scope][&name]["spec"].get("signIn").is_some()
+                    && indexes[&scope][&name]["spec"].get("admission").is_some() => {}
+            Ok(_) => causes.push(format!(
+                "loginTypes Type {selection} must state signIn and admission"
+            )),
+            Err((_, why)) => causes.push(format!("loginTypes Type {selection}: {why}")),
+        }
+    }
+    causes
+        .into_iter()
+        .map(|cause| diag("CTR-015", format!("{scope}: Type {name}: {cause}")))
+        .collect()
+}
+
+fn admission_no_defaults(
+    env: &Environment,
+    part: &BindingPart,
+    core: &str,
+    seen: &mut BTreeSet<String>,
+    place: &str,
+) -> Result<()> {
+    let identity = serde_json::to_string(&json!([part.scope, part.root, part.schema]))
+        .map_err(|e| e.to_string())?;
+    if !seen.insert(identity) {
+        return Ok(());
+    }
+    crate::schemas::walk(
+        &mut part.schema.clone(),
+        &part.schema_path,
+        &mut |map, at| {
+            if map.contains_key("default") {
+                return Err(format!(
+                    "a default stands at {at}/default, at or under the levers place {place}"
+                ));
+            }
+            if let Some(reference) = map.get("$ref").and_then(Value::as_str) {
+                let (scope, schema) =
+                    env.schema_reference(&part.scope, &part.root, reference, core)?;
+                let root = if reference == "#" || reference.starts_with("#/") {
+                    part.root.clone()
+                } else {
+                    schema.clone()
+                };
+                admission_no_defaults(
+                    env,
+                    &BindingPart {
+                        scope,
+                        root,
+                        schema,
+                        secret: false,
+                        resource: false,
+                        schema_path: if reference == "#" || reference.starts_with("#/") {
+                            crate::schemas::unfragment(&reference[1..])?
+                        } else {
+                            reference.into()
+                        },
+                    },
+                    core,
+                    seen,
+                    place,
+                )?;
+            }
+            Ok(())
+        },
+    )
+}
+
 fn listed_control_faults(spec: &Value) -> Option<String> {
     let mut faults = vec![];
     if spec["inputSchema"]["properties"].get("revision").is_none() {
@@ -1780,6 +1914,11 @@ fn branches(
                 schema,
                 secret: false,
                 resource: false,
+                schema_path: if reference == "#" || reference.starts_with("#/") {
+                    crate::schemas::unfragment(&reference[1..]).ok()?
+                } else {
+                    reference.into()
+                },
             });
         }
     }
@@ -1788,8 +1927,10 @@ fn branches(
             .as_array()
             .into_iter()
             .flatten()
-            .map(|schema| BindingPart {
+            .enumerate()
+            .map(|(index, schema)| BindingPart {
                 schema: schema.clone(),
+                schema_path: format!("{}/allOf/{index}", part.schema_path),
                 ..part.clone()
             }),
     );
@@ -1809,11 +1950,12 @@ fn branches(
     for key in ["anyOf", "oneOf"] {
         if let Some(choices) = part.schema[key].as_array() {
             let mut other = vec![];
-            for choice in choices {
+            for (index, choice) in choices.iter().enumerate() {
                 other.extend(branches(
                     env,
                     BindingPart {
                         schema: choice.clone(),
+                        schema_path: format!("{}/{key}/{index}", part.schema_path),
                         ..part.clone()
                     },
                     core,
@@ -1841,6 +1983,8 @@ enum BindingMode {
     Scalar,
     OwnTools,
     Login,
+    Levers,
+    Lever(&'static [&'static str]),
 }
 
 fn binding(
@@ -1858,6 +2002,7 @@ fn binding(
             schema: schema.clone(),
             secret: false,
             resource: false,
+            schema_path: String::new(),
         }],
         tokens,
         core,
@@ -1892,11 +2037,15 @@ fn binding_parts_at(
     if mode == BindingMode::Login && tokens.is_empty() && path.is_empty() {
         return Err("the login place must name a required member of configuration".into());
     }
-    const UNREADABLE: &str =
-        "rule (a): the walk could not read a reference or a pattern of the schema";
+    let levers = matches!(mode, BindingMode::Levers | BindingMode::Lever(_));
+    let unreadable = if levers {
+        "the levers schema has a reference or pattern that could not be read"
+    } else {
+        "rule (a): the walk could not read a reference or a pattern of the schema"
+    };
     let mut alternatives = vec![vec![]];
     for part in parts {
-        let expanded = branches(env, part, core, &BTreeSet::new()).ok_or(UNREADABLE)?;
+        let expanded = branches(env, part, core, &BTreeSet::new()).ok_or(unreadable)?;
         alternatives = alternatives
             .iter()
             .flat_map(|a| expanded.iter().map(|b| [a.clone(), b.clone()].concat()))
@@ -1909,47 +2058,83 @@ fn binding_parts_at(
             // value here must be an object for the next member to have a value.
             let member = format!("{path}/{}", head.replace('~', "~0").replace('/', "~1"));
             if binding_mask(&parts) & !32 != 0 {
-                return Err(format!(
-                    "rule (a): in a branch of the schema, the value holding {member} may be other than an object, so {member} may be absent"
-                ));
+                return Err(if levers {
+                    format!("the levers schema must require an object holding {member}")
+                } else {
+                    format!(
+                        "rule (a): in a branch of the schema, the value holding {member} may be other than an object, so {member} may be absent"
+                    )
+                });
             }
             if !parts
                 .iter()
                 .any(|p| strings(&p.schema, "required").any(|n| n == head))
             {
-                return Err(format!(
-                    "rule (a): a branch of the schema does not list {member} under required"
-                ));
+                return Err(if levers {
+                    format!("the levers schema must require {member}")
+                } else {
+                    format!(
+                        "rule (a): a branch of the schema does not list {member} under required"
+                    )
+                });
             }
             let mut subs = vec![];
             for p in parts {
                 let mut applicable = vec![];
                 if let Some(sub) = p.schema["properties"].get(head) {
-                    applicable.push(sub.clone());
+                    applicable.push((
+                        sub.clone(),
+                        format!(
+                            "{}/properties/{}",
+                            p.schema_path,
+                            crate::schemas::token(head)
+                        ),
+                    ));
                 }
                 for (pattern, sub) in items(&p.schema, "patternProperties") {
                     if conduit_loader::formats::ecma_regex(pattern)
-                        .map_err(|_| UNREADABLE)?
+                        .map_err(|_| unreadable)?
                         .find(head)
                         .is_some()
                     {
-                        applicable.push(sub.clone());
+                        applicable.push((
+                            sub.clone(),
+                            format!(
+                                "{}/patternProperties/{}",
+                                p.schema_path,
+                                crate::schemas::token(pattern)
+                            ),
+                        ));
                     }
                 }
                 if applicable.is_empty()
                     && let Some(sub) = p.schema.get("additionalProperties")
                 {
-                    applicable.push(sub.clone());
+                    applicable.push((
+                        sub.clone(),
+                        format!("{}/additionalProperties", p.schema_path),
+                    ));
                 }
-                subs.extend(applicable.into_iter().map(|schema| BindingPart {
-                    schema,
-                    ..p.clone()
-                }));
+                subs.extend(
+                    applicable
+                        .into_iter()
+                        .map(|(schema, schema_path)| BindingPart {
+                            schema,
+                            schema_path,
+                            ..p.clone()
+                        }),
+                );
             }
             if subs.is_empty() {
-                return Err(format!(
-                    "rule (a): a branch of the schema describes {member} under none of properties, patternProperties and additionalProperties"
-                ));
+                return Err(if levers {
+                    format!(
+                        "the levers schema must describe {member} under properties, patternProperties or additionalProperties"
+                    )
+                } else {
+                    format!(
+                        "rule (a): a branch of the schema describes {member} under none of properties, patternProperties and additionalProperties"
+                    )
+                });
             }
             let member = binding_parts_at(env, subs, tail, core, mode, &member)?;
             place.nullable |= member.nullable;
@@ -1958,6 +2143,56 @@ fn binding_parts_at(
             if mode == BindingMode::Login {
                 if !parts.iter().any(|part| part.resource) {
                     return Err("the place is not governed by resource-reference.v1".into());
+                }
+                continue;
+            }
+            if mode == BindingMode::Levers {
+                if binding_mask(&parts) & !32 != 0 {
+                    return Err("the levers schema must be an object".into());
+                }
+                for part in &parts {
+                    admission_no_defaults(env, part, core, &mut BTreeSet::new(), path)?;
+                }
+                for (name, words) in [
+                    ("billing", &["included", "paid-from-first-token"][..]),
+                    ("paidUsage", &["allow", "refuse", "refuse-if-possible"][..]),
+                    ("whenUnknown", &["refuse", "one-trial", "admit"][..]),
+                ] {
+                    binding_parts_at(
+                        env,
+                        parts.clone(),
+                        &[name.into()],
+                        core,
+                        BindingMode::Lever(words),
+                        path,
+                    )?;
+                }
+                continue;
+            }
+            if let BindingMode::Lever(words) = mode {
+                let mut allowed: Option<Vec<Value>> = None;
+                for values in parts
+                    .iter()
+                    .filter_map(|part| part.schema["enum"].as_array())
+                {
+                    allowed = Some(match allowed {
+                        None => values.clone(),
+                        Some(previous) => previous
+                            .into_iter()
+                            .filter(|v| values.contains(v))
+                            .collect(),
+                    });
+                }
+                if !allowed.is_some_and(|values| {
+                    !values.is_empty()
+                        && values
+                            .iter()
+                            .all(|v| v.as_str().is_some_and(|word| words.contains(&word)))
+                }) {
+                    return Err(format!(
+                        "{path} must be confined by enum to some of: {}",
+                        words.join(", ")
+                    ));
                 }
                 continue;
             }
@@ -2341,6 +2576,7 @@ mod tests {
                 schema,
                 secret: false,
                 resource: false,
+                schema_path: String::new(),
             }],
             &pointer_tokens(pointer),
             "core",

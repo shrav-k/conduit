@@ -21,20 +21,12 @@
       "reason": "Work order 302 (DEC-114): list.v1 omits instance owner, placement, revision and Running; the following engine order implementing DEC-114 fills them from inspection state and removes this entry."
     },
     {
-      "id": "registration-admission-checks",
-      "reason": "CTR-015, order 314: the first build makes none of CTR-015's checks; the guard's engine order for keeping makes it pass"
-    },
-    {
       "id": "requests-admission-hold",
       "reason": "PND-016, order 316: the first build dispatches a call on a guarded login with no ask and holds none; the guard's engine orders for the ask and the hold make it pass"
     },
     {
       "id": "requests-admission-no-report",
       "reason": "PND-016, order 316: the first build dispatches a call on a guarded login with no ask and holds none; the guard's engine orders for the ask and the hold make it pass"
-    },
-    {
-      "id": "requests-admission-not-checked",
-      "reason": "IFC-054, order 316: the first build's status holds no admission; the guard's engine order for keeping makes it pass"
     },
     {
       "id": "requests-admission-report-kept",

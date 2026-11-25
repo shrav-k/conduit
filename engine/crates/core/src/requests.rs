@@ -3572,7 +3572,7 @@ fn dispatch_hook(
     Ok(id)
 }
 
-fn record_hook_dispatch(
+pub(crate) fn record_hook_dispatch(
     t: &mut Transition,
     a: &mut Allocation<'_>,
     c: &Context,

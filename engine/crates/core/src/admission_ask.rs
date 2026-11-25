@@ -111,6 +111,8 @@ pub(crate) fn wait(
         let op = c.qualified("admission-hook.v1");
         let (_, _, contract) = schemas::operation(&target, &op, &c.core_package)?;
         let implementation = target["resolved_implementations"][&op].clone();
+        let item = &implementation["item"];
+        let plain = item["plain"] == true && !requests::keyed_hook(item, &op);
         let id = a.next(&mut t.state)?;
         let arguments = json!({
             "levers":login["config"].pointer(place),
@@ -119,13 +121,23 @@ pub(crate) fn wait(
         });
         // This is neither a request nor a part. In particular no sender, serving,
         // Conduit, key or inherited filter can grant this invocation authority.
-        let ask = json!({"id":id,"hook":true,"caller":v["caller"],"causedBy":v["id"],
+        let mut ask = json!({"id":id,"hook":true,"caller":v["caller"],"causedBy":v["id"],
             "target":login["id"],"operation":op,"arguments":arguments,"filters":[],
-            "state":"in-progress","plain":false,"contract":contract,"held_target":target,
+            "state":"in-progress","plain":plain,"contract":contract,"held_target":target,
             "implementation":implementation,"needs_result":false,"attempt":1,
-            "config":login["config"],"revision":login["revision"],"discovery":"pending"});
-        t.external_intents.push(requests::discovery_intent(&ask, c));
-        t.state.invocations.push(ask);
+            "config":login["config"],"revision":login["revision"]});
+        if !plain {
+            ask["discovery"] = json!("pending");
+        }
+        t.state.invocations.push(ask.clone());
+        if plain {
+            requests::record_hook_dispatch(t, a, c, &ask)?;
+            // A login's Type states signIn, so IFC-045 permits URL elicitation.
+            t.external_intents
+                .push(requests::dispatch_intent(&ask, true, c));
+        } else {
+            t.external_intents.push(requests::discovery_intent(&ask, c));
+        }
         t.state.admission_asks.insert(
             login_id.into(),
             Ask {

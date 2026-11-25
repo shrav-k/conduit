@@ -84,7 +84,18 @@ impl Fixture {
     }
 
     async fn start(&self, token: Option<&str>) -> Front {
+        self.start_mode(token, false).await
+    }
+
+    async fn writer(&self) -> Front {
+        self.start_mode(Some(&self.markers[0]), true).await
+    }
+
+    async fn start_mode(&self, token: Option<&str>, write: bool) -> Front {
         let mut command = Command::new(env!("CARGO_BIN_EXE_conduit-github"));
+        if write {
+            command.arg("--write");
+        }
         command
             .env_clear()
             .env("PATH", &self.path)
@@ -604,4 +615,407 @@ async fn discovery_advertises_extension_and_refuses_unsupported_requests() {
     assert_eq!(result["_meta"][RESTRICTION], restriction);
     assert!(f.seen().is_empty());
     front.stop(&f).await;
+}
+
+const HEAD: &str = "1111111111111111111111111111111111111111";
+const MOVED: &str = "2222222222222222222222222222222222222222";
+const SQUASH: &str = "3333333333333333333333333333333333333333";
+const WRITE_FLAGS: [&str; 3] = [
+    "stdio",
+    "--tools",
+    "list_pull_requests,create_pull_request,pull_request_read,merge_pull_request",
+];
+
+fn write_call(merge: bool) -> Value {
+    let mut request = if merge {
+        call(
+            "pull-request.merge.v1",
+            json!({
+                "number":1,"expectedHead":HEAD,"title":"Squash title","message":"Squash message"
+            }),
+        )
+    } else {
+        call(
+            "pull-request.create.v1",
+            json!({
+                "head":"topic/change","title":"Change title","body":"Change body"
+            }),
+        )
+    };
+    request["_meta"][format!("{PREFIX}config")]["base"] = json!("main");
+    request
+}
+
+fn seed(f: &Fixture, state: &str, merged: bool, base: &str, sha: &str) {
+    fs::write(
+        f.home.join("pulls.json"),
+        json!([{
+            "number":1,"head":{"ref":"topic/change","sha":sha},
+            "base":{"ref":base},"state":state,"merged":merged
+        }])
+        .to_string(),
+    )
+    .unwrap();
+}
+
+fn calls(f: &Fixture) -> Vec<Value> {
+    f.seen()
+        .into_iter()
+        .filter(|row| row.get("tool").is_some())
+        .collect()
+}
+
+fn unknown(result: &Value, name: &str) {
+    assert_eq!(result["_meta"][OUTCOME], "unknown");
+    assert_eq!(result["isError"], true);
+    assert!(result["_meta"].get(REASON).is_none());
+    assert!(
+        result["content"][0]["text"]
+            .as_str()
+            .unwrap()
+            .contains(name)
+    );
+}
+
+#[tokio::test]
+async fn pull_requests_are_created_and_merged_in_the_configured_repository() {
+    let f = Fixture::new(true);
+    fs::write(f.home.join("pulls.json"), "[]").unwrap();
+    let front = f.writer().await;
+    for merge in [false, true] {
+        for field in ["repository", "owner", "base", "merge_method"] {
+            let mut request = write_call(merge);
+            request["arguments"][field] = json!("other");
+            failed(&front.call(&f, request).await, "arguments");
+        }
+        for base in [
+            Value::Null,
+            json!("bad..branch"),
+            json!("-bad"),
+            json!("a.lock/b"),
+        ] {
+            let mut request = write_call(merge);
+            let config = request["_meta"][format!("{PREFIX}config")]
+                .as_object_mut()
+                .unwrap();
+            if base.is_null() {
+                config.remove("base");
+            } else {
+                config.insert("base".into(), base);
+            }
+            failed(&front.call(&f, request).await, "configuration");
+        }
+    }
+    let mut request = write_call(false);
+    request["arguments"]["head"] = json!("main");
+    failed(&front.call(&f, request).await, "head");
+    assert!(f.seen().is_empty());
+    let created = front.call(&f, write_call(false)).await;
+    assert_eq!(created["_meta"][OUTCOME], "succeeded");
+    assert_eq!(
+        created["structuredContent"],
+        json!({"number":1,"url":"https://github.com/octo/allowed/pull/1"})
+    );
+    let merged = front.call(&f, write_call(true)).await;
+    assert_eq!(merged["_meta"][OUTCOME], "succeeded");
+    assert_eq!(merged["structuredContent"], json!({"sha":SQUASH}));
+    assert_eq!(f.seen()[0]["arguments"], json!(WRITE_FLAGS));
+    assert_eq!(
+        calls(&f),
+        vec![
+            json!({"tool":"list_pull_requests","arguments":{"owner":"octo","repo":"allowed","state":"open","head":"octo:topic/change","base":"main"}}),
+            json!({"tool":"create_pull_request","arguments":{"owner":"octo","repo":"allowed","title":"Change title","head":"topic/change","base":"main","body":"Change body"}}),
+            json!({"tool":"pull_request_read","arguments":{"method":"get","owner":"octo","repo":"allowed","pullNumber":1}}),
+            json!({"tool":"merge_pull_request","arguments":{"owner":"octo","repo":"allowed","pullNumber":1,"merge_method":"squash","commit_title":"Squash title","commit_message":"Squash message","expectedHeadSha":HEAD}}),
+        ]
+    );
+    front.stop(&f).await;
+}
+
+#[tokio::test]
+async fn a_merge_is_refused_unless_the_head_is_the_expected_commit() {
+    for (state, merged, base, sha, message) in [
+        ("open", false, "main", MOVED, "not the expected"),
+        ("closed", true, "main", HEAD, "already merged"),
+        ("closed", false, "main", HEAD, "is closed"),
+        ("open", false, "other", HEAD, "targets other, not main"),
+    ] {
+        let f = Fixture::new(true);
+        seed(&f, state, merged, base, sha);
+        let front = f.writer().await;
+        let result = front.call(&f, write_call(true)).await;
+        failed(&result, message);
+        failed(&result, "nothing merged");
+        failed(
+            &result,
+            "read the pull request through pull-request.read.v1 before trying again",
+        );
+        let text = result["content"][0]["text"].as_str().unwrap();
+        assert_eq!(text.matches("pull request #1").count(), 1);
+        assert!(text.ends_with("nothing merged"));
+        if sha != HEAD {
+            failed(&result, "gate the new head before merging again");
+        }
+        assert!(calls(&f).iter().all(|r| r["tool"] != "merge_pull_request"));
+        front.stop(&f).await;
+    }
+    let f = Fixture::new(true);
+    seed(&f, "open", false, "main", HEAD);
+    f.mode("move-head");
+    let front = f.writer().await;
+    let result = front.call(&f, write_call(true)).await;
+    failed(&result, "the head is now");
+    failed(&result, MOVED);
+    failed(&result, "gate the new head before merging again");
+    let pulls: Value =
+        serde_json::from_slice(&fs::read(f.home.join("pulls.json")).unwrap()).unwrap();
+    assert_eq!(pulls[0]["state"], "open");
+    assert_eq!(calls(&f).len(), 3);
+    front.stop(&f).await;
+
+    let f = Fixture::new(true);
+    let front = f.writer().await;
+    let result = front.call(&f, write_call(true)).await;
+    failed(&result, "could not read");
+    failed(
+        &result,
+        "read the pull request through pull-request.read.v1 before trying again",
+    );
+    let text = result["content"][0]["text"].as_str().unwrap();
+    assert_eq!(text.matches("pull request #1").count(), 1);
+    assert!(text.ends_with("nothing merged"));
+    assert_eq!(calls(&f).len(), 1);
+    front.stop(&f).await;
+}
+
+#[tokio::test]
+async fn writes_are_unknown_unless_their_effect_is_known() {
+    for merge in [false, true] {
+        for mode in [
+            "write-exit",
+            "error-after-effect",
+            "error-after-effect-unreadable",
+            "error-after-effect-malformed",
+            "wrong-url",
+            "write-not-json",
+            "write-too-big",
+            "write-hold",
+        ] {
+            if (merge && mode == "wrong-url")
+                || (!merge
+                    && matches!(
+                        mode,
+                        "error-after-effect-unreadable" | "error-after-effect-malformed"
+                    ))
+            {
+                continue;
+            }
+            let f = Fixture::new(true);
+            if merge {
+                seed(&f, "open", false, "main", HEAD);
+            } else {
+                fs::write(f.home.join("pulls.json"), "[]").unwrap();
+            }
+            f.mode(mode);
+            let front = f.writer().await;
+            if mode == "write-hold" {
+                let request = serde_json::from_value(write_call(merge)).unwrap();
+                let peer = front.service.peer().clone();
+                let pending = tokio::spawn(async move { peer.call_tool(request).await });
+                timeout(WAIT, async {
+                    while calls(&f).len() < 2 {
+                        tokio::time::sleep(Duration::from_millis(10)).await;
+                    }
+                })
+                .await
+                .expect("write was not sent");
+                let pid = f.seen()[0]["process"].as_u64().unwrap();
+                front.finish(&f, Some(rustix::process::Signal::TERM)).await;
+                if let Ok(result) = timeout(WAIT, pending).await.unwrap().unwrap() {
+                    unknown(
+                        &serde_json::to_value(result).unwrap(),
+                        if merge {
+                            "pull-request.read.v1"
+                        } else {
+                            "pull-request.list.v1"
+                        },
+                    );
+                }
+                gone(pid).await;
+            } else {
+                let result = front.call(&f, write_call(merge)).await;
+                unknown(
+                    &result,
+                    if merge {
+                        "pull-request.read.v1"
+                    } else {
+                        "pull-request.list.v1"
+                    },
+                );
+                if merge && mode.starts_with("error-after-effect") {
+                    let text = result["content"][0]["text"].as_str().unwrap();
+                    if mode == "error-after-effect" {
+                        assert!(
+                            text.contains("; pull request #1 is now merged; merge is not known")
+                        );
+                        assert!(!text.contains("readback could not establish"));
+                    } else {
+                        assert!(
+                            text.contains(
+                                "readback could not establish that the write had no effect"
+                            )
+                        );
+                        assert!(!text.contains("is now merged"));
+                    }
+                    assert_eq!(calls(&f).len(), 3);
+                }
+                front.stop(&f).await;
+            }
+        }
+        let f = Fixture::new(true);
+        if merge {
+            seed(&f, "open", false, "main", HEAD);
+        } else {
+            fs::write(f.home.join("pulls.json"), "[]").unwrap();
+        }
+        f.mode("error-no-effect");
+        let front = f.writer().await;
+        let result = front.call(&f, write_call(merge)).await;
+        failed(&result, "synthetic refusal");
+        failed(
+            &result,
+            if merge {
+                "nothing merged"
+            } else {
+                "nothing created"
+            },
+        );
+        assert!(
+            !result["content"][0]["text"]
+                .as_str()
+                .unwrap()
+                .contains("the head is now")
+        );
+        assert_eq!(calls(&f).len(), 3);
+        assert_eq!(
+            calls(&f)[2]["tool"],
+            if merge {
+                "pull_request_read"
+            } else {
+                "list_pull_requests"
+            }
+        );
+        front.stop(&f).await;
+    }
+    let f = Fixture::new(true);
+    seed(&f, "open", false, "main", HEAD);
+    let front = f.writer().await;
+    failed(&front.call(&f, write_call(false)).await, "pull request #1");
+    assert_eq!(calls(&f).len(), 1);
+    front.stop(&f).await;
+}
+
+#[tokio::test]
+async fn the_writer_runs_its_own_server_and_keeps_its_token() {
+    for merge in [false, true] {
+        for token in [None, Some("")] {
+            let f = Fixture::new(true);
+            let front = f.start_mode(token, true).await;
+            failed(&front.call(&f, write_call(merge)).await, "absent or empty");
+            front.stop(&f).await;
+            assert!(f.seen().is_empty());
+        }
+        let f = Fixture::new(true);
+        if merge {
+            seed(&f, "open", false, "main", HEAD);
+        } else {
+            fs::write(f.home.join("pulls.json"), "[]").unwrap();
+        }
+        f.mode("error-no-effect");
+        let front = f.writer().await;
+        let mut request = write_call(merge);
+        request["arguments"]["title"] = json!(f.markers[0]);
+        failed(&front.call(&f, request).await, "credential");
+        assert!(f.seen().is_empty());
+        failed(&front.call(&f, write_call(merge)).await, "[token]");
+        let seen = f.seen();
+        assert_eq!(
+            seen[0]["environment"],
+            json!([TOKEN_VARIABLE, "HOME", "PATH"])
+        );
+        assert!(
+            seen[0]["digest"] == format!("{:x}", Sha256::digest(f.markers[0].as_bytes())),
+            "wrong synthetic credential"
+        );
+        assert_eq!(seen[0]["arguments"], json!(WRITE_FLAGS));
+        front.stop(&f).await;
+    }
+    for write in [false, true] {
+        let f = Fixture::new(true);
+        let front = f.start_mode(Some(&f.markers[0]), write).await;
+        let tools = timeout(WAIT, front.service.list_all_tools())
+            .await
+            .unwrap()
+            .unwrap();
+        let names: Vec<_> = tools.iter().map(|t| t.name.as_ref()).collect();
+        if write {
+            assert_eq!(
+                names,
+                vec!["pull-request.create.v1", "pull-request.merge.v1"]
+            );
+            failed(
+                &front
+                    .call(&f, call("issue.read.v1", json!({"number":1})))
+                    .await,
+                "unknown pull-request writer operation",
+            );
+            let mut filtered = write_call(true);
+            let restriction =
+                json!({"requirement":"example.org/unknown#limited.v1","arguments":{}});
+            filtered["_meta"][format!("{PREFIX}filters")] = json!([restriction]);
+            let result = front.call(&f, filtered).await;
+            assert_eq!(result["_meta"][REASON], "unavailable");
+            assert_eq!(result["_meta"][RESTRICTION], restriction);
+            assert!(result["_meta"].get(OUTCOME).is_none());
+            assert!(
+                result["content"][0]["text"]
+                    .as_str()
+                    .unwrap()
+                    .contains("pull-request writer cannot apply the requested filter")
+            );
+        } else {
+            assert_eq!(
+                names,
+                vec![
+                    "issue.read.v1",
+                    "issue.list.v1",
+                    "pull-request.read.v1",
+                    "pull-request.list.v1"
+                ]
+            );
+            failed(&front.call(&f, write_call(true)).await, "unknown");
+        }
+        assert!(f.seen().is_empty());
+        front.stop(&f).await;
+    }
+}
+
+#[tokio::test]
+async fn a_missing_write_tool_or_property_fails_every_write() {
+    for mode in ["missing-expected-head", "missing-write-tool"] {
+        let f = Fixture::new(true);
+        f.mode(mode);
+        let front = f.writer().await;
+        for merge in [false, true] {
+            let result = front.call(&f, write_call(merge)).await;
+            for message in ["merge_pull_request", "stand-in-232"] {
+                failed(&result, message);
+            }
+            if mode == "missing-expected-head" {
+                failed(&result, "expectedHeadSha");
+            }
+        }
+        assert!(calls(&f).is_empty());
+        front.stop(&f).await;
+    }
 }

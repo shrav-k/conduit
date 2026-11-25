@@ -1,4 +1,4 @@
-//! Repository-scoped read front for GitHub's stdio MCP server.
+//! Repository-scoped read and pull-request write fronts for GitHub's stdio MCP server.
 use rmcp::{
     ClientHandler, ErrorData, RoleClient, RoleServer, ServerHandler, ServiceExt,
     model::*,
@@ -26,6 +26,7 @@ use tokio::{
 };
 
 mod upstream_lifetime;
+mod writes;
 #[doc(hidden)]
 pub use upstream_lifetime::{SUPERVISE_UPSTREAM, supervise_upstream};
 
@@ -295,8 +296,8 @@ struct Upstream {
 }
 
 impl Upstream {
-    fn spawn() -> Result<(Self, UpstreamTransport), &'static str> {
-        let (mut supervisor, control) = upstream_lifetime::spawn()?;
+    fn spawn(write: bool) -> Result<(Self, UpstreamTransport), &'static str> {
+        let (mut supervisor, control) = upstream_lifetime::spawn(write)?;
         let oversized = Arc::new(AtomicBool::new(false));
         let transport = AsyncRwTransport::new_client(
             BoundedOutput {
@@ -345,6 +346,7 @@ impl Upstream {
 async fn tools_match(
     service: &RunningService<RoleClient, UpstreamClient>,
     token: &str,
+    write: bool,
 ) -> Result<(), String> {
     let info = service.peer_info();
     let version = info
@@ -371,20 +373,30 @@ async fn tools_match(
         }
         cursor = Some(next);
     }
-    for op in OPERATIONS {
+    let table: Vec<(&str, Vec<&str>)> = if write {
+        writes::TOOLS
+            .iter()
+            .map(|(name, fields)| (*name, fields.to_vec()))
+            .collect()
+    } else {
+        OPERATIONS
+            .iter()
+            .map(|op| (op.tool, op.forwarded_fields().collect()))
+            .collect()
+    };
+    for (name, fields) in table {
         let tool = tools
             .iter()
-            .find(|tool| tool.name == op.tool)
-            .ok_or_else(|| format!("github-mcp-server {version} is missing tool {}", op.tool))?;
+            .find(|tool| tool.name == name)
+            .ok_or_else(|| format!("github-mcp-server {version} is missing tool {name}"))?;
         let properties = tool
             .input_schema
             .get("properties")
             .and_then(Value::as_object);
-        for property in op.forwarded_fields() {
+        for property in fields {
             if properties.is_none_or(|properties| !properties.contains_key(property)) {
                 return Err(format!(
-                    "github-mcp-server {version} tool {} is missing input property {property}",
-                    op.tool
+                    "github-mcp-server {version} tool {name} is missing input property {property}"
                 ));
             }
         }
@@ -394,6 +406,7 @@ async fn tools_match(
 
 #[derive(Clone)]
 pub struct Front {
+    write: bool,
     token: Option<Arc<str>>,
     upstream: Arc<Mutex<Option<Upstream>>>,
     stopping: watch::Sender<bool>,
@@ -402,6 +415,7 @@ pub struct Front {
 impl Default for Front {
     fn default() -> Self {
         Self {
+            write: false,
             token: std::env::var(TOKEN_VARIABLE)
                 .ok()
                 .filter(|value| !value.is_empty())
@@ -413,6 +427,13 @@ impl Default for Front {
 }
 
 impl Front {
+    pub fn writer() -> Self {
+        Self {
+            write: true,
+            ..Self::default()
+        }
+    }
+
     pub async fn shutdown(&self) {
         self.stopping.send_replace(true);
         if let Some(upstream) = self.upstream.lock().await.take() {
@@ -420,18 +441,19 @@ impl Front {
         }
     }
 
-    async fn dispatch(
+    async fn dispatch_raw(
         &self,
         token: &str,
-        operation: Operation,
+        tool: &str,
         arguments: Map<String, Value>,
-    ) -> Result<Value, String> {
+        sent: Option<&AtomicBool>,
+    ) -> Result<CallToolResult, String> {
         let mut slot = self.upstream.lock().await;
         if slot.as_mut().is_some_and(Upstream::closed) {
             slot.take().unwrap().stop().await;
         }
         if slot.is_none() {
-            let (upstream, transport) = Upstream::spawn()?;
+            let (upstream, transport) = Upstream::spawn(self.write)?;
             *slot = Some(upstream);
             let started = timeout(
                 TIMEOUT,
@@ -451,7 +473,7 @@ impl Front {
             upstream.service = Some(service);
             let compatible = timeout(
                 TIMEOUT,
-                tools_match(upstream.service.as_ref().unwrap(), token),
+                tools_match(upstream.service.as_ref().unwrap(), token, self.write),
             )
             .await;
             if upstream.closed() {
@@ -463,14 +485,17 @@ impl Front {
         }
         let upstream = slot.as_mut().unwrap();
         upstream.compatibility.clone()?;
-        let request = CallToolRequestParams::new(operation.tool).with_arguments(arguments);
+        let request = CallToolRequestParams::new(tool.to_owned()).with_arguments(arguments);
+        if let Some(sent) = sent {
+            sent.store(true, Ordering::Relaxed);
+        }
         match timeout(
             TIMEOUT,
             upstream.service.as_ref().unwrap().call_tool(request),
         )
         .await
         {
-            Ok(Ok(result)) => data(result, token),
+            Ok(Ok(result)) => Ok(result),
             _ => {
                 let message = if upstream.oversized.load(Ordering::Relaxed) {
                     "server answer exceeds 8 MiB"
@@ -517,7 +542,7 @@ impl Front {
         tokio::select! {
             biased;
             _ = stopping.changed() => Err("repository front is stopping".into()),
-            result = self.dispatch(token, operation, arguments) => result,
+            result = self.dispatch_raw(token, operation.tool, arguments, None) => result.and_then(|result| data(result, token)),
         }
     }
 }
@@ -540,6 +565,9 @@ impl ServerHandler for Front {
         _: Option<PaginatedRequestParams>,
         _: RequestContext<RoleServer>,
     ) -> Result<ListToolsResult, ErrorData> {
+        if self.write {
+            return Ok(ListToolsResult::with_all_items(writes::tools()));
+        }
         Ok(ListToolsResult::with_all_items(OPERATIONS.into_iter()
             .map(|op| serde_json::from_value(json!({"name":op.name,"inputSchema":op.input_schema(),"outputSchema":output_schema()})).unwrap())
             .collect()))
@@ -557,6 +585,15 @@ impl ServerHandler for Front {
             return Err(serde_json::from_value(json!({"code":-32021,"message":"Missing required client capability; performed nothing","data":{"requiredCapabilities":{"extensions":{EXTENSION:{"revision":"v0"}}}}})).unwrap());
         }
         let Some(filters) = meta[format!("{PREFIX}filters")].as_array() else {
+            if self.write {
+                return Ok(serde_json::from_value::<CallToolResult>(self.write_failure(
+                    &request,
+                    false,
+                    "request metadata filters must be a list",
+                ))
+                .unwrap()
+                .into());
+            }
             return Ok(reply(Err("request metadata filters must be a list".into())));
         };
         if let Some(restriction) = filters.first() {
@@ -565,11 +602,28 @@ impl ServerHandler for Front {
                 .as_deref()
                 .is_some_and(|token| filters.iter().any(|filter| contains_token(filter, token)))
             {
+                if self.write {
+                    return Ok(serde_json::from_value::<CallToolResult>(self.write_failure(
+                        &request,
+                        false,
+                        "requested filter contains the active credential",
+                    ))
+                    .unwrap()
+                    .into());
+                }
                 return Ok(reply(Err(
                     "requested filter contains the active credential".into(),
                 )));
             }
-            return Ok(serde_json::from_value::<CallToolResult>(json!({"content":[{"type":"text","text":"repository front cannot apply the requested filter; performed nothing"}],"isError":true,"_meta":{REASON:"unavailable",RESTRICTION:restriction}})).unwrap().into());
+            let message = if self.write {
+                "pull-request writer cannot apply the requested filter; performed nothing"
+            } else {
+                "repository front cannot apply the requested filter; performed nothing"
+            };
+            return Ok(serde_json::from_value::<CallToolResult>(json!({"content":[{"type":"text","text":message}],"isError":true,"_meta":{REASON:"unavailable",RESTRICTION:restriction}})).unwrap().into());
+        }
+        if self.write {
+            return Ok(self.write_call(request, &meta).await);
         }
         Ok(reply(self.call(request, &meta).await))
     }

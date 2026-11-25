@@ -50,7 +50,7 @@ promise is kept.
 | DL16: executor coverage | On builtin-run-stopped the core records the run's stopped condition. The shell submits that observation only at runner shutdown, and only once the run's Unix process group has been seen absent: the guard receives a stop request on its lifetime pipe and sends TERM, with one shared Config.stop_grace (10 seconds by default) for all runs. Once asked to stop, the guard KILLs its group as soon as the program has exited; loss of the lifetime pipe KILLs it immediately at any time. At the grace deadline, the runner KILLs groups still present and waits up to three more seconds, polling every 10 ms. Only a group probe failing with ESRCH proves absence, after the guard has been reaped; success or EPERM does not. Each group seen absent is recorded immediately. For a group not seen absent, nothing is submitted and a fixed diagnostic names its instance ID instead. Shutdown runs once; Drop invokes it and prints the diagnostics that call added. Groups still starting are KILLed immediately without an observation; if the shell is already gone, shutdown waits for nothing and submits nothing. A process that left the group is neither stopped nor seen. This evidence does not cover spontaneous exits, runs ended across restart or runtime-provider stop reports. A separate observation of a secret provider's process exiting during an engine session distinguishes that exit from a provider run eligible for PRV-026 after restart. A missing local run or unserved remote dispatch reports missing, which cannot prove that nothing was sent. builtin-runner, dispatch, refresh-tools-and-call, cancel and cancel-setup-parts are served. The engine reads secrets from the file store for its own runner through the consumer's open Conduit. From order 221, the shell serves `run.v1`, `stop.v1` and `inspect-run.v1` through a runtime provider's run on the engine's own runner and reaches the returned URL through the bridge, as the stand-in provider tests show. From order 226, the engine runs [local-process](../packages/provider-local-process/README.md) on the Mac ([integration tests](crates/shell/tests/local_process.rs)), reports the part unavailable for an unproved URL or missing discovery extension, runs an eligible provider again before a call after restart, and keeps package-relative `command` items on the engine's own runner (PRV-007), except a package's item stating `platforms` whose provider's Type requires `run.v2`: that provider is sent `run.v2` with the program for the node's pair (`platforms/<os>/<arch>/...`) and the kept archive's digest, size and `file:` URL. PRV-007 refuses, naming the item and the provider, a relative program on a provider without `run.v2`, any other relative program on an external runtime, and a kept copy that is unavailable. Remote connections, secrets for runs on providers, and inspections made on the engine's own initiative (DL5) remain unserved. Cancellation uses the attempt's actual JSON-RPC ID; setup cancellation kills every group it started and starts none. The transport preserves the core's exact tools/call params, including its omission of metadata for plain servers, rather than adding rmcp client/progress metadata. Refresh reads tools/list once then sends the eligible core-supplied read once within its attempt; no effectful retry is added. | wire, repair, write-error, late-result and setup-cancellation tests; shutdown_reports_a_run_that_traps_term_stopped_after_kill; shutdown_reports_a_run_that_exits_on_term_before_the_grace; shutdown_submits_nothing_for_a_group_not_seen_absent |
 | DL16: runs of runtime providers | The private `conduit __http-bridge <url>` process carries stdio message bytes over Streamable HTTP, preserving JSON and SSE data apart from changing raw CR/LF to spaces on stdout. It carries the runner’s initialization revision, currently 2026-07-28 (rmcp 3.9.0’s default), the assigned session ID and the negotiated protocol header; each fresh bridge initializes without an old session ID. It opens a GET stream (405 means none), reconnects an ended stream at most once a second, sends concurrent later POSTs, and sends DELETE on stdin EOF for any assigned session, including while initialization is pending. Empty SSE priming events are skipped, and empty fields inside nonempty data are preserved. Every HTTP method carries the engine token. JSON-RPC messages with a method also carry `Mcp-Method`, and `tools/call` carries `Mcp-Name` with the MCP encoding when required. HTTP requests are never retried. Redirects are never followed; transport errors or responses without a passable JSON-RPC body end it, apart from empty 202 notification responses. The bridge reads its private mode-0600 files once from HTTP_BRIDGE_DIR and keeps them in memory after initialization removes the directory. Its process group and lifetime socket end it with the engine; cancellation ends a bridge that setup started and sends the provider no stop. No Last-Event-ID resumption or 2026-07-28 Mcp-Param headers are built. No proxy, cookie store or content encoding is used. A provider whose own run ended at engine shutdown runs again before the first call that needs it (PRV-026). A run that ended while the engine was serving requires an explicit setup. Initialization and calls use shell deadlines, independent of a gate’s TCP keepalive bound. From order 239, a provider's result with a reason in place of an outcome reads as unknown (IFC-026, PRV-005, OPS-007), and the kit's gate initializes a run's server once, answering each later bridge's `initialize` itself. | [bridge](crates/shell/src/http_bridge.rs), [provider calls](crates/shell/src/runner.rs), [bridge tests](crates/shell/tests/http_bridge.rs), [provider tests](crates/shell/tests/provider_calls.rs) |
 | DL15 | Generated names retain at most the first 57 characters of the template name, then append a hyphen and a five-character suffix of lower-case letters/digits, supplied by the boundary and retried on collision. Authored and generated names share the ruled grammar; unused suffixes are not consumed identities. | `registration-generated-collision`, `registration-s1`, [registration.rs](crates/core/src/registration.rs) |
-| DL21 | 30 seconds by default, counted from the time of the step that starts the ask; `Config`'s `admission_ask_timeout` and `--admission-ask-timeout-seconds N`, for `init`, `register` and `serve` as `--call-timeout-seconds` is, set it, and it is revisited once the usage guard's probe has timed a hook's read. While `serve` holds the store, a timer started for each ask the core starts, by a call or by a completion, submits `admission-ask-deadline`, naming the ask and its attempt, at the limit; where the ask is still in progress at that attempt, the core ends it unknown, with `deadline` as the cause the login's status gives, sends a cancellation of its call and keeps nothing of a later answer (OPS-013). DL10's call deadline bounds the ask as well: where it comes first, the runner reports the call missing and the ask ends unknown. The shell's timers end with the engine, and a restart ends an ask in progress unknown (IMP-007). The 60 seconds after an ask that gave no report are PND-016's, fixed. | `admission_ask_deadline_ends_it_unknown` in [admission_tests.rs](crates/core/src/admission_tests.rs), `admission_ask_ends_at_its_deadline` in [server_tests.rs](crates/shell/src/server_tests.rs) |
+| DL21 | 30 seconds by default, counted from the time of the step that starts the ask; `Config`'s `admission_ask_timeout` and `--admission-ask-timeout-seconds N`, for `init`, `register` and `serve` as `--call-timeout-seconds` is, set it, and the usage guard's probe of 2026-11-24, whose reads of a login took under two seconds, kept it. While `serve` holds the store, a timer started for each ask the core starts, by a call or by a completion, submits `admission-ask-deadline`, naming the ask and its attempt, at the limit; where the ask is still in progress at that attempt, the core ends it unknown, with `deadline` as the cause the login's status gives, sends a cancellation of its call and keeps nothing of a later answer (OPS-013). DL10's call deadline bounds the ask as well: where it comes first, the runner reports the call missing and the ask ends unknown. The shell's timers end with the engine, and a restart ends an ask in progress unknown (IMP-007). The 60 seconds after an ask that gave no report are PND-016's, fixed. | `admission_ask_deadline_ends_it_unknown` in [admission_tests.rs](crates/core/src/admission_tests.rs), `admission_ask_ends_at_its_deadline` in [server_tests.rs](crates/shell/src/server_tests.rs) |
 
 D19 is a measurement convention under DL2/DL8, not a DL promise: compact UTF-8 JSON bytes
 for records, gap metadata and invocation arrays separately, with per-step signed growth and
@@ -902,8 +902,8 @@ compared.
 
 ## A login's levers and admission reports (order 317)
 
-From order 317, install, submission and `replace.v1` check a Type's `admission` beyond
-the shape `type-spec.v1` gives it, which the loader rejects under SUB-005: a login Type's
+From order 317, install, submission and `replace.v1` check a Type's `admission` beyond the
+shape `type-spec.v1` gives it, which the loader rejects under SUB-005: a login Type's
 levers place, required on its path, with no `default` at or under it, requiring the three
 fixed levers, each confined by `enum`; its control, listed, changing exactly that place,
 with no other listed control overlapping it; and an Agent Type's `loginTypes`, each a Type
@@ -911,11 +911,11 @@ stating `signIn` and `admission`. Registration and `register-replacement.v1` che
 Agent's Type lists its login's Type and that no levers value holds `whenUnknown` `admit`
 beside a refusing `paidUsage`, which they report under CTR-015 in INS-014's place, and a
 control that would store one is not dispatched, under CTR-015 as this build makes no
-REV-015 check (CTR-015, `registration-admission-checks`). The engine holds no call on a
-report: the hold and the warnings are later orders' (DEC-095, DEC-099), and order 319
-writes the ask (below). As control dispatch stores no settings (above), a control sent
-a value at the levers place ends the login's report when it succeeds, and the stored
-levers stay as registered.
+REV-015 check (CTR-015, `registration-admission-checks`). The engine warns of no call yet:
+the warnings are a later order's (DEC-099), and orders 319 and 320 write the ask and the
+hold (below). As control dispatch stores no settings (above), a control sent a value at
+the levers place ends the login's report when it succeeds, and the stored levers stay as
+registered.
 
 ## A login's admission ask (order 319)
 
@@ -932,11 +932,10 @@ that began meanwhile; keeps waiting for a fresh ask, which the earliest starts, 
 report was kept already ended because a control sent a value at the levers place succeeded
 while the ask ran (IFC-054, DEC-169); and otherwise has its dispatch conditions checked
 once (row DL4) and is dispatched, the first so dispatched spending a single-use report.
-This build holds no call on a report or for want of one: a report whose `admit` is false,
-a single-use report another call spent, an ask that gave no report and the 60 seconds
-after one, in which no ask starts on the login and which the status gives in `noReport`,
-each leave the call dispatched as with no `admission` stated, until the hold's order
-(DEC-095, DEC-099). A call cancelled while it waits is not dispatched and reports
+From order 320, a report whose `admit` is false, a single-use report another call
+spent, an ask that gave no report and the 60 seconds after one, in which no ask
+starts on the login and which the status gives in `noReport`, each hold the call
+(below). A call cancelled while it waits is not dispatched and reports
 unavailable under PND-016, a restart ends one unavailable under REC-007 and its ask
 unknown under IMP-007, and a request matching a waiting call reports conflict under
 PND-016. A waiting call is no call in progress where PND-005 counts one. As control
@@ -947,3 +946,28 @@ while an ask runs adds at most another DL21, so repeated changes can extend the 
 wait without a fixed bound. Each call that begins to wait has an `admission-wait`
 decision citing PND-016 and naming its invocation, ask and login, including when it
 joins an existing ask or moves to a fresh ask after a lever change.
+
+## A login's admission hold (order 320)
+
+From order 320, a call that starts model work on an Agent of a login whose Type states
+`admission` is held, not dispatched, reporting unavailable under PND-016 and never queued,
+where the report that decides it has `admit` false, where its ask's single-use report
+admitted an earlier call waiting on that ask, and, without waiting, for 60 seconds after
+an ask that gave no report because it failed, ended unknown, passed DL21, could not be
+dispatched or was ended by a restart (PND-016, DEC-095). Its one error diagnostic names
+the login; says why, in the report's words with the lever and its value, the window and
+the paid usage read, or which ask gave no report and why, or which call a single-use
+report admitted; and says how the hold lifts, with `retryAt`; it carries the same in
+`properties.admission`, in `admission-hold.v1` form, with no amount (DEC-099). An Agent's
+call is named only where the caller may inspect that Agent, and the ask only where it may
+inspect the login. The call's `request-ended` record names PND-016, and its transition
+holds a decision `hold-login-admission`. A report that a lever change ended while its ask
+ran holds no call: the calls waiting on it wait for a fresh ask (DEC-169). A waiting
+call's dispatch conditions are checked before the hold, and one that fails ends as row DL4
+says (DEC-170). Where the ask ends in a transition whose records fail, its waiting calls
+end unavailable under REC-007 before the PND-005 and PND-011 holds, lever-change re-wait
+and dispatch conditions: the failed transition cannot retain the records those decisions
+require, so REC-007 takes precedence. The engine never stops or cancels a dispatched call
+under PND-016, whatever a later report says, and sends it as with no `admission` stated
+(DEC-120). A call admitted on a report whose `reason` is `warning` or `cannot-tell` is
+dispatched with no warning yet: the warnings are a later order's (DEC-099).

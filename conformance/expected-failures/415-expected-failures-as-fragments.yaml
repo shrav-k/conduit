@@ -29,26 +29,6 @@
       "reason": "Work order 302 (DEC-114): list.v1 omits instance owner, placement, revision and Running; the following engine order implementing DEC-114 fills them from inspection state and removes this entry."
     },
     {
-      "id": "requests-admission-hold",
-      "reason": "PND-016, order 316: the first build asks for a login's report and waits, but holds no call on a report or for want of one; the guard's engine order for the hold makes it pass"
-    },
-    {
-      "id": "requests-admission-no-report",
-      "reason": "PND-016, order 316: the first build asks for a login's report and waits, but holds no call on a report or for want of one; the guard's engine order for the hold makes it pass"
-    },
-    {
-      "id": "requests-admission-single-use",
-      "reason": "PND-016, order 316: the first build holds no call on a login's report and stores no control's levers (REV-007); the guard's engine order for the hold and REV-007's storing at the levers place make it pass"
-    },
-    {
-      "id": "requests-admission-wait-ends",
-      "reason": "PND-016, order 316: the first build asks for a login's report and waits, but holds no call on a report or for want of one; the guard's engine order for the hold makes it pass"
-    },
-    {
-      "id": "requests-admission-warning",
-      "reason": "IFC-054, order 318: the first build dispatches a call on a guarded login with no ask and carries no warning; the guard's engine orders for the ask, the hold and the warnings make it pass"
-    },
-    {
       "id": "requests-attributed-a-hook",
       "reason": "PKG-020: the first build does not read `attributed`; DEC-067's engine order makes it pass and removes this entry"
     },

@@ -4246,15 +4246,20 @@
               },
               "causedBy": "$callRefresh"
             }
+          },
+          {
+            "type": "request-ended",
+            "data": {
+              "invocation": "$admission3",
+              "target": "$login",
+              "operation": "@core#admission-hook.v1",
+              "outcome": "succeeded",
+              "causedBy": "$callRefresh"
+            }
           }
         ],
         "absent": [
-          {
-            "text": "request-ended",
-            "under": [
-              "/records"
-            ]
-          },
+          "/records/2",
           {
             "text": "access-decision",
             "under": [

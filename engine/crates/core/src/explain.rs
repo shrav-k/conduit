@@ -1009,6 +1009,110 @@ pub fn first_text(reply: &mut Value, c: &Context) {
     }
 }
 
+/// PND-016's caller diagnostic uses only the already disclosure-checked form.
+pub(crate) fn admission_hold(tool: &str, form: &Value) -> String {
+    fn read(value: &Value) -> String {
+        if value.is_null() {
+            "not reported".into()
+        } else if let Some(text) = value.as_str() {
+            text.into()
+        } else {
+            value.to_string()
+        }
+    }
+    let login = crate::login_resource::label(&form["login"]);
+    let report = &form["report"];
+    let ask = form["reportInvocation"]
+        .as_str()
+        .map(|id| format!("ask {id}"))
+        .unwrap_or_else(|| "the login's ask".into());
+    let refusal = if report.is_null() {
+        "it has no report that admits this call"
+    } else {
+        "its admission report says model work may not start on it now"
+    };
+    let retry = if form["retryAt"].is_null() {
+        "after the lift".into()
+    } else {
+        format!("at {}", read(&form["retryAt"]))
+    };
+    let mut text = format!(
+        "{tool} reports unavailable under PND-016: {login}: {refusal}. The call was not dispatched and started no model work; nothing of it is queued. A call sent again {retry} is decided afresh. Once dispatched, a call runs to its end; the guard never stops it. "
+    );
+    if !report.is_null() {
+        let reason = match report["reason"].as_str().unwrap_or_default() {
+            "included-spent" => "included usage is not allowed and paidUsage refuses",
+            "paid-in-use" => "paid usage is in use and paidUsage is refuse",
+            "paid-possible" => "paid usage is possible and paidUsage is refuse-if-possible",
+            "paid-from-first-token" => {
+                "billing declares paid-from-first-token and paidUsage refuses"
+            }
+            "threshold" => "refused at the package lever's window-percentage threshold",
+            "cannot-tell" => "the observation cannot decide, so whenUnknown decides",
+            _ => "the report refuses model work",
+        };
+        text.push_str(&format!("The report from {ask} says {}: {reason}; lever `{}` has value `{}`. Window {}, used percentage {}, observedAt {}, window resets at {}. Paid usage: possible {}, inUse {}, paid usage resets at {}. ",
+            read(&report["reason"]), read(&report["lever"]["pointer"]),read(&report["lever"]["value"]),read(&report["window"]["id"]),read(&report["window"]["usedPercent"]),read(&report["observedAt"]),read(&report["window"]["resetsAt"]),read(&report["paidUsage"]["possible"]),read(&report["paidUsage"]["inUse"]),read(&report["paidUsage"]["resetsAt"])));
+        if report["reason"] == "cannot-tell" {
+            let why = match report["cannotTell"].as_str().unwrap_or_default() {
+                "never-observed" => "`limits` is `unknown`",
+                "not-reported" => "the client gave no signal needed to decide",
+                "stale" => "the needed observation is no longer current",
+                "read-failed" => "the client's read failed",
+                "read-timed-out" => "the client's read timed out",
+                _ => "not reported",
+            };
+            text.push_str(&format!("It cannot tell: {why}. "));
+        }
+    } else if let Some(cause) = form["noReport"].as_str() {
+        let why = match cause {
+            "failed" => "failed",
+            "unknown" => "ended unknown (including an ask ended at a restart)",
+            "deadline" => "passed DL21",
+            "not-dispatched" => "could not be dispatched",
+            _ => "gave no report",
+        };
+        text.push_str(&format!("No report from {ask}: it {why}. "));
+    } else {
+        let admitted = form["singleUse"]
+            .as_str()
+            .map(|id| format!("call {id}"))
+            .unwrap_or_else(|| "a call of an Agent of the login".into());
+        text.push_str(&format!("The single-use report from {ask} admitted {admitted} and was spent at once. The caller need not wait for that call to end before sending again. "));
+    }
+    let pointer = read(&form["levers"]["pointer"]);
+    let control = read(&form["levers"]["control"]);
+    if form["lifts"] == "lever-change" {
+        text.push_str(&format!("Waiting alone does not lift this; a change of `{pointer}` by the control `{control}` on `{login}`, sent by an Interface, does."));
+    } else {
+        let lift = match form["lifts"].as_str().unwrap_or_default() {
+            "at-time" if form["noReport"].is_string() => {
+                "when 60 seconds have passed since the ask ended, even if a newer report is kept meanwhile"
+            }
+            "at-time" => "when the report's validity ends",
+            "newer-report" => "once a newer observation says otherwise",
+            "after-call" => {
+                "another call took the report; retryAt is a retry time, not an earliest permitted retry or a guarantee that the admitted call has ended"
+            }
+            _ => "as the report says",
+        };
+        text.push_str(&format!(
+            "The hold lifts {}: {lift}; retryAt {}.",
+            read(&form["lifts"]),
+            read(&form["retryAt"])
+        ));
+        if form["lifts"] == "newer-report" {
+            text.push_str(&format!(" For this report, retryAt {} is when its validity ends. Unless the report ends sooner, calls on the login are held at once until then and no ask is made; the first call at or after retryAt asks the login afresh.",read(&form["retryAt"])));
+        }
+        if !report.is_null() {
+            text.push_str(&format!(" A change of the levers at `{pointer}` by the control `{control}` on `{login}`, sent by an Interface, also ends the report."));
+        } else if form["noReport"].is_string() {
+            text.push_str(" A lever change does not shorten the 60 seconds.");
+        }
+    }
+    text
+}
+
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;

@@ -1286,8 +1286,13 @@ fn admission_ask_started_once_for_waiting_calls() {
     // The period survives serialization, ends at exactly 60 seconds, and starts no ask.
     s.state = serde_json::from_value(serde_json::to_value(&s.state).unwrap()).unwrap();
     let t = s.admission_call("2026-11-21T13:01:59Z", "call-b.turn.v1");
-    assert!(t.reply["hook"].is_null());
-    assert_eq!(dispatched_ids(&t), vec![t.reply["invocation"].clone()]);
+    assert!(t.external_intents.is_empty() && t.state.admission_asks.is_empty());
+    assert_admission_hold(
+        &s,
+        &t,
+        &t.reply,
+        no_report_fields(json!(k), "unknown", "2026-11-21T13:02:00Z"),
+    );
     assert!(s.login_status("2026-11-21T13:02:00Z")["noReport"].is_null());
     waiting(&s.admission_call("2026-11-21T13:02:00Z", "call-a.turn.v1"));
 
@@ -1394,7 +1399,13 @@ fn admission_single_use_report_spent_once() {
     let (b, _) = waiting(&s.admission_call(time, "call-b.turn.v1"));
     s.discover_ask(&k, time);
     let t = s.finish(&k, time, result("succeeded", json!({"admission":r3})));
-    assert_eq!(dispatched_ids(&t), vec![json!(a), json!(b)]);
+    assert_eq!(dispatched_ids(&t), vec![json!(a)]);
+    assert_admission_hold(
+        &s,
+        &t,
+        hold_reply(&t, &b),
+        json!({"report":null,"reportInvocation":k,"noReport":null,"singleUse":a,"lifts":"after-call","retryAt":"2026-11-21T13:02:00Z"}),
+    );
     assert_eq!(s.login_status(time)["ended"], "single-use");
 }
 
@@ -1510,7 +1521,13 @@ fn admission_ask_without_a_report_starts_none_for_60_seconds() {
     let (a, k) = waiting(&s.admission_call(time, "call-a.turn.v1"));
     s.discover_ask(&k, time);
     let t = s.finish(&k, time, result("failed", json!({})));
-    assert_eq!(dispatched_ids(&t), vec![json!(a)]);
+    assert!(t.external_intents.is_empty());
+    assert_admission_hold(
+        &s,
+        &t,
+        hold_reply(&t, &a),
+        no_report_fields(json!(k), "failed", "2026-11-21T13:02:00Z"),
+    );
     assert!(
         t.records
             .iter()
@@ -1520,7 +1537,13 @@ fn admission_ask_without_a_report_starts_none_for_60_seconds() {
     let period = json!({"invocation":k,"cause":"failed","until":"2026-11-21T13:02:00Z"});
     assert_eq!(s.login_status(time)["noReport"], period);
     let t = s.admission_call("2026-11-21T13:01:30Z", "call-b.turn.v1");
-    assert!(t.reply["hook"].is_null());
+    assert!(t.external_intents.is_empty() && t.state.admission_asks.is_empty());
+    assert_admission_hold(
+        &s,
+        &t,
+        &t.reply,
+        no_report_fields(json!(k), "failed", "2026-11-21T13:02:00Z"),
+    );
     assert_eq!(s.login_status("2026-11-21T13:01:30Z")["noReport"], period);
     assert!(s.login_status("2026-11-21T13:02:00Z")["noReport"].is_null());
     let (_, k2) = waiting(&s.admission_call("2026-11-21T13:02:00Z", "call-a.turn.v1"));
@@ -1540,7 +1563,13 @@ fn admission_ask_without_a_report_starts_none_for_60_seconds() {
     let mut s = GuardScenario::new(guarded());
     let (a, k) = waiting(&s.admission_call(time, "call-a.turn.v1"));
     let t = s.finish(&k, time, json!({"capabilities":{}}));
-    assert_eq!(dispatched_ids(&t), vec![json!(a)]);
+    assert!(t.external_intents.is_empty());
+    assert_admission_hold(
+        &s,
+        &t,
+        hold_reply(&t, &a),
+        no_report_fields(Value::Null, "not-dispatched", "2026-11-21T13:02:00Z"),
+    );
     assert!(s.state.admission_asks.is_empty());
     assert_eq!(
         s.login_status(time)["noReport"],
@@ -1746,7 +1775,13 @@ fn admission_ask_deadline_ends_it_unknown() {
         }
         let input = json!({"kind":"admission-ask-deadline","invocation":k,"attempt":1});
         let t = s.admission_input("2026-11-21T13:01:30Z", input.clone());
-        assert_eq!(dispatched_ids(&t), vec![json!(k), json!(a)]);
+        assert_eq!(dispatched_ids(&t), vec![json!(k)]);
+        assert_admission_hold(
+            &s,
+            &t,
+            hold_reply(&t, &a),
+            no_report_fields(json!(k), "deadline", "2026-11-21T13:02:30Z"),
+        );
         assert_eq!(t.external_intents[0]["kind"], "cancel");
         let ended = t.state.invocations.iter().find(|v| v["id"] == k).unwrap();
         let diagnostic = ended["cause"].to_string();
@@ -1913,5 +1948,704 @@ fn admission_dispatch_diagnostic_distinguishes_failed_and_unreadable_conditions(
             "{text}"
         );
         assert!(!text.contains(" or "), "{text}");
+    }
+}
+
+fn refusing_report() -> Value {
+    let case: Value = serde_json::from_str(include_str!(
+        "../../../../conformance/conventions/requests/admission-hold/case.yaml"
+    ))
+    .unwrap();
+    case["steps"][17]["input"]["completion"]["result"]["structuredContent"]["admission"].clone()
+}
+
+fn single_use_report() -> Value {
+    let case: Value = serde_json::from_str(include_str!(
+        "../../../../conformance/conventions/requests/admission-single-use/case.yaml"
+    ))
+    .unwrap();
+    case["steps"][18]["input"]["completion"]["result"]["structuredContent"]["admission"].clone()
+}
+
+#[track_caller]
+fn hold_reply<'a>(t: &'a Transition, id: &str) -> &'a Value {
+    &t.request_replies
+        .iter()
+        .find(|r| r.invocation == id)
+        .expect("held reply")
+        .reply
+}
+
+fn assert_admission_hold(
+    s: &GuardScenario,
+    t: &Transition,
+    reply: &Value,
+    fields: Value,
+) -> String {
+    assert_eq!(reply["isError"], true);
+    assert_eq!(
+        reply["_meta"]["io.github.shrav-k.conduit/reason"],
+        "unavailable"
+    );
+    assert!(
+        reply["_meta"]
+            .get("io.github.shrav-k.conduit/pendingAction")
+            .is_none()
+    );
+    let id = reply["_meta"]["io.github.shrav-k.conduit/invocation"]
+        .as_str()
+        .unwrap();
+    let diagnostics = reply["structuredContent"]["diagnostics"]
+        .as_array()
+        .unwrap();
+    assert_eq!(diagnostics.len(), 1);
+    let d = &diagnostics[0];
+    assert_eq!(d["ruleId"], "PND-016");
+    assert_eq!(d["level"], "error");
+    let mut expected = json!({"login":inventory::object(subject(&s.state,"Resource","login")),
+        "dispatched":false,"levers":{"type":"example.org/conformance/shared-login#login-holder.v1",
+        "pointer":"/admission","control":"example.org/conformance/shared-login#set-admission.v1"}});
+    expected
+        .as_object_mut()
+        .unwrap()
+        .extend(fields.as_object().unwrap().clone());
+    assert_eq!(d["properties"]["admission"], expected);
+    assert_eq!(
+        s.c.core_environment
+            .first_core_failure(&s.c.core_package, "admission-hold.v1", &expected)
+            .unwrap(),
+        None
+    );
+    let record = t
+        .records
+        .iter()
+        .find(|r| r["type"] == "request-ended" && r["data"]["invocation"] == id)
+        .unwrap();
+    assert_eq!(record["data"]["ruleId"], "PND-016");
+    assert_eq!(record["data"]["reason"], "unavailable");
+    assert_eq!(record["data"]["dispatched"], false);
+    assert!(
+        !t.records
+            .iter()
+            .any(|r| r["type"] == "invocation-dispatched" && r["data"]["invocation"] == id)
+    );
+    assert!(!t.external_intents.iter().any(|v| v["invocation"] == id));
+    assert!(
+        !t.state
+            .invocations
+            .iter()
+            .any(|v| v["id"] == id && v["state"] == "in-progress")
+    );
+    let decisions: Vec<_> = t
+        .decisions
+        .iter()
+        .filter(|d| d.action == "hold-login-admission" && d.facts["invocation"] == id)
+        .collect();
+    assert_eq!(decisions.len(), 1);
+    assert_eq!(decisions[0].facts["instance"], expected["login"]["id"]);
+    let text = d["message"]["text"].as_str().unwrap();
+    for word in ["amount", "balance", "credit", "currency"] {
+        assert!(!text.contains(word));
+    }
+    assert!(text.contains("reports unavailable under PND-016: "));
+    assert!(text.contains("Once dispatched, a call runs to its end; the guard never stops it."));
+    if expected["report"].is_null() {
+        assert!(!text.contains("also ends the report"));
+        if expected["noReport"].is_string() {
+            assert!(text.contains("A lever change does not shorten the 60 seconds."));
+        }
+    } else {
+        assert!(text.contains(": its admission report says"));
+        assert!(text.contains("window resets at") && text.contains("paid usage resets at"));
+        if expected["lifts"] == "newer-report" {
+            assert!(text.contains("is when its validity ends"));
+            assert!(text.contains("held at once until then and no ask is made"));
+            assert!(text.contains("the first call at or after retryAt asks the login afresh"));
+        }
+    }
+    assert!(
+        text.contains("not dispatched")
+            && text.contains("queued")
+            && text.contains("decided afresh")
+    );
+    text.into()
+}
+
+#[test]
+fn admission_held_on_a_refusing_report() {
+    let time = "2026-11-21T13:01:00Z";
+    let mut s = GuardScenario::new(guarded());
+    let r2 = refusing_report();
+    let (a, k) = waiting(&s.admission_call(time, "call-a.turn.v1"));
+    s.discover_ask(&k, time);
+    let t = s.finish(&k, time, result("succeeded", json!({"admission":r2})));
+    assert!(t.external_intents.is_empty());
+    let fields = json!({"report":r2,"reportInvocation":k,"noReport":null,"singleUse":null,"lifts":"newer-report","retryAt":"2026-11-21T13:11:00Z"});
+    let text = assert_admission_hold(&s, &t, hold_reply(&t, &a), fields.clone());
+    assert!(!t.records.iter().any(|r| r["type"] == "access-decision"));
+    for word in [
+        login_resource::label(subject(&s.state, "Resource", "login")).as_str(),
+        "/admission/paidUsage",
+        "refuse",
+        "not reported",
+        "2026-11-21T13:11:00Z",
+        &k,
+        "Interface",
+    ] {
+        assert!(text.contains(word), "missing {word}");
+    }
+    let t = s.admission_call("2026-11-21T13:02:00Z", "call-b.turn.v1");
+    assert_admission_hold(&s, &t, &t.reply, fields);
+    assert!(t.external_intents.is_empty() && t.state.admission_asks.is_empty());
+    let (_, t) = s.keep("2026-11-21T13:03:00Z", &report_one(), None);
+    assert!(t.external_intents.is_empty());
+    let t = s.admission_call("2026-11-21T13:03:10Z", "call-a.turn.v1");
+    assert_eq!(dispatched_ids(&t), vec![t.reply["invocation"].clone()]);
+
+    for lever_change in [true, false] {
+        let mut s = GuardScenario::new(guarded());
+        let mut report = r2.clone();
+        if lever_change {
+            report["lifts"] = json!("lever-change");
+        } else {
+            report = json!({"admit":false,"reason":"threshold","lever":{"pointer":"/admission/refuseAt","value":95},"window":{"id":"example/all/300m","usedPercent":97,"resetsAt":"2026-11-21T14:00:00Z"},"paidUsage":{"possible":false,"inUse":false,"resetsAt":null},"cannotTell":null,"lifts":"at-time","observedAt":"2026-11-21T13:00:30Z","source":{"client":null,"method":"example-read"},"validForSeconds":600,"singleUse":false});
+        }
+        let (k, _) = s.keep(time, &report, None);
+        let t = s.admission_call("2026-11-21T13:01:30Z", "call-a.turn.v1");
+        let text = assert_admission_hold(
+            &s,
+            &t,
+            &t.reply,
+            json!({"report":report,"reportInvocation":k,"noReport":null,"singleUse":null,"lifts":report["lifts"],"retryAt":if lever_change {Value::Null} else {json!("2026-11-21T13:11:00Z")}}),
+        );
+        if lever_change {
+            assert!(text.contains(&format!("Waiting alone does not lift this; a change of `/admission` by the control `example.org/conformance/shared-login#set-admission.v1` on `{}`, sent by an Interface, does.",login_resource::label(subject(&s.state,"Resource","login")))));
+        } else {
+            for word in [
+                "/admission/refuseAt",
+                "95",
+                "example/all/300m",
+                "97",
+                "2026-11-21T13:00:30Z",
+                "2026-11-21T14:00:00Z",
+            ] {
+                assert!(text.contains(word));
+            }
+        }
+    }
+}
+
+#[test]
+fn admission_single_use_holds_the_others_after_call() {
+    let time = "2026-11-21T13:01:00Z";
+    let mut s = GuardScenario::new(guarded());
+    let (a, k) = waiting(&s.admission_call(time, "call-a.turn.v1"));
+    let (b, _) = waiting(&s.admission_call(time, "call-b.turn.v1"));
+    let (b2, _) = waiting(&s.admission_call(time, "call-b.turn.v1"));
+    assert_eq!(
+        s.call(time, "access.close.v1", json!({"conduit":"call-a"}))
+            .reply["isError"],
+        false
+    );
+    s.discover_ask(&k, time);
+    let r3 = single_use_report();
+    let t = s.finish(&k, time, result("succeeded", json!({"admission":r3})));
+    assert_eq!(dispatched_ids(&t), vec![json!(b)]);
+    assert!(
+        hold_reply(&t, &a)["structuredContent"]["diagnostics"][0]["properties"]
+            .get("admission")
+            .is_none()
+    );
+    let text = assert_admission_hold(
+        &s,
+        &t,
+        hold_reply(&t, &b2),
+        json!({"report":null,"reportInvocation":k,"noReport":null,"singleUse":b,"lifts":"after-call","retryAt":"2026-11-21T13:02:00Z"}),
+    );
+    assert!(text.contains(&b) && text.contains("need not wait"));
+    assert!(!t.records.iter().any(|r| r["type"] == "access-decision"));
+    let (_, k2) = waiting(&s.admission_call("2026-11-21T13:01:10Z", "call-b.turn.v1"));
+    assert_ne!(k2, k);
+    let t = s.discover_ask(&k2, "2026-11-21T13:01:10Z");
+    assert_eq!(
+        t.external_intents[0]["call"]["params"]["arguments"]["previous"],
+        r3
+    );
+}
+
+#[test]
+fn admission_hold_names_only_what_the_caller_may_inspect() {
+    let time = "2026-11-21T13:01:00Z";
+    let mut p = guarded();
+    let mut path = document_mut(&mut p, "call-b").clone();
+    path["metadata"]["name"] = json!("observer-turn");
+    path["consumer"]["name"] = json!("observer");
+    p.documents.push(path);
+    for single in [true, false] {
+        let mut s = GuardScenario::new(p.clone());
+        assert_eq!(
+            s.call(time, "access.open.v1", json!({"conduit":"observer-turn"}))
+                .reply["isError"],
+            false
+        );
+        let observer = subject(&s.state, "Interface", "observer")["id"].clone();
+        for (kind, name) in [("Resource", "login"), ("Agent", "a")] {
+            assert!(
+                !access::may_inspect(&s.state, &observer, subject(&s.state, kind, name), &s.c)
+                    .unwrap()
+            );
+        }
+        let (a, k) = waiting(&s.admission_call(time, "call-a.turn.v1"));
+        let t = s.admission_input(time,json!({"kind":"invoke","request":{"identity":{"kind":"instance","id":observer},"tool":"observer-turn.turn.v1","arguments":{}}}));
+        let (b, _) = waiting(&t);
+        s.discover_ask(&k, time);
+        let report = if single {
+            single_use_report()
+        } else {
+            refusing_report()
+        };
+        let t = s.finish(&k, time, result("succeeded", json!({"admission":report})));
+        assert_eq!(
+            dispatched_ids(&t),
+            if single { vec![json!(a)] } else { vec![] }
+        );
+        let text = assert_admission_hold(
+            &s,
+            &t,
+            hold_reply(&t, &b),
+            json!({"report":if single {Value::Null} else {report},"reportInvocation":null,"noReport":null,"singleUse":null,"lifts":if single {"after-call"} else {"newer-report"},"retryAt":if single {"2026-11-21T13:02:00Z"} else {"2026-11-21T13:11:00Z"}}),
+        );
+        assert!(!text.contains(&k) && !text.contains(&a));
+        if single {
+            assert!(text.contains("a call of an Agent of the login"));
+        }
+    }
+}
+
+#[test]
+fn admission_hold_never_stops_a_dispatched_call() {
+    let time = "2026-11-21T13:01:00Z";
+    let mut s = GuardScenario::new(guarded());
+    let (a, k) = waiting(&s.admission_call(time, "call-a.turn.v1"));
+    let (b, _) = waiting(&s.admission_call(time, "call-b.turn.v1"));
+    s.discover_ask(&k, time);
+    let t = s.finish(
+        &k,
+        time,
+        result("succeeded", json!({"admission":report_one()})),
+    );
+    assert_eq!(dispatched_ids(&t), vec![json!(a), json!(b)]);
+    let mut output = result("succeeded", json!({}));
+    output["_meta"]["io.github.shrav-k.conduit/limits"] = limits_member();
+    let t = s.finish(&b, "2026-11-21T13:02:00Z", output);
+    assert!(!dispatched_ids(&t).contains(&json!(a)));
+    assert_eq!(
+        s.login_status("2026-11-21T13:02:00Z")["ended"],
+        "newer-limits"
+    );
+    let t = s.admission_call("2026-11-21T13:03:00Z", "call-b.turn.v1");
+    assert!(!dispatched_ids(&t).contains(&json!(a)));
+    let (b2, k2) = waiting(&t);
+    let t = s.discover_ask(&k2, "2026-11-21T13:03:00Z");
+    assert!(!dispatched_ids(&t).contains(&json!(a)));
+    let t = s.finish(
+        &k2,
+        "2026-11-21T13:03:00Z",
+        result("succeeded", json!({"admission":refusing_report()})),
+    );
+    assert!(t.external_intents.is_empty());
+    assert_admission_hold(
+        &s,
+        &t,
+        hold_reply(&t, &b2),
+        json!({"report":refusing_report(),"reportInvocation":k2,"noReport":null,"singleUse":null,"lifts":"newer-report","retryAt":"2026-11-21T13:13:00Z"}),
+    );
+    assert!(
+        s.state
+            .invocations
+            .iter()
+            .any(|v| v["id"] == a && v["state"] == "in-progress")
+    );
+    let t = s.finish(&a, "2026-11-21T13:04:00Z", result("succeeded", json!({})));
+    assert_eq!(
+        t.reply["_meta"]["io.github.shrav-k.conduit/outcome"],
+        "succeeded"
+    );
+    assert!(
+        t.reply["_meta"]
+            .get("io.github.shrav-k.conduit/admission")
+            .is_none()
+    );
+    assert!(
+        !t.reply["structuredContent"]["diagnostics"]
+            .as_array()
+            .is_some_and(|ds| ds.iter().any(|d| d["ruleId"] == "PND-016"))
+    );
+    assert!(!dispatched_ids(&t).contains(&json!(a)));
+}
+
+fn no_report_fields(ask: Value, cause: &str, until: &str) -> Value {
+    json!({"report":null,"reportInvocation":ask,"noReport":cause,"singleUse":null,
+        "lifts":"at-time","retryAt":until})
+}
+
+#[test]
+fn admission_held_for_want_of_a_report() {
+    let time = "2026-11-21T13:01:00Z";
+    let mut s = GuardScenario::new(guarded());
+    let (a, k) = waiting(&s.admission_call(time, "call-a.turn.v1"));
+    s.discover_ask(&k, time);
+    let t = s.finish(&k, time, result("failed", json!({})));
+    assert!(t.external_intents.is_empty());
+    let fields = no_report_fields(json!(k), "failed", "2026-11-21T13:02:00Z");
+    let text = assert_admission_hold(&s, &t, hold_reply(&t, &a), fields.clone());
+    assert!(text.contains(&k) && text.contains("failed") && text.contains("2026-11-21T13:02:00Z"));
+    assert!(t.records.iter().all(|r| r["type"] != "access-decision"));
+    let t = s.admission_call("2026-11-21T13:01:30Z", "call-b.turn.v1");
+    assert_admission_hold(&s, &t, &t.reply, fields.clone());
+    assert!(t.external_intents.is_empty() && t.state.admission_asks.is_empty());
+    let (_, t) = s.keep("2026-11-21T13:01:40Z", &report_one(), None);
+    assert!(t.external_intents.is_empty());
+    let t = s.admission_call("2026-11-21T13:01:45Z", "call-a.turn.v1");
+    assert_admission_hold(&s, &t, &t.reply, fields);
+    assert!(t.external_intents.is_empty() && t.state.admission_asks.is_empty());
+    let t = s.admission_call("2026-11-21T13:02:00Z", "call-a.turn.v1");
+    assert_eq!(dispatched_ids(&t), vec![t.reply["invocation"].clone()]);
+    assert!(t.state.admission_asks.is_empty());
+    assert_eq!(
+        s.login_status("2026-11-21T13:02:00Z")["validUntil"],
+        "2026-11-21T14:01:40Z"
+    );
+
+    let mut s = GuardScenario::new(guarded());
+    let (_, k) = waiting(&s.admission_call(time, "call-a.turn.v1"));
+    s.discover_ask(&k, time);
+    s.finish(&k, time, result("failed", json!({})));
+    let (a, k2) = waiting(&s.admission_call("2026-11-21T13:02:00Z", "call-a.turn.v1"));
+    assert_ne!(k2, k);
+    s.discover_ask(&k2, "2026-11-21T13:02:00Z");
+    let mut bad = report_one();
+    bad.as_object_mut().unwrap().remove("singleUse");
+    let t = s.finish(
+        &k2,
+        "2026-11-21T13:02:00Z",
+        result("succeeded", json!({"admission":bad})),
+    );
+    let text = assert_admission_hold(
+        &s,
+        &t,
+        hold_reply(&t, &a),
+        no_report_fields(json!(k2), "unknown", "2026-11-21T13:03:00Z"),
+    );
+    assert!(t.external_intents.is_empty());
+    assert!(
+        text.contains(&k2) && text.contains("unknown") && text.contains("2026-11-21T13:03:00Z")
+    );
+
+    let mut s = GuardScenario::new(guarded());
+    let (a, k) = waiting(&s.admission_call(time, "call-a.turn.v1"));
+    s.discover_ask(&k, time);
+    let t = s.admission_input(
+        "2026-11-21T13:01:30Z",
+        json!({"kind":"admission-ask-deadline","invocation":k,"attempt":1}),
+    );
+    assert_eq!(
+        t.external_intents,
+        vec![json!({"kind":"cancel","invocation":k,"attempt":1})]
+    );
+    let text = assert_admission_hold(
+        &s,
+        &t,
+        hold_reply(&t, &a),
+        no_report_fields(json!(k), "deadline", "2026-11-21T13:02:30Z"),
+    );
+    assert!(text.contains(&k) && text.contains("DL21") && text.contains("2026-11-21T13:02:30Z"));
+
+    let mut s = GuardScenario::new(guarded());
+    let (a, k) = waiting(&s.admission_call(time, "call-a.turn.v1"));
+    let t = s.finish(&k, time, json!({"capabilities":{}}));
+    assert!(t.external_intents.is_empty());
+    let text = assert_admission_hold(
+        &s,
+        &t,
+        hold_reply(&t, &a),
+        no_report_fields(Value::Null, "not-dispatched", "2026-11-21T13:02:00Z"),
+    );
+    assert!(text.contains("could not be dispatched") && text.contains("2026-11-21T13:02:00Z"));
+    assert!(!text.contains(&k));
+
+    let mut s = GuardScenario::new(guarded());
+    let (a, k) = waiting(&s.admission_call(time, "call-a.turn.v1"));
+    s.discover_ask(&k, time);
+    let t = s.admission_input("2026-11-21T13:01:30Z", json!({"kind":"recover"}));
+    assert!(t.external_intents.is_empty());
+    // Recovery records the ending; the previous process's caller is gone.
+    let end = t
+        .records
+        .iter()
+        .find(|r| r["type"] == "request-ended" && r["data"]["invocation"] == a)
+        .unwrap();
+    assert_eq!(end["data"]["ruleId"], "REC-007");
+    assert_eq!(end["data"]["reason"], "unavailable");
+    assert_eq!(end["data"]["dispatched"], false);
+    assert!(end["data"].get("admission").is_none());
+    assert!(!t.state.invocations.iter().any(|v| v["id"] == a));
+    let t = s.admission_call("2026-11-21T13:02:00Z", "call-b.turn.v1");
+    let text = assert_admission_hold(
+        &s,
+        &t,
+        &t.reply,
+        no_report_fields(json!(k), "unknown", "2026-11-21T13:02:30Z"),
+    );
+    assert!(t.external_intents.is_empty());
+    assert!(text.contains(&k) && text.contains("unknown") && text.contains("2026-11-21T13:02:30Z"));
+
+    // REC-007 precedes the guard even when the proposed completion would hold
+    // the call, its Conduit closes, or its login acquires a PND-005 hold.
+    for condition in ["open", "closed", "login-held"] {
+        let mut s = GuardScenario::new(guarded());
+        let (a, k) = waiting(&s.admission_call(time, "call-a.turn.v1"));
+        s.discover_ask(&k, time);
+        if condition == "closed" {
+            s.call(time, "access.close.v1", json!({"conduit":"call-a"}));
+        } else if condition == "login-held" {
+            let login = subject(&s.state, "Resource", "login")["id"]
+                .as_str()
+                .unwrap()
+                .to_owned();
+            s.state.sign_in_holds.insert(login, json!({"since":time}));
+        }
+        let e = s.evidence(time);
+        let input: Input = serde_json::from_value(json!({"kind":"complete","invocation":k,"attempt":1,
+            "evidence":{"time":e.time,"ids":e.ids,"revisions":e.revisions,"suffixes":e.suffixes},
+            "completion":{"kind":"result","result":result("succeeded",json!({"admission":refusing_report()}))}})).unwrap();
+        let trial = step(&s.state, input.clone(), &s.c).unwrap();
+        let fault = RecordFault::from_trial(input, &trial, false).unwrap();
+        let t = fault.step(s.state, &s.c).unwrap();
+        assert!(t.external_intents.is_empty());
+        let reply = hold_reply(&t, &a);
+        assert_eq!(
+            reply["structuredContent"]["diagnostics"][0]["ruleId"],
+            "REC-007"
+        );
+        assert!(
+            reply["structuredContent"]["diagnostics"][0]["properties"]
+                .get("admission")
+                .is_none()
+        );
+        assert!(
+            !t.decisions
+                .iter()
+                .any(|d| d.action == "hold-login-admission")
+        );
+        assert!(t.records.iter().all(|r| r["type"] != "access-decision"));
+    }
+}
+
+#[test]
+fn admission_status_shows_what_holds() {
+    let time = "2026-11-21T13:01:00Z";
+    for refused in [true, false] {
+        let mut s = GuardScenario::new(guarded());
+        let (a, k) = waiting(&s.admission_call(time, "call-a.turn.v1"));
+        s.discover_ask(&k, time);
+        let t = s.finish(
+            &k,
+            time,
+            if refused {
+                result("succeeded", json!({"admission":refusing_report()}))
+            } else {
+                result("failed", json!({}))
+            },
+        );
+        assert!(t.external_intents.is_empty());
+        let fields = if refused {
+            json!({"report":refusing_report(),"reportInvocation":k,"noReport":null,"singleUse":null,"lifts":"newer-report","retryAt":"2026-11-21T13:11:00Z"})
+        } else {
+            no_report_fields(json!(k), "failed", "2026-11-21T13:02:00Z")
+        };
+        assert_admission_hold(&s, &t, hold_reply(&t, &a), fields.clone());
+        assert_eq!(
+            s.call(time, "access.open.v1", json!({"conduit":"observer-scope"}))
+                .reply["isError"],
+            false
+        );
+        let expected = if refused {
+            json!({"checked":true,"report":fields["report"],"invocation":k,"keptAt":time,"validUntil":fields["retryAt"],"state":"current","ended":null,"asking":null,"noReport":null})
+        } else {
+            json!({"checked":true,"report":null,"invocation":null,"keptAt":null,"validUntil":null,"state":"none","ended":null,"asking":null,"noReport":{"invocation":k,"cause":fields["noReport"],"until":fields["retryAt"]}})
+        };
+        for (actor, route, kind, name) in [
+            ("root", "logins", "Resource", "login"),
+            ("root", "workers", "Agent", "a"),
+            ("observer", "observer-scope", "Agent", "a"),
+        ] {
+            let e = s.evidence(time);
+            let before = s.state.clone();
+            let input: Input = serde_json::from_value(json!({"kind":"invoke",
+                "evidence":{"time":e.time,"ids":e.ids,"revisions":e.revisions,"suffixes":e.suffixes},
+                "request":{"identity":{"kind":"instance","id":subject(&s.state,"Interface",actor)["id"]},
+                "tool":format!("{route}.inspect.v1"),"arguments":{"object":{"kind":kind,"name":name}}}})).unwrap();
+            let t = step(&s.state, input, &s.c).unwrap();
+            assert_eq!(t.reply["isError"], false);
+            let mut expected = expected.clone();
+            if actor == "observer" {
+                assert!(
+                    !access::may_inspect(
+                        &before,
+                        &subject(&before, "Interface", actor)["id"],
+                        subject(&before, "Resource", "login"),
+                        &s.c
+                    )
+                    .unwrap()
+                );
+                expected["invocation"] = Value::Null;
+                if !expected["noReport"].is_null() {
+                    expected["noReport"]["invocation"] = Value::Null;
+                }
+            }
+            let status = &t.reply["structuredContent"]["status"]["admission"];
+            assert_eq!(*status, expected);
+            assert_eq!(
+                s.c.core_environment
+                    .first_core_failure(&s.c.core_package, "admission-status.v1", status)
+                    .unwrap(),
+                None
+            );
+            assert!(t.external_intents.is_empty());
+            assert!(
+                !t.decisions
+                    .iter()
+                    .any(|d| d.action == "hold-login-admission")
+            );
+            assert_eq!(t.state.admission_reports, before.admission_reports);
+            assert_eq!(t.state.admission_asks, before.admission_asks);
+            assert_eq!(t.state.admission_no_reports, before.admission_no_reports);
+            // OBS-006 protects the observed state. REC-001 and OPS-009 still
+            // record this inspection and retain its own successful result.
+            assert_eq!(t.state.invocations.len(), before.invocations.len() + 1);
+            assert!(
+                t.state.invocations[..before.invocations.len()] == before.invocations,
+                "inspection changed a pre-existing invocation"
+            );
+            let inspection = t.state.invocations.last().unwrap();
+            assert_eq!(
+                inspection["id"],
+                t.reply["_meta"]["io.github.shrav-k.conduit/invocation"]
+            );
+            assert_eq!(inspection["operation"], s.c.qualified("inspect.v1"));
+            assert_eq!(inspection["state"], "succeeded");
+            for (kind, name) in [("Resource", "login"), ("Agent", "a")] {
+                assert_eq!(subject(&t.state, kind, name), subject(&before, kind, name));
+            }
+            assert_eq!(
+                t.state
+                    .objects
+                    .iter()
+                    .filter(|o| o["kind"] == "Conduit")
+                    .collect::<Vec<_>>(),
+                before
+                    .objects
+                    .iter()
+                    .filter(|o| o["kind"] == "Conduit")
+                    .collect::<Vec<_>>()
+            );
+            s.state = t.state;
+        }
+    }
+}
+
+#[test]
+fn admission_hold_restores_keyed_attempt_without_wait_fields() {
+    for waits in [false, true] {
+        let mut project = guarded();
+        // An extension-aware implementation can report a definite failed turn,
+        // allowing another attempt with the same key.
+        project
+            .documents
+            .iter_mut()
+            .find(|d| d["metadata"]["name"] == "shared-agent.v1")
+            .unwrap()["spec"]["implementation"] =
+            json!({"#turn.v1":"#agent","#status.v1":"#agent"});
+        let mut s = GuardScenario::new(project);
+        s.keep("2026-11-21T13:00:00Z", &report_one(), None);
+        let t = s.keyed_admission_call("2026-11-21T13:01:00Z");
+        let id = t.reply["invocation"].as_str().unwrap().to_owned();
+        assert_eq!(dispatched_ids(&t), vec![json!(id)]);
+        s.discover_ask(&id, "2026-11-21T13:01:00Z");
+        s.finish(&id, "2026-11-21T13:01:01Z", result("failed", json!({})));
+        let previous = s
+            .state
+            .invocations
+            .iter()
+            .find(|v| v["id"] == id)
+            .unwrap()
+            .clone();
+        assert_eq!(previous["state"], "failed");
+        let time = "2026-11-21T14:01:00Z";
+        if !waits {
+            s.keep(time, &refusing_report(), None);
+        }
+        let mut t = s.keyed_admission_call(time);
+        let reply = if waits {
+            let (call, ask) = waiting(&t);
+            assert_eq!(call, id);
+            s.discover_ask(&ask, time);
+            t = s.finish(
+                &ask,
+                time,
+                result("succeeded", json!({"admission":refusing_report()})),
+            );
+            hold_reply(&t, &id)
+        } else {
+            &t.reply
+        };
+        assert_eq!(
+            reply["structuredContent"]["diagnostics"][0]["ruleId"],
+            "PND-016"
+        );
+        assert!(t.external_intents.is_empty());
+        let restored = t.state.invocations.iter().find(|v| v["id"] == id).unwrap();
+        assert_eq!(restored["state"], previous["state"]);
+        assert_eq!(restored["retained"], previous["retained"]);
+        for field in ["admission_tool", "admission_wait", "previous"] {
+            assert!(
+                restored.get(field).is_none(),
+                "restored keyed attempt retains {field}; waits={waits}"
+            );
+        }
+        s.keep("2026-11-21T14:02:00Z", &report_one(), None);
+        let t = s.keyed_admission_call("2026-11-21T14:02:01Z");
+        assert_eq!(dispatched_ids(&t), vec![json!(id)]);
+    }
+}
+
+#[test]
+fn admission_hold_explains_cannot_tell_in_schema_words() {
+    for (cause, words) in [
+        ("never-observed", "`limits` is `unknown`"),
+        ("not-reported", "the client gave no signal needed to decide"),
+        ("stale", "the needed observation is no longer current"),
+        ("read-failed", "the client's read failed"),
+        ("read-timed-out", "the client's read timed out"),
+    ] {
+        let mut s = GuardScenario::new(guarded());
+        let mut report = refusing_report();
+        report["reason"] = json!("cannot-tell");
+        report["cannotTell"] = json!(cause);
+        report["lever"] = json!({"pointer":"/admission/whenUnknown","value":"refuse"});
+        let (ask, _) = s.keep("2026-11-21T13:01:00Z", &report, None);
+        let t = s.admission_call("2026-11-21T13:01:01Z", "call-a.turn.v1");
+        let text = assert_admission_hold(
+            &s,
+            &t,
+            &t.reply,
+            json!({"report":report,"reportInvocation":ask,"noReport":null,"singleUse":null,
+                "lifts":"newer-report","retryAt":"2026-11-21T13:11:00Z"}),
+        );
+        assert!(
+            text.contains(&format!("It cannot tell: {words}.")),
+            "{cause}: {text}"
+        );
     }
 }

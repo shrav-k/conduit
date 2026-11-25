@@ -70,7 +70,7 @@ struct Waiter {
     attempt: u64,
 }
 
-/// Return true only when this prepared request must wait, before any dispatch record or intent.
+/// Return true when this prepared request waits or is held, before dispatch.
 pub(crate) fn wait(
     t: &mut Transition,
     a: &mut Allocation<'_>,
@@ -93,7 +93,15 @@ pub(crate) fn wait(
     if no_report(&t.state, login_id, &a.evidence.time).is_some()
         || admission::current(&t.state, login_id, &a.evidence.time).is_some()
     {
-        return decide_report(t, a, c, i, login_id).map(|dispatch| !dispatch);
+        t.state.invocations[i]["admission_tool"] = route["tool"].clone();
+        let dispatch = decide_report(t, a, c, i, login_id, &mut None)?;
+        if dispatch {
+            t.state.invocations[i]
+                .as_object_mut()
+                .unwrap()
+                .remove("admission_tool");
+        }
+        return Ok(!dispatch);
     }
     t.state.admission_no_reports.remove(login_id);
     let ask = if let Some(ask) = t.state.admission_asks.get(login_id) {
@@ -161,30 +169,171 @@ pub(crate) fn wait(
     Ok(true)
 }
 
-/// The hold's order changes this one decision point. For now a refusal, a spent
-/// single-use report and no current report all allow dispatch, without another ask.
+/// PND-016: decide only here, after the other holds and dispatch conditions.
+/// `spent` belongs to this ask's settlement, never to a later arriving call.
 fn decide_report(
     t: &mut Transition,
     a: &mut Allocation<'_>,
-    _c: &Context,
-    _i: usize,
+    c: &Context,
+    i: usize,
     login: &str,
+    spent: &mut Option<Value>,
 ) -> Result<bool> {
     let time = &a.evidence.time;
-    if no_report(&t.state, login, time).is_none()
-        && admission::current(&t.state, login, time)
-            .is_some_and(|report| report["admit"] == true && report["singleUse"] == true)
-    {
-        admission::end(
-            &mut t.state.admission_reports,
-            login,
-            time,
-            admission::End::SingleUse,
-            None,
-        );
+    // The period decides first, even if a newer report was kept meanwhile.
+    let period = no_report(&t.state, login, time).cloned();
+    let report = if period.is_none() {
+        admission::current(&t.state, login, time).cloned()
+    } else {
+        None
+    };
+    if let Some(report) = &report {
+        if report["admit"] == true {
+            if report["singleUse"] == true {
+                *spent = Some(t.state.invocations[i].clone());
+                admission::end(
+                    &mut t.state.admission_reports,
+                    login,
+                    time,
+                    admission::End::SingleUse,
+                    None,
+                );
+            }
+            return Ok(true);
+        }
+    } else if period.is_none() && spent.is_none() {
+        return Ok(true);
     }
-    // PND-016's report/no-report hold is the next engine order.
-    Ok(true)
+    let v = t.state.invocations[i].clone();
+    let login_object = access::object_by_id(&t.state, &json!(login)).ok_or("held login absent")?;
+    let status = admission::status(&t.state, login_object, &v["caller"], time, c)
+        .ok_or("held login has no admission status")?;
+    let ask = period
+        .as_ref()
+        .map(|p| json!(p.invocation))
+        .unwrap_or_else(|| status["invocation"].clone());
+    let cause = if let Some(period) = period.as_ref() {
+        HoldCause::NoReport { period }
+    } else if let Some(admitted) = spent.as_ref() {
+        HoldCause::AfterCall {
+            admitted,
+            ended_at: time,
+        }
+    } else {
+        HoldCause::Report {
+            valid_until: &status["validUntil"],
+        }
+    };
+    let form = hold_form(
+        &t.state,
+        c,
+        login_object,
+        &v["caller"],
+        report.as_ref(),
+        &ask,
+        cause,
+    )?;
+    let message = crate::explain::admission_hold(
+        v["admission_tool"]
+            .as_str()
+            .ok_or("held call has no tool")?,
+        &form,
+    );
+    requests::reject_admission(t, a, c, i, &message, form)?;
+    t.decisions.push(decision(
+        "hold-login-admission",
+        &["PND-016", "IFC-054", "OPS-023", "IFC-025"],
+        &[],
+        json!({"instance":login,"invocation":v["id"]}),
+        vec![],
+    ));
+    Ok(false)
+}
+
+pub(crate) enum HoldCause<'a> {
+    NoReport {
+        period: &'a NoReport,
+    },
+    Report {
+        valid_until: &'a Value,
+    },
+    AfterCall {
+        admitted: &'a Value,
+        ended_at: &'a str,
+    },
+}
+
+/// One builder for the hold's form; the warning order adds its dispatched case here.
+pub(crate) fn hold_form(
+    state: &State,
+    c: &Context,
+    login: &Value,
+    caller: &Value,
+    report: Option<&Value>,
+    ask: &Value,
+    cause: HoldCause<'_>,
+) -> Result<Value> {
+    let published = registration::publication_object(login, c)?;
+    let (env, scope, ty) = schemas::operation(
+        &published,
+        login["type"].as_str().ok_or("login Type absent")?,
+        &c.core_package,
+    )?;
+    let control = ty["spec"]["admission"]["control"]
+        .as_str()
+        .ok_or("admission control absent")?;
+    let mut scoped = published;
+    scoped["contract_scope"] = json!(scope);
+    let (control_env, control_scope, control_doc) =
+        schemas::operation(&scoped, control, &c.core_package)?;
+    let control = format!(
+        "{}#{}",
+        control_env.scopes[&control_scope].address,
+        control_doc["metadata"]["name"]
+            .as_str()
+            .ok_or("control name absent")?
+    );
+    let type_name = format!(
+        "{}#{}",
+        env.scopes[&scope].address,
+        ty["metadata"]["name"].as_str().ok_or("Type name absent")?
+    );
+    let mut form = json!({"login":inventory::object(login),"dispatched":false,"report":report,
+        "reportInvocation":if access::may_inspect(state,caller,login,c).unwrap_or(false) {ask.clone()} else {Value::Null},
+        "noReport":null,"singleUse":null,"lifts":null,"retryAt":null,
+        "levers":{"type":type_name,"pointer":ty["spec"]["admission"]["levers"],"control":control}});
+    match cause {
+        HoldCause::NoReport { period } => {
+            form["report"] = Value::Null;
+            form["noReport"] = json!(period.cause);
+            form["lifts"] = json!("at-time");
+            form["retryAt"] = json!(period.until());
+        }
+        HoldCause::Report { valid_until } => {
+            form["lifts"] = form["report"]["lifts"].clone();
+            if form["lifts"] != "lever-change" {
+                form["retryAt"] = valid_until.clone();
+            }
+        }
+        HoldCause::AfterCall { admitted, ended_at } => {
+            form["report"] = Value::Null;
+            form["lifts"] = json!("after-call");
+            form["retryAt"] = json!(
+                NoReport {
+                    invocation: None,
+                    cause: String::new(),
+                    ended_at: ended_at.into()
+                }
+                .until()
+            );
+            if access::object_by_id(state, &admitted["target"])
+                .is_some_and(|agent| access::may_inspect(state, caller, agent, c).unwrap_or(false))
+            {
+                form["singleUse"] = admitted["id"].clone();
+            }
+        }
+    }
+    Ok(form)
 }
 
 /// Called after completion has kept the report. Synthetic entries used by order
@@ -256,6 +405,7 @@ fn settle_ended(
                 },
             );
         }
+        let mut spent = None;
         for waiter in ask.waiters {
             let Some(i) = t.state.invocations.iter().position(|v| {
                 v["id"] == waiter.invocation
@@ -265,6 +415,18 @@ fn settle_ended(
             }) else {
                 continue;
             };
+            if record_fault {
+                // REC-007 precedes all holds: no guard record can be kept here.
+                // The original access decision stands, without a second one.
+                requests::record_fault_unavailable(
+                    t,
+                    a,
+                    c,
+                    i,
+                    requests::UnsentDispatch::DecisionKept,
+                )?;
+                continue;
+            }
             let v = t.state.invocations[i].clone();
             let mut route = json!({"target":v["target"],"caller":v["caller"],"consumer":v["sender"],
                 "conduit":v["conduit"],"operation":v["operation"],"serving":v["serving"],
@@ -297,20 +459,8 @@ fn settle_ended(
                 requests::reject_waiting(t, a, c, i, &message)?;
                 continue;
             }
-            if decide_report(t, a, c, i, &login)? {
-                if record_fault {
-                    // Its initial access decision was already kept. Suppress the
-                    // selected dispatch without fabricating a second access decision.
-                    requests::record_fault_unavailable(
-                        t,
-                        a,
-                        c,
-                        i,
-                        requests::UnsentDispatch::DecisionKept,
-                    )?;
-                } else {
-                    requests::dispatch_waiting(t, a, c, i)?;
-                }
+            if decide_report(t, a, c, i, &login, &mut spent)? {
+                requests::dispatch_waiting(t, a, c, i)?;
             }
         }
     }

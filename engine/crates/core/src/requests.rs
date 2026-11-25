@@ -2164,6 +2164,41 @@ pub(crate) fn reject_waiting(
     end_waiting(t, i)
 }
 
+/// End a PND-016 hold with the same identity whether it arrived now or waited.
+pub(crate) fn reject_admission(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    message: &str,
+    form: Value,
+) -> Result<()> {
+    let v = t.state.invocations[i].clone();
+    let mut route = recorded_route(&v);
+    route["dispatched"] = json!(false);
+    reject_diagnostics(
+        t,
+        a,
+        c,
+        &route,
+        "unavailable",
+        "PND-016",
+        Some(&v["id"]),
+        None,
+        Some(
+            json!([{"ruleId":"PND-016","level":"error","message":{"text":message},"properties":{"admission":form}}]),
+        ),
+    )?;
+    if v.get("admission_wait").is_some() {
+        fault_reply(t, &v)?;
+    }
+    let fields = t.state.invocations[i].as_object_mut().unwrap();
+    fields.remove("admission_tool");
+    fields.remove("admission_wait");
+    restore_or_remove_invocation(&mut t.state, i, &v);
+    Ok(())
+}
+
 pub(crate) fn end_waiting(t: &mut Transition, i: usize) -> Result<()> {
     let v = t.state.invocations[i].clone();
     fault_reply(t, &v)?;

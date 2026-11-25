@@ -103,6 +103,7 @@ The raw export leaves at the next condensation; the results then link its last v
 | [stage-3/fleet/conduit.yaml](stage-3/fleet/conduit.yaml) | Stage 3's manifest template, for the Agent packages 0.2.4 |
 | [stage-3/fleet/instances.yaml](stage-3/fleet/instances.yaml) | Stage 3's Pool, login Resources, Agents and Conduit instances |
 | [stage-3/fleet/templates.yaml](stage-3/fleet/templates.yaml) | Stage 3's Pool, Conduit, login Resource and role Agent templates |
+| [coordinator/README.md](coordinator/README.md) | The coordinator's Rust tooling, the binary `wo` (DEC-174), and its merge queue |
 | `NNN-name/`, from order 2 on | One directory per order: its scrubbed records export, the harness's log and measures, its reports and its dated result, as the registration below says |
 
 ## What it cannot show

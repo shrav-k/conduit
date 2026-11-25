@@ -97,6 +97,7 @@ RUST_READS = (
     ('packages/scenario-s2-linear-restrictions', 'spec/', 'tests/schema_drift.rs', '"../../spec'),
     ('packages/scenario-s4-effect', 'spec/', 'tests/declarations.rs', '"../../spec'),
     ('experiments/011-short-form-spike', 'spec/', 'src/evidence.rs', '.join("spec")'),
+    ('experiments/028-a78-dogfood/coordinator', 'spec/', 'tests/fixtures/queue_fixture.rs', '.join("spec")'),
     ('experiments/011-short-form-spike', 'conformance/fixtures/s1/', 'src/evidence.rs',
      '.join("conformance/fixtures/s1")'),
     ('experiments/022-provider-contracts', 'spec/', 'tests/harness.rs', '.join("spec/'),

@@ -1,0 +1,19 @@
+[package]
+name = "a78-coordinator"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+doctest = false
+
+[[bin]]
+name = "wo"
+path = "src/main.rs"
+
+[[bin]]
+name = "queue-fixture"
+path = "tests/fixtures/queue_fixture.rs"
+
+[dependencies]
+serde_json = "=1.0.154"

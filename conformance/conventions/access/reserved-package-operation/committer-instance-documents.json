@@ -1,0 +1,30 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Interface",
+    "metadata": {
+      "name": "committer"
+    },
+    "spec": {
+      "type": "github.com/shrav-k/conduit/core#interface.v1",
+      "config": {},
+      "conduits": {
+        "commit": {
+          "from": "repo-commit",
+          "target": {
+            "kind": "Resource",
+            "name": "repo"
+          }
+        }
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Interface",
+    "metadata": {
+      "name": "committer-1"
+    },
+    "from": "committer"
+  }
+]

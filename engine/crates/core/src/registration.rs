@@ -2724,6 +2724,384 @@ pub(crate) fn root_consumed(state: &crate::State, document: &Value, root: &Value
             .is_some_and(|consumer| consumer["id"] == root["id"])
 }
 
+/// ACC-032 / ACC-054: authority is decided before catalog validity or allocation.
+/// The scan uses the same held templates and input substitution as instantiation, but
+/// publishes no object and consumes no boundary-supplied ID.
+pub(crate) struct RegistrationRestriction {
+    pub(crate) rule: &'static str,
+    place: DocumentPlace,
+}
+
+impl RegistrationRestriction {
+    pub(crate) fn location(&self) -> String {
+        self.place.qualified("")
+    }
+}
+
+impl Builder<'_> {
+    fn reservation_candidates(
+        &self,
+        document: &Value,
+        held: &Held,
+        parent: Option<(&Value, &str, &str)>,
+        place: DocumentPlace,
+        candidates: &mut Vec<(Value, DocumentPlace)>,
+        depth: usize,
+    ) {
+        if depth > 128 || document.get("from").is_none() {
+            return;
+        }
+        let Some(kind) = document["kind"].as_str() else {
+            return;
+        };
+        let Ok((template, h, _)) = self.template(&document["from"], kind, held, false) else {
+            return;
+        };
+        let mut spec = template["spec"].clone();
+        if !spec.is_object() {
+            return;
+        }
+        implicit(&mut spec, kind);
+        let definition = DocumentPlace {
+            name: template["metadata"]["name"].as_str().unwrap_or("").into(),
+            pointer: "/spec".into(),
+        };
+        let mut filled = spec.clone();
+        // Invalid inputs cannot hide a restriction written directly in the template.
+        // Input-filled operations are inspected only when substitution succeeds.
+        if self
+            .apply_inputs(document, &mut filled, &h, &place, &definition, parent)
+            .is_ok()
+        {
+            spec = filled;
+        }
+        spec["kind"] = json!(kind);
+        spec["name"] = document["metadata"]["name"].clone();
+        spec["held"] = serde_json::to_value(&h).expect("held contexts serialize");
+        for key in ["consumer", "target", "owner"] {
+            if let Some(value) = document.get(key) {
+                spec[key] = value.clone();
+            }
+        }
+        if let Some((parent, slot, local)) = parent {
+            let reference = if parent["id"].is_string() {
+                json!({"kind":parent["kind"],"id":parent["id"]})
+            } else {
+                json!({"kind":parent["kind"],"name":parent["name"]})
+            };
+            spec[if slot == "entries" {
+                "owner"
+            } else {
+                "consumer"
+            }] = reference.clone();
+            // Match instantiation's entry_pool: a declared Conduit of a Pool entry
+            // resolves {entry: name} in that entry's enclosing Pool.
+            if slot == "entries" {
+                spec["reservation_entry_pool"] = reference.clone();
+            } else if let Some(pool) = parent.get("reservation_entry_pool") {
+                spec["reservation_entry_pool"] = pool.clone();
+            } else if parent["nested"]["slot"] == "entries" {
+                // A replacement can start from an already registered Pool entry.
+                spec["reservation_entry_pool"] =
+                    json!({"kind":"Pool","id":parent["nested"]["parent"]});
+            }
+            spec["reservation_parent"] = reference;
+            spec["reservation_slot"] = json!(slot);
+            spec["reservation_name"] = json!(local);
+        }
+        candidates.push((spec.clone(), place));
+        for (slot, family) in [("conduits", "Conduit"), ("entries", "Resource")] {
+            for (local, mut nested) in items(&spec, slot) {
+                if !nested.is_object() {
+                    continue;
+                }
+                nested["kind"] = json!(family);
+                self.reservation_candidates(
+                    &nested,
+                    &h,
+                    Some((&spec, slot, &local)),
+                    DocumentPlace {
+                        name: definition.name.clone(),
+                        pointer: format!("/{slot}/{}", crate::schemas::token(&local)),
+                    },
+                    candidates,
+                    depth + 1,
+                );
+            }
+        }
+    }
+}
+
+fn reservation_object<'a>(
+    objects: &'a [Value],
+    reference: &Value,
+    entry_pool: Option<&Value>,
+) -> Option<&'a Value> {
+    if reference.is_null() {
+        return None;
+    }
+    if let Some(entry) = reference.get("entry") {
+        let pool_reference = reference
+            .get("name")
+            .map(|name| json!({"kind":"Pool","name":name}));
+        let pool = reservation_object(objects, pool_reference.as_ref().or(entry_pool)?, None)?;
+        return objects.iter().find(|object| {
+            object["kind"] == "Resource"
+                && object["state"] != "retired"
+                && ((object["nested"]["slot"] == "entries"
+                    && object["nested"]["name"] == *entry
+                    && pool["id"].is_string()
+                    && object["nested"]["parent"] == pool["id"])
+                    || (object["reservation_slot"] == "entries"
+                        && object["reservation_name"] == *entry
+                        && reservation_object(objects, &object["reservation_parent"], None)
+                            .is_some_and(|parent| std::ptr::eq(parent, pool))))
+        });
+    }
+    objects.iter().find(|object| {
+        object.get("spec").is_none()
+            && reference
+                .get("kind")
+                .is_none_or(|kind| object["kind"] == *kind)
+            && (reference.get("id").is_some_and(|id| object["id"] == *id)
+                || reference
+                    .as_str()
+                    .is_some_and(|name| object["id"] == name || object["name"] == name)
+                || reference
+                    .get("name")
+                    .is_some_and(|name| object["name"] == *name))
+    })
+}
+
+fn reserved_conduit(object: &Value, objects: &[Value], context: &Context) -> bool {
+    if object["kind"] != "Conduit" {
+        return false;
+    }
+    if reservation_object(objects, &object["consumer"], None)
+        .is_some_and(|consumer| consumer["from"] == context.qualified("root"))
+    {
+        return false;
+    }
+    let Some(target) = reservation_object(
+        objects,
+        &object["target"],
+        object.get("reservation_entry_pool"),
+    ) else {
+        return false;
+    };
+    // Read the target's contract scope without publishing its other operations:
+    // an invalid control or configuration must not hide this refusal (OPS-023).
+    let target = if let Some(held) = target.get("held") {
+        let Ok(held) = serde_json::from_value::<Held>(held.clone()) else {
+            return false;
+        };
+        let Some(ty) = target["type"].as_str() else {
+            return false;
+        };
+        let Ok((scope, _, _)) = held.select(ty, "Type", &context.core_package) else {
+            return false;
+        };
+        json!({"schema_environment":held.environment,"contract_scope":scope.scope})
+    } else if target.get("schema_environment").is_some() {
+        target.clone()
+    } else {
+        json!({"schema_environment":context.core_environment,"contract_scope":"core"})
+    };
+    let held = object
+        .get("held")
+        .and_then(|h| serde_json::from_value::<Held>(h.clone()).ok());
+    list(object, "operations").iter().any(|operation| {
+        let qualified = if let Some(held) = &held {
+            let Ok((_, _, qualified)) = held.select(operation, "Operation", &context.core_package)
+            else {
+                return false;
+            };
+            Some(qualified)
+        } else {
+            None
+        };
+        crate::schemas::operation(
+            &target,
+            qualified.as_deref().unwrap_or(operation),
+            &context.core_package,
+        )
+        .is_ok_and(|(_, _, contract)| contract["spec"]["reservedToRoot"] == true)
+    })
+}
+
+fn registration_restriction(
+    state: &State,
+    project: Project,
+    snapshots: Vec<Snapshot>,
+    context: &Context,
+    root_own: bool,
+    replacement: Option<(&Value, &str)>,
+) -> Option<RegistrationRestriction> {
+    let builtin = context.builtin.as_ref()?;
+    let (environment, indexes) = Catalog::diagnostic_context(builtin, &snapshots, &project);
+    let h = Held {
+        environment,
+        indexes,
+        contexts: json!({}),
+        scope: "project".into(),
+        instance_inputs: BTreeMap::new(),
+    };
+    let evidence = Evidence {
+        time: String::new(),
+        ids: vec![],
+        revisions: vec![],
+        suffixes: vec![],
+    };
+    let b = Builder {
+        context, evidence: &evidence, state: state.clone(), allocation: Allocation { evidence: &evidence, cursor: 0 },
+        suffix: 0, objects: vec![], diagnostics: vec![], sources: BTreeMap::new(),
+        templates: project.documents.iter().filter(|d| !packages::contract(d) && d.get("from").is_none())
+            .map(|d| json!({"kind":d["kind"],"name":d["metadata"]["name"],"metadata":d["metadata"],"spec":d["spec"],"held":h})).collect(),
+        reserved_names: BTreeSet::new(), snapshots, trusted: true, replacement_declaration: None,
+        submitted_resources: BTreeMap::new(), defer_children: false,
+    };
+    let mut candidates = vec![];
+    if let Some((parent, name)) = replacement {
+        let slot = if parent["kind"] == "Pool" {
+            "entries"
+        } else {
+            "conduits"
+        };
+        let mut document = parent[slot][name].clone();
+        if !document.is_object() {
+            return None;
+        }
+        document["kind"] = json!(if slot == "entries" {
+            "Resource"
+        } else {
+            "Conduit"
+        });
+        let held = serde_json::from_value(parent["held"].clone()).ok()?;
+        b.reservation_candidates(
+            &document,
+            &held,
+            Some((parent, slot, name)),
+            DocumentPlace {
+                name: parent["name"].as_str()?.into(),
+                pointer: format!("/{slot}/{}", crate::schemas::token(name)),
+            },
+            &mut candidates,
+            0,
+        );
+    } else {
+        for document in &project.documents {
+            let Some(name) = document["metadata"]["name"].as_str() else {
+                continue;
+            };
+            b.reservation_candidates(
+                document,
+                &h,
+                None,
+                DocumentPlace {
+                    name: name.into(),
+                    pointer: String::new(),
+                },
+                &mut candidates,
+                0,
+            );
+        }
+    }
+    let mut objects = state.objects.clone();
+    objects.extend(candidates.iter().map(|(object, _)| object.clone()));
+    // ACC-054 precedes ACC-032 even when another declaration would be refused too.
+    if !root_own
+        && let Some((_, place)) = candidates.iter().find(|(object, _)| {
+            object["kind"] == "Conduit"
+                && reservation_object(&objects, &object["consumer"], None)
+                    .is_some_and(|consumer| consumer["from"] == context.qualified("root"))
+        })
+    {
+        return Some(RegistrationRestriction {
+            rule: "ACC-054",
+            place: place.clone(),
+        });
+    }
+    candidates
+        .into_iter()
+        .find(|(object, _)| reserved_conduit(object, &objects, context))
+        .map(|(_, place)| RegistrationRestriction {
+            rule: "ACC-032",
+            place,
+        })
+}
+
+pub(crate) fn reserved_submission(
+    state: &State,
+    documents: &[Value],
+    manifest: Option<&Value>,
+    snapshots: Vec<Snapshot>,
+    context: &Context,
+    root_own: bool,
+) -> Option<RegistrationRestriction> {
+    registration_restriction(
+        state,
+        Project {
+            manifest: manifest.cloned(),
+            documents: documents.to_vec(),
+            directory: None,
+        },
+        snapshots,
+        context,
+        root_own,
+        None,
+    )
+}
+
+pub(crate) fn reserved_replacement(
+    state: &State,
+    arguments: &Value,
+    context: &Context,
+    root_own: bool,
+) -> Option<RegistrationRestriction> {
+    let parent = crate::access::object(state, &arguments["instance"])?;
+    let name = arguments["nested"].as_str()?;
+    registration_restriction(
+        state,
+        Project {
+            manifest: None,
+            documents: vec![],
+            directory: None,
+        },
+        packages::catalog_entries(state, state.preinstalled_snapshots.clone()),
+        context,
+        root_own,
+        Some((parent, name)),
+    )
+}
+
+fn refuse_reserved_registration(
+    t: &mut Transition,
+    evidence: &Evidence,
+    request: &Request,
+    documents: &[Value],
+    context: &Context,
+    restriction: RegistrationRestriction,
+) -> Result<Option<crate::explain::Rejection>> {
+    let rule = restriction.rule;
+    t.decisions.push(decision(
+        "refuse-reserved-conduit-registration",
+        &[rule, "OPS-023"],
+        &[],
+        json!({}),
+        vec![],
+    ));
+    let route = crate::explain::ids(request, json!({"documents":documents}));
+    end_request(t, evidence, &route, None, "refused", rule, context)?;
+    let mut diagnostic = crate::explain::diagnostic(&t.state, &route, context, "refused", rule)?;
+    packages::object_location(
+        &mut diagnostic,
+        &restriction.place.name,
+        &restriction.place.pointer,
+    );
+    t.reply = json!({"accepted":false,"reason":"refused","diagnostics":[diagnostic]});
+    Ok(Some(crate::explain::Rejection::new("refused", rule)))
+}
+
 fn refuse_root_registration(
     t: &mut Transition,
     evidence: &Evidence,
@@ -2934,6 +3312,23 @@ pub(crate) fn prepare(
             .any(|doc| root_consumed(&t.state, doc, root))
     {
         return refuse_root_registration(t, evidence, request, &project.documents, context);
+    }
+    if let Some(restriction) = reserved_submission(
+        &t.state,
+        &project.documents,
+        project.manifest.as_ref(),
+        snapshots.clone(),
+        context,
+        root_own,
+    ) {
+        return refuse_reserved_registration(
+            t,
+            evidence,
+            request,
+            &project.documents,
+            context,
+            restriction,
+        );
     }
     // Canonical traversal fixes allocations, diagnostics and nested names independently of file order.
     project.documents.sort_by_key(|d| {
@@ -3177,6 +3572,29 @@ pub(crate) fn prepare(
     }
     let mut all_resolved = b.state.objects.clone();
     all_resolved.extend(resolved.iter().cloned());
+    for object in &resolved {
+        if reserved_conduit(object, &all_resolved, context) {
+            let source = object["id"].as_str().and_then(|id| b.sources.get(id));
+            let place = source
+                .and_then(|source| source.declaration.clone())
+                .unwrap_or(DocumentPlace {
+                    name: object["name"].as_str().unwrap_or("").into(),
+                    pointer: String::new(),
+                });
+            return refuse_reserved_registration(
+                t,
+                evidence,
+                request,
+                &project.documents,
+                context,
+                RegistrationRestriction {
+                    rule: "ACC-032",
+                    place,
+                },
+            );
+        }
+    }
+
     for object in &resolved {
         let Some(place) = object["login_resource_place"].as_str() else {
             continue;

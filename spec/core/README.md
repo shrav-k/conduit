@@ -232,9 +232,8 @@ ENR-008).
   other work, as it does for `set-up.v1`, `retire.v1` and `retire-with-resources.v1`.
   `inspect.v1` states no `effect`.
 - **Reserved to `root`.** Written `reservedToRoot: true` in the contract (CTR-002). ACC-032
-  says what the mark means, and only an Operation contract of the core package carries it: any
-  other package that holds one is rejected when it is installed, and a project that holds one
-  when it is submitted (CTR-009).
+  says what the mark means. An Operation contract of any package or project may carry it
+  (CTR-009), and only a capability of its own package or project may list it (CTR-003).
 - **How a request names things.** A request that an actor makes on its own behalf names an
   object by a reference and never by an ID, and one that holds the resolved form in its place
   reports invalid (LIF-031). A retired instance's name still resolves until the instance is

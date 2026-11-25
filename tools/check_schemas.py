@@ -231,7 +231,7 @@ RULES = {
     "one-name": "NAM-027",
     "bound-once": "CON-028",
     "bound-target": "CON-028",
-    "reserved-mark": "CTR-009",
+    "reserved-listed": "CTR-003",
     "entry-reference": "POOL-005",
     "operations-filled": "CON-016",
     "ref": "SCH-015",
@@ -1688,14 +1688,20 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
                 aims(f"the declared Conduit {local} of the template {name}",
                      declared.get("from"), declared["target"])
 
-    # reserved-mark (CTR-009): outside the core package no Operation contract is marked.
+    # reserved-listed (CTR-003): outside the core, no capability lists a reserved core
+    # operation. This checker has the core's contracts; other packages need full resolution.
     if not is_core:
+        reserved = {core + "#" + name for name, contract in package_docs[core].items()
+                    if contract.get("kind") == "Operation"
+                    and (contract.get("spec") or {}).get("reservedToRoot") is True}
         for doc in docs:
-            if doc.get("kind") == "Operation" \
-                    and (doc.get("spec") or {}).get("reservedToRoot") is True:
-                found.append(("reserved-mark", f"the Operation contract {named(doc)} is marked "
-                                               f"`reservedToRoot: true` and is not a contract "
-                                               f"of the core package"))
+            if doc.get("kind") == "Capability":
+                for operation in (doc.get("spec") or {}).get("operations", []):
+                    if isinstance(operation, str) and operation in reserved:
+                        found.append(("reserved-listed",
+                                      f"the Capability contract {named(doc)} lists the reserved "
+                                      f"core operation {operation}, whose contract is not of "
+                                      f"the capability's own package or project"))
 
     # first-start-from (FST-006): no instance document is made from a core template from
     # which first start alone makes instances, `node` among them. Applied where `from` is

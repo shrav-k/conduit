@@ -286,8 +286,9 @@ own sessions. Config fields are `engine_https_url`, `https_listen` and `https_ro
 The first address and output retention use CLI options `--url`,
 `--output-cap-bytes` and `--output-age-seconds`; defaults are a loopback address at port 3000
 with path /mcp, 64 MiB and seven days. Runner settings are `initialize_timeout` (30 seconds),
-`call_timeout` (120 seconds) and `pass_environment` (empty); CLI equivalents are
-`--initialize-timeout-seconds`, `--call-timeout-seconds` and repeated `--pass-environment NAME`.
+`call_timeout` (120 seconds), `admission_ask_timeout` (30 seconds) and `pass_environment` (empty);
+CLI equivalents are `--initialize-timeout-seconds`, `--call-timeout-seconds`,
+`--admission-ask-timeout-seconds` and repeated `--pass-environment NAME`.
 The runner supports npm Packages over stdio, verifies their artifact SHA-256 before unpacking,
 installs dependencies without scripts, and keeps a hash-keyed cache under the store. This
 pins the artifact, not its dependency graph. Each run has a private empty working directory,

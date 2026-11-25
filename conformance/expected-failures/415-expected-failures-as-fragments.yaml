@@ -22,23 +22,19 @@
     },
     {
       "id": "requests-admission-hold",
-      "reason": "PND-016, order 316: the first build dispatches a call on a guarded login with no ask and holds none; the guard's engine orders for the ask and the hold make it pass"
+      "reason": "PND-016, order 316: the first build asks for a login's report and waits, but holds no call on a report or for want of one; the guard's engine order for the hold makes it pass"
     },
     {
       "id": "requests-admission-no-report",
-      "reason": "PND-016, order 316: the first build dispatches a call on a guarded login with no ask and holds none; the guard's engine orders for the ask and the hold make it pass"
-    },
-    {
-      "id": "requests-admission-report-kept",
-      "reason": "IFC-054, order 314: the first build never calls admission-hook.v1 and keeps no admission report; the guard's engine orders for keeping and the ask make it pass"
+      "reason": "PND-016, order 316: the first build asks for a login's report and waits, but holds no call on a report or for want of one; the guard's engine order for the hold makes it pass"
     },
     {
       "id": "requests-admission-single-use",
-      "reason": "PND-016, order 316: the first build dispatches a call on a guarded login with no ask and holds none; the guard's engine orders for the ask and the hold make it pass"
+      "reason": "PND-016, order 316: the first build holds no call on a login's report and stores no control's levers (REV-007); the guard's engine order for the hold and REV-007's storing at the levers place make it pass"
     },
     {
       "id": "requests-admission-wait-ends",
-      "reason": "PND-016, order 316: the first build dispatches a call on a guarded login with no ask and holds none; the guard's engine orders for the ask and the hold make it pass"
+      "reason": "PND-016, order 316: the first build asks for a login's report and waits, but holds no call on a report or for want of one; the guard's engine order for the hold makes it pass"
     },
     {
       "id": "requests-attributed-a-hook",

@@ -423,6 +423,7 @@ pub(crate) fn record_content(t: &Transition, c: &Context, data: &mut Value) -> R
             ("conduit", "conduit"),
             ("operation", "operation"),
             ("serving", "serving"),
+            ("causedBy", "causedBy"),
             ("object", "object"),
             ("requiredCapabilities", "requiredCapabilities"),
             ("extensionRevision", "extensionRevision"),
@@ -1036,6 +1037,135 @@ pub(crate) fn invoke_part(
 }
 
 #[allow(clippy::too_many_arguments)]
+pub(crate) fn hold_before_dispatch(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    target: &Value,
+    contract: &Value,
+    route: &mut Value,
+    access_record_id: &str,
+) -> Result<bool> {
+    let operation = route["operation"]
+        .as_str()
+        .ok_or("request has no operation")?
+        .to_owned();
+    let op = operation.as_str();
+    if contract["spec"]["startsModelWork"] == true
+        && let Some(hold) =
+            crate::login_resource::hold_work(t, a, c, target, route, access_record_id)?
+    {
+        if !hold.actions.is_empty() {
+            route["pendingAction"] = json!(hold.actions);
+        }
+        reject_diagnostics(
+            t,
+            a,
+            c,
+            route,
+            "unavailable",
+            hold.rule,
+            None,
+            None,
+            Some(json!([{"ruleId":hold.rule,"level":"error","message":{"text":hold.message}}])),
+        )?;
+        if let Some(ids) = route.get("pendingAction") {
+            t.reply["_meta"][mark(c, "pendingAction")] = ids.clone();
+        }
+        return Ok(true);
+    }
+    let held_for_sign_in = sign_in::request_is_held(&t.state, target, contract);
+    let held_for_undo = sign_in::request_is_held_for_sign_in_undone(&t.state, &target["id"]);
+    if held_for_sign_in || held_for_undo {
+        let tool = route["tool"]
+            .as_str()
+            .ok_or("held request has no tool")?
+            .to_owned();
+        let mut diagnostics = Vec::new();
+        if held_for_sign_in {
+            let mut facts = json!({"instance":target["id"]});
+            if let sign_in::ExpectedAccount::Set { pointer, account } =
+                sign_in::expected_account(target, c)?
+            {
+                if let Some(action) = pending::raise_sign_in(
+                    &mut t.state,
+                    target,
+                    account,
+                    &pointer,
+                    pending::SignInRequest::Held {
+                        access_record_id,
+                        operation: op,
+                    },
+                    a,
+                )? {
+                    t.decisions.push(decision(
+                        "raise-sign-in-action",
+                        &["PND-001", "PND-005", "PND-012"],
+                        &["DL19"],
+                        json!({"action":action["id"], "instance":target["id"]}),
+                        vec![],
+                    ));
+                }
+                if let Some(action) =
+                    pending::unanswered_sign_in(&t.state, target, &a.evidence.time)
+                {
+                    facts["action"] = action["id"].clone();
+                    route["pendingAction"] = json!([action["id"]]);
+                }
+            }
+            t.decisions.push(decision(
+                "hold-for-sign-in",
+                &["PND-005", "IFC-025", "OPS-023"],
+                &[],
+                facts,
+                vec![],
+            ));
+            diagnostics.push(json!({
+            "ruleId": "PND-005",
+            "level": "error",
+            "message": {"text": format!(
+                "{tool} reports unavailable under PND-005: the instance awaits sign-in to its expected account, so the request was not dispatched; send it again once sign-in.v1 has signed the instance in."
+            )}
+        }));
+        }
+        if held_for_undo {
+            t.decisions.push(decision(
+                "hold-for-sign-in-undone",
+                &["PND-011", "OPS-023"],
+                &[],
+                json!({"instance":target["id"]}),
+                vec![],
+            ));
+            diagnostics.push(json!({
+                "ruleId":"PND-011","level":"error","message":{"text":format!(
+                    "{tool} reports unavailable under PND-011: SignInUndone is False for the instance, since an account check found an account other than the expected one that may still be signed in. The request was not dispatched. Send it again once an account check within sign-in.v1 or setup finds the expected account or none."
+                )}
+            }));
+        }
+        reject_diagnostics(
+            t,
+            a,
+            c,
+            route,
+            "unavailable",
+            if held_for_sign_in {
+                "PND-005"
+            } else {
+                "PND-011"
+            },
+            None,
+            None,
+            Some(json!(diagnostics)),
+        )?;
+        if let Some(ids) = route.get("pendingAction") {
+            t.reply["_meta"][mark(c, "pendingAction")] = ids.clone();
+        }
+        return Ok(true);
+    }
+    Ok(false)
+}
+
+#[allow(clippy::too_many_arguments)]
 fn invoke_inner(
     t: &mut Transition,
     a: &mut Allocation<'_>,
@@ -1282,7 +1412,11 @@ fn invoke_inner(
         access::object(&t.state, &route["target"]).ok_or("missing target")?,
         c,
     )?;
-    let op = route["operation"].as_str().ok_or("missing operation")?;
+    let operation = route["operation"]
+        .as_str()
+        .ok_or("missing operation")?
+        .to_owned();
+    let op = operation.as_str();
     let (_, _, contract) = schemas::operation(&target, op, &c.core_package)?;
     // LIF-031 and IFC-049 apply to each sign-in request, including keyed repeats.
     if op == c.qualified("sign-in.v1")
@@ -1356,6 +1490,22 @@ fn invoke_inner(
             None
         };
         if let Some(rule) = conflict {
+            if rule == "OPS-032" && old.get("admission_wait").is_some() {
+                return reject_diagnostics(
+                    t,
+                    a,
+                    c,
+                    &route,
+                    "conflict",
+                    "PND-016",
+                    Some(id),
+                    None,
+                    Some(
+                        json!([{"ruleId":"PND-016","level":"error","message":{"text":
+                        "The earlier call with this key waits for its login's admission report; nothing was dispatched for this request, and the earlier call's reply gives its result."}}]),
+                    ),
+                );
+            }
             return reject(
                 t,
                 a,
@@ -1483,115 +1633,7 @@ fn invoke_inner(
         ));
         return end(t, a, c, &route, Some(outcome), None, Some(&old["id"]));
     }
-    if contract["spec"]["startsModelWork"] == true
-        && let Some(hold) =
-            crate::login_resource::hold_work(t, a, c, &target, &route, &access_record_id)?
-    {
-        if !hold.actions.is_empty() {
-            route["pendingAction"] = json!(hold.actions);
-        }
-        reject_diagnostics(
-            t,
-            a,
-            c,
-            &route,
-            "unavailable",
-            hold.rule,
-            None,
-            None,
-            Some(json!([{"ruleId":hold.rule,"level":"error","message":{"text":hold.message}}])),
-        )?;
-        if let Some(ids) = route.get("pendingAction") {
-            t.reply["_meta"][mark(c, "pendingAction")] = ids.clone();
-        }
-        return Ok(());
-    }
-    let held_for_sign_in = sign_in::request_is_held(&t.state, &target, &contract);
-    let held_for_undo = sign_in::request_is_held_for_sign_in_undone(&t.state, &target["id"]);
-    if held_for_sign_in || held_for_undo {
-        let tool = route["tool"]
-            .as_str()
-            .ok_or("held request has no tool")?
-            .to_owned();
-        let mut diagnostics = Vec::new();
-        if held_for_sign_in {
-            let mut facts = json!({"instance":target["id"]});
-            if let sign_in::ExpectedAccount::Set { pointer, account } =
-                sign_in::expected_account(&target, c)?
-            {
-                if let Some(action) = pending::raise_sign_in(
-                    &mut t.state,
-                    &target,
-                    account,
-                    &pointer,
-                    pending::SignInRequest::Held {
-                        access_record_id: &access_record_id,
-                        operation: op,
-                    },
-                    a,
-                )? {
-                    t.decisions.push(decision(
-                        "raise-sign-in-action",
-                        &["PND-001", "PND-005", "PND-012"],
-                        &["DL19"],
-                        json!({"action":action["id"], "instance":target["id"]}),
-                        vec![],
-                    ));
-                }
-                if let Some(action) =
-                    pending::unanswered_sign_in(&t.state, &target, &a.evidence.time)
-                {
-                    facts["action"] = action["id"].clone();
-                    route["pendingAction"] = json!([action["id"]]);
-                }
-            }
-            t.decisions.push(decision(
-                "hold-for-sign-in",
-                &["PND-005", "IFC-025", "OPS-023"],
-                &[],
-                facts,
-                vec![],
-            ));
-            diagnostics.push(json!({
-            "ruleId": "PND-005",
-            "level": "error",
-            "message": {"text": format!(
-                "{tool} reports unavailable under PND-005: the instance awaits sign-in to its expected account, so the request was not dispatched; send it again once sign-in.v1 has signed the instance in."
-            )}
-        }));
-        }
-        if held_for_undo {
-            t.decisions.push(decision(
-                "hold-for-sign-in-undone",
-                &["PND-011", "OPS-023"],
-                &[],
-                json!({"instance":target["id"]}),
-                vec![],
-            ));
-            diagnostics.push(json!({
-                "ruleId":"PND-011","level":"error","message":{"text":format!(
-                    "{tool} reports unavailable under PND-011: SignInUndone is False for the instance, since an account check found an account other than the expected one that may still be signed in. The request was not dispatched. Send it again once an account check within sign-in.v1 or setup finds the expected account or none."
-                )}
-            }));
-        }
-        reject_diagnostics(
-            t,
-            a,
-            c,
-            &route,
-            "unavailable",
-            if held_for_sign_in {
-                "PND-005"
-            } else {
-                "PND-011"
-            },
-            None,
-            None,
-            Some(json!(diagnostics)),
-        )?;
-        if let Some(ids) = route.get("pendingAction") {
-            t.reply["_meta"][mark(c, "pendingAction")] = ids.clone();
-        }
+    if hold_before_dispatch(t, a, c, &target, &contract, &mut route, &access_record_id)? {
         return Ok(());
     }
     if op == c.qualified("register-replacement.v1") {
@@ -1902,6 +1944,12 @@ fn invoke_inner(
         && !crate::lifecycle::handles(op, c)
         && op != c.qualified("sign-in.v1");
     link_access(t, &id, discover.then_some(&invocation["attempt"]));
+    if crate::admission_ask::wait(t, a, c, i, &route)? {
+        // A delayed dispatch correlates with this one permitted decision by attempt,
+        // including a plain call, whose ordinary dispatch is in the same transition.
+        link_access(t, &id, Some(&invocation["attempt"]));
+        return Ok(());
+    }
     let mut data = json!({"target":route["target"],"caller":route["caller"],"consumer":route["consumer"],"conduit":route["conduit"],"operation":op,"invocation":id,"attempt":invocation["attempt"]});
     if let Some(action) = &retried {
         data["pendingAction"] = json!([action["id"]]);
@@ -2065,6 +2113,61 @@ fn invoke_inner(
         t.external_intents.push(call);
         t.reply = json!({"pending":true,"invocation":id,"attempt":invocation["attempt"]});
     }
+    Ok(())
+}
+
+/// PND-016: the same prepared invocation, after its wait and dispatch check.
+pub(crate) fn dispatch_waiting(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+) -> Result<()> {
+    let v = &mut t.state.invocations[i];
+    v.as_object_mut().unwrap().remove("admission_wait");
+    v.as_object_mut().unwrap().remove("admission_tool");
+    if v["plain"] != true {
+        v["discovery"] = json!("pending");
+    }
+    let v = v.clone();
+    if v["plain"] == true {
+        order_control_dispatch(&mut t.state, i)?;
+        record(t, a, c, "invocation-dispatched", recorded_route(&v))?;
+        t.external_intents.push(intent(&v, &t.state, c)?);
+    } else {
+        t.external_intents.push(discovery_intent(&v, c));
+    }
+    Ok(())
+}
+
+pub(crate) fn reject_waiting(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    message: &str,
+) -> Result<()> {
+    let v = t.state.invocations[i].clone();
+    let mut route = recorded_route(&v);
+    route["dispatched"] = json!(false);
+    reject_diagnostics(
+        t,
+        a,
+        c,
+        &route,
+        "unavailable",
+        "PND-016",
+        Some(&v["id"]),
+        None,
+        Some(json!([{"ruleId":"PND-016","level":"error","message":{"text":message}}])),
+    )?;
+    end_waiting(t, i)
+}
+
+pub(crate) fn end_waiting(t: &mut Transition, i: usize) -> Result<()> {
+    let v = t.state.invocations[i].clone();
+    fault_reply(t, &v)?;
+    restore_or_remove_invocation(&mut t.state, i, &v);
     Ok(())
 }
 
@@ -2291,7 +2394,7 @@ pub(crate) fn complete(
     if let Some(limits) = limits {
         limits.record_end(t, c, first_record, id);
     }
-    Ok(())
+    crate::admission_ask::settle(t, evidence, c)
 }
 
 fn complete_call(
@@ -2537,7 +2640,7 @@ fn complete_call(
 fn recorded_route(v: &Value) -> Value {
     json!({"target":v["target"],"caller":v["caller"],"consumer":v["sender"],
         "conduit":v["conduit"],"operation":v["operation"],"serving":v["serving"],
-        "invocation":v["id"],"attempt":v["attempt"],"idempotencyKey":v["key"]})
+        "invocation":v["id"],"attempt":v["attempt"],"idempotencyKey":v["key"],"causedBy":v["causedBy"]})
 }
 
 pub(crate) fn finish_record_fault(
@@ -2622,7 +2725,10 @@ fn reject_unsent(
     stage: UnsentDispatch,
 ) -> Result<Value> {
     let v = t.state.invocations[i].clone();
-    let route = recorded_route(&v);
+    let mut route = recorded_route(&v);
+    if v.get("admission_wait").is_some() {
+        route["dispatched"] = json!(false);
+    }
     if matches!(stage, UnsentDispatch::Proposed) {
         discard_proposed_dispatch(t, &v["id"]);
         let mut data = route.clone();
@@ -2796,6 +2902,9 @@ fn complete_discovery(
         "conduit":v["conduit"],"operation":operation,"arguments":v["arguments"],
         "serving":v["serving"],"idempotencyKey":v["key"]
     });
+    if let Some(cause) = v.get("causedBy") {
+        route["causedBy"] = cause.clone();
+    }
     let cause = if retired {
         t.decisions.push(decision(
             "withhold-sign-in-hook-for-retirement",
@@ -2966,6 +3075,32 @@ pub(crate) fn cancel(
         evidence,
         cursor: 0,
     };
+    if t.state.invocations[i].get("admission_wait").is_some() {
+        reject_waiting(
+            t,
+            &mut a,
+            c,
+            i,
+            "The call was cancelled while it waited for its login's admission report, so it was not dispatched and started no model work.",
+        )?;
+        for records in [&mut t.records, &mut t.state.records] {
+            if let Some(record) = records
+                .iter_mut()
+                .rev()
+                .find(|r| r["type"] == "request-ended" && r["data"]["invocation"] == id)
+            {
+                record["data"]["cancelledWhileWaiting"] = json!(true);
+            }
+        }
+        t.decisions.push(decision(
+            "cancel-admission-wait",
+            &["PND-016", "OPS-027"],
+            &[],
+            json!({"invocation":id}),
+            vec![],
+        ));
+        return Ok(());
+    }
     if t.state.invocations[i].get("cascade").is_some() {
         return crate::cascade::cancel(t, &mut a, c, i);
     }
@@ -3047,7 +3182,7 @@ pub(crate) fn cancel(
         crate::lifecycle::child_ended(t, &mut a, c, i)?;
         t.reply = reply;
     }
-    Ok(())
+    crate::admission_ask::settle(t, evidence, c)
 }
 pub(crate) fn expire(t: &mut Transition, id: &str) -> Result<()> {
     let v = t
@@ -3082,6 +3217,15 @@ pub(crate) fn recover(t: &mut Transition, evidence: &Evidence, c: &Context) -> R
         evidence,
         cursor: 0,
     };
+    // End every undispatched waiter before any ask it depended on.
+    while let Some(i) = t
+        .state
+        .invocations
+        .iter()
+        .position(|v| v["state"] == "in-progress" && v.get("admission_wait").is_some())
+    {
+        reject_unsent(t, &mut a, c, i, UnsentDispatch::DecisionKept)?;
+    }
     let mut next = 0;
     while next < t.state.invocations.len() {
         let i = next;
@@ -3091,7 +3235,9 @@ pub(crate) fn recover(t: &mut Transition, evidence: &Evidence, c: &Context) -> R
         }
         if t.state.invocations[i]["state"] == "in-progress" {
             let v = &t.state.invocations[i];
-            if v["discovery"] == "pending" && v["hook"] != true {
+            if v.get("admission_wait").is_some()
+                || (v["discovery"] == "pending" && v["hook"] != true)
+            {
                 let removed = v.get("previous").is_none();
                 reject_unsent(t, &mut a, c, i, UnsentDispatch::DecisionKept)?;
                 if removed {
@@ -3148,6 +3294,7 @@ pub(crate) fn recover(t: &mut Transition, evidence: &Evidence, c: &Context) -> R
             }
         }
     }
+    crate::admission_ask::recovered(t, &mut a, c)?;
     for invocation in &mut t.state.invocations {
         compact_ended_invocation(invocation, c);
     }

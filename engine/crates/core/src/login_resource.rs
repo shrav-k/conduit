@@ -87,6 +87,7 @@ pub(crate) fn hold_work(
                 .iter()
                 .find(|v| {
                     v["state"] == "in-progress"
+                        && v.get("admission_wait").is_none()
                         && v["contract"]["spec"]["startsModelWork"] == true
                         && id(&v["held_target"]) == Some(&resource["id"])
                 })

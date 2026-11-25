@@ -27,7 +27,7 @@ use std::{
     collections::BTreeMap,
     path::Path,
     sync::{
-        Arc, Mutex,
+        Arc, Mutex, Weak,
         atomic::{AtomicU8, Ordering},
     },
 };
@@ -173,9 +173,18 @@ pub fn preflight(shell: &Shell) -> Result<()> {
     Ok(())
 }
 
+#[derive(Clone)]
+struct AdmissionTimers {
+    shell: Weak<Shell>,
+    executor: Weak<ServingExecutor>,
+    runtime: tokio::runtime::Handle,
+    shutdown: CancellationToken,
+}
+
 pub struct ServingExecutor {
     inner: Arc<dyn Executor>,
     changes: broadcast::Sender<String>,
+    admission_timers: Mutex<Option<AdmissionTimers>>,
     #[cfg(test)]
     pub(crate) sign_in_wait_limit: Option<chrono::TimeDelta>,
 }
@@ -184,6 +193,7 @@ impl ServingExecutor {
         Self {
             inner,
             changes: broadcast::channel(1024).0,
+            admission_timers: Mutex::new(None),
             #[cfg(test)]
             sign_in_wait_limit: None,
         }
@@ -210,6 +220,50 @@ impl Executor for ServingExecutor {
     }
     fn cancel_setup_parts(&self, v: &Value) -> Result<Execution> {
         self.inner.cancel_setup_parts(v)
+    }
+    fn admission_asks_started(&self, asks: &[Value]) -> Result<()> {
+        self.inner.admission_asks_started(asks)?;
+        let timers = self
+            .admission_timers
+            .lock()
+            .map_err(|_| "admission timer lock poisoned")?
+            .clone();
+        let Some(timers) = timers else {
+            return Ok(());
+        };
+        for ask in asks {
+            let (Some(shell), Some(executor)) = (timers.shell.upgrade(), timers.executor.upgrade())
+            else {
+                break;
+            };
+            let invocation = ask["invocation"]
+                .as_str()
+                .ok_or("ask has no invocation")?
+                .to_owned();
+            let attempt = ask["attempt"].as_u64().ok_or("ask has no attempt")?;
+            let start =
+                DateTime::parse_from_rfc3339(ask["startedAt"].as_str().ok_or("ask has no start")?)
+                    .map_err(|_| "invalid ask start")?
+                    .with_timezone(&Utc);
+            let limit = chrono::TimeDelta::from_std(shell.config.admission_ask_timeout)
+                .map_err(|_| "admission ask timeout is too large")?;
+            let expires = start
+                .checked_add_signed(limit)
+                .ok_or("admission ask deadline overflow")?;
+            let shutdown = timers.shutdown.clone();
+            timers.runtime.spawn(async move {
+                let wait = (expires - Utc::now()).to_std().unwrap_or_default();
+                tokio::select! {
+                    biased;
+                    _ = shutdown.cancelled() => return,
+                    _ = tokio::time::sleep(wait) => {}
+                }
+                let _ = tokio::task::spawn_blocking(move || shell.submit(
+                    json!({"kind":"admission-ask-deadline","invocation":invocation,"attempt":attempt}), executor.as_ref()
+                )).await;
+            });
+        }
+        Ok(())
     }
     fn tools_changed(&self, notifications: &[Value]) -> Result<()> {
         self.inner.tools_changed(notifications)?;
@@ -1070,6 +1124,15 @@ pub async fn serve_with_ready(
     } else {
         None
     };
+    *executor
+        .admission_timers
+        .lock()
+        .map_err(|_| "admission timer lock poisoned")? = Some(AdmissionTimers {
+        shell: Arc::downgrade(&shell),
+        executor: Arc::downgrade(&executor),
+        runtime: tokio::runtime::Handle::current(),
+        shutdown: shutdown.clone(),
+    });
     let run = |listener, https| {
         let router = listener_router(shell.clone(), executor.clone(), shutdown.clone(), https);
         let shutdown = shutdown.clone();

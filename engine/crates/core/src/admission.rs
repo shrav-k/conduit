@@ -13,7 +13,7 @@ use std::collections::BTreeMap;
 pub enum End {
     /// The keep time plus the report's validity has passed.
     ValidForEnded,
-    /// Its one call was admitted; the ask's order will set this end.
+    /// Its one call was admitted.
     SingleUse,
     /// A later call kept a limits member for this login.
     NewerLimits,
@@ -70,6 +70,25 @@ impl Kept {
     }
 }
 
+pub(crate) fn newest<'a>(state: &'a State, login: &str) -> Option<&'a Value> {
+    state.admission_reports.get(login).map(|kept| &kept.report)
+}
+
+pub(crate) fn kept_by(state: &State, login: &str, invocation: &str) -> bool {
+    state
+        .admission_reports
+        .get(login)
+        .is_some_and(|kept| kept.invocation == invocation)
+}
+
+pub(crate) fn current<'a>(state: &'a State, login: &str, time: &str) -> Option<&'a Value> {
+    state
+        .admission_reports
+        .get(login)
+        .filter(|kept| kept.end_at(time).is_none())
+        .map(|kept| &kept.report)
+}
+
 pub(crate) struct Report {
     report: Value,
     login: String,
@@ -117,12 +136,17 @@ impl Report {
             return;
         };
         t.state.admission_reports.insert(
-            self.login,
+            self.login.clone(),
             Kept {
                 report: self.report.clone(),
                 invocation: invocation.into(),
                 kept_at: kept_at.into(),
-                ended: None,
+                ended: t
+                    .state
+                    .admission_asks
+                    .get(&self.login)
+                    .filter(|ask| ask.invocation == invocation && ask.levers_changed)
+                    .map(|_| End::LeversChanged),
             },
         );
         ended["data"]["admission"] = self.report;
@@ -189,6 +213,9 @@ pub(crate) fn control_succeeded(state: &mut State, invocation: &Value, time: &st
             })
     });
     if changed {
+        if let Some(ask) = state.admission_asks.get_mut(id) {
+            ask.levers_changed = true;
+        }
         // This build stores no control settings. Its successful supplied value is
         // the boundary for ending this report; no hold or ask is produced here.
         end(
@@ -220,16 +247,28 @@ pub(crate) fn status(
     if ty["spec"].get("admission").is_none() {
         return Some(json!({"checked":false}));
     }
+    let visible =
+        instance["kind"] != "Agent" || access::may_inspect(state, actor, login, c).unwrap_or(false);
+    let asking = if visible {
+        state
+            .admission_asks
+            .get(login["id"].as_str()?)
+            .map(|ask| json!(ask.invocation))
+            .unwrap_or(Value::Null)
+    } else {
+        Value::Null
+    };
+    let no_report = crate::admission_ask::no_report(state, login["id"].as_str()?, time)
+        .map(|period| period.status(visible))
+        .unwrap_or(Value::Null);
     let Some(kept) = state.admission_reports.get(login["id"].as_str()?) else {
         return Some(
             json!({"checked":true,"report":null,"invocation":null,"keptAt":null,
-            "validUntil":null,"state":"none","ended":null,"asking":null,"noReport":null}),
+            "validUntil":null,"state":"none","ended":null,"asking":asking,"noReport":no_report}),
         );
     };
     let ended = kept.end_at(time);
-    let invocation = if instance["kind"] != "Agent"
-        || access::may_inspect(state, actor, login, c).unwrap_or(false)
-    {
+    let invocation = if visible {
         json!(kept.invocation)
     } else {
         Value::Null
@@ -240,6 +279,6 @@ pub(crate) fn status(
         json!({"checked":true,"report":kept.report,"invocation":invocation,
         "keptAt":kept.kept_at,"validUntil":kept.valid_until(),
         "state":if ended.is_some() {"ended"} else {"current"},
-        "ended":ended,"asking":null,"noReport":null}),
+        "ended":ended,"asking":asking,"noReport":no_report}),
     )
 }

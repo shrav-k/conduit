@@ -109,6 +109,7 @@ fn run() -> Result<()> {
                     | "--output-age-seconds"
                     | "--initialize-timeout-seconds"
                     | "--call-timeout-seconds"
+                    | "--admission-ask-timeout-seconds"
                     | "--pass-environment"
             )
         {
@@ -219,6 +220,14 @@ fn run() -> Result<()> {
                         .ok_or("missing call timeout")?
                         .parse()
                         .map_err(|_| "invalid call timeout")?,
+                )
+            }
+            "--admission-ask-timeout-seconds" => {
+                config.admission_ask_timeout = std::time::Duration::from_secs(
+                    args.next()
+                        .ok_or("missing admission ask timeout")?
+                        .parse()
+                        .map_err(|_| "invalid admission ask timeout")?,
                 )
             }
             _ if command == "register" && !arg.starts_with('-') && project.is_none() => {
